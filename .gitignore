@@ -1,0 +1,3 @@
+/bin/*
+!/bin/resources
+/bin/resources/app/app.js

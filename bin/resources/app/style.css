@@ -1,0 +1,100 @@
+html, body {
+    padding: 0;
+	margin: 0;
+	height: 100%;
+}
+body {
+	font: 11pt sans-serif;
+	box-sizing: border-box;
+	overflow: hidden;
+	background: white;
+}
+/* */
+#main {
+	width: 100%;
+	height: 100vh;
+	display: flex;
+}
+#main > div {
+	padding: 0;
+	box-sizing: border-box;
+	position: relative;
+}
+#splitter-td {
+	border-right: 1px solid;
+	border-left: 1px solid;
+	border-color: #BCBBBC;
+	background: #f2f2f2;
+	width: 5px;
+	cursor: e-resize;
+}
+#main #editor-td {
+	flex-grow: 1;
+	padding: 0px;
+}
+#doc {
+	display: none;
+	background: rgba(250, 250, 250, 0.95);
+}
+#main.resizing .mouse-blocker,
+#main.showdoc #doc {
+	width: 100%;
+	height: 100vh;
+	position: absolute;
+	left: 0; top: 0;
+}
+#main.showdoc #doc { display: block; }
+#main.resizing .mouse-blocker {
+	background: rgba(0, 0, 0, 0.001);
+}
+.chrome-tabs {
+	border-radius: 0;
+	height: 36px;
+	padding-top: 4px;
+}
+.chrome-tabs .chrome-tab .chrome-tab-background > svg .chrome-tab-background {
+	/*transition: fill ease-in-out 0.1s;*/
+}
+.chrome-tabs .chrome-tab:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
+	fill: #d7d7d7;
+}
+.chrome-tab .chrome-tab-favicon {
+	width: 0;
+}
+.chrome-tab-changed .chrome-tab-close:before {
+	/* url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path stroke='#5a5a5a' stroke-linecap='round' stroke-width='1.125' d='M4 4 L10 10 M10 4 L4 10'></path></svg>") */
+	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="#5198D9"/></svg>');
+}
+.project-name {
+	line-height: 36px;
+	padding-top: 0;
+}
+#project-name {
+	font-size: 14px;
+	text-shadow: 0 1px 2px white;
+}
+/* */
+.top, .bottom {
+	width: 100%;
+	box-sizing: border-box;
+}
+.top {
+	height: 36px;
+	margin-bottom: 1px;
+	overflow: hidden;
+}
+.bottom {
+	height: calc(100vh - 36px);
+	padding-top: 1px;
+}
+/* */
+#source, #output, .ace_editor, .ace_status-bar {
+	box-sizing: border-box;
+	/*border: 1px solid #aaa;*/
+}
+#game, #game-fallback, .ace_editor {
+	width: 100%;
+	height: 100vh;
+	margin: 0;
+	resize: none;
+}

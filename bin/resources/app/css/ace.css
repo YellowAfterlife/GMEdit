@@ -1,0 +1,114 @@
+#source, #main .ace_editor {
+	font-size: 9pt;
+	line-height: 1.35;
+}
+#source {
+	overflow-y: scroll;
+}
+#source, #output, #main .ace_editor {
+	font-family: Consolas, Ubuntu Mono, monospace;
+	width: 100%;
+	height: calc(100vh - 60px);
+}
+#main .ace_status-bar {
+	width: 100%;
+	line-height: 24px;
+	height: 24px;
+	border-top: 1px solid #CCCCCC;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 5px;
+}
+#main .ace_status-bar .row, #main .ace_status-bar .col {
+	display: inline-block;
+	text-align: right;
+	min-width: 24px;
+}
+#main #ace_status-hint {
+	margin-left: 5px;
+	border-left: 1px solid #bbb;
+	padding-left: 5px;
+}
+#main #ace_status-hint.active {
+	color: rgb(250, 50, 50);
+	cursor: pointer;
+}
+#main #ace_status-hint .argument.current {
+	color: rgb(250, 50, 50);
+}
+
+#main .ace_gutter {
+	background: #F8F8F8;
+	color: #666;
+	border-right: 1px solid #ccc;
+}
+#main .ace_gutter-define {
+	box-shadow: 0 1px 0px #d0d0d0 inset;
+}
+#main .ace_gutter-active-line {
+	background: #EFEAE8;
+}
+
+.ace_scroller {
+    box-shadow: 17px 0 16px -16px rgba(0, 0, 0, 0.0) inset;
+	transition: box-shadow 0.3s ease-in-out;
+}
+
+#main .ace_line {
+	position: relative;
+}
+#main .ace_active-line {
+	background: rgba(255, 253, 205, 0.5);
+}
+#main .gml .ace_comment {
+	color: #008000;
+	font-style: italic;
+}
+#main .gml .ace_comment.ace_doc {
+	color: #008080;
+}
+#main .gml .ace_function,
+#main .gml .ace_variable,
+#main .gml .ace_constant,
+#main .gml .ace_macro {
+	color: #800000;
+}
+#main .gml .ace_asset {
+	color: rgb(0, 128, 160);
+}
+#main .gml .ace_script {
+	color: #800080;
+}
+#main .gml .ace_keyword,
+#main .gml .ace_curly.ace_paren {
+	color: #00379B;
+	font-weight: bold;
+}
+#main .gml .ace_preproc {
+	color: rgb(0, 120, 170);
+}
+/** underline the define-line */
+#main .gml .ace_preproc.ace_define:after {
+    content: "";
+    left: -4px;
+    /*bottom: -1px;*/
+	top: 0;px;
+    right: 0;
+    height: 1px;
+    position: absolute;
+    display: block;
+    background: #E8E8E8;
+}
+#main .gml .ace_numeric {
+	color: #00f;
+}
+#main .gml .ace_string {
+	color: #00f;
+}
+#main .ace_error-line {
+	position: absolute;
+	background-color: rgba(233, 115, 111, 0.35);
+}
+.ace_tooltip {
+	font: 10pt sans-serif;
+}

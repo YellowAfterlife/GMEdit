@@ -1,0 +1,62 @@
+.treeview {
+	line-height: 1.35;
+	overflow: auto;
+}
+.treeview .dir {
+	
+}
+.treeview .dir .header,
+.treeview .item,
+.treeview .items {
+	border-left: 2px solid #f3f3f3;
+	user-select: none;
+}
+.treeview .dir .header,
+.treeview .item {
+	display: block;
+	outline: none;
+	text-decoration: none;
+	margin: 0;
+	font-weight: 700;
+	font-size: 15px;
+	color: #458;
+	padding-left: 4px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+.treeview .dir > .header:before,
+.treeview .item:before {
+	display: inline-block;
+	content: "#";
+	font: 12px Consolas, monospace;
+	font-weight: 700;
+	border: 1px solid #458;
+	line-height: 11px;
+	height: 11px;
+	width: 11px;
+	text-align: center;
+	border-radius: 50%;
+	margin-right: 4px;
+	vertical-align: middle;
+	position: relative;
+	top: -1px;
+}
+.treeview .dir > .header:before {
+	content: "+";
+}
+.treeview .dir.open > .header:before {
+	content: "-";
+}
+.treeview .header:hover,
+.treeview .item:hover {
+	border-left-color: #f3f3f3;
+	background: #f3f3f3;
+}
+.treeview .dir:not(.open) > .items {
+	display: none;
+}
+.treeview .items {
+	padding-left: 9px;
+}
