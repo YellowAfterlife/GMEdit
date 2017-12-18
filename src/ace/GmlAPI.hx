@@ -50,6 +50,7 @@ class GmlAPI {
 				meta: "function",
 				doc: comp
 			});
+			stdDoc.set(name, parseDoc(comp));
 		});
 		// 1name 2array       3flags
 		~/^((\w+)(\[[^\]]*\])?([~\*\$#]*));?[ \t]*$/gm.each(src, function(rx:EReg) {

@@ -41,9 +41,9 @@ class AceStatusBar {
 						case ";": break;
 					}
 				};
-				case "script": if (depth < 0) { doc = GmlAPI.stdDoc[tk.value]; break; }
+				case "script": if (depth < 0) { doc = GmlAPI.gmlDoc[tk.value]; break; }
 				case "function": if (depth < 0) { doc = GmlAPI.stdDoc[tk.value]; break; }
-				case "extfunction": if (depth < 0) { doc = GmlAPI.stdDoc[tk.value]; break; }
+				case "extfunction": if (depth < 0) { doc = GmlAPI.extDoc[tk.value]; break; }
 				default:
 			}
 			iter.stepBackward();
@@ -68,8 +68,9 @@ class AceStatusBar {
 			}
 			out.appendChild(document.createTextNode(doc.post));
 			statusHint.appendChild(out);
+			statusHint.title = out.innerText;
 			statusHint.classList.remove("active");
-		}
+		} else statusHint.title = "";
 	}
 	static function statusUpdate() {
 		var editor = Main.aceEditor;

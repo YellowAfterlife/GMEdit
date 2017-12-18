@@ -10,14 +10,22 @@
 	width: 100%;
 	height: calc(100vh - 60px);
 }
+#editor-td .bottom {
+	position: relative;
+}
 #main .ace_status-bar {
 	width: 100%;
 	line-height: 24px;
 	height: 24px;
 	border-top: 1px solid #CCCCCC;
+	padding: 0 5px;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	padding: 0 5px;
+	position: absolute;
+	left: 0; right: 0;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
 }
 #main .ace_status-bar .row, #main .ace_status-bar .col {
 	display: inline-block;
@@ -70,7 +78,9 @@
 #main .gml .ace_function,
 #main .gml .ace_variable,
 #main .gml .ace_constant,
-#main .gml .ace_macro {
+#main .gml .ace_macro,
+#main .gml .ace_extfunction,
+#main .gml .ace_extmacro {
 	color: #800000;
 }
 #main .gml .ace_asset {

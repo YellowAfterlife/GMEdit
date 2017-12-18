@@ -7,6 +7,7 @@ import js.html.Element;
 import js.html.MouseEvent;
 import tools.Dictionary;
 import ace.GmlAPI;
+import ace.AceWrap;
 import gmx.SfGmx;
 import Main.*;
 import tools.HtmlTools;
@@ -169,6 +170,36 @@ class Project {
 				var cgmx = SfGmx.parse(nodefs.readFileSync(cpath, "utf8"));
 				for (outer in cgmx.findAll("ConfigConstants")) {
 					for (ctr in outer.findAll("constants")) addMacros(ctr);
+				}
+			}
+		}
+		//
+		GmlAPI.extComp.clear();
+		GmlAPI.extDoc = new Dictionary();
+		GmlAPI.extKind = new Dictionary();
+		for (extensions in gmx.findAll("NewExtensions"))
+		for (extension in extensions.findAll("extension")) {
+			var epath = Path.join([dir, extension.text + ".extension.gmx"]);
+			var egmx = SfGmx.parse(nodefs.readFileSync(epath, "utf8"));
+			for (files in egmx.findAll("files"))
+			for (file in files.findAll("file")) {
+				for (funcs in file.findAll("functions"))
+				for (func in funcs.findAll("function")) {
+					var name = func.findText("name");
+					GmlAPI.extKind.set(name, "extfunction");
+					var help = func.findText("help");
+					if (help != null && help != "") {
+						GmlAPI.extComp.push(new AceAutoCompleteItem(name, "function", help));
+						GmlAPI.extDoc.set(name, GmlAPI.parseDoc(help));
+					}
+				}
+				for (mcrs in file.findAll("constants"))
+				for (mcr in mcrs.findAll("constant"))
+				if (mcr.findText("hidden") == "0") {
+					var name = mcr.findText("name");
+					var expr = mcr.findText("value");
+					GmlAPI.extComp.push(new AceAutoCompleteItem(name, "macro", expr));
+					GmlAPI.extKind.set(name, "extmacro");
 				}
 			}
 		}
