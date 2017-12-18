@@ -152,13 +152,27 @@ class Project {
 		loadAssets(tm, "object");
 		loadAssets(tm, "room");
 		//
-		for (cat in gmx.findAll("constants"))
-		for (q in cat.findAll("constant")) {
-			var name = q.get("name");
-			var expr = q.text;
-			tm.set(name, "macro");
-			comp.push(new AceAutoCompleteItem(name, "macro", expr));
+		function addMacros(ctr:SfGmx) {
+			for (q in ctr.findAll("constant")) {
+				var name = q.get("name");
+				var expr = q.text;
+				tm.set(name, "macro");
+				comp.push(new AceAutoCompleteItem(name, "macro", expr));
+			}
 		}
+		for (ctr in gmx.findAll("constants")) addMacros(ctr);
+		//
+		for (configs in gmx.findAll("Configs")) {
+			var confNode = configs.find("Config");
+			if (confNode != null) {
+				var cpath = Path.join([dir, confNode.text + ".config.gmx"]);
+				var cgmx = SfGmx.parse(nodefs.readFileSync(cpath, "utf8"));
+				for (outer in cgmx.findAll("ConfigConstants")) {
+					for (ctr in outer.findAll("constants")) addMacros(ctr);
+				}
+			}
+		}
+		//
 		GmlAPI.gmlKind = tm;
 		//}
 	}

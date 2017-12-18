@@ -45,12 +45,13 @@ class GmlFile {
 	//
 	public function load() {
 		var src = Main.nodefs.readFileSync(path, "utf8");
+		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
 			case Normal: code = src;
 			case GmxObject: {
-				var gmx = SfGmx.parse(src);
-				var out = "";
-				var errors = "";
+				gmx = SfGmx.parse(src);
+				out = "";
+				errors = "";
 				for (evOuter in gmx.findAll("events")) {
 					var events = evOuter.findAll("event");
 					events.sort(function(a:SfGmx, b:SfGmx) {
@@ -103,8 +104,19 @@ class GmlFile {
 					code = errors;
 				} else code = out;
 			};
-			case _: {
-				
+			case GmxProjectMacros, GmxConfigMacros: {
+				gmx = SfGmx.parse(src);
+				out = "// note: only #macro definitions here are saved";
+				if (kind == GmxConfigMacros) {
+					gmx = gmx.find("ConfigConstants");
+				}
+				if (gmx != null) for (mcrParent in gmx.findAll("constants"))
+				for (mcrNode in mcrParent.findAll("constant")) {
+					var name = mcrNode.get("name");
+					var expr = mcrNode.text;
+					out += '\n#macro $name $expr';
+				}
+				code = out;
 			};
 		}
 	}
