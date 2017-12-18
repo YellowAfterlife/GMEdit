@@ -56,6 +56,7 @@ class Main {
 		untyped {
 			window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
 			window.AceUndoManager = AceWrap.require("ace/undomanager").UndoManager;
+			window.aceEditor = aceEditor;
 		};
 		aceEditor.on("input", function() {
 			var q = GmlFile.current;
@@ -87,7 +88,10 @@ class Main {
 		//
 		
 		//
-		project = new Project("..\\nuclearthronetogether.gmx\\nuclearthrone.project.gmx");
+		var path = window.localStorage.getItem("autoload");
+		if (path != null) {
+			project = new Project(path);
+		} else project = null;
 		//
 		trace("hi!");
 		return null;
