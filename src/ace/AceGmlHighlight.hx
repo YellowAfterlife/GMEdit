@@ -13,7 +13,7 @@ import haxe.extern.EitherType;
 	@:native("$rules") public var rules:Dynamic;
 	public function new() {
 		//
-		function rule1(tk:EitherType<String, String->String>, rx:String, next:String):AceLangRule {
+		function rule1(tk:Dynamic, rx:String, next:String):AceLangRule {
 			return { token: tk, regex: rx, next: next };
 		}
 		function rdef(tk:String):Dynamic {
@@ -30,8 +30,8 @@ import haxe.extern.EitherType;
 			rule("comment", ~/\/\/.*$/),
 			rule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rule("comment", ~/\/\*/, "comment"),
-			rule("preproc.define", ~/#define[ \t]+\w+/),
-			rule("preproc.macro", ~/#macro[ \t]+\w+/),
+			rule(["preproc.define", "script"], ~/(#define[ \t]+)(\w+)/),
+			rule(["preproc.macro", "variable"], ~/(#macro[ \t]+)(\w+)/),
 			rule("string", ~/"/, "string2"),
 			rule("string", ~/'/, "string1"),
 			rule("string", ~/`/, "stringt"),

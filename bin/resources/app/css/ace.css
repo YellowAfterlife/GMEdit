@@ -85,7 +85,9 @@
 	font-weight: bold;
 }
 #main .gml .ace_preproc {
-	color: rgb(0, 120, 170);
+	/*color: rgb(0, 120, 170);*/
+	/*color: #7A81A9;*/
+	color: #768;
 }
 /** underline the define-line */
 #main .gml .ace_preproc.ace_define:after {

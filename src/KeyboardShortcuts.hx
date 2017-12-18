@@ -68,6 +68,7 @@ class KeyboardShortcuts {
 			case KeyboardEvent.DOM_VK_F12: {
 				if (flags == 0) {
 					var tk = aceEditor.session.getTokenAtPos(aceEditor.getCursorPosition());
+					if (tk == null) return;
 					var el = treeview.querySelector('.item[title="${tk.value}"]');
 					if (el != null) {
 						Project.openFile(el.title, el.getAttribute("path"));

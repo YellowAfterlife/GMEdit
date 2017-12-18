@@ -19,6 +19,10 @@ import ace.AceWrap;
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
 	):Void {
+		if (prefix.length < 2) {
+			callback(null, []);
+			return;
+		}
 		if (editor.completer != null) {
 			editor.completer.exactMatch = true;
 		}
