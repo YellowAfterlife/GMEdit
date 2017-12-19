@@ -16,6 +16,7 @@ The intent is to have a code editor that supports common features (syntax highli
 * Code editor: [Ace](https://ace.c9.io/)
 * [Chrome tabs](https://github.com/adamschwartz/chrome-tabs)
 * Native wrapper: [Electron](https://electronjs.org/)
+* Resource tree icons (slightly edited): [Silk](http://www.famfamfam.com/lab/icons/silk/)
 
 ### License
 

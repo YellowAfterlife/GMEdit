@@ -47,7 +47,7 @@ class GmlFile {
 		var src = Main.nodefs.readFileSync(path, "utf8");
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
-			case Normal: code = src;
+			case Normal, Extern: code = src;
 			case GmxObject: {
 				gmx = SfGmx.parse(src);
 				out = "";
@@ -130,6 +130,7 @@ class GmlFile {
 	}
 }
 @:fakeEnum(Int) enum GmlFileKind {
+	Extern;
 	Normal;
 	GmxObject;
 	GmxProjectMacros;

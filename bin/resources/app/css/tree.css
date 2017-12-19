@@ -11,15 +11,16 @@
 	border-left: 2px solid #f3f3f3;
 	user-select: none;
 }
+/*.treeview .items > div {
+	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAACAQMAAABWsa/UAAAAA1BMVEXz8/ML3eGLAAAACklEQVQI12MAAwAABgAB6AoqpAAAAABJRU5ErkJggg==') 0px 9px no-repeat;
+}*/
 .treeview .dir .header,
 .treeview .item {
 	display: block;
 	outline: none;
 	text-decoration: none;
 	margin: 0;
-	font-weight: 700;
-	font-size: 15px;
-	color: #458;
+	font-size: 13px;
 	padding-left: 4px;
 	padding-top: 1px;
 	padding-bottom: 1px;
@@ -29,25 +30,20 @@
 .treeview .dir > .header:before,
 .treeview .item:before {
 	display: inline-block;
-	content: "#";
-	font: 12px Consolas, monospace;
-	font-weight: 700;
-	border: 1px solid #458;
-	line-height: 11px;
-	height: 11px;
-	width: 11px;
-	text-align: center;
-	border-radius: 50%;
-	margin-right: 4px;
+	content: "";
+	width: 16px;
+	height: 16px;
+	background: url(tree.png) no-repeat;
+	margin-right: 2px;
 	vertical-align: middle;
 	position: relative;
-	top: -1px;
+	top: -2px;
 }
 .treeview .dir > .header:before {
-	content: "+";
+	background-position: -20px 0;
 }
 .treeview .dir.open > .header:before {
-	content: "-";
+	background-position: -40px 0;
 }
 .treeview .header:hover,
 .treeview .item:hover {

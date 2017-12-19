@@ -35,7 +35,8 @@ class Main {
 	public static var project:Project;
 	public static var treeview:DivElement = cast document.querySelector(".treeview");
 	public static var nodefs:NodeFS = untyped require("fs");
-	public static var aceEditor:AceWrap = untyped window.editor;
+	public static var electron:Dynamic = untyped require("electron");
+	public static var aceEditor:AceWrap;
 	//
 	static function main() {
 		document.body.addEventListener("keydown", KeyboardShortcuts.handle);
@@ -72,8 +73,13 @@ class Main {
 			tabOverlapDistance: 14, minWidth: 45, maxWidth: 160
 		});
 		tabsEl.addEventListener("activeTabChange", function(event:Dynamic) {
-			var detail = event.detail; if (detail == null) return;
-			var tabEl:TreeViewItem = detail.tabEl; if (tabEl == null) return;
+			//
+			var detail = event.detail;
+			if (detail == null) return;
+			//
+			var tabEl:ChromeTab = detail.tabEl;
+			if (tabEl == null) return;
+			//
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) {
 				gmlFile = GmlFile.next;
@@ -81,6 +87,7 @@ class Main {
 				GmlFile.next = null;
 				gmlFile.tabEl = cast tabEl;
 				tabEl.gmlFile = gmlFile;
+				tabEl.title = gmlFile.path;
 			}
 			GmlFile.current = gmlFile;
 			aceEditor.setSession(gmlFile.session);
