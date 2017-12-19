@@ -1,4 +1,5 @@
-package ace;
+package gml;
+import gml.GmlEnum;
 import haxe.io.Path;
 import js.RegExp;
 import tools.Dictionary;
@@ -11,6 +12,7 @@ using tools.ERegTools;
  * @author YellowAfterlife
  */
 class GmlAPI {
+	public static var kwMap:Dictionary<Bool> = new Dictionary();
 	//
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
@@ -19,17 +21,36 @@ class GmlAPI {
 		for (kw in ("globalvar|var|if|then|else|begin|end"
 			+ "|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return"
 			+ "|self|other|noone|all|global|local|mod|div|not|and|or|xor|enum|debugger"
-		).split("|")) q.set(kw, "keyword");
+		).split("|")) {
+			kwMap.set(kw, true);
+			q.set(kw, "keyword");
+		}
 		q;
 	};
 	// extension scope
 	public static var extDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var extKind:Dictionary<String> = new Dictionary();
 	public static var extComp:AceAutoCompleteItems = [];
+	public static function extClear() {
+		extDoc = new Dictionary();
+		extKind = new Dictionary();
+		extComp.clear();
+	}
 	// script/object scope
 	public static var gmlDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var gmlKind:Dictionary<String> = new Dictionary();
 	public static var gmlComp:AceAutoCompleteItems = [];
+	public static var gmlEnums:Dictionary<GmlEnum> = new Dictionary();
+	public static var gmlGlobalKind:Dictionary<String> = new Dictionary();
+	public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
+	public static function gmlClear() {
+		gmlDoc = new Dictionary();
+		gmlKind = new Dictionary();
+		gmlComp.clear();
+		gmlEnums = new Dictionary();
+		gmlGlobalKind = new Dictionary();
+	}
+	//
 	
 	/**
 	 * Loads definitions from fnames format used by GMS itself.

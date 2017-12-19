@@ -1,5 +1,7 @@
 package ace;
 import ace.AceWrap;
+import gml.GmlAPI;
+import gml.GmlEnum;
 import js.RegExp;
 import tools.Dictionary;
 import ace.AceMacro.rule;
@@ -25,6 +27,17 @@ import haxe.extern.EitherType;
 				GmlAPI.stdKind[name], GmlAPI.extKind[name], GmlAPI.gmlKind[name], "identifier"
 			);
 		}
+		function identFunc2(s1:String, _, _, _, s2:String):Array<String> {
+			var e = GmlAPI.gmlEnums[s1];
+			if (e != null) {
+				s1 = "enum";
+				s2 = e.items[s2] ? "enumfield" : "enumerror";
+			} else {
+				s1 = identFunc(s1);
+				s2 = identFunc(s2);
+			}
+			return [s1, "text", "punctuation.operator", "text", s2];
+		}
 		var baseRules:Array<AceLangRule> = [
 			rule("comment.doc", ~/\/\/\/.*$/),
 			rule("comment", ~/\/\/.*$/),
@@ -38,6 +51,7 @@ import haxe.extern.EitherType;
 			rule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
 			rule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rule("constant.boolean", ~/(?:true|false)\b/),
+			rule(identFunc2, ~/([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
 			rule(identFunc, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
 			rule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
 			rule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|==|!=|<=|>=|<>|<|>|!|&&|\|\|/),

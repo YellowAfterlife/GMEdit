@@ -90,10 +90,16 @@
 #main .gml .ace_variable,
 #main .gml .ace_constant,
 #main .gml .ace_macro,
+#main .gml .ace_globalvar,
 #main .gml .ace_extfunction,
-#main .gml .ace_extmacro {
+#main .gml .ace_extmacro,
+#main .gml .ace_enum,
+#main .gml .ace_enumfield {
 	color: #800000;
 }
+/*#main .gml .ace_enumerror {
+	color: red;
+}*/
 #main .gml .ace_asset {
 	color: rgb(0, 128, 160);
 }

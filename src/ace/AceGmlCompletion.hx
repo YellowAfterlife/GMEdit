@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap;
+import gml.GmlAPI;
 
 /**
  * ...
@@ -7,12 +8,10 @@ import ace.AceWrap;
  */
 @:keep class AceGmlCompletion implements AceAutoCompleter {
 	//
-	public var items:Array<AceAutoCompleteItem>;
+	public var items:AceAutoCompleteItems;
 	//
-	public function new(items:Array<AceAutoCompleteItem>) {
-		items.sort(function(a, b) {
-			return untyped a.name < b.name ? -1 : 1;
-		});
+	public function new(items:AceAutoCompleteItems) {
+		items.autoSort();
 		this.items = items;
 	}
 	// interface AceAutoCompleter

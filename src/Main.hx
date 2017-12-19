@@ -2,6 +2,7 @@ package;
 
 import ace.*;
 import ace.AceWrap;
+import gml.GmlAPI;
 import js.Lib;
 import tools.*;
 import js.html.DivElement;

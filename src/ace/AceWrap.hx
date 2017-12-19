@@ -126,6 +126,7 @@ typedef AcePos = { column: Int, row:Int };
 typedef AceToken = { type:String, value:String, index:Int, start:Int };
 typedef AceAnnotation = { row:Int, column:Int, type:String, text:String }
 //
+/** (name, meta, ?doc) */
 @:forward abstract AceAutoCompleteItem(AceAutoCompleteItemImpl)
 from AceAutoCompleteItemImpl to AceAutoCompleteItemImpl {
 	public inline function new(name:String, meta:String, ?doc:String) {
@@ -141,6 +142,11 @@ from Array<AceAutoCompleteItem> to Array<AceAutoCompleteItem> {
 	}
 	public inline function clear() {
 		untyped this.length = 0;
+	}
+	public inline function autoSort() {
+		this.sort(function(a, b) {
+			return untyped a.name < b.name ? -1 : 1;
+		});
 	}
 }
 //

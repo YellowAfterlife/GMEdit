@@ -6,7 +6,7 @@ import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
 import tools.Dictionary;
-import ace.GmlAPI;
+import gml.GmlAPI;
 import ace.AceWrap;
 import gmx.SfGmx;
 import Main.*;
@@ -84,9 +84,7 @@ class Project {
 	public function reload_1() {
 		gmx = SfGmx.parse(nodefs.readFileSync(path, "utf8"));
 		//
-		var comp = GmlAPI.gmlComp;
-		comp.clear();
-		//
+		GmlAPI.gmlClear();
 		var rxName = ~/^.+[\/\\](\w+)(?:\.[\w.]+)?$/g;
 		var tv = treeview;
 		tv.innerHTML = "";
@@ -117,10 +115,18 @@ class Project {
 			if (gmx.name == one) {
 				var path = gmx.text;
 				var name = rxName.replace(path, "$1");
-				if (one != "script") path += '.$one.gmx';
 				path = Path.join([dir, path]);
 				var r = makeItem(name, path);
 				out.appendChild(r);
+				//
+				var _main:String;
+				if (one != "script") {
+					path += '.$one.gmx';
+					_main = "";
+				} else {
+					_main = name;
+					gml.GmlSeeker.run(path, _main);
+				}
 			} else {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
@@ -133,9 +139,8 @@ class Project {
 		for (q in gmx.findAll("scripts")) loadrec(q, tv, "script");
 		for (q in gmx.findAll("objects")) loadrec(q, tv, "object");
 		//
-		GmlAPI.extComp.clear();
-		GmlAPI.extDoc = new Dictionary();
-		GmlAPI.extKind = new Dictionary();
+		GmlAPI.extClear();
+		var comp = GmlAPI.gmlComp;
 		for (extParent in gmx.findAll("NewExtensions")) {
 			var extNodes = extParent.findAll("extension");
 			if (extNodes.length == 0) continue;

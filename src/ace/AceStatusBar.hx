@@ -1,6 +1,6 @@
 package ace;
 import ace.AceWrap;
-import ace.GmlAPI;
+import gml.GmlAPI;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -43,7 +43,7 @@ class AceStatusBar {
 						case ";": break;
 					}
 				};
-				case "script": if (depth < 0) { doc = GmlAPI.gmlDoc[tk.value]; break; }
+				case "asset.script": if (depth < 0) { doc = GmlAPI.gmlDoc[tk.value]; break; }
 				case "function": if (depth < 0) { doc = GmlAPI.stdDoc[tk.value]; break; }
 				case "extfunction": if (depth < 0) { doc = GmlAPI.extDoc[tk.value]; break; }
 				default:
@@ -126,6 +126,7 @@ class AceStatusBar {
 		} else {
 			ctxCtr.style.display = "none";
 			ctxPre.style.display = "none";
+			contextRow = -1;
 		}
 		//
 		updateComp(editor, pos.row, pos.column);
