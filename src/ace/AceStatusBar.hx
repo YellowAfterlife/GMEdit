@@ -3,6 +3,7 @@ import ace.AceWrap;
 import ace.GmlAPI;
 import js.html.DivElement;
 import js.html.Element;
+import js.html.MouseEvent;
 import js.html.SpanElement;
 import Main.document;
 import tools.Dictionary;
@@ -17,6 +18,7 @@ class AceStatusBar {
 	static var statusBar:DivElement;
 	static var statusSpan:SpanElement;
 	static var statusHint:SpanElement;
+	static var contextRow:Int = 0;
 	static var flowKeywords:Dictionary<Bool> = {
 		var q = new Dictionary();
 		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|debugger".split("|")) q.set(s, true);
@@ -77,30 +79,54 @@ class AceStatusBar {
 		var sel = editor.selection;
 		var pos = sel.lead;
 		//
-		statusSpan.innerHTML = "";
-		function add(value:Dynamic, ?kind:String) {
-			if (value == null || value == "") return;
-			var text = " " + value;
-			if (kind != null) {
-				var span = document.createSpanElement();
-				span.appendChild(document.createTextNode(text));
-				span.className = kind;
-				statusSpan.appendChild(span);
-			} else statusSpan.appendChild(document.createTextNode(text));
+		var showRow = pos.row;
+		var checkRx = new js.RegExp('^#define[ \t]+(\\w+)', '');
+		var startRow = showRow + 1;
+		var checkExec = null;
+		var session = editor.getSession();
+		while (--startRow >= 0) {
+			checkExec = checkRx.exec(session.getLine(startRow));
+			if (checkExec != null) {
+				showRow -= startRow + 1;
+				break;
+			}
 		}
 		//
-		add(editor.keyBinding.getStatusText(editor), "status");
-		if (editor.commands.recording) add("REC", "recording");
+		var ctr = statusSpan, s:String;
+		function set(q:String, v:String) {
+			var el = ctr.querySelector(q);
+			if (v != null && v != "") {
+				el.style.display = "";
+				el.innerText = v;
+			} else el.style.display = "none";
+		}
+		//
+		set(".status", editor.keyBinding.getStatusText(editor));
+		set(".recording", editor.commands.recording ? "REC" : null);
+		//
 		if (!sel.isEmpty()) {
 			var r = editor.getSelectionRange();
-			add('(${r.end.row - r.start.row}:${r.end.column - r.start.column})', "select");
+			set(".select", '(${r.end.row - r.start.row}:${r.end.column - r.start.column})');
 		}
 		//
-		add("Ln:", "row-label");
-		add(pos.row + 1, "row");
-		add("Col:", "col-label");
-		add(pos.column + 1, "col");
-		if (sel.rangeCount > 0) add('[${sel.rangeCount}]', "ranges");
+		set(".row", showRow < 0 ? "#" : "" + (showRow + 1));
+		set(".col", "" + (pos.column + 1));
+		set(".ranges", sel.rangeCount > 0 ? '[${sel.rangeCount}]' : null);
+		//
+		var ctxCtr = ctr.querySelector(".context");
+		var ctxPre = ctr.querySelector(".context-pre");
+		if (checkExec != null) {
+			ctxCtr.style.display = "";
+			ctxPre.style.display = "";
+			var str = checkExec[1];
+			var ctxTxt = ctr.querySelector(".context-txt");
+			ctxTxt.innerText = str;
+			ctxTxt.title = str;
+			contextRow = startRow;
+		} else {
+			ctxCtr.style.display = "none";
+			ctxPre.style.display = "none";
+		}
 		//
 		updateComp(editor, pos.row, pos.column);
 	}
@@ -108,21 +134,14 @@ class AceStatusBar {
 		lang = AceWrap.require("ace/lib/lang");
 		tokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
 		//
-		statusBar = document.createDivElement();
-		statusBar.className = "ace_status-bar";
-		//
-		statusSpan = document.createSpanElement();
-		statusSpan.setAttribute("width", "0%");
-		statusSpan.className = "ace_status-hint";
-		statusBar.appendChild(statusSpan);
-		//
-		statusHint = document.createSpanElement();
-		statusHint.innerHTML = "OK!";
-		statusHint.id = "ace_status-hint";
-		statusBar.appendChild(statusHint);
+		statusBar = cast document.querySelector(".ace_status-bar");
+		statusBar.style.display = "";
+		statusSpan = cast statusBar.querySelector(".ace_status-hint");
+		statusHint = cast statusBar.querySelector("#ace_status-hint");
+		statusBar.querySelector('.context').addEventListener("click", function(e:MouseEvent) {
+			Main.aceEditor.gotoLine(contextRow + 1, 0);
+		});
 		editor.statusHint = statusHint;
-		//
-		ectr.appendChild(statusBar);
 		//
 		var dcUpdate = lang.delayedCall(statusUpdate).schedule.bind(null, 100);
 		editor.on("changeStatus", dcUpdate);

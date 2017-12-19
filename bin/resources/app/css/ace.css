@@ -32,10 +32,21 @@
 	text-align: right;
 	min-width: 24px;
 }
-#main #ace_status-hint {
-	margin-left: 5px;
+#main #ace_status-hint, #main .ace_status-bar .context-pre {
+	/*margin-left: 5px;*/
 	border-left: 1px solid #bbb;
 	padding-left: 5px;
+}
+#main .ace_status-bar .context {
+	position: relative;
+	display: inline-block;
+	vertical-align: bottom;
+	max-width: 100px;
+	overflow: hidden;
+	cursor: pointer;
+}
+#main .ace_status-bar .context-txt {
+	float: right;
 }
 #main #ace_status-hint.active {
 	color: rgb(250, 50, 50);

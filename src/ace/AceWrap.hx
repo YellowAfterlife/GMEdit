@@ -109,6 +109,7 @@ extern class AceSelection {
 	public function getUndoManager():AceUndoManager;
 	public function setUndoManager(m:AceUndoManager):Void;
 	//
+	public function getLine(row:Int):String;
 	public function getTokenAt(row:Int, col:Int):AceToken;
 	public inline function getTokenAtPos(pos:AcePos):AceToken {
 		return getTokenAt(pos.row, pos.column);
