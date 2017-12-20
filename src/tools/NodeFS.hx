@@ -1,5 +1,7 @@
 package tools;
+import gmx.SfGmx;
 import js.Error;
+import haxe.extern.EitherType;
 
 /**
  * ...
@@ -11,4 +13,11 @@ extern class NodeFS {
 		readFile(path, "utf8", cast callback);
 	}
 	public function readFileSync(path:String, ?enc:String):Dynamic;
+	public inline function readTextFileSync(path:String):String {
+		return readFileSync(path, "utf8");
+	}
+	public inline function readGmxFileSync(path:String):SfGmx {
+		return SfGmx.parse(readTextFileSync(path));
+	}
+	public function writeFileSync(path:String, data:Dynamic, ?options:Dynamic):Void;
 }

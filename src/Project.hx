@@ -18,6 +18,12 @@ import GmlFile;
  * @author YellowAfterlife
  */
 class Project {
+	//
+	public static var assetTypes:Array<String> = [
+		"sprite", "background", "sound", "path", "font",
+		"shader", "timeline", "script", "object", "room"
+	];
+	//
 	public static var nameNode = document.querySelector("#project-name");
 	public static var toggleCode = ('var cl = this.parentElement.classList;'
 		+ ' if (cl.contains("open")) cl.remove("open"); else cl.add("open");'
@@ -40,7 +46,7 @@ class Project {
 			case "gmx": {
 				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
 				kind = switch (ext) {
-					case "object": GmxObject;
+					case "object": GmxObjectEvents;
 					case "project": GmxProjectMacros;
 					case "config": GmxConfigMacros;
 					default: Extern;
@@ -116,9 +122,6 @@ class Project {
 				var path = gmx.text;
 				var name = rxName.replace(path, "$1");
 				path = Path.join([dir, path]);
-				var r = makeItem(name, path);
-				out.appendChild(r);
-				//
 				var _main:String;
 				if (one != "script") {
 					path += '.$one.gmx';
@@ -127,6 +130,8 @@ class Project {
 					_main = name;
 					gml.GmlSeeker.run(path, _main);
 				}
+				var r = makeItem(name, path);
+				out.appendChild(r);
 			} else {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
@@ -196,24 +201,18 @@ class Project {
 		//{
 		function loadAssets(r:Dictionary<String>, single:String, ?plural:String) {
 			if (plural == null) plural = single + "s";
+			var id:Int = 0;
+			var ids = GmlAPI.gmlAssetIDs[single];
 			for (section in gmx.findAll(plural)) for (item in section.findRec(single)) {
 				var name = rxName.replace(item.text, "$1");
 				r.set(name, "asset." + single);
 				comp.push(new AceAutoCompleteItem(name, single));
+				ids.set(name, id++);
 			}
 		}
 		//
 		var tm = new Dictionary();
-		loadAssets(tm, "sprite");
-		loadAssets(tm, "background");
-		loadAssets(tm, "sound");
-		loadAssets(tm, "path");
-		loadAssets(tm, "font");
-		loadAssets(tm, "shader");
-		loadAssets(tm, "timeline");
-		loadAssets(tm, "script");
-		loadAssets(tm, "object");
-		loadAssets(tm, "room");
+		for (type in assetTypes) loadAssets(tm, type);
 		//
 		function addMacros(ctr:SfGmx) {
 			for (q in ctr.findAll("constant")) {

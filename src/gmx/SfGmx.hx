@@ -31,8 +31,17 @@ class SfGmx {
 	public inline function addChild(q:SfGmx):Void {
 		children.push(q);
 	}
+	public function addTextChild(name:String, value:String):SfGmx {
+		var r = new SfGmx(name, value);
+		addChild(r);
+		return r;
+	}
+	//
 	public inline function removeChild(q:SfGmx):Void {
 		children.remove(q);
+	}
+	public inline function clearChildren():Void {
+		children.splice(0, children.length);
 	}
 	//
 	/** Finds the first element with given name */

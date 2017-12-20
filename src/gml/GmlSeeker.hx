@@ -21,98 +21,70 @@ class GmlSeeker {
 	}
 	public static function runSync(orig:String, src:String, main:String) {
 		var out = new GmlSeekData();
-		var pos = 0;
-		var len = src.length;
-		inline function loop():Bool {
-			return pos < len;
-		}
-		inline function skip():Void {
-			pos += 1;
-		}
-		inline function next():Int {
-			return src.fastCodeAt(pos++);
-		}
-		inline function peek(ofs:Int = 0):Int {
-			return src.fastCodeAt(ofs != 0 ? pos + ofs : pos);
-		}
-		inline function at(i:Int):Int {
-			return src.fastCodeAt(i);
-		}
-		inline function sub(start:Int, end:Int):String {
-			return src.substring(start, end);
-		}
-		inline function isIdent1(c:Int):Bool {
-			return c == "_".code
-				|| c >= "a".code && c <= "z".code
-				|| c >= "A".code && c <= "Z".code
-				|| c >= "0".code && c <= "9".code;
-		}
+		var q = new GmlReader(src);
+		/**
+		 * A lazy parser.
+		 * You tell it what you're looking for, and it reads the input till it finds any of that.
+		 */
 		function find(flags:GmlSeekerFlags):String {
-			while (loop()) {
-				var start = pos;
-				var c = next(), q:Int, s:String;
+			while (q.loop) {
+				var start = q.pos;
+				var c = q.read(), s:String;
 				switch (c) {
 					case "\r".code, "\n".code: if (flags.has(Line)) return "\n";
 					case ",".code: if (flags.has(Comma)) return ",";
 					case ";".code: if (flags.has(Semico)) return ";";
 					case "{".code: if (flags.has(Cub0)) return "{";
 					case "}".code: if (flags.has(Cub1)) return "}";
-					case "=".code: if (flags.has(SetOp) && peek() != "=".code) return "=";
-					case "/".code: switch (peek()) {
+					case "=".code: if (flags.has(SetOp) && q.peek() != "=".code) return "=";
+					case "/".code: switch (q.peek()) {
 						case "/".code: {
-							skip();
-							while (loop()) switch (peek()) {
-								case "\n".code, "\r".code: break;
-								default: skip();
-							}
-							if (flags.has(Doc) && at(start + 2) == "/".code) {
-								return sub(start, pos);
+							q.skip();
+							q.skipLine();
+							if (flags.has(Doc) && q.get(start + 2) == "/".code) {
+								return q.substring(start, q.pos);
 							}
 						};
 						case "*".code: {
-							skip();
-							do {
-								c = next();
-							} while (loop() && (c != "*".code || peek() != "/".code));
-							if (loop()) skip();
+							q.skip();
+							q.skipComment();
 						};
 						default:
 					};
 					case '"'.code, "'".code: {
-						q = peek();
-						while (q != c && loop()) {
-							skip(); q = peek();
-						}
-						if (loop()) skip();
+						q.skipString1(c);
 					};
 					case "#".code: {
-						while (loop()) {
-							c = peek();
-							if (isIdent1(c)) {
-								skip();
+						while (q.loop) {
+							c = q.peek();
+							if (c.isIdent1()) {
+								q.skip();
 							} else break;
 						}
-						if (pos > start + 1) {
-							s = sub(start, pos);
+						if (q.pos > start + 1) {
+							s = q.substring(start, q.pos);
 							switch (s) {
-								case "#define": if (flags.has(Define)) return s;
+								case "#define": if (flags.has(Define)) {
+									if (start == 0) return s;
+									c = q.get(start - 1);
+									if (c == "\r".code || c == "\n".code) {
+										return s;
+									}
+								};
 								case "#macro": if (flags.has(Macro)) return s;
 								default:
 							}
 						}
 					};
 					default: {
-						if (c >= "_".code
-						|| (c >= "A".code && c <= "Z".code)
-						|| (c >= "a".code && c <= "z".code)
-						) {
-							while (loop()) {
-								c = peek();
-								if (isIdent1(c)) {
-									skip();
+						if (c.isIdent0()) {
+							while (q.loop) {
+								c = q.peek();
+								if (c.isIdent1()) {
+									q.skip();
 								} else break;
 							}
-							if (flags.has(Ident)) return sub(start, pos);
+							if (flags.has(Ident)) return q.substring(start, q.pos);
 						}
 					};
 				}
@@ -120,13 +92,13 @@ class GmlSeeker {
 			return null;
 		} // find
 		var s:String, name:String;
-		while (loop()) {
+		while (q.loop) {
 			s = find(Ident | Doc | Define);
 			if (s == null) {
 				//
 			} else if (s.fastCodeAt(0) == "/".code) {
 				if (main != null) {
-					trace(main, s);
+					//trace(main, s);
 					GmlAPI.gmlDoc.set(main, GmlAPI.parseDoc(s.substring(3).ltrim()));
 					//trace(main, s);
 					main = null;
@@ -138,13 +110,13 @@ class GmlSeeker {
 				case "#macro": {
 					name = find(Ident);
 					if (name == null) continue;
-					var start = pos;
+					var start = q.pos;
 					find(Line);
-					s = sub(start, pos - 1);
+					s = q.substring(start, q.pos - 1);
 					// GMS2-only!
 				};
 				case "globalvar": {
-					while (loop()) {
+					while (q.loop) {
 						s = find(Ident | Semico);
 						if (s == ";" || GmlAPI.kwMap.exists(s)) break;
 						var g = new GmlGlobal(s, orig);
@@ -159,7 +131,7 @@ class GmlSeeker {
 					var en = new GmlEnum(name, orig);
 					out.enumList.push(en);
 					out.enumMap.set(name, en);
-					while (loop()) {
+					while (q.loop) {
 						s = find(Ident | Cub1);
 						if (s == null || s == "}") break;
 						en.names.push(s);

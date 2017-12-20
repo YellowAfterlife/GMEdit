@@ -43,7 +43,7 @@ import haxe.extern.EitherType;
 			rule("comment", ~/\/\/.*$/),
 			rule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rule("comment", ~/\/\*/, "comment"),
-			rule(["preproc.define", "script"], ~/(#define[ \t]+)(\w+)/),
+			rule(["preproc.define", "script"], ~/^(#define[ \t]+)(\w+)/),
 			rule(["preproc.macro", "variable"], ~/(#macro[ \t]+)(\w+)/),
 			rule("string", ~/"/, "string2"),
 			rule("string", ~/'/, "string1"),

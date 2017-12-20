@@ -43,12 +43,17 @@ class GmlAPI {
 	public static var gmlEnums:Dictionary<GmlEnum> = new Dictionary();
 	public static var gmlGlobalKind:Dictionary<String> = new Dictionary();
 	public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
+	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
 		gmlComp.clear();
 		gmlEnums = new Dictionary();
 		gmlGlobalKind = new Dictionary();
+		gmlAssetIDs = new Dictionary();
+		for (type in Project.assetTypes) {
+			gmlAssetIDs.set(type, new Dictionary());
+		}
 	}
 	//
 	

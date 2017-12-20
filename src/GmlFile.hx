@@ -2,6 +2,7 @@ package;
 import js.html.Element;
 import ace.AceWrap;
 import gmx.*;
+import Main.nodefs;
 
 /**
  * ...
@@ -44,95 +45,57 @@ class GmlFile {
 	}
 	//
 	public function load() {
-		var src = Main.nodefs.readFileSync(path, "utf8");
+		var src = nodefs.readTextFileSync(path);
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
 			case Normal, Extern: code = src;
-			case GmxObject: {
+			case GmxObjectEvents: {
 				gmx = SfGmx.parse(src);
-				out = "";
-				errors = "";
-				for (evOuter in gmx.findAll("events")) {
-					var events = evOuter.findAll("event");
-					events.sort(function(a:SfGmx, b:SfGmx) {
-						var atype = Std.parseInt(a.get("eventtype"));
-						var btype = Std.parseInt(b.get("eventtype"));
-						if (atype != btype) return atype - btype;
-						//
-						var aname = a.get("ename");
-						var bname = b.get("ename");
-						if (aname != null || bname != null) {
-							return untyped aname < bname ? 1 : -1;
-						}
-						//
-						var anumb = Std.parseInt(a.get("enumb"));
-						var bnumb = Std.parseInt(b.get("enumb"));
-						return anumb - bnumb;
-					});
-					for (event in events) {
-						var type = Std.parseInt(event.get("eventtype"));
-						var ename = event.get("ename");
-						var numb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
-						if (out != "") out += "\n";
-						var name = GmxEvent.toString(type, numb, ename);
-						out += "#define " + name;
-						var actions = event.findAll("action");
-						function addAction(action:SfGmx, head:Bool) {
-							if (head) out += "\n\n";
-							if(action.findText("libid") != "1"
-							|| action.findText("id") != "603"
-							|| action.findText("useapplyto") != "-1") {
-								errors += "Can't read non-code block in " + name;
-								return;
-							}
-							var code = action.find("arguments").find("argument").find("string").text;
-							if (head && !StringTools.startsWith(code, "///")) {
-								out += "///\n";
-							}
-							out += code;
-						}
-						if (actions.length != 0) {
-							out += "\n";
-							addAction(actions[0], false);
-							for (i in 1 ... actions.length) {
-								addAction(actions[i], true);
-							}
-						}
-					}
-				}
-				if (errors != "") {
-					code = errors;
+				out = GmxObject.getCode(gmx);
+				if (out == null) {
+					code = GmxObject.errorText;
 				} else code = out;
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = SfGmx.parse(src);
-				out = "// note: only #macro definitions here are saved";
-				if (kind == GmxConfigMacros) {
-					gmx = gmx.find("ConfigConstants");
-				}
-				if (gmx != null) for (mcrParent in gmx.findAll("constants"))
-				for (mcrNode in mcrParent.findAll("constant")) {
-					var name = mcrNode.get("name");
-					var expr = mcrNode.text;
-					out += '\n#macro $name $expr';
-				}
-				code = out;
+				code = GmxProject.getMacroCode(gmx, kind == GmxConfigMacros);
 			};
 		}
 	}
 	//
 	public function save() {
+		var val = session.getValue();
+		//
+		var out:String, src:String, gmx:SfGmx;
+		switch (kind) {
+			case Normal, Extern: out = val;
+			case GmxObjectEvents: {
+				gmx = nodefs.readGmxFileSync(path);
+				if (!GmxObject.updateCode(gmx, val)) {
+					Main.window.alert("Can't update GMX:\n" + GmxObject.errorText);
+				}
+				out = gmx.toGmxString();
+			};
+			case GmxProjectMacros, GmxConfigMacros: {
+				gmx = nodefs.readGmxFileSync(path);
+				GmxProject.setMacroCode(gmx, val, kind == GmxConfigMacros);
+				out = gmx.toGmxString();
+			};
+			default: {
+				return;
+			};
+		}
+		//
+		//session.setValue(out);
+		nodefs.writeFileSync(path, out);
 		changed = false;
 		session.getUndoManager().markClean();
-		//
-		
-		//
 	}
 }
 @:fakeEnum(Int) enum GmlFileKind {
 	Extern;
 	Normal;
-	GmxObject;
+	GmxObjectEvents;
 	GmxProjectMacros;
 	GmxConfigMacros;
 }
