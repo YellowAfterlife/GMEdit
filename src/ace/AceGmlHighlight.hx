@@ -51,6 +51,7 @@ import haxe.extern.EitherType;
 			rule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
 			rule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rule("constant.boolean", ~/(?:true|false)\b/),
+			rule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
 			rule(identFunc2, ~/([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
 			rule(identFunc, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
 			rule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
@@ -64,6 +65,16 @@ import haxe.extern.EitherType;
 		];
 		rules = {
 			"start": baseRules,
+			"enum": [
+				rule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
+				rule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
+				// todo: see if there's a better method of detecting the last item:
+				rule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "start"),
+				rule("curly.paren.rparen", ~/\}/, "start"),
+			].concat(baseRules),
+			"enumvalue": [
+				rule("punctuation.operator", ~/,/, "enum"),
+			].concat(baseRules),
 			"string1" : [
 				rule("string", ~/.*?[']/, "start"),
 				rule("string", ~/.+/),
