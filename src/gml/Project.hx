@@ -1,5 +1,7 @@
-package;
+package gml;
 import ace.AceWrap.AceAutoCompleteItem;
+import electron.FileSystem;
+import electron.Electron;
 import haxe.io.Path;
 import js.Boot;
 import js.html.DivElement;
@@ -11,7 +13,7 @@ import ace.AceWrap;
 import gmx.SfGmx;
 import Main.*;
 import tools.HtmlTools;
-import GmlFile;
+import gml.GmlFile;
 
 /**
  * ...
@@ -19,6 +21,7 @@ import GmlFile;
  */
 class Project {
 	//
+	public static var current:Project = null;
 	public static var assetTypes:Array<String> = [
 		"sprite", "background", "sound", "path", "font",
 		"shader", "timeline", "script", "object", "room"
@@ -32,7 +35,7 @@ class Project {
 		// see if there's an existing tab for this:
 		for (tabNode in document.querySelectorAll('.chrome-tab')) {
 			var tabEl:Element = cast tabNode;
-			var gmlFile:GmlFile = untyped tabEl.gmlFile;
+			var gmlFile:gml.GmlFile = untyped tabEl.gmlFile;
 			if (gmlFile != null && gmlFile.path == path) {
 				tabEl.click();
 				return;
@@ -57,10 +60,10 @@ class Project {
 		//
 		if (kind != Extern) {
 			// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
-			GmlFile.next = new GmlFile(name, path, kind);
+			gml.GmlFile.next = new gml.GmlFile(name, path, kind);
 			chromeTabs.addTab({ title: name, });
 		} else {
-			electron.shell.openItem(path);
+			Electron.shell.openItem(path);
 		}
 	}
 	public static function openEvent(e:MouseEvent) {
@@ -88,18 +91,24 @@ class Project {
 		}, 1);
 	}
 	public function reload_1() {
-		gmx = SfGmx.parse(nodefs.readFileSync(path, "utf8"));
+		gmx = FileSystem.readGmxFileSync(path);
 		//
 		GmlAPI.gmlClear();
 		var rxName = ~/^.+[\/\\](\w+)(?:\.[\w.]+)?$/g;
 		var tv = treeview;
+		var tvOpen = [];
+		for (tvNode in tv.querySelectorAll(".dir.open")) {
+			var tvDir:Element = cast tvNode;
+			tvOpen.push(tvDir.getAttribute("path"));
+		}
 		tv.innerHTML = "";
-		function makeDir(name:String):TreeViewDir {
+		function makeDir(name:String, path:String):TreeViewDir {
 			var r:TreeViewDir = cast document.createDivElement();
 			r.className = "dir";
 			var h = document.createDivElement();
 			h.className = "header";
 			h.appendChild(document.createTextNode(name));
+			r.setAttribute("path", path);
 			h.setAttribute("onclick", toggleCode);
 			r.appendChild(h);
 			var c = document.createDivElement();
@@ -117,7 +126,7 @@ class Project {
 			r.addEventListener("dblclick", openEvent);
 			return r;
 		}
-		function loadrec(gmx:SfGmx, out:Element, one:String) {
+		function loadrec(gmx:SfGmx, out:Element, one:String, path:String) {
 			if (gmx.name == one) {
 				var path = gmx.text;
 				var name = rxName.replace(path, "$1");
@@ -135,26 +144,28 @@ class Project {
 			} else {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
-				var r = makeDir(name);
+				var next = path + name + "/";
+				var r = makeDir(name, next);
 				var c = r.treeItems;
-				for (q in gmx.children) loadrec(q, c, one);
+				for (q in gmx.children) loadrec(q, c, one, next);
 				out.appendChild(r);
 			}
 		}
-		for (q in gmx.findAll("scripts")) loadrec(q, tv, "script");
-		for (q in gmx.findAll("objects")) loadrec(q, tv, "object");
+		for (q in gmx.findAll("scripts")) loadrec(q, tv, "script", "scripts/");
+		for (q in gmx.findAll("objects")) loadrec(q, tv, "object", "objects/");
 		//
 		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
 		for (extParent in gmx.findAll("NewExtensions")) {
 			var extNodes = extParent.findAll("extension");
 			if (extNodes.length == 0) continue;
-			var extParentDir = makeDir("Extensions");
+			var extParentDir = makeDir("Extensions", "extensions/");
 			for (extNode in extNodes) {
-				var extName = extNode.text;
-				var extPath = Path.join([dir, extName + ".extension.gmx"]);
-				var extGmx = SfGmx.parse(nodefs.readFileSync(extPath, "utf8"));
-				var extDir = makeDir(extName);
+				var extRel = extNode.text;
+				var extPath = Path.join([dir, extRel + ".extension.gmx"]);
+				var extGmx = FileSystem.readGmxFileSync(extPath);
+				var extName = extGmx.findText("name");
+				var extDir = makeDir(extName, "extensions/" + extName + "/");
 				for (extFiles in extGmx.findAll("files"))
 				for (extFile in extFiles.findAll("file")) {
 					var extFileName = extFile.findText("filename");
@@ -186,7 +197,7 @@ class Project {
 			tv.appendChild(extParentDir);
 		}
 		//
-		var mcrDir = makeDir("Macros");
+		var mcrDir = makeDir("Macros", "macros/");
 		var mcrItems = mcrDir.querySelector(".items");
 		mcrItems.appendChild(makeItem("All configurations", path));
 		for (configs in gmx.findAll("Configs")) {
@@ -228,11 +239,16 @@ class Project {
 			var confNode = configs.find("Config");
 			if (confNode != null) {
 				var cpath = Path.join([dir, confNode.text + ".config.gmx"]);
-				var cgmx = SfGmx.parse(nodefs.readFileSync(cpath, "utf8"));
+				var cgmx = FileSystem.readGmxFileSync(cpath);
 				for (outer in cgmx.findAll("ConfigConstants")) {
 					for (ctr in outer.findAll("constants")) addMacros(ctr);
 				}
 			}
+		}
+		//
+		for (tvPath in tvOpen) {
+			var tvDir = tv.querySelector('.dir[path="$tvPath"]');
+			if (tvDir != null) tvDir.classList.add("open");
 		}
 		//
 		GmlAPI.gmlKind = tm;

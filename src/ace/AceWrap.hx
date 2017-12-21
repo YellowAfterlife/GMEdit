@@ -14,8 +14,12 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		this = AceEditor.edit(el);
 	}
 	//
-	public var session(get, never):AceSession;
+	public var session(get, set):AceSession;
 	private inline function get_session() return this.getSession();
+	private inline function set_session(q:AceSession) {
+		this.setSession(q);
+		return q;
+	}
 	//
 	public var value(get, set):String;
 	private inline function get_value() return this.getValue();

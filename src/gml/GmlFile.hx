@@ -1,8 +1,8 @@
-package;
+package gml;
+import electron.FileSystem;
 import js.html.Element;
 import ace.AceWrap;
 import gmx.*;
-import Main.nodefs;
 
 /**
  * ...
@@ -45,7 +45,7 @@ class GmlFile {
 	}
 	//
 	public function load() {
-		var src = nodefs.readTextFileSync(path);
+		var src = FileSystem.readTextFileSync(path);
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
 			case Normal, Extern: code = src;
@@ -70,14 +70,14 @@ class GmlFile {
 		switch (kind) {
 			case Normal, Extern: out = val;
 			case GmxObjectEvents: {
-				gmx = nodefs.readGmxFileSync(path);
+				gmx = FileSystem.readGmxFileSync(path);
 				if (!GmxObject.updateCode(gmx, val)) {
 					Main.window.alert("Can't update GMX:\n" + GmxObject.errorText);
 				}
 				out = gmx.toGmxString();
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
-				gmx = nodefs.readGmxFileSync(path);
+				gmx = FileSystem.readGmxFileSync(path);
 				GmxProject.setMacroCode(gmx, val, kind == GmxConfigMacros);
 				out = gmx.toGmxString();
 			};
@@ -87,7 +87,7 @@ class GmlFile {
 		}
 		//
 		//session.setValue(out);
-		nodefs.writeFileSync(path, out);
+		FileSystem.writeFileSync(path, out);
 		changed = false;
 		session.getUndoManager().markClean();
 	}

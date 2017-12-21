@@ -1,4 +1,5 @@
 package gml;
+import electron.FileSystem;
 import gml.GmlEnum;
 import haxe.io.Path;
 import js.RegExp;
@@ -123,7 +124,7 @@ class GmlAPI {
 		var getContent_s:String;
 		var getContent_rx = new RegExp("\r\n", "g");
 		inline function getContent(path:String):String {
-			getContent_s = Main.nodefs.readFileSync(Path.join([Main.modulePath, path]), "utf8");
+			getContent_s = FileSystem.readFileSync(Path.join([Main.modulePath, path]), "utf8");
 			getContent_s = NativeString.replace(getContent_s, getContent_rx, "\n");
 			return getContent_s;
 		}

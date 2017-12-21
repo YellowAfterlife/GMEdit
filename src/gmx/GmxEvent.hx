@@ -1,4 +1,5 @@
 package gmx;
+import electron.FileSystem;
 import haxe.ds.StringMap;
 import haxe.io.Path;
 import tools.Dictionary;
@@ -66,7 +67,7 @@ class GmxEvent {
 		linkType(8, "draw");
 		linkType(9, "keypress");
 		linkType(10, "keyrelease");
-		var data = Main.nodefs.readFileSync(Main.relPath("api/events.gml"), "utf8");
+		var data = FileSystem.readFileSync(Main.relPath("api/events.gml"), "utf8");
 		tools.ERegTools.each(~/^(\d+):(\d+)[ \t]+(\w+)/gm, data, function(rx:EReg) {
 			link(Std.parseInt(rx.matched(1)), Std.parseInt(rx.matched(2)), rx.matched(3));
 		});

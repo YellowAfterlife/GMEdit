@@ -10,26 +10,23 @@ import haxe.macro.Type;
  * with toString and parse auto-generated methods.
  */
 @:noCompletion
-class IntEnum {
-	public static macro function build(?kind:String):Array<Field> {
+class AutoEnum {
+	public static macro function build(?kindName:String):Array<Field> {
 		var pos = Context.currentPos();
+		var autoKind:AutoEnumKind = switch (kindName.toLowerCase()) {
+			case null, "int": AInt(false);
+			case "bit": AInt(true);
+			case "lq", "lower": AString(false);
+			case "uq", "upper": AString(true);
+			case "string", "str": AString(null);
+			default: Context.error('"$kindName" is not a known kind.', pos);
+		}
 		var at:AbstractType = switch (Context.getLocalClass().get().kind) {
-			case KAbstractImpl(_.get() => at): {
-				switch (at.type) {
-					case TAbstract(_.get() => { name: "Int" }, _): at;
-					default: Context.error(
-						"This macro should only be applied to abstracts with base type Int",
-						pos);
-				}
-			};
+			case KAbstractImpl(_.get() => at): at;
 			default: Context.error("This macro should only be applied to abstracts", pos);
 		}
 		var fields:Array<Field> = Context.getBuildFields();
-		var isBit = switch (kind) {
-			case null, "int": false;
-			case "bit": true;
-			default: Context.error('"$kind" is not a known kind.', pos);
-		};
+		var isBit = autoKind.match(AInt(true));
 		var nextIndex:Int = isBit ? 1 : 0;
 		var getNameCases:Array<Case> = [];
 		var getNameField:Field = null;
@@ -48,9 +45,19 @@ class IntEnum {
 					if (isBit) nextIndex <<= 1; else nextIndex += 1;
 				};
 				case FVar(t, null): { // `var some;`
-					value = Std.string(nextIndex);
-					if (isBit) nextIndex <<= 1; else nextIndex += 1;
-					field.kind = FVar(t, { expr: EConst(CInt(value)), pos: field.pos });
+					switch (autoKind) {
+						case AInt(_): {
+							value = Std.string(nextIndex);
+							if (isBit) nextIndex <<= 1; else nextIndex += 1;
+							field.kind = FVar(t, { expr: EConst(CInt(value)), pos: field.pos });
+						};
+						case AString(z): {
+							value = field.name;
+							if (z == true) value = value.toUpperCase();
+							if (z == false) value = value.toLowerCase();
+							field.kind = FVar(t, { expr: EConst(CString(value)), pos: field.pos });
+						};
+					}
 				};
 				default:
 			}
@@ -69,7 +76,7 @@ class IntEnum {
 		} // for (field in fields)
 		//
 		if (getNameField == null) {
-			getNameField = (macro class Magic {
+			getNameField = (macro class Temp_getNameField {
 				public function getName():String return null;
 			}).fields[0];
 			fields.push(getNameField);
@@ -85,7 +92,7 @@ class IntEnum {
 		}
 		//
 		if (createField == null) {
-			createField = (macro class Magic {
+			createField = (macro class Temp_createField {
 				public static function parse(name:String) return cast null;
 			}).fields[0];
 			fields.push(createField);
@@ -114,4 +121,8 @@ class IntEnum {
 		//
 		return fields;
 	} // build
-} // class
+}
+private enum AutoEnumKind {
+	AInt(bit:Bool);
+	AString(upper:Bool);
+}

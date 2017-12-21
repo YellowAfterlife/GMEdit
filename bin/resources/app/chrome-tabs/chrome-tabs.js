@@ -43,7 +43,7 @@
     }
 
     emit(eventName, data) {
-      this.el.dispatchEvent(new CustomEvent(eventName, { detail: data }))
+      return this.el.dispatchEvent(new CustomEvent(eventName, { detail: data }))
     }
 
     setupStyleEl() {
@@ -60,7 +60,8 @@
         if (target.classList.contains('chrome-tab')) {
           this.setCurrentTab(target)
         } else if (target.classList.contains('chrome-tab-close')) {
-          this.removeTab(target.parentNode)
+          let e = new CustomEvent('tabClose', { cancelable: true, detail: { tabEl: target.parentNode } })
+          if (this.el.dispatchEvent(e)) this.removeTab(target.parentNode)
         } else if (target.classList.contains('chrome-tab-title') || target.classList.contains('chrome-tab-favicon')) {
           this.setCurrentTab(target.parentNode)
         }

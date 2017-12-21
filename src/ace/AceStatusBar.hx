@@ -75,6 +75,7 @@ class AceStatusBar {
 		} else statusHint.title = "";
 	}
 	static function statusUpdate() {
+		//
 		var editor = Main.aceEditor;
 		var sel = editor.selection;
 		var pos = sel.lead;
@@ -91,6 +92,9 @@ class AceStatusBar {
 				break;
 			}
 		}
+		//
+		var q = gml.GmlFile.current;
+		if (q != null) q.changed = !session.getUndoManager().isClean();
 		//
 		var ctr = statusSpan, s:String;
 		function set(q:String, v:String) {

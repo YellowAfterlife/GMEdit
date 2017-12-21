@@ -1,5 +1,6 @@
 package gml;
 import ace.AceWrap.AceAutoCompleteItem;
+import electron.FileSystem;
 import gml.GmlAPI;
 import tools.Dictionary;
 using StringTools;
@@ -12,7 +13,7 @@ class GmlSeeker {
 	public static var itemsLeft:Int = 0;
 	public static function run(path:String, main:String) {
 		itemsLeft++;
-		Main.nodefs.readTextFile(path, function(err, text) {
+		FileSystem.readTextFile(path, function(err, text) {
 			runSync(path, text, main);
 			if (--itemsLeft <= 0) {
 				GmlAPI.gmlComp.autoSort();
@@ -153,7 +154,7 @@ class GmlSeeker {
 		GmlSeekData.map.set(orig, out);
 	} // runSync
 }
-@:build(tools.IntEnum.build("bit"))
+@:build(tools.AutoEnum.build("bit"))
 @:enum abstract GmlSeekerFlags(Int) from Int to Int {
 	var Ident;
 	var Define;

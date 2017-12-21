@@ -1,0 +1,7 @@
+Hello!
+
+Drag and drop a project file onto here to load it.
+Ctrl+R to reload the project.
+
+Since this software is still in early stages,
+MAKE FREQUENT BACKUPS
