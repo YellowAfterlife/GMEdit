@@ -39,6 +39,15 @@
 	position: relative;
 	top: -2px;
 }
+.treeview .header > span,
+.treeview .item > span {
+	display: inline-block;
+	/*width: 100%;*/
+}
+.treeview .header:hover > span,
+.treeview .item:hover > span {
+	background: #f3f3f3;
+}
 .treeview .dir > .header:before {
 	background-position: -20px 0;
 }

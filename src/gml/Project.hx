@@ -68,6 +68,7 @@ class Project {
 	}
 	public static function openEvent(e:MouseEvent) {
 		var el:Element = cast e.target;
+		if (!el.classList.contains("item")) el = el.parentElement;
 		openFile(el.innerText, el.getAttribute("path"));
 		e.preventDefault();
 	}
@@ -105,12 +106,18 @@ class Project {
 		function makeDir(name:String, path:String):TreeViewDir {
 			var r:TreeViewDir = cast document.createDivElement();
 			r.className = "dir";
-			var h = document.createDivElement();
-			h.className = "header";
-			h.appendChild(document.createTextNode(name));
+			//
+			var header = document.createDivElement();
+			header.className = "header";
+			header.setAttribute("onclick", toggleCode);
+			header.title = name;
+			r.appendChild(header);
+			//
+			var span = document.createSpanElement();
+			span.appendChild(document.createTextNode(name));
+			header.appendChild(span);
+			//
 			r.setAttribute("path", path);
-			h.setAttribute("onclick", toggleCode);
-			r.appendChild(h);
 			var c = document.createDivElement();
 			c.className = "items";
 			r.treeItems = c;
@@ -120,7 +127,9 @@ class Project {
 		function makeItem(name:String, path:String) {
 			var r = document.createDivElement();
 			r.className = "item";
-			r.appendChild(document.createTextNode(name));
+			var span = document.createSpanElement();
+			span.appendChild(document.createTextNode(name));
+			r.appendChild(span);
 			r.title = name;
 			r.setAttribute("path", path);
 			r.addEventListener("dblclick", openEvent);
