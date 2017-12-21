@@ -1,6 +1,7 @@
 package ui;
 import electron.Dialog;
 import electron.Electron;
+import gml.GmlFile;
 import js.html.BeforeUnloadEvent;
 import js.html.CustomEvent;
 import js.html.Element;
@@ -16,6 +17,8 @@ import Main.document;
 class ChromeTabs {
 	public static var element:Element;
 	public static var impl:ChromeTabsImpl;
+	public static var pathHistory:Array<String> = [];
+	public static inline var pathHistorySize:Int = 32;
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
 		impl = new ChromeTabsImpl();
@@ -33,7 +36,12 @@ class ChromeTabs {
 				tabEl.gmlFile = gmlFile;
 				tabEl.title = gmlFile.path;
 			}
-			gml.GmlFile.current = gmlFile;
+			var prev = GmlFile.current;
+			if (prev != null) {
+				pathHistory.unshift(prev.path);
+				if (pathHistory.length > pathHistorySize) pathHistory.pop();
+			}
+			GmlFile.current = gmlFile;
 			Main.aceEditor.setSession(gmlFile.session);
 		});
 		element.addEventListener("tabClose", function(e:CustomEvent) {
@@ -57,6 +65,18 @@ class ChromeTabs {
 		element.addEventListener("tabRemove", function(e:CustomEvent) {
 			if (impl.tabEls.length == 0) {
 				Main.aceEditor.session = WelcomePage.session;
+			} else {
+				var tab:Element = null;
+				while (tab == null && pathHistory.length > 0) {
+					tab = document.querySelector(
+						'.chrome-tab[title="' + pathHistory.shift() + '"]'
+					);
+				}
+				if (tab == null) tab = e.detail.prevTab;
+				if (tab == null) tab = e.detail.nextTab;
+				if (tab == null) {
+					Main.aceEditor.session = WelcomePage.session;
+				} else impl.setCurrentTab(tab);
 			}
 		});
 		// https://github.com/electron/electron/issues/7977:
@@ -83,5 +103,6 @@ class ChromeTabs {
 	public function new():Void;
 	public function init(el:Element, opt:Dynamic):Void;
 	public function addTab(tab:Dynamic):Dynamic;
+	public function setCurrentTab(tab:Element):Void;
 	public var tabEls(default, never):Array<Element>;
 }

@@ -1,3 +1,5 @@
 /bin/*
 !/bin/resources
 /bin/resources/app/app.js
+/bin/resources/default_app.asar
+/bin/resources/electron.asar

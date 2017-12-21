@@ -55,6 +55,14 @@
       window.addEventListener('resize', event => this.layoutTabs())
 
       //this.el.addEventListener('dblclick', event => this.addTab())
+      this.el.addEventListener('mouseup', ({which, target}) => {
+        if (which != 2) return;
+        let tcl = target.classList;
+        if (tcl.contains('chrome-tab') || tcl.contains('chrome-tab-close') || tcl.contains('chrome-tab-title') || tcl.contains('chrome-tab-favicon')) {
+          let tab = tcl.contains('chrome-tab') ? target : target.parentElement;
+          if (tab) tab.querySelector('.chrome-tab-close').click();
+        }
+      })
 
       this.el.addEventListener('click', ({target}) => {
         if (target.classList.contains('chrome-tab')) {
@@ -163,15 +171,17 @@
     }
 
     removeTab(tabEl) {
-      if (tabEl.classList.contains('chrome-tab-current')) {
+      /*if (tabEl.classList.contains('chrome-tab-current')) {
         if (tabEl.previousElementSibling) {
           this.setCurrentTab(tabEl.previousElementSibling)
         } else if (tabEl.nextElementSibling) {
           this.setCurrentTab(tabEl.nextElementSibling)
         }
-      }
+      }*/ // +y: handled on Haxe side instead
+      let prevTab = tabEl.previousElementSibling
+      let nextTab = tabEl.nextElementSibling
       tabEl.parentNode.removeChild(tabEl)
-      this.emit('tabRemove', { tabEl })
+      this.emit('tabRemove', { tabEl, prevTab, nextTab })
       this.layoutTabs()
       this.fixZIndexes()
       this.setupDraggabilly()
