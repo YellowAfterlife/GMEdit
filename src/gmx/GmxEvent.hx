@@ -1,4 +1,5 @@
 package gmx;
+import ace.AceWrap;
 import electron.FileSystem;
 import haxe.ds.StringMap;
 import haxe.io.Path;
@@ -13,6 +14,7 @@ class GmxEvent {
 	static var s2t:Dictionary<Int> = new Dictionary();
 	static var i2s:Array<Array<String>> = [];
 	static var s2i:Dictionary<GmxEventData> = new Dictionary();
+	public static var comp:AceAutoCompleteItems = [];
 	public static inline function exists(name:String):Bool {
 		return s2i.exists(name);
 	}
@@ -72,7 +74,9 @@ class GmxEvent {
 		linkType(10, "keyrelease");
 		var data = FileSystem.readFileSync(Main.relPath("api/events.gml"), "utf8");
 		tools.ERegTools.each(~/^(\d+):(\d+)[ \t]+(\w+)/gm, data, function(rx:EReg) {
-			link(Std.parseInt(rx.matched(1)), Std.parseInt(rx.matched(2)), rx.matched(3));
+			var name = rx.matched(3);
+			comp.push(new AceAutoCompleteItem(name, "event"));
+			link(Std.parseInt(rx.matched(1)), Std.parseInt(rx.matched(2)), name);
 		});
 	}
 }

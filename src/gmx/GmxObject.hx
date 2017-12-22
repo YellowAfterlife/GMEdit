@@ -11,6 +11,7 @@ using StringTools;
  */
 class GmxObject {
 	public static var errorText:String;
+	private static var rxHeader = ~/^\/\/\/\/? ?(.*)/;
 	public static function getCode(gmx:SfGmx):String {
 		var out = "";
 		var errors = "";
@@ -41,10 +42,10 @@ class GmxObject {
 				var numb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
 				if (out != "") out += "\n";
 				var name = GmxEvent.toString(type, numb, ename);
-				out += "#define " + name;
+				out += "#event " + name;
 				var actions = event.findAll("action");
 				function addAction(action:SfGmx, head:Bool) {
-					if (head) out += "\n\n";
+					//if (head) out += "\n";
 					if(action.findText("libid") != "1"
 					|| action.findText("id") != "603"
 					|| action.findText("useapplyto") != "-1") {
@@ -52,8 +53,14 @@ class GmxObject {
 						return;
 					}
 					var code = action.find("arguments").find("argument").find("string").text;
-					if (head && !StringTools.startsWith(code, "///")) {
-						out += "///\n";
+					if (head) {
+						var addSection = true;
+						code = rxHeader.map(code, function(e:EReg) {
+							out += "#section " + e.matched(1);
+							addSection = false;
+							return "";
+						});
+						if (addSection) out += "#section\n";
 					}
 					out += code;
 				}
@@ -74,26 +81,34 @@ class GmxObject {
 	
 	
 	public static function updateCode(gmx:SfGmx, gmlCode:String):Bool {
-		var eventData:Array<{ data:GmxEventData, code:String }> = [];
+		var eventData:Array<{ data:GmxEventData, code:Array<String> }> = [];
 		var errors = "";
 		{ // generate eventData
 			var q = new GmlReader(gmlCode);
 			var evStart = 0;
+			var evCode:Array<String> = [];
 			var evName = null;
 			//
-			var flushData:GmxEventData;
-			var flushCode:String;
-			inline function flush(till:Int) {
-				flushCode = q.substring(evStart, till).rtrim();
+			var flushHeader:String = null;
+			function flush(till:Int, ?sctName:String):Void {
+				var flushCode = q.substring(evStart, till).rtrim();
 				if (evName == null) {
 					if (flushCode != "") {
 						errors += "There's code prior to first event definition.\n";
 						//trace(flushCode);
 					}
 				} else {
-					flushData = GmxEvent.fromString(evName);
+					var flushData = GmxEvent.fromString(evName);
 					if (flushData != null) {
-						eventData.push({ data: flushData, code: flushCode + "\r\n" });
+						if (flushHeader != null) {
+							flushCode = '///$flushHeader\n' + flushCode;
+						}
+						evCode.push(flushCode + "\r\n");
+						if (sctName == null) {
+							eventData.push({ data: flushData, code: evCode });
+							evCode = [];
+							flushHeader = null;
+						} else flushHeader = sctName;
 					} else errors += '`$evName` is not a known event type.\n';
 				}
 			}
@@ -120,42 +135,57 @@ class GmxObject {
 							case "\r".code, "\n".code: { };
 							default: continue;
 						}
-						if (q.substr(q.pos, 6) != "define") continue;
-						//
-						flush(q.pos - 1);
-						q.skip(6);
-						// skip spaces:
-						while (q.loop) {
-							c = q.peek();
-							if (c.isSpace0()) {
-								q.skip();
-							} else break;
+						if (q.substr(q.pos, 5) == "event") {
+							//
+							flush(q.pos - 1);
+							q.skip(5);
+							// skip spaces:
+							q.skipSpaces0();
+							// read name:
+							var nameStart = q.pos;
+							while (q.loop) {
+								c = q.peek();
+								if (c.isIdent1() || c == ":".code) {
+									q.skip();
+								} else break;
+							}
+							evName = q.substring(nameStart, q.pos);
+							// skip spaces after:
+							q.skipSpaces0();
+							// skip line:
+							if (q.loop) switch (q.peek()) {
+								case "\r".code: {
+									q.skip();
+									if (q.loop && q.peek() == "\n".code) q.skip();
+								};
+								case "\n".code: q.skip();
+							}
+							evStart = q.pos;
+						} else if (q.substr(q.pos, 7) == "section") {
+							q.skip(7);
+							//
+							var nameStart = q.pos;
+							var nameEnd = -1;
+							while (q.loop) switch (q.peek()) {
+								case "\r".code: {
+									nameEnd = q.pos;
+									q.skip();
+									if (q.loop && q.peek() == "\n".code) q.skip();
+									break;
+								};
+								case "\n".code: {
+									nameEnd = q.pos;
+									q.skip();
+									break;
+								}
+								default: q.skip();
+							}
+							if (nameEnd < 0) nameEnd = q.length;
+							var name = q.substring(nameStart, nameEnd);
+							flush(nameStart - 8, name);
+							//
+							evStart = q.pos;
 						}
-						// read name:
-						var nameStart = q.pos;
-						while (q.loop) {
-							c = q.peek();
-							if (c.isIdent1() || c == ":".code) {
-								q.skip();
-							} else break;
-						}
-						evName = q.substring(nameStart, q.pos);
-						// skip spaces after:
-						while (q.loop) {
-							c = q.peek();
-							if (c.isSpace0()) {
-								q.skip();
-							} else break;
-						}
-						// skip line:
-						if (q.loop) switch (q.peek()) {
-							case "\r".code: {
-								q.skip();
-								if (q.loop && q.peek() == "\n".code) q.skip();
-							};
-							case "\n".code: q.skip();
-						}
-						evStart = q.pos;
 					};
 					default:
 				} // switch (q.read)
@@ -203,29 +233,30 @@ class GmxObject {
 			if (data.name != null) event.set("ename", "" + data.name);
 			evCtr.addChild(event);
 			//
-			var action = new SfGmx("action");
-			action.addTextChild("libid", "1");
-			action.addTextChild("id", "603");
-			action.addTextChild("kind", "7");
-			action.addTextChild("userelative", "0");
-			action.addTextChild("isquestion", "0");
-			action.addTextChild("useapplyto", "-1");
-			action.addTextChild("exetype", "2");
-			action.addTextChild("functionname", "");
-			action.addTextChild("codestring", "");
-			action.addTextChild("whoName", "self");
-			action.addTextChild("relative", "0");
-			action.addTextChild("isnot", "0");
-			event.addChild(action);
-			//
-			var arguments = new SfGmx("arguments");
-			action.addChild(arguments);
-			var argument = new SfGmx("argument");
-			argument.addTextChild("kind", "1");
-			argument.addTextChild("string", source.code);
-			arguments.addChild(argument);
-			//
-		}
+			for (gml in source.code) {
+				var action = new SfGmx("action");
+				action.addTextChild("libid", "1");
+				action.addTextChild("id", "603");
+				action.addTextChild("kind", "7");
+				action.addTextChild("userelative", "0");
+				action.addTextChild("isquestion", "0");
+				action.addTextChild("useapplyto", "-1");
+				action.addTextChild("exetype", "2");
+				action.addTextChild("functionname", "");
+				action.addTextChild("codestring", "");
+				action.addTextChild("whoName", "self");
+				action.addTextChild("relative", "0");
+				action.addTextChild("isnot", "0");
+				event.addChild(action);
+				//
+				var arguments = new SfGmx("arguments");
+				action.addChild(arguments);
+				var argument = new SfGmx("argument");
+				argument.addTextChild("kind", "1");
+				argument.addTextChild("string", gml);
+				arguments.addChild(argument);
+			}
+		} // for (source)
 		//
 		//trace(gmx.toGmxString());
 		return true;

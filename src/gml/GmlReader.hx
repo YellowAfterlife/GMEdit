@@ -30,4 +30,14 @@ class GmlReader extends StringReader {
 		}
 		if (loop) skip();
 	}
+	
+	public inline function skipSpaces0() {
+		while (loop) {
+			var c = peek();
+			if (c.isSpace0()) {
+				skip();
+			} else break;
+		}
+	}
+	
 }

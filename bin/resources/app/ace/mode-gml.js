@@ -114,12 +114,12 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 	
-	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define/;
+	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#section\b/;
 	this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
 	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
 	this.startRegionRe = /^\s*(\/\*|\/\/)#?region\b/;
-	this.startScriptRe = /^#define[ \t](\w+)/;
+	this.startScriptRe = /^(?:#define|#event|#section|)\b/;
 	this._getFoldWidgetBase = this.getFoldWidget;
 	this.getFoldWidget = function(session, foldStyle, row) {
 		var line = session.getLine(row);
@@ -236,7 +236,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 		var maxRow = session.getLength();
 		var startCol = line.length;
 		var startRow = row;
-		var re = /^#define/;
+		var re = /^(?:#define|#event|#section)\b/;
 		var last = line;
 		while (++row < maxRow) {
 			line = session.getLine(row);
@@ -256,7 +256,8 @@ oop.inherits(FoldMode, BaseFoldMode);
 function ace_mode_gml_1() {
 // a nasty override for Gutter.update to reset line counter on #define:
 var dom = ace.require("ace/lib/dom"); 
-var rxDefine = /^#define/;
+var rxDefine = /^(?:#define|#event)\b/;
+var rxSection = /^#section\b/;
 ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 	var session = this.session;
 	var firstRow = config.firstRow;
@@ -318,11 +319,15 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 			className += decorations[row];
 		if (this.$annotations[row])
 			className += this.$annotations[row].className;
-		var reset = rxDefine.test(session.getLine(row));
+		var rowText = session.getLine(row);
+		var reset = rxDefine.test(rowText);
 		if (reset) {
 			firstLineNumber = -row;
 			className += "ace_gutter-define ";
+		} else if (rxSection.test(rowText)) {
+			className += "ace_gutter-define ";
 		}
+		
 		if (cell.element.className != className)
 			cell.element.className = className;
 

@@ -79,11 +79,13 @@
 #main .ace_active-line {
 	background: rgba(255, 253, 205, 0.5);
 }
-#main .gml .ace_comment {
+#main .gml .ace_comment,
+#main .gml .ace_sectionname {
 	color: #008000;
 	font-style: italic;
 }
-#main .gml .ace_comment.ace_doc {
+#main .gml .ace_comment.ace_doc,
+#main .gml .ace_sectionname {
 	color: #008080;
 }
 #main .gml .ace_function,
@@ -93,6 +95,7 @@
 #main .gml .ace_globalvar,
 #main .gml .ace_extfunction,
 #main .gml .ace_extmacro,
+#main .gml .ace_macroname,
 #main .gml .ace_enum,
 #main .gml .ace_enumfield {
 	color: #800000;
@@ -103,7 +106,9 @@
 #main .gml .ace_asset {
 	color: rgb(0, 128, 160);
 }
-#main .gml .ace_script {
+#main .gml .ace_script,
+#main .gml .ace_scriptname,
+#main .gml .ace_eventname {
 	color: #800080;
 }
 #main .gml .ace_keyword,
@@ -117,7 +122,9 @@
 	color: #768;
 }
 /** underline the define-line */
-#main .gml .ace_preproc.ace_define:after {
+#main .gml .ace_preproc.ace_define:after,
+#main .gml .ace_preproc.ace_section:after,
+#main .gml .ace_preproc.ace_event:after {
     content: "";
     left: -4px;
     /*bottom: -1px;*/

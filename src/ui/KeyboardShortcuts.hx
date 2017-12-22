@@ -82,9 +82,11 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_S: {
-				var q = gml.GmlFile.current;
-				if (q != null) {
-					q.save();
+				if (flags == CTRL) {
+					var q = gml.GmlFile.current;
+					if (q != null) {
+						q.save();
+					}
 				}
 			};
 			case KeyboardEvent.DOM_VK_F12: {
