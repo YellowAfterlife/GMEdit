@@ -33,6 +33,7 @@ class YyLoader {
 		if (rootView == null) return "Couldn't find a top-level view in project.";
 		//
 		GmlAPI.gmlClear();
+		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
 		//
 		var rxName = ~/^.+[\/\\](\w+)\.\w+$/g;
@@ -90,6 +91,41 @@ class YyLoader {
 							objectNames.set(res.Key, name);
 							objectGUIDs.set(name, res.Key);
 							GmlSeeker.run(full, null);
+						};
+						case "GMExtension": {
+							var ext:YyExtension = FileSystem.readJsonFileSync(full);
+							var extDir = Path.directory(full);
+							var extRel = path + ext.name + "/";
+							var extEl = TreeView.makeDir(ext.name, extRel);
+							for (file in ext.files) {
+								var fileName = file.filename;
+								extEl.treeItems.appendChild(TreeView.makeItem(
+									fileName, extRel + fileName, Path.join([extDir, fileName])
+								));
+								for (func in file.functions) {
+									var name = func.name;
+									var help = func.help;
+									GmlAPI.extKind.set(name, "extfunction");
+									if (help != null && help != "" && !func.hidden) {
+										GmlAPI.extComp.push(new AceAutoCompleteItem(
+											name, "function", help
+										));
+										GmlAPI.extDoc.set(name, GmlAPI.parseDoc(help));
+									}
+								}
+								for (mcr in file.constants) {
+									var name = mcr.constantName;
+									GmlAPI.extKind.set(name, "extmacro");
+									if (!mcr.hidden) {
+										var expr = mcr.value;
+										GmlAPI.extComp.push(new AceAutoCompleteItem(
+											name, "macro", expr
+										));
+									}
+								}
+							}
+							out.appendChild(extEl);
+							continue;
 						};
 						default: continue;
 					}

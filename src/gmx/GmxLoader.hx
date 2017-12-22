@@ -85,12 +85,13 @@ class GmxLoader {
 					}
 					//
 					for (mcrs in extFile.findAll("constants"))
-					for (mcr in mcrs.findAll("constant"))
-					if (mcr.findText("hidden") == "0") {
+					for (mcr in mcrs.findAll("constant")) {
 						var name = mcr.findText("name");
-						var expr = mcr.findText("value");
-						GmlAPI.extComp.push(new AceAutoCompleteItem(name, "macro", expr));
 						GmlAPI.extKind.set(name, "extmacro");
+						if (mcr.findText("hidden") == "0") {
+							var expr = mcr.findText("value");
+							GmlAPI.extComp.push(new AceAutoCompleteItem(name, "macro", expr));
+						}
 					}
 				} // for (extFile)
 				extParentDir.treeItems.appendChild(extDir);
