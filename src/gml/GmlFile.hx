@@ -78,7 +78,7 @@ class GmlFile {
 			gml.GmlFile.next = new gml.GmlFile(name, path, kind);
 			ui.ChromeTabs.addTab(name);
 		} else {
-			electron.Electron.shell.openItem(path);
+			electron.Shell.openItem(path);
 		}
 	}
 	//

@@ -43,7 +43,6 @@ class Main {
 	public static var aceEditor:AceWrap;
 	//
 	static function main() {
-		document.body.addEventListener("keydown", KeyboardShortcuts.handle);
 		Electron.init();
 		//
 		modulePath = untyped __dirname;
@@ -58,6 +57,7 @@ class Main {
 		untyped aceEditor.$blockScrolling = Infinity;
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);
+		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
 		//
 		untyped {
 			window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
@@ -65,6 +65,7 @@ class Main {
 			window.aceEditor = aceEditor;
 		};
 		aceEditor.session = WelcomePage.init(aceEditor);
+		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
 		//
 		TreeView.init();
 		FileDrag.init();

@@ -1,10 +1,15 @@
 package ui;
 import Main.*;
+import electron.Shell;
+import gml.GmlAPI;
 import gml.GmlFile;
 import gml.Project;
 import js.html.KeyboardEvent;
 import js.html.Element;
+import js.html.MouseEvent;
 import tools.HtmlTools;
+import ace.AceWrap;
+using StringTools;
 
 /**
  * ...
@@ -29,7 +34,7 @@ class KeyboardShortcuts {
 	private static inline var SHIFT = 2;
 	private static inline var ALT = 4;
 	private static inline var META = 8;
-	public static function handle(e:KeyboardEvent) {
+	public static function keydown(e:KeyboardEvent) {
 		var flags = 0x0;
 		if (e.ctrlKey) flags |= CTRL;
 		if (e.shiftKey) flags |= SHIFT;
@@ -85,15 +90,38 @@ class KeyboardShortcuts {
 			case KeyboardEvent.DOM_VK_F12: {
 				if (flags == 0) {
 					var tk = aceEditor.session.getTokenAtPos(aceEditor.getCursorPosition());
-					if (tk == null) return;
-					var el = TreeView.element.querySelector(
-						'.item[${TreeView.attrIdent}="${tk.value}"]'
-					);
-					if (el != null) {
-						GmlFile.open(el.title, el.getAttribute("path"));
-					}
+					openDeclaration(tk);
 				}
 			};
 		}
+	}
+	public static function openDeclaration(tk:AceToken) {
+		if (tk == null) return;
+		var term = tk.value;
+		var el = TreeView.element.querySelector(
+			'.item[${TreeView.attrIdent}="$term"]'
+		);
+		if (el != null) {
+			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
+			return;
+		}
+		//
+		var helpURL = GmlAPI.helpURL;
+		if (helpURL != null) {
+			var helpLookup = GmlAPI.helpLookup;
+			if (helpLookup != null) {
+				var helpTerm = helpLookup[term];
+				if (helpTerm != null) {
+					Shell.openExternal(helpURL.replace("$1", helpTerm));
+				}
+			} else Shell.openExternal(helpURL.replace("$1", term));
+		}
+	}
+	public static function mousedown(ev:Dynamic) {
+		var dom:MouseEvent = ev.domEvent;
+		if (dom.button != 1) return;
+		dom.preventDefault();
+		var pos:AcePos = ev.getDocumentPosition();
+		openDeclaration(aceEditor.session.getTokenAtPos(pos));
 	}
 }

@@ -30,6 +30,9 @@ class GmlAPI {
 	];
 	public static var kwMap:Dictionary<Bool> = new Dictionary();
 	//
+	public static var helpLookup:Dictionary<String> = null;
+	public static var helpURL:String = null;
+	//
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
 	public static var stdKind:Dictionary<String> = new Dictionary();
@@ -138,11 +141,43 @@ class GmlAPI {
 		var getContent_s:String;
 		var getContent_rx = new RegExp("\r\n", "g");
 		inline function getContent(path:String):String {
-			getContent_s = FileSystem.readFileSync(Path.join([Main.modulePath, path]), "utf8");
+			getContent_s = FileSystem.readFileSync(Main.relPath(path), "utf8");
 			getContent_s = NativeString.replace(getContent_s, getContent_rx, "\n");
 			return getContent_s;
 		}
-		var dir = "./api/" + version.getName();
+		var dir = "api/" + version.getName();
+		//
+		helpURL = null;
+		helpLookup = null;
+		var confPath = Main.relPath(dir + "/config.json");
+		if (FileSystem.existsSync(confPath)) {
+			var conf:GmlConfig = FileSystem.readJsonFileSync(confPath);
+			//
+			var confKeywords = conf.keywords;
+			if (confKeywords != null) for (kw in confKeywords) {
+				stdKind.set(kw, "keyword");
+			}
+			//
+			helpURL = conf.helpURL;
+			var helpIndexPath = conf.helpIndex;
+			if (helpIndexPath != null) {
+				helpIndexPath = Main.relPath(dir + "/" + helpIndexPath);
+				var helpIndexJs = FileSystem.readTextFileSync(helpIndexPath);
+				helpLookup = new Dictionary();
+				helpIndexJs = helpIndexJs.substring(helpIndexJs.indexOf("["));
+				helpIndexJs = helpIndexJs.substring(0, helpIndexJs.indexOf(";"));
+				try {
+					var helpIndexArr:Array<Array<Dynamic>> = haxe.Json.parse(helpIndexJs);
+					for (pair in helpIndexArr) {
+						var item:Dynamic = pair[1];
+						if (Std.is(item, Array)) item = item[0][1];
+						helpLookup.set(pair[0], item);
+					}
+				} catch (x:Dynamic) {
+					trace("Couldn't parse help index:", x);
+				}
+			}
+		}
 		//
 		var raw = getContent('$dir/fnames');
 		raw += "\n" + getContent('$dir/extra.gml');
@@ -169,6 +204,14 @@ class GmlAPI {
 		loadStd(raw);
 	}
 }
+typedef GmlConfig = {
+	/** Documentation URL, with "$1" to be replaced by search term */
+	?helpURL:String,
+	/** Documentation index file path (for official documentation) */
+	?helpIndex:String,
+	/** Additional keywords (if any) */
+	?keywords:Array<String>,
+};
 typedef GmlFuncDoc = {
 	pre:String, post:String, args:Array<String>, rest:Bool
 };

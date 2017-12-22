@@ -13,6 +13,9 @@ class GmxEvent {
 	static var s2t:Dictionary<Int> = new Dictionary();
 	static var i2s:Array<Array<String>> = [];
 	static var s2i:Dictionary<GmxEventData> = new Dictionary();
+	public static inline function exists(name:String):Bool {
+		return s2i.exists(name);
+	}
 	//
 	static function link(type:Int, numb:Int, name:String) {
 		var arr = i2s[type];

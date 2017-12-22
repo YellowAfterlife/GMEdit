@@ -21,5 +21,6 @@ import haxe.extern.EitherType;
 		load("Electron_API", "electron");
 		load("Electron_FS", "fs");
 		set("Electron_Dialog", remote.dialog);
+		set("Electron_Shell", shell);
 	}
 }

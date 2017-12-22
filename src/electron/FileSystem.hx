@@ -12,6 +12,7 @@ import haxe.extern.EitherType;
 	public static inline function readTextFile(path:String, callback:Error->String->Void):Void {
 		readFile(path, "utf8", cast callback);
 	}
+	//
 	public static function readFileSync(path:String, ?enc:String):Dynamic;
 	public static inline function readTextFileSync(path:String):String {
 		return readFileSync(path, "utf8");
@@ -19,5 +20,11 @@ import haxe.extern.EitherType;
 	public static inline function readGmxFileSync(path:String):SfGmx {
 		return SfGmx.parse(readTextFileSync(path));
 	}
+	public static inline function readJsonFileSync(path:String):Dynamic {
+		return haxe.Json.parse(readTextFileSync(path));
+	}
+	//
 	public static function writeFileSync(path:String, data:Dynamic, ?options:Dynamic):Void;
+	//
+	public static function existsSync(path:String):Bool;
 }
