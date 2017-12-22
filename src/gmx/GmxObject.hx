@@ -1,6 +1,5 @@
 package gmx;
-import gml.GmlAPI;
-import gml.GmlReader;
+import gml.*;
 import gmx.GmxEvent;
 import gmx.SfGmx;
 using StringTools;
@@ -46,13 +45,12 @@ class GmxObject {
 				var actions = event.findAll("action");
 				function addAction(action:SfGmx, head:Bool) {
 					//if (head) out += "\n";
-					if(action.findText("libid") != "1"
-					|| action.findText("id") != "603"
-					|| action.findText("useapplyto") != "-1") {
-						errors += "Can't read non-code block in " + name + "\n";
+					var code = GmxAction.getCode(action);
+					if (code == null) {
+						errors += "Unreadable action in " + name + "\n";
+						errors += "Only self-applied code blocks are supported.\n";
 						return;
 					}
-					var code = action.find("arguments").find("argument").find("string").text;
 					if (head) {
 						var addSection = true;
 						code = rxHeader.map(code, function(e:EReg) {
@@ -81,119 +79,9 @@ class GmxObject {
 	
 	
 	public static function updateCode(gmx:SfGmx, gmlCode:String):Bool {
-		var eventData:Array<{ data:GmxEventData, code:Array<String> }> = [];
-		var errors = "";
-		{ // generate eventData
-			var q = new GmlReader(gmlCode);
-			var evStart = 0;
-			var evCode:Array<String> = [];
-			var evName = null;
-			//
-			var flushHeader:String = null;
-			function flush(till:Int, ?sctName:String):Void {
-				var flushCode = q.substring(evStart, till).rtrim();
-				if (evName == null) {
-					if (flushCode != "") {
-						errors += "There's code prior to first event definition.\n";
-						//trace(flushCode);
-					}
-				} else {
-					var flushData = GmxEvent.fromString(evName);
-					if (flushData != null) {
-						if (flushHeader != null) {
-							flushCode = '///$flushHeader\n' + flushCode;
-						}
-						evCode.push(flushCode + "\r\n");
-						if (sctName == null) {
-							eventData.push({ data: flushData, code: evCode });
-							evCode = [];
-							flushHeader = null;
-						} else flushHeader = sctName;
-					} else errors += '`$evName` is not a known event type.\n';
-				}
-			}
-			//
-			while (q.loop) {
-				var c = q.read();
-				switch (c) {
-					case "/".code: switch (q.peek()) {
-						case "/".code: {
-							q.skip();
-							q.skipLine();
-						};
-						case "*".code: {
-							q.skip();
-							q.skipComment();
-						};
-						default:
-					};
-					case '"'.code, "'".code: {
-						q.skipString1(c);
-					};
-					case "#".code: {
-						if (q.pos > 1) switch (q.get(q.pos - 2)) {
-							case "\r".code, "\n".code: { };
-							default: continue;
-						}
-						if (q.substr(q.pos, 5) == "event") {
-							//
-							flush(q.pos - 1);
-							q.skip(5);
-							// skip spaces:
-							q.skipSpaces0();
-							// read name:
-							var nameStart = q.pos;
-							while (q.loop) {
-								c = q.peek();
-								if (c.isIdent1() || c == ":".code) {
-									q.skip();
-								} else break;
-							}
-							evName = q.substring(nameStart, q.pos);
-							// skip spaces after:
-							q.skipSpaces0();
-							// skip line:
-							if (q.loop) switch (q.peek()) {
-								case "\r".code: {
-									q.skip();
-									if (q.loop && q.peek() == "\n".code) q.skip();
-								};
-								case "\n".code: q.skip();
-							}
-							evStart = q.pos;
-						} else if (q.substr(q.pos, 7) == "section") {
-							q.skip(7);
-							//
-							var nameStart = q.pos;
-							var nameEnd = -1;
-							while (q.loop) switch (q.peek()) {
-								case "\r".code: {
-									nameEnd = q.pos;
-									q.skip();
-									if (q.loop && q.peek() == "\n".code) q.skip();
-									break;
-								};
-								case "\n".code: {
-									nameEnd = q.pos;
-									q.skip();
-									break;
-								}
-								default: q.skip();
-							}
-							if (nameEnd < 0) nameEnd = q.length;
-							var name = q.substring(nameStart, nameEnd);
-							flush(nameStart - 8, name);
-							//
-							evStart = q.pos;
-						}
-					};
-					default:
-				} // switch (q.read)
-			}
-			flush(q.pos);
-		} // get eventData
-		if (errors != "") {
-			errorText = errors;
+		var eventData = GmlEvent.parse(gmlCode, GmlVersion.v1);
+		if (eventData == null) {
+			errorText = GmlEvent.parseError;
 			return false;
 		}
 		//

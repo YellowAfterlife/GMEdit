@@ -2,7 +2,9 @@ package gml;
 import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
 import gml.GmlAPI;
+import haxe.io.Path;
 import tools.Dictionary;
+import yy.YyObject;
 using StringTools;
 
 /**
@@ -21,6 +23,27 @@ class GmlSeeker {
 		});
 	}
 	public static function runSync(orig:String, src:String, main:String) {
+		switch (Path.extension(orig)) {
+			case "yy": {
+				var obj:YyObject = haxe.Json.parse(src);
+				var dir = Path.directory(orig);
+				for (ev in obj.eventList) {
+					var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
+					var full = Path.join([dir, rel]);
+					run(full, null);
+				}
+				return;
+			};
+			case "gmx": {
+				var obj = gmx.SfGmx.parse(src);
+				for (events in obj.findAll("events"))
+				for (event in events.findAll("event"))
+				for (action in event.findAll("action")) {
+					var code = gmx.GmxAction.getCode(action);
+					if (code != null) runSync(orig, code, null);
+				}
+			};
+		}
 		var out = new GmlSeekData();
 		var q = new GmlReader(src);
 		/**
@@ -94,7 +117,7 @@ class GmlSeeker {
 		} // find
 		var s:String, name:String;
 		while (q.loop) {
-			s = find(Ident | Doc | Define);
+			s = find(Ident | Doc | Define | Macro);
 			if (s == null) {
 				//
 			} else if (s.fastCodeAt(0) == "/".code) {
@@ -114,7 +137,9 @@ class GmlSeeker {
 					var start = q.pos;
 					find(Line);
 					s = q.substring(start, q.pos - 1);
-					// GMS2-only!
+					var m = new GmlMacro(name, orig, s);
+					out.macroList.push(m);
+					out.macroMap.set(name, m);
 				};
 				case "globalvar": {
 					while (q.loop) {

@@ -4,9 +4,7 @@ import ace.*;
 import ace.AceWrap;
 import electron.*;
 import electron.Dialog;
-import gml.GmlAPI;
-import gml.GmlFile;
-import gml.Project;
+import gml.*;
 import haxe.io.Path;
 import js.Lib;
 import tools.*;
@@ -47,7 +45,7 @@ class Main {
 		//
 		modulePath = untyped __dirname;
 		GmlAPI.init();
-		gmx.GmxEvent.init();
+		GmlEvent.init();
 		untyped window.ace_mode_gml_0();
 		AceGmlHighlight.init();
 		untyped window.ace_mode_gml_1();

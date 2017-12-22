@@ -55,7 +55,7 @@ import tools.Dictionary;
 				new AceGmlCompletion(GmlAPI.stdComp, nf, true),
 				new AceGmlCompletion(GmlAPI.extComp, nf, true),
 				new AceGmlCompletion(GmlAPI.gmlComp, nf, true),
-				new AceGmlCompletion(gmx.GmxEvent.comp, ef, false),
+				new AceGmlCompletion(gml.GmlEvent.comp, ef, false),
 			]
 		});
 	}

@@ -31,11 +31,14 @@ class Project {
 	public var path:String;
 	public var dir:String;
 	//
+	public var yyObjectNames:Dictionary<String>;
+	public var yyObjectGUIDs:Dictionary<yy.YyGUID>;
+	//
 	public function new(path:String) {
 		this.path = path;
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
-		if (Path.extension(path) == "yy") version = GmlVersion.v2;
+		if (Path.extension(path) == "yyp") version = GmlVersion.v2;
 		document.title = name;
 		TreeView.clear();
 		reload();
@@ -54,6 +57,7 @@ class Project {
 	public function reload_1() {
 		switch (version) {
 			case GmlVersion.v1: gmx.GmxLoader.run(this);
+			case GmlVersion.v2: yy.YyLoader.run(this);
 			default:
 		}
 	}

@@ -7,7 +7,7 @@ import js.RegExp;
  * ...
  * @author YellowAfterlife
  */
-extern class NativeString {
+class NativeString {
 	public static inline function split(s:String, d:EitherType<String, RegExp>):Array<String> {
 		return untyped s.split(d);
 	}
@@ -15,5 +15,11 @@ extern class NativeString {
 		s:String, what:EitherType<String, RegExp>, by:EitherType<String, Function>
 	):String {
 		return untyped s.replace(what, by);
+	}
+	public static function capitalize(s:String):String {
+		return s.charAt(0).toUpperCase() + s.substring(1);
+	}
+	public static inline function trimRight(s:String):String {
+		return untyped s.trimRight();
 	}
 }

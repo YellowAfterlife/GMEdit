@@ -45,6 +45,9 @@ class FileDrag {
 						};
 					}
 				};
+				case "yyp": {
+					Project.current = new Project(path);
+				};
 				case "gml": {
 					GmlFile.open(Path.withoutExtension(file.name), path);
 				};

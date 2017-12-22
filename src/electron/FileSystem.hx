@@ -27,4 +27,6 @@ import haxe.extern.EitherType;
 	public static function writeFileSync(path:String, data:Dynamic, ?options:Dynamic):Void;
 	//
 	public static function existsSync(path:String):Bool;
+	//
+	public static function unlinkSync(path:String):Void;
 }

@@ -1,0 +1,129 @@
+package yy;
+import electron.FileSystem;
+import gml.GmlEvent;
+import haxe.io.Path;
+import tools.Dictionary;
+import tools.NativeString;
+
+/**
+ * ...
+ * @author YellowAfterlife
+ */
+@:forward abstract YyObject(YyObjectImpl) from YyObjectImpl to YyObjectImpl {
+	public static var errorText:String;
+	public function getCode(objPath:String):String {
+		var dir = Path.directory(objPath);
+		var out = "";
+		var errors = "";
+		// GMS2 doesn't sort events so not doing anything means
+		// that the events will maintain order as authored.
+		/*var evOrder:Dictionary<Int> = new Dictionary();
+		var evCount = 0;
+		for (ev in this.eventList) evOrder.set(ev.id, evCount++);
+		this.eventList.sort(function(a, b) {
+			var at = a.eventtype, bt = b.eventtype;
+			if (at != bt) return at - bt;
+			//
+			if (at == gmx.GmxEvent.typeCollision) {
+				return evOrder[a.id] - evOrder[b.id];
+			} else return a.enumb - b.enumb;
+		});*/
+		//
+		for (ev in this.eventList) {
+			var eid = ev.id;
+			var oid = ev.collisionObjectId;
+			var type = ev.eventtype;
+			var numb = ev.enumb;
+			var rel = YyEvent.toPath(type, numb, eid);
+			var name = YyEvent.toString(type, numb, oid);
+			var full = Path.join([dir, rel]);
+			var code = FileSystem.readTextFileSync(full);
+			if (out != "") out += "\n\n";
+			out += "#event " + name + "\n" + NativeString.trimRight(code);
+		}
+		return out;
+	}
+	public function setCode(objPath:String, gmlCode:String) {
+		var dir = Path.directory(objPath);
+		//
+		var eventData = GmlEvent.parse(gmlCode, gml.GmlVersion.v2);
+		if (eventData == null) {
+			errorText = GmlEvent.parseError;
+			return false;
+		}
+		// resolve object GUIDs, leave if that doesn't work out:
+		var errors = "";
+		for (item in eventData) {
+			var idat = item.data;
+			if (idat.type == GmlEvent.typeCollision) {
+				var obj = gml.Project.current.yyObjectGUIDs[idat.name];
+				if (obj == null) {
+					errors += "Couldn't find object " + idat.name + " for collision event.\n";
+				} else idat.obj = obj;
+			} else idat.obj = YyGUID.zero;
+		}
+		if (errors != "") {
+			errorText = errors;
+			return false;
+		}
+		// fill out oldList/oldMap so that we can tell what existed before:
+		var oldList = this.eventList;
+		var oldMap = new Dictionary<YyObjectEvent>();
+		var oldNames:Array<String> = [];
+		for (ev in oldList) {
+			var oldName = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
+			oldNames.push(oldName);
+			oldMap.set(oldName, ev);
+		}
+		//
+		var newList:Array<{ event:YyObjectEvent, code:String }> = [];
+		var newMap = new Dictionary<YyObjectEvent>();
+		for (item in eventData) {
+			var idat = item.data;
+			// try to reuse existing events where possible:
+			var newName = YyEvent.toString(idat.type, idat.numb, idat.obj);
+			var ev = oldMap[newName];
+			if (ev == null) ev = {
+				id: new YyGUID(),
+				modelName: "GMEvent",
+				mvc: "1.0",
+				IsDnD: false,
+				eventtype: idat.type,
+				enumb: idat.numb,
+				collisionObjectId: idat.obj,
+				m_owner: this.id,
+			};
+			newMap.set(newName, ev);
+			newList.push({ event: ev, code: item.code[0] });
+		}
+		// remove event files that are no longer used:
+		for (i in 0 ... oldList.length) if (!newMap.exists(oldNames[i])) {
+			var ev = oldList[i];
+			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
+			if (FileSystem.existsSync(full)) FileSystem.unlinkSync(full);
+		}
+		// write used event files:
+		this.eventList = [];
+		for (item in newList) {
+			var ev = item.event;
+			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
+			FileSystem.writeFileSync(full, item.code);
+			this.eventList.push(ev);
+		}
+		//
+		return true;
+	}
+}
+typedef YyObjectImpl = {
+	>YyBase,
+	name:String,
+	eventList:Array<YyObjectEvent>
+}
+typedef YyObjectEvent = {
+	>YyBase,
+	eventtype:Int,
+	enumb:Int,
+	collisionObjectId:YyGUID,
+	m_owner:YyGUID,
+	IsDnD:Bool,
+}

@@ -80,28 +80,41 @@ class GmlAPI {
 	 */
 	public static function loadStd(src:String) {
 		//  1func (2args ) 3flags
-		~/^((\w+)\((.*?)\))([~\$]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
+		~/^((\w+)\((.*?)\))([~\$#*@&£!:]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var args = rx.matched(3);
-			var kind = rx.matched(4);
-			//
-			if (!ukSpelling && version != GmlVersion.v2) {
+			var flags:String = rx.matched(4);
+			var show = true;
+			var doc = parseDoc(comp);
+			if (version == GmlVersion.v2) {
+				if (ukSpelling) {
+					if (flags.indexOf("$") >= 0) show = false;
+				} else {
+					if (flags.indexOf("£") >= 0) show = false;
+				}
+			} else if (!ukSpelling) {
+				var orig = name;
+				// (todo: were there other things?)
 				name = NativeString.replace(name, "colour", "color");
+				if (orig != name) {
+					stdKind.set(orig, "function");
+					stdDoc.set(name, doc);
+				}
 			}
 			//
 			stdKind.set(name, "function");
-			stdComp.push({
+			if (show) stdComp.push({
 				name: name,
 				value: name,
 				score: 0,
 				meta: "function",
 				doc: comp
 			});
-			stdDoc.set(name, parseDoc(comp));
+			stdDoc.set(name, doc);
 		});
 		// 1name 2array       3flags
-		~/^((\w+)(\[[^\]]*\])?([~\*\$#]*));?[ \t]*$/gm.each(src, function(rx:EReg) {
+		~/^((\w+)(\[[^\]]*\])?([~\*\$£#@&]*));?[ \t]*$/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var flags = rx.matched(4);

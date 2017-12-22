@@ -5,6 +5,8 @@ import ace.AceWrap;
 import gmx.*;
 import Main.document;
 import haxe.io.Path;
+import yy.YyBase;
+import yy.YyObject;
 using tools.HtmlTools;
 
 /**
@@ -38,11 +40,11 @@ class GmlFile {
 		return z;
 	}
 	//
-	public function new(name:String, path:String, kind:GmlFileKind) {
+	public function new(name:String, path:String, kind:GmlFileKind, ?data:Dynamic) {
 		this.name = name;
 		this.path = path;
 		this.kind = kind;
-		load();
+		load(data);
 		session = new AceSession(code, "ace/mode/gml");
 		session.setUndoManager(new AceUndoManager());
 	}
@@ -59,6 +61,7 @@ class GmlFile {
 		// determine what to do with the file:
 		var kind:GmlFileKind;
 		var ext = Path.extension(path).toLowerCase();
+		var data:Dynamic = null;
 		switch (ext) {
 			case "gml": kind = Normal;
 			case "gmx": {
@@ -70,20 +73,34 @@ class GmlFile {
 					default: Extern;
 				}
 			};
+			case "yy": {
+				var json:YyBase = FileSystem.readJsonFileSync(path);
+				switch (json.modelName) {
+					case "GMObject": {
+						data = json;
+						kind = YyObjectEvents;
+					}
+					case "GMScript": {
+						path = Path.withoutExtension(path) + ".gml";
+						kind = Normal;
+					}
+					default: kind = Extern;
+				};
+			};
 			default: kind = Extern;
 		}
 		//
 		if (kind != Extern) {
 			// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
-			gml.GmlFile.next = new gml.GmlFile(name, path, kind);
+			GmlFile.next = new GmlFile(name, path, kind, data);
 			ui.ChromeTabs.addTab(name);
 		} else {
 			electron.Shell.openItem(path);
 		}
 	}
 	//
-	public function load() {
-		var src = FileSystem.readTextFileSync(path);
+	public function load(?data:Dynamic) {
+		var src:String = data != null ? null : FileSystem.readTextFileSync(path);
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
 			case Normal, Extern: code = src;
@@ -98,6 +115,10 @@ class GmlFile {
 				gmx = SfGmx.parse(src);
 				code = GmxProject.getMacroCode(gmx, kind == GmxConfigMacros);
 			};
+			case YyObjectEvents: {
+				var obj:yy.YyObject = data;
+				code = obj.getCode(path);
+			};
 		}
 	}
 	//
@@ -111,6 +132,7 @@ class GmlFile {
 				gmx = FileSystem.readGmxFileSync(path);
 				if (!GmxObject.updateCode(gmx, val)) {
 					Main.window.alert("Can't update GMX:\n" + GmxObject.errorText);
+					return;
 				}
 				out = gmx.toGmxString();
 			};
@@ -118,6 +140,14 @@ class GmlFile {
 				gmx = FileSystem.readGmxFileSync(path);
 				GmxProject.setMacroCode(gmx, val, kind == GmxConfigMacros);
 				out = gmx.toGmxString();
+			};
+			case YyObjectEvents: {
+				var obj:YyObject = FileSystem.readJsonFileSync(path);
+				if (!obj.setCode(path, val)) {
+					Main.window.alert("Can't update YY:\n" + YyObject.errorText);
+					return;
+				}
+				out = haxe.Json.stringify(obj, null, "    ");
 			};
 			default: {
 				return;
@@ -136,4 +166,5 @@ class GmlFile {
 	GmxObjectEvents;
 	GmxProjectMacros;
 	GmxConfigMacros;
+	YyObjectEvents;
 }
