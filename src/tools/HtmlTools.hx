@@ -9,15 +9,15 @@ import js.html.MouseEvent;
  * @author YellowAfterlife
  */
 class HtmlTools {
-	
+	/** For when you are 100% sure that you are getting Elements in querySelector */
+	public static inline function querySelectorEls(el:Element, selectors:String):ElementList {
+		return cast el.querySelectorAll(selectors);
+	}
+}
+extern class ElementList implements ArrayAccess<Element> {
+	public var length(default, never):Int;
+	public function item(index:Int):Element;
 }
 extern class ChromeTab extends Element {
 	public var gmlFile:gml.GmlFile;
-}
-extern class TreeViewDir extends DivElement {
-	public var treeItems:DivElement;
-}
-extern class TreeViewItem extends DivElement {
-	public var gmlFile:gml.GmlFile;
-	public var gmlOpen:Null<MouseEvent>->Void;
 }

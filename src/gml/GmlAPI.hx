@@ -13,21 +13,33 @@ using tools.ERegTools;
  * @author YellowAfterlife
  */
 class GmlAPI {
+	public static var version(default, set):GmlVersion = GmlVersion.none;
+	private static inline function set_version(v:GmlVersion):GmlVersion {
+		if (version != v) {
+			version = v;
+			init();
+		}
+		return v;
+	}
+	//
+	public static var kwList:Array<String> = ["globalvar", "var",
+		"if", "then", "else", "begin", "end", "for", "while", "do", "until", "repeat",
+		"switch", "case", "default", "break", "continue", "with", "exit", "return",
+		"self", "other", "noone", "all", "global", "local",
+		"mod", "div", "not", "and", "or", "xor", "enum"
+	];
 	public static var kwMap:Dictionary<Bool> = new Dictionary();
 	//
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
-	public static var stdKind:Dictionary<String> = {
+	public static var stdKind:Dictionary<String> = new Dictionary();
+	public static function stdClear() {
+		stdDoc = new Dictionary();
+		stdComp.clear();
 		var q = new Dictionary();
-		for (kw in ("globalvar|var|if|then|else|begin|end"
-			+ "|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return"
-			+ "|self|other|noone|all|global|local|mod|div|not|and|or|xor|enum|debugger"
-		).split("|")) {
-			kwMap.set(kw, true);
-			q.set(kw, "keyword");
-		}
-		q;
-	};
+		for (kw in kwList) q.set(kw, "keyword");
+		stdKind = q;
+	}
 	// extension scope
 	public static var extDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var extKind:Dictionary<String> = new Dictionary();
@@ -52,7 +64,7 @@ class GmlAPI {
 		gmlEnums = new Dictionary();
 		gmlGlobalKind = new Dictionary();
 		gmlAssetIDs = new Dictionary();
-		for (type in Project.assetTypes) {
+		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
 	}
@@ -120,6 +132,8 @@ class GmlAPI {
 	}
 	//
 	public static function init() {
+		stdClear();
+		if (version == GmlVersion.none) return;
 		//
 		var getContent_s:String;
 		var getContent_rx = new RegExp("\r\n", "g");
@@ -128,10 +142,12 @@ class GmlAPI {
 			getContent_s = NativeString.replace(getContent_s, getContent_rx, "\n");
 			return getContent_s;
 		}
-		var raw = getContent("./api/fnames");
-		raw += "\n" + getContent("api/extra.gml");
+		var dir = "./api/" + version.getName();
 		//
-		var replace = getContent("api/replace.gml");
+		var raw = getContent('$dir/fnames');
+		raw += "\n" + getContent('$dir/extra.gml');
+		//
+		var replace = getContent('$dir/replace.gml');
 		~/^(\w+).+$/gm.each(replace, function(rx:EReg) {
 			var name = rx.matched(1);
 			var code = rx.matched(0);
@@ -140,7 +156,7 @@ class GmlAPI {
 			});
 		});
 		//
-		var exclude = getContent("api/exclude.gml");
+		var exclude = getContent('$dir/exclude.gml');
 		~/^(\w+)(\*?)$/gm.each(exclude, function(rx:EReg) {
 			var name = rx.matched(1);
 			if (rx.matched(2) != "") {

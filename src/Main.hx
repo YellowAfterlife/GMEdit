@@ -40,9 +40,6 @@ class Main {
 	public static inline function relPath(path:String) {
 		return haxe.io.Path.join([modulePath, path]);
 	}
-	public static var chromeTabs:ChromeTabsImpl;
-	public static var project:gml.Project;
-	public static var treeview:DivElement = cast document.querySelector(".treeview");
 	public static var aceEditor:AceWrap;
 	//
 	static function main() {
@@ -69,8 +66,9 @@ class Main {
 		};
 		aceEditor.session = WelcomePage.init(aceEditor);
 		//
+		TreeView.init();
 		FileDrag.init();
-		chromeTabs = ChromeTabs.init();
+		ChromeTabs.init();
 		//
 		var path = window.localStorage.getItem("autoload");
 		if (path != null) {

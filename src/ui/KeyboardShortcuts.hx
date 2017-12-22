@@ -86,9 +86,11 @@ class KeyboardShortcuts {
 				if (flags == 0) {
 					var tk = aceEditor.session.getTokenAtPos(aceEditor.getCursorPosition());
 					if (tk == null) return;
-					var el = treeview.querySelector('.item[title="${tk.value}"]');
+					var el = TreeView.element.querySelector(
+						'.item[${TreeView.attrIdent}="${tk.value}"]'
+					);
 					if (el != null) {
-						gml.Project.openFile(el.title, el.getAttribute("path"));
+						GmlFile.open(el.title, el.getAttribute("path"));
 					}
 				}
 			};

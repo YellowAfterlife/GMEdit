@@ -43,6 +43,9 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		hint.onclick = null;
 		session.clearAnnotations();
 	}
+	public function init() {
+		
+	}
 	/*public function setHintError(msg:String, pos:GmlPos) {
 		var Range = untyped ace.require("ace/range").Range;
 		var row = pos.row - 1;

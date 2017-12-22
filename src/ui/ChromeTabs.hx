@@ -19,6 +19,9 @@ class ChromeTabs {
 	public static var impl:ChromeTabsImpl;
 	public static var pathHistory:Array<String> = [];
 	public static inline var pathHistorySize:Int = 32;
+	public static inline function addTab(title:String) {
+		impl.addTab({ title: title });
+	}
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
 		impl = new ChromeTabsImpl();

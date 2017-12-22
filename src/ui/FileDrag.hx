@@ -5,6 +5,7 @@ import js.html.DragEvent;
 import electron.Dialog;
 import haxe.io.Path;
 import gml.Project;
+import gml.GmlFile;
 
 /**
  * ...
@@ -38,14 +39,14 @@ class FileDrag {
 							Project.current = new Project(path);
 						};
 						case "object", "config": {
-							Project.openFile(
+							GmlFile.open(
 								Path.withoutExtension(Path.withoutExtension(file.name)),
 								path);
 						};
 					}
 				};
 				case "gml": {
-					Project.openFile(Path.withoutExtension(file.name), path);
+					GmlFile.open(Path.withoutExtension(file.name), path);
 				};
 				default: decline();
 			}
