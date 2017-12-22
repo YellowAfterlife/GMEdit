@@ -7,6 +7,7 @@ import tools.Dictionary;
 import ace.AceWrap;
 import tools.NativeString;
 using tools.ERegTools;
+using StringTools;
 
 /**
  * ...
@@ -32,6 +33,7 @@ class GmlAPI {
 	//
 	public static var helpLookup:Dictionary<String> = null;
 	public static var helpURL:String = null;
+	public static var ukSpelling:Bool = false;
 	//
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
@@ -83,6 +85,10 @@ class GmlAPI {
 			var name = rx.matched(2);
 			var args = rx.matched(3);
 			var kind = rx.matched(4);
+			//
+			if (!ukSpelling && version != GmlVersion.v2) {
+				name = NativeString.replace(name, "colour", "color");
+			}
 			//
 			stdKind.set(name, "function");
 			stdComp.push({
@@ -152,6 +158,7 @@ class GmlAPI {
 		var confPath = Main.relPath(dir + "/config.json");
 		if (FileSystem.existsSync(confPath)) {
 			var conf:GmlConfig = FileSystem.readJsonFileSync(confPath);
+			ukSpelling = conf.ukSpelling;
 			//
 			var confKeywords = conf.keywords;
 			if (confKeywords != null) for (kw in confKeywords) {
@@ -211,6 +218,8 @@ typedef GmlConfig = {
 	?helpIndex:String,
 	/** Additional keywords (if any) */
 	?keywords:Array<String>,
+	/** Whether to use UK spelling for names */
+	?ukSpelling:Bool,
 };
 typedef GmlFuncDoc = {
 	pre:String, post:String, args:Array<String>, rest:Bool
