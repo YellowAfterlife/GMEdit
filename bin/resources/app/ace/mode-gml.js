@@ -114,11 +114,12 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 	
-	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#section\b/;
+	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#section\b|#region\b/;
 	this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
 	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
-	this.startRegionRe = /^\s*(\/\*|\/\/)#?region\b/;
+	this.startRegionRe = /^\s*(\/\*|\/\/)#region\b/;
+	this.startBlockRe = /^\s*#region\b/;
 	this.startScriptRe = /^(?:#define|#event|#section|)\b/;
 	this._getFoldWidgetBase = this.getFoldWidget;
 	this.getFoldWidget = function(session, foldStyle, row) {
@@ -140,11 +141,9 @@ oop.inherits(FoldMode, BaseFoldMode);
 	this.getFoldWidgetRange = function(session, foldStyle, row, forceMultiline) {
 		var line = session.getLine(row);
 		
-		if (this.startScriptRe.test(line))
-			return this.getScriptRegionBlock(session, line, row);
-		
-		if (this.startRegionRe.test(line))
-			return this.getCommentRegionBlock(session, line, row);
+		if (this.startScriptRe.test(line)) return this.getScriptRegionBlock(session, line, row);
+		if (this.startBlockRe.test(line)) return this.getCodeRegionBlock(session, line, row);
+		if (this.startRegionRe.test(line)) return this.getCommentRegionBlock(session, line, row);
 		
 		var match = line.match(this.foldingStartMarker);
 		if (match) {
@@ -210,12 +209,12 @@ oop.inherits(FoldMode, BaseFoldMode);
 		
 		return new Range(startRow, startColumn, endRow, session.getLine(endRow).length);
 	};
-	this.getCommentRegionBlock = function(session, line, row) {
+	this.getCodeRegionBlock = function(session, line, row) {
 		var startColumn = line.search(/\s*$/);
 		var maxRow = session.getLength();
 		var startRow = row;
 		
-		var re = /^\s*(?:\/\*|\/\/|--)#?(end)?region\b/;
+		var re = /^\s*#(end)?region\b/;
 		var depth = 1;
 		while (++row < maxRow) {
 			line = session.getLine(row);
@@ -229,7 +228,29 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 		var endRow = row;
 		if (endRow > startRow) {
-			return new Range(startRow, startColumn, endRow - 1, line.length);
+			return new Range(startRow, startColumn, endRow, line.length);
+		}
+	};
+	this.getCommentRegionBlock = function(session, line, row) {
+		var startColumn = line.search(/\s*$/);
+		var maxRow = session.getLength();
+		var startRow = row;
+		
+		var re = /^\s*(?:\/\*|\/\/)#(end)?region\b/;
+		var depth = 1;
+		while (++row < maxRow) {
+			line = session.getLine(row);
+			var m = re.exec(line);
+			if (!m) continue;
+			if (m[1]) depth--;
+			else depth++;
+
+			if (!depth) break;
+		}
+
+		var endRow = row;
+		if (endRow > startRow) {
+			return new Range(startRow, startColumn, endRow, line.length);
 		}
 	};
 	this.getScriptRegionBlock = function(session, line, row) {
