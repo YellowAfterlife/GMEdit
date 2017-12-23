@@ -44,6 +44,7 @@ class Main {
 		Electron.init();
 		//
 		modulePath = untyped __dirname;
+		Preferences.init();
 		GmlAPI.init();
 		GmlEvent.init();
 		untyped window.ace_mode_gml_0();

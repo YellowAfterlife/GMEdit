@@ -29,4 +29,12 @@ import haxe.extern.EitherType;
 	public static function existsSync(path:String):Bool;
 	//
 	public static function unlinkSync(path:String):Void;
+	//
+	public static function readdirSync(path:String, ?options:Dynamic):Array<String>;
+	//
+	public static function statSync(path:String):FileSystemStat;
+}
+extern class FileSystemStat {
+	public function isFile():Bool;
+	public function isDirectory():Bool;
 }

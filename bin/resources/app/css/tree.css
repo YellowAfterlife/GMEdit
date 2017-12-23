@@ -44,19 +44,14 @@
 	display: inline-block;
 	/*width: 100%;*/
 }
-.treeview .header:hover > span,
-.treeview .item:hover > span {
-	background: #f3f3f3;
-}
 .treeview .dir > .header:before {
 	background-position: -20px 0;
 }
 .treeview .dir.open > .header:before {
 	background-position: -40px 0;
 }
-.treeview .header:hover,
-.treeview .item:hover {
-	border-left-color: #f3f3f3;
+.treeview .header:hover, .treeview .header:hover > span,
+.treeview .item:hover, .treeview .item:hover > span {
 	background: #f3f3f3;
 }
 .treeview .dir:not(.open) > .items {
