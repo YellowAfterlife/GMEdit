@@ -45,7 +45,8 @@ class GmlFile {
 		this.path = path;
 		this.kind = kind;
 		load(data);
-		session = new AceSession(code, "ace/mode/gml");
+		// todo: this does not seem to cache per-version, but not a performance hit either?
+		session = new AceSession(code, { path: "ace/mode/gml", version: GmlAPI.version });
 		session.setUndoManager(new AceUndoManager());
 	}
 	//

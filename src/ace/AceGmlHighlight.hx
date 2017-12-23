@@ -2,9 +2,10 @@ package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
 import gml.GmlEnum;
+import gml.GmlVersion;
 import js.RegExp;
 import tools.Dictionary;
-import ace.AceMacro.rule;
+import ace.AceMacro.rxRule;
 import haxe.extern.EitherType;
 
 /**
@@ -13,9 +14,16 @@ import haxe.extern.EitherType;
  */
 @:keep class AceGmlHighlight {
 	@:native("$rules") public var rules:Dynamic;
+	public var updateRules:Void->Void;
+	public static var current:AceGmlHighlight = null;
+	public static function update() {
+		if (current != null) current.updateRules();
+	}
 	public function new() {
+		var version = GmlAPI.version;
+		current = this;
 		//
-		function rule1(tk:Dynamic, rx:String, next:String):AceLangRule {
+		function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
 			return { token: tk, regex: rx, next: next };
 		}
 		function rdef(tk:String):Dynamic {
@@ -38,67 +46,105 @@ import haxe.extern.EitherType;
 			}
 			return [s1, "text", "punctuation.operator", "text", s2];
 		}
-		var baseRules:Array<AceLangRule> = [
-			rule("comment.doc", ~/\/\/\/.*$/),
-			rule("comment", ~/\/\/.*$/),
-			rule("comment.doc", ~/\/\*\*/, "comment.doc"),
-			rule("comment", ~/\/\*/, "comment"),
-			rule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
-			rule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
-			rule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/),
-			rule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
-			rule("string", ~/"/, "string2"),
-			rule("string", ~/'/, "string1"),
-			rule("string", ~/`/, "stringt"),
-			rule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
-			rule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
-			rule("constant.boolean", ~/(?:true|false)\b/),
-			rule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
-			rule(identFunc2, ~/([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
-			rule(identFunc, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
-			rule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
-			rule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|==|!=|<=|>=|<>|<|>|!|&&|\|\|/),
-			rule("punctuation.operator", ~/\?|:|,|;|\./),
-			rule("curly.paren.lparen", ~/\{/),
-			rule("curly.paren.rparen", ~/\}/),
-			rule("paren.lparen", ~/[\[(]/),
-			rule("paren.rparen", ~/[\])]/),
-			rule("text", ~/\s+/),
+		//
+		var rBase:Array<AceLangRule> = [
+			rxRule("comment.doc", ~/\/\/\/.*$/),
+			rxRule("comment", ~/\/\/.*$/),
+			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
+			rxRule("comment", ~/\/\*/, "comment"),
+			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
+			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
+			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 		];
-		rules = {
-			"start": baseRules,
-			"enum": [
-				rule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
-				rule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
-				// todo: see if there's a better method of detecting the last item:
-				rule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "start"),
-				rule("curly.paren.rparen", ~/\}/, "start"),
-			].concat(baseRules),
-			"enumvalue": [
-				rule("punctuation.operator", ~/,/, "enum"),
-			].concat(baseRules),
-			"string1" : [
-				rule("string", ~/.*?[']/, "start"),
-				rule("string", ~/.+/),
+		// regions:
+		if (version == GmlVersion.v2) {
+			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
+			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
+		} else {
+			rBase.push(rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/));
+		}
+		// strings:
+		if (version == GmlVersion.v2) {
+			rBase.push(rxRule("string", ~/"(?=.)/, "string.esc"));
+		} else {
+			rBase.push(rxRule("string", ~/"/, "string.dq"));
+			rBase.push(rxRule("string", ~/'/, "string.sq"));
+		}
+		if (version == GmlVersion.live) {
+			rBase.push(rxRule("string", ~/`/, "string.tpl"));
+		}
+		// normal things:
+		rBase = rBase.concat([
+			rxRule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
+			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
+			rxRule("constant.boolean", ~/(?:true|false)\b/),
+			rxRule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
+			rxRule(identFunc2, ~/([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
+			rxRule(identFunc, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
+			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
+			rxRule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|==|!=|<=|>=|<>|<|>|!|&&|\|\|/),
+			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
+			rxRule("curly.paren.lparen", ~/\{/),
+			rxRule("curly.paren.rparen", ~/\}/),
+			rxRule("paren.lparen", ~/[\[(]/),
+			rxRule("paren.rparen", ~/[\])]/),
+			rxRule("text", ~/\s+/),
+		]);
+		//
+		var rEnum = [
+			rxRule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
+			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
+			// todo: see if there's a better method of detecting the last item:
+			rxRule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "start"),
+			rxRule("curly.paren.rparen", ~/\}/, "start"),
+		].concat(rBase);
+		//
+		var rEnumValue = [
+			rxRule("punctuation.operator", ~/,/, "enum"),
+		].concat(rBase);
+		//
+		if (rules != null) {
+			Reflect.setField(rules, "start", rBase);
+			Reflect.setField(rules, "enum", rEnum);
+			Reflect.setField(rules, "enumvalue", rEnumValue);
+		} else rules = {
+			"start": rBase,
+			"enum": rEnum,
+			"enumvalue": rEnumValue,
+			"string.sq": [ // GMS1 single-quoted strings
+				rxRule("string", ~/.*?[']/, "start"),
+				rxRule("string", ~/.+/),
 			],
-			"string2" : [
-				rule("string", ~/.*?["]/, "start"),
-				rule("string", ~/.+/),
+			"string.dq": [ // GMS1 double-quoted strings
+				rxRule("string", ~/.*?["]/, "start"),
+				rxRule("string", ~/.+/),
 			],
-			"stringt" : [
-				rule("string", ~/.*?[`]/, "start"),
+			"string.tpl": [ // GMLive strings with templates
+				rxRule("string", ~/.*?[`]/, "start"),
+				rdef("string"),
+			],
+			"string.esc": [ // GMS2 strings with escape characters
+				rule("string.escape", "\\\\(?:"
+					+ "x[0-9a-fA-F]{2}|" // \x41
+					+ "u[0-9a-fA-F]{4}|" // \u1234
+					// there's also octal that doesn't work (?)
+				+ ".)"),
+				// (this is to allow escaping linebreaks, which is honestly a strange thing)
+				cast { token : "string", regex : "\\\\$", consumeLineEnd : true },
+				rule("string", '"|$', "start"),
 				rdef("string"),
 			],
 			"comment" : [
-				rule("comment", ~/.*?\*\//, "start"),
-				rule("comment", ~/.+/)
+				rxRule("comment", ~/.*?\*\//, "start"),
+				rxRule("comment", ~/.+/)
 			],
 			"comment.doc" : [
-				rule("comment.doc", ~/.*?\*\//, "start"),
-				rule("comment.doc", ~/.+/)
+				rxRule("comment.doc", ~/.*?\*\//, "start"),
+				rxRule("comment.doc", ~/.+/)
 			],
 		};
 	}
+	//
 	public static function define(require:AceRequire, exports:AceExports, module:AceModule) {
 		var oop = require("../lib/oop");
 		var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
@@ -116,5 +162,5 @@ import haxe.extern.EitherType;
 typedef AceLangRule = {
 	token: EitherType<String, String->String>,
 	regex: EitherType<String, RegExp>,
-	next: String,
+	?next: String,
 };

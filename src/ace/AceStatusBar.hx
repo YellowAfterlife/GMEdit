@@ -81,7 +81,7 @@ class AceStatusBar {
 		var pos = sel.lead;
 		//
 		var showRow = pos.row;
-		var checkRx = new js.RegExp('^#define[ \t]+(\\w+)', '');
+		var checkRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
 		var startRow = showRow + 1;
 		var checkExec = null;
 		var session = editor.getSession();

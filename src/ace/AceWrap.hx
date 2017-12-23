@@ -102,7 +102,7 @@ extern class AceSelection {
 	public var rangeCount:Int;
 }
 @:native("AceEditSession") extern class AceSession {
-	public function new(text:String, mode:String);
+	public function new(text:String, mode:Dynamic);
 	//
 	public function getValue():String;
 	public function setValue(v:String):Void;
