@@ -61,9 +61,6 @@
 	color: #666;
 	border-right: 1px solid #ccc;
 }
-#main .ace_gutter-define {
-	box-shadow: 0 1px 0px #d0d0d0 inset;
-}
 #main .ace_gutter-active-line {
 	background: #EFEAE8;
 }
@@ -125,20 +122,6 @@
 	/*color: #7A81A9;*/
 	color: #768;
 }
-/** underline the define-line */
-#main .gml .ace_preproc.ace_define:after,
-#main .gml .ace_preproc.ace_section:after,
-#main .gml .ace_preproc.ace_event:after {
-    content: "";
-    left: -4px;
-    /*bottom: -1px;*/
-	top: 0;px;
-    right: 0;
-    height: 1px;
-    position: absolute;
-    display: block;
-    background: #E8E8E8;
-}
 #main .gml .ace_numeric {
 	color: #00f;
 }
@@ -151,4 +134,22 @@
 }
 .ace_tooltip {
 	font: 10pt sans-serif;
+}
+
+/** underline the define-line */
+#main .ace_gutter-define:not(:first-child) {
+	box-shadow: 0 1px 0px #d0d0d0 inset;
+}
+#main .gml .ace_line:not(:first-child) .ace_preproc.ace_define::after,
+#main .gml .ace_line:not(:first-child) .ace_preproc.ace_section::after,
+#main .gml .ace_line:not(:first-child) .ace_preproc.ace_event::after {
+    content: "";
+    left: -4px;
+    /*bottom: -1px;*/
+	top: 0;px;
+    right: 0;
+    height: 1px;
+    position: absolute;
+    display: block;
+    background: #E8E8E8;
 }
