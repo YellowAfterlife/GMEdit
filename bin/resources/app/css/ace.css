@@ -79,14 +79,20 @@
 #main .ace_active-line {
 	background: rgba(255, 253, 205, 0.5);
 }
-#main .gml .ace_comment,
-#main .gml .ace_sectionname {
+#main .gml .ace_comment {
 	color: #008000;
-	font-style: italic;
+	/*font-style: italic;*/
 }
-#main .gml .ace_comment.ace_doc,
+/*#main .gml .ace_comment.ace_doc,
+#main .gml .ace_regionname,
 #main .gml .ace_sectionname {
 	color: #008080;
+}*/
+#main .gml .ace_regionname,
+#main .gml .ace_sectionname,
+#main .gml .ace_scriptname,
+#main .gml .ace_eventname {
+	color: #308;
 }
 #main .gml .ace_function,
 #main .gml .ace_variable,
@@ -106,9 +112,7 @@
 #main .gml .ace_asset {
 	color: rgb(0, 128, 160);
 }
-#main .gml .ace_script,
-#main .gml .ace_scriptname,
-#main .gml .ace_eventname {
+#main .gml .ace_script {
 	color: #800080;
 }
 #main .gml .ace_keyword,
