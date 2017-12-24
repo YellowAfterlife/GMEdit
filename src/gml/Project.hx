@@ -2,6 +2,7 @@ package gml;
 import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
 import electron.Electron;
+import haxe.Json;
 import haxe.io.Path;
 import js.Boot;
 import js.html.DivElement;
@@ -13,6 +14,7 @@ import ace.AceWrap;
 import gmx.SfGmx;
 import Main.*;
 import tools.HtmlTools;
+import tools.NativeString;
 import gml.GmlFile;
 import ui.TreeView;
 
@@ -41,16 +43,55 @@ class Project {
 		if (Path.extension(path) == "yyp") version = GmlVersion.v2;
 		document.title = name;
 		TreeView.clear();
-		reload();
+		reload(true);
+	}
+	public function close() {
+		TreeView.saveOpen();
+		var data:ProjectState = {
+			treeviewScrollTop: TreeView.element.scrollTop,
+			treeviewOpenNodes: TreeView.openPaths,
+		};
+		window.localStorage.setItem("project:" + path, Json.stringify(data));
+		window.localStorage.setItem("@project:" + path, "" + Date.now().getTime());
+	}
+	public static function init() {
+		//
+		var ls = window.localStorage;
+		var remList:Array<String> = [];
+		var remTime:Float = Date.now().getTime()
+			- (1000 * 60 * 60 * 24 * ui.Preferences.current.projectSessionTime);
+		for (i in 0 ... ls.length) {
+			var k = ls.key(i);
+			if (NativeString.startsWith(k, "@project:")) {
+				var t = Std.parseFloat(ls.getItem(k));
+				if (Std.parseFloat(ls.getItem(k)) < remTime) {
+					remList.push(k);
+					remList.push(k.substring(1));
+				}
+			}
+		}
+		for (remKey in remList) ls.removeItem(remKey);
+		//
+		var path = window.localStorage.getItem("autoload");
+		if (path != null) {
+			current = new Project(path);
+		} else current = null;
 	}
 	//
-	public function reload() {
+	public function reload(?first:Bool) {
 		nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
 			GmlAPI.version = version;
-			TreeView.saveOpen();
+			var state:ProjectState = null;
+			if (first) {
+				try {
+					var stateText = window.localStorage.getItem("project:" + path);
+					state = Json.parse(stateText);
+				} catch (_:Dynamic) { }
+			} else TreeView.saveOpen();
 			reload_1();
-			TreeView.restoreOpen();
+			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
+			if (state != null) TreeView.element.scrollTop = state.treeviewScrollTop;
 			nameNode.innerText = "";
 		}, 1);
 	}
@@ -61,4 +102,8 @@ class Project {
 			default:
 		}
 	}
+}
+typedef ProjectState = {
+	treeviewScrollTop:Int,
+	treeviewOpenNodes:Array<String>,
 }

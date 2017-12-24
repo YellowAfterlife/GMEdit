@@ -66,7 +66,7 @@ class TreeView {
 		return r;
 	}
 	//
-	private static var openPaths:Array<String> = [];
+	public static var openPaths:Array<String> = [];
 	public static function saveOpen() {
 		var r:Array<String> = [];
 		for (dir in element.querySelectorEls(".dir.open")) {
@@ -74,8 +74,8 @@ class TreeView {
 		}
 		openPaths = r;
 	}
-	public static function restoreOpen() {
-		var paths = openPaths;
+	public static function restoreOpen(?paths:Array<String>) {
+		var paths = paths != null ? paths : openPaths;
 		var el = element;
 		for (path in paths) {
 			var dir = el.querySelector('.dir[$attrRel="$path"]');

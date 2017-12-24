@@ -72,11 +72,7 @@ class Main {
 		TreeView.init();
 		FileDrag.init();
 		ChromeTabs.init();
-		//
-		var path = window.localStorage.getItem("autoload");
-		if (path != null) {
-			Project.current = new Project(path);
-		} else Project.current = null;
+		Project.init();
 		//
 		trace("hi!");
 		return null;

@@ -58,6 +58,25 @@ class Preferences {
 			ctr.appendChild(lb);
 			out.appendChild(ctr);
 		}
+		function addInput(legend:String, current:String, fn:String->Void) {
+			var ctr = document.createDivElement();
+			//
+			var lb = document.createLabelElement();
+			lb.htmlFor = legend;
+			lb.appendChild(document.createTextNode(legend));
+			ctr.appendChild(lb);
+			//
+			var cb = document.createInputElement();
+			cb.type = "text";
+			cb.value = current;
+			cb.name = legend;
+			cb.addEventListener("change", function(_) {
+				fn(cb.value);
+			});
+			ctr.appendChild(cb);
+			//
+			out.appendChild(ctr);
+		}
 		function addButton(text:String, fn:Void->Void) {
 			var ctr = document.createDivElement();
 			var el = document.createAnchorElement();
@@ -88,6 +107,14 @@ class Preferences {
 			GmlAPI.ukSpelling = z;
 			GmlAPI.init();
 			save();
+		});
+		addInput("Keep file sessions for (days):",
+		"" + current.fileSessionTime, function(s) {
+			current.fileSessionTime = Std.parseFloat(s); save();
+		});
+		addInput("Keep project sessions for (d):",
+		"" + current.projectSessionTime, function(s) {
+			current.fileSessionTime = Std.parseFloat(s); save();
 		});
 		addButton("Code Settings", function() {
 			AceWrap.loadModule("ace/ext/settings_menu", function(module) {

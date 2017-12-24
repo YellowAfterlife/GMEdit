@@ -2,6 +2,7 @@ package ui;
 import electron.Dialog;
 import electron.Electron;
 import gml.GmlFile;
+import gml.Project;
 import js.html.BeforeUnloadEvent;
 import js.html.CustomEvent;
 import js.html.Element;
@@ -90,7 +91,15 @@ class ChromeTabs {
 		// https://github.com/electron/electron/issues/7977:
 		window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
 			var changedTabs = document.querySelectorAll('.chrome-tab.chrome-tab-changed');
-			if (changedTabs.length == 0) return;
+			if (changedTabs.length == 0) {
+				for (tabNode in element.querySelectorAll('.chrome-tab')) {
+					var tabEl:ChromeTab = cast tabNode;
+					var file = tabEl.gmlFile;
+					if (file != null) file.close();
+				}
+				if (Project.current != null) Project.current.close();
+				return;
+			}
 			//
 			e.returnValue = cast false;
 			window.setTimeout(function() {

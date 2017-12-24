@@ -125,7 +125,11 @@ body {
 	vertical-align: bottom;
 	margin-right: 2px;
 }
-
+#main #preferences-window input[type="text"] {
+	width: 100%;
+	box-sizing: border-box;
+}
+/* */
 #ace_settingsmenu div[contains="setMode"],
 #ace_settingsmenu div[contains="setTheme"] {
 	display: none;
