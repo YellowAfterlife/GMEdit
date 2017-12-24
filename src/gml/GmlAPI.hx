@@ -96,7 +96,7 @@ class GmlAPI {
 			} else if (!ukSpelling) {
 				var orig = name;
 				// (todo: were there other things?)
-				name = NativeString.replace(name, "colour", "color");
+				name = NativeString.replaceExt(name, "colour", "color");
 				if (orig != name) {
 					stdKind.set(orig, "function");
 					stdDoc.set(name, doc);
@@ -142,7 +142,7 @@ class GmlAPI {
 			return {
 				pre: s.substring(0, p0 + 1),
 				post: s.substring(p1),
-				args: NativeString.split(sw, untyped __js__("/,\\s*/g")),
+				args: NativeString.splitReg(sw, untyped __js__("/,\\s*/g")),
 				rest: sw.indexOf("...") >= 0,
 			};
 		} else return {
@@ -161,7 +161,7 @@ class GmlAPI {
 		var getContent_rx = new RegExp("\r\n", "g");
 		inline function getContent(path:String):String {
 			getContent_s = FileSystem.readFileSync(Main.relPath(path), "utf8");
-			getContent_s = NativeString.replace(getContent_s, getContent_rx, "\n");
+			getContent_s = NativeString.replaceExt(getContent_s, getContent_rx, "\n");
 			return getContent_s;
 		}
 		var dir = "api/" + version.getName();

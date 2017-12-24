@@ -6,6 +6,7 @@ import haxe.io.Path;
 import tools.Dictionary;
 import yy.YyObject;
 using StringTools;
+using tools.NativeString;
 
 /**
  * ...
@@ -121,9 +122,13 @@ class GmlSeeker {
 			if (s == null) {
 				//
 			} else if (s.fastCodeAt(0) == "/".code) {
-				if (main != null) {
+				if (main != null && s.indexOf("(") >= 0) {
+					s = s.substring(3).trimLeft();
+					if (s.startsWith("@description")) {
+						s = s.substring(12).trimLeft();
+					}
 					//trace(main, s);
-					GmlAPI.gmlDoc.set(main, GmlAPI.parseDoc(s.substring(3).ltrim()));
+					GmlAPI.gmlDoc.set(main, GmlAPI.parseDoc(s));
 					//trace(main, s);
 					main = null;
 				}

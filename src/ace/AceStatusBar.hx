@@ -111,7 +111,7 @@ class AceStatusBar {
 		if (!sel.isEmpty()) {
 			var r = editor.getSelectionRange();
 			set(".select", '(${r.end.row - r.start.row}:${r.end.column - r.start.column})');
-		}
+		} else set(".select", null);
 		//
 		set(".row", showRow < 0 ? "#" : "" + (showRow + 1));
 		set(".col", "" + (pos.column + 1));
