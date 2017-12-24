@@ -44,6 +44,13 @@ class GmlAPI {
 		stdComp.clear();
 		var q = new Dictionary();
 		for (kw in kwList) q.set(kw, "keyword");
+		if (version == GmlVersion.live) {
+			q.set("wait", "keyword");
+			q.set("in", "keyword");
+			q.set("try", "keyword");
+			q.set("catch", "keyword");
+			q.set("throw", "keyword");
+		}
 		stdKind = q;
 	}
 	// extension scope
@@ -81,7 +88,7 @@ class GmlAPI {
 	 */
 	public static function loadStd(src:String) {
 		//  1func (2args ) 3flags
-		~/^((\w+)\((.*?)\))([~\$#*@&£!:]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
+		~/^(:?(\w+)\((.*?)\))([~\$#*@&£!:]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var args = rx.matched(3);
@@ -104,6 +111,7 @@ class GmlAPI {
 				}
 			}
 			//
+			if (stdKind.exists(name)) return;
 			stdKind.set(name, "function");
 			if (show) stdComp.push({
 				name: name,
@@ -114,8 +122,8 @@ class GmlAPI {
 			});
 			stdDoc.set(name, doc);
 		});
-		// 1name 2array       3flags
-		~/^((\w+)(\[[^\]]*\])?([~\*\$£#@&]*));?[ \t]*$/gm.each(src, function(rx:EReg) {
+		// 1name 2array       3flags         type
+		~/^((\w+)(\[[^\]]*\])?([~\*\$£#@&]*))(?::\w+)?;?[ \t]*$/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var flags = rx.matched(4);
@@ -131,6 +139,33 @@ class GmlAPI {
 				score: 0,
 				meta: kind,
 				doc: comp
+			});
+		});
+		// name       =      value
+		~/^(\w+)[ \t]*=[ \t]*(.+)$/g.each(src, function(rx:EReg) {
+			var name = rx.matched(1);
+			var expr = rx.matched(2);
+			stdKind.set(name, "constant");
+			stdComp.push({
+				name: name,
+				value: name,
+				score: 0,
+				meta: "constant",
+				doc: expr
+			});
+		});
+	}
+	
+	public static function loadAssets(src:String) {
+		~/(\w+)/g.each(src, function(rx:EReg) {
+			var name = rx.matched(1);
+			stdKind.set(name, "asset");
+			stdComp.push({
+				name: name,
+				value: name,
+				score: 0,
+				meta: "asset",
+				doc: null,
 			});
 		});
 	}
@@ -156,6 +191,7 @@ class GmlAPI {
 	//
 	public static function init() {
 		stdClear();
+		untyped window.gmlResetOnDefine = version != GmlVersion.live;
 		if (version == GmlVersion.none) return;
 		//
 		var getContent_s:String;
@@ -169,10 +205,14 @@ class GmlAPI {
 		//
 		helpURL = null;
 		helpLookup = null;
+		ukSpelling = Preferences.current.ukSpelling;
 		var confPath = Main.relPath(dir + "/config.json");
+		var files:Array<String> = null;
+		var assets:Array<String> = null;
 		if (FileSystem.existsSync(confPath)) {
 			var conf:GmlConfig = FileSystem.readJsonFileSync(confPath);
-			ukSpelling = Preferences.current.ukSpelling;
+			files = conf.apiFiles;
+			assets = conf.assetFiles;
 			if (ukSpelling == null) ukSpelling = conf.ukSpelling;
 			//
 			var confKeywords = conf.keywords;
@@ -201,29 +241,39 @@ class GmlAPI {
 			}
 		}
 		//
-		var raw = getContent('$dir/fnames');
-		raw += "\n" + getContent('$dir/extra.gml');
+		if (assets != null) for (file in assets) {
+			var raw = getContent('$dir/$file');
+			loadAssets(raw);
+		}
 		//
-		var replace = getContent('$dir/replace.gml');
-		~/^(\w+).+$/gm.each(replace, function(rx:EReg) {
-			var name = rx.matched(1);
-			var code = rx.matched(0);
-			raw = (new EReg('^$name.+$$', "gm")).map(raw, function(r1) {
-				return code;
+		if (files != null) for (file in files) {
+			var raw = getContent('$dir/$file');
+			loadStd(raw);
+		} else {
+			var raw = getContent('$dir/fnames');
+			raw += "\n" + getContent('$dir/extra.gml');
+			//
+			var replace = getContent('$dir/replace.gml');
+			~/^(\w+).+$/gm.each(replace, function(rx:EReg) {
+				var name = rx.matched(1);
+				var code = rx.matched(0);
+				raw = (new EReg('^$name.+$$', "gm")).map(raw, function(r1) {
+					return code;
+				});
 			});
-		});
-		//
-		var exclude = getContent('$dir/exclude.gml');
-		~/^(\w+)(\*?)$/gm.each(exclude, function(rx:EReg) {
-			var name = rx.matched(1);
-			if (rx.matched(2) != "") {
-				raw = new EReg('^$name.*$', "gm").replace(raw, "");
-			} else {
-				raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
-			}
-		});
-		//
-		loadStd(raw);
+			//
+			var exclude = getContent('$dir/exclude.gml');
+			~/^(\w+)(\*?)$/gm.each(exclude, function(rx:EReg) {
+				var name = rx.matched(1);
+				if (rx.matched(2) != "") {
+					raw = new EReg('^$name.*$', "gm").replace(raw, "");
+				} else {
+					raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
+				}
+			});
+			//
+			loadStd(raw);
+		}
 	}
 }
 typedef GmlConfig = {
@@ -235,6 +285,9 @@ typedef GmlConfig = {
 	?keywords:Array<String>,
 	/** Whether to use UK spelling for names */
 	?ukSpelling:Bool,
+	/** */
+	?apiFiles:Array<String>,
+	?assetFiles:Array<String>,
 };
 typedef GmlFuncDoc = {
 	pre:String, post:String, args:Array<String>, rest:Bool

@@ -32,6 +32,12 @@ class FileDrag {
 					buttons: ["OK"]
 				});
 			}
+			switch (Path.withoutDirectory(path)) {
+				case "main.cfg", "main.txt": {
+					Project.current = new Project(path);
+					return;
+				};
+			}
 			switch (Path.extension(path)) {
 				case "gmx": {
 					switch (Path.extension(Path.withoutExtension(path))) {

@@ -293,9 +293,10 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 	var lastLineNumber = 0;
 	
 	//
+	var resetOnDefine = window.gmlResetOnDefine;
 	var checkRow = firstRow;
 	var checkToken;
-	while (--checkRow >= 0) {
+	if (resetOnDefine) while (--checkRow >= 0) {
 		//checkToken = session.getTokenAt(checkRow, 0);
 		//console.log(checkToken);
 		if (rxDefine.test(session.getLine(checkRow))) {
@@ -341,7 +342,7 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 		if (this.$annotations[row])
 			className += this.$annotations[row].className;
 		var rowText = session.getLine(row);
-		var reset = rxDefine.test(rowText);
+		var reset = resetOnDefine && rxDefine.test(rowText);
 		if (reset) {
 			firstLineNumber = -row;
 			className += "ace_gutter-define ";

@@ -41,6 +41,12 @@ class Project {
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
 		if (Path.extension(path) == "yyp") version = GmlVersion.v2;
+		switch (name.toLowerCase()) {
+			case "main.txt", "main.cfg": {
+				version = GmlVersion.live;
+				name = Path.withoutDirectory(dir);
+			};
+		}
 		document.title = name;
 		TreeView.clear();
 		reload(true);
@@ -99,6 +105,7 @@ class Project {
 		switch (version) {
 			case GmlVersion.v1: gmx.GmxLoader.run(this);
 			case GmlVersion.v2: yy.YyLoader.run(this);
+			case GmlVersion.live: gml.GmlLoader.run(this);
 			default:
 		}
 	}

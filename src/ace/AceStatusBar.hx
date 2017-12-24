@@ -86,10 +86,11 @@ class AceStatusBar {
 		var startRow = showRow + 1;
 		var checkExec = null;
 		var session = editor.getSession();
+		var resetOnDefine:Bool = untyped window.gmlResetOnDefine;
 		while (--startRow >= 0) {
 			checkExec = checkRx.exec(session.getLine(startRow));
 			if (checkExec != null) {
-				showRow -= startRow + 1;
+				if (resetOnDefine) showRow -= startRow + 1;
 				break;
 			}
 		}
