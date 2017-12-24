@@ -114,6 +114,9 @@ body {
 	overflow-y: auto;
 	padding: 4px;
 }
+#main #preferences-window div {
+	margin-top: 4px;
+}
 #main #preferences-window fieldset {
 	border: 1px solid #999;
 	padding: 4px;

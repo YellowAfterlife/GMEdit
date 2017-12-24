@@ -25,6 +25,7 @@ class GmlLoader {
 			for (el in rd) out.appendChild(el);
 			for (el in rf) out.appendChild(el);
 		}
+		TreeView.clear();
 		loadrec(TreeView.element, Path.directory(project.path), "");
 	}
 }

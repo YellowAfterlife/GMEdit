@@ -113,7 +113,8 @@
 	color: #800080;
 }
 #main .gml .ace_keyword,
-#main .gml .ace_curly.ace_paren {
+#main .gml .ace_curly.ace_paren,
+#main .gml .ace_quasi.ace_paren {
 	color: #00379B;
 	font-weight: bold;
 }

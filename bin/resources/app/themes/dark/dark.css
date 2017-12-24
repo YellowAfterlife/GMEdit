@@ -38,6 +38,9 @@
 #main #preferences-window fieldset {
 	border: 1px solid #495057;
 }
+#main #preferences-window a {
+	color: #FFB871;
+}
 
 /* gutter */
 #main .ace_gutter,
@@ -45,6 +48,9 @@
 	background-color: #2B343B;
 	color: #40C3F4;
 	border-color: #495057;
+}
+#main .ace_status-bar {
+	color: #a0a5a9;
 }
 #main #ace_status-hint, #main .ace_status-bar .context-pre {
 	border-color: #495057;
@@ -118,7 +124,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_extfunction,
 #main .gml .ace_extmacro,
 #main .gml .ace_macroname,
-#main .gml .ace_script {
+#main .gml .ace_script,
+#main .gml .ace_quasi.ace_paren {
 	color: #FFB871;
 }
 #main .gml .ace_preproc {

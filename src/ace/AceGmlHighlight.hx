@@ -29,6 +29,9 @@ import haxe.extern.EitherType;
 		function rdef(tk:String):Dynamic {
 			return { defaultToken: tk };
 		}
+		function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
+			return { token: tk, regex: rx, push: push };
+		}
 		//
 		function identFunc(name:String):String {
 			return untyped __js__("{0} || {1} || {2} || {3}",
@@ -47,7 +50,31 @@ import haxe.extern.EitherType;
 			return [s1, "text", "punctuation.operator", "text", s2];
 		}
 		//
+		var rTpl:AceLangRule = {
+			regex: "[{}]",
+			onMatch: untyped __js__('(function(val, state, stack) {
+				this.next = val == "{" ? this.nextState : "";
+				if (val == "{" && stack.length) {
+					stack.unshift("start", state);
+				}
+				else if (val == "}" && stack.length) {
+					stack.shift();
+					this.next = stack.shift();
+					if (this.next.indexOf("string") >= 0) return "quasi.paren.rparen";
+				}
+				switch (val) {
+					case "[": return "paren.lparen";
+					case "]": return "paren.rparen";
+					case "{": return "curly.paren.lparen";
+					case "}": return "curly.paren.rparen";
+					default: return "paren";
+				}
+			})'),
+			nextState: "start"
+		};
+		//
 		var rBase:Array<AceLangRule> = [
+			rTpl,
 			rxRule("comment.doc", ~/\/\/\/.*$/),
 			rxRule("comment", ~/\/\/.*$/),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
@@ -71,7 +98,16 @@ import haxe.extern.EitherType;
 			rBase.push(rxRule("string", ~/'/, "string.sq"));
 		}
 		if (version == GmlVersion.live) {
-			rBase.push(rxRule("string", ~/`/, "string.tpl"));
+			rBase.push({
+				token: "string",
+				regex: "`",
+				push: [
+					rpush("quasi.paren.lparen", "\\${", "start"),
+					rule("string.quasi", "`", "pop"),
+					rdef("string.quasi")
+				]
+			});
+			//rBase.push(rxRule("string", ~/`/, "string.tpl"));
 		}
 		// normal things:
 		rBase = rBase.concat([
@@ -103,14 +139,20 @@ import haxe.extern.EitherType;
 			rxRule("punctuation.operator", ~/,/, "enum"),
 		].concat(rBase);
 		//
+		var rTemplateExpr = [
+			rxRule("string", ~/\}/, "pop"),
+		].concat(rBase);
+		//
 		if (rules != null) {
 			Reflect.setField(rules, "start", rBase);
 			Reflect.setField(rules, "enum", rEnum);
 			Reflect.setField(rules, "enumvalue", rEnumValue);
+			Reflect.setField(rules, "tplexpr", rTemplateExpr);
 		} else rules = {
 			"start": rBase,
 			"enum": rEnum,
 			"enumvalue": rEnumValue,
+			"tplexpr": rTemplateExpr,
 			"string.sq": [ // GMS1 single-quoted strings
 				rxRule("string", ~/.*?[']/, "start"),
 				rxRule("string", ~/.+/),
@@ -120,8 +162,9 @@ import haxe.extern.EitherType;
 				rxRule("string", ~/.+/),
 			],
 			"string.tpl": [ // GMLive strings with templates
-				rxRule("string", ~/.*?[`]/, "start"),
-				rdef("string"),
+				rxRule("string", ~/.*?\$\{/, "start"),
+				rxRule("string", ~/.*?[`]/, "pop"),
+				rxRule("string", ~/.+/),
 			],
 			"string.esc": [ // GMS2 strings with escape characters
 				rule("string.escape", "\\\\(?:"
@@ -135,14 +178,15 @@ import haxe.extern.EitherType;
 				rdef("string"),
 			],
 			"comment" : [
-				rxRule("comment", ~/.*?\*\//, "start"),
+				rxRule("comment", ~/.*?\*\//, "pop"),
 				rxRule("comment", ~/.+/)
 			],
 			"comment.doc" : [
-				rxRule("comment.doc", ~/.*?\*\//, "start"),
+				rxRule("comment.doc", ~/.*?\*\//, "pop"),
 				rxRule("comment.doc", ~/.+/)
 			],
 		};
+		untyped this.normalizeRules();
 	}
 	//
 	public static function define(require:AceRequire, exports:AceExports, module:AceModule) {
@@ -160,7 +204,10 @@ import haxe.extern.EitherType;
 	}
 }
 typedef AceLangRule = {
-	token: EitherType<String, String->String>,
+	?token: EitherType<String, String->String>,
 	regex: EitherType<String, RegExp>,
+	?onMatch:String->String->Array<String>->String,
 	?next: String,
+	?nextState: String,
+	?push:EitherType<String, Array<AceLangRule>>,
 };
