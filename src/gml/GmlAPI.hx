@@ -6,6 +6,7 @@ import js.RegExp;
 import tools.Dictionary;
 import ace.AceWrap;
 import tools.NativeString;
+import ui.Preferences;
 using tools.ERegTools;
 using StringTools;
 
@@ -171,7 +172,8 @@ class GmlAPI {
 		var confPath = Main.relPath(dir + "/config.json");
 		if (FileSystem.existsSync(confPath)) {
 			var conf:GmlConfig = FileSystem.readJsonFileSync(confPath);
-			ukSpelling = conf.ukSpelling;
+			ukSpelling = Preferences.current.ukSpelling;
+			if (ukSpelling == null) ukSpelling = conf.ukSpelling;
 			//
 			var confKeywords = conf.keywords;
 			if (confKeywords != null) for (kw in confKeywords) {

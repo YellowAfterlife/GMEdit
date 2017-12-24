@@ -101,6 +101,9 @@ class GmlFile {
 			// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
 			GmlFile.next = file;
 			ui.ChromeTabs.addTab(name);
+			Main.window.setTimeout(function() {
+				Main.aceEditor.focus();
+			});
 		} else {
 			electron.Shell.openItem(path);
 		}

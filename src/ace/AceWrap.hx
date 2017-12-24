@@ -88,6 +88,7 @@ extern class AceEditor {
 	public var keyBinding:{ getStatusText: AceEditor->String };
 	public var commands:AceCommandManager;
 	public var completer:{ exactMatch:Bool };
+	public function focus():Void;
 	//
 	public function on(ev:String, fn:Dynamic):Void;
 	public function setOption(name:String, val:Dynamic):Void;
