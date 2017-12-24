@@ -1,4 +1,5 @@
 package gml;
+import ace.AceSessionData;
 import electron.FileSystem;
 import js.html.Element;
 import ace.AceWrap;
@@ -49,6 +50,9 @@ class GmlFile {
 		session = new AceSession(code, { path: "ace/mode/gml", version: GmlAPI.version });
 		session.setUndoManager(new AceUndoManager());
 	}
+	public function close():Void {
+		AceSessionData.store(this);
+	}
 	//
 	public static function open(name:String, path:String) {
 		// see if there's an existing tab for this:
@@ -92,8 +96,10 @@ class GmlFile {
 		}
 		//
 		if (kind != Extern) {
+			var file = new GmlFile(name, path, kind, data);
+			AceSessionData.restore(file);
 			// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
-			GmlFile.next = new GmlFile(name, path, kind, data);
+			GmlFile.next = file;
 			ui.ChromeTabs.addTab(name);
 		} else {
 			electron.Shell.openItem(path);

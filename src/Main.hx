@@ -68,6 +68,7 @@ class Main {
 		ace.AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//
+		AceSessionData.init();
 		TreeView.init();
 		FileDrag.init();
 		ChromeTabs.init();

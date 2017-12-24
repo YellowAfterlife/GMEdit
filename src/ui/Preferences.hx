@@ -117,6 +117,8 @@ class Preferences {
 			save();
 		}
 		//
+		if (pref.fileSessionTime == null) pref.fileSessionTime = 7;
+		if (pref.projectSessionTime == null) pref.projectSessionTime = 14;
 		if (pref.theme != null) Theme.current = pref.theme;
 		GmlAPI.ukSpelling = pref.ukSpelling;
 		//
@@ -131,4 +133,6 @@ class Preferences {
 typedef PrefData = {
 	?theme:String,
 	?ukSpelling:Bool,
+	?fileSessionTime:Float,
+	?projectSessionTime:Float,
 }

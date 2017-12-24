@@ -28,4 +28,7 @@ class NativeString {
 	public static inline function trimBoth(s:String):String {
 		return untyped s.trim();
 	}
+	public static inline function startsWith(s:String, q:String):Bool {
+		return untyped s.startsWith(q);
+	}
 }

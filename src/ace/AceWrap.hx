@@ -126,6 +126,8 @@ extern class AceSelection {
 	public function isEmpty():Bool;
 	public var lead:AcePos;
 	public var rangeCount:Int;
+	public function toJSON():Dynamic;
+	public function fromJSON(q:Dynamic):Void;
 }
 @:native("AceEditSession") extern class AceSession {
 	public function new(text:String, mode:Dynamic);
@@ -133,9 +135,17 @@ extern class AceSelection {
 	/** Returns the total number of lines */
 	public function getLength():Int;
 	//
+	public function getScrollLeft():Float;
+	public function setScrollLeft(left:Float):Void;
+	public function getScrollTop():Float;
+	public function setScrollTop(top:Float):Void;
+	//
 	public var foldWidgets:Array<String>;
 	public function getFoldWidget(row:Int):String;
 	public function getFoldAt(row:Int, col:Int):Dynamic;
+	@:native("$toggleFoldWidget")
+	public function toggleFoldWidgetRaw(row:Int, opt:Dynamic):AceRange;
+	public function getAllFolds():Array<AceFold>;
 	//
 	public function getValue():String;
 	public function setValue(v:String):Void;
@@ -156,6 +166,7 @@ extern class AceSelection {
 	}
 	//
 	public var bgTokenizer:Dynamic;
+	public var selection:AceSelection;
 }
 @:native("AceUndoManager") extern class AceUndoManager {
 	public function new():Void;
@@ -163,8 +174,15 @@ extern class AceSelection {
 	public function markClean():Void;
 }
 typedef AcePos = { column: Int, row:Int };
+typedef AceRange = { start: AcePos, end:AcePos };
 typedef AceToken = { type:String, value:String, index:Int, start:Int };
 typedef AceAnnotation = { row:Int, column:Int, type:String, text:String }
+extern class AceFold {
+	public var start:AcePos;
+	public var end:AcePos;
+	public var range:AceRange;
+	public var subFolds:Array<AceFold>;
+}
 //
 /** (name, meta, ?doc) */
 @:forward abstract AceAutoCompleteItem(AceAutoCompleteItemImpl)

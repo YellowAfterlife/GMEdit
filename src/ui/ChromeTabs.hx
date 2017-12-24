@@ -66,6 +66,11 @@ class ChromeTabs {
 			}
 		});
 		element.addEventListener("tabRemove", function(e:CustomEvent) {
+			//
+			var closedTab:ChromeTab = e.detail.tabEl;
+			var closedFile = closedTab.gmlFile;
+			if (closedFile != null) closedFile.close();
+			//
 			if (impl.tabEls.length == 0) {
 				Main.aceEditor.session = WelcomePage.session;
 			} else {
