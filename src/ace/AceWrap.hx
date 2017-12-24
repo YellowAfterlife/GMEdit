@@ -90,7 +90,9 @@ extern class AceEditor {
 	public var completer:{ exactMatch:Bool };
 	//
 	public function on(ev:String, fn:Dynamic):Void;
+	public function setOption(name:String, val:Dynamic):Void;
 	public function setOptions(opt:Dynamic):Void;
+	public function getOptions():Dynamic;
 	// globals:
 	public static var config:Dynamic;
 	public static function edit(el:EitherType<String, Element>):AceEditor;

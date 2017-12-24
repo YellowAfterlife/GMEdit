@@ -116,7 +116,7 @@ class Preferences {
 		"" + current.projectSessionTime, function(s) {
 			current.fileSessionTime = Std.parseFloat(s); save();
 		});
-		addButton("Code Settings", function() {
+		addButton("Code Editor Settings", function() {
 			AceWrap.loadModule("ace/ext/settings_menu", function(module) {
 				module.init(Main.aceEditor);
 				untyped Main.aceEditor.showSettingsMenu();
@@ -155,6 +155,19 @@ class Preferences {
 		Main.document.querySelector("#preferences-button")
 			.addEventListener("click", function(_) open());
 		load();
+	}
+	public static function initEditor() {
+		try {
+			var text = Main.window.localStorage.getItem("aceOptions");
+			if (text != null) Main.aceEditor.setOptions(Json.parse(text));
+		} catch (_:Dynamic) { };
+		//
+		var origSetOption = Main.aceEditor.setOption;
+		untyped Main.aceEditor.setOption = function(key, val) {
+			origSetOption(key, val);
+			var opts = Main.aceEditor.getOptions();
+			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
+		};
 	}
 }
 typedef PrefData = {

@@ -57,6 +57,7 @@ class Main {
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);
 		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
+		Preferences.initEditor();
 		//
 		untyped {
 			window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
