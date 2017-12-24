@@ -1,9 +1,11 @@
 package ui;
+import ace.AceWrap;
 import electron.FileSystem;
 import gml.GmlAPI;
 import haxe.Json;
 import haxe.io.Path;
 import js.html.Element;
+import js.html.MouseEvent;
 import js.html.Window;
 import Main.document;
 
@@ -41,6 +43,7 @@ class Preferences {
 			out.appendChild(fs);
 		}
 		function addCheckbox(legend:String, current:Bool, fn:Bool->Void) {
+			var ctr = document.createDivElement();
 			var cb = document.createInputElement();
 			cb.type = "checkbox";
 			cb.checked = current;
@@ -48,11 +51,24 @@ class Preferences {
 			cb.addEventListener("change", function(_) {
 				fn(cb.checked);
 			});
-			out.appendChild(cb);
+			ctr.appendChild(cb);
 			var lb = document.createLabelElement();
 			lb.htmlFor = legend;
 			lb.appendChild(document.createTextNode(legend));
-			out.appendChild(lb);
+			ctr.appendChild(lb);
+			out.appendChild(ctr);
+		}
+		function addButton(text:String, fn:Void->Void) {
+			var ctr = document.createDivElement();
+			var el = document.createAnchorElement();
+			el.href = "#";
+			el.appendChild(document.createTextNode(text));
+			el.addEventListener("click", function(e:MouseEvent) {
+				e.preventDefault();
+				fn();
+			});
+			ctr.appendChild(el);
+			out.appendChild(ctr);
 		}
 		//
 		var themeList = ["default"];
@@ -72,6 +88,12 @@ class Preferences {
 			GmlAPI.ukSpelling = z;
 			GmlAPI.init();
 			save();
+		});
+		addButton("Code Settings", function() {
+			AceWrap.loadModule("ace/ext/settings_menu", function(module) {
+				module.init(Main.aceEditor);
+				untyped Main.aceEditor.showSettingsMenu();
+			});
 		});
 	}
 	public static function open() {

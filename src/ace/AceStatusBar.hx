@@ -74,6 +74,7 @@ class AceStatusBar {
 			statusHint.classList.remove("active");
 		} else statusHint.title = "";
 	}
+	private static var lineResetRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
 	static function statusUpdate() {
 		//
 		var editor = Main.aceEditor;
@@ -81,7 +82,7 @@ class AceStatusBar {
 		var pos = sel.lead;
 		//
 		var showRow = pos.row;
-		var checkRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
+		var checkRx = lineResetRx;
 		var startRow = showRow + 1;
 		var checkExec = null;
 		var session = editor.getSession();

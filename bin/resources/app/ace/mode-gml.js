@@ -475,3 +475,6 @@ exports.Mode = Mode;
 });
 //
 } // function ace_mode_gml_1
+function ace_mode_gml_2() {
+//
+} // function ace_mode_gml_2

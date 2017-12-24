@@ -11993,7 +11993,7 @@ var Editor = function(renderer, session) {
            dom.computedStyle(this.container, "fontSize");
     };
     this.setFontSize = function(size) {
-        this.setOption("fontSize", size);
+        this.setOption("fontSize", parseFloat(size));
     };
 
     this.$highlightBrackets = function() {

@@ -119,9 +119,14 @@ body {
 	padding: 4px;
 	-webkit-padding-before: 0;
 }
-#main #preferences-window input[type="radio"], {
+#main #preferences-window input[type="radio"],
 #main #preferences-window input[type="checkbox"] {
 	margin: 0;
 	vertical-align: bottom;
 	margin-right: 2px;
+}
+
+#ace_settingsmenu div[contains="setMode"],
+#ace_settingsmenu div[contains="setTheme"] {
+	display: none;
 }

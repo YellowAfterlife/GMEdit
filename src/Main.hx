@@ -65,6 +65,8 @@ class Main {
 		};
 		aceEditor.session = WelcomePage.init(aceEditor);
 		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
+		ace.AceGmlCommands.init();
+		untyped window.ace_mode_gml_2();
 		//
 		TreeView.init();
 		FileDrag.init();
