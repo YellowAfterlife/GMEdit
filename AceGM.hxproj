@@ -46,7 +46,7 @@
   <options>
     <option showHiddenPaths="False" />
     <option testMovie="Custom" />
-    <option testMovieCommand="bin\electron.exe" />
+    <option testMovieCommand="bin\Editor.exe" />
   </options>
   <!-- Plugin storage -->
   <storage />

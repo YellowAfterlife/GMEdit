@@ -41,6 +41,20 @@ class Main {
 	public static var aceEditor:AceWrap;
 	//
 	static function main() {
+		//
+		haxe.Log.trace = @:access(js.Boot.__string_rec) function(
+			v:Dynamic, ?infos:haxe.PosInfos
+		) {
+			var out:Array<Dynamic> = [v];
+			if (infos != null) {
+				out.unshift(infos.fileName + ":" + infos.lineNumber);
+				if (infos.customParams != null) {
+					for (v in infos.customParams) out.push(v);
+				}
+			}
+			var console = window.console;
+			Reflect.callMethod(console, console.log, out);
+		};
 		Electron.init();
 		//
 		modulePath = untyped __dirname;
@@ -66,6 +80,8 @@ class Main {
 		};
 		aceEditor.session = WelcomePage.init(aceEditor);
 		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
+		aceEditor.on("mousewheel", KeyboardShortcuts.mousewheel);
+		window.console.log(haxe.Log.trace);
 		ace.AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//

@@ -5,3 +5,9 @@ Ctrl+R to reload the project.
 
 Since this software is still in early stages,
 MAKE FREQUENT BACKUPS
+
+Editor compiled at %%VERSION%%.
+Current versions can be found at
+https://yellowafterlife.itch.io/gml-code-editor
+
+Have fun!

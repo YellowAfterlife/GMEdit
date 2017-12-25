@@ -7,6 +7,11 @@ import haxe.macro.Expr;
  * @author YellowAfterlife
  */
 class AceMacro {
+	public static macro function timestamp() {
+		var now = Date.now();
+		var out = DateTools.format(now, "%b %e, %Y");
+		return macro $v{out};
+	}
 	public static macro function rxRule(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
 		switch (rx.expr) {
 			case EConst(CRegexp(r, o)): {
