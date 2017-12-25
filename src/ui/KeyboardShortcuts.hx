@@ -1,5 +1,6 @@
 package ui;
 import Main.*;
+import electron.Electron;
 import electron.Shell;
 import gml.GmlAPI;
 import gml.GmlFile;
@@ -158,6 +159,28 @@ class KeyboardShortcuts {
 		delta = delta < 0 ? 1 : -1;
 		var obj = aceEditor;
 		obj.setOption("fontSize", obj.getOption("fontSize") + delta);
+	}
+	public static function initGlobal() {
+		inline function getCurrentWindow():Dynamic {
+			return Electron.remote.getCurrentWindow();
+		}
+		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
+		document.querySelector(".system-button.close").addEventListener("click", function(_) {
+			var wnd = getCurrentWindow();
+			if (wnd != null) wnd.close();
+		});
+		document.querySelector(".system-button.maximize").addEventListener("click", function(_) {
+			var wnd = getCurrentWindow();
+			if (wnd != null) {
+				if (wnd.isMaximized()) {
+					wnd.unmaximize();
+				} else wnd.maximize();
+			}
+		});
+		document.querySelector(".system-button.minimize").addEventListener("click", function(_) {
+			var wnd = getCurrentWindow();
+			if (wnd != null) wnd.minimize();
+		});
 	}
 }
 

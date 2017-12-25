@@ -151,7 +151,7 @@ class Preferences {
 		current = pref;
 	}
 	public static function init() {
-		Main.document.querySelector("#preferences-button")
+		Main.document.querySelector(".system-button.preferences")
 			.addEventListener("click", function(_) open());
 		load();
 	}

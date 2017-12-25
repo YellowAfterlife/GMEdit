@@ -2,9 +2,6 @@
 	border-color: #161719;
 	background: #495057;
 }
-#preferences-button {
-	background-image: url(preferences-button.png);
-}
 .project-name {
 	color: white;
 	text-shadow: none;
@@ -157,6 +154,21 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #main .ace_editor .ace_scrollbar-v {
 	bottom: 12px !important;
+}
+/* */
+.system-button:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+.system-button:active {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+.system-button.close svg polygon,
+.system-button.minimize svg rect,
+.system-button.preferences svg rect {
+	fill: white;
+}
+.system-button.maximize svg rect {
+	stroke: white;
 }
 /* */
 ::-webkit-scrollbar {

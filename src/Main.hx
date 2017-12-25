@@ -70,7 +70,7 @@ class Main {
 		untyped aceEditor.$blockScrolling = Infinity;
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);
-		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
+		KeyboardShortcuts.initGlobal();
 		Preferences.initEditor();
 		//
 		untyped {

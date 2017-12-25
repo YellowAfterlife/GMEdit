@@ -11,10 +11,16 @@
 	<link rel="stylesheet" href="css/tree.css" />
 </head><body>
 <div id="main">
-	<div width="200" id="tree-td">
+	<div id="tree-td" style="width: 200px">
 		<div class="chrome-tabs project-name">
 			<span id="project-name"></span>
-			<span id="preferences-button" title="Preferences"></span>
+			<span class="system-button preferences" title="Preferences">
+				<svg width="12" height="12" viewBox="0 0 12 12">
+					<rect width="10" height="1" x="1" y="3" fill="black"></rect>
+					<rect width="10" height="1" x="1" y="6" fill="black"></rect>
+					<rect width="10" height="1" x="1" y="9" fill="black"></rect>
+				</svg>
+			</span>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
 		<div class="bottom treeview">
@@ -26,7 +32,16 @@
 	</div>
 	<div id="editor-td">
 		<div class="chrome-tabs" id="tabs">
-			<div class="chrome-tabs-content">
+			<div class="chrome-tabs-content"></div>
+			<!-- (these are close enough replicas of Win10 icons)-->
+			<div class="system-button close">
+				<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
+			</div>
+			<div class="system-button maximize">
+				<svg  width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
+			</div>
+			<div class="system-button minimize">
+				<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
 			</div>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>

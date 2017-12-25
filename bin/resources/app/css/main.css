@@ -38,6 +38,44 @@ body {
 	border-radius: 0;
 	height: 36px;
 	padding-top: 4px;
+	-webkit-app-region: drag;
+	-webkit-user-select: none;
+}
+.chrome-tabs .chrome-tab, #preferences-button, .system-button {
+	-webkit-app-region: no-drag;
+}
+#tabs.chrome-tabs {
+	padding-right: 108px;
+}
+.system-button {
+	width: 36px;
+	height: 28px;
+	position: absolute;
+	right: 0; top: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.system-button.maximize {
+	right: 36px;
+}
+.system-button.minimize {
+	right: 72px;
+}
+.system-button:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.system-button:active {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+.system-button.close:hover {
+	background-color: rgba(250, 80, 80, 0.9);
+}
+.system-button.close:active {
+	background-color: rgba(250, 80, 80, 1.0);
+}
+.system-button.close:hover svg polygon {
+	fill: white;
 }
 .chrome-tabs .chrome-tab .chrome-tab-background > svg .chrome-tab-background {
 	/*transition: fill ease-in-out 0.1s;*/
@@ -61,6 +99,7 @@ body {
 	font-size: 14px;
 	text-shadow: 0 1px 2px white;
 }
+.system-button
 /* */
 .top, .bottom {
 	width: 100%;
@@ -86,7 +125,7 @@ body {
 	resize: none;
 }
 /* */
-#preferences-button {
+/*#preferences-button {
 	position: absolute;
 	right: 4px; top: 0; bottom: 0;
 	margin: auto 0;
@@ -97,7 +136,7 @@ body {
 	background-size: 100% auto;
 	background-repeat: no-repeat;
 	opacity: 0.7;
-}
+}*/
 #preferences-button:hover {
 	opacity: 1.0;
 }
@@ -133,6 +172,12 @@ body {
 	box-sizing: border-box;
 }
 /* */
+.ace_closeButton {
+	display: none;
+}
+html #ace_settingsmenu {
+	top: 36px;
+}
 #ace_settingsmenu div[contains="setMode"],
 #ace_settingsmenu div[contains="setTheme"] {
 	display: none;
