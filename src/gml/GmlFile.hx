@@ -54,13 +54,13 @@ class GmlFile {
 		AceSessionData.store(this);
 	}
 	//
-	public static function open(name:String, path:String) {
+	public static function open(name:String, path:String):GmlFile {
 		// see if there's an existing tab for this:
 		for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
 			var gmlFile:GmlFile = untyped tabEl.gmlFile;
 			if (gmlFile != null && gmlFile.path == path) {
 				tabEl.click();
-				return;
+				return gmlFile;
 			}
 		}
 		// determine what to do with the file:
@@ -104,8 +104,10 @@ class GmlFile {
 			Main.window.setTimeout(function() {
 				Main.aceEditor.focus();
 			});
+			return file;
 		} else {
 			electron.Shell.openItem(path);
+			return null;
 		}
 	}
 	//

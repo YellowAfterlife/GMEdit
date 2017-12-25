@@ -48,8 +48,8 @@ body {
 .chrome-tab .chrome-tab-favicon {
 	width: 0;
 }
-.chrome-tab-changed .chrome-tab-close::before {
-	/* url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path stroke='#5a5a5a' stroke-linecap='round' stroke-width='1.125' d='M4 4 L10 10 M10 4 L4 10'></path></svg>") */
+.chrome-tab-changed .chrome-tab-close::before,
+.chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-changed .chrome-tab-close:not(:hover)::before {
 	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="#5198D9"/></svg>');
 }
 .project-name {

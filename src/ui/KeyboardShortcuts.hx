@@ -100,11 +100,29 @@ class KeyboardShortcuts {
 	public static function openDeclaration(tk:AceToken) {
 		if (tk == null) return;
 		var term = tk.value;
-		var el = TreeView.element.querySelector(
-			'.item[${TreeView.attrIdent}="$term"]'
-		);
+		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$term"]');
 		if (el != null) {
 			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
+			return;
+		}
+		//
+		var lookup = GmlAPI.gmlLookup[term];
+		el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$lookup"]');
+		if (el != null) {
+			var file = GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
+			if (file != null) {
+				var def = new js.RegExp("^#define[ \t]" + term, "");
+				var session = file.session;
+				for (row in 0 ... session.getLength()) {
+					var line = session.getLine(row);
+					if (def.test(line)) {
+						window.setTimeout(function() {
+							aceEditor.gotoLine(row + 1, line.length);
+						});
+						break;
+					}
+				}
+			}
 			return;
 		}
 		//

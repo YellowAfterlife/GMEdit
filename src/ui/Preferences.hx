@@ -102,7 +102,6 @@ class Preferences {
 			save();
 		});
 		addCheckbox("UK spelling", current.ukSpelling, function(z) {
-			trace(z);
 			current.ukSpelling = z;
 			GmlAPI.ukSpelling = z;
 			GmlAPI.init();

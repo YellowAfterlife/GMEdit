@@ -1,4 +1,9 @@
 // Generated at 23.12.2017 12:49:37
+true
+false
+null
+undefined
+//
 :alarm_get(:index):
 :alarm_set(:index, value:number)
 //{ instance vars

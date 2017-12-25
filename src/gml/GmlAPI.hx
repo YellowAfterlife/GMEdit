@@ -70,6 +70,7 @@ class GmlAPI {
 	public static var gmlGlobalKind:Dictionary<String> = new Dictionary();
 	public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
+	public static var gmlLookup:Dictionary<String> = new Dictionary();
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
@@ -77,6 +78,7 @@ class GmlAPI {
 		gmlEnums = new Dictionary();
 		gmlGlobalKind = new Dictionary();
 		gmlAssetIDs = new Dictionary();
+		gmlLookup = new Dictionary();
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}

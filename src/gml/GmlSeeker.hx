@@ -45,6 +45,7 @@ class GmlSeeker {
 				}
 			};
 		}
+		var mainTop = main;
 		var out = new GmlSeekData();
 		var q = new GmlReader(src);
 		/**
@@ -135,6 +136,11 @@ class GmlSeeker {
 			} else switch (s) {
 				case "#define": {
 					main = find(Ident);
+					if (!GmlAPI.gmlKind.exists(main)) {
+						GmlAPI.gmlKind.set(main, "asset.script");
+						GmlAPI.gmlComp.push(new AceAutoCompleteItem(main, "script"));
+						if (main != mainTop) GmlAPI.gmlLookup.set(main, mainTop);
+					}
 				};
 				case "#macro": {
 					name = find(Ident);
