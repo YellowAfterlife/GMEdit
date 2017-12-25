@@ -74,7 +74,8 @@ import haxe.extern.EitherType;
 		};
 		//
 		var rBase:Array<AceLangRule> = [
-			rTpl,
+			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
+				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
 			rxRule("comment.doc", ~/\/\/\/.*$/),
 			rxRule("comment", ~/\/\/.*$/),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
@@ -83,6 +84,7 @@ import haxe.extern.EitherType;
 			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 		];
+		if (version == GmlVersion.live) rBase.unshift(rTpl);
 		// regions:
 		if (version == GmlVersion.v2) {
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
