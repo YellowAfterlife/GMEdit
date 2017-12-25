@@ -38,8 +38,14 @@ body {
 	border-radius: 0;
 	height: 36px;
 	padding-top: 4px;
-	-webkit-app-region: drag;
 	-webkit-user-select: none;
+}
+.chrome-tabs::before {
+	content: "";
+	display: block;
+	position: absolute;
+	left: 2px; top: 8px; right: 2px; bottom: 2px;
+	-webkit-app-region: drag;
 }
 .chrome-tabs .chrome-tab, #preferences-button, .system-button {
 	-webkit-app-region: no-drag;
