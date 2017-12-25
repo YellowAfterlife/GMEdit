@@ -97,9 +97,13 @@ body {
 }
 #project-name {
 	font-size: 14px;
-	text-shadow: 0 1px 2px white;
+	width: calc(100% - 28px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
 }
-.system-button
 /* */
 .top, .bottom {
 	width: 100%;

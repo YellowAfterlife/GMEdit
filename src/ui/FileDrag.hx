@@ -1,5 +1,7 @@
 package ui;
 import Main.document;
+import gml.GmlAPI;
+import gml.GmlVersion;
 import js.html.Event;
 import js.html.DragEvent;
 import electron.Dialog;
@@ -55,6 +57,7 @@ class FileDrag {
 					Project.current = new Project(path);
 				};
 				case "gml": {
+					if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 					GmlFile.open(Path.withoutExtension(file.name), path);
 				};
 				default: decline();

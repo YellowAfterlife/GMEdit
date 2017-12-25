@@ -39,9 +39,25 @@ class Main {
 		return haxe.io.Path.join([modulePath, path]);
 	}
 	public static var aceEditor:AceWrap;
+	public static var moduleArgs:Dictionary<String>;
+	//
+	private static function getArgs() {
+		var out = new Dictionary<String>();
+		var search = document.location.search;
+		if (search != "") {
+			for (pair in search.substring(1).split("&")) {
+				var eq = pair.indexOf("=");
+				if (eq >= 0) {
+					var val = StringTools.urlDecode(pair.substring(eq + 1));
+					out.set(pair.substring(0, eq), val);
+				} else out.set(pair, "");
+			}
+		}
+		return out;
+	}
 	//
 	static function main() {
-		//
+		moduleArgs = getArgs();
 		haxe.Log.trace = @:access(js.Boot.__string_rec) function(
 			v:Dynamic, ?infos:haxe.PosInfos
 		) {

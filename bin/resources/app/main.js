@@ -21,14 +21,15 @@ function createWindow () {
 	})
 
 	// and load the index.html of the app.
-	let index_url = 'index.html'
-	let args = process.argv
-	mainWindow.loadURL(url.format({
-		pathname: path.join(__dirname, 'index.html'),
+	let index_url = url.format({
+		pathname: path.join(__dirname, "index.html"),
 		protocol: 'file:',
-		query: args.length > 1 ? "path=" + encodeURIComponent(args[1]) : "",
 		slashes: true
-	}))
+	})
+	let args = process.argv
+	if (args.length > 1) index_url += "?open=" + encodeURIComponent(args[1])
+	console.log(index_url)
+	mainWindow.loadURL(index_url)
 
 	// Open the DevTools.
 	//mainWindow.webContents.openDevTools()

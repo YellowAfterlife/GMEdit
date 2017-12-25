@@ -29,8 +29,12 @@ class Project {
 	public static var nameNode = document.querySelector("#project-name");
 	//
 	public var version:GmlVersion = GmlVersion.v1;
-	public var name:String;
+	/** full path */
 	public var path:String;
+	/** no directory */
+	public var name:String;
+	/** no directory, no extension */
+	public var displayName:String;
 	public var dir:String;
 	//
 	public var yyObjectNames:Dictionary<String>;
@@ -40,12 +44,19 @@ class Project {
 		this.path = path;
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
-		if (Path.extension(path) == "yyp") version = GmlVersion.v2;
-		switch (name.toLowerCase()) {
+		if (Path.extension(path).toLowerCase() == "gmx") {
+			version = GmlVersion.v1;
+			displayName = Path.withoutExtension(Path.withoutExtension(name));
+		} else if (Path.extension(path).toLowerCase() == "yyp") {
+			version = GmlVersion.v2;
+			displayName = Path.withoutExtension(name);
+		} else switch (name.toLowerCase()) {
 			case "main.txt", "main.cfg": {
 				version = GmlVersion.live;
 				name = Path.withoutDirectory(dir);
+				displayName = name;
 			};
+			default: displayName = name;
 		}
 		document.title = name;
 		TreeView.clear();
@@ -78,7 +89,8 @@ class Project {
 		}
 		for (remKey in remList) ls.removeItem(remKey);
 		//
-		var path = window.localStorage.getItem("autoload");
+		var path = moduleArgs["open"];
+		if (path == null || path == "") path = window.localStorage.getItem("autoload");
 		if (path != null) {
 			current = new Project(path);
 		} else current = null;
@@ -98,7 +110,7 @@ class Project {
 			reload_1();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
 			if (state != null) TreeView.element.scrollTop = state.treeviewScrollTop;
-			nameNode.innerText = "";
+			nameNode.innerText = displayName;
 		}, 1);
 	}
 	public function reload_1() {
