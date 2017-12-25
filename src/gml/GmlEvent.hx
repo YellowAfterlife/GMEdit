@@ -202,6 +202,7 @@ class GmlEvent {
 		linkType(8, "draw");
 		linkType(9, "keypress");
 		linkType(10, "keyrelease");
+		linkType(12, "cleanup"); t2sc[12] = "CleanUp";
 		linkType(13, "gesture");
 		// set up auto-completion for events that have ":id" suffix:
 		comp.push(new AceAutoCompleteItem("collision", "event"));

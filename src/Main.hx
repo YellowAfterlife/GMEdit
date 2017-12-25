@@ -81,7 +81,6 @@ class Main {
 		aceEditor.session = WelcomePage.init(aceEditor);
 		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
 		aceEditor.on("mousewheel", KeyboardShortcuts.mousewheel);
-		window.console.log(haxe.Log.trace);
 		ace.AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//

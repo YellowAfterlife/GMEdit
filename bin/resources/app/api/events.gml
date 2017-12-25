@@ -12,6 +12,7 @@
 2:11 alarm11
 0:0 create
 1:0 destroy
+12:0 cleanup
 13:1 gesture_double_tap
 13:4 gesture_drag_end
 13:2 gesture_drag_start
