@@ -7,6 +7,7 @@ import gml.Project;
 import js.html.KeyboardEvent;
 import js.html.Element;
 import js.html.MouseEvent;
+import js.html.WheelEvent;
 import tools.HtmlTools;
 import ace.AceWrap;
 using StringTools;
@@ -34,12 +35,16 @@ class KeyboardShortcuts {
 	private static inline var SHIFT = 2;
 	private static inline var ALT = 4;
 	private static inline var META = 8;
-	public static function keydown(e:KeyboardEvent) {
+	private static inline function getEventFlags(e:HasKeyboardFlags):Int {
 		var flags = 0x0;
 		if (e.ctrlKey) flags |= CTRL;
 		if (e.shiftKey) flags |= SHIFT;
 		if (e.altKey) flags |= ALT;
 		if (e.metaKey) flags |= META;
+		return flags;
+	}
+	public static function keydown(e:KeyboardEvent) {
+		var flags = getEventFlags(e);
 		//
 		switch (e.keyCode) {
 			case KeyboardEvent.DOM_VK_F5: {
@@ -144,4 +149,21 @@ class KeyboardShortcuts {
 		var pos:AcePos = ev.getDocumentPosition();
 		openDeclaration(aceEditor.session.getTokenAtPos(pos));
 	}
+	public static function mousewheel(ev:Dynamic) {
+		var dom:WheelEvent = ev.domEvent;
+		var flags = getEventFlags(dom);
+		if (flags != CTRL) return;
+		var delta = dom.deltaY;
+		if (delta == 0) return;
+		delta = delta < 0 ? 1 : -1;
+		var obj = aceEditor;
+		obj.setOption("fontSize", obj.getOption("fontSize") + delta);
+	}
 }
+
+typedef HasKeyboardFlags = {
+	public var ctrlKey (default, null):Bool;
+	public var shiftKey(default, null):Bool;
+	public var altKey  (default, null):Bool;
+	public var metaKey (default, null):Bool;
+};

@@ -91,9 +91,11 @@ extern class AceEditor {
 	public function focus():Void;
 	//
 	public function on(ev:String, fn:Dynamic):Void;
+	//
+	public function getOption(name:String):Dynamic;
 	public function setOption(name:String, val:Dynamic):Void;
-	public function setOptions(opt:Dynamic):Void;
 	public function getOptions():Dynamic;
+	public function setOptions(opt:Dynamic):Void;
 	// globals:
 	public static var config:Dynamic;
 	public static function edit(el:EitherType<String, Element>):AceEditor;
@@ -167,6 +169,9 @@ extern class AceSelection {
 	public inline function getTokenAtPos(pos:AcePos):AceToken {
 		return getTokenAt(pos.row, pos.column);
 	}
+	//
+	public function getOption(name:String):Dynamic;
+	public function setOption(name:String, val:Dynamic):Void;
 	//
 	public var bgTokenizer:Dynamic;
 	public var selection:AceSelection;
