@@ -68,9 +68,11 @@ class GmlAPI {
 	public static var gmlComp:AceAutoCompleteItems = [];
 	public static var gmlEnums:Dictionary<GmlEnum> = new Dictionary();
 	public static var gmlGlobalKind:Dictionary<String> = new Dictionary();
-	public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
+	//public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
+	/** asset type -> asset name -> id*/
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
-	public static var gmlLookup:Dictionary<String> = new Dictionary();
+	/** Used for F12/middle-click */
+	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
@@ -278,6 +280,12 @@ class GmlAPI {
 		}
 	}
 }
+typedef GmlLookup = {
+	path:String,
+	?sub:String,
+	row:Int,
+	?col:Int
+};
 typedef GmlConfig = {
 	/** Documentation URL, with "$1" to be replaced by search term */
 	?helpURL:String,

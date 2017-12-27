@@ -418,7 +418,10 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 	}
 };
 //
-ace.define("ace/mode/gml",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules","ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"], function(require, exports, module) {
+ace.define("ace/mode/gml",["require","exports","module",
+	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"
+], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -472,6 +475,26 @@ oop.inherits(Mode, TextMode);
 	this.$id = "ace/mode/gml";
 }).call(Mode.prototype);
 
+exports.Mode = Mode;
+});
+//
+ace.define("ace/mode/gml_search",["require","exports","module",
+	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"
+], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var GmlMode = require("./gml").Mode;
+
+var Mode = function() {
+	GmlMode.call(this);
+	this.foldingRules = null;
+};
+(function modifyPrototype() {
+	this.$id = "ace/mode/gml_search";
+}).call(Mode.prototype);
+oop.inherits(Mode, GmlMode);
 exports.Mode = Mode;
 });
 //

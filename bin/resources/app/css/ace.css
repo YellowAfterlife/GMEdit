@@ -80,6 +80,9 @@
 	color: #008000;
 	/*font-style: italic;*/
 }
+#main .gml .ace_comment.ace_link {
+	color: #0000FF;
+}
 /*#main .gml .ace_comment.ace_doc,
 #main .gml .ace_regionname,
 #main .gml .ace_sectionname {
@@ -110,7 +113,7 @@
 	color: rgb(0, 128, 160);
 }
 #main .gml .ace_script {
-	color: #800080;
+	color: #990099;
 }
 #main .gml .ace_keyword,
 #main .gml .ace_curly.ace_paren,

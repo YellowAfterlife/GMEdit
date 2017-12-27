@@ -82,6 +82,13 @@ extern class AceEditor {
 	public function getSession():AceSession;
 	public function setSession(q:AceSession):Void;
 	public function gotoLine(row:Int, col:Int):Void;
+	/** gotoLine with 0-based row */
+	public inline function gotoLine0(row:Int, col:Int):Void {
+		gotoLine(row + 1, col);
+	}
+	public inline function gotoPos(pos:AcePos):Void {
+		gotoLine(pos.row + 1, pos.column);
+	}
 	public function getCursorPosition():AcePos;
 	public function getSelectionRange():{ start:AcePos, end:AcePos };
 	public var selection:AceSelection;
@@ -175,6 +182,8 @@ extern class AceSelection {
 	//
 	public var bgTokenizer:Dynamic;
 	public var selection:AceSelection;
+	// non-standard:
+	public var gmlFile:gml.GmlFile;
 }
 @:native("AceUndoManager") extern class AceUndoManager {
 	public function new():Void;

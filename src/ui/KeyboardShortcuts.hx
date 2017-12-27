@@ -32,6 +32,7 @@ class KeyboardShortcuts {
 		if (next == null) next = tab.parentElement.firstElementChild;
 		if (next != null) next.click();
 	}
+	private static inline var NONE = 0;
 	private static inline var CTRL = 1;
 	private static inline var SHIFT = 2;
 	private static inline var ALT = 4;
@@ -46,8 +47,8 @@ class KeyboardShortcuts {
 	}
 	public static function keydown(e:KeyboardEvent) {
 		var flags = getEventFlags(e);
-		//
-		switch (e.keyCode) {
+		var keyCode = e.keyCode;
+		switch (keyCode) {
 			case KeyboardEvent.DOM_VK_F5: {
 				// debug
 				//document.location.reload(true);
@@ -98,14 +99,57 @@ class KeyboardShortcuts {
 			case KeyboardEvent.DOM_VK_F12: {
 				if (flags == 0) {
 					var tk = aceEditor.session.getTokenAtPos(aceEditor.getCursorPosition());
-					openDeclaration(tk);
+					openDeclaration(tk.value);
+				}
+			};
+			case KeyboardEvent.DOM_VK_F: {
+				/*if (flags == CTRL + SHIFT) {
+					var name = "Search results";
+					GmlFile.next = new GmlFile(name, null, SearchResults, "hello");
+					ChromeTabs.addTab(name);
+					window.setTimeout(function() {
+						aceEditor.focus();
+					});
+				}*/
+			};
+			default: {
+				if (flags == CTRL
+				&& keyCode >= KeyboardEvent.DOM_VK_0
+				&& keyCode <= KeyboardEvent.DOM_VK_9) {
+					var tabId = keyCode - KeyboardEvent.DOM_VK_1;
+					if (tabId < 0) tabId = 9;
+					var tabs = document.querySelectorAll(".chrome-tab");
+					var tabEl:Element = cast tabs[tabId];
+					if (tabEl != null) tabEl.click();
 				}
 			};
 		}
 	}
-	public static function openDeclaration(tk:AceToken) {
-		if (tk == null) return;
-		var term = tk.value;
+	public static function openScript(name:String):Bool {
+		return false;
+	}
+	public static function openDeclaration(term:String) {
+		var lookup = GmlAPI.gmlLookup[term];
+		if (lookup != null) {
+			var path = lookup.path;
+			var el = TreeView.element.querySelector('.item['
+				+ TreeView.attrPath + '="' + path + '"]');
+			if (el != null) {
+				var pos = { row: lookup.row, column: lookup.col };
+				var sub = lookup.sub;
+				var nav:GmlFileNav = sub != null ? Script(sub, pos) : Offset(pos);
+				GmlFile.open(el.title, path, nav);
+				return;
+			}
+		}
+		//
+		/*var sub = null;
+		var del = term.indexOf(":");
+		if (del >= 0) {
+			sub = term.substring(del + 1);
+			term = term.substring(0, del);
+		}
+		//
 		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$term"]');
 		if (el != null) {
 			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
@@ -115,22 +159,9 @@ class KeyboardShortcuts {
 		var lookup = GmlAPI.gmlLookup[term];
 		el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$lookup"]');
 		if (el != null) {
-			var file = GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
-			if (file != null) {
-				var def = new js.RegExp("^#define[ \t]" + term, "");
-				var session = file.session;
-				for (row in 0 ... session.getLength()) {
-					var line = session.getLine(row);
-					if (def.test(line)) {
-						window.setTimeout(function() {
-							aceEditor.gotoLine(row + 1, line.length);
-						});
-						break;
-					}
-				}
-			}
+			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath), Script(term, null));
 			return;
-		}
+		}*/
 		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
@@ -148,7 +179,7 @@ class KeyboardShortcuts {
 		if (dom.button != 1) return;
 		dom.preventDefault();
 		var pos:AcePos = ev.getDocumentPosition();
-		openDeclaration(aceEditor.session.getTokenAtPos(pos));
+		openDeclaration(aceEditor.session.getTokenAtPos(pos).value);
 	}
 	public static function mousewheel(ev:Dynamic) {
 		var dom:WheelEvent = ev.domEvent;
@@ -181,6 +212,17 @@ class KeyboardShortcuts {
 			var wnd = getCurrentWindow();
 			if (wnd != null) wnd.minimize();
 		});
+	}
+	public static function initEditor() {
+		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
+		aceEditor.on("mousewheel", KeyboardShortcuts.mousewheel);
+		untyped aceEditor.debugShowToken = function() {
+			aceEditor.on("mousemove", function(ev:Dynamic) {
+				var pos:AcePos = ev.getDocumentPosition();
+				var tk = aceEditor.session.getTokenAtPos(pos);
+				if (tk != null) ace.AceStatusBar.setStatusHint(tk.type);
+			});
+		};
 	}
 }
 

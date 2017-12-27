@@ -46,8 +46,15 @@ class GmlSeeker {
 			};
 		}
 		var mainTop = main;
+		var sub = null;
 		var out = new GmlSeekData();
 		var q = new GmlReader(src);
+		var v = GmlAPI.version;
+		var row = 0;
+		inline function setLookup(s:String, eol:Bool = false):Void {
+			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
+		}
+		setLookup(main);
 		/**
 		 * A lazy parser.
 		 * You tell it what you're looking for, and it reads the input till it finds any of that.
@@ -57,7 +64,11 @@ class GmlSeeker {
 				var start = q.pos;
 				var c = q.read(), s:String;
 				switch (c) {
-					case "\r".code, "\n".code: if (flags.has(Line)) return "\n";
+					case "\r".code: if (flags.has(Line)) return "\n";
+					case "\n".code: {
+						row += 1;
+						if (flags.has(Line)) return "\n";
+					};
 					case ",".code: if (flags.has(Comma)) return ",";
 					case ";".code: if (flags.has(Semico)) return ";";
 					case "{".code: if (flags.has(Cub0)) return "{";
@@ -73,12 +84,25 @@ class GmlSeeker {
 						};
 						case "*".code: {
 							q.skip();
-							q.skipComment();
+							row += q.skipComment();
 						};
 						default:
 					};
-					case '"'.code, "'".code: {
-						q.skipString1(c);
+					case '"'.code: {
+						if (v == GmlVersion.v2) {
+							row += q.skipString2();
+						} else row += q.skipString1('"'.code);
+					};
+					case "'".code: {
+						if (v != GmlVersion.v2) row += q.skipString1("'".code);
+					};
+					case "@".code: {
+						if (v == GmlVersion.v2) {
+							switch (q.peek()) {
+								case "'".code: q.skip(); row += q.skipString1("'".code);
+								case '"'.code: q.skip(); row += q.skipString1('"'.code);
+							}
+						}
 					};
 					case "#".code: {
 						while (q.loop) {
@@ -129,17 +153,19 @@ class GmlSeeker {
 						s = s.substring(12).trimLeft();
 					}
 					//trace(main, s);
-					GmlAPI.gmlDoc.set(main, GmlAPI.parseDoc(s));
+					//setLookup(main, true);
 					//trace(main, s);
 					main = null;
 				}
 			} else switch (s) {
 				case "#define": {
 					main = find(Ident);
+					sub = main;
+					row = 0;
+					setLookup(main, true);
 					if (!GmlAPI.gmlKind.exists(main)) {
 						GmlAPI.gmlKind.set(main, "asset.script");
 						GmlAPI.gmlComp.push(new AceAutoCompleteItem(main, "script"));
-						if (main != mainTop) GmlAPI.gmlLookup.set(main, mainTop);
 					}
 				};
 				case "#macro": {
@@ -151,6 +177,7 @@ class GmlSeeker {
 					var m = new GmlMacro(name, orig, s);
 					out.macroList.push(m);
 					out.macroMap.set(name, m);
+					setLookup(name, true);
 				};
 				case "globalvar": {
 					while (q.loop) {
@@ -159,6 +186,7 @@ class GmlSeeker {
 						var g = new GmlGlobal(s, orig);
 						out.globalList.push(g);
 						out.globalMap.set(s, g);
+						setLookup(s);
 					}
 				};
 				case "enum": {
@@ -168,6 +196,7 @@ class GmlSeeker {
 					var en = new GmlEnum(name, orig);
 					out.enumList.push(en);
 					out.enumMap.set(name, en);
+					setLookup(s);
 					while (q.loop) {
 						s = find(Ident | Cub1);
 						if (s == null || s == "}") break;

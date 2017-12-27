@@ -74,6 +74,11 @@ class AceStatusBar {
 			statusHint.classList.remove("active");
 		} else statusHint.title = "";
 	}
+	public static function setStatusHint(s:String) {
+		statusHint.innerHTML = "";
+		statusHint.appendChild(document.createTextNode(s));
+		statusHint.title = s;
+	}
 	private static var lineResetRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
 	static function statusUpdate() {
 		//

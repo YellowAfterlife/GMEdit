@@ -46,20 +46,53 @@ class GmlFile {
 		this.path = path;
 		this.kind = kind;
 		load(data);
+		var modePath = switch (kind) {
+			case SearchResults: "ace/mode/gml_search";
+			default: "ace/mode/gml";
+		}
 		// todo: this does not seem to cache per-version, but not a performance hit either?
-		session = new AceSession(code, { path: "ace/mode/gml", version: GmlAPI.version });
+		session = new AceSession(code, { path: modePath, version: GmlAPI.version });
 		session.setUndoManager(new AceUndoManager());
+		session.gmlFile = this;
 	}
 	public function close():Void {
 		AceSessionData.store(this);
 	}
 	//
-	public static function open(name:String, path:String):GmlFile {
+	private static function openPost(file:GmlFile, nav:GmlFileNav) {
+		var editor = Main.aceEditor;
+		switch (nav) {
+			case Offset(p): editor.gotoPos(p);
+			case Script(name, pos): {
+				var session = file.session;
+				var def = new js.RegExp("^#define[ \t]" + name, "");
+				for (row in 0 ... session.getLength()) {
+					var line = session.getLine(row);
+					if (def.test(line)) {
+						if (pos != null) {
+							var col = pos.column;
+							var row1 = row + pos.row;
+							if (col == null) {
+								line = session.getLine(row1);
+								col = line != null ? line.length : 0;
+							}
+							editor.gotoLine0(row1, col);
+						} else editor.gotoLine0(row, line.length);
+						break;
+					}
+				}
+			};
+		}
+	}
+	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
 		// see if there's an existing tab for this:
 		for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
 			var gmlFile:GmlFile = untyped tabEl.gmlFile;
 			if (gmlFile != null && gmlFile.path == path) {
 				tabEl.click();
+				if (nav != null) Main.window.setTimeout(function() {
+					openPost(gmlFile, nav);
+				});
 				return gmlFile;
 			}
 		}
@@ -103,6 +136,7 @@ class GmlFile {
 			ui.ChromeTabs.addTab(name);
 			Main.window.setTimeout(function() {
 				Main.aceEditor.focus();
+				if (nav != null) openPost(file, nav);
 			});
 			return file;
 		} else {
@@ -115,7 +149,9 @@ class GmlFile {
 		var src:String = data != null ? null : FileSystem.readTextFileSync(path);
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
-			case Normal, Extern: code = src;
+			case Extern: code = data != null ? data : "";
+			case SearchResults: code = data;
+			case Normal: code = src;
 			case GmxObjectEvents: {
 				gmx = SfGmx.parse(src);
 				out = GmxObject.getCode(gmx);
@@ -179,4 +215,9 @@ class GmlFile {
 	GmxProjectMacros;
 	GmxConfigMacros;
 	YyObjectEvents;
+	SearchResults;
+}
+enum GmlFileNav {
+	Offset(pos:AcePos);
+	Script(name:String, ?pos:AcePos);
 }

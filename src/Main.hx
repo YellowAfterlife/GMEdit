@@ -95,8 +95,7 @@ class Main {
 			window.aceEditor = aceEditor;
 		};
 		aceEditor.session = WelcomePage.init(aceEditor);
-		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
-		aceEditor.on("mousewheel", KeyboardShortcuts.mousewheel);
+		KeyboardShortcuts.initEditor();
 		ace.AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//

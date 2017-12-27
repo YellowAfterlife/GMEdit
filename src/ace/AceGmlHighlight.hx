@@ -52,7 +52,8 @@ import haxe.extern.EitherType;
 		//
 		var rTpl:AceLangRule = {
 			regex: "[{}]",
-			onMatch: untyped __js__('(function(val, state, stack) {
+			onMatch: untyped __js__('(function(val, state, stack)
+			{
 				this.next = val == "{" ? this.nextState : "";
 				if (val == "{" && stack.length) {
 					stack.unshift("start", state);
@@ -69,37 +70,35 @@ import haxe.extern.EitherType;
 					case "}": return "curly.paren.rparen";
 					default: return "paren";
 				}
-			})'),
+			})
+			'),
 			nextState: "start"
 		};
-		//
-		var rBase:Array<AceLangRule> = [
+		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
-			rxRule("comment.doc", ~/\/\/\/.*$/),
-			rxRule("comment", ~/\/\/.*$/),
+			rxRule("comment.doc.line", ~/\/\/\//, "comment.doc.line"),
+			rxRule("comment.line", ~/\/\//, "comment.line"),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
 			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
 			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
-		];
+		]; //}
 		if (version == GmlVersion.live) rBase.unshift(rTpl);
-		// regions:
-		if (version == GmlVersion.v2) {
+		if (version == GmlVersion.v2) { // regions
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
 		} else {
 			rBase.push(rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/));
 		}
-		// strings:
-		if (version == GmlVersion.v2) {
+		if (version == GmlVersion.v2) { // strings
 			rBase.push(rxRule("string", ~/"(?=.)/, "string.esc"));
 		} else {
 			rBase.push(rxRule("string", ~/"/, "string.dq"));
 			rBase.push(rxRule("string", ~/'/, "string.sq"));
 		}
-		if (version == GmlVersion.live) {
+		if (version == GmlVersion.live) { // template strings
 			rBase.push({
 				token: "string",
 				regex: "`",
@@ -111,8 +110,7 @@ import haxe.extern.EitherType;
 			});
 			//rBase.push(rxRule("string", ~/`/, "string.tpl"));
 		}
-		// normal things:
-		rBase = rBase.concat([
+		rBase = rBase.concat([ //{
 			rxRule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
 			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
@@ -127,23 +125,23 @@ import haxe.extern.EitherType;
 			rxRule("paren.lparen", ~/[\[(]/),
 			rxRule("paren.rparen", ~/[\])]/),
 			rxRule("text", ~/\s+/),
-		]);
-		//
-		var rEnum = [
+		]); //}
+		var rEnum = [ //{
 			rxRule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
 			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
 			// todo: see if there's a better method of detecting the last item:
 			rxRule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "start"),
 			rxRule("curly.paren.rparen", ~/\}/, "start"),
-		].concat(rBase);
-		//
-		var rEnumValue = [
+		].concat(rBase); //}
+		var rEnumValue = [ //{
 			rxRule("punctuation.operator", ~/,/, "enum"),
-		].concat(rBase);
-		//
-		var rTemplateExpr = [
+		].concat(rBase); //}
+		var rTemplateExpr = [ //{
 			rxRule("string", ~/\}/, "pop"),
-		].concat(rBase);
+		].concat(rBase); //}
+		var rComment = [ //{
+			rule("comment.link", "@\\[" + "[^\\[]*" + "\\]"),
+		]; //}
 		//
 		if (rules != null) {
 			Reflect.setField(rules, "start", rBase);
@@ -155,38 +153,46 @@ import haxe.extern.EitherType;
 			"enum": rEnum,
 			"enumvalue": rEnumValue,
 			"tplexpr": rTemplateExpr,
-			"string.sq": [ // GMS1 single-quoted strings
+			"string.sq": [ //{ GMS1 single-quoted strings
 				rxRule("string", ~/.*?[']/, "start"),
 				rxRule("string", ~/.+/),
-			],
-			"string.dq": [ // GMS1 double-quoted strings
+			], //}
+			"string.dq": [ //{ GMS1 double-quoted strings
 				rxRule("string", ~/.*?["]/, "start"),
 				rxRule("string", ~/.+/),
-			],
-			"string.tpl": [ // GMLive strings with templates
+			], //}
+			"string.tpl": [ //{ GMLive strings with templates
 				rxRule("string", ~/.*?\$\{/, "start"),
 				rxRule("string", ~/.*?[`]/, "pop"),
 				rxRule("string", ~/.+/),
-			],
-			"string.esc": [ // GMS2 strings with escape characters
+			], //}
+			"string.esc": [ //{ GMS2 strings with escape characters
 				rule("string.escape", "\\\\(?:"
 					+ "x[0-9a-fA-F]{2}|" // \x41
 					+ "u[0-9a-fA-F]{4}|" // \u1234
-					// there's also octal that doesn't work (?)
+					// there's also octal which doesn't work (?)
 				+ ".)"),
 				// (this is to allow escaping linebreaks, which is honestly a strange thing)
 				cast { token : "string", regex : "\\\\$", consumeLineEnd : true },
 				rule("string", '"|$', "start"),
 				rdef("string"),
-			],
-			"comment" : [
-				rxRule("comment", ~/.*?\*\//, "pop"),
+			], //}
+			"comment.line": rComment.concat([ //{
+				rxRule("comment.line", ~/$/, "start"),
+				rdef("comment.line"),
+			]), //}
+			"comment.doc.line": rComment.concat([ //{
+				rxRule("comment.doc.line", ~/$/, "start"),
+				rdef("comment.line"),
+			]), //}
+			"comment": rComment.concat([
+				rxRule("comment", ~/.*?\*\//, "start"),
 				rxRule("comment", ~/.+/)
-			],
-			"comment.doc" : [
-				rxRule("comment.doc", ~/.*?\*\//, "pop"),
+			]),
+			"comment.doc": rComment.concat([
+				rxRule("comment.doc", ~/.*?\*\//, "start"),
 				rxRule("comment.doc", ~/.+/)
-			],
+			]),
 		};
 		untyped this.normalizeRules();
 	}
