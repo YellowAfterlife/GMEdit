@@ -27,7 +27,7 @@ class GmlSeeker {
 	}
 	private static function runSyncImpl(
 		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals
-	) {
+	):Void {
 		var mainTop = main;
 		var sub = null;
 		var q = new GmlReader(src);
@@ -53,6 +53,10 @@ class GmlSeeker {
 					};
 					case ",".code: if (flags.has(Comma)) return ",";
 					case ";".code: if (flags.has(Semico)) return ";";
+					case "(".code: if (flags.has(Par0)) return "(";
+					case ")".code: if (flags.has(Par1)) return ")";
+					case "[".code: if (flags.has(Sqb0)) return "[";
+					case "]".code: if (flags.has(Sqb1)) return "]";
 					case "{".code: if (flags.has(Cub0)) return "{";
 					case "}".code: if (flags.has(Cub1)) return "}";
 					case "=".code: if (flags.has(SetOp) && q.peek() != "=".code) return "=";
@@ -225,52 +229,61 @@ class GmlSeeker {
 			} // switch (s)
 		} // while
 	}
-	public static function runSync(orig:String, src:String, main:String) {
-		inline function finish(out:GmlSeekData):Void {
-			GmlSeekData.apply(GmlSeekData.map[orig], out);
-			GmlSeekData.map.set(orig, out);
+	static inline function finish(orig:String, out:GmlSeekData):Void {
+		GmlSeekData.apply(GmlSeekData.map[orig], out);
+		GmlSeekData.map.set(orig, out);
+	}
+	static function runYyObject(orig:String, src:String) {
+		var obj:YyObject = haxe.Json.parse(src);
+		var dir = Path.directory(orig);
+		var out = new GmlSeekData();
+		var eventsLeft = 0;
+		for (ev in obj.eventList) {
+			var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
+			var full = Path.join([dir, rel]);
+			var name = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
+			eventsLeft += 1;
+			FileSystem.readTextFile(full, function(err, code) {
+				if (err == null) try {
+					var locals = new GmlLocals();
+					out.locals.set(name, locals);
+					var code = FileSystem.readTextFileSync(full);
+					runSyncImpl(orig, code, null, out, locals);
+				} catch (_:Dynamic) {
+					//
+				}
+				if (--eventsLeft <= 0) finish(orig, out);
+			});
 		}
+	}
+	static function runGmxObject(orig:String, src:String) {
+		var obj = SfGmx.parse(src);
+		var out = new GmlSeekData();
+		for (events in obj.findAll("events"))
+		for (event in events.findAll("event")) {
+			var etype = Std.parseInt(event.get("eventtype"));
+			var ename = event.get("ename");
+			var enumb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
+			var name = GmxEvent.toString(etype, enumb, ename);
+			var locals = new GmlLocals();
+			out.locals.set(name, locals);
+			for (action in event.findAll("action")) {
+				var code = GmxAction.getCode(action);
+				if (code != null) {
+					runSyncImpl(orig, code, null, out, locals);
+				}
+			}
+		}
+		finish(orig, out);
+	}
+	public static function runSync(orig:String, src:String, main:String) {
 		switch (Path.extension(orig)) {
 			case "yy": {
-				var obj:YyObject = haxe.Json.parse(src);
-				var dir = Path.directory(orig);
-				var out = new GmlSeekData();
-				for (ev in obj.eventList) {
-					var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
-					var full = Path.join([dir, rel]);
-					var name = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
-					try {
-						var locals = new GmlLocals();
-						out.locals.set(name, locals);
-						var code = FileSystem.readTextFileSync(full);
-						runSyncImpl(orig, code, null, out, locals);
-					} catch (_:Dynamic) {
-						
-					}
-					//run(full, null);
-				}
-				finish(out);
+				
 				return;
 			};
 			case "gmx": {
-				var obj = SfGmx.parse(src);
-				var out = new GmlSeekData();
-				for (events in obj.findAll("events"))
-				for (event in events.findAll("event")) {
-					var etype = Std.parseInt(event.get("eventtype"));
-					var ename = event.get("ename");
-					var enumb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
-					var name = GmxEvent.toString(etype, enumb, ename);
-					var locals = new GmlLocals();
-					out.locals.set(name, locals);
-					for (action in event.findAll("action")) {
-						var code = GmxAction.getCode(action);
-						if (code != null) {
-							runSyncImpl(orig, code, null, out, locals);
-						}
-					}
-				}
-				finish(out);
+				
 				return;
 			};
 		}
@@ -279,7 +292,7 @@ class GmlSeeker {
 		var locals = new GmlLocals();
 		out.locals.set("", locals);
 		runSyncImpl(orig, src, main, out, locals);
-		finish(out);
+		finish(orig, out);
 	} // runSync
 }
 @:build(tools.AutoEnum.build("bit"))
