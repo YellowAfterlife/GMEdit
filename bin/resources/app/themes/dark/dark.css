@@ -108,6 +108,10 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_eventname {
 	color: #77BB5B;
 }
+#main .gml .ace_identifier,
+#main .gml .ace_field {
+	color: #B2B1FF;
+}
 #main .gml .ace_asset,
 #main .gml .ace_macro,
 #main .gml .ace_enum,
@@ -115,7 +119,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_constant {
 	color: #FF8080;
 }
-#main .gml .ace_globalvar,
+#main .gml .ace_globalvar {
+	color: #FF7EFF;
+}
 #main .gml .ace_variable {
 	color: #58E55A;
 }
@@ -142,9 +148,6 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #main .gml .ace_string {
 	color: #FCF320;
-}
-#main .gml .ace_field {
-	color: #B2B1FF;
 }
 .ace_editor.ace_autocomplete, .ace_tooltip {
 	background: #1F1F1F;
