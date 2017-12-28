@@ -6211,7 +6211,7 @@ var Tokenizer = function(rules) {
         
         return new RegExp(src, (flag||"").replace("g", ""));
     };
-    this.getLineTokens = function(line, startState) {
+    this.getLineTokens = function(line, startState, row) {
         if (startState && typeof startState != "string") {
             var stack = startState.slice(0);
             startState = stack[0];
@@ -6262,7 +6262,7 @@ var Tokenizer = function(rules) {
                 rule = state[mapping[i]];
 
                 if (rule.onMatch)
-                    type = rule.onMatch(value, currentState, stack, line);
+                    type = rule.onMatch(value, currentState, stack, line, row);
                 else
                     type = rule.token;
 
