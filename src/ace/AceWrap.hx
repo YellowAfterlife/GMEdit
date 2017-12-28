@@ -180,10 +180,13 @@ extern class AceSelection {
 	public function getOption(name:String):Dynamic;
 	public function setOption(name:String, val:Dynamic):Void;
 	//
-	public var bgTokenizer:Dynamic;
+	public var bgTokenizer:AceBgTokenizer;
 	public var selection:AceSelection;
 	// non-standard:
 	public var gmlFile:gml.GmlFile;
+}
+extern class AceBgTokenizer {
+	public function start(row:Int):Void;
 }
 @:native("AceUndoManager") extern class AceUndoManager {
 	public function new():Void;

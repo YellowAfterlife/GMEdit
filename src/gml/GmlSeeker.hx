@@ -19,11 +19,19 @@ class GmlSeeker {
 	public static function run(path:String, main:String) {
 		itemsLeft++;
 		FileSystem.readTextFile(path, function(err, text) {
-			runSync(path, text, main);
-			if (--itemsLeft <= 0) {
-				GmlAPI.gmlComp.autoSort();
+			if (runSync(path, text, main)) {
+				runNext();
 			}
 		});
+	}
+	private static function runNext():Void {
+		if (--itemsLeft <= 0) {
+			GmlAPI.gmlComp.autoSort();
+			if (Project.current != null) {
+				Project.nameNode.innerText = Project.current.displayName;
+			}
+			Main.aceEditor.session.bgTokenizer.start(0);
+		}
 	}
 	private static function runSyncImpl(
 		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals
@@ -238,23 +246,34 @@ class GmlSeeker {
 		var dir = Path.directory(orig);
 		var out = new GmlSeekData();
 		var eventsLeft = 0;
+		var eventFiles = [];
 		for (ev in obj.eventList) {
 			var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
 			var full = Path.join([dir, rel]);
 			var name = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
 			eventsLeft += 1;
+			eventFiles.push({
+				name: name,
+				full: full,
+			});
+		}
+		if (eventFiles.length == 0) return true;
+		for (file in eventFiles) (function(name, full) {
 			FileSystem.readTextFile(full, function(err, code) {
 				if (err == null) try {
 					var locals = new GmlLocals();
 					out.locals.set(name, locals);
-					var code = FileSystem.readTextFileSync(full);
 					runSyncImpl(orig, code, null, out, locals);
 				} catch (_:Dynamic) {
 					//
 				}
-				if (--eventsLeft <= 0) finish(orig, out);
+				if (--eventsLeft <= 0) {
+					finish(orig, out);
+					runNext();
+				}
 			});
-		}
+		})(file.name, file.full);
+		return false;
 	}
 	static function runGmxObject(orig:String, src:String) {
 		var obj = SfGmx.parse(src);
@@ -275,17 +294,12 @@ class GmlSeeker {
 			}
 		}
 		finish(orig, out);
+		return true;
 	}
 	public static function runSync(orig:String, src:String, main:String) {
 		switch (Path.extension(orig)) {
-			case "yy": {
-				
-				return;
-			};
-			case "gmx": {
-				
-				return;
-			};
+			case "yy": return runYyObject(orig, src);
+			case "gmx": return runGmxObject(orig, src);
 		}
 		var out = new GmlSeekData();
 		out.main = main;
@@ -293,6 +307,7 @@ class GmlSeeker {
 		out.locals.set("", locals);
 		runSyncImpl(orig, src, main, out, locals);
 		finish(orig, out);
+		return true;
 	} // runSync
 }
 @:build(tools.AutoEnum.build("bit"))

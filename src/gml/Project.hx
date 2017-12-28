@@ -102,6 +102,7 @@ class Project {
 			GmlAPI.version = version;
 			var state:ProjectState = null;
 			if (first) {
+				GmlSeekData.map = new Dictionary();
 				try {
 					var stateText = window.localStorage.getItem("project:" + path);
 					state = Json.parse(stateText);
@@ -110,7 +111,9 @@ class Project {
 			reload_1();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
 			if (state != null) TreeView.element.scrollTop = state.treeviewScrollTop;
-			nameNode.innerText = displayName;
+			if (GmlSeeker.itemsLeft == 0) {
+				nameNode.innerText = displayName;
+			} else nameNode.innerText = "Indexing...";
 		}, 1);
 	}
 	public function reload_1() {
