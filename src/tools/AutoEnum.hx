@@ -42,7 +42,12 @@ class AutoEnum {
 				case FVar(t, { expr: EConst(CInt(int)) }): { // `var some = 1;`
 					value = int;
 					nextIndex = Std.parseInt(value);
-					if (isBit) nextIndex <<= 1; else nextIndex += 1;
+					if (isBit) {
+						nextIndex <<= 1;
+						if (nextIndex == 0) {
+							Context.error("Bit overflow (too many fields?)", pos);
+						}
+					} else nextIndex += 1;
 				};
 				case FVar(t, null): { // `var some;`
 					switch (autoKind) {

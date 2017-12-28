@@ -8,6 +8,8 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 @:keep class AceGmlCompletion implements AceAutoCompleter {
+	public static var localCompleter:AceGmlCompletion;
+	public static var noItems:AceAutoCompleteItems = [];
 	//
 	public var items:AceAutoCompleteItems;
 	public var tokenFilter:Dictionary<Bool>;
@@ -50,8 +52,10 @@ import tools.Dictionary;
 		var ef = new Dictionary<Bool>();
 		ef.set("eventname", true);
 		//
+		localCompleter = new AceGmlCompletion([], nf, true);
 		editor.setOptions({
 			enableLiveAutocompletion: [
+				localCompleter,
 				new AceGmlCompletion(GmlAPI.stdComp, nf, true),
 				new AceGmlCompletion(GmlAPI.extComp, nf, true),
 				new AceGmlCompletion(GmlAPI.gmlComp, nf, true),

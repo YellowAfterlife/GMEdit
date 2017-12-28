@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
+import gml.GmlLocals;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -18,10 +19,11 @@ class AceStatusBar {
 	static var statusBar:DivElement;
 	static var statusSpan:SpanElement;
 	static var statusHint:SpanElement;
-	static var contextRow:Int = 0;
-	static var flowKeywords:Dictionary<Bool> = {
+	private static var contextRow:Int = 0;
+	private static var contextName:String = null;
+	private static var flowKeywords:Dictionary<Bool> = {
 		var q = new Dictionary();
-		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|debugger".split("|")) q.set(s, true);
+		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|wait".split("|")) q.set(s, true);
 		return q;
 	};
 	static function updateComp(editor:AceWrap, row:Int, col:Int) {
@@ -79,22 +81,22 @@ class AceStatusBar {
 		statusHint.appendChild(document.createTextNode(s));
 		statusHint.title = s;
 	}
-	private static var lineResetRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
-	static function statusUpdate() {
+	public static function statusUpdate() {
 		//
 		var editor = Main.aceEditor;
 		var sel = editor.selection;
 		var pos = sel.lead;
 		//
 		var showRow = pos.row;
-		var checkRx = lineResetRx;
+		var checkRx = GmlAPI.scopeResetRx;
 		var startRow = showRow + 1;
-		var checkExec = null;
 		var session = editor.getSession();
 		var resetOnDefine:Bool = untyped window.gmlResetOnDefine;
+		var scope:String = "";
 		while (--startRow >= 0) {
-			checkExec = checkRx.exec(session.getLine(startRow));
-			if (checkExec != null) {
+			var checkResult = checkRx.exec(session.getLine(startRow));
+			if (checkResult != null) {
+				scope = checkResult[1];
 				if (resetOnDefine) showRow -= startRow + 1;
 				break;
 			}
@@ -126,15 +128,19 @@ class AceStatusBar {
 		//
 		var ctxCtr = ctr.querySelector(".context");
 		var ctxPre = ctr.querySelector(".context-pre");
-		if (checkExec != null) {
+		if (scope != "") {
+			var locals = GmlLocals.currentMap[scope];
+			if (locals != null) {
+				AceGmlCompletion.localCompleter.items = locals.comp;
+			} else AceGmlCompletion.localCompleter.items = AceGmlCompletion.noItems;
 			ctxCtr.style.display = "";
 			ctxPre.style.display = "";
-			var str = checkExec[1];
 			var ctxTxt = ctr.querySelector(".context-txt");
-			ctxTxt.innerText = str;
-			ctxTxt.title = str;
+			ctxTxt.innerText = scope;
+			ctxTxt.title = scope;
 			contextRow = startRow;
 		} else {
+			AceGmlCompletion.localCompleter.items = AceGmlCompletion.noItems;
 			ctxCtr.style.display = "none";
 			ctxPre.style.display = "none";
 			contextRow = -1;
@@ -159,6 +165,5 @@ class AceStatusBar {
 		editor.on("changeStatus", dcUpdate);
 		editor.on("changeSelection", dcUpdate);
 		editor.on("keyboardActivity", dcUpdate);
-		statusUpdate();
 	}
 }

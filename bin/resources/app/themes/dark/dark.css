@@ -58,9 +58,13 @@
 #main .ace_gutter-active-line {
 	background-color: #345;
 }
-#main .ace_marker-layer .ace_selection {
+#main .ace_marker-layer .ace_selection,
+#main .ace_marker-layer .ace_selected-word {
 	background-color: rgba(207, 239, 255, 0.37);
 	border-radius: 0;
+}
+#main .ace_marker-layer .ace_selected-word {
+	border: none;
 }
 /* */
 #main .ace_gutter-define:not(:first-child) {
@@ -115,6 +119,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_variable {
 	color: #58E55A;
 }
+#main .gml .ace_local {
+	color: #FFF899;
+}
 #main .gml .ace_keyword,
 #main .gml .ace_curly.ace_paren,
 #main .gml .ace_function,
@@ -135,6 +142,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #main .gml .ace_string {
 	color: #FCF320;
+}
+#main .gml .ace_field {
+	color: #B2B1FF;
 }
 .ace_editor.ace_autocomplete, .ace_tooltip {
 	background: #1F1F1F;
@@ -182,9 +192,12 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	border: 2px solid black;
 	min-height: 40px;
 }
+::-webkit-scrollbar-thumb:hover {
+	background-color: #777;
+}
 ::-webkit-scrollbar-corner {
     background: #000;
 }
-::-webkit-scrollbar-track{
+::-webkit-scrollbar-track {
 	background-color:#000;
 }

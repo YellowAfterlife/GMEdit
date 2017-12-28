@@ -6,6 +6,7 @@ import ace.AceWrap;
 import gmx.*;
 import Main.document;
 import haxe.io.Path;
+import tools.Dictionary;
 import yy.YyBase;
 import yy.YyObject;
 using tools.HtmlTools;
@@ -16,7 +17,7 @@ using tools.HtmlTools;
  */
 class GmlFile {
 	public static var next:GmlFile = null;
-	public static var current:GmlFile = null;
+	public static var current(default, set):GmlFile = null;
 	//
 	public var name:String;
 	public var path:String;
@@ -206,6 +207,29 @@ class GmlFile {
 		FileSystem.writeFileSync(path, out);
 		changed = false;
 		session.getUndoManager().markClean();
+		//
+		if (current == this) {
+			var data = GmlSeekData.map[path];
+			if (data != null) {
+				GmlSeeker.runSync(path, out, data.main);
+				var next = GmlSeekData.map[path];
+				if (next != data) {
+					GmlLocals.currentMap = next.locals;
+					Main.aceEditor.session.bgTokenizer.start(0);
+				}
+			}
+		}
+	}
+	//
+	private static function set_current(file:GmlFile) {
+		current = file;
+		var data = file != null ? GmlSeekData.map[file.path] : null;
+		if (data != null) {
+			GmlLocals.currentMap = data.locals;
+		} else {
+			GmlLocals.currentMap = GmlLocals.defaultMap;
+		}
+		return file;
 	}
 }
 @:fakeEnum(Int) enum GmlFileKind {

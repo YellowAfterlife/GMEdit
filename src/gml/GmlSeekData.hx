@@ -10,12 +10,14 @@ class GmlSeekData {
 	public static var map:Dictionary<GmlSeekData> = new Dictionary();
 	private static var blank:GmlSeekData = new GmlSeekData();
 	//
+	public var main:String;
 	public var enumList:Array<GmlEnum> = [];
 	public var enumMap:Dictionary<GmlEnum> = new Dictionary();
 	public var globalList:Array<GmlGlobal> = [];
 	public var globalMap:Dictionary<GmlGlobal> = new Dictionary();
 	public var macroList:Array<GmlMacro> = [];
 	public var macroMap:Dictionary<GmlMacro> = new Dictionary();
+	public var locals:Dictionary<GmlLocals> = new Dictionary();
 	//
 	public function new() {
 		

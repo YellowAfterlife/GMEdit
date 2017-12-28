@@ -73,6 +73,7 @@ class ChromeTabs {
 			if (closedFile != null) closedFile.close();
 			//
 			if (impl.tabEls.length == 0) {
+				GmlFile.current = null;
 				Main.aceEditor.session = WelcomePage.session;
 			} else {
 				var tab:Element = null;

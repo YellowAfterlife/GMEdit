@@ -106,6 +106,9 @@
 #main .gml .ace_enumfield {
 	color: #990000;
 }
+#main .gml .ace_local {
+	color: #F59;
+}
 /*#main .gml .ace_enumerror {
 	color: red;
 }*/

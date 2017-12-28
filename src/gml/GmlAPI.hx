@@ -32,6 +32,8 @@ class GmlAPI {
 	];
 	public static var kwMap:Dictionary<Bool> = new Dictionary();
 	//
+	public static var scopeResetRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
+	//
 	public static var helpLookup:Dictionary<String> = null;
 	public static var helpURL:String = null;
 	public static var ukSpelling:Bool = false;
@@ -73,6 +75,7 @@ class GmlAPI {
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
 	/** Used for F12/middle-click */
 	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
+	public static var gmlLocalKind:Dictionary<String> = new Dictionary();
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
@@ -81,6 +84,7 @@ class GmlAPI {
 		gmlGlobalKind = new Dictionary();
 		gmlAssetIDs = new Dictionary();
 		gmlLookup = new Dictionary();
+		gmlLocalKind = new Dictionary();
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}

@@ -2,6 +2,8 @@ package gml;
 import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
 import gml.GmlAPI;
+import gmx.*;
+import yy.*;
 import haxe.io.Path;
 import tools.Dictionary;
 import yy.YyObject;
@@ -23,31 +25,11 @@ class GmlSeeker {
 			}
 		});
 	}
-	public static function runSync(orig:String, src:String, main:String) {
-		switch (Path.extension(orig)) {
-			case "yy": {
-				var obj:YyObject = haxe.Json.parse(src);
-				var dir = Path.directory(orig);
-				for (ev in obj.eventList) {
-					var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
-					var full = Path.join([dir, rel]);
-					run(full, null);
-				}
-				return;
-			};
-			case "gmx": {
-				var obj = gmx.SfGmx.parse(src);
-				for (events in obj.findAll("events"))
-				for (event in events.findAll("event"))
-				for (action in event.findAll("action")) {
-					var code = gmx.GmxAction.getCode(action);
-					if (code != null) runSync(orig, code, null);
-				}
-			};
-		}
+	private static function runSyncImpl(
+		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals
+	) {
 		var mainTop = main;
 		var sub = null;
-		var out = new GmlSeekData();
 		var q = new GmlReader(src);
 		var v = GmlAPI.version;
 		var row = 0;
@@ -152,10 +134,9 @@ class GmlSeeker {
 					if (s.startsWith("@description")) {
 						s = s.substring(12).trimLeft();
 					}
-					//trace(main, s);
-					//setLookup(main, true);
-					//trace(main, s);
-					main = null;
+					if (!GmlAPI.gmlDoc.exists(main)) {
+						GmlAPI.gmlDoc.set(main, GmlAPI.parseDoc(s));
+					}
 				}
 			} else switch (s) {
 				case "#define": {
@@ -163,6 +144,8 @@ class GmlSeeker {
 					sub = main;
 					row = 0;
 					setLookup(main, true);
+					locals = new GmlLocals();
+					out.locals.set(main, locals);
 					if (!GmlAPI.gmlKind.exists(main)) {
 						GmlAPI.gmlKind.set(main, "asset.script");
 						GmlAPI.gmlComp.push(new AceAutoCompleteItem(main, "script"));
@@ -182,11 +165,37 @@ class GmlSeeker {
 				case "globalvar": {
 					while (q.loop) {
 						s = find(Ident | Semico);
-						if (s == ";" || GmlAPI.kwMap.exists(s)) break;
+						if (s == null || s == ";" || GmlAPI.kwMap.exists(s)) break;
 						var g = new GmlGlobal(s, orig);
 						out.globalList.push(g);
 						out.globalMap.set(s, g);
 						setLookup(s);
+					}
+				};
+				case "var": {
+					while (q.loop) {
+						name = find(Ident);
+						if (name == null) break;
+						locals.add(name);
+						s = find(SetOp | Comma | Semico);
+						if (s == ",") {
+							// OK, next
+						} else if (s == "=") {
+							// name = (balanced expression)[,;]
+							var depth = 0;
+							while (q.loop) {
+								s = find(Par0 | Par1 | Sqb0 | Sqb1 | Cub0 | Cub1
+									| Comma | Semico);
+								if (s == null) break;
+								switch (s) {
+									case "(", "[", "{": depth += 1;
+									case ")", "]", "}": depth -= 1;
+									case ",": if (depth == 0) break;
+									case ";": break;
+								}
+							}
+							if (s == ";" || s == null) break;
+						} else break;
 					}
 				};
 				case "enum": {
@@ -215,8 +224,62 @@ class GmlSeeker {
 				};
 			} // switch (s)
 		} // while
-		GmlSeekData.apply(GmlSeekData.map[orig], out);
-		GmlSeekData.map.set(orig, out);
+	}
+	public static function runSync(orig:String, src:String, main:String) {
+		inline function finish(out:GmlSeekData):Void {
+			GmlSeekData.apply(GmlSeekData.map[orig], out);
+			GmlSeekData.map.set(orig, out);
+		}
+		switch (Path.extension(orig)) {
+			case "yy": {
+				var obj:YyObject = haxe.Json.parse(src);
+				var dir = Path.directory(orig);
+				var out = new GmlSeekData();
+				for (ev in obj.eventList) {
+					var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
+					var full = Path.join([dir, rel]);
+					var name = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
+					try {
+						var locals = new GmlLocals();
+						out.locals.set(name, locals);
+						var code = FileSystem.readTextFileSync(full);
+						runSyncImpl(orig, code, null, out, locals);
+					} catch (_:Dynamic) {
+						
+					}
+					//run(full, null);
+				}
+				finish(out);
+				return;
+			};
+			case "gmx": {
+				var obj = SfGmx.parse(src);
+				var out = new GmlSeekData();
+				for (events in obj.findAll("events"))
+				for (event in events.findAll("event")) {
+					var etype = Std.parseInt(event.get("eventtype"));
+					var ename = event.get("ename");
+					var enumb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
+					var name = GmxEvent.toString(etype, enumb, ename);
+					var locals = new GmlLocals();
+					out.locals.set(name, locals);
+					for (action in event.findAll("action")) {
+						var code = GmxAction.getCode(action);
+						if (code != null) {
+							runSyncImpl(orig, code, null, out, locals);
+						}
+					}
+				}
+				finish(out);
+				return;
+			};
+		}
+		var out = new GmlSeekData();
+		out.main = main;
+		var locals = new GmlLocals();
+		out.locals.set("", locals);
+		runSyncImpl(orig, src, main, out, locals);
+		finish(out);
 	} // runSync
 }
 @:build(tools.AutoEnum.build("bit"))
@@ -231,6 +294,10 @@ class GmlSeeker {
 	var Semico;
 	var SetOp;
 	var Line;
+	var Par0;
+	var Par1;
+	var Sqb0;
+	var Sqb1;
 	//
 	public inline function has(flag:GmlSeekerFlags) {
 		return this & flag != 0;

@@ -104,6 +104,7 @@ class Main {
 		FileDrag.init();
 		ChromeTabs.init();
 		Project.init();
+		AceStatusBar.statusUpdate();
 		//
 		trace("hi!");
 		return null;

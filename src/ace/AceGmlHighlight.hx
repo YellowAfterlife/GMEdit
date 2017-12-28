@@ -6,6 +6,8 @@ import gml.GmlVersion;
 import js.RegExp;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;
+import ace.AceMacro.jsOr;
+import ace.AceMacro.jsThis;
 import haxe.extern.EitherType;
 
 /**
@@ -33,21 +35,77 @@ import haxe.extern.EitherType;
 			return { token: tk, regex: rx, push: push };
 		}
 		//
-		function identFunc(name:String):String {
-			return untyped __js__("{0} || {1} || {2} || {3}",
-				GmlAPI.stdKind[name], GmlAPI.extKind[name], GmlAPI.gmlKind[name], "identifier"
+		inline function getGlobalType(name:String, fallback:String) {
+			return jsOr(GmlAPI.gmlKind[name],
+				jsOr(GmlAPI.extKind[name],
+					jsOr(GmlAPI.stdKind[name], fallback)
+				)
 			);
 		}
-		function identFunc2(s1:String, _, _, _, s2:String):Array<String> {
-			var e = GmlAPI.gmlEnums[s1];
-			if (e != null) {
-				s1 = "enum";
-				s2 = e.items[s2] ? "enumfield" : "enumerror";
-			} else {
-				s1 = identFunc(s1);
-				s2 = identFunc(s2);
+		//
+		inline function token(type:String, value:String):Dynamic {
+			return { type: type, value: value };
+		}
+		inline function getLocalType(row:Int, name:String):String {
+			if (row != null) {
+				var scope = gml.GmlScopes.get(row);
+				if (scope != null) {
+					var locals = gml.GmlLocals.currentMap[scope];
+					if (locals != null) {
+						return locals.kind[name];
+					} else return null;
+				} else return null;
+			} else return null;
+		}
+		var rIdentLocal:AceLangRule = {
+			regex: '[a-zA-Z_][a-zA-Z0-9_]*\\b',
+			onMatch: function(
+				value:String, state:String, stack:Array<String>, line:String, row:Int
+			) {
+				var type:String = getLocalType(row, value);
+				if (type == null) type = getGlobalType(value, "identifier");
+				return [token(type, value)];
+			},
+		};
+		var rIdentPair:AceLangRule = {
+			regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*)',
+			onMatch: function(
+				value:String, state:String, stack:Array<String>, line:String, row:Int
+			) {
+				var values:Array<String> = jsThis.splitRegex.exec(value);
+				var object = values[1];
+				var field = values[5];
+				var objType:String, fdType:String;
+				if (object == "global") {
+					objType = "keyword";
+					fdType = "globalvar";
+				} else {
+					objType = getLocalType(row, object);
+					if (objType == null) {
+						var en = GmlAPI.gmlEnums[object];
+						if (en != null) {
+							objType = "enum";
+							fdType = en.items[field] ? "enumfield" : "enumerror";
+						} else {
+							objType = getGlobalType(object, "identifier");
+							fdType = getGlobalType(field, "field");
+						}
+					} else fdType = getGlobalType(field, "field");
+				}
+				return [
+					token(objType, object),
+					token("text", values[2]),
+					token("punctuation.operator", values[3]),
+					token("text", values[4]),
+					token(fdType, field),
+				];
 			}
-			return [s1, "text", "punctuation.operator", "text", s2];
+		};
+		function mtField(_, field:String) {
+			return ["punctuation.operator", "text", getGlobalType(field, "field")];
+		}
+		function mtIdent(ident:String) {
+			return getGlobalType(ident, "identifier");
 		}
 		//
 		var rTpl:AceLangRule = {
@@ -77,7 +135,9 @@ import haxe.extern.EitherType;
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
+			rxRule("comment.doc.line", ~/\/\/\/$/),
 			rxRule("comment.doc.line", ~/\/\/\//, "comment.doc.line"),
+			rxRule("comment.line", ~/\/\/$/),
 			rxRule("comment.line", ~/\/\//, "comment.line"),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
@@ -115,8 +175,10 @@ import haxe.extern.EitherType;
 			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxRule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
-			rxRule(identFunc2, ~/([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
-			rxRule(identFunc, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
+			rIdentPair,
+			rIdentLocal,
+			rxRule(mtField, ~/(\.)(\s+)([a-zA-Z_][a-zA-Z0-9_]*)/),
+			rxRule(mtIdent, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
 			rxRule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|==|!=|<=|>=|<>|<|>|!|&&|\|\|/),
 			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
@@ -213,8 +275,8 @@ import haxe.extern.EitherType;
 }
 typedef AceLangRule = {
 	?token: EitherType<String, String->String>,
-	regex: EitherType<String, RegExp>,
-	?onMatch:String->String->Array<String>->String,
+	regex:EitherType<String, RegExp>,
+	?onMatch:haxe.Constraints.Function,
 	?next: String,
 	?nextState: String,
 	?push:EitherType<String, Array<AceLangRule>>,
