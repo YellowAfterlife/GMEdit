@@ -120,7 +120,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
 	this.startRegionRe = /^\s*(\/\*|\/\/)#region\b/;
 	this.startBlockRe = /^\s*#region\b/;
-	this.startScriptRe = /^(?:#define|#event|#section|)\b/;
+	this.startScriptRe = /^(?:#define|#event|#section)\b/;
 	this._getFoldWidgetBase = this.getFoldWidget;
 	this.getFoldWidget = function(session, foldStyle, row) {
 		var line = session.getLine(row);
