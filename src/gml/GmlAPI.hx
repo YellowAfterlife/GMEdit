@@ -14,6 +14,7 @@ using StringTools;
  * ...
  * @author YellowAfterlife
  */
+@:expose("GmlAPI")
 class GmlAPI {
 	public static var version(default, set):GmlVersion = GmlVersion.none;
 	private static inline function set_version(v:GmlVersion):GmlVersion {

@@ -52,6 +52,7 @@ class GmlReader extends StringReader {
 			} else skip();
 			c = peek();
 		}
+		if (loop) skip();
 		return n;
 	}
 	
