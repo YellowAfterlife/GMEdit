@@ -7,6 +7,7 @@ import gmx.*;
 import Main.document;
 import haxe.io.Path;
 import tools.Dictionary;
+import tools.StringBuilder;
 import yy.YyBase;
 import yy.YyObject;
 using tools.HtmlTools;
@@ -21,6 +22,10 @@ class GmlFile {
 	//
 	public var name:String;
 	public var path:String;
+	public var notePath(get, never):String;
+	private inline function get_notePath():String {
+		return path + ".gmlnotes";
+	}
 	public var code:String;
 	public var kind:GmlFileKind = Normal;
 	public var session:AceSession;
@@ -162,7 +167,9 @@ class GmlFile {
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = SfGmx.parse(src);
-				code = GmxProject.getMacroCode(gmx, kind == GmxConfigMacros);
+				var notes = FileSystem.existsSync(notePath)
+					? new GmlReader(FileSystem.readTextFileSync(notePath)) : null;
+				code = GmxProject.getMacroCode(gmx, notes, kind == GmxConfigMacros);
 			};
 			case YyObjectEvents: {
 				var obj:yy.YyObject = data;
@@ -187,7 +194,13 @@ class GmlFile {
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = FileSystem.readGmxFileSync(path);
-				GmxProject.setMacroCode(gmx, val, kind == GmxConfigMacros);
+				var notes = new StringBuilder();
+				GmxProject.setMacroCode(gmx, val, notes, kind == GmxConfigMacros);
+				if (notes.length > 0) {
+					FileSystem.writeFileSync(notePath, notes.toString());
+				} else if (FileSystem.existsSync(notePath)) {
+					FileSystem.unlinkSync(notePath);
+				}
 				out = gmx.toGmxString();
 			};
 			case YyObjectEvents: {

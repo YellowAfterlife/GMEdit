@@ -14,6 +14,16 @@ class GmlReader extends StringReader {
 			default: skip();
 		}
 	}
+	/** Skips a single `\n` / `\r\n`, if any */
+	public inline function skipLineEnd() {
+		switch (peek()) {
+			case "\r".code: {
+				skip();
+				if (peek() == "\n".code) skip();
+			};
+			case "\n".code: skip();
+		}
+	}
 	/** Skips past the end of a comment-block */
 	public inline function skipComment() {
 		var n = 0;
