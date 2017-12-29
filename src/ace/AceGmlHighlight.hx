@@ -192,6 +192,7 @@ import haxe.extern.EitherType;
 			rxRule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
 			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
 			// todo: see if there's a better method of detecting the last item:
+			rxRule(["enumfield", "text"], ~/(\w+)(\s*)$/),
 			rxRule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "start"),
 			rxRule("curly.paren.rparen", ~/\}/, "start"),
 		].concat(rBase); //}
