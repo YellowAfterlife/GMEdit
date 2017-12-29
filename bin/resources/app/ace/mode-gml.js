@@ -265,7 +265,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 		}
 		var endRow = row;
 		if (endRow > startRow) {
-			return new Range(startRow, startCol, endRow - 1, line.length);
+			return new Range(startRow, startCol, endRow - 1, session.getLine(endRow - 1).length);
 		}
 	};
 
