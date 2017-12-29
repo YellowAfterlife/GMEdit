@@ -13,6 +13,15 @@ class AceGmlCommands {
 			return { win: win, mac: mac };
 		}
 		commands.addCommand({
+			name: "startAutocomplete",
+			exec: function(editor:AceWrap) {
+				if (editor.completer != null) {
+					editor.completer.showPopup(editor);
+				}
+			},
+			bindKey: "Ctrl-Space|Ctrl-Shift-Space|Alt-Space"
+		});
+		commands.addCommand({
 			name: "showKeyboardShortcuts",
 			bindKey: wm("Ctrl-Alt-h", "Command-Alt-h"),
 			exec: function(editor) {
