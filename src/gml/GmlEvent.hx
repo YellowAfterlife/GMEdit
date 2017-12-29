@@ -11,6 +11,9 @@ import tools.Dictionary;
  */
 class GmlEvent {
 	public static inline var typeCollision:Int = 4;
+	public static inline function isKeyType(t:Int) {
+		return t == 5 || t == 9 || t == 10;
+	}
 	static var t2s:Array<String> = [];
 	static var t2sc:Array<String> = [];
 	static var s2t:Dictionary<Int> = new Dictionary();
@@ -50,6 +53,7 @@ class GmlEvent {
 			if (out != null) return out;
 		}
 		var tName = t2s[type];
+		if (isKeyType(type)) return tName + ":" + GmlKeycode.toName(numb);
 		if (tName != null) return tName + ":" + numb;
 		return "event" + type + ":" + numb;
 	}
@@ -59,11 +63,15 @@ class GmlEvent {
 		var i = name.indexOf(":");
 		if (i < 0) return null;
 		var type = s2t[name.substring(0, i)];
+		var name = name.substring(i + 1);
 		if (type == null) return null;
-		if (type == typeCollision) {
-			return { type: type, numb: null, name: name.substring(i + 1) };
+		if (type == typeCollision) return { type: type, numb: null, name: name };
+		if (isKeyType(type)) {
+			var key = GmlKeycode.fromName(name);
+			if (key == null) return null;
+			return { type: type, numb: key };
 		}
-		var numb = Std.parseInt(name.substring(i + 1));
+		var numb = Std.parseInt(name);
 		if (numb == null) return null;
 		return { type: type, numb: numb };
 	}
@@ -118,9 +126,12 @@ class GmlEvent {
 					};
 					default:
 				};
-				case '"'.code, "'".code: {
-					q.skipString1(c);
+				case '"'.code: {
+					if (version == GmlVersion.v2) {
+						q.skipString2();
+					} else q.skipString1('"'.code);
 				};
+				case "'".code: q.skipString1(c);
 				case "#".code: {
 					if (q.pos > 1) switch (q.get(q.pos - 2)) {
 						case "\r".code, "\n".code: { };

@@ -166,7 +166,6 @@ class Preferences {
 		var origSetOption = Main.aceEditor.setOption;
 		untyped Main.aceEditor.setOption = function(key, val) {
 			origSetOption(key, val);
-			var live = Main.aceEditor.getOption("enableLiveAutocompletion");
 			var opts:Dictionary<Dynamic> = Main.aceEditor.getOptions();
 			opts.remove("enableLiveAutocompletion");
 			opts.remove("theme");

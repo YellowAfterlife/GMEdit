@@ -34,9 +34,6 @@
 8:64 draw_gui
 8:74 draw_gui_begin
 8:75 draw_gui_end
-5:0 keyboard_dynamic
-9:0 keypress_dynamic
-10:0 keyrelease_dynamic
 6:0 mouse_left_button
 6:4 mouse_left_press
 6:7 mouse_left_release
