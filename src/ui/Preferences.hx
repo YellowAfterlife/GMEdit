@@ -8,6 +8,7 @@ import js.html.Element;
 import js.html.MouseEvent;
 import js.html.Window;
 import Main.document;
+import tools.Dictionary;
 
 /**
  * ...
@@ -165,7 +166,10 @@ class Preferences {
 		var origSetOption = Main.aceEditor.setOption;
 		untyped Main.aceEditor.setOption = function(key, val) {
 			origSetOption(key, val);
-			var opts = Main.aceEditor.getOptions();
+			var live = Main.aceEditor.getOption("enableLiveAutocompletion");
+			var opts:Dictionary<Dynamic> = Main.aceEditor.getOptions();
+			opts.remove("enableLiveAutocompletion");
+			opts.remove("theme");
 			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
 		};
 	}

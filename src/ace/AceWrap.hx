@@ -96,7 +96,7 @@ extern class AceEditor {
 	public var selection:AceSelection;
 	public var keyBinding:{ getStatusText: AceEditor->String };
 	public var commands:AceCommandManager;
-	public var completer:{ exactMatch:Bool };
+	public var completer:{ exactMatch:Bool, showPopup:AceWrap->Void };
 	public function focus():Void;
 	//
 	public function on(ev:String, fn:Dynamic):Void;
