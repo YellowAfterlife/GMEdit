@@ -1,5 +1,6 @@
 package gmx;
 using StringTools;
+import tools.Dictionary;
 import tools.StringBuilder;
 
 /**
@@ -22,7 +23,7 @@ class SfGmx {
 	//
 	public var children:Array<SfGmx> = [];
 	private var attrList:Array<String> = [];
-	private var attrMap:Map<String, String> = new Map();
+	private var attrMap:Dictionary<String> = new Dictionary();
 	public function new(name:String, text:String = null) {
 		this.name = name;
 		this.text = text;
@@ -89,14 +90,14 @@ class SfGmx {
 	}
 	//
 	private function toStringRec(r:StringBuilder, t:String) {
-		if (children.length == 0 && text == null) {
-			r.addFormat("<%s/>", name);
-			return;
-		}
 		r.addChar("<".code);
 		r.addString(name);
 		for (attr in attrList) {
 			r.addFormat(' %s="%s"', attr, attrMap[attr].htmlEscape(true));
+		}
+		if (children.length == 0 && text == null) {
+			r.addString("/>");
+			return;
 		}
 		r.addChar(">".code);
 		var n = children.length;
