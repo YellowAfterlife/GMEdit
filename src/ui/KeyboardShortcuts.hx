@@ -154,6 +154,12 @@ class KeyboardShortcuts {
 			}
 		}
 		//
+		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$term"]');
+		if (el != null) {
+			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
+			return;
+		}
+		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
 			var helpLookup = GmlAPI.helpLookup;
