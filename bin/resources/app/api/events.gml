@@ -27,6 +27,7 @@
 13:11 gesture_rotating
 13:0 gesture_tap
 8:0 draw
+8:65 draw_resize
 8:72 draw_begin
 8:73 draw_end
 8:77 draw_post
