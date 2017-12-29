@@ -36,16 +36,14 @@ class FileDrag {
 			}
 			switch (Path.withoutDirectory(path)) {
 				case "main.cfg", "main.txt": {
-					Project.current = new Project(path);
+					Project.open(path);
 					return;
 				};
 			}
 			switch (Path.extension(path)) {
 				case "gmx": {
 					switch (Path.extension(Path.withoutExtension(path))) {
-						case "project": {
-							Project.current = new Project(path);
-						};
+						case "project": Project.open(path);
 						case "object", "config": {
 							GmlFile.open(
 								Path.withoutExtension(Path.withoutExtension(file.name)),
@@ -53,9 +51,7 @@ class FileDrag {
 						};
 					}
 				};
-				case "yyp": {
-					Project.current = new Project(path);
-				};
+				case "yyp": Project.open(path);
 				case "gml": {
 					if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 					GmlFile.open(Path.withoutExtension(file.name), path);

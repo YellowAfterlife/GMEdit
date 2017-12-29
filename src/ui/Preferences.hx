@@ -151,16 +151,17 @@ class Preferences {
 		current = pref;
 	}
 	public static function init() {
-		Main.document.querySelector(".system-button.preferences")
+		document.querySelector(".system-button.preferences")
 			.addEventListener("click", function(_) open());
 		load();
 	}
 	public static function initEditor() {
+		// load Ace options:
 		try {
 			var text = Main.window.localStorage.getItem("aceOptions");
 			if (text != null) Main.aceEditor.setOptions(Json.parse(text));
 		} catch (_:Dynamic) { };
-		//
+		// flush Ace options on changes (usually only via Ctrl+,):
 		var origSetOption = Main.aceEditor.setOption;
 		untyped Main.aceEditor.setOption = function(key, val) {
 			origSetOption(key, val);

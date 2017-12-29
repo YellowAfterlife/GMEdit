@@ -1,5 +1,6 @@
 package ui;
 import gml.GmlFile;
+import gml.Project;
 import js.html.Element;
 import js.html.DivElement;
 import js.html.MouseEvent;
@@ -25,12 +26,6 @@ class TreeView {
 		element.innerHTML = "";
 	}
 	//
-	public static function openEvent(e:MouseEvent) {
-		var el:Element = cast e.target;
-		if (!el.classList.contains("item")) el = el.parentElement;
-		GmlFile.open(el.innerText, el.getAttribute(attrPath));
-		e.preventDefault();
-	}
 	public static function makeDir(name:String, rel:String):TreeViewDir {
 		var r:TreeViewDir = cast document.createDivElement();
 		r.className = "dir";
@@ -52,17 +47,42 @@ class TreeView {
 		r.appendChild(c);
 		return r;
 	}
-	public static function makeItem(name:String, rel:String, path:String) {
+	//
+	public static function openEvent(e:MouseEvent) {
+		e.preventDefault();
+		var el:Element = cast e.target;
+		if (!el.classList.contains("item")) el = el.parentElement;
+		GmlFile.open(el.innerText, el.getAttribute(attrPath));
+	}
+	private static inline function makeItemImpl(name:String, path:String) {
 		var r = document.createDivElement();
 		r.className = "item";
 		var span = document.createSpanElement();
 		span.appendChild(document.createTextNode(name));
 		r.appendChild(span);
 		r.title = name;
-		r.setAttribute(attrRel, rel);
 		r.setAttribute(attrPath, path);
 		r.setAttribute(attrIdent, name);
+		return r;
+	}
+	//
+	public static function makeItem(name:String, rel:String, path:String) {
+		var r = makeItemImpl(name, path);
+		r.setAttribute(attrRel, rel);
 		r.addEventListener("dblclick", openEvent);
+		return r;
+	}
+	//
+	private static function openProject(e:MouseEvent) {
+		e.preventDefault();
+		var el:Element = cast e.target;
+		if (!el.classList.contains("item")) el = el.parentElement;
+		Project.open(el.getAttribute(attrPath));
+	}
+	public static function makeProject(name:String, path:String) {
+		var r = makeItemImpl(name, path);
+		r.title = path;
+		r.addEventListener("dblclick", openProject);
 		return r;
 	}
 	//

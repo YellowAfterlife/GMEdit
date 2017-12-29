@@ -24,7 +24,7 @@ import ui.TreeView;
  */
 class Project {
 	//
-	public static var current:Project = null;
+	public static var current(default, null):Project = null;
 	//
 	public static var nameNode = document.querySelector("#project-name");
 	//
@@ -44,7 +44,11 @@ class Project {
 		this.path = path;
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
-		if (Path.extension(path).toLowerCase() == "gmx") {
+		if (path == "") {
+			name = "Load something?";
+			version = GmlVersion.none;
+			displayName = "Recent projects";
+		} else if (Path.extension(path).toLowerCase() == "gmx") {
 			version = GmlVersion.v1;
 			displayName = Path.withoutExtension(Path.withoutExtension(name));
 		} else if (Path.extension(path).toLowerCase() == "yyp") {
@@ -62,6 +66,11 @@ class Project {
 		TreeView.clear();
 		reload(true);
 	}
+	public static function open(path:String) {
+		if (current != null) current.close();
+		if (path != "") ui.RecentProjects.add(path);
+		current = new Project(path);
+	}
 	public function close() {
 		TreeView.saveOpen();
 		var data:ProjectState = {
@@ -71,6 +80,7 @@ class Project {
 		window.localStorage.setItem("project:" + path, Json.stringify(data));
 		window.localStorage.setItem("@project:" + path, "" + Date.now().getTime());
 	}
+	//
 	public static function init() {
 		//
 		var ls = window.localStorage;
@@ -91,9 +101,7 @@ class Project {
 		//
 		var path = moduleArgs["open"];
 		if (path == null || path == "") path = window.localStorage.getItem("autoload");
-		if (path != null) {
-			current = new Project(path);
-		} else current = null;
+		open(path != null ? path : "");
 	}
 	//
 	public function reload(?first:Bool) {
@@ -121,6 +129,7 @@ class Project {
 			case GmlVersion.v1: gmx.GmxLoader.run(this);
 			case GmlVersion.v2: yy.YyLoader.run(this);
 			case GmlVersion.live: gml.GmlLoader.run(this);
+			case GmlVersion.none: ui.RecentProjects.show();
 			default:
 		}
 	}

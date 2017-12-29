@@ -79,7 +79,9 @@ class KeyboardShortcuts {
 			case KeyboardEvent.DOM_VK_W: {
 				if (flags == 1) {
 					var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
-					if (q != null) q.click();
+					if (q != null) {
+						q.click();
+					} else Project.open("");
 				}
 				if (flags == 3) {
 					for (q in document.querySelectorAll(
