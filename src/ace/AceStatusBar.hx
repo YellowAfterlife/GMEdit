@@ -34,6 +34,8 @@ class AceStatusBar {
 		while (tk != null) {
 			switch (tk.type) {
 				case "keyword": if (flowKeywords[tk.value]) break;
+				case "preproc.macro": break;
+				case "macroname": break;
 				case "set.operator": break;
 				case "curly.paren.lparen": break;
 				case "curly.paren.rparen": break;
