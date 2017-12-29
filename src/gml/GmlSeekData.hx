@@ -25,35 +25,36 @@ class GmlSeekData {
 	public static function apply(prev:GmlSeekData, next:GmlSeekData) {
 		if (prev == null) prev = blank;
 		if (next == null) next = blank;
-		// todo: updating for incremental changes
-		// remove enums:
+		// todo: it might be <a bit> faster to merge changes instead
+		// enums:
 		for (e in prev.enumList) {
-			if (next.enumMap.exists(e.name)) continue;
 			for (comp in e.compList) GmlAPI.gmlComp.remove(comp);
 			GmlAPI.gmlKind.remove(e.name);
 			GmlAPI.gmlEnums.remove(e.name);
 		}
-		// add enums:
 		for (e in next.enumList) {
-			if (prev.enumMap.exists(e.name)) continue;
 			for (comp in e.compList) GmlAPI.gmlComp.push(comp);
 			GmlAPI.gmlEnums.set(e.name, e);
 			GmlAPI.gmlKind.set(e.name, "enum");
 		}
-		// update enums:
-		for (e in prev.enumList) {
-			var q = next.enumMap[e.name];
-			if (q == null) continue;
+		// globals:
+		for (g in prev.globalList) {
+			GmlAPI.gmlKind.remove(g.name);
+			GmlAPI.gmlComp.remove(g.comp);
 		}
-		// add globals:
 		for (g in next.globalList) {
 			GmlAPI.gmlKind.set(g.name, "globalvar");
 			GmlAPI.gmlComp.push(g.comp);
 		}
-		// add macros:
+		// macros:
+		for (m in prev.macroList) {
+			GmlAPI.gmlKind.remove(m.name);
+			GmlAPI.gmlComp.remove(m.comp);
+		}
 		for (m in next.macroList) {
 			GmlAPI.gmlKind.set(m.name, "macro");
 			GmlAPI.gmlComp.push(m.comp);
 		}
+		// (locals don't have to be added/removed)
 	}
 }

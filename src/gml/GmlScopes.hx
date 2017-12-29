@@ -7,6 +7,7 @@ using tools.NativeArray;
  * 
  * @author YellowAfterlife
  */
+@:expose("GmlScopes")
 class GmlScopes {
 	
 	public static var enabled:Bool = true;
