@@ -132,6 +132,26 @@ import haxe.extern.EitherType;
 			'),
 			nextState: "start"
 		};
+		var rPragma_call:AceLangRule = {
+			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
+				'("global"|\'global\')(\\s*)(,)(\\s*)("|\'|@"|@\')',
+			onMatch: function(value:String, state:String, stack:Array<String>, line:String) {
+				var values:Array<String> = jsThis.splitRegex.exec(value);
+				jsThis.next = values[9].indexOf('"') >= 0 ? "pragma.dq" : "pragma.sq";
+				return [
+					token("function", values[1]),
+					token("text", values[2]),
+					token("paren.lparen", values[3]),
+					token("text", values[4]),
+					token("string", values[5]),
+					token("text", values[6]),
+					token("punctuation.operator", values[7]),
+					token("text", values[8]),
+					token("punctuation.operator", values[9]),
+				];
+			},
+			next: "pragma",
+		};
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
@@ -163,7 +183,7 @@ import haxe.extern.EitherType;
 				token: "string",
 				regex: "`",
 				push: [
-					rpush("quasi.paren.lparen", "\\${", "start"),
+					//rpush("quasi.paren.lparen", "\\${", "start"),
 					rule("string.quasi", "`", "pop"),
 					rdef("string.quasi")
 				]
@@ -175,6 +195,7 @@ import haxe.extern.EitherType;
 			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxRule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
+			rPragma_call,
 			rIdentPair,
 			rIdentLocal,
 			rxRule(mtField, ~/(\.)(\s+)([a-zA-Z_][a-zA-Z0-9_]*)/),
@@ -188,6 +209,7 @@ import haxe.extern.EitherType;
 			rxRule("paren.rparen", ~/[\])]/),
 			rxRule("text", ~/\s+/),
 		]); //}
+		//
 		var rEnum = [ //{
 			rxRule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
 			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
@@ -199,6 +221,10 @@ import haxe.extern.EitherType;
 		var rEnumValue = [ //{
 			rxRule("punctuation.operator", ~/,/, "enum"),
 		].concat(rBase); //}
+		//
+		var rPragma_sq = [rule("punctuation.operator", "'", "start")].concat(rBase);
+		var rPragma_dq = [rule("punctuation.operator", '"', "start")].concat(rBase);
+		//
 		var rTemplateExpr = [ //{
 			rxRule("string", ~/\}/, "pop"),
 		].concat(rBase); //}
@@ -211,11 +237,15 @@ import haxe.extern.EitherType;
 			Reflect.setField(rules, "enum", rEnum);
 			Reflect.setField(rules, "enumvalue", rEnumValue);
 			Reflect.setField(rules, "tplexpr", rTemplateExpr);
+			Reflect.setField(rules, "pragma.sq", rPragma_sq);
+			Reflect.setField(rules, "pragma.dq", rPragma_dq);
 		} else rules = {
 			"start": rBase,
 			"enum": rEnum,
 			"enumvalue": rEnumValue,
 			"tplexpr": rTemplateExpr,
+			"pragma.sq": rPragma_sq,
+			"pragma.dq": rPragma_dq,
 			"string.sq": [ //{ GMS1 single-quoted strings
 				rxRule("string", ~/.*?[']/, "start"),
 				rxRule("string", ~/.+/),
