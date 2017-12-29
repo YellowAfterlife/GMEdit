@@ -81,7 +81,9 @@ class KeyboardShortcuts {
 					var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
 					if (q != null) {
 						q.click();
-					} else Project.open("");
+					} else if (document.querySelectorAll(".chrome-tab").length == 0) {
+						Project.open("");
+					}
 				}
 				if (flags == 3) {
 					for (q in document.querySelectorAll(
