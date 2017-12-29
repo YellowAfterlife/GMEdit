@@ -5,6 +5,7 @@ import electron.Shell;
 import gml.GmlAPI;
 import gml.GmlFile;
 import gml.Project;
+import js.html.InputElement;
 import js.html.KeyboardEvent;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -98,8 +99,9 @@ class KeyboardShortcuts {
 			};
 			case KeyboardEvent.DOM_VK_F12: {
 				if (flags == 0) {
-					var tk = aceEditor.session.getTokenAtPos(aceEditor.getCursorPosition());
-					openDeclaration(tk.value);
+					var pos = aceEditor.getCursorPosition();
+					var tk = aceEditor.session.getTokenAtPos(pos);
+					openDeclaration(pos, tk);
 				}
 			};
 			case KeyboardEvent.DOM_VK_F: {
@@ -125,10 +127,15 @@ class KeyboardShortcuts {
 			};
 		}
 	}
-	public static function openScript(name:String):Bool {
-		return false;
-	}
-	public static function openDeclaration(term:String) {
+	//
+	public static function openDeclaration(pos:AcePos, token:AceToken) {
+		var term = token.value;
+		//
+		if (term.charCodeAt(0) == "$".code || term.startsWith("0x")) {
+			ColorPicker.open(term);
+			return;
+		}
+		//
 		var lookup = GmlAPI.gmlLookup[term];
 		if (lookup != null) {
 			var path = lookup.path;
@@ -142,26 +149,6 @@ class KeyboardShortcuts {
 				return;
 			}
 		}
-		//
-		/*var sub = null;
-		var del = term.indexOf(":");
-		if (del >= 0) {
-			sub = term.substring(del + 1);
-			term = term.substring(0, del);
-		}
-		//
-		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$term"]');
-		if (el != null) {
-			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
-			return;
-		}
-		//
-		var lookup = GmlAPI.gmlLookup[term];
-		el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$lookup"]');
-		if (el != null) {
-			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath), Script(term, null));
-			return;
-		}*/
 		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
@@ -179,7 +166,7 @@ class KeyboardShortcuts {
 		if (dom.button != 1) return;
 		dom.preventDefault();
 		var pos:AcePos = ev.getDocumentPosition();
-		openDeclaration(aceEditor.session.getTokenAtPos(pos).value);
+		openDeclaration(pos, aceEditor.session.getTokenAtPos(pos));
 	}
 	public static function mousewheel(ev:Dynamic) {
 		var dom:WheelEvent = ev.domEvent;

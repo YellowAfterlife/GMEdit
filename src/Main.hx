@@ -87,6 +87,7 @@ class Main {
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);
 		KeyboardShortcuts.initGlobal();
+		ColorPicker.init();
 		Preferences.initEditor();
 		//
 		untyped {

@@ -91,6 +91,8 @@ extern class AceEditor {
 	}
 	public function getCursorPosition():AcePos;
 	public function getSelectionRange():{ start:AcePos, end:AcePos };
+	public function getSelectedText():String;
+	public function insert(text:String, ?pasted:Bool):Void;
 	public var selection:AceSelection;
 	public var keyBinding:{ getStatusText: AceEditor->String };
 	public var commands:AceCommandManager;
@@ -135,6 +137,7 @@ extern typedef AceModule = Dynamic;
 extern typedef AceImpl = AceRequire->AceExports->AceModule->Void;
 extern class AceSelection {
 	public function clearSelection():Void;
+	public function selectWord():Void;
 	public function isEmpty():Bool;
 	public var lead:AcePos;
 	public var rangeCount:Int;
