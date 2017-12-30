@@ -27,16 +27,19 @@
 }
 
 /* */
-#main #preferences-window {
+.popout-window {
 	background-color: rgba(0, 0, 0, 0.8);
 	border-color: #495057;
 	color: #c0c0c0;
 }
-#main #preferences-window fieldset {
+.popout-window fieldset {
 	border: 1px solid #495057;
 }
-#main #preferences-window a {
+.popout-window a {
 	color: #FFB871;
+}
+.popout-window input[type="text"] {
+	
 }
 
 /* gutter */
@@ -102,6 +105,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_comment {
 	color: #5B995B;
 }
+#main .gml .ace_comment.ace_link {
+	color: white;
+}
 #main .gml .ace_regionname,
 #main .gml .ace_sectionname,
 #main .gml .ace_scriptname,
@@ -156,6 +162,17 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
 	background: #495057;
+}
+.ace_search {
+	background: #505050;
+	color: #d0d0d0;
+	border-color: rgba(0, 0, 0, 0.5);
+}
+.ace_search .ace_button {
+	color: white;
+}
+.ace_search .ace_searchbtn_close {
+	color: white;
 }
 /* */
 #main .ace_editor > .ace_scroller {
