@@ -1,0 +1,69 @@
+.popout-window {
+	position: absolute;
+	background: #fdfdfd;
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+	border: 1px solid #999;
+	z-index: 1000;
+	overflow-y: auto;
+	padding: 4px;
+	box-sizing: border-box;
+}
+#global-search {
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	width: 400px;
+	height: 130px;
+	resize: both;
+	display: flex;
+}
+#global-search .search-main {
+	flex-grow: 1;
+	padding-right: 2px;
+}
+#global-search .search-options {
+	margin: 0;
+	width: 160px;
+}
+#global-search > div {
+	
+}
+#preferences-window {
+	right: 20px;
+	top: 40px;
+	bottom: 40px;
+	width: 200px;
+	overflow-y: auto;
+}
+/* */
+.popout-window div:not(:first-child) {
+	margin-top: 4px;
+}
+.popout-window fieldset {
+	border: 1px solid #999;
+	padding: 4px;
+	-webkit-padding-before: 0;
+}
+.popout-window input[type="radio"],
+.popout-window input[type="checkbox"] {
+	margin: 0;
+	vertical-align: bottom;
+	margin-right: 2px;
+}
+.popout-window input[type="text"] {
+	width: 100%;
+	box-sizing: border-box;
+}
+/* */
+.ace_closeButton {
+	display: none;
+}
+html #ace_settingsmenu {
+	top: 36px;
+}
+#ace_settingsmenu div[contains="setMode"],
+#ace_settingsmenu div[contains="setTheme"] {
+	display: none;
+}

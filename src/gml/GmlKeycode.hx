@@ -12,10 +12,10 @@ class GmlKeycode {
 		tools.NativeArray.clearResize(r, 256);
 		//
 		i = "A".code; while (i <= "Z".code) {
-			r[i++] = 'ord("' + String.fromCharCode(i) + '")';
+			r[i++] = String.fromCharCode(i);
 		}
 		i = "0".code; while (i <= "9".code) {
-			r[i++] = 'ord("' + String.fromCharCode(i) + '")';
+			r[i++] = 'd' + String.fromCharCode(i);
 		}
 		//{ autogen from fnames:
 		r[0] = "vk_nokey";

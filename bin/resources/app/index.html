@@ -7,6 +7,7 @@
 	<script src="chrome-tabs/draggabilly.pkgd.min.js"></script>
 	<script src="chrome-tabs/chrome-tabs.js"></script>
 	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/popouts.css" />
 	<link rel="stylesheet" href="css/ace.css" />
 	<link rel="stylesheet" href="css/tree.css" />
 </head><body>
@@ -64,9 +65,36 @@
 			</div>
 		</div>
 	</div>
-</tr>
-</table>
-<div id="preferences-window" style="display:none"></div>
+</div>
+<form id="global-search" class="popout-window" style="display:none">
+	<div class="search-main">
+		<div>
+			Find what:
+			<input type="text" name="find-text" />
+		</div>
+		<div>
+			Replace with:
+			<input type="text" name="replace-text" value="(not yet)" disabled />
+		</div>
+		<div>
+			<input type="button" name="find" value="Find All" />
+			<input type="button" name="replace" value="Replace All" disabled />
+			<input type="button" name="cancel" value="Cancel" />
+		</div>
+	</div>
+	<div class="search-options">
+		<fieldset>
+			<legend>Options</legend>
+			<input type="checkbox" name="whole-word" /><label for="">Whole word</label><br/>
+			<input type="checkbox" name="match-case" /><label for="">Match case</label><br/>
+			<input type="checkbox" name="check-comments" checked disabled/><label for="">Look in comments</label><br/>
+			<input type="checkbox" name="check-strings" checked disabled /><label for="">Look in strings</label><br/>
+			<input type="checkbox" name="check-objects" checked disabled /><label for="">Look in objects</label><br/>
+			<input type="checkbox" name="check-scripts" checked disabled /><label for="">Look in scripts</label><br/>
+		</fieldset>
+	</div>
+</form>
+<div id="preferences-window" class="popout-window" style="display:none"></div>
 <input type="color" id="color-picker" style="display:none"/>
 <!-- -->
 <script type="text/javascript" src="./misc/splitter.js"></script>

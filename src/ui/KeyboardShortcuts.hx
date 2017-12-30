@@ -5,6 +5,7 @@ import electron.Shell;
 import gml.GmlAPI;
 import gml.GmlFile;
 import gml.Project;
+import js.RegExp;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import js.html.Element;
@@ -109,14 +110,9 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_F: {
-				/*if (flags == CTRL + SHIFT) {
-					var name = "Search results";
-					GmlFile.next = new GmlFile(name, null, SearchResults, "hello");
-					ChromeTabs.addTab(name);
-					window.setTimeout(function() {
-						aceEditor.focus();
-					});
-				}*/
+				if (flags == CTRL + SHIFT) {
+					GlobalSearch.toggle();
+				}
 			};
 			default: {
 				if (flags == CTRL
@@ -132,6 +128,72 @@ class KeyboardShortcuts {
 		}
 	}
 	//
+	private static function openLink(meta:String) {
+		// name(def):ctx
+		var rx:RegExp = new RegExp("^(\\w+)" 
+			+ "(?:\\(([^)]*)\\))?"
+			+ "(?::(.+))?$");
+		var vals = rx.exec(meta);
+		if (vals == null) return;
+		var name = vals[1];
+		var def = vals[2];
+		var ctx = vals[3];
+		var nav:GmlFileNav = { def: def };
+		if (ctx != null) {
+			var rs = "(\\d+)(?:(\\d+))?";
+			rx = new RegExp("^" + rs + "$");
+			vals = rx.exec(ctx);
+			var ctxRow = null, ctxCol = null;
+			if (vals == null) {
+				rx = new RegExp("^([^:]+):" + rs + "$");
+				vals = rx.exec(ctx);
+				if (vals != null) {
+					nav.ctx = vals[1];
+					ctxRow = vals[2];
+					ctxCol = vals[3];
+				} else nav.ctx = ctx;
+			} else {
+				ctxRow = vals[1];
+				ctxCol = vals[2];
+			}
+			if (ctxRow != null) nav.pos = {
+				row: Std.parseInt(ctxRow) - 1,
+				column: ctxCol != null ? Std.parseInt(ctxCol) - 1 : 0
+			};
+		}
+		openLocal(name, nav);
+	}
+	public static function openLocal(name:String, nav:GmlFileNav):Bool {
+		//
+		var lookup = GmlAPI.gmlLookup[name];
+		if (lookup != null) {
+			var path = lookup.path;
+			var el = TreeView.element.querySelector('.item['
+				+ TreeView.attrPath + '="' + path + '"]');
+			if (el != null) {
+				if (nav != null) {
+					if (nav.def == null) nav.def = lookup.sub;
+					if (nav.pos != null) {
+						nav.pos.row += lookup.row;
+						nav.pos.column += lookup.col;
+					} else nav.pos = { row: lookup.row, column: lookup.col };
+				}; else nav = {
+					def: lookup.sub,
+					pos: { row: lookup.row, column: lookup.col }
+				};
+				GmlFile.open(el.title, path, nav);
+				return true;
+			}
+		}
+		//
+		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$name"]');
+		if (el != null) {
+			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath), nav);
+			return true;
+		}
+		//
+		return false;
+	}
 	public static function openDeclaration(pos:AcePos, token:AceToken) {
 		var term = token.value;
 		//
@@ -140,25 +202,14 @@ class KeyboardShortcuts {
 			return;
 		}
 		//
-		var lookup = GmlAPI.gmlLookup[term];
-		if (lookup != null) {
-			var path = lookup.path;
-			var el = TreeView.element.querySelector('.item['
-				+ TreeView.attrPath + '="' + path + '"]');
-			if (el != null) {
-				var pos = { row: lookup.row, column: lookup.col };
-				var sub = lookup.sub;
-				var nav:GmlFileNav = sub != null ? Script(sub, pos) : Offset(pos);
-				GmlFile.open(el.title, path, nav);
-				return;
-			}
-		}
-		//
-		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$term"]');
-		if (el != null) {
-			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath));
+		if (term.substring(0, 2) == "@[") {
+			var rx = new RegExp("^@\\[(.*)\\]");
+			var vals = rx.exec(term);
+			if (vals != null) openLink(vals[1]);
 			return;
 		}
+		//
+		if (openLocal(term, null)) return;
 		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {

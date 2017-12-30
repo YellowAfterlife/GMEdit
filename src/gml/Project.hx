@@ -11,11 +11,13 @@ import js.html.MouseEvent;
 import tools.Dictionary;
 import gml.GmlAPI;
 import ace.AceWrap;
-import gmx.SfGmx;
+import gmx.*;
+import yy.*;
 import Main.*;
 import tools.HtmlTools;
 import tools.NativeString;
 import gml.GmlFile;
+import ui.GlobalSearch;
 import ui.TreeView;
 
 /**
@@ -124,16 +126,26 @@ class Project {
 			} else nameNode.innerText = "Indexing...";
 		}, 1);
 	}
-	public function reload_1() {
+	private function reload_1() {
 		switch (version) {
-			case GmlVersion.v1: gmx.GmxLoader.run(this);
-			case GmlVersion.v2: yy.YyLoader.run(this);
-			case GmlVersion.live: gml.GmlLoader.run(this);
+			case GmlVersion.v1: GmxLoader.run(this);
+			case GmlVersion.v2: YyLoader.run(this);
+			case GmlVersion.live: GmlLoader.run(this);
 			case GmlVersion.none: ui.RecentProjects.show();
 			default:
 		}
 	}
+	//
+	/** fn(name, path, code), */
+	public function search(fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt) {
+		switch (version) {
+			case GmlVersion.v1: GmxSearcher.run(this, fn, done, opt);
+			default:
+		}
+	}
 }
+/** (name, path, code) */
+typedef ProjectSearcher = String->String->String->Void;
 typedef ProjectState = {
 	treeviewScrollTop:Int,
 	treeviewOpenNodes:Array<String>,

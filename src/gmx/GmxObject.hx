@@ -10,7 +10,6 @@ using StringTools;
  */
 class GmxObject {
 	public static var errorText:String;
-	private static var rxHeader = ~/^\/\/\/\/? ?(.*)/;
 	public static function getCode(gmx:SfGmx):String {
 		var out = "";
 		var errors = "";
@@ -36,38 +35,16 @@ class GmxObject {
 				return anumb - bnumb;
 			});
 			for (event in events) {
-				var type = Std.parseInt(event.get("eventtype"));
-				var ename = event.get("ename");
-				var numb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
 				if (out != "") out += "\n";
-				var name = GmxEvent.toString(type, numb, ename);
+				var name = GmxEvent.toStringGmx(event);
 				out += "#event " + name;
-				var actions = event.findAll("action");
-				function addAction(action:SfGmx, head:Bool) {
-					//if (head) out += "\n";
-					var code = GmxAction.getCode(action);
-					if (code == null) {
-						errors += "Unreadable action in " + name + "\n";
-						errors += "Only self-applied code blocks are supported.\n";
-						return;
-					}
-					if (head) {
-						var addSection = true;
-						code = rxHeader.map(code, function(e:EReg) {
-							out += "#section " + e.matched(1);
-							addSection = false;
-							return "";
-						});
-						if (addSection) out += "#section\n";
-					}
+				var code = GmxEvent.getCode(event);
+				if (code != null) {
+					if (event.findAll("action").length > 0) out += "\n";
 					out += code;
-				}
-				if (actions.length != 0) {
-					out += "\n";
-					addAction(actions[0], false);
-					for (i in 1 ... actions.length) {
-						addAction(actions[i], true);
-					}
+				} else {
+					errors += "Unreadable action in " + name + "\n";
+					errors += "Only self-applied code blocks are supported.\n";
 				}
 			}
 		}

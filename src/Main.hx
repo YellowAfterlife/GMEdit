@@ -88,6 +88,7 @@ class Main {
 		AceGmlCompletion.init(aceEditor);
 		KeyboardShortcuts.initGlobal();
 		ColorPicker.init();
+		GlobalSearch.init();
 		Preferences.initEditor();
 		//
 		untyped {

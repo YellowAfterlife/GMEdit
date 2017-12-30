@@ -278,14 +278,14 @@ import haxe.extern.EitherType;
 				rxRule("comment.doc.line", ~/$/, "start"),
 				rdef("comment.line"),
 			]), //}
-			"comment": rComment.concat([
+			"comment": rComment.concat([ //{
 				rxRule("comment", ~/.*?\*\//, "start"),
 				rxRule("comment", ~/.+/)
-			]),
-			"comment.doc": rComment.concat([
+			]), //}
+			"comment.doc": rComment.concat([ //{
 				rxRule("comment.doc", ~/.*?\*\//, "start"),
 				rxRule("comment.doc", ~/.+/)
-			]),
+			]), //}
 		};
 		untyped this.normalizeRules();
 	}

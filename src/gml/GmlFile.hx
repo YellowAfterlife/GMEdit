@@ -1,12 +1,14 @@
 package gml;
 import ace.AceSessionData;
 import electron.FileSystem;
+import js.RegExp;
 import js.html.Element;
 import ace.AceWrap;
 import gmx.*;
 import Main.document;
 import haxe.io.Path;
 import tools.Dictionary;
+import tools.NativeString;
 import tools.StringBuilder;
 import yy.YyBase;
 import yy.YyObject;
@@ -67,11 +69,57 @@ class GmlFile {
 	//
 	private static function openPost(file:GmlFile, nav:GmlFileNav) {
 		var editor = Main.aceEditor;
-		switch (nav) {
+		var session = file.session;
+		var len = session.getLength();
+		//
+		var found = false;
+		var row = 0, col = 0;
+		var i:Int, s:String;
+		if (nav.def != null) {
+			var rxDef = new RegExp("^(#define|#event)[ \t]" + NativeString.escapeRx(nav.def));
+			i = 0;
+			while (i < len) {
+				s = session.getLine(i);
+				if (rxDef.test(s)) {
+					row = i + 1;
+					col = s.length;
+					found = true;
+					break;
+				} else i += 1;
+			}
+		}
+		var ctx = nav.ctx;
+		if (ctx != null) {
+			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
+			var rxEof = new RegExp("^(#define|#event)");
+			i = row;
+			while (i < len) {
+				s = session.getLine(i);
+				if (rxEof.test(s)) break;
+				var vals = rxCtx.exec(s);
+				if (vals != null) {
+					row = i;
+					col = vals.index;
+					found = true;
+					break;
+				} else i += 1;
+			}
+		}
+		var pos = nav.pos;
+		if (pos != null) {
+			if (ctx == null) col = 0;
+			row += pos.row;
+			col += pos.column;
+			found = true;
+		}
+		if (found) {
+			editor.gotoLine0(row, col);
+		}
+		/*switch (nav) {
 			case Offset(p): editor.gotoPos(p);
 			case Script(name, pos): {
 				var session = file.session;
-				var def = new js.RegExp("^#define[ \t]" + name, "");
+				var def = new js.RegExp("^(#define|#event)[ \t]" + name, "");
 				for (row in 0 ... session.getLength()) {
 					var line = session.getLine(row);
 					if (def.test(line)) {
@@ -88,7 +136,7 @@ class GmlFile {
 					}
 				}
 			};
-		}
+		}*/
 	}
 	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
 		// see if there's an existing tab for this:
@@ -254,7 +302,11 @@ class GmlFile {
 	YyObjectEvents;
 	SearchResults;
 }
-enum GmlFileNav {
-	Offset(pos:AcePos);
-	Script(name:String, ?pos:AcePos);
+typedef GmlFileNav = {
+	/** definition (script/event) */
+	?def:String,
+	/** row-column */
+	?pos:AcePos,
+	/** code to scroll to */
+	?ctx:String
 }

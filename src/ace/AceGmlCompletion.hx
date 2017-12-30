@@ -45,6 +45,8 @@ import tools.Dictionary;
 		var nf = new Dictionary<Bool>();
 		nf.set("comment", true);
 		nf.set("comment.doc", true);
+		nf.set("comment.line", true);
+		nf.set("comment.line.doc", true);
 		nf.set("string", true);
 		nf.set("eventname", true);
 		var nn = true;

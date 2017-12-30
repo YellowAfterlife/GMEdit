@@ -31,4 +31,8 @@ class NativeString {
 	public static inline function startsWith(s:String, q:String):Bool {
 		return untyped s.startsWith(q);
 	}
+	private static var escapeRx_1:RegExp = new RegExp('([.*+?^${}()|[\\]\\/\\\\])', 'g');
+	public static inline function escapeRx(s:String):String {
+		return replaceExt(s, escapeRx_1, "\\$1");
+	}
 }
