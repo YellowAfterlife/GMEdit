@@ -227,6 +227,7 @@ class GmlFile {
 	}
 	//
 	public function save() {
+		if (path == null) return;
 		var val = session.getValue();
 		//
 		var out:String, src:String, gmx:SfGmx;

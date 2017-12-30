@@ -11,7 +11,7 @@ import js.html.KeyboardEvent;
 import js.html.Element;
 import js.html.MouseEvent;
 import js.html.WheelEvent;
-import tools.HtmlTools;
+import ui.ChromeTabs;
 import ace.AceWrap;
 using StringTools;
 
@@ -96,9 +96,14 @@ class KeyboardShortcuts {
 			};
 			case KeyboardEvent.DOM_VK_S: {
 				if (flags == CTRL) {
-					var q = gml.GmlFile.current;
+					var q = GmlFile.current;
 					if (q != null) {
 						q.save();
+					}
+				} else if (flags == CTRL + SHIFT) {
+					for (tabEl in ChromeTabs.impl.tabEls) {
+						var file = tabEl.gmlFile;
+						if (file != null) file.save();
 					}
 				}
 			};

@@ -7,7 +7,6 @@ import js.html.BeforeUnloadEvent;
 import js.html.CustomEvent;
 import js.html.Element;
 import js.html.Event;
-import tools.HtmlTools;
 import Main.window;
 import Main.document;
 
@@ -122,5 +121,8 @@ class ChromeTabs {
 	public function init(el:Element, opt:Dynamic):Void;
 	public function addTab(tab:Dynamic):Dynamic;
 	public function setCurrentTab(tab:Element):Void;
-	public var tabEls(default, never):Array<Element>;
+	public var tabEls(default, never):Array<ChromeTab>;
+}
+extern class ChromeTab extends Element {
+	public var gmlFile:GmlFile;
 }

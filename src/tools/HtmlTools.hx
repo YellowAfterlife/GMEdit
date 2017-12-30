@@ -23,6 +23,3 @@ extern class ElementList implements ArrayAccess<Element> {
 	public var length(default, never):Int;
 	public function item(index:Int):Element;
 }
-extern class ChromeTab extends Element {
-	public var gmlFile:gml.GmlFile;
-}
