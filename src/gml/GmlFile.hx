@@ -21,9 +21,11 @@ using tools.HtmlTools;
 class GmlFile {
 	public static var next:GmlFile = null;
 	public static var current(default, set):GmlFile = null;
+	private static var searchId:Int = 0;
 	//
 	public var name:String;
 	public var path:String;
+	public var context:String;
 	public var notePath(get, never):String;
 	private inline function get_notePath():String {
 		return path + ".gmlnotes";
@@ -54,6 +56,11 @@ class GmlFile {
 		this.path = path;
 		this.kind = kind;
 		load(data);
+		if (path != null) {
+			context = path;
+		} else if (kind == SearchResults) {
+			context = name + "#" + (searchId++);
+		} else context = name;
 		var modePath = switch (kind) {
 			case SearchResults: "ace/mode/gml_search";
 			default: "ace/mode/gml";

@@ -18,6 +18,7 @@ class ChromeTabs {
 	public static var element:Element;
 	public static var impl:ChromeTabsImpl;
 	public static var pathHistory:Array<String> = [];
+	public static var attrContext:String = "data-context";
 	public static inline var pathHistorySize:Int = 32;
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
@@ -32,16 +33,17 @@ class ChromeTabs {
 			var tabEl:ChromeTab = e.detail.tabEl;
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) {
-				gmlFile = gml.GmlFile.next;
+				gmlFile = GmlFile.next;
 				if (gmlFile == null) return;
-				gml.GmlFile.next = null;
+				GmlFile.next = null;
 				gmlFile.tabEl = cast tabEl;
 				tabEl.gmlFile = gmlFile;
 				tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
+				tabEl.setAttribute(attrContext, gmlFile.context);
 			}
 			var prev = GmlFile.current;
 			if (prev != null) {
-				pathHistory.unshift(prev.path);
+				pathHistory.unshift(prev.context);
 				if (pathHistory.length > pathHistorySize) pathHistory.pop();
 			}
 			GmlFile.current = gmlFile;
@@ -78,7 +80,7 @@ class ChromeTabs {
 				var tab:Element = null;
 				while (tab == null && pathHistory.length > 0) {
 					tab = document.querySelector(
-						'.chrome-tab[title="' + pathHistory.shift() + '"]'
+						'.chrome-tab[' + attrContext + '="' + pathHistory.shift() + '"]'
 					);
 				}
 				if (tab == null) tab = e.detail.prevTab;
