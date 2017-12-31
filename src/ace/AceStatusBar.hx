@@ -131,10 +131,6 @@ class AceStatusBar {
 		var ctxCtr = ctr.querySelector(".context");
 		var ctxPre = ctr.querySelector(".context-pre");
 		if (scope != "") {
-			var locals = GmlLocals.currentMap[scope];
-			if (locals != null) {
-				AceGmlCompletion.localCompleter.items = locals.comp;
-			} else AceGmlCompletion.localCompleter.items = AceGmlCompletion.noItems;
 			ctxCtr.style.display = "";
 			ctxPre.style.display = "";
 			var ctxTxt = ctr.querySelector(".context-txt");
@@ -142,11 +138,13 @@ class AceStatusBar {
 			ctxTxt.title = scope;
 			contextRow = startRow;
 		} else {
-			AceGmlCompletion.localCompleter.items = AceGmlCompletion.noItems;
 			ctxCtr.style.display = "none";
 			ctxPre.style.display = "none";
 			contextRow = -1;
 		}
+		var locals = GmlLocals.currentMap[scope];
+		AceGmlCompletion.localCompleter.items = locals != null
+			? locals.comp : AceGmlCompletion.noItems;
 		//
 		updateComp(editor, pos.row, pos.column);
 	}
