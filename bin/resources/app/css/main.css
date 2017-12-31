@@ -47,6 +47,12 @@ body {
 	left: 2px; top: 8px; right: 2px; bottom: 2px;
 	-webkit-app-region: drag;
 }
+.chrome-tabs .chrome-tab-title {
+	max-width: calc(100% - 4em);
+}
+.chrome-tabs .chrome-tab-title-text {
+	float: right;
+}
 .chrome-tabs .chrome-tab, #preferences-button, .system-button {
 	-webkit-app-region: no-drag;
 }

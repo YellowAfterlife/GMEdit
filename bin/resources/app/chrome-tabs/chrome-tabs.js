@@ -10,7 +10,7 @@
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="50%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/></svg></g></svg>
       </div>
       <div class="chrome-tab-favicon"></div>
-      <div class="chrome-tab-title"></div>
+      <div class="chrome-tab-title"><span class="chrome-tab-title-text"></span></div>
       <div class="chrome-tab-close"></div>
     </div>
   `
@@ -58,8 +58,9 @@
       this.el.addEventListener('mouseup', ({which, target}) => {
         if (which != 2) return;
         let tcl = target.classList;
-        if (tcl.contains('chrome-tab') || tcl.contains('chrome-tab-close') || tcl.contains('chrome-tab-title') || tcl.contains('chrome-tab-favicon')) {
+        if (tcl.contains('chrome-tab') || tcl.contains('chrome-tab-close') || tcl.contains('chrome-tab-title') || tcl.contains('chrome-tab-title-text') || tcl.contains('chrome-tab-favicon')) {
           let tab = tcl.contains('chrome-tab') ? target : target.parentElement;
+          if (tcl.contains('chrome-tab-title-text')) tab = tab.parentElement;
           if (tab) tab.querySelector('.chrome-tab-close').click();
         }
       })
@@ -70,7 +71,7 @@
         } else if (target.classList.contains('chrome-tab-close')) {
           let e = new CustomEvent('tabClose', { cancelable: true, detail: { tabEl: target.parentNode } })
           if (this.el.dispatchEvent(e)) this.removeTab(target.parentNode)
-        } else if (target.classList.contains('chrome-tab-title') || target.classList.contains('chrome-tab-favicon')) {
+        } else if (target.classList.contains('chrome-tab-title') || target.classList.contains('chrome-tab-title-text') || target.classList.contains('chrome-tab-favicon')) {
           this.setCurrentTab(target.parentNode)
         }
       })
@@ -188,7 +189,7 @@
     }
 
     updateTab(tabEl, tabProperties) {
-      tabEl.querySelector('.chrome-tab-title').textContent = tabProperties.title
+      tabEl.querySelector('.chrome-tab-title-text').textContent = tabProperties.title
       tabEl.querySelector('.chrome-tab-favicon').style.backgroundImage = `url('${tabProperties.favicon}')`
     }
 

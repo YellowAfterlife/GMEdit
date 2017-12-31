@@ -37,7 +37,7 @@ class ChromeTabs {
 				gml.GmlFile.next = null;
 				gmlFile.tabEl = cast tabEl;
 				tabEl.gmlFile = gmlFile;
-				tabEl.title = gmlFile.path;
+				tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
 			}
 			var prev = GmlFile.current;
 			if (prev != null) {
