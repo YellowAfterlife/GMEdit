@@ -76,6 +76,7 @@ class GlobalSearch {
 			var s = aceEditor.getSelectedText();
 			if (s != "" && s != null) fdFind.value = s;
 			fdFind.focus();
+			fdFind.select();
 		} else {
 			element.style.display = "none";
 		}
