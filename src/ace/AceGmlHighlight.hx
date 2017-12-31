@@ -14,16 +14,11 @@ import haxe.extern.EitherType;
  * Syntax highlighting rules for GML
  * @author YellowAfterlife
  */
+@:expose("AceGmlHighlight")
 @:keep class AceGmlHighlight {
 	@:native("$rules") public var rules:Dynamic;
-	public var updateRules:Void->Void;
-	public static var current:AceGmlHighlight = null;
-	public static function update() {
-		if (current != null) current.updateRules();
-	}
 	public function new() {
 		var version = GmlAPI.version;
-		current = this;
 		//
 		function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
 			return { token: tk, regex: rx, next: next };
@@ -132,6 +127,37 @@ import haxe.extern.EitherType;
 			'),
 			nextState: "start"
 		};
+		//
+		var rQuotes:AceLangRule = {
+			regex: '(\'|")',
+			onMatch: function(value:String, state:String, stack:Array<String>, line:String) {
+				var top = stack[stack.length - 1];
+				if (value == '"') {
+					if (state == "pragma.dq") {
+						jsThis.next = "start";
+						return "punctuation.operator";
+					} else {
+						jsThis.next = (version == GmlVersion.v2 ? "string.esc" : "string.dq");
+						stack.unshift(state);
+						stack.unshift(jsThis.next);
+						return "string";
+					}
+				} else {
+					if (state == "pragma.sq") {
+						jsThis.next = "start";
+						return "punctuation.operator";
+					} else if (version != GmlVersion.v2) {
+						stack.unshift(state);
+						stack.unshift("string.sq");
+						jsThis.next = "string.sq";
+						return "string";
+					} else {
+						jsThis.next = null;
+						return "punctuation.operator";
+					}
+				}
+			}
+		};
 		var rPragma_call:AceLangRule = {
 			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
 				'("global"|\'global\')(\\s*)(,)(\\s*)("|\'|@"|@\')',
@@ -153,6 +179,7 @@ import haxe.extern.EitherType;
 			next: "pragma",
 		};
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
+			rQuotes,
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
 			rxRule("comment.doc.line", ~/\/\/\/$/),
@@ -172,11 +199,9 @@ import haxe.extern.EitherType;
 		} else {
 			rBase.push(rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/));
 		}
-		if (version == GmlVersion.v2) { // strings
-			rBase.push(rxRule("string", ~/"(?=.)/, "string.esc"));
-		} else {
-			rBase.push(rxRule("string", ~/"/, "string.dq"));
-			rBase.push(rxRule("string", ~/'/, "string.sq"));
+		if (version == GmlVersion.v2) {
+			rBase.push(rpush("string", '@"', "string.dq"));
+			rBase.push(rpush("string", "@'", "string.sq"));
 		}
 		if (version == GmlVersion.live) { // template strings
 			rBase.push({
@@ -222,8 +247,8 @@ import haxe.extern.EitherType;
 			rxRule("punctuation.operator", ~/,/, "enum"),
 		].concat(rBase); //}
 		//
-		var rPragma_sq = [rule("punctuation.operator", "'", "start")].concat(rBase);
-		var rPragma_dq = [rule("punctuation.operator", '"', "start")].concat(rBase);
+		var rPragma_sq = [].concat(rBase);
+		var rPragma_dq = [].concat(rBase);
 		//
 		var rTemplateExpr = [ //{
 			rxRule("string", ~/\}/, "pop"),
@@ -246,19 +271,6 @@ import haxe.extern.EitherType;
 			"tplexpr": rTemplateExpr,
 			"pragma.sq": rPragma_sq,
 			"pragma.dq": rPragma_dq,
-			"string.sq": [ //{ GMS1 single-quoted strings
-				rxRule("string", ~/.*?[']/, "start"),
-				rxRule("string", ~/.+/),
-			], //}
-			"string.dq": [ //{ GMS1 double-quoted strings
-				rxRule("string", ~/.*?["]/, "start"),
-				rxRule("string", ~/.+/),
-			], //}
-			"string.tpl": [ //{ GMLive strings with templates
-				rxRule("string", ~/.*?\$\{/, "start"),
-				rxRule("string", ~/.*?[`]/, "pop"),
-				rxRule("string", ~/.+/),
-			], //}
 			"string.esc": [ //{ GMS2 strings with escape characters
 				rule("string.escape", "\\\\(?:"
 					+ "x[0-9a-fA-F]{2}|" // \x41
@@ -267,8 +279,21 @@ import haxe.extern.EitherType;
 				+ ".)"),
 				// (this is to allow escaping linebreaks, which is honestly a strange thing)
 				cast { token : "string", regex : "\\\\$", consumeLineEnd : true },
-				rule("string", '"|$', "start"),
+				rule("string", '"|$', "pop"),
 				rdef("string"),
+			], //}
+			"string.sq": [ //{ GMS1 single-quoted strings
+				rxRule("string", ~/.*?[']/, "pop"),
+				rxRule("string", ~/.+/),
+			], //}
+			"string.dq": [ //{ GMS1 double-quoted strings
+				rxRule("string", ~/.*?["]/, "pop"),
+				rxRule("string", ~/.+/),
+			], //}
+			"string.tpl": [ //{ GMLive strings with templates
+				rxRule("string", ~/.*?\$\{/, "start"),
+				rxRule("string", ~/.*?[`]/, "pop"),
+				rxRule("string", ~/.+/),
 			], //}
 			"comment.line": rComment.concat([ //{
 				rxRule("comment.line", ~/$/, "start"),
