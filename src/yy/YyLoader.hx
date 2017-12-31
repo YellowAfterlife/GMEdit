@@ -36,7 +36,7 @@ class YyLoader {
 		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
 		//
-		var rxName = ~/^.+[\/\\](\w+)\.\w+$/g;
+		var rxName = Project.rxName;
 		var objectNames = new Dictionary<String>();
 		var objectGUIDs = new Dictionary<YyGUID>();
 		project.yyObjectNames = objectNames;

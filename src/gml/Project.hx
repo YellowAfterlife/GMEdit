@@ -30,6 +30,8 @@ class Project {
 	//
 	public static var nameNode = document.querySelector("#project-name");
 	//
+	public static var rxName:EReg = ~/^.+[\/\\](\w+)\.\w+$/g;
+	//
 	public var version:GmlVersion = GmlVersion.v1;
 	/** full path */
 	public var path:String;
@@ -140,6 +142,7 @@ class Project {
 	public function search(fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt) {
 		switch (version) {
 			case GmlVersion.v1: GmxSearcher.run(this, fn, done, opt);
+			case GmlVersion.v2: YySearcher.run(this, fn, done, opt);
 			default:
 		}
 	}
