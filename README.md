@@ -10,6 +10,12 @@ The intent is to have a code editor that supports common features (syntax highli
 * Download [a pre-built Electron binary](https://github.com/electron/electron/releases) and extract the files into bin/ directory (so that you have `bin/electron.exe`).
 * Build the project via `haxe -cp src -js ./bin/resources/app/app.js -D nodejs -main Main -dce full` (or open and run the included FlashDevelop project)
 
+### Pre-built binaries
+
+Stable binaries can be found [on itch.io](https://yellowafterlife.itch.io/gmedit).
+
+Same page also houses screenshots and development log.
+
 ### Credits
 
 * Programming language: [Haxe](https://haxe.org)
