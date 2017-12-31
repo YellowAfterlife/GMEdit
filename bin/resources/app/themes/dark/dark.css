@@ -123,6 +123,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #main .gml .ace_asset,
 #main .gml .ace_macro,
+#main .gml .ace_macroname,
 #main .gml .ace_enum,
 #main .gml .ace_enumfield,
 #main .gml .ace_constant {
@@ -142,7 +143,6 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_function,
 #main .gml .ace_extfunction,
 #main .gml .ace_extmacro,
-#main .gml .ace_macroname,
 #main .gml .ace_script,
 #main .gml .ace_quasi.ace_paren {
 	color: #FFB871;
