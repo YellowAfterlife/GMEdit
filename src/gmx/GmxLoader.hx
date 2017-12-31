@@ -37,6 +37,7 @@ class GmxLoader {
 				} else {
 					_main = name;
 				}
+				GmlAPI.gmlLookupText += name + "\n";
 				gml.GmlSeeker.run(full, _main);
 				out.appendChild(TreeView.makeItem(name, path, full));
 			} else {

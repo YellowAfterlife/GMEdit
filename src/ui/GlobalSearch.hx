@@ -96,8 +96,9 @@ class GlobalSearch {
 		cbCheckScripts = element.querySelectorAuto('input[name="check-scripts"]');
 		//
 		fdFind.onkeydown = function(e:KeyboardEvent) {
-			if (e.keyCode == KeyboardEvent.DOM_VK_RETURN) {
-				btFind.click();
+			switch (e.keyCode) {
+				case KeyboardEvent.DOM_VK_RETURN: btFind.click();
+				case KeyboardEvent.DOM_VK_ESCAPE: btCancel.click();
 			}
 		}
 		btFind.onclick = function(_) {

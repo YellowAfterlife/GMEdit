@@ -74,9 +74,13 @@ class GmlAPI {
 	//public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
 	/** asset type -> asset name -> id*/
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
+	
 	/** Used for F12/middle-click */
 	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
-	public static var gmlLocalKind:Dictionary<String> = new Dictionary();
+	
+	/** `\n` separated asset names for regular expression search */
+	public static var gmlLookupText:String = "";
+	
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
@@ -85,7 +89,7 @@ class GmlAPI {
 		gmlGlobalKind = new Dictionary();
 		gmlAssetIDs = new Dictionary();
 		gmlLookup = new Dictionary();
-		gmlLocalKind = new Dictionary();
+		gmlLookupText = "";
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}

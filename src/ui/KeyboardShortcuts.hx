@@ -115,9 +115,10 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_F: {
-				if (flags == CTRL + SHIFT) {
-					GlobalSearch.toggle();
-				}
+				if (flags == CTRL + SHIFT) GlobalSearch.toggle();
+			};
+			case KeyboardEvent.DOM_VK_T: {
+				if (flags == CTRL) GlobalLookup.toggle();
 			};
 			default: {
 				if (flags == CTRL
@@ -168,7 +169,7 @@ class KeyboardShortcuts {
 		}
 		openLocal(name, nav);
 	}
-	public static function openLocal(name:String, nav:GmlFileNav):Bool {
+	public static function openLocal(name:String, ?nav:GmlFileNav):Bool {
 		//
 		var lookup = GmlAPI.gmlLookup[name];
 		if (lookup != null) {

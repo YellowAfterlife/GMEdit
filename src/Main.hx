@@ -89,6 +89,7 @@ class Main {
 		KeyboardShortcuts.initGlobal();
 		ColorPicker.init();
 		GlobalSearch.init();
+		GlobalLookup.init();
 		Preferences.initEditor();
 		//
 		untyped {

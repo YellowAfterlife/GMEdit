@@ -115,28 +115,6 @@ class GmlFile {
 		if (found) {
 			editor.gotoLine0(row, col);
 		}
-		/*switch (nav) {
-			case Offset(p): editor.gotoPos(p);
-			case Script(name, pos): {
-				var session = file.session;
-				var def = new js.RegExp("^(#define|#event)[ \t]" + name, "");
-				for (row in 0 ... session.getLength()) {
-					var line = session.getLine(row);
-					if (def.test(line)) {
-						if (pos != null) {
-							var col = pos.column;
-							var row1 = row + pos.row;
-							if (col == null) {
-								line = session.getLine(row1);
-								col = line != null ? line.length : 0;
-							}
-							editor.gotoLine0(row1, col);
-						} else editor.gotoLine0(row, line.length);
-						break;
-					}
-				}
-			};
-		}*/
 	}
 	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
 		// see if there's an existing tab for this:

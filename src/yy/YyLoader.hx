@@ -84,10 +84,12 @@ class YyLoader {
 					if (out == null) continue;
 					switch (type) {
 						case "GMScript": {
+							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
 							GmlSeeker.run(full, name);
 						};
 						case "GMObject": {
+							GmlAPI.gmlLookupText += name + "\n";
 							objectNames.set(res.Key, name);
 							objectGUIDs.set(name, res.Key);
 							GmlSeeker.run(full, null);

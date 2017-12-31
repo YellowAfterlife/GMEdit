@@ -38,8 +38,11 @@
 .popout-window a {
 	color: #FFB871;
 }
-.popout-window input[type="text"] {
-	
+.popout-window input[type="text"],
+.popout-window select {
+	border: 1px solid #495057;
+	background: #222;
+	color: white;
 }
 
 /* gutter */

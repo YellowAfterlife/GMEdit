@@ -8,6 +8,28 @@
 	padding: 4px;
 	box-sizing: border-box;
 }
+/* */
+
+#global-lookup {
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	width: 300px;
+	height: 200px;
+	resize: both;
+	display: flex;
+	flex-direction: column;
+}
+#global-lookup input {
+	margin-bottom: 4px;
+}
+#global-lookup select {
+	flex-grow: 1;
+	overflow-y: auto;
+}
+/* */
 #global-search {
 	left: 0;
 	top: 0;
@@ -27,9 +49,7 @@
 	margin: 0;
 	width: 160px;
 }
-#global-search > div {
-	
-}
+/* */
 #preferences-window {
 	right: 20px;
 	top: 40px;
@@ -52,7 +72,12 @@
 	vertical-align: bottom;
 	margin-right: 2px;
 }
-.popout-window input[type="text"] {
+.popout-window input[type="text"],
+.popout-window select option {
+	padding-left: 2px;
+}
+.popout-window input[type="text"],
+.popout-window select {
 	width: 100%;
 	box-sizing: border-box;
 }
