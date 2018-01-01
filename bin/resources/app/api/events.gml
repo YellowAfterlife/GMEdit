@@ -3,7 +3,7 @@
 2:2 alarm2
 2:3 alarm3
 2:4 alarm4
-2:5 alamr5
+2:5 alarm5
 2:6 alarm6
 2:7 alarm7
 2:8 alarm8
