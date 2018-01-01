@@ -1,4 +1,6 @@
 package gml;
+import ace.AceWrap;
+import gml.GmlAPI;
 import tools.Dictionary;
 
 /**
@@ -18,11 +20,16 @@ class GmlSeekData {
 	public var macroList:Array<GmlMacro> = [];
 	public var macroMap:Dictionary<GmlMacro> = new Dictionary();
 	public var locals:Dictionary<GmlLocals> = new Dictionary();
+	public var kind:Dictionary<String> = new Dictionary();
+	public var comp:AceAutoCompleteItems = [];
+	public var docList:Array<GmlFuncDoc> = [];
+	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	//
 	public function new() {
 		
 	}
 	public static function apply(prev:GmlSeekData, next:GmlSeekData) {
+		if (GmlAPI.version == GmlVersion.live) return;
 		if (prev == null) prev = blank;
 		if (next == null) next = blank;
 		// todo: it might be <a bit> faster to merge changes instead

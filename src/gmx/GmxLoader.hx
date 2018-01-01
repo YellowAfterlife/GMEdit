@@ -120,7 +120,9 @@ class GmxLoader {
 			for (section in gmx.findAll(plural)) for (item in section.findRec(single)) {
 				var name = rxName.replace(item.text, "$1");
 				r.set(name, "asset." + single);
-				comp.push(new AceAutoCompleteItem(name, single));
+				var next = new AceAutoCompleteItem(name, single);
+				GmlAPI.gmlAssetComp.set(name, next);
+				comp.push(next);
 				ids.set(name, id++);
 			}
 		}

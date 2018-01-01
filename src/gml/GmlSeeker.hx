@@ -33,6 +33,7 @@ class GmlSeeker {
 			Main.aceEditor.session.bgTokenizer.start(0);
 		}
 	}
+	
 	private static function runSyncImpl(
 		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals
 	):Void {
@@ -90,6 +91,9 @@ class GmlSeeker {
 					case "'".code: {
 						if (v != GmlVersion.v2) row += q.skipString1("'".code);
 					};
+					case "`".code: {
+						if (v == GmlVersion.live) row += q.skipString1("`".code);
+					};
 					case "@".code: {
 						if (v == GmlVersion.v2) {
 							switch (q.peek()) {
@@ -135,41 +139,78 @@ class GmlSeeker {
 			}
 			return null;
 		} // find
-		var s:String, name:String;
+		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
+		var s:String, name:String, start:Int, doc:GmlFuncDoc;
 		while (q.loop) {
 			s = find(Ident | Doc | Define | Macro);
 			if (s == null) {
 				//
 			} else if (s.fastCodeAt(0) == "/".code) {
-				if (main != null && s.indexOf("(") >= 0) {
-					s = s.substring(3).trimLeft();
-					if (s.startsWith("@description")) {
-						s = s.substring(12).trimLeft();
-					}
-					if (!GmlAPI.gmlDoc.exists(main)) {
-						GmlAPI.gmlDoc.set(main, GmlAPI.parseDoc(s));
+				if (main != null) {
+					if (s.indexOf("(") >= 0) {
+						s = s.substring(3).trimLeft();
+						if (s.startsWith("@description")) {
+							s = s.substring(12).trimLeft();
+						}
+						if (!out.docMap.exists(main)) {
+							doc = GmlAPI.parseDoc(s);
+							out.docList.push(doc);
+							out.docMap.set(main, doc);
+							if (!GmlAPI.gmlDoc.exists(main)) {
+								GmlAPI.gmlDoc.set(main, doc);
+							}
+							if (mainComp != null && mainComp.doc == null) {
+								mainComp.doc = s;
+							}
+						}
+					} else if (v == GmlVersion.live) {
+						s = s.substring(3).trimLeft();
+						doc = out.docMap[main];
+						if (doc == null) {
+							out.docMap.set(main, GmlAPI.parseDoc(main + "(...) " + s));
+						} else doc.post += " " + s;
 					}
 				}
 			} else switch (s) {
 				case "#define": {
 					main = find(Ident);
+					start = q.pos;
 					sub = main;
 					row = 0;
 					setLookup(main, true);
 					locals = new GmlLocals();
 					out.locals.set(main, locals);
+					if (v == GmlVersion.live) {
+						s = find(Line | Par0);
+						if (s == "(") {
+							while (q.loop) {
+								s = find(Ident | Line | Par1);
+								if (s == ")" || s == "\n" || s == null) break;
+								locals.add(s);
+							}
+							out.docMap.set(main, GmlAPI.parseDoc(main + q.substring(start, q.pos)));
+						}
+					}
+					//
+					mainComp = new AceAutoCompleteItem(main, "script",
+						q.pos > start ? main + q.substring(start, q.pos) : null);
+					out.comp.push(mainComp);
+					out.kind.set(main, "asset.script");
+					//
 					if (!GmlAPI.gmlKind.exists(main)) {
 						GmlAPI.gmlKind.set(main, "asset.script");
-						GmlAPI.gmlComp.push(new AceAutoCompleteItem(main, "script"));
+						GmlAPI.gmlComp.push(mainComp);
 					}
 				};
 				case "#macro": {
 					name = find(Ident);
 					if (name == null) continue;
-					var start = q.pos;
+					start = q.pos;
 					find(Line);
 					s = q.substring(start, q.pos - 1);
-					var m = new GmlMacro(name, orig, s);
+					var m = new GmlMacro(name, orig, s.trimBoth());
+					out.kind.set(name, "macro");
+					out.comp.push(m.comp);
 					out.macroList.push(m);
 					out.macroMap.set(name, m);
 					setLookup(name, true);
@@ -181,6 +222,8 @@ class GmlSeeker {
 						var g = new GmlGlobal(s, orig);
 						out.globalList.push(g);
 						out.globalMap.set(s, g);
+						out.comp.push(g.comp);
+						out.kind.set(s, "globalvar");
 						setLookup(s);
 					}
 				};
@@ -226,6 +269,7 @@ class GmlSeeker {
 						var ac = new AceAutoCompleteItem(name + "." + s, "enum");
 						en.compList.push(ac);
 						en.compMap.set(s, ac);
+						out.comp.push(ac);
 						s = find(Comma | SetOp | Cub1);
 						if (s == null || s == "}") break;
 						if (s == "=") {
@@ -237,9 +281,11 @@ class GmlSeeker {
 			} // switch (s)
 		} // while
 	}
+	
 	static inline function finish(orig:String, out:GmlSeekData):Void {
 		GmlSeekData.apply(GmlSeekData.map[orig], out);
 		GmlSeekData.map.set(orig, out);
+		out.comp.autoSort();
 	}
 	static function runYyObject(orig:String, src:String) {
 		var obj:YyObject = haxe.Json.parse(src);

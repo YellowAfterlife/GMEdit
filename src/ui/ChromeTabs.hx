@@ -47,6 +47,7 @@ class ChromeTabs {
 				if (pathHistory.length > pathHistorySize) pathHistory.pop();
 			}
 			GmlFile.current = gmlFile;
+			gmlFile.focus();
 			Main.aceEditor.setSession(gmlFile.session);
 		});
 		element.addEventListener("tabClose", function(e:CustomEvent) {

@@ -8,6 +8,10 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 @:keep class AceGmlCompletion implements AceAutoCompleter {
+	public static var stdCompleter:AceGmlCompletion;
+	public static var gmlCompleter:AceGmlCompletion;
+	public static var extCompleter:AceGmlCompletion;
+	public static var eventCompleter:AceGmlCompletion;
 	public static var localCompleter:AceGmlCompletion;
 	public static var noItems:AceAutoCompleteItems = [];
 	//
@@ -55,13 +59,17 @@ import tools.Dictionary;
 		ef.set("eventname", true);
 		//
 		localCompleter = new AceGmlCompletion([], nf, true);
+		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, nf, true);
+		extCompleter = new AceGmlCompletion(GmlAPI.extComp, nf, true);
+		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, nf, true);
+		eventCompleter = new AceGmlCompletion(gml.GmlEvent.comp, ef, false);
 		editor.setOptions({
 			enableLiveAutocompletion: [
 				localCompleter,
-				new AceGmlCompletion(GmlAPI.stdComp, nf, true),
-				new AceGmlCompletion(GmlAPI.extComp, nf, true),
-				new AceGmlCompletion(GmlAPI.gmlComp, nf, true),
-				new AceGmlCompletion(gml.GmlEvent.comp, ef, false),
+				stdCompleter,
+				extCompleter,
+				gmlCompleter,
+				eventCompleter,
 			]
 		});
 	}

@@ -1,4 +1,5 @@
 package gml;
+import ace.AceGmlCompletion;
 import ace.AceSessionData;
 import electron.FileSystem;
 import js.RegExp;
@@ -209,6 +210,9 @@ class GmlFile {
 				code = obj.getCode(path);
 			};
 		}
+		if (GmlAPI.version == GmlVersion.live) {
+			GmlSeeker.runSync(path, code, null);
+		}
 	}
 	//
 	public function save() {
@@ -259,6 +263,7 @@ class GmlFile {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
 				GmlSeeker.runSync(path, out, data.main);
+				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
 				if (next != data) {
 					GmlLocals.currentMap = next.locals;
@@ -266,6 +271,20 @@ class GmlFile {
 				}
 			}
 		}
+	}
+	//
+	public function liveApply() {
+		var data = GmlSeekData.map[path];
+		if (data != null) {
+			AceGmlCompletion.gmlCompleter.items = data.comp;
+			GmlAPI.gmlComp = data.comp;
+			GmlAPI.gmlKind = data.kind;
+			GmlAPI.gmlEnums = data.enumMap;
+			GmlAPI.gmlDoc = data.docMap;
+		}
+	}
+	public function focus() {
+		if (GmlAPI.version == GmlVersion.live) liveApply();
 	}
 	//
 	private static function set_current(file:GmlFile) {

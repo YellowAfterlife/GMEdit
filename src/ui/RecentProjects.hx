@@ -28,6 +28,11 @@ class RecentProjects {
 		var el = TreeView.element;
 		for (path in get()) {
 			var name = Path.withoutDirectory(path);
+			switch (name.toLowerCase()) {
+				case "main.txt", "main.cfg": {
+					name = Path.withoutDirectory(Path.directory(path));
+				};
+			}
 			el.appendChild(TreeView.makeProject(name, path));
 		}
 	}

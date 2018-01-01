@@ -66,14 +66,23 @@ class GmlAPI {
 		extComp.clear();
 	}
 	// script/object scope
+	/** script name -> doc */
 	public static var gmlDoc:Dictionary<GmlFuncDoc> = new Dictionary();
+	
+	/** word -> ACE kind */
 	public static var gmlKind:Dictionary<String> = new Dictionary();
+	
+	/** array of auto-completion items */
 	public static var gmlComp:AceAutoCompleteItems = [];
+	
+	/** enum name -> enum, for highlighting */
 	public static var gmlEnums:Dictionary<GmlEnum> = new Dictionary();
-	public static var gmlGlobalKind:Dictionary<String> = new Dictionary();
-	//public static var gmlGlobalMap:Dictionary<String> = new Dictionary();
+	
 	/** asset type -> asset name -> id*/
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
+	
+	/** asset name -> asset AC */
+	public static var gmlAssetComp:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	
 	/** Used for F12/middle-click */
 	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
@@ -86,8 +95,8 @@ class GmlAPI {
 		gmlKind = new Dictionary();
 		gmlComp.clear();
 		gmlEnums = new Dictionary();
-		gmlGlobalKind = new Dictionary();
 		gmlAssetIDs = new Dictionary();
+		gmlAssetComp = new Dictionary();
 		gmlLookup = new Dictionary();
 		gmlLookupText = "";
 		for (type in gmx.GmxLoader.assetTypes) {
@@ -183,23 +192,29 @@ class GmlAPI {
 		});
 	}
 	//
-	public static function parseDoc(s:String):GmlFuncDoc {
+	public static function parseDoc(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
 		var p0 = s.indexOf("(");
 		var p1 = s.indexOf(")", p0);
+		var pre:String, post:String, args:Array<String>, rest:Bool;
 		if (p0 >= 0 && p1 >= 0) {
 			var sw = s.substring(p0 + 1, p1);
-			return {
-				pre: s.substring(0, p0 + 1),
-				post: s.substring(p1),
-				args: NativeString.splitReg(sw, untyped __js__("/,\\s*/g")),
-				rest: sw.indexOf("...") >= 0,
-			};
-		} else return {
-			pre: s,
-			post: "",
-			args: [],
-			rest: false,
-		};
+			pre = s.substring(0, p0 + 1);
+			post = s.substring(p1);
+			args = NativeString.splitReg(sw, untyped __js__("/,\\s*/g"));
+			rest = sw.indexOf("...") >= 0;
+		} else {
+			pre = s;
+			post = "";
+			args = [];
+			rest = false;
+		}
+		if (out != null) {
+			out.pre = pre;
+			out.post = post;
+			out.args = args;
+			out.rest = rest;
+			return out;
+		} else return { pre: pre, post: post, args: args, rest: rest };
 	}
 	//
 	public static function init() {
