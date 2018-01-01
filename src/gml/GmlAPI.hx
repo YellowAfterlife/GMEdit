@@ -164,7 +164,7 @@ class GmlAPI {
 			});
 		});
 		// name       =      value
-		~/^(\w+)[ \t]*=[ \t]*(.+)$/g.each(src, function(rx:EReg) {
+		~/^(\w+)[ \t]*=[ \t]*(.+)$/gm.each(src, function(rx:EReg) {
 			var name = rx.matched(1);
 			var expr = rx.matched(2);
 			stdKind.set(name, "constant");
