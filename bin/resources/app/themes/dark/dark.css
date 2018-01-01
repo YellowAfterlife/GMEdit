@@ -178,8 +178,10 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	color: white;
 }
 /* */
-#main .ace_editor > .ace_scroller {
+#main .ace_editor > .ace_scroller:not([style*="right: 0"]) {
 	right: 12px !important;
+}
+#main .ace_editor > .ace_scroller:not([style*="bottom: 0"]) {
 	bottom: 12px !important;
 }
 #main .ace_editor .ace_scrollbar-h {
