@@ -1,5 +1,4 @@
 package ui;
-import haxe.ds.Map;
 import js.RegExp;
 import js.html.Element;
 import js.html.InputElement;
