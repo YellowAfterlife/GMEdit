@@ -37,4 +37,12 @@ import haxe.extern.EitherType;
 extern class FileSystemStat {
 	public function isFile():Bool;
 	public function isDirectory():Bool;
+	public var atime:Date;
+	public var mtime:Date;
+	public var ctime:Date;
+	public var mtimeMs(get, never):Float;
+	private inline function get_mtimeMs():Float {
+		return mtime.getTime();
+	}
+	public var size:Int;
 }

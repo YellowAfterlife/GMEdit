@@ -116,6 +116,10 @@ class ChromeTabs {
 			});
 		});
 		//
+		window.addEventListener("focus", function(_) {
+			if (GmlFile.current != null) GmlFile.current.checkChanges();
+		});
+		//
 		return impl;
 	}
 }

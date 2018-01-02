@@ -1,6 +1,7 @@
 package gml;
 import ace.AceGmlCompletion;
 import ace.AceSessionData;
+import electron.Dialog;
 import electron.FileSystem;
 import js.RegExp;
 import js.html.Element;
@@ -23,18 +24,38 @@ class GmlFile {
 	public static var next:GmlFile = null;
 	public static var current(default, set):GmlFile = null;
 	private static var searchId:Int = 0;
-	//
+	
+	/** Display name (used for tab title). Usually name.ext */
 	public var name:String;
+	
+	/** Full path to the source file (null if no source file, e.g. search results) */
 	public var path:String;
+	
+	/** Source file change time */
+	public var time:Float = 0;
+	
+	/** Context (used for tagging tabs) */
 	public var context:String;
+	
+	/** Path to .gmlnotes (used for GMS1 macros) */
 	public var notePath(get, never):String;
 	private inline function get_notePath():String {
 		return path + ".gmlnotes";
 	}
+	
+	/** Last loaded/saved code */
 	public var code:String;
+	
+	/** Loading/saving mode of operation */
 	public var kind:GmlFileKind = Normal;
+	
+	/** Code editing session (contains up to date code) */
 	public var session:AceSession;
+	
+	/** Associated chrome tab */
 	public var tabEl:Element;
+	
+	/** Whether there had been changes since opening the file (setting updates tab status) */
 	public var changed(get, set):Bool;
 	private var __changed:Bool = false;
 	private inline function get_changed() {
@@ -51,6 +72,7 @@ class GmlFile {
 		}
 		return z;
 	}
+	
 	//
 	public function new(name:String, path:String, kind:GmlFileKind, ?data:Dynamic) {
 		this.name = name;
@@ -65,6 +87,10 @@ class GmlFile {
 		var modePath = switch (kind) {
 			case SearchResults: "ace/mode/gml_search";
 			default: "ace/mode/gml";
+		}
+		//
+		if (GmlAPI.version == GmlVersion.live) {
+			GmlSeeker.runSync(path, code, null);
 		}
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(code, { path: modePath, version: GmlAPI.version });
@@ -185,8 +211,13 @@ class GmlFile {
 		}
 	}
 	//
+	/**
+	 * Loads the current code
+	 * @param	data	If provided, is used instead of reading from FS.
+	 */
 	public function load(?data:Dynamic) {
 		var src:String = data != null ? null : FileSystem.readTextFileSync(path);
+		if (path != null) time = FileSystem.statSync(path).mtimeMs;
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
@@ -210,14 +241,12 @@ class GmlFile {
 				code = obj.getCode(path);
 			};
 		}
-		if (GmlAPI.version == GmlVersion.live) {
-			GmlSeeker.runSync(path, code, null);
-		}
 	}
 	//
 	public function save() {
 		if (path == null) return;
 		var val = session.getValue();
+		code = val;
 		//
 		var out:String, src:String, gmx:SfGmx;
 		switch (kind) {
@@ -254,11 +283,10 @@ class GmlFile {
 			};
 		}
 		//
-		//session.setValue(out);
 		FileSystem.writeFileSync(path, out);
 		changed = false;
 		session.getUndoManager().markClean();
-		//
+		// update things if this is the active tab:
 		if (current == this) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
@@ -286,7 +314,58 @@ class GmlFile {
 			GmlAPI.gmlGlobalFieldMap = data.globalFieldMap;
 		}
 	}
+	public function checkChanges() {
+		if (path != null) try {
+			var time1 = FileSystem.statSync(path).mtimeMs;
+			if (time1 > time) {
+				time = time1;
+				var prev = code;
+				load();
+				if (prev == code) {
+					// OK!
+				} else if (!changed) {
+					session.setValue(code);
+				} else {
+					function printSize(b:Float) {
+						inline function toFixed(f:Float):String {
+							return untyped f.toFixed(n, 2);
+						}
+						if (b < 10000) return b + "B";
+						b /= 1024;
+						if (b < 10000) return toFixed(b) + "KB";
+						b /= 1024;
+						if (b < 10000) return toFixed(b) + "MB";
+						b /= 1024;
+						return toFixed(b) + "GB";
+					}
+					var bt = Dialog.showMessageBox({
+						title: "File conflict for " + name,
+						message: "Source file changed ("
+							+ printSize(code.length)
+							+ ") but you have unsaved changes ("
+							+ printSize(session.getValue().length)
+							+ "). What would you like to do?",
+						buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
+						cancelId: 1,
+					});
+					switch (bt) {
+						case 0: session.setValue(code);
+						case 1: { };
+						case 2: {
+							var name1 = name + " <copy>";
+							GmlFile.next = new GmlFile(name1, null, SearchResults, code);
+							ui.ChromeTabs.addTab(name1);
+						};
+					}
+				}
+			}
+		} catch (e:Dynamic) {
+			trace("Error checking: ", e);
+		}
+	}
+	/** Executed when the code tab gains focus */
 	public function focus() {
+		checkChanges();
 		if (GmlAPI.version == GmlVersion.live) liveApply();
 	}
 	//
