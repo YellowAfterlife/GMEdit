@@ -4,3 +4,4 @@
 /bin/resources/default_app.asar
 /bin/resources/electron.asar
 /art/*.png
+.DS_Store
