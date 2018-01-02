@@ -90,13 +90,12 @@ import haxe.extern.EitherType;
 						}
 					} else fdType = getGlobalType(field, "field");
 				}
-				return [
-					token(objType, object),
-					token("text", values[2]),
-					token("punctuation.operator", values[3]),
-					token("text", values[4]),
-					token(fdType, field),
-				];
+				var tokens:Array<AceToken> = [token(objType, object)];
+				if (values[2] != "") tokens.push(token("text", values[2]));
+				tokens.push(token("punctuation.operator", values[3]));
+				if (values[4] != "") tokens.push(token("text", values[4]));
+				tokens.push(token(fdType, field));
+				return tokens;
 			}
 		};
 		function mtField(_, field:String) {
