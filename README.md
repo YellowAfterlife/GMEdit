@@ -8,7 +8,8 @@ The intent is to have a code editor that supports common features (syntax highli
 
 * Download/clone the repository
 * Download [a pre-built Electron binary](https://github.com/electron/electron/releases) and extract the files into bin/ directory (so that you have `bin/electron.exe`).
-* Build the project via `haxe -cp src -js ./bin/resources/app/app.js -D nodejs -main Main -dce full` (or open and run the included FlashDevelop project)
+* Build the project via `haxe -cp src -js ./bin/resources/app/app.js -D nodejs -main Main -dce full` or `npm run compile` (or open and run the included FlashDevelop project)
+* Run the compiled output with electron via `npm start`
 
 ### Pre-built binaries
 
