@@ -30,12 +30,11 @@ class GmxLoader {
 				var path = gmx.text;
 				var name = rxName.replace(path, "$1");
 				var full = Path.join([dir, path]);
-				var _main:String;
-				if (one != "script") {
-					full += '.$one.gmx';
-					_main = "";
-				} else {
-					_main = name;
+				var _main:String = "";
+				switch (one) {
+					case "script": _main = name;
+					case "shader": { };
+					default: full += '.$one.gmx';
 				}
 				GmlAPI.gmlLookupText += name + "\n";
 				gml.GmlSeeker.run(full, _main);
@@ -51,6 +50,7 @@ class GmxLoader {
 			}
 		}
 		for (q in gmx.findAll("scripts")) loadrec(q, tv, "script", "scripts/");
+		for (q in gmx.findAll("shaders")) loadrec(q, tv, "shader", "shaders/");
 		for (q in gmx.findAll("objects")) loadrec(q, tv, "object", "objects/");
 		//
 		GmlAPI.extClear();
