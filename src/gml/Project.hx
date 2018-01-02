@@ -109,7 +109,7 @@ class Project {
 	}
 	//
 	public function reload(?first:Bool) {
-		nameNode.innerText = "Loading...";
+    nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
 			GmlAPI.version = version;
 			var state:ProjectState = null;
