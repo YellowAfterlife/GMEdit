@@ -10,7 +10,7 @@ import Main.document;
 import tools.Dictionary;
 
 /**
- * ...
+ * This handles everything about that status bar on the bottom of the code editor.
  * @author YellowAfterlife
  */
 class AceStatusBar {

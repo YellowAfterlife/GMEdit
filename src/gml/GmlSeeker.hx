@@ -61,6 +61,7 @@ class GmlSeeker {
 						if (flags.has(Line)) return "\n";
 					};
 					case ",".code: if (flags.has(Comma)) return ",";
+					case ".".code: if (flags.has(Period)) return ".";
 					case ";".code: if (flags.has(Semico)) return ";";
 					case "(".code: if (flags.has(Par0)) return "(";
 					case ")".code: if (flags.has(Par1)) return ")";
@@ -219,12 +220,27 @@ class GmlSeeker {
 					while (q.loop) {
 						s = find(Ident | Semico);
 						if (s == null || s == ";" || GmlAPI.kwMap.exists(s)) break;
-						var g = new GmlGlobal(s, orig);
-						out.globalList.push(g);
-						out.globalMap.set(s, g);
+						var g = new GmlGlobalVar(s, orig);
+						out.globalVarList.push(g);
+						out.globalVarMap.set(s, g);
 						out.comp.push(g.comp);
 						out.kind.set(s, "globalvar");
 						setLookup(s);
+					}
+				};
+				case "global": {
+					if (find(Period | Ident) == ".") {
+						s = find(Ident);
+						if (s != null && out.globalFieldMap[s] == null) {
+							var gfd = GmlAPI.gmlGlobalFieldMap[s];
+							if (gfd == null) {
+								gfd = new GmlGlobalField(s);
+								GmlAPI.gmlGlobalFieldMap.set(s, gfd);
+							}
+							out.globalFieldList.push(gfd);
+							out.globalFieldMap.set(s, gfd);
+							out.globalFieldComp.push(gfd.comp);
+						}
 					}
 				};
 				case "var": {
@@ -365,6 +381,7 @@ class GmlSeeker {
 	var Cub0;
 	var Cub1;
 	var Comma;
+	var Period;
 	var Semico;
 	var SetOp;
 	var Line;

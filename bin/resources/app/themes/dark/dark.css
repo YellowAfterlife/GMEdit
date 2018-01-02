@@ -129,7 +129,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_constant {
 	color: #FF8080;
 }
-#main .gml .ace_globalvar {
+#main .gml .ace_globalvar,
+#main .gml .ace_globalfield {
 	color: #FF7EFF;
 }
 #main .gml .ace_variable {

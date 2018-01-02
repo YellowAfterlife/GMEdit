@@ -11,7 +11,9 @@ import ace.AceMacro.jsThis;
 import haxe.extern.EitherType;
 
 /**
- * Syntax highlighting rules for GML
+ * Syntax highlighting rules for GML.
+ * Merging constructor from Ace means that it can't have instance methods,
+ * so things get kind of weird.
  * @author YellowAfterlife
  */
 @:expose("AceGmlHighlight")
@@ -62,6 +64,7 @@ import haxe.extern.EitherType;
 				return [token(type, value)];
 			},
 		};
+		/** something.field */
 		var rIdentPair:AceLangRule = {
 			regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*)',
 			onMatch: function(
@@ -73,7 +76,7 @@ import haxe.extern.EitherType;
 				var objType:String, fdType:String;
 				if (object == "global") {
 					objType = "keyword";
-					fdType = "globalvar";
+					fdType = "globalfield";
 				} else {
 					objType = getLocalType(row, object);
 					if (objType == null) {

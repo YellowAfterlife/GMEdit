@@ -11,7 +11,7 @@ using tools.ERegTools;
 using StringTools;
 
 /**
- * ...
+ * Stores current API state and projct-specific data.
  * @author YellowAfterlife
  */
 @:expose("GmlAPI")
@@ -84,6 +84,12 @@ class GmlAPI {
 	/** asset name -> asset AC */
 	public static var gmlAssetComp:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	
+	/** global field name -> data */
+	public static var gmlGlobalFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	
+	/** global field AC items */
+	public static var gmlGlobalFieldComp:AceAutoCompleteItems = [];
+	
 	/** Used for F12/middle-click */
 	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
 	
@@ -97,6 +103,8 @@ class GmlAPI {
 		gmlEnums = new Dictionary();
 		gmlAssetIDs = new Dictionary();
 		gmlAssetComp = new Dictionary();
+		gmlGlobalFieldMap = new Dictionary();
+		gmlGlobalFieldComp.clear();
 		gmlLookup = new Dictionary();
 		gmlLookupText = "";
 		for (type in gmx.GmxLoader.assetTypes) {

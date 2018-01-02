@@ -1,12 +1,11 @@
 package ace;
-//import ast.GmlPos;
 import js.html.Element;
 import js.html.SpanElement;
 import haxe.extern.EitherType;
 import tools.Dictionary;
 
 /**
- * ...
+ * A big, ugly pile of random handwritten externs for Ace components.
  * @author YellowAfterlife
  */
 @:forward @:forwardStatics

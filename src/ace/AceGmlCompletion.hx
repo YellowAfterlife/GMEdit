@@ -13,6 +13,7 @@ import tools.Dictionary;
 	public static var extCompleter:AceGmlCompletion;
 	public static var eventCompleter:AceGmlCompletion;
 	public static var localCompleter:AceGmlCompletion;
+	public static var globalCompleter:AceGmlCompletion;
 	public static var noItems:AceAutoCompleteItems = [];
 	//
 	public var items:AceAutoCompleteItems;
@@ -46,6 +47,7 @@ import tools.Dictionary;
 	}
 	//
 	public static function init(editor:AceWrap) {
+		//
 		var nf = new Dictionary<Bool>();
 		nf.set("comment", true);
 		nf.set("comment.doc", true);
@@ -53,16 +55,21 @@ import tools.Dictionary;
 		nf.set("comment.line.doc", true);
 		nf.set("string", true);
 		nf.set("eventname", true);
-		var nn = true;
-		//
-		var ef = new Dictionary<Bool>();
-		ef.set("eventname", true);
-		//
+		nf.set("macroname", true);
+		nf.set("globalfield", true);
 		localCompleter = new AceGmlCompletion([], nf, true);
 		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, nf, true);
 		extCompleter = new AceGmlCompletion(GmlAPI.extComp, nf, true);
 		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, nf, true);
+		//
+		var ef = new Dictionary<Bool>();
+		ef.set("eventname", true);
 		eventCompleter = new AceGmlCompletion(gml.GmlEvent.comp, ef, false);
+		//
+		var globalFilter = new Dictionary<Bool>();
+		globalFilter.set("globalfield", true);
+		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, globalFilter, false);
+		//
 		editor.setOptions({
 			enableLiveAutocompletion: [
 				localCompleter,
@@ -70,6 +77,7 @@ import tools.Dictionary;
 				extCompleter,
 				gmlCompleter,
 				eventCompleter,
+				globalCompleter,
 			]
 		});
 	}

@@ -277,10 +277,13 @@ class GmlFile {
 		var data = GmlSeekData.map[path];
 		if (data != null) {
 			AceGmlCompletion.gmlCompleter.items = data.comp;
+			AceGmlCompletion.globalCompleter.items = data.globalFieldComp;
 			GmlAPI.gmlComp = data.comp;
 			GmlAPI.gmlKind = data.kind;
 			GmlAPI.gmlEnums = data.enumMap;
 			GmlAPI.gmlDoc = data.docMap;
+			GmlAPI.gmlGlobalFieldComp = data.globalFieldComp;
+			GmlAPI.gmlGlobalFieldMap = data.globalFieldMap;
 		}
 	}
 	public function focus() {

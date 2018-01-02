@@ -13,12 +13,20 @@ class GmlSeekData {
 	private static var blank:GmlSeekData = new GmlSeekData();
 	//
 	public var main:String;
+	// enums declared in this file
 	public var enumList:Array<GmlEnum> = [];
 	public var enumMap:Dictionary<GmlEnum> = new Dictionary();
-	public var globalList:Array<GmlGlobal> = [];
-	public var globalMap:Dictionary<GmlGlobal> = new Dictionary();
+	// globalvars declared in this file
+	public var globalVarList:Array<GmlGlobalVar> = [];
+	public var globalVarMap:Dictionary<GmlGlobalVar> = new Dictionary();
+	// specific globals used in this file
+	public var globalFieldList:Array<GmlGlobalField> = [];
+	public var globalFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	public var globalFieldComp:AceAutoCompleteItems = [];
+	// macros declared in this file
 	public var macroList:Array<GmlMacro> = [];
 	public var macroMap:Dictionary<GmlMacro> = new Dictionary();
+	/** scope name -> local variables */
 	public var locals:Dictionary<GmlLocals> = new Dictionary();
 	public var kind:Dictionary<String> = new Dictionary();
 	public var comp:AceAutoCompleteItems = [];
@@ -45,13 +53,28 @@ class GmlSeekData {
 			GmlAPI.gmlKind.set(e.name, "enum");
 		}
 		// globals:
-		for (g in prev.globalList) {
+		for (g in prev.globalVarList) {
 			GmlAPI.gmlKind.remove(g.name);
 			GmlAPI.gmlComp.remove(g.comp);
 		}
-		for (g in next.globalList) {
+		for (g in next.globalVarList) {
 			GmlAPI.gmlKind.set(g.name, "globalvar");
 			GmlAPI.gmlComp.push(g.comp);
+		}
+		// global fields (delta)
+		for (g in prev.globalFieldList) {
+			if (next.globalFieldMap[g.name] != null) continue;
+			if (--g.refs <= 0) {
+				GmlAPI.gmlGlobalFieldMap.remove(g.name);
+				GmlAPI.gmlGlobalFieldComp.remove(g.comp);
+			}
+		}
+		for (g in next.globalFieldList) {
+			if (prev.globalFieldMap[g.name] != null) continue;
+			if (++g.refs == 1) {
+				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
+				GmlAPI.gmlGlobalFieldComp.push(g.comp);
+			}
 		}
 		// macros:
 		for (m in prev.macroList) {

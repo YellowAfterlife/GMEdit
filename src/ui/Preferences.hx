@@ -11,7 +11,8 @@ import Main.document;
 import tools.Dictionary;
 
 /**
- * ...
+ * User preferences are managed here!
+ * Currently everything is just dumped into LocalStorage in JSON format.
  * @author YellowAfterlife
  */
 class Preferences {
@@ -171,6 +172,9 @@ class Preferences {
 			opts.remove("theme");
 			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
 		};
+		if (Main.aceEditor.getOption("newLineMode") == "auto") {
+			Main.aceEditor.setOption("newLineMode", "windows");
+		}
 	}
 }
 typedef PrefData = {
