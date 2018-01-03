@@ -49,7 +49,7 @@ class Project {
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
 		if (path == "") {
-			name = "Load something?";
+			name = "GMEdit";
 			version = GmlVersion.none;
 			displayName = "Recent projects";
 		} else if (Path.extension(path).toLowerCase() == "gmx") {

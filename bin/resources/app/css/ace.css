@@ -90,6 +90,7 @@
 }*/
 #main .gml .ace_regionname,
 #main .gml .ace_sectionname,
+#main .gml .ace_momentname,
 #main .gml .ace_scriptname,
 #main .gml .ace_eventname {
 	color: #308;
@@ -129,7 +130,8 @@
 	/*color: #7A81A9;*/
 	color: #768;
 }
-#main .gml .ace_numeric {
+#main .gml .ace_numeric,
+#main .gml .ace_momenttime {
 	color: #00f;
 }
 #main .gml .ace_string {

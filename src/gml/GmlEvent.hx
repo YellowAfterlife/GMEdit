@@ -87,9 +87,9 @@ class GmlEvent {
 		var evStart = 0;
 		var evCode:Array<String> = [];
 		var evName = null;
+		var sctName = null;
 		//
-		var flushHeader:String = null;
-		function flush(till:Int, ?sctName:String):Void {
+		function flush(till:Int, ?cont:Bool):Void {
 			var flushCode = tools.NativeString.trimRight(q.substring(evStart, till));
 			if (evName == null) {
 				if (flushCode != "") {
@@ -97,17 +97,17 @@ class GmlEvent {
 					//trace(flushCode);
 				}
 			} else {
+				if (sctName != null && sctName != "") {
+					flushCode = '///$sctName\r\n' + flushCode;
+					sctName = null;
+				}
 				var flushData = GmlEvent.fromString(evName);
 				if (flushData != null) {
-					if (flushHeader != null) {
-						flushCode = '///$flushHeader\n' + flushCode;
-					}
-					evCode.push(flushCode + "\r\n");
-					if (sctName == null) {
+					evCode.push(flushCode);
+					if (!cont) {
 						eventData.push({ data: flushData, code: evCode });
 						evCode = [];
-						flushHeader = null;
-					} else flushHeader = sctName;
+					}
 				} else errors += '`$evName` is not a known event type.\n';
 			}
 		}
@@ -116,22 +116,11 @@ class GmlEvent {
 			var c = q.read();
 			switch (c) {
 				case "/".code: switch (q.peek()) {
-					case "/".code: {
-						q.skip();
-						q.skipLine();
-					};
-					case "*".code: {
-						q.skip();
-						q.skipComment();
-					};
+					case "/".code: q.skipLine();
+					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code: {
-					if (version == GmlVersion.v2) {
-						q.skipString2();
-					} else q.skipString1('"'.code);
-				};
-				case "'".code: q.skipString1(c);
+				case '"'.code, "'".code, "`".code: q.skipStringAuto(c, version);
 				case "#".code: {
 					if (q.pos > 1) switch (q.get(q.pos - 2)) {
 						case "\r".code, "\n".code: { };
@@ -154,14 +143,8 @@ class GmlEvent {
 						evName = q.substring(nameStart, q.pos);
 						// skip spaces after:
 						q.skipSpaces0();
-						// skip line:
-						if (q.loop) switch (q.peek()) {
-							case "\r".code: {
-								q.skip();
-								if (q.loop && q.peek() == "\n".code) q.skip();
-							};
-							case "\n".code: q.skip();
-						}
+						q.skipLineEnd();
+						//
 						evStart = q.pos;
 					} else if (q.substr(q.pos, 7) == "section" && version == GmlVersion.v1) {
 						q.skip(7);
@@ -183,8 +166,8 @@ class GmlEvent {
 							default: q.skip();
 						}
 						if (nameEnd < 0) nameEnd = q.length;
-						var name = q.substring(nameStart, nameEnd);
-						flush(nameStart - 8, name);
+						flush(nameStart - 8, true);
+						sctName = q.substring(nameStart, nameEnd);
 						//
 						evStart = q.pos;
 					}

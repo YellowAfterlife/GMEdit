@@ -51,6 +51,7 @@ class GmxLoader {
 		}
 		for (q in gmx.findAll("scripts")) loadrec(q, tv, "script", "scripts/");
 		for (q in gmx.findAll("shaders")) loadrec(q, tv, "shader", "shaders/");
+		for (q in gmx.findAll("timelines")) loadrec(q, tv, "timeline", "timelines/");
 		for (q in gmx.findAll("objects")) loadrec(q, tv, "object", "objects/");
 		//
 		GmlAPI.extClear();

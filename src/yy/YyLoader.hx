@@ -56,7 +56,7 @@ class YyLoader {
 					}
 					name = vdir.folderName;
 					if (path == "") switch (name) {
-						case "objects", "shaders", "scripts", "extensions": {
+						case "objects", "shaders", "scripts", "extensions", "timelines": {
 							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
 						default: {
@@ -97,6 +97,9 @@ class YyLoader {
 						case "GMShader": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.directory(full);
+						};
+						case "GMTimeline": {
+							GmlAPI.gmlLookupText += name + "\n";
 						};
 						case "GMExtension": {
 							var ext:YyExtension = FileSystem.readJsonFileSync(full);

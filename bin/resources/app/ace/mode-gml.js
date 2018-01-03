@@ -114,13 +114,13 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 	
-	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#section\b|#region\b/;
+	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#moment\b|#section\b|#region\b/;
 	this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
 	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
 	this.startRegionRe = /^\s*(\/\*|\/\/)#region\b/;
 	this.startBlockRe = /^\s*#region\b/;
-	this.startScriptRe = /^(?:#define|#event|#section)\b/;
+	this.startScriptRe = /^(?:#define|#event|#section|#moment)\b/;
 	this._getFoldWidgetBase = this.getFoldWidget;
 	this.getFoldWidget = function(session, foldStyle, row) {
 		var line = session.getLine(row);
@@ -257,7 +257,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 		var maxRow = session.getLength();
 		var startCol = line.length;
 		var startRow = row;
-		var re = /^(?:#define|#event|#section)\b/;
+		var re = /^(?:#define|#event|#section|#moment)\b/;
 		var last = line;
 		while (++row < maxRow) {
 			line = session.getLine(row);
@@ -277,7 +277,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 function ace_mode_gml_1() {
 // a nasty override for Gutter.update to reset line counter on #define:
 var dom = ace.require("ace/lib/dom"); 
-var rxDefine = /^(?:#define|#event)\b/;
+var rxDefine = /^(?:#define|#event|#moment)\b/;
 var rxSection = /^#section\b/;
 ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 	var session = this.session;
@@ -345,6 +345,7 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 		var reset = resetOnDefine && rxDefine.test(rowText);
 		if (reset) {
 			firstLineNumber = -row;
+			if (/^#moment\s+\d+\s+.+$/g.test(rowText)) firstLineNumber += 1;
 			className += "ace_gutter-define ";
 		} else if (rxSection.test(rowText)) {
 			className += "ace_gutter-define ";

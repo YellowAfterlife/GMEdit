@@ -40,7 +40,7 @@ class GmxObject {
 				out += "#event " + name;
 				var code = GmxEvent.getCode(event);
 				if (code != null) {
-					if (event.findAll("action").length > 0) out += "\n";
+					if (event.find("action") != null) out += "\n";
 					out += code;
 				} else {
 					errors += "Unreadable action in " + name + "\n";
@@ -99,27 +99,7 @@ class GmxObject {
 			evCtr.addChild(event);
 			//
 			for (gml in source.code) {
-				var action = new SfGmx("action");
-				action.addTextChild("libid", "1");
-				action.addTextChild("id", "603");
-				action.addTextChild("kind", "7");
-				action.addTextChild("userelative", "0");
-				action.addTextChild("isquestion", "0");
-				action.addTextChild("useapplyto", "-1");
-				action.addTextChild("exetype", "2");
-				action.addTextChild("functionname", "");
-				action.addTextChild("codestring", "");
-				action.addTextChild("whoName", "self");
-				action.addTextChild("relative", "0");
-				action.addTextChild("isnot", "0");
-				event.addChild(action);
-				//
-				var arguments = new SfGmx("arguments");
-				action.addChild(arguments);
-				var argument = new SfGmx("argument");
-				argument.addTextChild("kind", "1");
-				argument.addTextChild("string", gml);
-				arguments.addChild(argument);
+				event.addChild(GmxAction.makeCodeBlock(gml + "\r\n"));
 			}
 		} // for (source)
 		//

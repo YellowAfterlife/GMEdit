@@ -12,8 +12,7 @@ import haxe.io.Path;
 import tools.Dictionary;
 import tools.NativeString;
 import tools.StringBuilder;
-import yy.YyBase;
-import yy.YyObject;
+import yy.*;
 using tools.HtmlTools;
 
 /**
@@ -33,6 +32,11 @@ class GmlFile {
 	
 	/** Source file change time */
 	public var time:Float = 0;
+	public inline function syncTime() {
+		if (path != null) try {
+			time = FileSystem.statSync(path).mtimeMs;
+		} catch (_:Dynamic) { }
+	}
 	
 	/** Context (used for tagging tabs) */
 	public var context:String;
@@ -174,6 +178,7 @@ class GmlFile {
 					case "object": GmxObjectEvents;
 					case "project": GmxProjectMacros;
 					case "config": GmxConfigMacros;
+					case "timeline": GmxTimelineMoments;
 					default: Extern;
 				}
 			};
@@ -183,11 +188,15 @@ class GmlFile {
 					case "GMObject": {
 						data = json;
 						kind = YyObjectEvents;
-					}
+					};
+					case "GMTimeline": {
+						data = json;
+						kind = YyTimelineMoments;
+					};
 					case "GMScript": {
 						path = Path.withoutExtension(path) + ".gml";
 						kind = Normal;
-					}
+					};
 					default: kind = Extern;
 				};
 			};
@@ -217,7 +226,7 @@ class GmlFile {
 	 */
 	public function load(?data:Dynamic) {
 		var src:String = data != null ? null : FileSystem.readTextFileSync(path);
-		if (path != null) time = FileSystem.statSync(path).mtimeMs;
+		syncTime();
 		var gmx:SfGmx, out:String, errors:String;
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
@@ -228,6 +237,15 @@ class GmlFile {
 				out = GmxObject.getCode(gmx);
 				if (out == null) {
 					code = GmxObject.errorText;
+					path = null;
+				} else code = out;
+			};
+			case GmxTimelineMoments: {
+				gmx = SfGmx.parse(src);
+				out = GmxTimeline.getCode(gmx);
+				if (out == null) {
+					code = GmxObject.errorText;
+					path = null;
 				} else code = out;
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
@@ -237,8 +255,12 @@ class GmlFile {
 				code = GmxProject.getMacroCode(gmx, notes, kind == GmxConfigMacros);
 			};
 			case YyObjectEvents: {
-				var obj:yy.YyObject = data;
+				var obj:YyObject = data;
 				code = obj.getCode(path);
+			};
+			case YyTimelineMoments: {
+				var tl:YyTimeline = data;
+				code = tl.getCode(path);
 			};
 		}
 	}
@@ -255,6 +277,14 @@ class GmlFile {
 				gmx = FileSystem.readGmxFileSync(path);
 				if (!GmxObject.updateCode(gmx, val)) {
 					Main.window.alert("Can't update GMX:\n" + GmxObject.errorText);
+					return;
+				}
+				out = gmx.toGmxString();
+			};
+			case GmxTimelineMoments: {
+				gmx = FileSystem.readGmxFileSync(path);
+				if (!GmxTimeline.setCode(gmx, val)) {
+					Main.window.alert("Can't update GMX:\n" + GmxTimeline.errorText);
 					return;
 				}
 				out = gmx.toGmxString();
@@ -278,12 +308,21 @@ class GmlFile {
 				}
 				out = haxe.Json.stringify(obj, null, "    ");
 			};
+			case YyTimelineMoments: {
+				var tl:YyTimeline = FileSystem.readJsonFileSync(path);
+				if (!tl.setCode(path, val)) {
+					Main.window.alert("Can't update YY:\n" + YyTimeline.errorText);
+					return;
+				}
+				out = haxe.Json.stringify(tl, null, "    ");
+			};
 			default: {
 				return;
 			};
 		}
 		//
 		FileSystem.writeFileSync(path, out);
+		syncTime();
 		changed = false;
 		session.getUndoManager().markClean();
 		// update things if this is the active tab:
@@ -384,9 +423,11 @@ class GmlFile {
 	Extern;
 	Normal;
 	GmxObjectEvents;
+	GmxTimelineMoments;
 	GmxProjectMacros;
 	GmxConfigMacros;
 	YyObjectEvents;
+	YyTimelineMoments;
 	SearchResults;
 }
 typedef GmlFileNav = {

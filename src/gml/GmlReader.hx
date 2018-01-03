@@ -1,5 +1,6 @@
 package gml;
 
+import tools.CharCode;
 import tools.StringReader;
 
 /**
@@ -16,7 +17,7 @@ class GmlReader extends StringReader {
 	}
 	/** Skips a single `\n` / `\r\n`, if any */
 	public inline function skipLineEnd() {
-		switch (peek()) {
+		if (loop) switch (peek()) {
 			case "\r".code: {
 				skip();
 				if (peek() == "\n".code) skip();
@@ -64,6 +65,27 @@ class GmlReader extends StringReader {
 		}
 		if (loop) skip();
 		return n;
+	}
+	
+	public inline function skipStringAuto(startquote:CharCode, version:GmlVersion):Int {
+		switch (startquote) {
+			case '"'.code: {
+				if (version == GmlVersion.v2) {
+					return skipString2();
+				} else return skipString1('"'.code);
+			};
+			case "'".code: {
+				if (version != GmlVersion.v2) {
+					return skipString1("'".code);
+				} else return 0;
+			};
+			case "`".code: {
+				if (version == GmlVersion.live) {
+					return skipString1("`".code);
+				} else return 0;
+			};
+			default: return 0;
+		}
 	}
 	
 	public inline function skipSpaces0() {

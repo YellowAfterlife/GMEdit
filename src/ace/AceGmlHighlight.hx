@@ -192,6 +192,7 @@ import haxe.extern.EitherType;
 			rxRule("comment", ~/\/\*/, "comment"),
 			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
 			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
+			rxRule(["preproc.moment", "momenttime", "momentname"], ~/^(#moment[ \t]+)(\d+)(.*)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 		]; //}
 		if (version == GmlVersion.live) rBase.unshift(rTpl);
