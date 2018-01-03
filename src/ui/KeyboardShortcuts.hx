@@ -71,7 +71,7 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_R: {
-				if (flags == CTRL) {
+				if (flags == CTRL || flags == META) {
 					if (Project.current != null) {
 						Project.current.reload();
 					}
@@ -95,12 +95,12 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_S: {
-				if (flags == CTRL) {
+				if (flags == CTRL || flags == META) {
 					var q = GmlFile.current;
 					if (q != null) {
 						q.save();
 					}
-				} else if (flags == CTRL + SHIFT) {
+				} else if (flags == CTRL + SHIFT || flags == META + SHIFT) {
 					for (tabEl in ChromeTabs.impl.tabEls) {
 						var file = tabEl.gmlFile;
 						if (file != null) file.save();
@@ -115,13 +115,13 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_F: {
-				if (flags == CTRL + SHIFT) GlobalSearch.toggle();
+				if (flags == CTRL + SHIFT || flags == META + SHIFT) GlobalSearch.toggle();
 			};
 			case KeyboardEvent.DOM_VK_T: {
-				if (flags == CTRL) GlobalLookup.toggle();
+				if (flags == CTRL || flags == META) GlobalLookup.toggle();
 			};
 			default: {
-				if (flags == CTRL
+				if ((flags == CTRL  || flags == META)
 				&& keyCode >= KeyboardEvent.DOM_VK_0
 				&& keyCode <= KeyboardEvent.DOM_VK_9) {
 					var tabId = keyCode - KeyboardEvent.DOM_VK_1;
@@ -238,7 +238,7 @@ class KeyboardShortcuts {
 	public static function mousewheel(ev:Dynamic) {
 		var dom:WheelEvent = ev.domEvent;
 		var flags = getEventFlags(dom);
-		if (flags != CTRL) return;
+		if (flags != CTRL && flags != META) return;
 		var delta = dom.deltaY;
 		if (delta == 0) return;
 		delta = delta < 0 ? 1 : -1;
