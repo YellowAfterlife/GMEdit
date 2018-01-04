@@ -70,18 +70,23 @@ class GmlReader extends StringReader {
 	public inline function skipStringAuto(startquote:CharCode, version:GmlVersion):Int {
 		switch (startquote) {
 			case '"'.code: {
-				if (version == GmlVersion.v2) {
+				if (version.hasStringEscapeCharacters()) {
 					return skipString2();
 				} else return skipString1('"'.code);
 			};
 			case "'".code: {
-				if (version != GmlVersion.v2) {
+				if (version.hasSingleQuoteStrings()) {
 					return skipString1("'".code);
 				} else return 0;
 			};
 			case "`".code: {
-				if (version == GmlVersion.live) {
+				if (version.hasTemplateStrings()) {
 					return skipString1("`".code);
+				} else return 0;
+			};
+			case "@".code: {
+				if (version.hasLiteralStrings()) {
+					return skipString1(read());
 				} else return 0;
 			};
 			default: return 0;

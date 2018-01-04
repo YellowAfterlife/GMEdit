@@ -84,25 +84,7 @@ class GmlSeeker {
 						};
 						default:
 					};
-					case '"'.code: {
-						if (v == GmlVersion.v2) {
-							row += q.skipString2();
-						} else row += q.skipString1('"'.code);
-					};
-					case "'".code: {
-						if (v != GmlVersion.v2) row += q.skipString1("'".code);
-					};
-					case "`".code: {
-						if (v == GmlVersion.live) row += q.skipString1("`".code);
-					};
-					case "@".code: {
-						if (v == GmlVersion.v2) {
-							switch (q.peek()) {
-								case "'".code: q.skip(); row += q.skipString1("'".code);
-								case '"'.code: q.skip(); row += q.skipString1('"'.code);
-							}
-						}
-					};
+					case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, v);
 					case "#".code: {
 						while (q.loop) {
 							c = q.peek();

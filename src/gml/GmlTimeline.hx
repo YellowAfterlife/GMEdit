@@ -43,7 +43,7 @@ class GmlTimeline {
 					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code, "'".code, "`".code: q.skipStringAuto(c, version);
+				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
 				case "#".code: if (q.pos == 1 || q.get(q.pos - 2) == "\n".code) {
 					if (q.substr(q.pos, 6) == "moment") {
 						flush(q.pos - 1);
