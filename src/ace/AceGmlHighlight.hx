@@ -2,6 +2,7 @@ package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
 import gml.GmlEnum;
+import gml.GmlKeycode;
 import gml.GmlVersion;
 import js.RegExp;
 import tools.Dictionary;
@@ -191,6 +192,8 @@ import haxe.extern.EitherType;
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
 			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
+			rxRule(["preproc.event", "eventname", "punctuation.operator", "eventkeyname"],
+				~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)/),
 			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
 			rxRule(["preproc.moment", "momenttime", "momentname"], ~/^(#moment[ \t]+)(\d+)(.*)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),

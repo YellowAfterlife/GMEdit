@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
+import gml.GmlKeycode;
 import tools.Dictionary;
 
 /**
@@ -14,16 +15,18 @@ import tools.Dictionary;
 	public static var eventCompleter:AceGmlCompletion;
 	public static var localCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
+	public static var keynameCompleter:AceGmlCompletion;
 	public static var noItems:AceAutoCompleteItems = [];
 	//
 	public var items:AceAutoCompleteItems;
 	public var tokenFilter:Dictionary<Bool>;
 	public var tokenFilterNot:Bool;
 	//
-	public function new(items:AceAutoCompleteItems, filter:Dictionary<Bool>, not:Bool) {
+	public function new(items:AceAutoCompleteItems, filters:Array<String>, not:Bool) {
 		items.autoSort();
 		this.items = items;
-		this.tokenFilter = filter;
+		this.tokenFilter = new Dictionary();
+		for (ft in filters) this.tokenFilter.set(ft, true);
 		this.tokenFilterNot = not;
 	}
 	// interface AceAutoCompleter
@@ -47,31 +50,24 @@ import tools.Dictionary;
 	}
 	//
 	public static function init(editor:AceWrap) {
-		//
-		var nf = new Dictionary<Bool>();
-		nf.set("comment", true);
-		nf.set("comment.doc", true);
-		nf.set("comment.line", true);
-		nf.set("comment.line.doc", true);
-		nf.set("string", true);
-		nf.set("eventname", true);
-		nf.set("sectionname", true);
-		nf.set("momenttime", true);
-		nf.set("momentname", true);
-		nf.set("macroname", true);
-		nf.set("globalfield", true);
-		localCompleter = new AceGmlCompletion([], nf, true);
-		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, nf, true);
-		extCompleter = new AceGmlCompletion(GmlAPI.extComp, nf, true);
-		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, nf, true);
-		//
-		var ef = new Dictionary<Bool>();
-		ef.set("eventname", true);
-		eventCompleter = new AceGmlCompletion(gml.GmlEvent.comp, ef, false);
-		//
-		var globalFilter = new Dictionary<Bool>();
-		globalFilter.set("globalfield", true);
-		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, globalFilter, false);
+		// tokens to not show normal auto-completion in
+		var excl = [
+			"comment", "comment.doc", "comment.line", "comment.line.doc",
+			"string",
+			"scriptname",
+			"eventname", "eventkeyname",
+			"sectionname",
+			"momenttime", "momentname",
+			"macroname",
+			"globalfield", // global.<text>
+		];
+		localCompleter = new AceGmlCompletion([], excl, true);
+		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, excl, true);
+		extCompleter = new AceGmlCompletion(GmlAPI.extComp, excl, true);
+		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, excl, true);
+		eventCompleter = new AceGmlCompletion(gml.GmlEvent.comp, ["eventname"], false);
+		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false);
+		keynameCompleter = new AceGmlCompletion(GmlKeycode.comp, ["eventkeyname"], false);
 		//
 		editor.setOptions({
 			enableLiveAutocompletion: [
@@ -81,6 +77,7 @@ import tools.Dictionary;
 				gmlCompleter,
 				eventCompleter,
 				globalCompleter,
+				keynameCompleter,
 			]
 		});
 	}

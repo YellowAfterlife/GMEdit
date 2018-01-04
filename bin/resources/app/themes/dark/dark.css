@@ -115,6 +115,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_sectionname,
 #main .gml .ace_momentname,
 #main .gml .ace_scriptname,
+#main .gml .ace_eventkeyname,
 #main .gml .ace_eventname {
 	color: #77BB5B;
 }

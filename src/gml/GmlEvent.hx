@@ -19,7 +19,11 @@ class GmlEvent {
 	static var s2t:Dictionary<Int> = new Dictionary();
 	static var i2s:Array<Array<String>> = [];
 	static var s2i:Dictionary<GmlEventData> = new Dictionary();
-	/** */
+	/** Returns rawname of given event type */
+	public static inline function getTypeName(type:Int):String {
+		return t2s[type];
+	}
+	/** Returns CapitalizedName of given event type */
 	public static inline function getTypeNameCap(type:Int):String {
 		return t2sc[type];
 	}
