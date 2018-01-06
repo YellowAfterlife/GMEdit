@@ -42,19 +42,22 @@ class YySearcher {
 						if (error == null) try {
 							var resDir = Path.directory(resFull);
 							var obj:YyObject = haxe.Json.parse(data);
-							for (ev in obj.eventList) {
-								var evRel = YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
-								var evFull = Path.join([resDir, evRel]);
-								var evName = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
-								evName = resName + '($evName)';
-								filesLeft += 1;
-								FileSystem.readTextFile(evFull, function(error, code) {
-									if (error == null) try {
-										fn(evName, evFull, code);
-									} catch (_:Dynamic) { };
-									next();
-								});
-							}
+							var code = obj.getCode(resFull);
+							fn(resName, resFull, code);
+						} catch (_:Dynamic) { };
+						next();
+					});
+				};
+				case "GMTimeline": if (opt == null || opt.checkObjects) {
+					resName = rxName.replace(res.resourcePath, "$1");
+					resFull = Path.join([pjDir, res.resourcePath]);
+					filesLeft += 1;
+					FileSystem.readTextFile(resFull, function(error, data) {
+						if (error == null) try {
+							var resDir = Path.directory(resFull);
+							var obj:YyTimeline = haxe.Json.parse(data);
+							var code = obj.getCode(resFull);
+							fn(resName, resFull, code);
 						} catch (_:Dynamic) { };
 						next();
 					});

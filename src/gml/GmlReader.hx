@@ -8,6 +8,13 @@ import tools.StringReader;
  * @author YellowAfterlife
  */
 class GmlReader extends StringReader {
+	public inline function skipWhile(fn:CharCode-> Bool) {
+		while (loop) {
+			if (fn(peek())) {
+				skip();
+			} else break;
+		}
+	}
 	/** Skips to the end of the current line */
 	public inline function skipLine() {
 		while (loop) switch (peek()) {
@@ -102,4 +109,20 @@ class GmlReader extends StringReader {
 		}
 	}
 	
+	public inline function skipIdent1() {
+		while (loop) {
+			if (peek().isIdent1()) {
+				skip();
+			} else break;
+		}
+	}
+	
+	public inline function skipEventName() {
+		while (loop) {
+			var c = peek();
+			if (c.isIdent1() || c == ":".code) {
+				skip();
+			} else break;
+		}
+	}
 }

@@ -6,6 +6,7 @@ import electron.FileSystem;
 import js.RegExp;
 import js.html.Element;
 import ace.AceWrap;
+import gml.GmlAPI;
 import gmx.*;
 import Main.document;
 import haxe.io.Path;
@@ -114,7 +115,7 @@ class GmlFile {
 		var row = 0, col = 0;
 		var i:Int, s:String;
 		if (nav.def != null) {
-			var rxDef = new RegExp("^(#define|#event)[ \t]" + NativeString.escapeRx(nav.def));
+			var rxDef = new RegExp("^(#define|#event|#moment)[ \t]" + NativeString.escapeRx(nav.def));
 			i = 0;
 			while (i < len) {
 				s = session.getLine(i);
@@ -126,10 +127,11 @@ class GmlFile {
 				} else i += 1;
 			}
 		}
+		//
 		var ctx = nav.ctx;
 		if (ctx != null) {
 			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
-			var rxEof = new RegExp("^(#define|#event)");
+			var rxEof = new RegExp("^(#define|#event|#moment)");
 			i = row;
 			while (i < len) {
 				s = session.getLine(i);
@@ -143,6 +145,7 @@ class GmlFile {
 				} else i += 1;
 			}
 		}
+		//
 		var pos = nav.pos;
 		if (pos != null) {
 			if (ctx == null) col = 0;
@@ -405,7 +408,9 @@ class GmlFile {
 	/** Executed when the code tab gains focus */
 	public function focus() {
 		checkChanges();
-		if (GmlAPI.version == GmlVersion.live) liveApply();
+		var version = GmlAPI.version;
+		GmlExternAPI.gmlResetOnDefine = version != GmlVersion.live && kind != SearchResults;
+		if (version == GmlVersion.live) liveApply();
 	}
 	//
 	private static function set_current(file:GmlFile) {

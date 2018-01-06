@@ -37,7 +37,7 @@
 	bottom: 0;
 	margin: auto;
 	width: 400px;
-	height: 130px;
+	height: 160px;
 	resize: both;
 	display: flex;
 }
@@ -48,6 +48,10 @@
 #global-search .search-options {
 	margin: 0;
 	width: 160px;
+}
+#global-search .search-options fieldset {
+	height: 100%;
+	box-sizing: border-box;
 }
 /* */
 #preferences-window {

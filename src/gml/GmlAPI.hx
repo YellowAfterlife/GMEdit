@@ -227,7 +227,7 @@ class GmlAPI {
 	//
 	public static function init() {
 		stdClear();
-		untyped window.gmlResetOnDefine = version != GmlVersion.live;
+		GmlExternAPI.gmlResetOnDefine = version != GmlVersion.live;
 		if (version == GmlVersion.none) return;
 		//
 		var getContent_s:String;
@@ -310,6 +310,12 @@ class GmlAPI {
 			//
 			loadStd(raw);
 		}
+	}
+}
+@:native("window") extern class GmlExternAPI {
+	static var gmlResetOnDefine:Bool;
+	static inline function init():Void {
+		gmlResetOnDefine = true;
 	}
 }
 typedef GmlLookup = {

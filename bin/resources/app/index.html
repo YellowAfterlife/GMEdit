@@ -85,16 +85,21 @@
 			<input type="button" name="replace" value="Replace All" disabled />
 			<input type="button" name="cancel" value="Cancel" />
 		</div>
+		<div style="display:none" class="searching-text">
+			Searching...
+		</div>
 	</div>
 	<div class="search-options">
 		<fieldset>
 			<legend>Options</legend>
 			<input type="checkbox" name="whole-word" /><label for="">Whole word</label><br/>
 			<input type="checkbox" name="match-case" /><label for="">Match case</label><br/>
-			<input type="checkbox" name="check-comments" checked disabled/><label for="">Look in comments</label><br/>
-			<input type="checkbox" name="check-strings" checked disabled /><label for="">Look in strings</label><br/>
+			<input type="checkbox" name="check-comments" checked /><label for="">Look in comments</label><br/>
+			<input type="checkbox" name="check-strings" checked /><label for="">Look in strings</label><br/>
 			<input type="checkbox" name="check-objects" checked /><label for="">Look in objects</label><br/>
 			<input type="checkbox" name="check-scripts" checked /><label for="">Look in scripts</label><br/>
+			<input type="checkbox" name="check-headers" checked /><label for="">Look in headers</label><br/>
+			<input type="checkbox" name="check-timelines" checked /><label for="">Look in timelines</label><br/>
 		</fieldset>
 	</div>
 </form>
