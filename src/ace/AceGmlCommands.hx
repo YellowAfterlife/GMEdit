@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap;
+import js.RegExp;
 
 /**
  * GMS-style keybinds, as per
@@ -40,12 +41,16 @@ class AceGmlCommands {
 		commands.bindKey(wm("Alt-Shift-Down", "Alt-Shift-Down"), "addCursorBelow");
 		commands.bindKey(wm("Ctrl-K", "Command-K"), "togglecomment");
 		//
-		inline function findFoldImpl(editor:AceWrap, fwd:Bool):Void {
+		var findRxs = "^#define\\b|^#event\\b|^#moment\\b|^#section\\b";
+		var findRx0 = new RegExp('(?:$findRxs|#region\\b|//{|//#region)');
+		//var findRx1 = new RegExp('(?:$findRxs)');
+		function findFoldImpl(editor:AceWrap, fwd:Bool, select:Bool):Void {
 			var session = editor.session;
 			var foldWidgets = session.foldWidgets;
 			var row = editor.selection.lead.row;
 			var steps = fwd ? (session.getLength() - 1 - row) : row;
 			var delta = fwd ? 1 : -1;
+			var rx = findRx0;
 			while (--steps >= 0) {
 				row += delta;
 				if (foldWidgets[row] == null) {
@@ -53,22 +58,42 @@ class AceGmlCommands {
 				}
 				if (foldWidgets[row] != "start") continue;
 				if (session.getFoldAt(row, 0) != null) continue;
-				editor.gotoLine(row + 1, session.getLine(row).length);
+				if (!rx.test(session.getLine(row))) continue;
+				var col = session.getLine(row).length;
+				if (select) {
+					editor.selection.selectTo(row, 0);
+				} else editor.gotoLine0(row, col);
 				break;
 			}
 		}
 		commands.addCommand({
-			name: "nextFoldWidget",
+			name: "gotoNextFoldRegion",
 			bindKey: wm("Ctrl-Down", "Command-Down"),
-			exec: function(editor:AceWrap) {
-				findFoldImpl(editor, true);
-			}
+			exec: function(editor:AceWrap) findFoldImpl(editor, true, false),
 		});
 		commands.addCommand({
-			name: "previousFoldWidget",
+			name: "gotoPreviousFoldRegion",
 			bindKey: wm("Ctrl-Up", "Command-Up"),
+			exec: function(editor:AceWrap) findFoldImpl(editor, false, false),
+		});
+		commands.addCommand({
+			name: "selectNextFoldRegion",
+			bindKey: wm("Ctrl-Shift-Down", "Command-Shift-Down"),
+			exec: function(editor:AceWrap) findFoldImpl(editor, true, true),
+		});
+		commands.addCommand({
+			name: "selectPreviousFoldRegion",
+			bindKey: wm("Ctrl-Shift-Up", "Command-Shift-Up"),
+			exec: function(editor:AceWrap) findFoldImpl(editor, false, true),
+		});
+		commands.removeCommand("gotoline");
+		commands.addCommand({
+			name: "gotoline",
+			bindKey: wm("Ctrl-G", "Command-G"),
 			exec: function(editor:AceWrap) {
-				findFoldImpl(editor, false);
+				AceWrap.loadModule("ace/ext/searchbox", function(e) {
+					AceGotoLine.run(editor);
+				});
 			}
 		});
 	}

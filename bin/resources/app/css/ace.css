@@ -163,3 +163,7 @@
     display: block;
     background: #E8E8E8;
 }
+
+.ace_search_field:first-child:last-child {
+	border-radius: 3px;
+}

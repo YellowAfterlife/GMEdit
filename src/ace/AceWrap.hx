@@ -93,9 +93,10 @@ extern class AceEditor {
 	public function getSelectedText():String;
 	public function insert(text:String, ?pasted:Bool):Void;
 	public var selection:AceSelection;
-	public var keyBinding:{ getStatusText: AceEditor->String };
+	public var keyBinding:AceKeybinding;
 	public var commands:AceCommandManager;
 	public var completer:{ exactMatch:Bool, showPopup:AceWrap->Void };
+	public var renderer:Dynamic;
 	public function focus():Void;
 	//
 	public function on(ev:String, fn:Dynamic):Void;
@@ -109,6 +110,11 @@ extern class AceEditor {
 	public static function edit(el:EitherType<String, Element>):AceEditor;
 	public static function require(path:String):Dynamic;
 	public static function define(path:String, require:Array<String>, impl:AceImpl):Void;
+}
+extern class AceKeybinding {
+	public function getStatusText(e:AceWrap):String;
+	public function addKeyboardHandler(kb:Dynamic):Void;
+	public function removeKeyboardHandler(kb:Dynamic):Void;
 }
 extern class AceCommandManager {
 	public var recording:Bool;
@@ -137,6 +143,7 @@ extern typedef AceImpl = AceRequire->AceExports->AceModule->Void;
 extern class AceSelection {
 	public function clearSelection():Void;
 	public function selectWord():Void;
+	public function selectTo(row:Int, col:Int):Void;
 	public function isEmpty():Bool;
 	public var lead:AcePos;
 	public var rangeCount:Int;

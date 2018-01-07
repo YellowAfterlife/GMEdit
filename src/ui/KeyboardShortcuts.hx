@@ -14,6 +14,7 @@ import js.html.WheelEvent;
 import ui.ChromeTabs;
 import ace.AceWrap;
 using StringTools;
+using tools.HtmlTools;
 
 /**
  * ...
@@ -120,27 +121,32 @@ class KeyboardShortcuts {
 			case KeyboardEvent.DOM_VK_T: {
 				if (flags == CTRL || flags == META) GlobalLookup.toggle();
 			};
+			case KeyboardEvent.DOM_VK_9: {
+				if (flags == CTRL || flags == META) {
+					var tabs = document.querySelectorEls(".chrome-tab");
+					var tabEl:Element = tabs[tabs.length - 1];
+					if (tabEl != null) tabEl.click();
+				}
+			};
 			default: {
-				if ((flags == CTRL  || flags == META)
+				if ((flags == CTRL || flags == META)
 				&& keyCode >= KeyboardEvent.DOM_VK_0
-				&& keyCode <= KeyboardEvent.DOM_VK_9) {
-					var tabId = keyCode - KeyboardEvent.DOM_VK_1;
-					if (tabId < 0) tabId = 9;
-					var tabs = document.querySelectorAll(".chrome-tab");
-					var tabEl:Element = cast tabs[tabId];
+				&& keyCode <= KeyboardEvent.DOM_VK_8) {
+					var tabs = document.querySelectorEls(".chrome-tab");
+					var tabEl:Element = cast tabs[keyCode - KeyboardEvent.DOM_VK_1];
 					if (tabEl != null) tabEl.click();
 				}
 			};
 		}
 	}
 	//
-	private static function openLink(meta:String) {
+	public static function openLink(meta:String) {
 		// name(def):ctx
 		var rx:RegExp = new RegExp("^(\\w+)" 
 			+ "(?:\\(([^)]*)\\))?"
 			+ "(?::(.+))?$");
 		var vals = rx.exec(meta);
-		if (vals == null) return;
+		if (vals == null) return false;
 		var name = vals[1];
 		var def = vals[2];
 		var ctx = vals[3];
@@ -168,6 +174,7 @@ class KeyboardShortcuts {
 			};
 		}
 		openLocal(name, nav);
+		return true;
 	}
 	public static function openLocal(name:String, ?nav:GmlFileNav):Bool {
 		//

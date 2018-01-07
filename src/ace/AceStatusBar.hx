@@ -19,8 +19,8 @@ class AceStatusBar {
 	static var statusBar:DivElement;
 	static var statusSpan:SpanElement;
 	static var statusHint:SpanElement;
-	private static var contextRow:Int = 0;
-	private static var contextName:String = null;
+	public static var contextRow:Int = 0;
+	public static var contextName:String = null;
 	private static var flowKeywords:Dictionary<Bool> = {
 		var q = new Dictionary();
 		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|wait".split("|")) q.set(s, true);
@@ -137,10 +137,12 @@ class AceStatusBar {
 			ctxTxt.innerText = scope;
 			ctxTxt.title = scope;
 			contextRow = startRow;
+			contextName = scope;
 		} else {
 			ctxCtr.style.display = "none";
 			ctxPre.style.display = "none";
 			contextRow = -1;
+			contextName = null;
 		}
 		var locals = GmlLocals.currentMap[scope];
 		AceGmlCompletion.localCompleter.items = locals != null
@@ -157,7 +159,7 @@ class AceStatusBar {
 		statusSpan = cast statusBar.querySelector(".ace_status-hint");
 		statusHint = cast statusBar.querySelector("#ace_status-hint");
 		statusBar.querySelector('.context').addEventListener("click", function(e:MouseEvent) {
-			Main.aceEditor.gotoLine(contextRow + 1, 0);
+			Main.aceEditor.gotoLine0(contextRow, 0);
 		});
 		editor.statusHint = statusHint;
 		//

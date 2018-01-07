@@ -106,7 +106,7 @@ class GmlFile {
 		AceSessionData.store(this);
 	}
 	//
-	private static function openPost(file:GmlFile, nav:GmlFileNav) {
+	public static function openPost(file:GmlFile, nav:GmlFileNav) {
 		var editor = Main.aceEditor;
 		var session = file.session;
 		var len = session.getLength();
@@ -120,7 +120,7 @@ class GmlFile {
 			while (i < len) {
 				s = session.getLine(i);
 				if (rxDef.test(s)) {
-					row = i + 1;
+					row = i;
 					col = s.length;
 					found = true;
 					break;
@@ -148,7 +148,7 @@ class GmlFile {
 		//
 		var pos = nav.pos;
 		if (pos != null) {
-			if (ctx == null) col = 0;
+			if (ctx == null) { col = 0; row += 1; }
 			row += pos.row;
 			col += pos.column;
 			found = true;
@@ -156,6 +156,7 @@ class GmlFile {
 		if (found) {
 			editor.gotoLine0(row, col);
 		}
+		return found;
 	}
 	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
 		// see if there's an existing tab for this:

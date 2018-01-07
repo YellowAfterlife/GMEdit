@@ -162,23 +162,26 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_string {
 	color: #FCF320;
 }
-.ace_editor.ace_autocomplete, .ace_tooltip {
+#main .ace_editor.ace_autocomplete, .ace_tooltip {
 	background: #1F1F1F;
 	color: #c0c0c0;
 	border-color: #495057;
 }
-.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
+#main .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
 	background: #495057;
 }
-.ace_search {
+#main .ace_search {
 	background: #505050;
 	color: #d0d0d0;
 	border-color: rgba(0, 0, 0, 0.5);
 }
-.ace_search .ace_button {
+#main .ace_search .ace_button {
 	color: white;
 }
-.ace_search .ace_searchbtn_close {
+#main .ace_search .ace_button:hover {
+	background-color: #606060;
+}
+#main .ace_search .ace_searchbtn_close {
 	color: white;
 }
 /* */
