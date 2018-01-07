@@ -450,8 +450,8 @@ oop.inherits(Mode, TextMode);
 
 		var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
 		var tokens = tokenizedLine.tokens;
-
-		if (tokens.length && tokens[tokens.length-1].type == "comment") {
+		
+		if (tokens.length && tokens[tokens.length-1].type.indexOf("comment") >= 0) {
 			return indent;
 		}
 
