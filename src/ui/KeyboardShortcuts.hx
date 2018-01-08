@@ -208,6 +208,7 @@ class KeyboardShortcuts {
 		return false;
 	}
 	public static function openDeclaration(pos:AcePos, token:AceToken) {
+		if (token == null) return;
 		var term = token.value;
 		//
 		if (term.charCodeAt(0) == "$".code || term.startsWith("0x")) {

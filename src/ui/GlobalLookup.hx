@@ -29,25 +29,32 @@ class GlobalLookup {
 		current = filter;
 		if (filter.length >= 2) {
 			var pattern = NativeString.escapeRx(filter);
-			var regex = new RegExp('^(.*$pattern.*)$', 'gm');
 			var selection = list.selectedOptions.length > 0
 				? list.selectedOptions[0].textContent : null;
-			var data = gml.GmlAPI.gmlLookupText;
 			var found = 0;
-			var match = regex.exec(data);
+			var foundMap = new Dictionary<Bool>();
 			list.selectedIndex = -1;
-			while (match != null) {
-				var name = match[1];
-				var option = list.children[found];
-				if (option == null) {
-					option = pool.pop();
-					if (option == null) option = document.createOptionElement();
-					list.appendChild(option);
+			var data = gml.GmlAPI.gmlLookupText;
+			for (iter in 0 ... 2) {
+				var ipatt = iter == 0 ? '^($pattern.*)$' : '^(.+$pattern.*)$';
+				var regex = new RegExp(ipatt, 'gm');
+				var match = regex.exec(data);
+				while (match != null) {
+					var name = match[1];
+					if (!foundMap[name]) {
+						foundMap.set(name, true);
+						var option = list.children[found];
+						if (option == null) {
+							option = pool.pop();
+							if (option == null) option = document.createOptionElement();
+							list.appendChild(option);
+						}
+						option.textContent = name;
+						if (name == selection) list.selectedIndex = found;
+						found += 1;
+					}
+					match = regex.exec(data);
 				}
-				option.textContent = name;
-				match = regex.exec(data);
-				if (name == selection) list.selectedIndex = found;
-				found += 1;
 			}
 			//
 			i = list.children.length;
