@@ -1,0 +1,63 @@
+.chrome-tabs .chrome-tab-close {
+  border-radius: 0px;
+}
+
+.chrome-tabs .chrome-tab-close:hover {
+  background: #40444C;
+}
+
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current > div.chrome-tab-background > svg {
+  display: none;
+}
+
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current > div.chrome-tab-background:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  right: 7px;
+  background: #232323;
+  border: 1px solid #009E59;
+  border-bottom: none;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+#tabs > div.chrome-tabs-content > div > div.chrome-tab-background > svg {
+  display: none;
+}
+
+#tabs > div.chrome-tabs-content > div > div.chrome-tab-background:before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  bottom: 0;
+  left: 7px;
+  right: 7px;
+  background: #333334;
+  border: 1px solid #181818;
+  border-bottom: none;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+#tabs > div.chrome-tabs-content > div > div.chrome-tab-title {
+  color: #696969;
+}
+
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current > div.chrome-tab-title {
+  color: white;
+}
+
+.chrome-tabs.chrome-tabs-dark-theme {
+  background: linear-gradient(to right, #181818, #00A385);
+}
+
+.project-name {
+  background: #181818 !important;
+}
+
+.treeview .dir > .header:before, .treeview .item:before {
+	background-image: url(tree.png);
+}
