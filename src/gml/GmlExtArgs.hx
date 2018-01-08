@@ -10,19 +10,19 @@ import ui.Preferences;
  */
 class GmlExtArgs {
 	public static var errorText:String;
-	private static inline var rsOpt0 = '\\s*argument_count\\s*>=\\s*(\\d+)\\s*';
+	private static inline var rsOpt0 = '\\s*argument_count\\s*>\\s*(\\d+)\\s*';
 	private static inline var rsOpt1 = '\\s*argument\\s*\\[\\s*(\\d+)\\s*\\]\\s*';
 	private static var rxOpt = new RegExp("^var\\s+(\\w+)\\s*(?:"
-		// `var q; if (argument_count >= 3) q = argument[3]; else q = `
+		// `var q; if (argument_count > 3) q = argument[3]; else q = `
 		+ ';\\s*if\\s\\($rsOpt0\\)\\s*(\\w+)\\s*=$rsOpt1;\\s*else\\s*(\\w+)\\s*='
 	+ '|'
-		// `var q = argument_count >= 3 ? argument[3] : `
+		// `var q = argument_count > 3 ? argument[3] : `
 		+ '=$rsOpt0\\?\\s*$rsOpt1\\:'
 	+ ')\\s*([^;]+);', "g");
 	private static var rxHasOpt = new RegExp('(?:\\?|=|,\\s*$)');
 	public static function pre(code:String):String {
 		var version = GmlAPI.version;
-		if (version == GmlVersion.live || !Preferences.current.argsMagic) return code;
+		if (!Preferences.current.argsMagic) return code;
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
@@ -172,7 +172,7 @@ class GmlExtArgs {
 	}
 	public static function post(code:String):Null<String> {
 		var version = GmlAPI.version;
-		if (version == GmlVersion.live || !Preferences.current.argsMagic) return code;
+		if (!Preferences.current.argsMagic) return code;
 		var q = new GmlReader(code);
 		var row = 0;
 		var out = "";
@@ -248,10 +248,10 @@ class GmlExtArgs {
 						out += ";\r\n";
 					}
 					if (version.hasTernaryOperator()) {
-						out += 'var $name = argument_count >= $found'
+						out += 'var $name = argument_count > $found'
 							+ ' ? argument[$found] : $val;\r\n';
 					} else {
-						out += 'var $name; if (argument_count >= $found)'
+						out += 'var $name; if (argument_count > $found)'
 							+ ' $name = argument[$found]; else $name = $val;\r\n';
 					}
 				} else {

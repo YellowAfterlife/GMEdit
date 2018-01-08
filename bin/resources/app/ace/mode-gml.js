@@ -405,7 +405,7 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 					/(?:,|^)\s*(?:\?\w+|\w+\s*=)/g);
 				if (argsMt != null) {
 					firstLineNumber += argsMt.length;
-					if (!/\w+\s*(?:,|$)/.test(argsText)) firstLineNumber -= 1;
+					if (!/[^?]\w+\s*(?:,|$)/.test(argsText)) firstLineNumber -= 1;
 				}
 			}
 		}
