@@ -16,6 +16,9 @@ class NativeString {
 	):String {
 		return untyped s.replace(what, by);
 	}
+	public static inline function matchRx(s:String, rx:RegExp):Array<String> {
+		return untyped s.match(rx);
+	}
 	public static function capitalize(s:String):String {
 		return s.charAt(0).toUpperCase() + s.substring(1);
 	}

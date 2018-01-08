@@ -21,19 +21,15 @@ class AceStatusBar {
 	static var statusHint:SpanElement;
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
-	private static var flowKeywords:Dictionary<Bool> = {
-		var q = new Dictionary();
-		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|wait".split("|")) q.set(s, true);
-		return q;
-	};
 	static function updateComp(editor:AceWrap, row:Int, col:Int) {
 		var iter:AceTokenIterator = untyped __new__(tokenIterator, editor.session, row, col);
 		var tk:AceToken = iter.getCurrentToken();
 		var depth = 0, index = 0;
 		var doc:GmlFuncDoc = null;
+		var fkw = GmlAPI.kwFlow;
 		while (tk != null) {
 			switch (tk.type) {
-				case "keyword": if (flowKeywords[tk.value]) break;
+				case "keyword": if (fkw[tk.value]) break;
 				case "preproc.macro": break;
 				case "macroname": break;
 				case "set.operator": break;

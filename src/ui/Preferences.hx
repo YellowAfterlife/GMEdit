@@ -103,6 +103,10 @@ class Preferences {
 			Theme.current = theme;
 			save();
 		});
+		addCheckbox("Use `#args` magic", current.argsMagic, function(z) {
+			current.argsMagic = z;
+			save();
+		});
 		addCheckbox("UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
 			GmlAPI.ukSpelling = z;
@@ -145,6 +149,7 @@ class Preferences {
 			save();
 		}
 		//
+		if (pref.argsMagic == null) pref.argsMagic = true;
 		if (pref.fileSessionTime == null) pref.fileSessionTime = 7;
 		if (pref.projectSessionTime == null) pref.projectSessionTime = 14;
 		if (pref.theme != null) Theme.current = pref.theme;
@@ -182,4 +187,5 @@ typedef PrefData = {
 	?ukSpelling:Bool,
 	?fileSessionTime:Float,
 	?projectSessionTime:Float,
+	?argsMagic:Bool,
 }

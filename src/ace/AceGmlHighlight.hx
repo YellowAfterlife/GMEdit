@@ -197,6 +197,7 @@ import haxe.extern.EitherType;
 			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
 			rxRule(["preproc.moment", "momenttime", "momentname"], ~/^(#moment[ \t]+)(\d+)(.*)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
+			rxRule("preproc.args", ~/#args\b/),
 		]; //}
 		if (version == GmlVersion.live) rBase.unshift(rTpl);
 		if (version == GmlVersion.v2) { // regions

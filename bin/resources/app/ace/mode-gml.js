@@ -396,7 +396,16 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 		lastLineNumber = text;
 		if (text != cell.textNode.data)
 			cell.textNode.data = text;
-
+		//
+		if (!reset) {
+			var argsMt = /#args\s+/.exec(rowText);
+			if (argsMt != null) {
+				argsMt = rowText.substring(argsMt.index + 5).trimLeft().match(
+					/(?:,|^)\s*(?:\?\w+|\w+\s*=)/g);
+				if (argsMt != null) firstLineNumber += argsMt.length;
+			}
+		}
+		//
 		row++;
 	}
 

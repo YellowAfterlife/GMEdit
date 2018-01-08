@@ -100,6 +100,7 @@ class GmlFile {
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(code, { path: modePath, version: GmlAPI.version });
 		session.setUndoManager(new AceUndoManager());
+		session.setOption("newLineMode", "windows");
 		session.gmlFile = this;
 	}
 	public function close():Void {
@@ -235,7 +236,10 @@ class GmlFile {
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
 			case SearchResults: code = data;
-			case Normal: code = src;
+			case Normal: {
+				code = src;
+				code = GmlExtArgs.pre(code);
+			};
 			case GmxObjectEvents: {
 				gmx = SfGmx.parse(src);
 				out = GmxObject.getCode(gmx);
@@ -270,26 +274,35 @@ class GmlFile {
 	}
 	//
 	public function save() {
-		if (path == null) return;
+		if (path == null) return false;
 		var val = session.getValue();
 		code = val;
+		inline function error(s:String) {
+			Main.window.alert(s);
+			return false;
+		}
 		//
 		var out:String, src:String, gmx:SfGmx;
 		switch (kind) {
-			case Normal, Extern: out = val;
+			case Extern: out = val;
+			case Normal: {
+				out = val;
+				out = GmlExtArgs.post(out);
+				if (out == null) {
+					return error("Can't process macro:\n" + GmlExtArgs.errorText);
+				}
+			};
 			case GmxObjectEvents: {
 				gmx = FileSystem.readGmxFileSync(path);
 				if (!GmxObject.updateCode(gmx, val)) {
-					Main.window.alert("Can't update GMX:\n" + GmxObject.errorText);
-					return;
+					return error("Can't update GMX:\n" + GmxObject.errorText);
 				}
 				out = gmx.toGmxString();
 			};
 			case GmxTimelineMoments: {
 				gmx = FileSystem.readGmxFileSync(path);
 				if (!GmxTimeline.setCode(gmx, val)) {
-					Main.window.alert("Can't update GMX:\n" + GmxTimeline.errorText);
-					return;
+					return error("Can't update GMX:\n" + GmxTimeline.errorText);
 				}
 				out = gmx.toGmxString();
 			};
@@ -307,22 +320,18 @@ class GmlFile {
 			case YyObjectEvents: {
 				var obj:YyObject = FileSystem.readJsonFileSync(path);
 				if (!obj.setCode(path, val)) {
-					Main.window.alert("Can't update YY:\n" + YyObject.errorText);
-					return;
+					return error("Can't update YY:\n" + YyObject.errorText);
 				}
 				out = haxe.Json.stringify(obj, null, "    ");
 			};
 			case YyTimelineMoments: {
 				var tl:YyTimeline = FileSystem.readJsonFileSync(path);
 				if (!tl.setCode(path, val)) {
-					Main.window.alert("Can't update YY:\n" + YyTimeline.errorText);
-					return;
+					return error("Can't update YY:\n" + YyTimeline.errorText);
 				}
 				out = haxe.Json.stringify(tl, null, "    ");
 			};
-			default: {
-				return;
-			};
+			default: return false;
 		}
 		//
 		FileSystem.writeFileSync(path, out);
@@ -342,6 +351,7 @@ class GmlFile {
 				}
 			}
 		}
+		return true;
 	}
 	//
 	public function liveApply() {

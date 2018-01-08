@@ -119,9 +119,11 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_eventname {
 	color: #77BB5B;
 }
-#main .gml .ace_identifier,
-#main .gml .ace_field {
+#main .gml .ace_identifier {
 	color: #B2B1FF;
+}
+#main .gml .ace_field {
+	color: #CC9FFF;
 }
 #main .gml .ace_asset,
 #main .gml .ace_macro,

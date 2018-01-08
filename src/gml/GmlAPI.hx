@@ -31,7 +31,12 @@ class GmlAPI {
 		"self", "other", "noone", "all", "global", "local",
 		"mod", "div", "not", "and", "or", "xor", "enum"
 	];
-	public static var kwMap:Dictionary<Bool> = new Dictionary();
+	/** whether something is a "flow" (branching, etc. - delimiting) keyword */
+	public static var kwFlow:Dictionary<Bool> = {
+		var q = new Dictionary();
+		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|wait".split("|")) q.set(s, true);
+		return q;
+	};
 	//
 	public static var scopeResetRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
 	//
@@ -45,16 +50,19 @@ class GmlAPI {
 	public static function stdClear() {
 		stdDoc = new Dictionary();
 		stdComp.clear();
-		var q = new Dictionary();
-		for (kw in kwList) q.set(kw, "keyword");
-		if (version == GmlVersion.live) {
-			q.set("wait", "keyword");
-			q.set("in", "keyword");
-			q.set("try", "keyword");
-			q.set("catch", "keyword");
-			q.set("throw", "keyword");
+		var sk = new Dictionary();
+		inline function add(s:String) {
+			sk.set(s, "keyword");
 		}
-		stdKind = q;
+		for (s in kwList) add(s);
+		if (version == GmlVersion.live) {
+			add("wait");
+			add("in");
+			add("try");
+			add("catch");
+			add("throw");
+		}
+		stdKind = sk;
 	}
 	// extension scope
 	public static var extDoc:Dictionary<GmlFuncDoc> = new Dictionary();

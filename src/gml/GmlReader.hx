@@ -99,13 +99,14 @@ class GmlReader extends StringReader {
 			default: return 0;
 		}
 	}
-	
+	/** Skips spaces/tabs */
 	public inline function skipSpaces0() {
 		while (loop) {
-			var c = peek();
-			if (c.isSpace0()) {
-				skip();
-			} else break;
+			switch (peek()) {
+				case " ".code, "\t".code: {
+					skip(); continue;
+				};
+			}; break;
 		}
 	}
 	

@@ -201,7 +201,7 @@ class GmlSeeker {
 				case "globalvar": {
 					while (q.loop) {
 						s = find(Ident | Semico);
-						if (s == null || s == ";" || GmlAPI.kwMap.exists(s)) break;
+						if (s == null || s == ";" || GmlAPI.kwFlow.exists(s)) break;
 						var g = new GmlGlobalVar(s, orig);
 						out.globalVarList.push(g);
 						out.globalVarMap.set(s, g);

@@ -30,6 +30,9 @@ package gml;
 	public inline function hasTemplateStrings() {
 		return this == live;
 	}
+	public inline function hasTernaryOperator() {
+		return this != v1;
+	}
 	
 	public function getName() {
 		return null;
