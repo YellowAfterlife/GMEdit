@@ -17,9 +17,11 @@ class GmlReader extends StringReader {
 	}
 	/** Skips to the end of the current line */
 	public inline function skipLine() {
-		while (loop) switch (peek()) {
-			case "\n".code, "\r".code: break;
-			default: skip();
+		while (loop) {
+			switch (peek()) {
+				case "\n".code, "\r".code: // ->
+				default: skip(); continue;
+			}; break;
 		}
 	}
 	/** Skips a single `\n` / `\r\n`, if any */
@@ -104,6 +106,15 @@ class GmlReader extends StringReader {
 		while (loop) {
 			switch (peek()) {
 				case " ".code, "\t".code: {
+					skip(); continue;
+				};
+			}; break;
+		}
+	}
+	public inline function skipSpaces1() {
+		while (loop) {
+			switch (peek()) {
+				case " ".code, "\t".code, "\r".code, "\n".code: {
 					skip(); continue;
 				};
 			}; break;

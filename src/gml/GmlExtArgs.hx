@@ -42,7 +42,7 @@ class GmlExtArgs {
 			q.skipLine();
 			rxOpt.lastIndex = 0;
 			var hasReq = !rxOpt.test(q.substring(pos, q.pos));
-			q.pos = pos + 3;
+			q.pos = pos + (hasReq ? 3 : 0);
 			// pass 1: required arguments (could do regexp..?)
 			if (hasReq) while (q.loop) {
 				//
@@ -104,7 +104,7 @@ class GmlExtArgs {
 			var req = found;
 			var till = q.pos;
 			while (q.loop) {
-				q.skipSpaces0();
+				q.skipSpaces1();
 				pos = q.pos;
 				q.skipIdent1();
 				s = q.substring(pos, q.pos);

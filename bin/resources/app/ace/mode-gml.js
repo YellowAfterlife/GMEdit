@@ -400,9 +400,13 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 		if (!reset) {
 			var argsMt = /#args\s+/.exec(rowText);
 			if (argsMt != null) {
-				argsMt = rowText.substring(argsMt.index + 5).trimLeft().match(
+				var argsText = rowText.substring(argsMt.index + 5).trimLeft();
+				argsMt = argsText.match(
 					/(?:,|^)\s*(?:\?\w+|\w+\s*=)/g);
-				if (argsMt != null) firstLineNumber += argsMt.length;
+				if (argsMt != null) {
+					firstLineNumber += argsMt.length;
+					if (!/\w+\s*(?:,|$)/.test(argsText)) firstLineNumber -= 1;
+				}
 			}
 		}
 		//
