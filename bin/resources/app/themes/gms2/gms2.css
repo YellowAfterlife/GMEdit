@@ -24,6 +24,26 @@
   border-top-right-radius: 2px;
 }
 
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current:not(:first-child):before {
+  content: '';
+  background: linear-gradient(to right, transparent, #017E4E);
+  position: absolute;
+  right: calc(100% - 7px);
+  top: calc(100% - 1px);
+  left: -50%;
+  bottom: 0;
+}
+
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current:not(:last-child):after {
+  content: '';
+  background: linear-gradient(to left, transparent, #017E4E);
+  position: absolute;
+  left: calc(100% - 7px);
+  top: calc(100% - 1px);
+  right: -50%;
+  bottom: 0;
+}
+
 #tabs > div.chrome-tabs-content > div > div.chrome-tab-background > svg {
   display: none;
 }
