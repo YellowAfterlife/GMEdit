@@ -208,22 +208,22 @@ class KeyboardShortcuts {
 		return false;
 	}
 	public static function openDeclaration(pos:AcePos, token:AceToken) {
-		if (token == null) return;
+		if (token == null) return false;
 		var term = token.value;
 		//
 		if (term.charCodeAt(0) == "$".code || term.startsWith("0x")) {
 			ColorPicker.open(term);
-			return;
+			return true;
 		}
 		//
 		if (term.substring(0, 2) == "@[") {
 			var rx = new RegExp("^@\\[(.*)\\]");
 			var vals = rx.exec(term);
 			if (vals != null) openLink(vals[1]);
-			return;
+			return true;
 		}
 		//
-		if (openLocal(term, null)) return;
+		if (openLocal(term, null)) return true;
 		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
@@ -232,16 +232,25 @@ class KeyboardShortcuts {
 				var helpTerm = helpLookup[term];
 				if (helpTerm != null) {
 					Shell.openExternal(helpURL.replace("$1", helpTerm));
+					return true;
 				}
-			} else Shell.openExternal(helpURL.replace("$1", term));
+			} else {
+				Shell.openExternal(helpURL.replace("$1", term));
+				return true;
+			}
 		}
+		return false;
 	}
 	public static function mousedown(ev:Dynamic) {
 		var dom:MouseEvent = ev.domEvent;
 		if (dom.button != 1) return;
-		dom.preventDefault();
 		var pos:AcePos = ev.getDocumentPosition();
-		openDeclaration(pos, aceEditor.session.getTokenAtPos(pos));
+		var line = aceEditor.session.getLine(pos.row);
+		if (line != null && pos.column < line.length
+			&& openDeclaration(pos, aceEditor.session.getTokenAtPos(pos))
+		) {
+			dom.preventDefault();
+		}
 	}
 	public static function mousewheel(ev:Dynamic) {
 		var dom:WheelEvent = ev.domEvent;

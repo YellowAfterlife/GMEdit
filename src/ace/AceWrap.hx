@@ -97,6 +97,7 @@ extern class AceEditor {
 	public var commands:AceCommandManager;
 	public var completer:{ exactMatch:Bool, showPopup:AceWrap->Void };
 	public var renderer:Dynamic;
+	public var container:Element;
 	public function focus():Void;
 	//
 	public function on(ev:String, fn:Dynamic):Void;

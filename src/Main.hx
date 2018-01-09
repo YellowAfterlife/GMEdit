@@ -8,6 +8,7 @@ import gml.*;
 import haxe.io.Path;
 import js.Lib;
 import tools.*;
+import js.html.Console;
 import js.html.DivElement;
 import js.html.DragEvent;
 import js.html.Element;
@@ -27,6 +28,11 @@ class Main {
 	public static var window(get, never):Window;
 	private static inline function get_window() {
 		return untyped __js__("window");
+	}
+	//
+	public static var console(get, never):Console;
+	private static inline function get_console() {
+		return untyped __js__("console");
 	}
 	//
 	public static var document(get, never):HTMLDocument;
@@ -99,6 +105,7 @@ class Main {
 		};
 		aceEditor.session = WelcomePage.init(aceEditor);
 		KeyboardShortcuts.initEditor();
+		ScrollMode.init();
 		ace.AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//

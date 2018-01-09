@@ -15995,7 +15995,9 @@ var ScrollBar = function(parent) {
     this.skipEvent = false;
 
     event.addListener(this.element, "scroll", this.onScroll.bind(this));
-    event.addListener(this.element, "mousedown", event.preventDefault);
+    event.addListener(this.element, "mousedown", function(e) {
+		if (e.button != 1) e.preventDefault();
+	});
 };
 
 (function() {
