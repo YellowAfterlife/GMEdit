@@ -94,7 +94,7 @@ class GmlFile {
 		} else context = name;
 		var modePath = switch (this.kind) {
 			case SearchResults: "ace/mode/gml_search";
-			case Extern: "ace/mode/text";
+			case Extern, Plain: "ace/mode/text";
 			default: "ace/mode/gml";
 		}
 		//
@@ -168,6 +168,7 @@ class GmlFile {
 		var kind:GmlFileKind;
 		switch (ext) {
 			case "gml": kind = Normal;
+			case "shader", "vsh", "fsh": kind = Plain;
 			case "gmx": {
 				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
 				kind = switch (ext) {
@@ -184,6 +185,9 @@ class GmlFile {
 					case "GMObject": {
 						data = json;
 						kind = YyObjectEvents;
+					};
+					case "GMShader": {
+						kind = YyShader;
 					};
 					case "GMTimeline": {
 						data = json;
@@ -217,17 +221,25 @@ class GmlFile {
 		var kind = kd.kind;
 		var data = kd.data;
 		//
-		if (kind != Extern) {
-			var file = new GmlFile(name, path, kind, data);
-			openTab(file);
-			Main.window.setTimeout(function() {
-				Main.aceEditor.focus();
-				if (nav != null) file.navigate(nav);
-			});
-			return file;
-		} else {
-			electron.Shell.openItem(path);
-			return null;
+		switch (kind) {
+			case Extern: {
+				electron.Shell.openItem(path);
+				return null;
+			};
+			case YyShader: {
+				open(name + ".vsh", Path.withoutExtension(path) + ".vsh");
+				open(name + ".fsh", Path.withoutExtension(path) + ".fsh");
+				return null;
+			};
+			default: {
+				var file = new GmlFile(name, path, kind, data);
+				openTab(file);
+				Main.window.setTimeout(function() {
+					Main.aceEditor.focus();
+					if (nav != null) file.navigate(nav);
+				});
+				return file;
+			};
 		}
 	}
 	public static function openTab(file:GmlFile) {
@@ -252,6 +264,8 @@ class GmlFile {
 		}
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
+			case YyShader: code = "";
+			case Plain: code = src;
 			case SearchResults: code = data;
 			case Normal: {
 				code = src;
@@ -324,6 +338,7 @@ class GmlFile {
 		var writeFile:Bool = true;
 		switch (kind) {
 			case Extern: out = val;
+			case Plain: out = val;
 			case Normal: {
 				out = val;
 				out = GmlExtArgs.post(out);
@@ -498,6 +513,8 @@ class GmlFile {
 enum GmlFileKind {
 	/** Marks things that cannot be opened in GMEdit itself */
 	Extern;
+	/** Plaintext - no highlighting */
+	Plain;
 	/** */
 	Normal;
 	/** */
@@ -508,6 +525,7 @@ enum GmlFileKind {
 	GmxConfigMacros;
 	YyObjectEvents;
 	YyTimelineMoments;
+	YyShader;
 	SearchResults;
 }
 typedef GmlFileNav = {

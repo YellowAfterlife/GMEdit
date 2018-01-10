@@ -96,7 +96,7 @@ class YyLoader {
 						};
 						case "GMShader": {
 							GmlAPI.gmlLookupText += name + "\n";
-							full = Path.directory(full);
+							//full = Path.directory(full);
 						};
 						case "GMTimeline": {
 							GmlAPI.gmlLookupText += name + "\n";

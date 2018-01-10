@@ -17,6 +17,7 @@ import tools.Dictionary;
 	public static var globalCompleter:AceGmlCompletion;
 	public static var keynameCompleter:AceGmlCompletion;
 	public static var noItems:AceAutoCompleteItems = [];
+	public static var modeFilter:Dictionary<Bool>;
 	//
 	public var items:AceAutoCompleteItems;
 	public var tokenFilter:Dictionary<Bool>;
@@ -33,7 +34,7 @@ import tools.Dictionary;
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
 	):Void {
-		if (prefix.length < 2) {
+		if (prefix.length < 2 || !modeFilter[session.getOption("mode")]) {
 			callback(null, []);
 			return;
 		}
@@ -50,6 +51,10 @@ import tools.Dictionary;
 	}
 	//
 	public static function init(editor:AceWrap) {
+		//
+		modeFilter = new Dictionary();
+		modeFilter.set("ace/mode/gml", true);
+		modeFilter.set("ace/mode/gml_search", true);
 		// tokens to not show normal auto-completion in
 		var excl = [
 			"comment", "comment.doc", "comment.line", "comment.line.doc",

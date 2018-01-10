@@ -5,6 +5,8 @@ import haxe.io.Path;
 import js.html.Element;
 import gml.GmlFile;
 using tools.HtmlTools;
+using tools.NativeString;
+using tools.NativeArray;
 import Main.*;
 
 /**
@@ -51,6 +53,14 @@ class TreeViewMenus {
 		}
 	}
 	//
+	static var shaderItems:Array<MenuItem>;
+	static function openYyShader(ext:String) {
+		var name = target.getAttribute(TreeView.attrIdent) + "." + ext;
+		var path = target.getAttribute(TreeView.attrPath);
+		path = Path.withoutExtension(path) + "." + ext;
+		GmlFile.open(name, path);
+	}
+	//
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);
 		electron.Shell.openItem(path);
@@ -67,8 +77,10 @@ class TreeViewMenus {
 		dirMenu.popupAsync();
 	}
 	public static function showItemMenu(el:Element) {
+		var z:Bool;
 		target = el;
-		
+		z = gml.GmlAPI.version == v2 && el.getAttribute(TreeView.attrKind) == "shader";
+		shaderItems.forEach(function(q) q.visible = z);
 		itemMenu.popupAsync();
 	}
 	//
@@ -80,6 +92,10 @@ class TreeViewMenus {
 			return add_item;
 		}
 		itemMenu = new Menu();
+		shaderItems = [
+			add(itemMenu, { label: "Open vertex shader", click: function() openYyShader("vsh") }),
+			add(itemMenu, { label: "Open fragment shader", click: function() openYyShader("fsh") }),
+		];
 		add(itemMenu, { label: "Open externally", click: openExternal });
 		add(itemMenu, { label: "Show in directory", click: openDirectory });
 		//
