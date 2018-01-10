@@ -2,13 +2,15 @@
 	line-height: 1.35;
 	overflow: auto;
 }
-.treeview .dir {
-	
+.treeview .dir .header {
+  -webkit-user-select: none;
+  user-select: none;
 }
 .treeview .dir .header,
 .treeview .item,
 .treeview .items {
-	border-left: 2px solid #f3f3f3;
+  border-left: 2px solid #f3f3f3;
+  -webkit-user-select: none;
 	user-select: none;
 }
 /*.treeview .items > div {
