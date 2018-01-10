@@ -1,4 +1,5 @@
 package electron;
+import haxe.Constraints.Function;
 import haxe.extern.EitherType;
 
 /**
@@ -29,10 +30,10 @@ typedef MenuPopupOptions = {
 	var visible:Bool;
 	var checked:Bool;
 	var label:String;
-	var click:Void->Void;
+	var click:Function;
 }
 typedef MenuItemOptions = {
-	?click:MenuItem->Dynamic->js.html.Event->Void,
+	?click:Function,
 	?role:String,
 	?type:String,
 	?label:String,

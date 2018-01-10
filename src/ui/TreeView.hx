@@ -25,71 +25,25 @@ class TreeView {
 	public static function clear() {
 		element.innerHTML = "";
 	}
-	//{
-	/** whatever that invoked the context menu */
-	static var ctxTarget:Element;
-	static var ctxMenuDir:Menu;
 	//
-	static var ctxOpenAllItem:MenuItem;
-	static function ctxOpenAll(_, _, _) {
-		var found = 0;
-		var els = ctxTarget.querySelectorEls('.item');
-		if (els.length < 50 || Dialog.showMessageBox({
-			message: "Are you sure that you want to open " + els.length + " tabs?",
-			buttons: ["Yes", "No"],
-			cancelId: 1,
-		}) == ) for (el in els) {
-			window.setTimeout(function() {
-				GmlFile.open(el.innerText, el.getAttribute(attrPath));
-			}, found * 50);
-			found += 1;
-		}
-	}
-	//
-	static var ctxOpenCombinedItem:MenuItem;
-	static function ctxOpenCombined(_, _, _) {
-		var items = [];
-		var error = "";
-		var mpath = "";
-		for (item in ctxTarget.querySelectorEls('.item[$attrKind="script"]')) {
-			var path = item.getAttribute(attrPath);
-			var ident = item.getAttribute(attrIdent);
-			if (mpath != "") mpath += "|";
-			mpath += path;
-			items.push({ name: ident, path: path });
-		}
-		if (items.length > 0) {
-			var name = ctxTarget.querySelector('.header').innerText;
-			GmlFile.openTab(new GmlFile(name, mpath, Multifile, items));
-		}
-	}
-	//
-	static function ctxInit() {
-		ctxMenuDir = new Menu();
-		ctxOpenAllItem = new MenuItem({ label: "Open all", click: ctxOpenAll });
-		ctxMenuDir.append(ctxOpenAllItem);
-		ctxOpenCombinedItem = new MenuItem({ label: "Open combined view", click: ctxOpenCombined });
-		ctxMenuDir.append(ctxOpenCombinedItem);
-	}
-	//}
 	static function handleDirClick(e:MouseEvent) {
 		e.preventDefault();
 		var el:Element = cast e.target;
 		el = el.parentElement;
 		if (e.altKey) {
-			ctxTarget = el;
-			ctxOpenCombined(null, null, null);
+			TreeViewMenus.target = el;
+			TreeViewMenus.openCombined();
 		} else {
 			var cl = el.classList;
 			if (cl.contains("open")) cl.remove("open"); else cl.add("open");
 		}
 	}
 	static function handleDirCtxMenu(e:Event) {
-		ctxTarget = cast e.target;
-		ctxTarget = ctxTarget.parentElement;
-		ctxOpenAllItem.enabled = ctxTarget.querySelector('.item') != null;
-		ctxOpenCombinedItem.enabled = ctxTarget.querySelector('.item[$attrKind="script"]') != null;
-		ctxMenuDir.popupAsync();
+		var el:Element = cast e.target;
+		TreeViewMenus.showDirMenu(el.parentElement);
+	}
+	static function handleItemCtxMenu(e:Event) {
+		TreeViewMenus.showItemMenu(cast e.target);
 	}
 	public static function makeDir(name:String, rel:String):TreeViewDir {
 		var r:TreeViewDir = cast document.createDivElement();
@@ -137,6 +91,7 @@ class TreeView {
 		var r = makeItemImpl(name, path, kind);
 		r.setAttribute(attrRel, rel);
 		r.addEventListener("dblclick", handleItemClick);
+		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;
 	}
 	//
@@ -150,6 +105,7 @@ class TreeView {
 		var r = makeItemImpl(name, path, "project");
 		r.title = path;
 		r.addEventListener("dblclick", openProject);
+		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;
 	}
 	//
@@ -172,7 +128,6 @@ class TreeView {
 	//
 	public static function init() {
 		element = cast Main.document.querySelector(".treeview");
-		ctxInit();
 	}
 }
 extern class TreeViewDir extends DivElement {
