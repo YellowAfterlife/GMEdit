@@ -3,6 +3,7 @@ import ace.AceGmlCompletion;
 import ace.AceSessionData;
 import electron.Dialog;
 import electron.FileSystem;
+import gml.GmlMultifile;
 import js.RegExp;
 import js.html.Element;
 import ace.AceWrap;
@@ -34,7 +35,7 @@ class GmlFile {
 	/** Source file change time */
 	public var time:Float = 0;
 	public inline function syncTime() {
-		if (path != null) try {
+		if (path != null && kind != Multifile) try {
 			time = FileSystem.statSync(path).mtimeMs;
 		} catch (_:Dynamic) { }
 	}
@@ -78,6 +79,8 @@ class GmlFile {
 		return z;
 	}
 	
+	public var multidata:Array<{ name:String, path:String }>;
+	
 	//
 	public function new(name:String, path:String, kind:GmlFileKind, ?data:Dynamic) {
 		this.name = name;
@@ -89,8 +92,9 @@ class GmlFile {
 		} else if (kind == SearchResults) {
 			context = name + "#" + (searchId++);
 		} else context = name;
-		var modePath = switch (kind) {
+		var modePath = switch (this.kind) {
 			case SearchResults: "ace/mode/gml_search";
+			case Extern: "ace/mode/text";
 			default: "ace/mode/gml";
 		}
 		//
@@ -107,9 +111,8 @@ class GmlFile {
 		AceSessionData.store(this);
 	}
 	//
-	public static function openPost(file:GmlFile, nav:GmlFileNav) {
+	public function navigate(nav:GmlFileNav):Bool {
 		var editor = Main.aceEditor;
-		var session = file.session;
 		var len = session.getLength();
 		//
 		var found = false;
@@ -159,22 +162,10 @@ class GmlFile {
 		}
 		return found;
 	}
-	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
-		// see if there's an existing tab for this:
-		for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
-			var gmlFile:GmlFile = untyped tabEl.gmlFile;
-			if (gmlFile != null && gmlFile.path == path) {
-				tabEl.click();
-				if (nav != null) Main.window.setTimeout(function() {
-					openPost(gmlFile, nav);
-				});
-				return gmlFile;
-			}
-		}
-		// determine what to do with the file:
-		var kind:GmlFileKind;
+	public static function getKind(path:String):{kind:GmlFileKind, data:Null<Dynamic>} {
 		var ext = Path.extension(path).toLowerCase();
 		var data:Dynamic = null;
+		var kind:GmlFileKind;
 		switch (ext) {
 			case "gml": kind = Normal;
 			case "gmx": {
@@ -207,22 +198,43 @@ class GmlFile {
 			};
 			default: kind = Extern;
 		}
+		return { kind: kind, data: data };
+	}
+	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
+		// see if there's an existing tab for this:
+		for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
+			var gmlFile:GmlFile = untyped tabEl.gmlFile;
+			if (gmlFile != null && gmlFile.path == path) {
+				tabEl.click();
+				if (nav != null) Main.window.setTimeout(function() {
+					gmlFile.navigate(nav);
+				});
+				return gmlFile;
+			}
+		}
+		// determine what to do with the file:
+		var kd = getKind(path);
+		var kind = kd.kind;
+		var data = kd.data;
 		//
 		if (kind != Extern) {
 			var file = new GmlFile(name, path, kind, data);
-			AceSessionData.restore(file);
-			// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
-			GmlFile.next = file;
-			ui.ChromeTabs.addTab(name);
+			openTab(file);
 			Main.window.setTimeout(function() {
 				Main.aceEditor.focus();
-				if (nav != null) openPost(file, nav);
+				if (nav != null) file.navigate(nav);
 			});
 			return file;
 		} else {
 			electron.Shell.openItem(path);
 			return null;
 		}
+	}
+	public static function openTab(file:GmlFile) {
+		if (file.path != null) AceSessionData.restore(file);
+		// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
+		GmlFile.next = file;
+		ui.ChromeTabs.addTab(file.name);
 	}
 	//
 	/**
@@ -233,6 +245,11 @@ class GmlFile {
 		var src:String = data != null ? null : FileSystem.readTextFileSync(path);
 		syncTime();
 		var gmx:SfGmx, out:String, errors:String;
+		function setError(s:String) {
+			code = s;
+			path = null;
+			kind = Extern;
+		}
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
 			case SearchResults: code = data;
@@ -240,21 +257,42 @@ class GmlFile {
 				code = src;
 				code = GmlExtArgs.pre(code);
 			};
+			case Multifile: {
+				multidata = data;
+				out = ""; errors = "";
+				for (item in multidata) {
+					if (out != "") out += "\n\n";
+					out += "#define " + item.name + "\n";
+					var itemCode = FileSystem.readTextFileSync(item.path);
+					var itemSubs = GmlMultifile.split(itemCode, item.name);
+					if (itemSubs == null) {
+						errors += "Can't open " + item.name
+							+ " for editing: " + GmlMultifile.errorText + "\n";
+					} else switch (itemSubs.length) {
+						case 0: { };
+						case 1: out += NativeString.trimRight(GmlExtArgs.pre(itemSubs[0].code));
+						default: errors += "Can't open " + item.name
+							+ " for editing because it contains multiple scripts.\n";
+					}
+				}
+				if (errors == "") {
+					GmlSeeker.runSync(path, out, "");
+					code = out;
+				} else setError(errors);
+			};
 			case GmxObjectEvents: {
 				gmx = SfGmx.parse(src);
 				out = GmxObject.getCode(gmx);
-				if (out == null) {
-					code = GmxObject.errorText;
-					path = null;
-				} else code = out;
+				if (out != null) {
+					code = out;
+				} else setError(GmxObject.errorText);
 			};
 			case GmxTimelineMoments: {
 				gmx = SfGmx.parse(src);
 				out = GmxTimeline.getCode(gmx);
-				if (out == null) {
-					code = GmxObject.errorText;
-					path = null;
-				} else code = out;
+				if (out != null) {
+					code = out;
+				} else setError(GmxObject.errorText);
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = SfGmx.parse(src);
@@ -283,6 +321,7 @@ class GmlFile {
 		}
 		//
 		var out:String, src:String, gmx:SfGmx;
+		var writeFile:Bool = true;
 		switch (kind) {
 			case Extern: out = val;
 			case Normal: {
@@ -291,6 +330,27 @@ class GmlFile {
 				if (out == null) {
 					return error("Can't process macro:\n" + GmlExtArgs.errorText);
 				}
+			};
+			case Multifile: {
+				out = val;
+				out = GmlExtArgs.post(out);
+				if (out == null) {
+					return error("Can't process macro:\n" + GmlExtArgs.errorText);
+				}
+				//
+				writeFile = false;
+				var next = GmlMultifile.split(out, "<detached code>");
+				var map0 = new Dictionary<String>();
+				for (item in multidata) map0.set(item.name, item.path);
+				var errors = "";
+				for (item in next) {
+					var itemPath = map0[item.name];
+					if (itemPath != null) {
+						FileSystem.writeFileSync(itemPath, item.code);
+					} else errors += "Can't save script " + item.name
+						+ " because it is not among the edited group.\n";
+				}
+				if (errors != "") error(errors);
 			};
 			case GmxObjectEvents: {
 				gmx = FileSystem.readGmxFileSync(path);
@@ -334,7 +394,7 @@ class GmlFile {
 			default: return false;
 		}
 		//
-		FileSystem.writeFileSync(path, out);
+		if (writeFile) FileSystem.writeFileSync(path, out);
 		syncTime();
 		changed = false;
 		session.getUndoManager().markClean();
@@ -368,7 +428,7 @@ class GmlFile {
 		}
 	}
 	public function checkChanges() {
-		if (path != null) try {
+		if (path != null && kind != Multifile) try {
 			var time1 = FileSystem.statSync(path).mtimeMs;
 			if (time1 > time) {
 				time = time1;
@@ -435,9 +495,13 @@ class GmlFile {
 		return file;
 	}
 }
-@:fakeEnum(Int) enum GmlFileKind {
+enum GmlFileKind {
+	/** Marks things that cannot be opened in GMEdit itself */
 	Extern;
+	/** */
 	Normal;
+	/** */
+	Multifile;
 	GmxObjectEvents;
 	GmxTimelineMoments;
 	GmxProjectMacros;

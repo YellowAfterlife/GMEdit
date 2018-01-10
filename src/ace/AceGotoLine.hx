@@ -86,7 +86,7 @@ class AceGotoLine {
 							} else nav.ctx = ctx;
 						}
 					} else nav = { def: val };
-					if (!GmlFile.openPost(GmlFile.current, nav)) return;
+					if (!GmlFile.current.navigate(nav)) return;
 				} else {
 					row -= 1;
 					if (GmlExternAPI.gmlResetOnDefine) {

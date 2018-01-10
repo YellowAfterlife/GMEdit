@@ -42,6 +42,7 @@
 .treeview .header > span,
 .treeview .item > span {
 	display: inline-block;
+	pointer-events: none;
 	/*width: 100%;*/
 }
 .treeview .dir > .header:before {

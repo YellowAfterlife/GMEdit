@@ -38,7 +38,7 @@ class GmxLoader {
 				}
 				GmlAPI.gmlLookupText += name + "\n";
 				gml.GmlSeeker.run(full, _main);
-				out.appendChild(TreeView.makeItem(name, path, full));
+				out.appendChild(TreeView.makeItem(name, path, full, one));
 			} else {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
@@ -72,7 +72,7 @@ class GmxLoader {
 					var extFilePath = Path.join([extNode.text, extFileName]);
 					var extFileFull = Path.join([dir, extFilePath]);
 					extDir.treeItems.appendChild(TreeView.makeItem(
-						extFileName, extFilePath, extFileFull
+						extFileName, extFilePath, extFileFull, "extfile"
 					));
 					//
 					for (funcs in extFile.findAll("functions"))
@@ -103,13 +103,13 @@ class GmxLoader {
 		//
 		var mcrDir = TreeView.makeDir("Macros", "macros/");
 		var mcrItems = mcrDir.querySelector(".items");
-		mcrItems.appendChild(TreeView.makeItem("All configurations", "Configs/default", path));
+		mcrItems.appendChild(TreeView.makeItem("All configurations", "Configs/default", path, "config"));
 		for (configs in gmx.findAll("Configs")) {
 			for (config in configs.findAll("Config")) {
 				var configPath = config.text;
 				var configName = rxName.replace(configPath, "$1");
 				var configFull = Path.join([dir, configPath + ".config.gmx"]);
-				mcrItems.appendChild(TreeView.makeItem(configName, configPath, configFull));
+				mcrItems.appendChild(TreeView.makeItem(configName, configPath, configFull, "config"));
 			}
 		}
 		tv.appendChild(mcrDir);

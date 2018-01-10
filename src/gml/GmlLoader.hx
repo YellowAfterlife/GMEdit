@@ -20,7 +20,7 @@ class GmlLoader {
 					var nd = TreeView.makeDir(item, rel);
 					loadrec(nd.treeItems, full, rel);
 					rd.push(nd);
-				} else rf.push(TreeView.makeItem(item, rel, full));
+				} else rf.push(TreeView.makeItem(item, rel, full, "module"));
 			}
 			for (el in rd) out.appendChild(el);
 			for (el in rf) out.appendChild(el);

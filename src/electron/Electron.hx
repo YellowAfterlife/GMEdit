@@ -22,5 +22,7 @@ import haxe.extern.EitherType;
 		load("Electron_FS", "fs");
 		set("Electron_Dialog", remote.dialog);
 		set("Electron_Shell", shell);
+		set("Electron_Menu", remote.Menu);
+		set("Electron_MenuItem", remote.MenuItem);
 	}
 }

@@ -172,6 +172,8 @@ extern class AceSelection {
 	public function getValue():String;
 	public function setValue(v:String):Void;
 	//
+	public function setMode(s:String):Void;
+	//
 	public function setAnnotations(arr:Array<AceAnnotation>):Void;
 	public function clearAnnotations():Void;
 	//

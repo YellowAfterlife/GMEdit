@@ -116,6 +116,13 @@ class Main {
 		Project.init();
 		AceStatusBar.statusUpdate();
 		//
+		try {
+			Type.resolveClass("Main");
+			untyped __js__("window.$hxClasses = $hxClasses");
+		} catch (x:Dynamic) {
+			trace("Couldn't expose hxClasses: " + x);
+		}
+		//
 		trace("hi!");
 		return null;
 	}

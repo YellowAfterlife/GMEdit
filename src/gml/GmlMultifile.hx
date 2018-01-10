@@ -1,0 +1,66 @@
+package gml;
+import tools.Dictionary;
+import tools.NativeString;
+
+/**
+ * ...
+ * @author YellowAfterlife
+ */
+class GmlMultifile {
+	public static var errorText:String;
+	public static function split(gmlCode:String, first:String):GmlMultifileData {
+		var q = new GmlReader(gmlCode);
+		var start = 0;
+		var out:GmlMultifileData = [];
+		var scriptName = first;
+		var errors = "";
+		var version = GmlAPI.version;
+		function flush(till:Int) {
+			if (start > 0 || till > start) {
+				var next = q.substring(start, till);
+				next = NativeString.trimRight(next);
+				out.push({ name: scriptName, code: next });
+			}
+		}
+		var row = 1;
+		while (q.loop) {
+			var c = q.read();
+			switch (c) {
+				case "\n".code: row += 1;
+				case "/".code: switch (q.peek()) {
+					case "/".code: q.skipLine();
+					case "*".code: q.skip(); row += q.skipComment();
+					default:
+				};
+				case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+				case "#".code: if (q.pos == 1 || q.get(q.pos - 2) == "\n".code) {
+					if (q.substr(q.pos, 6) == "define") {
+						flush(q.pos - 1);
+						q.skip(6);
+						q.skipSpaces0();
+						var p = q.pos;
+						q.skipIdent1();
+						scriptName = q.substring(p, q.pos);
+						if (scriptName == "") {
+							errors += 'Expected a script name at line $row.\n';
+						}
+						q.skipLine();
+						//
+						p = q.pos;
+						q.skipLineEnd();
+						if (q.pos > p) row += 1;
+						//
+						start = q.pos;
+					}
+				};
+				default:
+			}
+		} // while (q.loop)
+		flush(q.pos);
+		if (errors != "") {
+			errorText = errors;
+			return null;
+		} else return out;
+	}
+}
+typedef GmlMultifileData = Array<{ name:String, code:String }>;

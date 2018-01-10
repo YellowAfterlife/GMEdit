@@ -162,8 +162,7 @@ class GlobalSearch {
 			if (finish != null) finish();
 			var name = "search: " + term;
 			out = "// " + found + " result" + (found != 1 ? "s" : "") + ":" + out;
-			GmlFile.next = new GmlFile(name, null, SearchResults, out);
-			ChromeTabs.addTab(name);
+			GmlFile.openTab(new GmlFile(name, null, SearchResults, out));
 			window.setTimeout(function() {
 				aceEditor.focus();
 			});

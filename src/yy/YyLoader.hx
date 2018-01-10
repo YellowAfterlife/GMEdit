@@ -108,8 +108,9 @@ class YyLoader {
 							var extEl = TreeView.makeDir(ext.name, extRel);
 							for (file in ext.files) {
 								var fileName = file.filename;
+								var filePath = Path.join([extDir, fileName]);
 								extEl.treeItems.appendChild(TreeView.makeItem(
-									fileName, extRel + fileName, Path.join([extDir, fileName])
+									fileName, extRel + fileName, filePath, "extfile"
 								));
 								for (func in file.functions) {
 									var name = func.name;
@@ -138,7 +139,8 @@ class YyLoader {
 						};
 						default: continue;
 					}
-					out.appendChild(TreeView.makeItem(name, rel, full));
+					var kind = type.substring(2).toLowerCase(); // GMScript -> script
+					out.appendChild(TreeView.makeItem(name, rel, full, kind));
 				}
 			}
 		}
