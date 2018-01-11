@@ -225,6 +225,19 @@ class KeyboardShortcuts {
 		//
 		if (openLocal(term, null)) return true;
 		//
+		if (term == "event_inherited") {
+			var def = gml.GmlScopes.get(pos.row);
+			if (def == "") return false;
+			var file = GmlFile.current;
+			var path = file.path;
+			switch (file.kind) {
+				case GmxObjectEvents: return gmx.GmxObject.openEventInherited(path, def) != null;
+				case YyObjectEvents: return yy.YyObject.openEventInherited(path, def) != null;
+				default: return false;
+			}
+			return true;
+		}
+		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
 			var helpLookup = GmlAPI.helpLookup;

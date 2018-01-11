@@ -24,7 +24,7 @@ class GmlScopes {
 	/** Synced number of lines */
 	public static var length:Int = 0;
 	
-	public static function get(row:Int) {
+	public static function get(row:Int):String {
 		var session = Main.aceEditor.session;
 		var len = session.getLength();
 		if (len != length) {

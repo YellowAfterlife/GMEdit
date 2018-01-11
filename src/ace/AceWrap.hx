@@ -173,6 +173,7 @@ extern class AceSelection {
 	public function setValue(v:String):Void;
 	//
 	public function setMode(s:String):Void;
+	@:native("$modeId") public var modeIdRaw(default, never):String;
 	//
 	public function setAnnotations(arr:Array<AceAnnotation>):Void;
 	public function clearAnnotations():Void;

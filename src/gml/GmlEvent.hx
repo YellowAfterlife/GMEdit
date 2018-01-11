@@ -216,5 +216,5 @@ class GmlEvent {
 		});
 	}
 }
-typedef GmlEventData = { type:Int, numb:Int, ?name:String, ?obj:yy.YyGUID };
+typedef GmlEventData = { type:Int, ?numb:Int, ?name:String, ?obj:yy.YyGUID };
 typedef GmlEventList = Array<{ data:GmlEventData, code:Array<String> }>;

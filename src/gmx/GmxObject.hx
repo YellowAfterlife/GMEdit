@@ -1,7 +1,9 @@
 package gmx;
 import gml.*;
+import electron.FileSystem;
 import gmx.GmxEvent;
 import gmx.SfGmx;
+import haxe.io.Path;
 using StringTools;
 
 /**
@@ -108,5 +110,32 @@ class GmxObject {
 		//
 		//trace(gmx.toGmxString());
 		return true;
-	} // updateCode
+	}
+	public static function openEventInherited(full:String, edef:String):GmlFile {
+		var edata = GmxEvent.fromString(edef);
+		if (edata == null) return null;
+		var etype:String = "" + edata.type;
+		var enumb:String = edata.numb != null ? ("" + edata.numb) : null;
+		var ename:String = edata.name;
+		//
+		var dir = Path.directory(full);
+		var gmx = FileSystem.readGmxFileSync(full);
+		var parent = gmx.findText("parentName");
+		var tries = 1024;
+		while (parent != "<undefined>" && --tries >= 0) {
+			var path = Path.join([dir, parent + ".object.gmx"]);
+			if (!FileSystem.existsSync(path)) return null;
+			gmx = FileSystem.readGmxFileSync(path);
+			for (events in gmx.findAll("events"))
+			for (event in events.findAll("event")) {
+				if (event.get("eventtype") == etype
+				&& event.get("enumb") == enumb
+				&& event.get("ename") == ename) {
+					return GmlFile.open(parent, path, { def: edef });
+				}
+			}
+			parent = gmx.findText("parentName");
+		}
+		return null;
+	}
 }

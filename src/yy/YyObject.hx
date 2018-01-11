@@ -1,9 +1,11 @@
 package yy;
 import electron.FileSystem;
 import gml.GmlEvent;
+import gml.GmlFile;
 import haxe.io.Path;
 import tools.Dictionary;
 import tools.NativeString;
+import ui.TreeView;
 
 /**
  * ...
@@ -113,11 +115,43 @@ import tools.NativeString;
 		//
 		return true;
 	}
+	public static function openEventInherited(full:String, edef:String):GmlFile {
+		var edata = YyEvent.fromString(edef);
+		if (edata == null) return null;
+		var etype = edata.type;
+		var enumb = edata.numb;
+		var eobj = edata.obj; if (eobj == null) eobj = YyGUID.zero;
+		//
+		var obj:YyObject = FileSystem.readJsonFileSync(full);
+		var parentId = obj.parentObjectId;
+		var tries = 1024;
+		while (parentId != YyGUID.zero && --tries >= 0) {
+			var parentName = gml.Project.current.yyObjectNames[parentId];
+			if (parentName == null) return null;
+			// todo: have an actual asset name -> asset path lookup instead
+			var el = TreeView.element.querySelector('.item['
+				+ TreeView.attrIdent + '="' + parentName + '"]');
+			if (el == null) return null;
+			var path = el.getAttribute(TreeView.attrPath);
+			if (!FileSystem.existsSync(path)) return null;
+			obj = FileSystem.readJsonFileSync(path);
+			for (event in obj.eventList) {
+				if (event.eventtype == etype
+				&& event.enumb == enumb
+				&& event.collisionObjectId == eobj) {
+					return GmlFile.open(parentName, path, { def: edef });
+				}
+			}
+			parentId = obj.parentObjectId;
+		}
+		return null;
+	}
 }
 typedef YyObjectImpl = {
 	>YyBase,
 	name:String,
-	eventList:Array<YyObjectEvent>
+	eventList:Array<YyObjectEvent>,
+	parentObjectId:YyGUID,
 }
 typedef YyObjectEvent = {
 	>YyBase,

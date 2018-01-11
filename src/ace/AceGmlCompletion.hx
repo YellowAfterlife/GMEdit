@@ -34,7 +34,8 @@ import tools.Dictionary;
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
 	):Void {
-		if (prefix.length < 2 || !modeFilter[session.getOption("mode")]) {
+		var modeId:String = AceMacro.jsOr(session.modeIdRaw, session.getOption("mode"));
+		if (prefix.length < 2 || !modeFilter[modeId]) {
 			callback(null, []);
 			return;
 		}
