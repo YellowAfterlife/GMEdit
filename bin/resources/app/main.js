@@ -28,7 +28,6 @@ function createWindow () {
 	})
 	let args = process.argv
 	if (args.length > 1) index_url += "?open=" + encodeURIComponent(args[1])
-	console.log(index_url)
 	mainWindow.loadURL(index_url)
 
 	// Open the DevTools.
@@ -52,6 +51,16 @@ app.on('ready', function () {
 		win = win || BrowserWindow.getFocusedWindow();
 		if (win) win.toggleDevTools();
 	});
+})
+
+// https://github.com/electron/electron/issues/4349
+electron.ipcMain.on('shell-open', (e, path) => {
+	electron.shell.openItem(path);
+})
+electron.ipcMain.on('shell-show', (e, path) => {
+	// https://github.com/electron/electron/issues/11617
+	if (process.platform.startsWith("win")) path = path.replace(/\//g, "\\");
+	electron.shell.showItemInFolder(path);
 })
 
 // Quit when all windows are closed.

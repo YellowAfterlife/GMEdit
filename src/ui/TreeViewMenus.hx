@@ -67,7 +67,7 @@ class TreeViewMenus {
 	}
 	public static function openDirectory() {
 		var path = target.getAttribute(TreeView.attrPath);
-		electron.Shell.openItem(Path.directory(path));
+		electron.Shell.showItemInFolder(path);
 	}
 	//
 	public static function showDirMenu(el:Element) {

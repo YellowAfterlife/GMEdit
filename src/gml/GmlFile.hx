@@ -104,6 +104,7 @@ class GmlFile {
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(code, { path: modePath, version: GmlAPI.version });
 		session.setUndoManager(new AceUndoManager());
+		// todo: does Mac version of GMS2 use Mac line endings? Probably not
 		session.setOption("newLineMode", "windows");
 		session.gmlFile = this;
 	}
