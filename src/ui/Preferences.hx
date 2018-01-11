@@ -169,16 +169,21 @@ class Preferences {
 			if (text != null) Main.aceEditor.setOptions(Json.parse(text));
 		} catch (_:Dynamic) { };
 		// flush Ace options on changes (usually only via Ctrl+,):
-		var origSetOption = Main.aceEditor.setOption;
-		untyped Main.aceEditor.setOption = function(key, val) {
+		var editor = Main.aceEditor;
+		var origSetOption = editor.setOption;
+		untyped editor.setOption = function(key, val) {
 			origSetOption(key, val);
 			var opts:Dictionary<Dynamic> = Main.aceEditor.getOptions();
 			opts.remove("enableLiveAutocompletion");
 			opts.remove("theme");
 			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
 		};
-		if (Main.aceEditor.getOption("newLineMode") == "auto") {
-			Main.aceEditor.setOption("newLineMode", "windows");
+		if (editor.getOption("fontFamily") == null) {
+			var font = switch (untyped process.platform) {
+				case "darwin": "Menlo, monospace";
+				default: "Consolas, Courier New, monospace";
+			}
+			editor.setOption("fontFamily", font);
 		}
 	}
 }

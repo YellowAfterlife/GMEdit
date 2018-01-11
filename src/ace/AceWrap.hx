@@ -10,8 +10,12 @@ import tools.Dictionary;
  */
 @:forward @:forwardStatics
 abstract AceWrap(AceEditor) from AceEditor to AceEditor {
-	public inline function new(el:EitherType<String, Element>) {
+	public function new(el:EitherType<String, Element>) {
 		this = AceEditor.edit(el);
+		untyped {
+			this.getFontFamily = function() return this.getOption("fontFamily");
+			this.setFontFamily = function(v) this.setOption("fontFamily", v);
+		};
 	}
 	//
 	public static inline function loadModule(path:String, fn:Dynamic->Void):Void {
