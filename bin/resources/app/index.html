@@ -78,12 +78,15 @@
 		</div>
 		<div>
 			Replace with:
-			<input type="text" name="replace-text" value="(not yet)" disabled />
+			<input type="text" name="replace-text" />
 		</div>
 		<div>
 			<input type="button" name="find" value="Find All" />
-			<input type="button" name="replace" value="Replace All" disabled />
-			<input type="button" name="cancel" value="Cancel" />
+			<input type="button" name="replace" value="Replace All" title="Replace items across the project" />
+			<input type="button" name="cancel" value="Cancel" /><br/>
+		</div>
+		<div>
+			<input type="button" name="preview" value="Preview 'Replace All'" title="Preview replace operation without modifications" />
 		</div>
 		<div style="display:none" class="searching-text">
 			Searching...
@@ -96,9 +99,9 @@
 			<input type="checkbox" name="match-case" /><label for="">Match case</label><br/>
 			<input type="checkbox" name="check-comments" checked /><label for="">Look in comments</label><br/>
 			<input type="checkbox" name="check-strings" checked /><label for="">Look in strings</label><br/>
-			<input type="checkbox" name="check-objects" checked /><label for="">Look in objects</label><br/>
+			<input type="checkbox" name="check-headers" /><label for="">Look in headers</label><br/>
 			<input type="checkbox" name="check-scripts" checked /><label for="">Look in scripts</label><br/>
-			<input type="checkbox" name="check-headers" checked /><label for="">Look in headers</label><br/>
+			<input type="checkbox" name="check-objects" checked /><label for="">Look in objects</label><br/>
 			<input type="checkbox" name="check-timelines" checked /><label for="">Look in timelines</label><br/>
 		</fieldset>
 	</div>

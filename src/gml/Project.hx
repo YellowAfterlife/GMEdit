@@ -148,7 +148,7 @@ class Project {
 	}
 }
 /** (name, path, code) */
-typedef ProjectSearcher = String->String->String->Void;
+typedef ProjectSearcher = String->String->String->Null<String>;
 typedef ProjectState = {
 	treeviewScrollTop:Int,
 	treeviewOpenNodes:Array<String>,

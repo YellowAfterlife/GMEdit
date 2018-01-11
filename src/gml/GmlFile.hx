@@ -369,7 +369,7 @@ class GmlFile {
 			};
 			case GmxObjectEvents: {
 				gmx = FileSystem.readGmxFileSync(path);
-				if (!GmxObject.updateCode(gmx, val)) {
+				if (!GmxObject.setCode(gmx, val)) {
 					return error("Can't update GMX:\n" + GmxObject.errorText);
 				}
 				out = gmx.toGmxString();

@@ -54,8 +54,11 @@ class GmxObject {
 		} else return out;
 	}
 	
-	
-	public static function updateCode(gmx:SfGmx, gmlCode:String):Bool {
+	/**
+	 * Attempts to update event code in specified GMX.
+	 * Returns true is successful, otherwise returns false and sets errorText.
+	 */
+	public static function setCode(gmx:SfGmx, gmlCode:String):Bool {
 		var eventData = GmlEvent.parse(gmlCode, GmlVersion.v1);
 		if (eventData == null) {
 			errorText = GmlEvent.parseError;

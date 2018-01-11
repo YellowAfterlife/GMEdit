@@ -21,6 +21,7 @@ class GlobalSearch {
 	public static var fdReplace:InputElement;
 	public static var btFind:InputElement;
 	public static var btReplace:InputElement;
+	public static var btPreview:InputElement;
 	public static var btCancel:InputElement;
 	public static var cbWholeWord:InputElement;
 	public static var cbMatchCase:InputElement;
@@ -54,16 +55,21 @@ class GlobalSearch {
 		var eterm = NativeString.escapeRx(term);
 		if (opt.wholeWord) eterm = "\\b" + eterm + "\\b";
 		var rx = new RegExp(eterm, opt.matchCase ? "g" : "ig");
-		var out = "";
+		var results = "";
 		var found = 0;
+		var repl = opt.replaceBy;
+		var isRepl = repl != null;
+		var isPrev = opt.previewReplace;
 		pj.search(function(name:String, path:String, code:String) {
 			var q = new GmlReader(code);
 			var start = 0;
 			var row = 0;
 			var ctxName = name;
 			var ctxStart = 0;
+			var out = isRepl ? "" : null;
+			var replStart = 0;
 			function flush(till:Int) {
-				var subc = q.substring(start, till);
+				var subc:String = q.substring(start, till);
 				var mt = rx.exec(subc);
 				while (mt != null) {
 					var ofs = start + mt.index;
@@ -75,7 +81,13 @@ class GlobalSearch {
 					var line = code.substring(ofs - pos.column, eol);
 					var ctxLink = ctxName;
 					if (pos.row >= 0) ctxLink += ":" + (pos.row + 1);
-					out += '\n\n// in @[$ctxLink]:\n' + line;
+					results += '\n\n// in @[$ctxLink]:\n' + line;
+					if (isRepl) {
+						out += q.substring(replStart, ofs) + repl;
+						replStart = ofs + mt[0].length;
+						results += "\n" + code.substring(ofs - pos.column, ofs)
+							+ repl + code.substring(replStart, eol);
+					}
 					found += 1;
 					mt = rx.exec(subc);
 				}
@@ -158,11 +170,23 @@ class GlobalSearch {
 				}
 			}
 			flush(q.pos);
+			if (isRepl) out += q.substring(replStart, q.length);
+			return isRepl && !isPrev ? out : null;
 		}, function() {
 			if (finish != null) finish();
-			var name = "search: " + term;
-			out = "// " + found + " result" + (found != 1 ? "s" : "") + ":" + out;
-			GmlFile.openTab(new GmlFile(name, null, SearchResults, out));
+			var name = (isRepl ? (isPrev ? "preview: " : "replace: ") : "search: ") + term;
+			var head = '// ' + found + ' result';
+			if (found != 1) head += "s";
+			if (isRepl) {
+				if (isPrev) {
+					head += " would be replaced";
+				} else head += " replaced";
+			} else head += " found";
+			results = head + ":" + results;
+			if (opt.errors != null) {
+				results = "/* Errors:\n" + opt.errors + "\n*/\n" + results;
+			}
+			GmlFile.openTab(new GmlFile(name, null, SearchResults, results));
 			window.setTimeout(function() {
 				aceEditor.focus();
 			});
@@ -186,6 +210,7 @@ class GlobalSearch {
 		fdReplace = element.querySelectorAuto('input[name="replace-text"]');
 		btFind = element.querySelectorAuto('input[name="find"]');
 		btReplace = element.querySelectorAuto('input[name="replace"]');
+		btPreview = element.querySelectorAuto('input[name="preview"]');
 		btCancel = element.querySelectorAuto('input[name="cancel"]');
 		divSearching = element.querySelectorAuto('.searching-text');
 		//
@@ -204,8 +229,14 @@ class GlobalSearch {
 				case KeyboardEvent.DOM_VK_ESCAPE: btCancel.click();
 			}
 		}
-		btFind.onclick = function(_) {
-			var opt:GlobalSearchOpt = {
+		fdReplace.onkeydown = function(e:KeyboardEvent) {
+			switch (e.keyCode) {
+				case KeyboardEvent.DOM_VK_RETURN: btReplace.click();
+				case KeyboardEvent.DOM_VK_ESCAPE: btCancel.click();
+			}
+		}
+		function getOpt():GlobalSearchOpt {
+			return {
 				wholeWord: cbWholeWord.checked,
 				matchCase: cbMatchCase.checked,
 				checkStrings: cbCheckStrings.checked,
@@ -215,15 +246,38 @@ class GlobalSearch {
 				checkComments: cbCheckComments.checked,
 				checkTimelines: cbCheckTimelines.checked,
 			};
+		}
+		btFind.onclick = function(_) {
 			divSearching.style.display = "";
+			find(fdFind.value, getOpt(), function() {
+				element.style.display = "none";
+			});
+		};
+		btReplace.onclick = function(_) {
+			if (!window.confirm("Are you sure that you want to globally replace?"
+				+ "\nThis cannot be undone!")) return;
+			divSearching.style.display = "";
+			var opt = getOpt();
+			opt.replaceBy = fdReplace.value;
 			find(fdFind.value, opt, function() {
 				element.style.display = "none";
 			});
 		};
+		btPreview.onclick = function(_) {
+			divSearching.style.display = "";
+			var opt = getOpt();
+			opt.replaceBy = fdReplace.value;
+			opt.previewReplace = true;
+			find(fdFind.value, opt, function() {
+				element.style.display = "none";
+			});
+		}
 		btCancel.onclick = function(_) element.style.display = "none";
 	}
 }
 typedef GlobalSearchOpt = {
+	?replaceBy:String,
+	?previewReplace:Bool,
 	wholeWord:Bool,
 	matchCase:Bool,
 	checkStrings:Bool,
@@ -232,4 +286,5 @@ typedef GlobalSearchOpt = {
 	checkHeaders:Bool,
 	checkComments:Bool,
 	checkTimelines:Bool,
+	?errors:String,
 };

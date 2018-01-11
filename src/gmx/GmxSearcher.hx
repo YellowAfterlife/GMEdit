@@ -13,12 +13,18 @@ class GmxSearcher {
 	public static function run(
 		pj:Project, fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt
 	):Void {
+		var isRepl = opt.replaceBy != null;
 		var pjDir = pj.dir;
 		var pjGmx = FileSystem.readGmxFileSync(pj.path);
 		var rxName = ~/^.+[\/\\](\w+)(?:\.[\w.]+)?$/g;
 		var filesLeft = 1;
 		inline function next():Void {
 			if (--filesLeft <= 0) done();
+		}
+		function addError(s:String) {
+			if (opt.errors != null) {
+				opt.errors += "\n" + s;
+			} else opt.errors = s;
 		}
 		function findrec(node:SfGmx, one:String) {
 			if (node.name == one) {
@@ -30,8 +36,19 @@ class GmxSearcher {
 						filesLeft += 1;
 						FileSystem.readTextFile(full, function(err:Error, xml:String) {
 							if (err == null) {
-								var code = GmxObject.getCode(SfGmx.parse(xml));
-								if (code != null) fn(name, full, code);
+								var gmx = SfGmx.parse(xml);
+								var gml0 = GmxObject.getCode(gmx);
+								if (gml0 != null) {
+									var gml1 = fn(name, full, gml0);
+									if (gml1 != null && gml1 != gml0) {
+										if (GmxObject.setCode(gmx, gml1)) {
+											FileSystem.writeFileSync(full, gmx.toGmxString());
+										} else {
+											addError("Failed to modify " + name
+												+ ":\n" + GmxObject.errorText);
+										}
+									}
+								}
 							}
 							next();
 						});
@@ -41,8 +58,19 @@ class GmxSearcher {
 						filesLeft += 1;
 						FileSystem.readTextFile(full, function(err:Error, xml:String) {
 							if (err == null) {
-								var code = GmxTimeline.getCode(SfGmx.parse(xml));
-								if (code != null) fn(name, full, code);
+								var gmx = SfGmx.parse(xml);
+								var gml0 = GmxTimeline.getCode(gmx);
+								if (gml0 != null) {
+									var gml1 = fn(name, full, gml0);
+									if (gml1 != null && gml1 != gml0) {
+										if (GmxTimeline.setCode(gmx, gml1)) {
+											FileSystem.writeFileSync(full, gmx.toGmxString());
+										} else {
+											addError("Failed to modify " + name
+												+ ":\n" + GmxTimeline.errorText);
+										}
+									}
+								}
 							}
 							next();
 						});
@@ -50,7 +78,12 @@ class GmxSearcher {
 					case "script": {
 						filesLeft += 1;
 						FileSystem.readTextFile(full, function(err:Error, code:String) {
-							if (err == null) fn(name, full, code);
+							if (err == null) {
+								var gml1 = fn(name, full, code);
+								if (gml1 != null && gml1 != code) {
+									FileSystem.writeFileSync(full, gml1);
+								}
+							}
 							next();
 						});
 					};

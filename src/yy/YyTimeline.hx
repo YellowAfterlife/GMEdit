@@ -35,7 +35,7 @@ abstract YyTimeline(YyTimelineImpl) {
 		}
 		return out;
 	}
-	public function setCode(objPath:String, gmlCode:String) {
+	public function setCode(objPath:String, gmlCode:String):Bool {
 		var dir = Path.directory(objPath);
 		var newData = GmlTimeline.parse(gmlCode, GmlVersion.v2);
 		if (newData == null) {

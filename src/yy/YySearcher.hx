@@ -20,6 +20,11 @@ class YySearcher {
 		inline function next():Void {
 			if (--filesLeft <= 0) done();
 		}
+		function addError(s:String) {
+			if (opt.errors != null) {
+				opt.errors += "\n" + s;
+			} else opt.errors = s;
+		}
 		for (resPair in yyProject.resources) {
 			var res = resPair.Value;
 			var resName:String, resFull:String;
@@ -30,7 +35,12 @@ class YySearcher {
 					resFull = Path.withoutExtension(resFull) + ".gml";
 					filesLeft += 1;
 					FileSystem.readTextFile(resFull, function(error, code) {
-						if (error == null) fn(resName, resFull, code);
+						if (error == null) {
+							var gml1 = fn(resName, resFull, code);
+							if (gml1 != null && gml1 != code) {
+								FileSystem.writeFileSync(resFull, gml1);
+							}
+						}
 						next();
 					});
 				};
@@ -43,7 +53,13 @@ class YySearcher {
 							var resDir = Path.directory(resFull);
 							var obj:YyObject = haxe.Json.parse(data);
 							var code = obj.getCode(resFull);
-							fn(resName, resFull, code);
+							var gml1 = fn(resName, resFull, code);
+							if (gml1 != null && gml1 != code) {
+								if (obj.setCode(resFull, gml1)) {
+									// OK!
+								} else addError("Failed to modify " + resName
+									+ ":\n" + YyObject.errorText);
+							}
 						} catch (_:Dynamic) { };
 						next();
 					});
@@ -55,9 +71,15 @@ class YySearcher {
 					FileSystem.readTextFile(resFull, function(error, data) {
 						if (error == null) try {
 							var resDir = Path.directory(resFull);
-							var obj:YyTimeline = haxe.Json.parse(data);
-							var code = obj.getCode(resFull);
-							fn(resName, resFull, code);
+							var tl:YyTimeline = haxe.Json.parse(data);
+							var code = tl.getCode(resFull);
+							var gml1 = fn(resName, resFull, code);
+							if (gml1 != null && gml1 != code) {
+								if (tl.setCode(resFull, gml1)) {
+									// OK!
+								} else addError("Failed to modify " + resName
+									+ ":\n" + YyObject.errorText);
+							}
 						} catch (_:Dynamic) { };
 						next();
 					});
