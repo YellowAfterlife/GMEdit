@@ -177,7 +177,11 @@ extern class AceSelection {
 	public function setValue(v:String):Void;
 	//
 	public function setMode(s:String):Void;
-	@:native("$modeId") public var modeIdRaw(default, never):String;
+	@:native("$modeId") private var modeIdRaw(default, never):String;
+	public var modeId(get, never):String;
+	private inline function get_modeId():String {
+		return AceMacro.jsOr(modeIdRaw, getOption("mode"));
+	}
 	//
 	public function setAnnotations(arr:Array<AceAnnotation>):Void;
 	public function clearAnnotations():Void;

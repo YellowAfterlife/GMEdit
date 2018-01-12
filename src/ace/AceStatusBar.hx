@@ -2,11 +2,13 @@ package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
 import gml.GmlLocals;
+import gml.GmlFuncDoc;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
 import js.html.SpanElement;
 import Main.document;
+import shaders.ShaderAPI;
 import tools.Dictionary;
 
 /**
@@ -25,6 +27,7 @@ class AceStatusBar {
 		var iter:AceTokenIterator = untyped __new__(tokenIterator, editor.session, row, col);
 		var tk:AceToken = iter.getCurrentToken();
 		var depth = 0, index = 0;
+		var resetIndex = false;
 		var doc:GmlFuncDoc = null;
 		var fkw = GmlAPI.kwFlow;
 		while (tk != null) {
@@ -35,16 +38,28 @@ class AceStatusBar {
 				case "set.operator": break;
 				case "curly.paren.lparen": break;
 				case "curly.paren.rparen": break;
-				case "paren.lparen": depth -= 1;
-				case "paren.rparen": depth += 1;
+				case "paren.lparen": {
+					depth -= 1;
+					resetIndex = true;
+				};
+				case "paren.rparen": {
+					depth += 1;
+				};
 				case "punctuation.operator": {
 					switch (tk.value) {
-						case ",": if (depth == 0) index += 1;
+						case ",": {
+							if (depth <= 0) {
+								if (resetIndex) { resetIndex = false; index = 0; }
+								index += 1;
+							}
+						};
 						case ";": break;
 					}
 				};
 				case "asset.script": if (depth < 0) { doc = GmlAPI.gmlDoc[tk.value]; break; }
 				case "function": if (depth < 0) { doc = GmlAPI.stdDoc[tk.value]; break; }
+				case "glsl.function": if (depth < 0) { doc = ShaderAPI.glslDoc[tk.value]; break; }
+				case "hlsl.function": if (depth < 0) { doc = ShaderAPI.hlslDoc[tk.value]; break; }
 				case "extfunction": if (depth < 0) { doc = GmlAPI.extDoc[tk.value]; break; }
 				default:
 			}

@@ -119,7 +119,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_eventname {
 	color: #77BB5B;
 }
-#main .gml .ace_identifier {
+#main .gml .ace_localfield {
 	color: #B2B1FF;
 }
 #main .gml .ace_field {
@@ -164,12 +164,12 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_string {
 	color: #FCF320;
 }
-#main .ace_editor.ace_autocomplete, .ace_tooltip {
+#app .ace_editor.ace_autocomplete, .ace_tooltip {
 	background: #1F1F1F;
 	color: #c0c0c0;
 	border-color: #495057;
 }
-#main .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
+#app .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
 	background: #495057;
 }
 #main .ace_search {

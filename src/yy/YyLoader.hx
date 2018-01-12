@@ -120,7 +120,7 @@ class YyLoader {
 										GmlAPI.extComp.push(new AceAutoCompleteItem(
 											name, "function", help
 										));
-										GmlAPI.extDoc.set(name, GmlAPI.parseDoc(help));
+										GmlAPI.extDoc.set(name, gml.GmlFuncDoc.parse(help));
 									}
 								}
 								for (mcr in file.constants) {

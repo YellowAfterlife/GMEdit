@@ -3,6 +3,7 @@ import electron.FileSystem;
 import gml.GmlEnum;
 import haxe.io.Path;
 import js.RegExp;
+import parsers.GmlParseAPI;
 import tools.Dictionary;
 import ace.AceWrap;
 import tools.NativeString;
@@ -120,119 +121,6 @@ class GmlAPI {
 		}
 	}
 	//
-	
-	/**
-	 * Loads definitions from fnames format used by GMS itself.
-	 */
-	public static function loadStd(src:String) {
-		//  1func (2args ) 3flags
-		~/^(:?(\w+)\((.*?)\))([~\$#*@&£!:]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
-			var comp = rx.matched(1);
-			var name = rx.matched(2);
-			var args = rx.matched(3);
-			var flags:String = rx.matched(4);
-			var show = true;
-			var doc = parseDoc(comp);
-			if (version == GmlVersion.v2) {
-				if (ukSpelling) {
-					if (flags.indexOf("$") >= 0) show = false;
-				} else {
-					if (flags.indexOf("£") >= 0) show = false;
-				}
-			} else if (!ukSpelling) {
-				var orig = name;
-				// (todo: were there other things?)
-				name = NativeString.replaceExt(name, "colour", "color");
-				if (orig != name) {
-					stdKind.set(orig, "function");
-					stdDoc.set(name, doc);
-				}
-			}
-			//
-			if (stdKind.exists(name)) return;
-			stdKind.set(name, "function");
-			if (show) stdComp.push({
-				name: name,
-				value: name,
-				score: 0,
-				meta: "function",
-				doc: comp
-			});
-			stdDoc.set(name, doc);
-		});
-		// 1name 2array       3flags         type
-		~/^((\w+)(\[[^\]]*\])?([~\*\$£#@&]*))(?::\w+)?;?[ \t]*$/gm.each(src, function(rx:EReg) {
-			var comp = rx.matched(1);
-			var name = rx.matched(2);
-			var flags = rx.matched(4);
-			var kind:String;
-			if (flags.indexOf("#") >= 0) {
-				kind = "constant";
-			} else kind = "variable";
-			//if (rx.matched(3) != null) kind += "[]";
-			stdKind.set(name, kind);
-			stdComp.push({
-				name: name,
-				value: name,
-				score: 0,
-				meta: kind,
-				doc: comp
-			});
-		});
-		// name       =      value
-		~/^(\w+)[ \t]*=[ \t]*(.+)$/gm.each(src, function(rx:EReg) {
-			var name = rx.matched(1);
-			var expr = rx.matched(2);
-			stdKind.set(name, "constant");
-			stdComp.push({
-				name: name,
-				value: name,
-				score: 0,
-				meta: "constant",
-				doc: expr
-			});
-		});
-	}
-	
-	public static function loadAssets(src:String) {
-		~/(\w+)/g.each(src, function(rx:EReg) {
-			var name = rx.matched(1);
-			stdKind.set(name, "asset");
-			stdComp.push({
-				name: name,
-				value: name,
-				score: 0,
-				meta: "asset",
-				doc: null,
-			});
-		});
-	}
-	//
-	public static function parseDoc(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
-		var p0 = s.indexOf("(");
-		var p1 = s.indexOf(")", p0);
-		var pre:String, post:String, args:Array<String>, rest:Bool;
-		if (p0 >= 0 && p1 >= 0) {
-			var sw = s.substring(p0 + 1, p1);
-			pre = s.substring(0, p0 + 1);
-			post = s.substring(p1);
-			args = NativeString.splitReg(sw, untyped __js__("/,\\s*/g"));
-			rest = sw.indexOf("...") >= 0;
-		} else {
-			pre = s;
-			post = "";
-			args = [];
-			rest = false;
-		}
-		if (out != null) {
-			out.pre = pre;
-			out.post = post;
-			out.args = args;
-			out.rest = rest;
-			return out;
-		} else return { pre: pre, post: post, args: args, rest: rest };
-	}
-	//
 	public static function init() {
 		stdClear();
 		GmlExternAPI.gmlResetOnDefine = version != GmlVersion.live;
@@ -287,13 +175,20 @@ class GmlAPI {
 		//
 		if (assets != null) for (file in assets) {
 			var raw = getContent('$dir/$file');
-			loadAssets(raw);
+			GmlParseAPI.loadAssets(raw, { kind: stdKind, comp: stdComp });
 		}
 		//
+		var data = {
+			kind: stdKind,
+			doc: stdDoc,
+			comp: stdComp,
+			ukSpelling: ukSpelling,
+			version: version,
+		};
 		if (files != null) for (file in files) {
 			var raw = getContent('$dir/$file');
-			loadStd(raw);
-		} else {
+			GmlParseAPI.loadStd(raw, data);
+		} else if (FileSystem.existsSync('$dir/fnames')) {
 			var raw = getContent('$dir/fnames');
 			raw += "\n" + getContent('$dir/extra.gml');
 			//
@@ -316,7 +211,7 @@ class GmlAPI {
 				}
 			});
 			//
-			loadStd(raw);
+			GmlParseAPI.loadStd(raw, data);
 		}
 	}
 }
@@ -344,7 +239,4 @@ typedef GmlConfig = {
 	/** */
 	?apiFiles:Array<String>,
 	?assetFiles:Array<String>,
-};
-typedef GmlFuncDoc = {
-	pre:String, post:String, args:Array<String>, rest:Bool
 };

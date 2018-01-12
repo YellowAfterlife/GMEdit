@@ -492,6 +492,66 @@ oop.inherits(Mode, TextMode);
 exports.Mode = Mode;
 });
 //
+ace.define("ace/mode/shader",["require","exports","module",
+	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"
+], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var TextMode = require("./text").Mode;
+var ShaderHighlightRules = require("./shader_highlight_rules").ShaderHighlightRules;
+var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
+var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
+var CStyleFoldMode = require("./folding/cstyle").FoldMode;
+
+var Mode = function() {
+	this.HighlightRules = ShaderHighlightRules;
+	
+	this.$outdent = new MatchingBraceOutdent();
+	this.$behaviour = new CstyleBehaviour();
+	this.foldingRules = new CStyleFoldMode();
+};
+oop.inherits(Mode, TextMode);
+
+(function() {
+	this.lineCommentStart = "//";
+	this.blockComment = {start: "/*", end: "*/"};
+	
+	this.getNextLineIndent = function(state, line, tab) {
+		var indent = this.$getIndent(line);
+
+		var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
+		var tokens = tokenizedLine.tokens;
+		
+		if (tokens.length && tokens[tokens.length-1].type.indexOf("comment") >= 0) {
+			return indent;
+		}
+
+		if (state == "start") {
+			var match = line.match(/^.*[\{\(\[]\s*$/);
+			if (match) {
+				indent += tab;
+			}
+		}
+
+		return indent;
+	};
+
+	this.checkOutdent = function(state, line, input) {
+		return this.$outdent.checkOutdent(line, input);
+	};
+
+	this.autoOutdent = function(state, doc, row) {
+		this.$outdent.autoOutdent(doc, row);
+	};
+
+	this.$id = "ace/mode/shader";
+}).call(Mode.prototype);
+
+exports.Mode = Mode;
+});
+//
 ace.define("ace/mode/gml_search",["require","exports","module",
 	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
 	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"

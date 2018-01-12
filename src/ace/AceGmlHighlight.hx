@@ -103,7 +103,7 @@ import haxe.extern.EitherType;
 			return ["punctuation.operator", "text", getGlobalType(field, "field")];
 		}
 		function mtIdent(ident:String) {
-			return getGlobalType(ident, "identifier");
+			return getGlobalType(ident, "localfield");
 		}
 		//
 		var rTpl:AceLangRule = {

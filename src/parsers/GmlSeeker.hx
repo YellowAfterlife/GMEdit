@@ -138,7 +138,7 @@ class GmlSeeker {
 							s = s.substring(12).trimLeft();
 						}
 						if (!out.docMap.exists(main)) {
-							doc = GmlAPI.parseDoc(s);
+							doc = GmlFuncDoc.parse(s);
 							out.docList.push(doc);
 							out.docMap.set(main, doc);
 							if (!GmlAPI.gmlDoc.exists(main)) {
@@ -152,7 +152,7 @@ class GmlSeeker {
 						s = s.substring(3).trimLeft();
 						doc = out.docMap[main];
 						if (doc == null) {
-							out.docMap.set(main, GmlAPI.parseDoc(main + "(...) " + s));
+							out.docMap.set(main, GmlFuncDoc.parse(main + "(...) " + s));
 						} else doc.post += " " + s;
 					}
 				}
@@ -173,7 +173,7 @@ class GmlSeeker {
 								if (s == ")" || s == "\n" || s == null) break;
 								locals.add(s);
 							}
-							out.docMap.set(main, GmlAPI.parseDoc(main + q.substring(start, q.pos)));
+							out.docMap.set(main, GmlFuncDoc.parse(main + q.substring(start, q.pos)));
 						}
 					}
 					//

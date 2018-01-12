@@ -15,6 +15,8 @@ import haxe.io.Path;
 import parsers.GmlReader;
 import parsers.GmlSeekData;
 import parsers.GmlSeeker;
+import shaders.ShaderHighlight;
+import shaders.ShaderKind;
 import tools.Dictionary;
 import tools.NativeString;
 import tools.StringBuilder;
@@ -99,6 +101,8 @@ class GmlFile {
 		var modePath = switch (this.kind) {
 			case SearchResults: "ace/mode/gml_search";
 			case Extern, Plain: "ace/mode/text";
+			case GLSL: ShaderHighlight.nextKind = GLSL; "ace/mode/shader";
+			case HLSL: ShaderHighlight.nextKind = HLSL; "ace/mode/shader";
 			default: "ace/mode/gml";
 		}
 		//
@@ -173,7 +177,8 @@ class GmlFile {
 		var kind:GmlFileKind;
 		switch (ext) {
 			case "gml": kind = Normal;
-			case "shader", "vsh", "fsh": kind = Plain;
+			case "txt": kind = Plain;
+			case "shader", "vsh", "fsh": kind = GLSL;
 			case "gmx": {
 				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
 				kind = switch (ext) {
@@ -192,6 +197,7 @@ class GmlFile {
 						kind = YyObjectEvents;
 					};
 					case "GMShader": {
+						data = json;
 						kind = YyShader;
 					};
 					case "GMTimeline": {
@@ -224,7 +230,7 @@ class GmlFile {
 		}
 		// determine what to do with the file:
 		var kd = getKind(path);
-		var kind = kd.kind;
+		var kind = (nav != null && nav.kind != null) ? nav.kind : kd.kind;
 		var data = kd.data;
 		//
 		switch (kind) {
@@ -233,8 +239,12 @@ class GmlFile {
 				return null;
 			};
 			case YyShader: {
-				open(name + ".vsh", Path.withoutExtension(path) + ".vsh");
-				open(name + ".fsh", Path.withoutExtension(path) + ".fsh");
+				var shKind:GmlFileKind = switch (data.type) {
+					case 2, 4: HLSL;
+					default: GLSL;
+				};
+				open(name + ".vsh", Path.withoutExtension(path) + ".vsh", { kind: shKind });
+				open(name + ".fsh", Path.withoutExtension(path) + ".fsh", { kind: shKind });
 				return null;
 			};
 			default: {
@@ -271,7 +281,7 @@ class GmlFile {
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
 			case YyShader: code = "";
-			case Plain: code = src;
+			case Plain, GLSL, HLSL: code = src;
 			case SearchResults: code = data;
 			case Normal: {
 				code = src;
@@ -344,7 +354,7 @@ class GmlFile {
 		var writeFile:Bool = true;
 		switch (kind) {
 			case Extern: out = val;
-			case Plain: out = val;
+			case Plain, GLSL, HLSL: out = val;
 			case Normal: {
 				out = val;
 				out = GmlExtArgs.post(out);
@@ -525,6 +535,8 @@ enum GmlFileKind {
 	Normal;
 	/** */
 	Multifile;
+	GLSL;
+	HLSL;
 	GmxObjectEvents;
 	GmxTimelineMoments;
 	GmxProjectMacros;
@@ -540,5 +552,7 @@ typedef GmlFileNav = {
 	/** row-column */
 	?pos:AcePos,
 	/** code to scroll to */
-	?ctx:String
+	?ctx:String,
+	/** file kind override */
+	?kind:GmlFileKind,
 }

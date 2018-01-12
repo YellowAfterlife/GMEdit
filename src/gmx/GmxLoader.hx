@@ -1,5 +1,6 @@
 package gmx;
 import gml.*;
+import gml.GmlFile;
 import ui.*;
 import electron.FileSystem;
 import js.html.Element;
@@ -39,7 +40,13 @@ class GmxLoader {
 				}
 				GmlAPI.gmlLookupText += name + "\n";
 				parsers.GmlSeeker.run(full, _main);
-				out.appendChild(TreeView.makeItem(name, path, full, one));
+				var item = TreeView.makeItem(name, path, full, one);
+				out.appendChild(item);
+				if (one == "shader") {
+					var kind:GmlFileKind = gmx.get("type").indexOf("HLSL") >= 0
+						? GmlFileKind.HLSL : GmlFileKind.GLSL;
+					item.setAttribute(TreeView.attrOpenAs, kind.getName());
+				}
 			} else {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
@@ -83,7 +90,7 @@ class GmxLoader {
 						var help = func.findText("help");
 						if (help != null && help != "") {
 							GmlAPI.extComp.push(new AceAutoCompleteItem(name, "function", help));
-							GmlAPI.extDoc.set(name, GmlAPI.parseDoc(help));
+							GmlAPI.extDoc.set(name, GmlFuncDoc.parse(help));
 						}
 					}
 					//

@@ -20,6 +20,7 @@ class TreeView {
 	public static inline var attrPath:String = "data-full-path";
 	public static inline var attrRel:String = "data-rel-path";
 	public static inline var attrKind:String = "data-kind";
+	public static inline var attrOpenAs:String = "data-open-as";
 	//
 	public static var element:DivElement;
 	public static function clear() {
@@ -72,7 +73,9 @@ class TreeView {
 		e.preventDefault();
 		var el:Element = cast e.target;
 		if (!el.classList.contains("item")) el = el.parentElement;
-		GmlFile.open(el.innerText, el.getAttribute(attrPath));
+		var openAs = el.getAttribute(attrOpenAs);
+		var nav = openAs != null ? { kind: GmlFileKind.createByName(openAs) } : null;
+		GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
 	}
 	private static inline function makeItemImpl(name:String, path:String, kind:String) {
 		var r = document.createDivElement();
