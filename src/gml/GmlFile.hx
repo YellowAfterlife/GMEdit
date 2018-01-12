@@ -103,6 +103,7 @@ class GmlFile {
 			case Extern, Plain: "ace/mode/text";
 			case GLSL: ShaderHighlight.nextKind = GLSL; "ace/mode/shader";
 			case HLSL: ShaderHighlight.nextKind = HLSL; "ace/mode/shader";
+			case JavaScript: "ace/mode/javascript";
 			default: "ace/mode/gml";
 		}
 		//
@@ -114,6 +115,7 @@ class GmlFile {
 		session.setUndoManager(new AceUndoManager());
 		// todo: does Mac version of GMS2 use Mac line endings? Probably not
 		session.setOption("newLineMode", "windows");
+		if (this.kind == JavaScript) session.setOption("useWorker", false);
 		session.gmlFile = this;
 	}
 	public function close():Void {
@@ -178,6 +180,7 @@ class GmlFile {
 		switch (ext) {
 			case "gml": kind = Normal;
 			case "txt": kind = Plain;
+			case "js": kind = JavaScript;
 			case "shader", "vsh", "fsh": kind = GLSL;
 			case "gmx": {
 				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
@@ -281,7 +284,7 @@ class GmlFile {
 		switch (kind) {
 			case Extern: code = data != null ? data : "";
 			case YyShader: code = "";
-			case Plain, GLSL, HLSL: code = src;
+			case Plain, GLSL, HLSL, JavaScript: code = src;
 			case SearchResults: code = data;
 			case Normal: {
 				code = src;
@@ -354,7 +357,7 @@ class GmlFile {
 		var writeFile:Bool = true;
 		switch (kind) {
 			case Extern: out = val;
-			case Plain, GLSL, HLSL: out = val;
+			case Plain, GLSL, HLSL, JavaScript: out = val;
 			case Normal: {
 				out = val;
 				out = GmlExtArgs.post(out);
@@ -537,6 +540,7 @@ enum GmlFileKind {
 	Multifile;
 	GLSL;
 	HLSL;
+	JavaScript;
 	GmxObjectEvents;
 	GmxTimelineMoments;
 	GmxProjectMacros;

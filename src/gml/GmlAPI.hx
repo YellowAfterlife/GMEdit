@@ -188,7 +188,7 @@ class GmlAPI {
 		if (files != null) for (file in files) {
 			var raw = getContent('$dir/$file');
 			GmlParseAPI.loadStd(raw, data);
-		} else if (FileSystem.existsSync('$dir/fnames')) {
+		} else {
 			var raw = getContent('$dir/fnames');
 			raw += "\n" + getContent('$dir/extra.gml');
 			//

@@ -144,6 +144,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	color: #FFF899;
 }
 #main .gml .ace_keyword,
+#main .gml .ace_type,
 #main .gml .ace_curly.ace_paren,
 #main .gml .ace_function,
 #main .gml .ace_extfunction,

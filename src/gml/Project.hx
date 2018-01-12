@@ -52,7 +52,7 @@ class Project {
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
 		if (path == "") {
-			name = "GMEdit";
+			name = "";
 			version = GmlVersion.none;
 			displayName = "Recent projects";
 		} else if (Path.extension(path).toLowerCase() == "gmx") {
@@ -69,7 +69,7 @@ class Project {
 			};
 			default: displayName = name;
 		}
-		document.title = name;
+		document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
 		TreeView.clear();
 		reload(true);
 	}
