@@ -1,12 +1,15 @@
-package gml;
+package parsers;
 import ace.AceWrap;
 import electron.FileSystem;
+import gml.GmlVersion;
 import haxe.ds.StringMap;
 import haxe.io.Path;
+import parsers.GmlReader;
 import tools.Dictionary;
 
 /**
- * todo: keyboard event conversion
+ * Handles general-purpose event name encoding/decoding,
+ * as well as splitting combined code back into individual events.
  * @author YellowAfterlife
  */
 class GmlEvent {
@@ -82,7 +85,7 @@ class GmlEvent {
 	//
 	public static var parseError:String;
 	/**
-	 * Splits GML code on 
+	 * Splits GML code on #event
 	 */
 	public static function parse(gmlCode:String, version:GmlVersion):GmlEventList {
 		var eventData:GmlEventList = [];

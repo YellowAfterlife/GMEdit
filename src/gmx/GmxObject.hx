@@ -4,6 +4,7 @@ import electron.FileSystem;
 import gmx.GmxEvent;
 import gmx.SfGmx;
 import haxe.io.Path;
+import parsers.GmlEvent;
 using StringTools;
 
 /**

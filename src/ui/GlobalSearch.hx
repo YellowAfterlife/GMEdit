@@ -8,6 +8,7 @@ import js.html.DivElement;
 import js.html.Element;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
+import parsers.GmlReader;
 import tools.NativeString;
 using tools.HtmlTools;
 

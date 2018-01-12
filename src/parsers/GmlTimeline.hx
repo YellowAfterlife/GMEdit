@@ -1,8 +1,10 @@
-package gml;
+package parsers;
+import parsers.GmlReader;
 import tools.NativeString;
+import gml.GmlVersion;
 
 /**
- * ...
+ * Handles conversion of combined code (with #moment headers) back into moment-code pairs.
  * @author YellowAfterlife
  */
 class GmlTimeline {

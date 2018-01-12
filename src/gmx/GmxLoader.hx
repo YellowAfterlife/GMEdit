@@ -5,6 +5,7 @@ import electron.FileSystem;
 import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
+import parsers.GmlSeeker;
 import tools.Dictionary;
 
 /**
@@ -37,7 +38,7 @@ class GmxLoader {
 					default: full += '.$one.gmx';
 				}
 				GmlAPI.gmlLookupText += name + "\n";
-				gml.GmlSeeker.run(full, _main);
+				parsers.GmlSeeker.run(full, _main);
 				out.appendChild(TreeView.makeItem(name, path, full, one));
 			} else {
 				var name = gmx.get("name");

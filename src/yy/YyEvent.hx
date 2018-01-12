@@ -1,6 +1,6 @@
 package yy;
 import gml.Project;
-import gml.GmlEvent;
+import parsers.GmlEvent;
 
 /**
  * ...

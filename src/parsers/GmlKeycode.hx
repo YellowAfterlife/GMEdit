@@ -1,10 +1,10 @@
-package gml;
+package parsers;
 import ace.AceWrap;
 import tools.Dictionary;
 import tools.NativeString;
 
 /**
- * ...
+ * Maps keyboard key names for use in events.
  * @author YellowAfterlife
  */
 class GmlKeycode {

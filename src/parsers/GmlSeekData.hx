@@ -1,10 +1,12 @@
-package gml;
+package parsers;
 import ace.AceWrap;
 import gml.GmlAPI;
+import gml.*;
 import tools.Dictionary;
 
 /**
- * ...
+ * Represents processed state of a file,
+ * describing what definitions it had.
  * @author YellowAfterlife
  */
 class GmlSeekData {

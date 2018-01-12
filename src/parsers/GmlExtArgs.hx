@@ -1,8 +1,10 @@
-package gml;
+package parsers;
 import js.RegExp;
+import parsers.GmlReader;
 import tools.CharCode;
 import tools.NativeString;
 import ui.Preferences;
+import gml.GmlAPI;
 
 /**
  * Handles conversion from/to #args magic.

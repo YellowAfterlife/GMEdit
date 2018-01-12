@@ -1,5 +1,5 @@
 package gmx;
-import gml.GmlTimeline;
+import parsers.GmlTimeline;
 
 /**
  * ...

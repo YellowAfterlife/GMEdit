@@ -5,7 +5,7 @@ import yy.YyObject;
 import electron.FileSystem;
 import tools.NativeString;
 import gml.*;
-import gml.GmlTimeline;
+import parsers.GmlTimeline;
 
 /**
  * ...

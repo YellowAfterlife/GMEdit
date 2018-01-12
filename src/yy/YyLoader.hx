@@ -3,7 +3,7 @@ import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
 import gml.GmlAPI;
 import gml.Project;
-import gml.GmlSeeker;
+import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
 import tools.Dictionary;

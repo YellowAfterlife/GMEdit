@@ -1,7 +1,7 @@
 package gmx;
 import ace.AceWrap;
 import electron.FileSystem;
-import gml.GmlEvent;
+import parsers.GmlEvent;
 import haxe.ds.StringMap;
 import haxe.io.Path;
 import tools.Dictionary;

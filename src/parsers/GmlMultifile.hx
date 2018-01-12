@@ -1,9 +1,10 @@
-package gml;
+package parsers;
 import tools.Dictionary;
 import tools.NativeString;
+import gml.GmlAPI;
 
 /**
- * ...
+ * Parses combined code with `#define` headers into individual name-code pairs.
  * @author YellowAfterlife
  */
 class GmlMultifile {

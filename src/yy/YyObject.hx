@@ -1,6 +1,6 @@
 package yy;
 import electron.FileSystem;
-import gml.GmlEvent;
+import parsers.GmlEvent;
 import gml.GmlFile;
 import haxe.io.Path;
 import tools.Dictionary;

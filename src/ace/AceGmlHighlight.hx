@@ -2,7 +2,7 @@ package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
 import gml.GmlEnum;
-import gml.GmlKeycode;
+import parsers.GmlKeycode;
 import gml.GmlVersion;
 import js.RegExp;
 import tools.Dictionary;

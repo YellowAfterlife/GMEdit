@@ -1,5 +1,5 @@
 package gmx;
-import gml.GmlReader;
+import parsers.GmlReader;
 import tools.StringBuilder;
 
 /**

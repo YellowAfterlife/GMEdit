@@ -15,6 +15,7 @@ import js.html.Element;
 import js.html.HTMLDocument;
 import js.html.KeyboardEvent;
 import js.html.Window;
+import parsers.GmlEvent;
 import tools.HtmlTools;
 import ui.ChromeTabs;
 import ui.*;

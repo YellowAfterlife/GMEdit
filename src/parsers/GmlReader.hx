@@ -1,10 +1,11 @@
-package gml;
+package parsers;
 
+import gml.GmlVersion;
 import tools.CharCode;
 import tools.StringReader;
 
 /**
- * ...
+ * Extends regular string parser with a set of GML-related helpers.
  * @author YellowAfterlife
  */
 class GmlReader extends StringReader {

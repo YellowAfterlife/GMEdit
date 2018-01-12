@@ -1,7 +1,8 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
-import gml.GmlKeycode;
+import parsers.GmlKeycode;
+import parsers.GmlEvent;
 import tools.Dictionary;
 
 /**
@@ -71,7 +72,7 @@ import tools.Dictionary;
 		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, excl, true);
 		extCompleter = new AceGmlCompletion(GmlAPI.extComp, excl, true);
 		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, excl, true);
-		eventCompleter = new AceGmlCompletion(gml.GmlEvent.comp, ["eventname"], false);
+		eventCompleter = new AceGmlCompletion(parsers.GmlEvent.comp, ["eventname"], false);
 		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false);
 		keynameCompleter = new AceGmlCompletion(GmlKeycode.comp, ["eventkeyname"], false);
 		//

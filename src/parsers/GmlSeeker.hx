@@ -1,17 +1,19 @@
-package gml;
+package parsers;
 import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
 import gml.GmlAPI;
 import gmx.*;
 import yy.*;
+import gml.*;
 import haxe.io.Path;
+import parsers.GmlReader;
 import tools.Dictionary;
 import yy.YyObject;
 using StringTools;
 using tools.NativeString;
 
 /**
- * ...
+ * Looks for definitions in files/code (for syntax highlighing, auto-completion, etc.)
  * @author YellowAfterlife
  */
 class GmlSeeker {
