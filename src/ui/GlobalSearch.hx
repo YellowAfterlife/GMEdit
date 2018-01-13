@@ -16,7 +16,7 @@ using tools.HtmlTools;
  * ...
  * @author YellowAfterlife
  */
-class GlobalSearch {
+@:keep class GlobalSearch {
 	public static var element:Element;
 	public static var fdFind:InputElement;
 	public static var fdReplace:InputElement;
@@ -49,16 +49,19 @@ class GlobalSearch {
 		}
 		return { column: till - rowStart, row: row };
 	}
-	public static function find(term:String, opt:GlobalSearchOpt, ?finish:Void->Void) {
+	public static function run(opt:GlobalSearchOpt, ?finish:Void->Void) {
 		var pj = Project.current;
 		var version = pj.version;
 		if (version == gml.GmlVersion.none) return;
+		var term = opt.find;
+		if (term == "") return;
 		var eterm = NativeString.escapeRx(term);
 		if (opt.wholeWord) eterm = "\\b" + eterm + "\\b";
 		var rx = new RegExp(eterm, opt.matchCase ? "g" : "ig");
 		var results = "";
 		var found = 0;
 		var repl = opt.replaceBy;
+		var ctxFilter = opt.headerFilter;
 		var isRepl = repl != null;
 		var isPrev = opt.previewReplace;
 		pj.search(function(name:String, path:String, code:String) {
@@ -67,9 +70,11 @@ class GlobalSearch {
 			var row = 0;
 			var ctxName = name;
 			var ctxStart = 0;
+			var ctxCheck = ctxFilter == null || ctxFilter.test("#define " + name);
 			var out = isRepl ? "" : null;
 			var replStart = 0;
 			function flush(till:Int) {
+				if (!ctxCheck) return;
 				var subc:String = q.substring(start, till);
 				var mt = rx.exec(subc);
 				while (mt != null) {
@@ -123,6 +128,16 @@ class GlobalSearch {
 					};
 					case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 						q.skipIdent1();
+						inline function ctxPost():Void {
+							q.skipLine(); q.skipLineEnd();
+							ctxStart = q.pos;
+							ctxCheck = ctxFilter == null || ctxFilter.test(q.substring(p, q.pos));
+							if (opt.checkHeaders) {
+								start = p;
+								flush(q.pos);
+							}
+							start = q.pos;
+						}
 						switch (q.substring(p, q.pos)) {
 							case "#define": {
 								flush(p);
@@ -130,13 +145,7 @@ class GlobalSearch {
 								p1 = q.pos;
 								q.skipIdent1();
 								ctxName = q.substring(p1, q.pos);
-								q.skipLine(); q.skipLineEnd();
-								ctxStart = q.pos;
-								if (opt.checkHeaders) {
-									start = p;
-									flush(q.pos);
-								}
-								start = q.pos;
+								ctxPost();
 							};
 							case "#event": {
 								flush(p);
@@ -144,13 +153,7 @@ class GlobalSearch {
 								p1 = q.pos;
 								q.skipEventName();
 								ctxName = name + "(" + q.substring(p1, q.pos) + ")";
-								q.skipLine(); q.skipLineEnd();
-								ctxStart = q.pos;
-								if (opt.checkHeaders) {
-									start = p;
-									flush(q.pos);
-								}
-								start = q.pos;
+								ctxPost();
 							};
 							case "#moment": {
 								flush(p);
@@ -158,13 +161,7 @@ class GlobalSearch {
 								p1 = q.pos;
 								q.skipIdent1();
 								ctxName = name + "(" + q.substring(p1, q.pos) + ")";
-								q.skipLine(); q.skipLineEnd();
-								ctxStart = q.pos;
-								if (opt.checkHeaders) {
-									start = p;
-									flush(q.pos);
-								}
-								start = q.pos;
+								ctxPost();
 							};
 						}
 					};
@@ -205,7 +202,42 @@ class GlobalSearch {
 			element.style.display = "none";
 		}
 	}
+	public static function getOptions():GlobalSearchOpt {
+		return {
+			find: fdFind.value,
+			wholeWord: cbWholeWord.checked,
+			matchCase: cbMatchCase.checked,
+			checkStrings: cbCheckStrings.checked,
+			checkObjects: cbCheckObjects.checked,
+			checkScripts: cbCheckScripts.checked,
+			checkHeaders: cbCheckHeaders.checked,
+			checkComments: cbCheckComments.checked,
+			checkTimelines: cbCheckTimelines.checked,
+		};
+	}
+	public static function runAuto(opt:GlobalSearchOpt) {
+		divSearching.style.display = "";
+		run(opt, function() {
+			element.style.display = "none";
+		});
+	}
+	public static function findAuto(?opt:GlobalSearchOpt) {
+		if (opt == null) opt = getOptions();
+		runAuto(opt);
+	}
+	public static function replaceAuto(?opt:GlobalSearchOpt) {
+		if (opt == null) opt = getOptions();
+		opt.replaceBy = fdReplace.value;
+		runAuto(opt);
+	}
+	public static function previewAuto(?opt:GlobalSearchOpt) {
+		if (opt == null) opt = getOptions();
+		opt.replaceBy = fdReplace.value;
+		opt.previewReplace = true;
+		runAuto(opt);
+	}
 	public static function init() {
+		//{
 		element = Main.document.querySelector("#global-search");
 		fdFind = element.querySelectorAuto('input[name="find-text"]');
 		fdReplace = element.querySelectorAuto('input[name="replace-text"]');
@@ -223,7 +255,7 @@ class GlobalSearch {
 		cbCheckHeaders = element.querySelectorAuto('input[name="check-headers"]');
 		cbCheckComments = element.querySelectorAuto('input[name="check-comments"]');
 		cbCheckTimelines = element.querySelectorAuto('input[name="check-timelines"]');
-		//
+		//}
 		fdFind.onkeydown = function(e:KeyboardEvent) {
 			switch (e.keyCode) {
 				case KeyboardEvent.DOM_VK_RETURN: btFind.click();
@@ -236,47 +268,18 @@ class GlobalSearch {
 				case KeyboardEvent.DOM_VK_ESCAPE: btCancel.click();
 			}
 		}
-		function getOpt():GlobalSearchOpt {
-			return {
-				wholeWord: cbWholeWord.checked,
-				matchCase: cbMatchCase.checked,
-				checkStrings: cbCheckStrings.checked,
-				checkObjects: cbCheckObjects.checked,
-				checkScripts: cbCheckScripts.checked,
-				checkHeaders: cbCheckHeaders.checked,
-				checkComments: cbCheckComments.checked,
-				checkTimelines: cbCheckTimelines.checked,
-			};
-		}
-		btFind.onclick = function(_) {
-			divSearching.style.display = "";
-			find(fdFind.value, getOpt(), function() {
-				element.style.display = "none";
-			});
-		};
+		btFind.onclick = function(_) findAuto();
 		btReplace.onclick = function(_) {
 			if (!window.confirm("Are you sure that you want to globally replace?"
 				+ "\nThis cannot be undone!")) return;
-			divSearching.style.display = "";
-			var opt = getOpt();
-			opt.replaceBy = fdReplace.value;
-			find(fdFind.value, opt, function() {
-				element.style.display = "none";
-			});
+			replaceAuto();
 		};
-		btPreview.onclick = function(_) {
-			divSearching.style.display = "";
-			var opt = getOpt();
-			opt.replaceBy = fdReplace.value;
-			opt.previewReplace = true;
-			find(fdFind.value, opt, function() {
-				element.style.display = "none";
-			});
-		}
+		btPreview.onclick = function(_) previewAuto();
 		btCancel.onclick = function(_) element.style.display = "none";
 	}
 }
 typedef GlobalSearchOpt = {
+	find:String,
 	?replaceBy:String,
 	?previewReplace:Bool,
 	wholeWord:Bool,
@@ -287,5 +290,6 @@ typedef GlobalSearchOpt = {
 	checkHeaders:Bool,
 	checkComments:Bool,
 	checkTimelines:Bool,
+	?headerFilter:RegExp,
 	?errors:String,
 };

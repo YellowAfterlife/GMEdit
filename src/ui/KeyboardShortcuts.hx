@@ -52,11 +52,11 @@ class KeyboardShortcuts {
 		var flags = getEventFlags(e);
 		var keyCode = e.keyCode;
 		switch (keyCode) {
-      case KeyboardEvent.DOM_VK_F2: {
-        if (flags == CTRL || flags == META) {
-          untyped __js__("formatAceGMLContents();");
-        }
-      }
+			case KeyboardEvent.DOM_VK_F2: {
+				if (flags == CTRL || flags == META) {
+					untyped __js__("formatAceGMLContents();");
+				}
+			};
 			case KeyboardEvent.DOM_VK_F5: {
 				// debug
 				//document.location.reload(true);
