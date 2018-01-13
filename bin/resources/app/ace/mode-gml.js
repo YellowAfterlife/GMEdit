@@ -93,7 +93,7 @@ var MatchingBraceOutdent = function() {};
 exports.MatchingBraceOutdent = MatchingBraceOutdent;
 }); // ace.define("ace/mode/matching_brace_outdent", ...)
 // Edited for "#define" support
-ace.define("ace/mode/folding/cstyle", ["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
+ace.define("ace/mode/folding/gmlstyle", ["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -271,7 +271,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 }).call(FoldMode.prototype);
 
-}); // ace.define("ace/mode/folding/cstyle", ...)
+}); // ace.define("ace/mode/folding/gmlstyle", ...)
 //
 } // function ace_mode_gml_0
 function ace_mode_gml_1() {
@@ -434,7 +434,7 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 //
 ace.define("ace/mode/gml",["require","exports","module",
 	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
-	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/gmlstyle"
 ], function(require, exports, module) {
 "use strict";
 
@@ -443,7 +443,7 @@ var TextMode = require("./text").Mode;
 var GmlHighlightRules = require("./gml_highlight_rules").GmlHighlightRules;
 var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
 var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
-var CStyleFoldMode = require("./folding/cstyle").FoldMode;
+var CStyleFoldMode = require("./folding/gmlstyle").FoldMode;
 
 var Mode = function() {
 	this.HighlightRules = GmlHighlightRules;
@@ -494,7 +494,7 @@ exports.Mode = Mode;
 //
 ace.define("ace/mode/shader",["require","exports","module",
 	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
-	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/gmlstyle"
 ], function(require, exports, module) {
 "use strict";
 
@@ -503,7 +503,7 @@ var TextMode = require("./text").Mode;
 var ShaderHighlightRules = require("./shader_highlight_rules").ShaderHighlightRules;
 var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
 var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
-var CStyleFoldMode = require("./folding/cstyle").FoldMode;
+var CStyleFoldMode = require("./folding/gmlstyle").FoldMode;
 
 var Mode = function() {
 	this.HighlightRules = ShaderHighlightRules;
@@ -554,7 +554,7 @@ exports.Mode = Mode;
 //
 ace.define("ace/mode/gml_search",["require","exports","module",
 	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
-	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/gmlstyle"
 ], function(require, exports, module) {
 "use strict";
 
