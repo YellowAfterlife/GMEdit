@@ -138,4 +138,33 @@ class GmlReader extends StringReader {
 			} else break;
 		}
 	}
+	
+	/** ("obj_some") this"#¦event step" -> "obj_some(step)" this"#event step¦" */
+	public inline function readContextName(name:String) {
+		var p = pos;
+		skipIdent1();
+		var preproc = substring(p - 1, pos);
+		switch (preproc) {
+			case "#define", "#event", "#moment": {
+				skipSpaces0();
+				p = pos;
+				switch (preproc) {
+					case "#define": {
+						skipIdent1();
+						return substring(p, pos);
+					};
+					case "#event": {
+						skipEventName();
+						return name + "(" + substring(p, pos) + ")";
+					};
+					case "#moment": {
+						skipIdent1();
+						return name + "(" + substring(p, pos) + ")";
+					};
+					default: return null;
+				}
+			};
+			default: return null;
+		}
+	}
 }

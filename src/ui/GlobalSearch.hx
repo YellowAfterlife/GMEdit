@@ -9,7 +9,9 @@ import js.html.Element;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import parsers.GmlReader;
+import tools.Dictionary;
 import tools.NativeString;
+import ui.GlobalSeachData;
 using tools.HtmlTools;
 
 /**
@@ -64,13 +66,20 @@ using tools.HtmlTools;
 		var ctxFilter = opt.headerFilter;
 		var isRepl = repl != null;
 		var isPrev = opt.previewReplace;
+		var saveData = new GlobalSeachData(opt);
+		var saveItems = saveData.list;
+		var saveItem:GlobalSearchItem;
+		var saveCtxItems:Array<GlobalSearchItem>;
 		pj.search(function(name:String, path:String, code:String) {
 			var q = new GmlReader(code);
 			var start = 0;
 			var row = 0;
 			var ctxName = name;
+			saveCtxItems = [];
+			saveData.map.set(ctxName, saveCtxItems);
 			var ctxStart = 0;
 			var ctxCheck = ctxFilter == null || ctxFilter.test("#define " + name);
+			var ctxLast = null;
 			var out = isRepl ? "" : null;
 			var replStart = 0;
 			function flush(till:Int) {
@@ -84,15 +93,22 @@ using tools.HtmlTools;
 						if (StringTools.fastCodeAt(code, eol - 1) == "\r".code) eol -= 1;
 					} else eol = code.length;
 					var pos = offsetToPos(code, ofs, ctxStart);
-					var line = code.substring(ofs - pos.column, eol);
+					var sol = ofs - pos.column;
+					var line = code.substring(sol, eol);
 					var ctxLink = ctxName;
 					if (pos.row >= 0) ctxLink += ":" + (pos.row + 1);
-					results += '\n\n// in @[$ctxLink]:\n' + line;
-					if (isRepl) {
-						out += q.substring(replStart, ofs) + repl;
-						replStart = ofs + mt[0].length;
-						results += "\n" + code.substring(ofs - pos.column, ofs)
-							+ repl + code.substring(replStart, eol);
+					if (ctxLink != ctxLast) {
+						saveItem = { row: pos.row, code: line, next: null };
+						saveItems.push(saveItem);
+						saveCtxItems.push(saveItem);
+						ctxLast = ctxLink;
+						results += '\n\n// in @[$ctxLink]:\n' + line;
+						if (isRepl) {
+							out += q.substring(replStart, ofs) + repl;
+							replStart = ofs + mt[0].length;
+							results += "\n" + code.substring(sol, ofs)
+								+ repl + code.substring(replStart, eol);
+						}
 					}
 					found += 1;
 					mt = rx.exec(subc);
@@ -127,43 +143,20 @@ using tools.HtmlTools;
 						}
 					};
 					case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-						q.skipIdent1();
-						inline function ctxPost():Void {
-							q.skipLine(); q.skipLineEnd();
-							ctxStart = q.pos;
-							ctxCheck = ctxFilter == null || ctxFilter.test(q.substring(p, q.pos));
-							if (opt.checkHeaders) {
-								start = p;
-								flush(q.pos);
-							}
-							start = q.pos;
+						var ctxNameNext = q.readContextName(name);
+						if (ctxNameNext == null) continue;
+						flush(p);
+						ctxName = ctxNameNext;
+						q.skipLine(); q.skipLineEnd();
+						ctxStart = q.pos;
+						ctxCheck = ctxFilter == null || ctxFilter.test(q.substring(p, q.pos));
+						if (opt.checkHeaders) {
+							start = p;
+							flush(q.pos);
 						}
-						switch (q.substring(p, q.pos)) {
-							case "#define": {
-								flush(p);
-								q.skipSpaces0();
-								p1 = q.pos;
-								q.skipIdent1();
-								ctxName = q.substring(p1, q.pos);
-								ctxPost();
-							};
-							case "#event": {
-								flush(p);
-								q.skipSpaces0();
-								p1 = q.pos;
-								q.skipEventName();
-								ctxName = name + "(" + q.substring(p1, q.pos) + ")";
-								ctxPost();
-							};
-							case "#moment": {
-								flush(p);
-								q.skipSpaces0();
-								p1 = q.pos;
-								q.skipIdent1();
-								ctxName = name + "(" + q.substring(p1, q.pos) + ")";
-								ctxPost();
-							};
-						}
+						saveCtxItems = [];
+						saveData.map.set(ctxName, saveCtxItems);
+						start = q.pos;
 					};
 				}
 			}
@@ -184,7 +177,9 @@ using tools.HtmlTools;
 			if (opt.errors != null) {
 				results = "/* Errors:\n" + opt.errors + "\n*/\n" + results;
 			}
-			GmlFile.openTab(new GmlFile(name, null, SearchResults, results));
+			var file = new GmlFile(name, null, SearchResults, results);
+			if (!isRepl) file.searchData = saveData;
+			GmlFile.openTab(file);
 			window.setTimeout(function() {
 				aceEditor.focus();
 			});
@@ -282,6 +277,7 @@ typedef GlobalSearchOpt = {
 	find:String,
 	?replaceBy:String,
 	?previewReplace:Bool,
+	//?saveData:GlobalSearchData,
 	wholeWord:Bool,
 	matchCase:Bool,
 	checkStrings:Bool,

@@ -33,6 +33,9 @@ import haxe.extern.EitherType;
 	public static function readdirSync(path:String, ?options:Dynamic):Array<String>;
 	//
 	public static function statSync(path:String):FileSystemStat;
+	public static inline function getMTimeMs(path:String):Float {
+		return statSync(path).mtimeMs;
+	}
 }
 extern class FileSystemStat {
 	public function isFile():Bool;

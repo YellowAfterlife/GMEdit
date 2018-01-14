@@ -21,6 +21,7 @@ import tools.Dictionary;
 import tools.NativeString;
 import tools.StringBuilder;
 import yy.*;
+import ui.GlobalSeachData;
 using tools.HtmlTools;
 
 /**
@@ -85,7 +86,11 @@ class GmlFile {
 		return z;
 	}
 	
+	/** only for Multifle */
 	public var multidata:Array<{ name:String, path:String }>;
+	
+	/** only for SearchResults */
+	public var searchData:GlobalSeachData;
 	
 	//
 	public function new(name:String, path:String, kind:GmlFileKind, ?data:Dynamic) {
@@ -344,8 +349,25 @@ class GmlFile {
 		}
 	}
 	//
+	public function savePost(?out:String) {
+		syncTime();
+		changed = false;
+		session.getUndoManager().markClean();
+		// update things if this is the active tab:
+		if (current == this && path != null && out != null) {
+			var data = GmlSeekData.map[path];
+			if (data != null) {
+				GmlSeeker.runSync(path, out, data.main);
+				if (GmlAPI.version == GmlVersion.live) liveApply();
+				var next = GmlSeekData.map[path];
+				if (next != data) {
+					GmlLocals.currentMap = next.locals;
+					Main.aceEditor.session.bgTokenizer.start(0);
+				}
+			}
+		}
+	}
 	public function save() {
-		if (path == null) return false;
 		var val = session.getValue();
 		code = val;
 		inline function error(s:String) {
@@ -354,7 +376,7 @@ class GmlFile {
 		}
 		//
 		var out:String, src:String, gmx:SfGmx;
-		var writeFile:Bool = true;
+		var writeFile:Bool = path != null;
 		switch (kind) {
 			case Extern: out = val;
 			case Plain, GLSL, HLSL, JavaScript: out = val;
@@ -385,6 +407,11 @@ class GmlFile {
 						+ " because it is not among the edited group.\n";
 				}
 				if (errors != "") error(errors);
+			};
+			case SearchResults: {
+				if (searchData != null) {
+					return searchData.save(this);
+				} else return false;
 			};
 			case GmxObjectEvents: {
 				gmx = FileSystem.readGmxFileSync(path);
@@ -429,22 +456,7 @@ class GmlFile {
 		}
 		//
 		if (writeFile) FileSystem.writeFileSync(path, out);
-		syncTime();
-		changed = false;
-		session.getUndoManager().markClean();
-		// update things if this is the active tab:
-		if (current == this) {
-			var data = GmlSeekData.map[path];
-			if (data != null) {
-				GmlSeeker.runSync(path, out, data.main);
-				if (GmlAPI.version == GmlVersion.live) liveApply();
-				var next = GmlSeekData.map[path];
-				if (next != data) {
-					GmlLocals.currentMap = next.locals;
-					Main.aceEditor.session.bgTokenizer.start(0);
-				}
-			}
-		}
+		savePost(out);
 		return true;
 	}
 	//
