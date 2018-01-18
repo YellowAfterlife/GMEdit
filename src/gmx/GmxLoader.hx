@@ -62,6 +62,20 @@ class GmxLoader {
 		for (q in gmx.findAll("timelines")) loadrec(q, tv, "timeline", "timelines/");
 		for (q in gmx.findAll("objects")) loadrec(q, tv, "object", "objects/");
 		//
+		for (datafiles in gmx.findAll("datafiles")) {
+			var parent = TreeView.makeDir("Included files", "datafiles/");
+			var found = 0;
+			for (datafile in datafiles.findAll("datafile")) {
+				var name = datafile.findText("name");
+				var rel = Path.join(["datafiles", name]);
+				var full = Path.join([dir, rel]);
+				var item = TreeView.makeItem(name, rel, full, "datafile") ;
+				parent.treeItems.appendChild(item);
+				found += 1;
+			}
+			if (found > 0) tv.appendChild(parent);
+		}
+		//
 		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
 		for (extParent in gmx.findAll("NewExtensions")) {
