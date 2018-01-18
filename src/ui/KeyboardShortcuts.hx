@@ -263,10 +263,14 @@ class KeyboardShortcuts {
 		var dom:MouseEvent = ev.domEvent;
 		if (dom.button != 1) return;
 		var pos:AcePos = ev.getDocumentPosition();
-		var line = aceEditor.session.getLine(pos.row);
+		var session = aceEditor.session;
+		var line = session.getLine(pos.row);
 		if (line != null && pos.column < line.length
 			&& openDeclaration(pos, aceEditor.session.getTokenAtPos(pos))
 		) {
+			if (session.selection.isEmpty()) {
+				session.selection.moveTo(pos.row, pos.column);
+			}
 			dom.preventDefault();
 		}
 	}
