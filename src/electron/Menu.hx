@@ -35,7 +35,7 @@ typedef MenuPopupOptions = {
 typedef MenuItemOptions = {
 	?click:Function,
 	?role:String,
-	?type:String,
+	?type:MenuItemType,
 	?label:String,
 	?sublabel:String,
 	?accelerator:Dynamic,

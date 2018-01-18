@@ -29,6 +29,9 @@ class ChromeTabs {
 		impl.init(element, {
 			tabOverlapDistance: 14, minWidth: 45, maxWidth: 160
 		});
+		//
+		ChromeTabMenu.init();
+		//
 		element.addEventListener("activeTabChange", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
 			var gmlFile = tabEl.gmlFile;
@@ -40,6 +43,9 @@ class ChromeTabs {
 				tabEl.gmlFile = gmlFile;
 				tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
 				tabEl.setAttribute(attrContext, gmlFile.context);
+				tabEl.addEventListener("contextmenu", function(_) {
+					ChromeTabMenu.show(tabEl);
+				});
 			}
 			var prev = GmlFile.current;
 			if (prev != null) {
