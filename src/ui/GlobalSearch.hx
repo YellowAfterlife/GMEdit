@@ -12,6 +12,8 @@ import parsers.GmlReader;
 import tools.Dictionary;
 import tools.NativeString;
 import ui.GlobalSeachData;
+import haxe.extern.EitherType;
+import haxe.Constraints.Function;
 using tools.HtmlTools;
 
 /**
@@ -55,16 +57,24 @@ using tools.HtmlTools;
 		var pj = Project.current;
 		var version = pj.version;
 		if (version == gml.GmlVersion.none) return;
-		var term = opt.find;
+		var term:String, rx:RegExp;
+		if (Std.is(opt.find, RegExp)) {
+			rx = opt.find;
+			term = rx.toString();
+		} else {
+			term = opt.find;
+			var eterm = NativeString.escapeRx(term);
+			if (opt.wholeWord) eterm = "\\b" + eterm + "\\b";
+			rx = new RegExp(eterm, opt.matchCase ? "g" : "ig");
+		}
 		if (term == "") return;
-		var eterm = NativeString.escapeRx(term);
-		if (opt.wholeWord) eterm = "\\b" + eterm + "\\b";
-		var rx = new RegExp(eterm, opt.matchCase ? "g" : "ig");
 		var results = "";
 		var found = 0;
-		var repl = opt.replaceBy;
+		var repl:Dynamic = opt.replaceBy;
+		var filterFn:Function = opt.findFilter;
 		var ctxFilter = opt.headerFilter;
 		var isRepl = repl != null;
+		var isReplFn = untyped __typeof__(repl) == "function";
 		var isPrev = opt.previewReplace;
 		var saveData = new GlobalSeachData(opt);
 		var saveItems = saveData.list;
@@ -98,16 +108,22 @@ using tools.HtmlTools;
 					var ctxLink = ctxName;
 					if (pos.row >= 0) ctxLink += ":" + (pos.row + 1);
 					if (ctxLink != ctxLast) {
-						saveItem = { row: pos.row, code: line, next: null };
-						saveItems.push(saveItem);
-						saveCtxItems.push(saveItem);
-						ctxLast = ctxLink;
-						results += '\n\n// in @[$ctxLink]:\n' + line;
-						if (isRepl) {
-							out += q.substring(replStart, ofs) + repl;
-							replStart = ofs + mt[0].length;
-							results += "\n" + code.substring(sol, ofs)
-								+ repl + code.substring(replStart, eol);
+						var curr:Dynamic = mt.length > 1 ? mt : mt[0];
+						if (filterFn == null || filterFn(curr)) {
+							saveItem = { row: pos.row, code: line, next: null };
+							saveItems.push(saveItem);
+							saveCtxItems.push(saveItem);
+							ctxLast = ctxLink;
+							var head = '\n\n// in @[$ctxLink]:\n' + line;
+							if (isRepl) {
+								var next:String = isReplFn ? repl(curr) : repl;
+								out += q.substring(replStart, ofs) + next;
+								replStart = ofs + mt[0].length;
+								if (mt[0] != next) {
+									results += head + "\n" + code.substring(sol, ofs)
+										+ next + code.substring(replStart, eol);
+								}
+							} else results += head;
 						}
 					}
 					found += 1;
@@ -200,6 +216,10 @@ using tools.HtmlTools;
 	public static function getOptions():GlobalSearchOpt {
 		return {
 			find: fdFind.value,
+			findFilter: null,
+			replaceBy: null,
+			previewReplace: false,
+			headerFilter: null,
 			wholeWord: cbWholeWord.checked,
 			matchCase: cbMatchCase.checked,
 			checkStrings: cbCheckStrings.checked,
@@ -274,10 +294,10 @@ using tools.HtmlTools;
 	}
 }
 typedef GlobalSearchOpt = {
-	find:String,
-	?replaceBy:String,
+	find:EitherType<String, RegExp>,
+	?findFilter:Function,
+	?replaceBy:EitherType<String, Function>,
 	?previewReplace:Bool,
-	//?saveData:GlobalSearchData,
 	wholeWord:Bool,
 	matchCase:Bool,
 	checkStrings:Bool,

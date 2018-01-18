@@ -74,7 +74,7 @@ class GlobalSeachData {
 					var ctxLine = null;
 					var itemRow = item.row;
 					inline function itemError(s:String):Void {
-						errors += "// Can't update @[" + ctxName + ":" + (itemRow + 1) + "]: " + s;
+						errors += "// Can't update @[" + ctxName + ":" + (itemRow + 1) + "]: " + s + "\n";
 					}
 					// this should have been an ugly regular expression instead:
 					while (ctxRow < itemRow) {
