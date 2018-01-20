@@ -33,6 +33,7 @@ class GmxAction {
 		action.addChild(arguments);
 		var argument = new SfGmx("argument");
 		argument.addTextChild("kind", "1");
+		if (code == "") code = "\r\n";
 		argument.addTextChild("string", code);
 		arguments.addChild(argument);
 		return action;
