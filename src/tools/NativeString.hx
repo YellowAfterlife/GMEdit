@@ -41,4 +41,8 @@ class NativeString {
 	public static inline function escapeRx(s:String):String {
 		return replaceExt(s, escapeRx_1, "\\$1");
 	}
+	private static var escapeProp_1:RegExp = new RegExp('(["\\\\])', 'g');
+	public static inline function escapeProp(s:String):String {
+		return replaceExt(s, escapeProp_1, "\\$1");
+	}
 }

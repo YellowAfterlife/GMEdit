@@ -9,6 +9,7 @@ import js.html.Element;
 import js.html.Event;
 import Main.window;
 import Main.document;
+using tools.NativeString;
 
 /**
  * ...
@@ -86,8 +87,8 @@ class ChromeTabs {
 			} else {
 				var tab:Element = null;
 				while (tab == null && pathHistory.length > 0) {
-					tab = document.querySelector(
-						'.chrome-tab[' + attrContext + '="' + pathHistory.shift() + '"]'
+					tab = document.querySelector('.chrome-tab[' + attrContext + '="'
+						+ pathHistory.shift().escapeProp() + '"]'
 					);
 				}
 				if (tab == null) tab = e.detail.prevTab;

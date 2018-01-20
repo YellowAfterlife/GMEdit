@@ -130,7 +130,7 @@ import ui.TreeView;
 			if (parentName == null) return null;
 			// todo: have an actual asset name -> asset path lookup instead
 			var el = TreeView.element.querySelector('.item['
-				+ TreeView.attrIdent + '="' + parentName + '"]');
+				+ TreeView.attrIdent + '="' + NativeString.escapeProp(parentName) + '"]');
 			if (el == null) return null;
 			var path = el.getAttribute(TreeView.attrPath);
 			if (!FileSystem.existsSync(path)) return null;

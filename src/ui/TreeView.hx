@@ -124,7 +124,8 @@ class TreeView {
 		var paths = paths != null ? paths : openPaths;
 		var el = element;
 		for (path in paths) {
-			var dir = el.querySelector('.dir[$attrRel="$path"]');
+			var epath = tools.NativeString.escapeProp(path);
+			var dir = el.querySelector('.dir[$attrRel="$epath"]');
 			if (dir != null) dir.classList.add("open");
 		}
 	}

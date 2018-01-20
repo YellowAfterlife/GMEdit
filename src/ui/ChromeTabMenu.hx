@@ -48,7 +48,8 @@ class ChromeTabMenu {
 			click: function() {
 				var tree = TreeView.element;
 				var path = target.gmlFile.path;
-				var item = tree.querySelector('.item[${TreeView.attrPath}="$path"]');
+				var epath = tools.NativeString.escapeProp(path);
+				var item = tree.querySelector('.item[${TreeView.attrPath}="$epath"]');
 				if (item == null) return;
 				var par = item;
 				do {
