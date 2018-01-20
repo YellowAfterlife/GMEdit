@@ -89,6 +89,7 @@ class GmlEvent {
 	 */
 	public static function parse(gmlCode:String, version:GmlVersion):GmlEventList {
 		var eventData:GmlEventList = [];
+		var eventMap = new Dictionary<Bool>();
 		var errors = "";
 		var q = new GmlReader(gmlCode);
 		var evStart = 0;
@@ -112,7 +113,12 @@ class GmlEvent {
 				if (flushData != null) {
 					evCode.push(flushCode);
 					if (!cont) {
-						eventData.push({ data: flushData, code: evCode });
+						if (eventMap.exists(evName)) {
+							errors += 'Duplicate event declaration found for `$evName`.\n';
+						} else {
+							eventData.push({ data: flushData, code: evCode });
+							eventMap.set(evName, true);
+						}
 						evCode = [];
 					}
 				} else errors += '`$evName` is not a known event type.\n';
