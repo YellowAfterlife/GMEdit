@@ -61,6 +61,12 @@ class TreeViewMenus {
 		GmlFile.open(name, path);
 	}
 	//
+	static var removeFromRecentProjectsItem:MenuItem;
+	static function removeFromRecentProjects() {
+		RecentProjects.remove(target.getAttribute(TreeView.attrPath));
+		target.parentElement.removeChild(target);
+	}
+	//
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);
 		electron.Shell.openItem(path);
@@ -79,29 +85,35 @@ class TreeViewMenus {
 	public static function showItemMenu(el:Element) {
 		var z:Bool;
 		target = el;
-		z = gml.GmlAPI.version == v2 && el.getAttribute(TreeView.attrKind) == "shader";
+		var kind = el.getAttribute(TreeView.attrKind);
+		z = gml.GmlAPI.version == v2 && kind == "shader";
 		shaderItems.forEach(function(q) q.visible = z);
+		removeFromRecentProjectsItem.visible = kind == "project";
 		itemMenu.popupAsync();
 	}
 	//
 	public static function init() {
-		var add_item:MenuItem;
-		inline function add(m:Menu, o:MenuItemOptions) {
-			add_item = new MenuItem(o);
-			m.append(add_item);
-			return add_item;
+		function add(m:Menu, o:MenuItemOptions) {
+			var r = new MenuItem(o);
+			m.append(r);
+			return r;
+		}
+		inline function addLink(m:Menu, label:String, click:Void->Void) {
+			return add(m, { label: label, click: click });
 		}
 		itemMenu = new Menu();
 		shaderItems = [
-			add(itemMenu, { label: "Open vertex shader", click: function() openYyShader("vsh") }),
-			add(itemMenu, { label: "Open fragment shader", click: function() openYyShader("fsh") }),
+			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
+			addLink(itemMenu, "Open fragment shader", function() openYyShader("fsh")),
 		];
-		add(itemMenu, { label: "Open externally", click: openExternal });
-		add(itemMenu, { label: "Show in directory", click: openDirectory });
+		addLink(itemMenu, "Open externally", openExternal);
+		addLink(itemMenu, "Show in directory", openDirectory);
+		removeFromRecentProjectsItem =
+			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
 		//
 		dirMenu = new Menu();
-		openAllItem = add(dirMenu, { label: "Open all", click: openAll });
-		openCombinedItem = add(dirMenu, { label: "Open combined view", click: openCombined });
+		openAllItem = addLink(dirMenu, "Open all", openAll);
+		openCombinedItem = addLink(dirMenu, "Open combined view", openCombined);
 		//
 	}
 }

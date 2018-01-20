@@ -16,12 +16,20 @@ class RecentProjects {
 			return Std.is(curr, Array) ? curr : [];
 		} catch (_:Dynamic) return [];
 	}
+	private static function set(list:Array<String>) {
+		Main.window.localStorage.setItem(lsPath, Json.stringify(list));
+	}
 	public static function add(path:String) {
 		var curr = get();
 		curr.remove(path);
 		curr.unshift(path);
 		if (curr.length > 16) curr.pop();
-		Main.window.localStorage.setItem(lsPath, Json.stringify(curr));
+		set(curr);
+	}
+	public static function remove(path:String) {
+		var curr = get();
+		curr.remove(path);
+		set(curr);
 	}
 	public static function show() {
 		TreeView.clear();
