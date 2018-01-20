@@ -37,7 +37,7 @@ class GlobalLookup {
 			var data = gml.GmlAPI.gmlLookupText;
 			for (iter in 0 ... 2) {
 				var ipatt = iter == 0 ? '^($pattern.*)$' : '^(.+$pattern.*)$';
-				var regex = new RegExp(ipatt, 'gm');
+				var regex = new RegExp(ipatt, 'gmi');
 				var match = regex.exec(data);
 				while (match != null) {
 					var name = match[1];
