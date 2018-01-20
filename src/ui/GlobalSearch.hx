@@ -36,6 +36,7 @@ using tools.HtmlTools;
 	public static var cbCheckScripts:InputElement;
 	public static var cbCheckHeaders:InputElement;
 	public static var cbCheckTimelines:InputElement;
+	public static var cbCheckMacros:InputElement;
 	public static var divSearching:DivElement;
 	//
 	static function offsetToPos(code:String, till:Int, rowStart:Int):AcePos {
@@ -159,20 +160,28 @@ using tools.HtmlTools;
 						}
 					};
 					case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-						var ctxNameNext = q.readContextName(name);
-						if (ctxNameNext == null) continue;
-						flush(p);
-						ctxName = ctxNameNext;
-						q.skipLine(); q.skipLineEnd();
-						ctxStart = q.pos;
-						ctxCheck = ctxFilter == null || ctxFilter.test(q.substring(p, q.pos));
-						if (opt.checkHeaders) {
-							start = p;
-							flush(q.pos);
+						if (q.substr(p, 6) == "#macro") {
+							if (!opt.checkMacros) {
+								q.skipLine();
+								q.skipLineEnd();
+								start = q.pos;
+							}
+						} else {
+							var ctxNameNext = q.readContextName(name);
+							if (ctxNameNext == null) continue;
+							flush(p);
+							ctxName = ctxNameNext;
+							q.skipLine(); q.skipLineEnd();
+							ctxStart = q.pos;
+							ctxCheck = ctxFilter == null || ctxFilter.test(q.substring(p, q.pos));
+							if (opt.checkHeaders) {
+								start = p;
+								flush(q.pos);
+							}
+							saveCtxItems = [];
+							saveData.map.set(ctxName, saveCtxItems);
+							start = q.pos;
 						}
-						saveCtxItems = [];
-						saveData.map.set(ctxName, saveCtxItems);
-						start = q.pos;
 					};
 				}
 			}
@@ -228,6 +237,7 @@ using tools.HtmlTools;
 			checkHeaders: cbCheckHeaders.checked,
 			checkComments: cbCheckComments.checked,
 			checkTimelines: cbCheckTimelines.checked,
+			checkMacros: cbCheckMacros.checked,
 		};
 	}
 	public static function runAuto(opt:GlobalSearchOpt) {
@@ -270,6 +280,7 @@ using tools.HtmlTools;
 		cbCheckHeaders = element.querySelectorAuto('input[name="check-headers"]');
 		cbCheckComments = element.querySelectorAuto('input[name="check-comments"]');
 		cbCheckTimelines = element.querySelectorAuto('input[name="check-timelines"]');
+		cbCheckMacros = element.querySelectorAuto('input[name="check-macros"]');
 		//}
 		fdFind.onkeydown = function(e:KeyboardEvent) {
 			switch (e.keyCode) {
@@ -306,6 +317,7 @@ typedef GlobalSearchOpt = {
 	checkHeaders:Bool,
 	checkComments:Bool,
 	checkTimelines:Bool,
+	checkMacros:Bool,
 	?headerFilter:RegExp,
 	?errors:String,
 };

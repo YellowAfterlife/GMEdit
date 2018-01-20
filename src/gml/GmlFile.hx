@@ -53,7 +53,7 @@ class GmlFile {
 	/** Path to .gmlnotes (used for GMS1 macros) */
 	public var notePath(get, never):String;
 	private inline function get_notePath():String {
-		return path + ".gmlnotes";
+		return GmxProject.getNotePath(path);
 	}
 	
 	/** Last loaded/saved code */

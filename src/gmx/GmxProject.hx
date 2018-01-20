@@ -7,6 +7,9 @@ import tools.StringBuilder;
  * @author YellowAfterlife
  */
 class GmxProject {
+	public static function getNotePath(path:String) {
+		return path + ".gmlnotes";
+	}
 	public static function getMacroCode(gmx:SfGmx, notes:GmlReader, isConfig:Bool):String {
 		var out = "";
 		if (isConfig) gmx = gmx.find("ConfigConstants");

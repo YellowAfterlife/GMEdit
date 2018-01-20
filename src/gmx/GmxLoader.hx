@@ -18,13 +18,15 @@ class GmxLoader {
 		"sprite", "background", "sound", "path", "font",
 		"shader", "timeline", "script", "object", "room"
 	];
+	public static var rxAssetName:EReg = ~/^.+[\/\\](\w+)(?:\.[\w.]+)?$/g;
+	public static var allConfigs:String = "All configurations";
 	public static function run(project:Project) {
 		var path = project.path;
 		var dir = project.dir;
 		var gmx = FileSystem.readGmxFileSync(path);
 		//
 		GmlAPI.gmlClear();
-		var rxName = ~/^.+[\/\\](\w+)(?:\.[\w.]+)?$/g;
+		var rxName = rxAssetName;
 		TreeView.clear();
 		var tv = TreeView.element;
 		function loadrec(gmx:SfGmx, out:Element, one:String, path:String) {
@@ -125,7 +127,7 @@ class GmxLoader {
 		//
 		var mcrDir = TreeView.makeDir("Macros", "macros/");
 		var mcrItems = mcrDir.querySelector(".items");
-		mcrItems.appendChild(TreeView.makeItem("All configurations", "Configs/default", path, "config"));
+		mcrItems.appendChild(TreeView.makeItem(allConfigs, "Configs/default", path, "config"));
 		for (configs in gmx.findAll("Configs")) {
 			for (config in configs.findAll("Config")) {
 				var configPath = config.text;
