@@ -61,7 +61,7 @@ import haxe.extern.EitherType;
 				value:String, state:String, stack:Array<String>, line:String, row:Int
 			) {
 				var type:String = getLocalType(row, value);
-				if (type == null) type = getGlobalType(value, "identifier");
+				if (type == null) type = getGlobalType(value, "localfield");
 				return [token(type, value)];
 			},
 		};
@@ -86,7 +86,7 @@ import haxe.extern.EitherType;
 							objType = "enum";
 							fdType = en.items[field] ? "enumfield" : "enumerror";
 						} else {
-							objType = getGlobalType(object, "identifier");
+							objType = getGlobalType(object, "localfield");
 							fdType = getGlobalType(field, "field");
 						}
 					} else fdType = getGlobalType(field, "field");
