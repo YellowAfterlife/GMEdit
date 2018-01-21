@@ -41,6 +41,13 @@
 	position: relative;
 	top: -2px;
 }
+.treeview .item[data-thumb]:before {
+	/*background-image: attr(data-thumb url);*/ /* if only */
+	background-position: center;
+	background-size: 100%;
+	background-size: contain;
+	/*image-rendering: pixelated;*/
+}
 .treeview .header > span,
 .treeview .item > span {
 	display: inline-block;

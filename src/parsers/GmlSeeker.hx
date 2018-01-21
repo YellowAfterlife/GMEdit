@@ -8,6 +8,8 @@ import gml.*;
 import haxe.io.Path;
 import parsers.GmlReader;
 import tools.Dictionary;
+import ui.Preferences;
+import ui.TreeView;
 import yy.YyObject;
 using StringTools;
 using tools.NativeString;
@@ -290,6 +292,26 @@ class GmlSeeker {
 	static function runYyObject(orig:String, src:String) {
 		var obj:YyObject = haxe.Json.parse(src);
 		var dir = Path.directory(orig);
+		//
+		if (Preferences.current.assetThumbs) {
+			var spriteId = obj.spriteId;
+			if (spriteId != YyGUID.zero) {
+				var pj = Project.current;
+				var res = pj.yyResources[spriteId];
+				if (res != null) {
+					var spritePath = Path.join([pj.dir, res.Value.resourcePath]);
+					FileSystem.readTextFile(spritePath, function(e, raw) {
+						if (e != null) return;
+						var sprite:YySprite = haxe.Json.parse(raw);
+						var frame = sprite.frames[0];
+						if (frame == null) return;
+						var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
+						if (FileSystem.existsSync(framePath)) TreeView.setThumb(orig, framePath);
+					});
+				}
+			}
+		}
+		//
 		var out = new GmlSeekData();
 		var eventsLeft = 0;
 		var eventFiles = [];
@@ -324,6 +346,15 @@ class GmlSeeker {
 	static function runGmxObject(orig:String, src:String) {
 		var obj = SfGmx.parse(src);
 		var out = new GmlSeekData();
+		//
+		if (Preferences.current.assetThumbs) {
+			var sprite = obj.findText("spriteName");
+			if (sprite != "<undefined>") {
+				var thumb = Path.join([Project.current.dir, "sprites", "images", sprite + "_0.png"]);
+				if (FileSystem.existsSync(thumb)) TreeView.setThumb(orig, thumb);
+			}
+		}
+		//
 		for (events in obj.findAll("events"))
 		for (event in events.findAll("event")) {
 			var etype = Std.parseInt(event.get("eventtype"));

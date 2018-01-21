@@ -44,7 +44,7 @@ class Preferences {
 			}
 			out.appendChild(fs);
 		}
-		function addCheckbox(legend:String, current:Bool, fn:Bool->Void) {
+		function addCheckbox(legend:String, current:Bool, fn:Bool->Void):Element {
 			var ctr = document.createDivElement();
 			var cb = document.createInputElement();
 			cb.type = "checkbox";
@@ -59,8 +59,9 @@ class Preferences {
 			lb.appendChild(document.createTextNode(legend));
 			ctr.appendChild(lb);
 			out.appendChild(ctr);
+			return ctr;
 		}
-		function addInput(legend:String, current:String, fn:String->Void) {
+		function addInput(legend:String, current:String, fn:String->Void):Element {
 			var ctr = document.createDivElement();
 			//
 			var lb = document.createLabelElement();
@@ -78,8 +79,9 @@ class Preferences {
 			ctr.appendChild(cb);
 			//
 			out.appendChild(ctr);
+			return ctr;
 		}
-		function addButton(text:String, fn:Void->Void) {
+		function addButton(text:String, fn:Void->Void):Element {
 			var ctr = document.createDivElement();
 			var el = document.createAnchorElement();
 			el.href = "#";
@@ -90,6 +92,7 @@ class Preferences {
 			});
 			ctr.appendChild(el);
 			out.appendChild(ctr);
+			return ctr;
 		}
 		//
 		var themeList = ["default"];
@@ -106,13 +109,19 @@ class Preferences {
 		addCheckbox("Use `#args` magic", current.argsMagic, function(z) {
 			current.argsMagic = z;
 			save();
-		});
+		}).title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`."
+			+ "\nSee wiki for examples and more information.";
 		addCheckbox("UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
 			GmlAPI.ukSpelling = z;
 			GmlAPI.init();
 			save();
-		});
+		}).title = "Displays UK versions of function/variable names (e.g. draw_set_colour) in auto-completion when available.";
+		addCheckbox("Show asset thumbnails", current.assetThumbs, function(z) {
+			current.assetThumbs = z;
+			save();
+			gml.Project.current.reload();
+		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
 		addInput("Keep file sessions for (days):",
 		"" + current.fileSessionTime, function(s) {
 			current.fileSessionTime = Std.parseFloat(s); save();
@@ -153,6 +162,7 @@ class Preferences {
 		if (pref.fileSessionTime == null) pref.fileSessionTime = 7;
 		if (pref.projectSessionTime == null) pref.projectSessionTime = 14;
 		if (pref.theme != null) Theme.current = pref.theme;
+		if (pref.assetThumbs == null) pref.assetThumbs = true;
 		GmlAPI.ukSpelling = pref.ukSpelling;
 		//
 		current = pref;
@@ -193,4 +203,5 @@ typedef PrefData = {
 	?fileSessionTime:Float,
 	?projectSessionTime:Float,
 	?argsMagic:Bool,
+	?assetThumbs:Bool,
 }

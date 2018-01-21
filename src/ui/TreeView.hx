@@ -3,12 +3,16 @@ import electron.Dialog;
 import electron.Menu;
 import gml.GmlFile;
 import gml.Project;
+import js.html.CSSStyleSheet;
 import js.html.Element;
 import js.html.DivElement;
 import js.html.Event;
 import js.html.MouseEvent;
 import Main.*;
+import js.html.StyleElement;
+import tools.Dictionary;
 using tools.HtmlTools;
+using tools.NativeString;
 
 /**
  * ...
@@ -20,11 +24,44 @@ class TreeView {
 	public static inline var attrPath:String = "data-full-path";
 	public static inline var attrRel:String = "data-rel-path";
 	public static inline var attrKind:String = "data-kind";
+	public static inline var attrThumb:String = "data-thumb";
 	public static inline var attrOpenAs:String = "data-open-as";
+	//
+	public static inline var clDir:String = "dir";
+	public static inline var clItem:String = "item";
 	//
 	public static var element:DivElement;
 	public static function clear() {
 		element.innerHTML = "";
+		//
+		var sheet = thumbSheet;
+		var rules = sheet.cssRules;
+		var i = rules.length;
+		while (--i >= 0) sheet.deleteRule(i);
+	}
+	//
+	public static function find(item:Bool, query:TreeViewQuery):Element {
+		var qjs = "." + (item ? clItem : clDir);
+		if (query.extra != null) qjs += "." + query.extra;
+		var check_1:String;
+		inline function prop(name:String, value:String) {
+			check_1 = value;
+			if (check_1 != null) qjs += '[$name="' + check_1.escapeProp() + '"]';
+		}
+		prop(attrIdent, query.ident);
+		prop(attrPath, query.path);
+		prop(attrKind, query.kind);
+		return element.querySelector(qjs);
+	}
+	//
+	public static var thumbStyle:StyleElement;
+	public static var thumbSheet:CSSStyleSheet;
+	public static function setThumb(itemPath:String, thumbPath:String) {
+		thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
+			+ '"]:before { background-image: url("file:///' + thumbPath.escapeProp()
+			+ '"); }', thumbSheet.cssRules.length);
+		var item = find(true, { path: itemPath });
+		if (item != null) item.setAttribute(attrThumb, thumbPath);
 	}
 	//
 	static function handleDirClick(e:MouseEvent) {
@@ -131,9 +168,17 @@ class TreeView {
 	}
 	//
 	public static function init() {
-		element = cast Main.document.querySelector(".treeview");
+		element = document.querySelectorAuto(".treeview");
+		thumbStyle = document.querySelectorAuto("#tree-thumbs");
+		thumbSheet = cast thumbStyle.sheet;
 	}
 }
+typedef TreeViewQuery = {
+	?extra:String,
+	?path:String,
+	?kind:String,
+	?ident:String,
+};
 extern class TreeViewDir extends DivElement {
 	public var treeItems:DivElement;
 }

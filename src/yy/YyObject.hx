@@ -149,6 +149,7 @@ import ui.TreeView;
 }
 typedef YyObjectImpl = {
 	>YyBase,
+	spriteId:YyGUID,
 	name:String,
 	eventList:Array<YyObjectEvent>,
 	parentObjectId:YyGUID,

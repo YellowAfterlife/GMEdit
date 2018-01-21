@@ -18,6 +18,7 @@ class YyLoader {
 		var dir = project.dir;
 		var yyProject:YyProject = FileSystem.readJsonFileSync(project.path);
 		var resources:Dictionary<YyProjectResource> = new Dictionary();
+		project.yyResources = resources;
 		var views:Dictionary<YyView> = new Dictionary();
 		var rootView:YyView = null;
 		for (res in yyProject.resources) {
