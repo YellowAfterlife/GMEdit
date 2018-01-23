@@ -6,6 +6,7 @@ import gmx.*;
 import yy.*;
 import gml.*;
 import haxe.io.Path;
+import js.RegExp;
 import parsers.GmlReader;
 import tools.Dictionary;
 import ui.Preferences;
@@ -36,6 +37,16 @@ class GmlSeeker {
 			}
 			Main.aceEditor.session.bgTokenizer.start(0);
 		}
+	}
+	
+	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
+	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
+	private static function parseConst(s:String):Null<Int> {
+		var mt = parseConst_rx10.exec(s);
+		if (mt != null) return Std.parseInt(s);
+		mt = parseConst_rx16.exec(s);
+		if (mt != null) return Std.parseInt("0x" + mt[1]);
+		return null;
 	}
 	
 	private static function runSyncImpl(
@@ -263,6 +274,7 @@ class GmlSeeker {
 					out.enumList.push(en);
 					out.enumMap.set(name, en);
 					setLookup(s);
+					var nextVal:Null<Int> = 0;
 					while (q.loop) {
 						s = find(Ident | Cub1);
 						if (s == null || s == "}") break;
@@ -273,11 +285,18 @@ class GmlSeeker {
 						en.compMap.set(s, ac);
 						out.comp.push(ac);
 						s = find(Comma | SetOp | Cub1);
-						if (s == null || s == "}") break;
 						if (s == "=") {
+							var vp = q.pos;
 							s = find(Comma | Cub1);
-							if (s == null || s == "}") break;
+							var val = parseConst(q.substring(vp, q.pos - 1).trimBoth());
+							if (val != null) {
+								ac.doc = "" + val;
+								nextVal = val + 1;
+							} else nextVal = null;
+						} else {
+							if (nextVal != null) ac.doc = "" + (nextVal++);
 						}
+						if (s == null || s == "}") break;
 					}
 				};
 			} // switch (s)
