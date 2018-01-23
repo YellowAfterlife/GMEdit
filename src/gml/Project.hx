@@ -130,6 +130,7 @@ class Project {
 			if (GmlSeeker.itemsLeft == 0) {
 				nameNode.innerText = displayName;
 			} else nameNode.innerText = "Indexing...";
+			ui.ProjectStyle.reload();
 		}, 1);
 	}
 	private function reload_1() {

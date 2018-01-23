@@ -1,6 +1,7 @@
 package ui;
 import electron.Menu;
 import electron.Dialog;
+import gml.Project;
 import haxe.io.Path;
 import js.html.Element;
 import gml.GmlFile;
@@ -67,6 +68,26 @@ class TreeViewMenus {
 		target.parentElement.removeChild(target);
 	}
 	//
+	static var changeIconItem:MenuItem;
+	public static function changeIcon() {
+		var def = Project.current.dir;
+		var files = Dialog.showOpenDialog({
+			title: "Hello",
+			defaultPath: def,
+			filters: [
+				{ name: "Images", extensions: ["png"] }
+			],
+		});
+		if (files != null && files[0] != null) {
+			ProjectStyle.setItemThumb({
+				thumb: files[0],
+				ident: target.getAttribute(TreeView.attrIdent),
+				kind: target.getAttribute(TreeView.attrKind),
+				rel: target.getAttribute(TreeView.attrRel),
+			});
+		}
+	}
+	//
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);
 		electron.Shell.openItem(path);
@@ -89,6 +110,7 @@ class TreeViewMenus {
 		z = gml.GmlAPI.version == v2 && kind == "shader";
 		shaderItems.forEach(function(q) q.visible = z);
 		removeFromRecentProjectsItem.visible = kind == "project";
+		changeIconItem.visible = kind != "project";
 		itemMenu.popupAsync();
 	}
 	//
@@ -101,6 +123,9 @@ class TreeViewMenus {
 		inline function addLink(m:Menu, label:String, click:Void->Void) {
 			return add(m, { label: label, click: click });
 		}
+		//
+		changeIconItem = new MenuItem({ label: "Change icon", click: changeIcon });
+		//
 		itemMenu = new Menu();
 		shaderItems = [
 			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
@@ -110,10 +135,12 @@ class TreeViewMenus {
 		addLink(itemMenu, "Show in directory", openDirectory);
 		removeFromRecentProjectsItem =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
+		itemMenu.append(changeIconItem);
 		//
 		dirMenu = new Menu();
 		openAllItem = addLink(dirMenu, "Open all", openAll);
 		openCombinedItem = addLink(dirMenu, "Open combined view", openCombined);
+		dirMenu.append(changeIconItem);
 		//
 	}
 }

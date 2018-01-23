@@ -116,6 +116,7 @@ class Main {
 		AceSessionData.init();
 		TreeView.init();
 		TreeViewMenus.init();
+		ProjectStyle.init();
 		FileDrag.init();
 		ChromeTabs.init();
 		Project.init();

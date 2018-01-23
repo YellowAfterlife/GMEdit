@@ -18,7 +18,7 @@ class AutoEnum {
 			case "bit": AInt(true);
 			case "lq", "lower": AString(false);
 			case "uq", "upper": AString(true);
-			case "string", "str": AString(null);
+			case "nq", "string", "str": AString(null);
 			default: Context.error('"$kindName" is not a known kind.', pos);
 		}
 		var at:AbstractType = switch (Context.getLocalClass().get().kind) {
