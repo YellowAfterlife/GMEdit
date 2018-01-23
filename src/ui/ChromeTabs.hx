@@ -54,6 +54,10 @@ class ChromeTabs {
 				if (pathHistory.length > pathHistorySize) pathHistory.pop();
 			}
 			GmlFile.current = gmlFile;
+			var ctr = Main.aceEditor.container;
+			ctr.setAttribute("file-name", gmlFile.name);
+			ctr.setAttribute("file-path", gmlFile.path);
+			ctr.setAttribute("file-kind", gmlFile.kind.getName());
 			gmlFile.focus();
 			Main.aceEditor.setSession(gmlFile.session);
 		});
@@ -96,6 +100,12 @@ class ChromeTabs {
 				if (tab == null) {
 					Main.aceEditor.session = WelcomePage.session;
 				} else impl.setCurrentTab(tab);
+			}
+			if (Main.aceEditor.session == WelcomePage.session) {
+				var ctr = Main.aceEditor.container;
+				ctr.removeAttribute("file-name");
+				ctr.removeAttribute("file-path");
+				ctr.removeAttribute("file-kind");
 			}
 		});
 		// https://github.com/electron/electron/issues/7977:
