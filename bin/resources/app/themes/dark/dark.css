@@ -105,7 +105,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	border-color: #DEDEDE;
 }
 /* */
-#main .gml .ace_comment {
+#main .gml .ace_comment,
+#main .gml .ace_eventtext {
 	color: #5B995B;
 }
 #main .gml .ace_comment.ace_link {

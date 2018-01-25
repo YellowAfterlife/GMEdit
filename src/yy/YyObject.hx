@@ -41,7 +41,10 @@ import ui.TreeView;
 			var full = Path.join([dir, rel]);
 			var code = FileSystem.readTextFileSync(full);
 			if (out != "") out += "\n\n";
-			out += "#event " + name + "\n" + NativeString.trimRight(code);
+			var pair = parsers.GmlHeader.parse(NativeString.trimRight(code), v2);
+			out += "#event " + name;
+			if (pair.name != null) out += " " + pair.name;
+			out += "\n" + pair.code;
 		}
 		return out;
 	}

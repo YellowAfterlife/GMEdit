@@ -6,6 +6,7 @@ import haxe.ds.StringMap;
 import haxe.io.Path;
 import parsers.GmlReader;
 import tools.Dictionary;
+using tools.NativeString;
 
 /**
  * Handles general-purpose event name encoding/decoding,
@@ -106,7 +107,7 @@ class GmlEvent {
 				}
 			} else {
 				if (sctName != null && sctName != "") {
-					flushCode = '///$sctName\r\n' + flushCode;
+					flushCode = (version == v2 ? '/// @description' : '///') + sctName + '\r\n' + flushCode;
 					sctName = null;
 				}
 				var flushData = GmlEvent.fromString(evName);
@@ -147,15 +148,15 @@ class GmlEvent {
 						q.skipSpaces0();
 						// read name:
 						var nameStart = q.pos;
-						while (q.loop) {
-							c = q.peek();
-							if (c.isIdent1() || c == ":".code) {
-								q.skip();
-							} else break;
-						}
+						q.skipEventName();
 						evName = q.substring(nameStart, q.pos);
-						// skip spaces after:
+						// read label:
+						nameStart = q.pos;
 						q.skipSpaces0();
+						q.skipLine();
+						sctName = q.substring(nameStart, q.pos);
+						if (sctName == "") sctName = null;
+						//
 						q.skipLineEnd();
 						//
 						evStart = q.pos;

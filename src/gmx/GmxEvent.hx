@@ -24,6 +24,9 @@ class GmxEvent {
 		return GmlEvent.fromString(name);
 	}
 	private static var rxHeader = ~/^\/\/\/\/? ?(.*)/;
+	public static function isEmpty(event:SfGmx) {
+		return event.find("action") == null;
+	}
 	public static function getCode(event:SfGmx) {
 		var out:String = "";
 		var actions = event.findAll("action");

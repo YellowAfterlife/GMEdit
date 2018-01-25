@@ -102,6 +102,22 @@ import haxe.extern.EitherType;
 		function mtField(_, field:String) {
 			return ["punctuation.operator", "text", getGlobalType(field, "field")];
 		}
+		function mtEventHead(def, name, col, kind, label) {
+			var kindToken:String;
+			if (kind != null) {
+				var kc = StringTools.fastCodeAt(kind, 0);
+				if (kc >= "0".code && kc <= "9".code) {
+					kindToken = "constant.numeric";
+				} else kindToken = getGlobalType(kind, "identifier");
+			} else kindToken = "identifier";
+			return [
+				"preproc.event",
+				"eventname",
+				"punctuation.operator",
+				kindToken,
+				"eventtext"
+			];
+		}
 		function mtIdent(ident:String) {
 			return getGlobalType(ident, "localfield");
 		}
@@ -192,9 +208,10 @@ import haxe.extern.EitherType;
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
 			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
-			rxRule(["preproc.event", "eventname", "punctuation.operator", "eventkeyname"],
-				~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)/),
-			rxRule(["preproc.event", "eventname"], ~/^(#event[ \t]+)(\w+)/),
+			rxRule(["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
+				~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/),
+			//                      1event       2type   3: 4ctx     5label
+			rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\s+.+)?)/),
 			rxRule(["preproc.moment", "momenttime", "momentname"], ~/^(#moment[ \t]+)(\d+)(.*)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rxRule("preproc.args", ~/#args\b/),

@@ -41,10 +41,13 @@ class GmxObject {
 				if (out != "") out += "\n";
 				var name = GmxEvent.toStringGmx(event);
 				out += "#event " + name;
+				// to say, GMS will usually purge empty events on save, but just in case:
+				if (GmxEvent.isEmpty(event)) continue;
 				var code = GmxEvent.getCode(event);
 				if (code != null) {
-					if (event.find("action") != null) out += "\n";
-					out += code;
+					var pair = parsers.GmlHeader.parse(code, v1);
+					if (pair.name != null) out += " " + pair.name;
+					out += "\n" + pair.code;
 				} else {
 					errors += "Unreadable action in " + name + "\n";
 					errors += "Only self-applied code blocks are supported.\n";

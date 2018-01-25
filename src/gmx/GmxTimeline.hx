@@ -1,4 +1,5 @@
 package gmx;
+import parsers.GmlHeader;
 import parsers.GmlTimeline;
 
 /**
@@ -17,12 +18,10 @@ class GmxTimeline {
 			var event = entry.find("event");
 			var code = GmxEvent.getCode(event);
 			if (code != null) {
-				code = ~/^\/\/\/\s*(.*)\r?\n/g.map(code, function(rx:EReg) {
-					out += " " + rx.matched(1);
-					return "";
-				});
+				var pair = GmlHeader.parse(code, v1);
+				if (pair.name != null) out += " " + pair.name;
 				if (event.find("action") != null) out += "\n";
-				out += code;
+				out += pair.code;
 			} else {
 				errors += "Unreadable action in moment " + name + "\n";
 				errors += "Only self-applied code blocks are supported.\n";

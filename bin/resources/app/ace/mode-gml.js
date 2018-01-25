@@ -345,7 +345,7 @@ ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 		var reset = resetOnDefine && rxDefine.test(rowText);
 		if (reset) {
 			firstLineNumber = -row;
-			if (/^#moment\s+\d+\s+.+$/g.test(rowText)) firstLineNumber += 1;
+			if (/^#moment\s+\d+\s+.+$|^#event\s+\w+(?:\:\w*)?\s+.+$/g.test(rowText)) firstLineNumber += 1;
 			className += "ace_gutter-define ";
 		} else if (rxSection.test(rowText)) {
 			className += "ace_gutter-define ";

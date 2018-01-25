@@ -76,7 +76,8 @@
 #main .ace_active-line {
 	background: rgba(255, 253, 205, 0.5);
 }
-#main .gml .ace_comment {
+#main .gml .ace_comment,
+#main .gml .ace_eventtext {
 	color: #008000;
 	/*font-style: italic;*/
 }

@@ -73,7 +73,7 @@ import tools.Dictionary;
 			"comment", "comment.doc", "comment.line", "comment.line.doc",
 			"string",
 			"scriptname",
-			"eventname", "eventkeyname",
+			"eventname", "eventkeyname", "eventtext",
 			"sectionname",
 			"momenttime", "momentname",
 			"macroname",
