@@ -168,7 +168,10 @@ class GmlFile {
 		//
 		var pos = nav.pos;
 		if (pos != null) {
-			if (ctx == null) { col = 0; row += 1; }
+			if (ctx == null && nav.def != null) {
+				col = 0;
+				row += 1;
+			}
 			row += pos.row;
 			col += pos.column;
 			found = true;

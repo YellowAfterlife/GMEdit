@@ -147,7 +147,7 @@ class KeyboardShortcuts {
 	//
 	public static function openLink(meta:String) {
 		// name(def):ctx
-		var rx:RegExp = new RegExp("^(\\w+)" 
+		var rx:RegExp = new RegExp("^(.+?)" 
 			+ "(?:\\(([^)]*)\\))?"
 			+ "(?::(.+))?$");
 		var vals = rx.exec(meta);
