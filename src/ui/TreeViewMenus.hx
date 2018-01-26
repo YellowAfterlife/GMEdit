@@ -88,6 +88,15 @@ class TreeViewMenus {
 		}
 	}
 	//
+	static function openHere() {
+		var path = target.getAttribute(TreeView.attrPath);
+		var pair = GmlFile.getKind(path);
+		if (pair.kind == GmlFileKind.Extern) {
+			pair.kind = GmlFileKind.Plain;
+		}
+		var file = new GmlFile(target.title, path, pair.kind, pair.data);
+		GmlFile.openTab(file);
+	}
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);
 		electron.Shell.openItem(path);
@@ -131,6 +140,7 @@ class TreeViewMenus {
 			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
 			addLink(itemMenu, "Open fragment shader", function() openYyShader("fsh")),
 		];
+		addLink(itemMenu, "Open here", openHere);
 		addLink(itemMenu, "Open externally", openExternal);
 		addLink(itemMenu, "Show in directory", openDirectory);
 		removeFromRecentProjectsItem =
