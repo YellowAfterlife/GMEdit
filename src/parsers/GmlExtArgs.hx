@@ -22,6 +22,8 @@ class GmlExtArgs {
 		+ '=$rsOpt0\\?\\s*$rsOpt1\\:'
 	+ ')\\s*([^;]+);', "g");
 	private static var rxHasOpt = new RegExp('(?:\\?|=|,\\s*$)');
+	private static var rxNotMagic = new RegExp('var\\s+\\w+\\s*=\\s*'
+		+ 'argument(?:\\s*\\[\\s*\\d+\\s*\\]|\\d+)', 'g');
 	public static function pre(code:String):String {
 		var version = GmlAPI.version;
 		if (!Preferences.current.argsMagic) return code;
@@ -37,6 +39,7 @@ class GmlExtArgs {
 			var argv = false;
 			var found = 0;
 			var pos:Int;
+			var proc_start = q.pos;
 			var c:CharCode;
 			var s:String;
 			//
@@ -132,6 +135,12 @@ class GmlExtArgs {
 				till = q.pos;
 			}
 			if (req == found && argv) args += ",";
+			//
+			rxNotMagic.lastIndex = q.pos;
+			if (rxNotMagic.test(q.source)) {
+				//q.pos = proc_start;
+				return null;
+			}
 			//
 			return args;
 		}

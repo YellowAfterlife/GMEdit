@@ -7,7 +7,7 @@ using StringTools;
  */
 class StringReader {
 	//
-	private var source:String;
+	public var source(default, null):String;
 	public var pos:Int;
 	public var length(default, null):Int;
 	//
