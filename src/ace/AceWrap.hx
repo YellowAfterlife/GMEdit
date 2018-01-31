@@ -1,4 +1,5 @@
 package ace;
+import ace.AceWrap.AceAutoCompleteItem;
 import js.html.Element;
 import js.html.SpanElement;
 import haxe.extern.EitherType;
@@ -168,6 +169,7 @@ extern class AceSelection {
 	public function getScrollTop():Float;
 	public function setScrollTop(top:Float):Void;
 	//
+	public var doc:AceDocument;
 	public var foldWidgets:Array<String>;
 	public function getFoldWidget(row:Int):String;
 	public function getFoldAt(row:Int, col:Int):Dynamic;
@@ -208,11 +210,15 @@ extern class AceSelection {
 	// non-standard:
 	public var gmlFile:gml.GmlFile;
 }
+extern class AceDocument {
+	public function setValue(s:String):Void;
+}
 extern class AceBgTokenizer {
 	public function start(row:Int):Void;
 }
 @:native("AceUndoManager") extern class AceUndoManager {
 	public function new():Void;
+	public function reset():Void;
 	public function isClean():Bool;
 	public function markClean():Void;
 }
@@ -232,6 +238,9 @@ extern class AceFold {
 from AceAutoCompleteItemImpl to AceAutoCompleteItemImpl {
 	public inline function new(name:String, meta:String, ?doc:String) {
 		this = { name: name, value: name, score: 0, meta: meta, doc: doc };
+	}
+	public inline function makeAlias(alias:String) {
+		return new AceAutoCompleteItem(alias, this.meta, this.doc);
 	}
 }
 typedef AceAutoCompleteItemImpl = { name:String, value:String, score:Int, meta:String, doc:String };

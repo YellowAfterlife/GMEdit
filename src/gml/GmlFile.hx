@@ -3,8 +3,7 @@ import ace.AceGmlCompletion;
 import ace.AceSessionData;
 import electron.Dialog;
 import electron.FileSystem;
-import parsers.GmlExtArgs;
-import parsers.GmlMultifile;
+import parsers.*;
 import js.RegExp;
 import js.html.Element;
 import ace.AceWrap;
@@ -294,10 +293,7 @@ class GmlFile {
 			case YyShader: code = "";
 			case Plain, GLSL, HLSL, JavaScript: code = src;
 			case SearchResults: code = data;
-			case Normal: {
-				code = src;
-				code = GmlExtArgs.pre(code);
-			};
+			case Normal: code = preprocNormal(src);
 			case Multifile: {
 				multidata = data;
 				out = ""; errors = "";
@@ -311,12 +307,18 @@ class GmlFile {
 							+ " for editing: " + GmlMultifile.errorText + "\n";
 					} else switch (itemSubs.length) {
 						case 0: { };
-						case 1: out += NativeString.trimRight(GmlExtArgs.pre(itemSubs[0].code));
+						case 1: {
+							var subCode = itemSubs[0].code;
+							out += NativeString.trimRight(subCode);
+						};
 						default: errors += "Can't open " + item.name
 							+ " for editing because it contains multiple scripts.\n";
 					}
 				}
 				if (errors == "") {
+					// (too buggy)
+					//out = GmlExtArgs.pre(out);
+					//out = GmlExtImport.pre(out, path);
 					GmlSeeker.runSync(path, out, "");
 					code = out;
 				} else setError(errors);
@@ -350,6 +352,11 @@ class GmlFile {
 				code = tl.getCode(path);
 			};
 		}
+	}
+	function preprocNormal(code:String) {
+		code = GmlExtArgs.pre(code);
+		code = GmlExtImport.pre(code, path);
+		return code;
 	}
 	//
 	public function savePost(?out:String) {
@@ -389,6 +396,31 @@ class GmlFile {
 				if (out == null) {
 					return error("Can't process macro:\n" + GmlExtArgs.errorText);
 				}
+				out = GmlExtImport.post(out, path);
+				// if there are imports, check if we should be updating the code
+				var data = path != null ? GmlSeekData.map[path] : null;
+				if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
+					var next = preprocNormal(out);
+					if (current == this) {
+						if (data.imports != null) {
+							GmlImports.currentMap = data.imports;
+						} else GmlImports.currentMap = GmlImports.defaultMap;
+					}
+					if (next != val) {
+						var sd = AceSessionData.get(this);
+						session.doc.setValue(next);
+						AceSessionData.set(this, sd);
+						Main.window.setTimeout(function() {
+							var u = session.getUndoManager();
+							if (!ui.Preferences.current.allowImportUndo) {
+								session.setUndoManager(u);
+								u.reset();
+							}
+							u.markClean();
+							changed = false;
+						});
+					}
+				}
 			};
 			case Multifile: {
 				out = val;
@@ -405,7 +437,8 @@ class GmlFile {
 				for (item in next) {
 					var itemPath = map0[item.name];
 					if (itemPath != null) {
-						FileSystem.writeFileSync(itemPath, item.code);
+						var itemCode = item.code;
+						FileSystem.writeFileSync(itemPath, itemCode);
 					} else errors += "Can't save script " + item.name
 						+ " because it is not among the edited group.\n";
 				}
@@ -538,8 +571,13 @@ class GmlFile {
 		var data = file != null ? GmlSeekData.map[file.path] : null;
 		if (data != null) {
 			GmlLocals.currentMap = data.locals;
+			GmlImports.currentMap = data.imports;
 		} else {
 			GmlLocals.currentMap = GmlLocals.defaultMap;
+			GmlImports.currentMap = null;
+		}
+		if (GmlImports.currentMap == null) {
+			GmlImports.currentMap = GmlImports.defaultMap;
 		}
 		return file;
 	}

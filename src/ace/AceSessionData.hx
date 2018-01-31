@@ -10,7 +10,7 @@ import ui.Preferences;
  * @author YellowAfterlife
  */
 class AceSessionData {
-	public static function store(file:GmlFile) {
+	public static function get(file:GmlFile):AceSessionDataImpl {
 		var session = file.session;
 		//
 		var foldLines:Array<Int> = [];
@@ -23,14 +23,25 @@ class AceSessionData {
 		}
 		for (fold in session.getAllFolds()) getFoldsRec(foldLines, fold, 0);
 		//
-		var data:AceSessionDataImpl = {
+		return {
 			selection: session.selection.toJSON(),
 			scrollLeft: session.getScrollLeft(),
 			scrollTop: session.getScrollTop(),
 			foldLines: foldLines,
 		};
+	}
+	public static function store(file:GmlFile) {
+		var data = get(file);
 		Main.window.localStorage.setItem("session:" + file.path, Json.stringify(data));
 		Main.window.localStorage.setItem("@session:" + file.path, "" + Date.now().getTime());
+	}
+	//
+	public static function set(file:GmlFile, data:AceSessionDataImpl) {
+		var session = file.session;
+		session.selection.fromJSON(data.selection);
+		for (row in data.foldLines) session.toggleFoldWidgetRaw(row, {});
+		session.setScrollLeft(data.scrollLeft);
+		session.setScrollTop(data.scrollTop);
 	}
 	public static function restore(file:GmlFile) {
 		var text = Main.window.localStorage.getItem("session:" + file.path);
@@ -41,11 +52,7 @@ class AceSessionData {
 		} catch (_:Dynamic) return false;
 		if (data == null) return false;
 		//
-		var session = file.session;
-		session.selection.fromJSON(data.selection);
-		for (row in data.foldLines) session.toggleFoldWidgetRaw(row, {});
-		session.setScrollLeft(data.scrollLeft);
-		session.setScrollTop(data.scrollTop);
+		set(file, data);
 		return true;
 	}
 	public static function init() {

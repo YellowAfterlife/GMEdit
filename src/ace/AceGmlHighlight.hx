@@ -1,7 +1,7 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
-import gml.GmlEnum;
+import gml.*;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
 import js.RegExp;
@@ -10,6 +10,7 @@ import ace.AceMacro.rxRule;
 import ace.AceMacro.jsOr;
 import ace.AceMacro.jsThis;
 import haxe.extern.EitherType;
+using tools.NativeString;
 
 /**
  * Syntax highlighting rules for GML.
@@ -44,17 +45,29 @@ import haxe.extern.EitherType;
 		inline function token(type:String, value:String):Dynamic {
 			return { type: type, value: value };
 		}
+		//
+		inline function getLocalType_1(name:String, scope:String):String {
+			var kind:String = null;
+			//
+			var locals = GmlLocals.currentMap[scope];
+			if (locals != null) kind = locals.kind[name];
+			//
+			if (kind == null) {
+				var imports = GmlImports.currentMap[scope];
+				if (imports != null) kind = imports.kind[name];
+			}
+			//
+			return kind;
+		}
 		inline function getLocalType(row:Int, name:String):String {
 			if (row != null) {
-				var scope = gml.GmlScopes.get(row);
+				var scope = GmlScopes.get(row);
 				if (scope != null) {
-					var locals = gml.GmlLocals.currentMap[scope];
-					if (locals != null) {
-						return locals.kind[name];
-					} else return null;
+					return getLocalType_1(name, scope);
 				} else return null;
 			} else return null;
 		}
+		//
 		var rIdentLocal:AceLangRule = {
 			regex: '[a-zA-Z_][a-zA-Z0-9_]*\\b',
 			onMatch: function(
@@ -79,7 +92,24 @@ import haxe.extern.EitherType;
 					objType = "keyword";
 					fdType = "globalfield";
 				} else {
-					objType = getLocalType(row, object);
+					objType = null;
+					fdType = null;
+					if (row != null) {
+						var scope = GmlScopes.get(row);
+						if (scope != null) {
+							var imp = GmlImports.currentMap[scope];
+							if (imp != null) {
+								var ns = imp.namespaces[object];
+								if (ns != null) {
+									objType = "namespace";
+									fdType = jsOr(ns[field], "identifier");
+								}
+							}
+							if (objType == null) {
+								objType = getLocalType_1(object, scope);
+							}
+						}
+					}
 					if (objType == null) {
 						var en = GmlAPI.gmlEnums[object];
 						if (en != null) {
@@ -89,7 +119,9 @@ import haxe.extern.EitherType;
 							objType = getGlobalType(object, "localfield");
 							fdType = getGlobalType(field, "field");
 						}
-					} else fdType = getGlobalType(field, "field");
+					} else if (fdType == null) {
+						fdType = getGlobalType(field, "field");
+					}
 				}
 				var tokens:Array<AceToken> = [token(objType, object)];
 				if (values[2] != "") tokens.push(token("text", values[2]));
@@ -120,6 +152,16 @@ import haxe.extern.EitherType;
 		}
 		function mtIdent(ident:String) {
 			return getGlobalType(ident, "localfield");
+		}
+		function mtImport(_import, _, _pkg:String, _, _in, _, _as) {
+			return ["preproc.import",
+				"text",
+				"importfrom",
+				"text",
+				"keyword",
+				"text",
+				_pkg.endsWith(".*") ? "namespace" : "importas",
+			];
 		}
 		//
 		var rTpl:AceLangRule = {
@@ -214,6 +256,16 @@ import haxe.extern.EitherType;
 			rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\s+.+)?)/),
 			rxRule(["preproc.moment", "momenttime", "momentname"], ~/^(#moment[ \t]+)(\d+)(.*)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
+			rule(mtImport, "(#import\\b)"
+				+ "([ \t]*)"
+				+ "([\\w.]+\\*?)" // com.pkg[.*]
+				+ "([ \t]*)"
+				+ "((?:\\b(?:as|in)\\b)?)" // in
+				+ "([ \t]*)"
+				+ "((?:\\w+)?)" // alias
+			),
+			rxRule(["preproc.import", "string.importpath"], ~/(#import\s+)("[^"]*"|'[^']*')/),
+			rxRule("preproc.import", ~/#import\b/),
 			rxRule("preproc.args", ~/#args\b/),
 		]; //}
 		if (version == GmlVersion.live) rBase.unshift(rTpl);

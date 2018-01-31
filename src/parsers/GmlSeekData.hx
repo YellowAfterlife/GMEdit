@@ -34,6 +34,7 @@ class GmlSeekData {
 	public var comp:AceAutoCompleteItems = [];
 	public var docList:Array<GmlFuncDoc> = [];
 	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
+	public var imports:Dictionary<GmlImports> = null;
 	//
 	public function new() {
 		
@@ -88,5 +89,7 @@ class GmlSeekData {
 			GmlAPI.gmlComp.push(m.comp);
 		}
 		// (locals don't have to be added/removed)
+		//
+		if (next.imports == null) next.imports = prev.imports;
 	}
 }

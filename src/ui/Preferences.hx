@@ -21,7 +21,7 @@ class Preferences {
 	public static var element:Element;
 	//
 	private static function build(out:Element) {
-		function addRadios(legend:String, current:String, names:Array<String>, fn:String->Void) {
+		function addRadios(legend:String, curr:String, names:Array<String>, fn:String->Void) {
 			var fs = document.createFieldSetElement();
 			var lg = document.createLegendElement();
 			lg.innerText = legend;
@@ -34,7 +34,7 @@ class Preferences {
 				rad.addEventListener("change", function(_) {
 					fn(name);
 				});
-				if (current == name) rad.checked = true;
+				if (curr == name) rad.checked = true;
 				var lb = document.createLabelElement();
 				lb.htmlFor = name;
 				lb.appendChild(document.createTextNode(name));
@@ -44,11 +44,11 @@ class Preferences {
 			}
 			out.appendChild(fs);
 		}
-		function addCheckbox(legend:String, current:Bool, fn:Bool->Void):Element {
+		function addCheckbox(legend:String, curr:Bool, fn:Bool->Void):Element {
 			var ctr = document.createDivElement();
 			var cb = document.createInputElement();
 			cb.type = "checkbox";
-			cb.checked = current;
+			cb.checked = curr;
 			cb.name = legend;
 			cb.addEventListener("change", function(_) {
 				fn(cb.checked);
@@ -61,7 +61,7 @@ class Preferences {
 			out.appendChild(ctr);
 			return ctr;
 		}
-		function addInput(legend:String, current:String, fn:String->Void):Element {
+		function addInput(legend:String, curr:String, fn:String->Void):Element {
 			var ctr = document.createDivElement();
 			//
 			var lb = document.createLabelElement();
@@ -71,7 +71,7 @@ class Preferences {
 			//
 			var cb = document.createInputElement();
 			cb.type = "text";
-			cb.value = current;
+			cb.value = curr;
 			cb.name = legend;
 			cb.addEventListener("change", function(_) {
 				fn(cb.value);
@@ -106,11 +106,25 @@ class Preferences {
 			Theme.current = theme;
 			save();
 		});
+		//
 		addCheckbox("Use `#args` magic", current.argsMagic, function(z) {
 			current.argsMagic = z;
 			save();
 		}).title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`."
-			+ "\nSee wiki for examples and more information.";
+		+ "\nSee wiki for examples and more information.";
+		//
+		addCheckbox("Use `#import` magic", current.importMagic, function(z) {
+			current.importMagic = z;
+			save();
+		}).title = "Allows setting up rules for shortening names per-script."
+		+ "\nSee wiki for examples and more information.";
+		//
+		addCheckbox("Allow undo-ing `#import`", current.allowImportUndo, function(z) {
+			current.allowImportUndo = z;
+			save();
+		}).title = "Allows undoing name changes made after changing #import rules."
+		+ "\nMakes it easier to break code, so be careful.";
+		//
 		addCheckbox("UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
 			GmlAPI.ukSpelling = z;
@@ -159,6 +173,7 @@ class Preferences {
 		}
 		//
 		if (pref.argsMagic == null) pref.argsMagic = true;
+		if (pref.importMagic == null) pref.importMagic = true;
 		if (pref.fileSessionTime == null) pref.fileSessionTime = 7;
 		if (pref.projectSessionTime == null) pref.projectSessionTime = 14;
 		if (pref.theme != null) Theme.current = pref.theme;
@@ -203,5 +218,7 @@ typedef PrefData = {
 	?fileSessionTime:Float,
 	?projectSessionTime:Float,
 	?argsMagic:Bool,
+	?importMagic:Bool,
+	?allowImportUndo:Bool,
 	?assetThumbs:Bool,
 }

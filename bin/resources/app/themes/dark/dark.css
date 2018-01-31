@@ -131,6 +131,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_macroname,
 #main .gml .ace_enum,
 #main .gml .ace_enumfield,
+#main .gml .ace_namespace,
 #main .gml .ace_constant {
 	color: #FF8080;
 }

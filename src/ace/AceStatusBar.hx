@@ -155,9 +155,14 @@ class AceStatusBar {
 			contextRow = -1;
 			contextName = null;
 		}
+		//
 		var locals = GmlLocals.currentMap[scope];
 		AceGmlCompletion.localCompleter.items = locals != null
 			? locals.comp : AceGmlCompletion.noItems;
+		//
+		var imports = gml.GmlImports.currentMap[scope];
+		AceGmlCompletion.importCompleter.items = imports != null
+			? imports.comp : AceGmlCompletion.noItems;
 		//
 		updateComp(editor, pos.row, pos.column);
 	}

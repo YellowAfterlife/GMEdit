@@ -18,6 +18,7 @@ import tools.Dictionary;
 	public static var extCompleter:AceGmlCompletion;
 	public static var eventCompleter:AceGmlCompletion;
 	public static var localCompleter:AceGmlCompletion;
+	public static var importCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
 	public static var keynameCompleter:AceGmlCompletion;
 	public static var glslCompleter:AceGmlCompletion;
@@ -79,6 +80,7 @@ import tools.Dictionary;
 			"macroname",
 			"globalfield", // global.<text>
 		];
+		importCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		localCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, excl, true, gmlf);
 		extCompleter = new AceGmlCompletion(GmlAPI.extComp, excl, true, gmlf);
@@ -97,6 +99,7 @@ import tools.Dictionary;
 		editor.setOptions({
 			enableLiveAutocompletion: [
 				localCompleter,
+				importCompleter,
 				stdCompleter,
 				extCompleter,
 				gmlCompleter,
