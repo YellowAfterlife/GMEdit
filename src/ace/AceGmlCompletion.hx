@@ -72,12 +72,13 @@ import tools.Dictionary;
 		// tokens to not show normal auto-completion in
 		var excl = [
 			"comment", "comment.doc", "comment.line", "comment.line.doc",
-			"string",
+			"string", "string.quasi",
 			"scriptname",
 			"eventname", "eventkeyname", "eventtext",
 			"sectionname",
 			"momenttime", "momentname",
 			"macroname",
+			"namespace",
 			"globalfield", // global.<text>
 		];
 		importCompleter = new AceGmlCompletion([], excl, true, gmlf);

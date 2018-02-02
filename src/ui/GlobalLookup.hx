@@ -105,7 +105,7 @@ class GlobalLookup {
 			case KeyboardEvent.DOM_VK_RETURN: {
 				e.preventDefault();
 				var term = list.value;
-				if (term != "") KeyboardShortcuts.openLocal(term);
+				if (term != "") KeyboardShortcuts.openLocal(term, null);
 				toggle();
 			};
 			case KeyboardEvent.DOM_VK_ESCAPE: {
@@ -121,7 +121,7 @@ class GlobalLookup {
 			window.setTimeout(function() {
 				var term = list.value;
 				if (term != "") {
-					KeyboardShortcuts.openLocal(term);
+					KeyboardShortcuts.openLocal(term, null);
 					toggle();
 				}
 			});

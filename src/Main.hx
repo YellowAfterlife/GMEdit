@@ -93,6 +93,7 @@ class Main {
 		var aceEl = document.querySelector("#source");
 		var acePar = aceEl.parentElement;
 		aceEditor = new AceWrap(aceEl);
+		AceWrap.init();
 		untyped aceEditor.$blockScrolling = Infinity;
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);
@@ -102,11 +103,6 @@ class Main {
 		GlobalLookup.init();
 		Preferences.initEditor();
 		//
-		untyped {
-			window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
-			window.AceUndoManager = AceWrap.require("ace/undomanager").UndoManager;
-			window.aceEditor = aceEditor;
-		};
 		aceEditor.session = WelcomePage.init(aceEditor);
 		KeyboardShortcuts.initEditor();
 		ScrollMode.init();

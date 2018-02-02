@@ -52,8 +52,12 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		hint.onclick = null;
 		session.clearAnnotations();
 	}
-	public function init() {
-		
+	public static function init() {
+		var window:Dynamic = Main.window;
+		window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
+		window.AceUndoManager = AceWrap.require("ace/undomanager").UndoManager;
+		window.AceTokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
+		window.aceEditor = Main.aceEditor;
 	}
 	/*public function setHintError(msg:String, pos:GmlPos) {
 		var Range = untyped ace.require("ace/range").Range;
@@ -269,7 +273,8 @@ interface AceAutoCompleter {
 }
 //
 extern class AceMarker { }
-extern class AceTokenIterator {
-	public function getCurrentToken():AceToken;
-	public function stepBackward():Void;
+@:native("AceTokenIterator") extern class AceTokenIterator {
+	function new(session:AceSession, row:Int, col:Int);
+	function getCurrentToken():AceToken;
+	function stepBackward():Void;
 }

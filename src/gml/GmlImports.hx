@@ -22,13 +22,16 @@ class GmlImports {
 	/** "ns" -> "some" -> "script" (for "ns.some")*/
 	public var namespaces:Dictionary<Dictionary<String>> = new Dictionary();
 	
+	/** "some" -> { pre: "scr_some", ... } */
+	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
+	
 	//
 	public function new() {
 		//
 	}
 	//
 	public function add(
-		long:String, short:String, kind:String, comp:AceAutoCompleteItem, ?space:String
+		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc, ?space:String
 	) {
 		if (space != null) {
 			var nsd = namespaces[space];
@@ -44,6 +47,8 @@ class GmlImports {
 		//
 		shorten.set(long, short);
 		longen.set(short, long);
+		//
+		if (doc != null) docs.set(short, doc);
 		//
 		if (comp != null) {
 			var nc = new AceAutoCompleteItem(short, comp.meta, comp.doc);

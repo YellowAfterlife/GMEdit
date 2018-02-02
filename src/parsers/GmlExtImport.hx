@@ -2,6 +2,7 @@ package parsers;
 import ace.AceWrap.AceAutoCompleteItems;
 import electron.FileSystem;
 import gml.GmlAPI;
+import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.Project;
 import haxe.io.Path;
@@ -37,20 +38,22 @@ class GmlExtImport {
 		if (path.endsWith(".*")) {
 			flat = path.substring(0, path.length - 1).replaceExt(rxPeriod, "_");
 			flen = flat.length;
-			function check(kind:Dictionary<String>, comp:AceAutoCompleteItems) {
+			function check(
+				kind:Dictionary<String>, comp:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
+			) {
 				kind.forField(function(fd) {
 					if (fd.startsWith(flat)) {
 						var comps = comp.filter(function(comp) {
 							return comp.name == fd;
 						});
 						short = fd.substring(flen);
-						imp.add(fd, short, kind[fd], comps[0], alias);
+						imp.add(fd, short, kind[fd], comps[0], docs[fd], alias);
 					}
 				});
 			}
-			check(GmlAPI.stdKind, GmlAPI.stdComp);
-			check(GmlAPI.extKind, GmlAPI.extComp);
-			check(GmlAPI.gmlKind, GmlAPI.gmlComp);
+			check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc);
+			check(GmlAPI.extKind, GmlAPI.extComp, GmlAPI.extDoc);
+			check(GmlAPI.gmlKind, GmlAPI.gmlComp, GmlAPI.gmlDoc);
 		} else {
 			flat = path.replaceExt(rxPeriod, "_");
 			if (alias == null) {
@@ -58,18 +61,20 @@ class GmlExtImport {
 				if (p < 0) return;
 				alias = flat.substring(p + 1);
 			}
-			function check(kind:Dictionary<String>, comp:AceAutoCompleteItems) {
+			function check(
+				kind:Dictionary<String>, comp:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
+			) {
 				var fdk = kind[flat];
 				if (fdk == null) return false;
 				var comps = comp.filter(function(comp) {
 					return comp.name == flat;
 				});
-				imp.add(flat, alias, fdk, comps[0]);
+				imp.add(flat, alias, fdk, comps[0], docs[flat]);
 				return true;
 			}
-			if(!check(GmlAPI.stdKind, GmlAPI.stdComp)
-				&& !check(GmlAPI.extKind, GmlAPI.extComp)
-				&& !check(GmlAPI.gmlKind, GmlAPI.gmlComp)
+			if(!check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc)
+			&& !check(GmlAPI.extKind, GmlAPI.extComp, GmlAPI.extDoc)
+			&& !check(GmlAPI.gmlKind, GmlAPI.gmlComp, GmlAPI.gmlDoc)
 			) {
 				errors += "Couldn't find " + flat + "\n";
 			}

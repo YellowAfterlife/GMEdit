@@ -280,7 +280,7 @@ class GmlFile {
 	 * @param	data	If provided, is used instead of reading from FS.
 	 */
 	public function load(?data:Dynamic) {
-		var src:String = data != null ? null : FileSystem.readTextFileSync(path);
+		var src:String = data != null ? data : FileSystem.readTextFileSync(path);
 		syncTime();
 		var gmx:SfGmx, out:String, errors:String;
 		function setError(s:String) {
@@ -293,7 +293,7 @@ class GmlFile {
 			case YyShader: code = "";
 			case Plain, GLSL, HLSL, JavaScript: code = src;
 			case SearchResults: code = data;
-			case Normal: code = preprocNormal(src);
+			case Normal: code = preprocNormal( src);
 			case Multifile: {
 				multidata = data;
 				out = ""; errors = "";
@@ -402,7 +402,7 @@ class GmlFile {
 				if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
 					var next = preprocNormal(out);
 					if (current == this) {
-						if (data.imports != null) {
+						if (data != null && data.imports != null) {
 							GmlImports.currentMap = data.imports;
 						} else GmlImports.currentMap = GmlImports.defaultMap;
 					}

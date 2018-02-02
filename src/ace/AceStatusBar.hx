@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
+import gml.GmlImports;
 import gml.GmlLocals;
 import gml.GmlFuncDoc;
 import js.html.DivElement;
@@ -17,18 +18,18 @@ import tools.Dictionary;
  */
 class AceStatusBar {
 	static var lang:Dynamic;
-	static var tokenIterator:Dynamic;
 	static var statusBar:DivElement;
 	static var statusSpan:SpanElement;
 	static var statusHint:SpanElement;
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
-	static function updateComp(editor:AceWrap, row:Int, col:Int) {
-		var iter:AceTokenIterator = untyped __new__(tokenIterator, editor.session, row, col);
+	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports) {
+		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
 		var tk:AceToken = iter.getCurrentToken();
 		var depth = 0, index = 0;
 		var resetIndex = false;
 		var doc:GmlFuncDoc = null;
+		var docs:Dictionary<GmlFuncDoc> = null;
 		var fkw = GmlAPI.kwFlow;
 		while (tk != null) {
 			switch (tk.type) {
@@ -56,15 +57,32 @@ class AceStatusBar {
 						case ";": break;
 					}
 				};
-				case "asset.script": if (depth < 0) { doc = GmlAPI.gmlDoc[tk.value]; break; }
-				case "function": if (depth < 0) { doc = GmlAPI.stdDoc[tk.value]; break; }
-				case "glsl.function": if (depth < 0) { doc = ShaderAPI.glslDoc[tk.value]; break; }
-				case "hlsl.function": if (depth < 0) { doc = ShaderAPI.hlslDoc[tk.value]; break; }
-				case "extfunction": if (depth < 0) { doc = GmlAPI.extDoc[tk.value]; break; }
+				case "asset.script" if (depth < 0): docs = GmlAPI.gmlDoc; break;
+				case "function" if (depth < 0): docs = GmlAPI.stdDoc; break;
+				case "glsl.function" if (depth < 0): docs = ShaderAPI.glslDoc; break;
+				case "hlsl.function" if (depth < 0): docs = ShaderAPI.hlslDoc; break;
+				case "extfunction" if (depth < 0): docs = GmlAPI.extDoc; break;
 				default:
 			}
 			iter.stepBackward();
 			tk = iter.getCurrentToken();
+		}
+		//
+		if (docs != null) doc = docs[tk.value];
+		if (docs != null && imports != null) {
+			var name = tk.value;
+			iter.stepBackward();
+			tk = iter.getCurrentToken();
+			if (tk.value == ".") {
+				iter.stepBackward();
+				tk = iter.getCurrentToken();
+				if (tk.type == "namespace") {
+					name = tk.value + "." + name;
+					doc = AceMacro.jsOr(imports.docs[name], doc);
+				}
+			} else {
+				doc = AceMacro.jsOr(imports.docs[name], doc);
+			}
 		}
 		//
 		statusHint.innerHTML = "";
@@ -164,11 +182,10 @@ class AceStatusBar {
 		AceGmlCompletion.importCompleter.items = imports != null
 			? imports.comp : AceGmlCompletion.noItems;
 		//
-		updateComp(editor, pos.row, pos.column);
+		updateComp(editor, pos.row, pos.column, imports);
 	}
 	public static function init(editor:AceWrap, ectr:Element) {
 		lang = AceWrap.require("ace/lib/lang");
-		tokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
 		//
 		statusBar = cast document.querySelector(".ace_status-bar");
 		statusBar.style.display = "";

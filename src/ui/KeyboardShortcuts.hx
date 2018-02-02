@@ -1,10 +1,12 @@
 package ui;
 import Main.*;
 import electron.Electron;
+import electron.FileSystem;
 import electron.Shell;
 import gml.GmlAPI;
 import gml.GmlFile;
 import gml.Project;
+import haxe.io.Path;
 import js.RegExp;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
@@ -145,7 +147,7 @@ class KeyboardShortcuts {
 		}
 	}
 	//
-	public static function openLink(meta:String) {
+	public static function openLink(meta:String, pos:AcePos) {
 		// name(def):ctx
 		var rx:RegExp = new RegExp("^(.+?)" 
 			+ "(?:\\(([^)]*)\\))?"
@@ -178,10 +180,33 @@ class KeyboardShortcuts {
 				column: ctxCol != null ? Std.parseInt(ctxCol) - 1 : 0
 			};
 		}
-		openLocal(name, nav);
+		openLocal(name, pos, nav);
 		return true;
 	}
-	public static function openLocal(name:String, ?nav:GmlFileNav):Bool {
+	public static function openLocal(name:String, pos:AcePos, ?nav:GmlFileNav):Bool {
+		//
+		if (pos != null) do {
+			var scope = gml.GmlScopes.get(pos.row);
+			if (scope == null) break;
+			var imp = gml.GmlImports.currentMap[scope];
+			if (imp == null) break;
+			//
+			var iter = new AceTokenIterator(aceEditor.session, pos.row, pos.column);
+			iter.stepBackward();
+			var tk = iter.getCurrentToken();
+			if (tk != null && tk.value == ".") {
+				iter.stepBackward();
+				tk = iter.getCurrentToken();
+				if (tk != null && tk.type == "namespace") {
+					name = imp.longen[tk.value + "." + name];
+					if (name == null) return false;
+					var ns = imp.namespaces[tk.value];
+				}
+			}
+			//
+			var long = imp.longen[name];
+			if (long != null) name = long;
+		} while (false);
 		//
 		var lookup = GmlAPI.gmlLookup[name];
 		if (lookup != null) {
@@ -213,9 +238,26 @@ class KeyboardShortcuts {
 		//
 		return false;
 	}
+	public static function openImportFile(rel:String) {
+		var dir = Path.join([Project.current.dir, "#import"]);
+		var full = Path.join([dir, rel]);
+		var data = null;
+		if (!FileSystem.existsSync(full)) {
+			full += ".gml";
+			if (!FileSystem.existsSync(full)) data = "";
+		}
+		if (data == null) data = FileSystem.readTextFileSync(full);
+		var file = new GmlFile(rel, full, Normal, data);
+		GmlFile.openTab(file);
+		return true;
+	}
 	public static function openDeclaration(pos:AcePos, token:AceToken) {
 		if (token == null) return false;
 		var term = token.value;
+		//
+		if (token.type.indexOf("importpath") >= 0) {
+			if (openImportFile(term.substring(1, term.length - 1))) return true;
+		}
 		//
 		if (term.charCodeAt(0) == "$".code || term.startsWith("0x")) {
 			ColorPicker.open(term);
@@ -225,11 +267,11 @@ class KeyboardShortcuts {
 		if (term.substring(0, 2) == "@[") {
 			var rx = new RegExp("^@\\[(.*)\\]");
 			var vals = rx.exec(term);
-			if (vals != null) openLink(vals[1]);
+			if (vals != null) openLink(vals[1], pos);
 			return true;
 		}
 		//
-		if (openLocal(term, null)) return true;
+		if (openLocal(term, pos, null)) return true;
 		//
 		if (term == "event_inherited") {
 			var def = gml.GmlScopes.get(pos.row);
