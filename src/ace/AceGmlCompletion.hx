@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
+import gml.file.GmlFile;
 import parsers.GmlKeycode;
 import parsers.GmlEvent;
 import shaders.ShaderAPI;
@@ -91,10 +92,10 @@ import tools.Dictionary;
 		keynameCompleter = new AceGmlCompletion(GmlKeycode.comp, ["eventkeyname"], false, gmlf);
 		//
 		glslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
-			return q.modeId == "ace/mode/shader" && gml.GmlFile.current.kind == GLSL;
+			return q.modeId == "ace/mode/shader" && gml.file.GmlFile.current.kind == GLSL;
 		});
 		hlslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
-			return q.modeId == "ace/mode/shader" && gml.GmlFile.current.kind == HLSL;
+			return q.modeId == "ace/mode/shader" && gml.file.GmlFile.current.kind == HLSL;
 		});
 		//
 		editor.setOptions({

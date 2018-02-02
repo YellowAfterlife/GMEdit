@@ -1,5 +1,5 @@
 package tools;
-import gml.GmlFile;
+import gml.file.GmlFile;
 import js.html.DivElement;
 import js.html.Document;
 import js.html.Element;

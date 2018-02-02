@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap.AceAutoCompleteItem;
+import gml.file.GmlFile;
 import js.html.Element;
 import js.html.SpanElement;
 import haxe.extern.EitherType;
@@ -212,7 +213,7 @@ extern class AceSelection {
 	public var bgTokenizer:AceBgTokenizer;
 	public var selection:AceSelection;
 	// non-standard:
-	public var gmlFile:gml.GmlFile;
+	public var gmlFile:gml.file.GmlFile;
 }
 extern class AceDocument {
 	public function setValue(s:String):Void;

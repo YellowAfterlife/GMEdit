@@ -1,6 +1,7 @@
 package gmx;
 import gml.*;
 import electron.FileSystem;
+import gml.file.GmlFile;
 import gmx.GmxEvent;
 import gmx.SfGmx;
 import haxe.io.Path;

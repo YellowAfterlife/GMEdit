@@ -148,18 +148,21 @@ class GmlReader extends StringReader {
 			case "#define", "#event", "#moment": {
 				skipSpaces0();
 				p = pos;
+				inline function next():String {
+					return substring(p, pos);
+				}
 				switch (preproc) {
 					case "#define": {
 						skipIdent1();
-						return substring(p, pos);
+						return next();
 					};
 					case "#event": {
 						skipEventName();
-						return name + "(" + substring(p, pos) + ")";
+						return name != null ? name + "(" + next() + ")" : next();
 					};
 					case "#moment": {
 						skipIdent1();
-						return name + "(" + substring(p, pos) + ")";
+						return name != null ? name + "(" + next() + ")" : next();
 					};
 					default: return null;
 				}

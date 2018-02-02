@@ -1,4 +1,4 @@
-package gml;
+package gml.file;
 import ace.AceGmlCompletion;
 import ace.AceSessionData;
 import electron.Dialog;
@@ -180,51 +180,6 @@ class GmlFile {
 		}
 		return found;
 	}
-	public static function getKind(path:String):{kind:GmlFileKind, data:Null<Dynamic>} {
-		var ext = Path.extension(path).toLowerCase();
-		var data:Dynamic = null;
-		var kind:GmlFileKind;
-		switch (ext) {
-			case "gml": kind = Normal;
-			case "txt": kind = Plain;
-			case "js": kind = JavaScript;
-			case "shader", "vsh", "fsh": kind = GLSL;
-			case "gmx": {
-				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
-				kind = switch (ext) {
-					case "object": GmxObjectEvents;
-					case "project": GmxProjectMacros;
-					case "config": GmxConfigMacros;
-					case "timeline": GmxTimelineMoments;
-					default: Extern;
-				}
-			};
-			case "yy": {
-				var json:YyBase = FileSystem.readJsonFileSync(path);
-				switch (json.modelName) {
-					case "GMObject": {
-						data = json;
-						kind = YyObjectEvents;
-					};
-					case "GMShader": {
-						data = json;
-						kind = YyShader;
-					};
-					case "GMTimeline": {
-						data = json;
-						kind = YyTimelineMoments;
-					};
-					case "GMScript": {
-						path = Path.withoutExtension(path) + ".gml";
-						kind = Normal;
-					};
-					default: kind = Extern;
-				};
-			};
-			default: kind = Extern;
-		}
-		return { kind: kind, data: data };
-	}
 	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
 		// todo: perhaps completely eliminate "name" from here and rely on file data
 		// see if there's an existing tab for this:
@@ -239,7 +194,7 @@ class GmlFile {
 			}
 		}
 		// determine what to do with the file:
-		var kd = getKind(path);
+		var kd = GmlFileKindTools.detect(path);
 		var kind = (nav != null && nav.kind != null) ? nav.kind : kd.kind;
 		var data = kd.data;
 		//
@@ -280,83 +235,7 @@ class GmlFile {
 	 * @param	data	If provided, is used instead of reading from FS.
 	 */
 	public function load(?data:Dynamic) {
-		var src:String = data != null ? data : FileSystem.readTextFileSync(path);
-		syncTime();
-		var gmx:SfGmx, out:String, errors:String;
-		function setError(s:String) {
-			code = s;
-			path = null;
-			kind = Extern;
-		}
-		switch (kind) {
-			case Extern: code = data != null ? data : "";
-			case YyShader: code = "";
-			case Plain, GLSL, HLSL, JavaScript: code = src;
-			case SearchResults: code = data;
-			case Normal: code = preprocNormal( src);
-			case Multifile: {
-				multidata = data;
-				out = ""; errors = "";
-				for (item in multidata) {
-					if (out != "") out += "\n\n";
-					out += "#define " + item.name + "\n";
-					var itemCode = FileSystem.readTextFileSync(item.path);
-					var itemSubs = GmlMultifile.split(itemCode, item.name);
-					if (itemSubs == null) {
-						errors += "Can't open " + item.name
-							+ " for editing: " + GmlMultifile.errorText + "\n";
-					} else switch (itemSubs.length) {
-						case 0: { };
-						case 1: {
-							var subCode = itemSubs[0].code;
-							out += NativeString.trimRight(subCode);
-						};
-						default: errors += "Can't open " + item.name
-							+ " for editing because it contains multiple scripts.\n";
-					}
-				}
-				if (errors == "") {
-					// (too buggy)
-					//out = GmlExtArgs.pre(out);
-					//out = GmlExtImport.pre(out, path);
-					GmlSeeker.runSync(path, out, "");
-					code = out;
-				} else setError(errors);
-			};
-			case GmxObjectEvents: {
-				gmx = SfGmx.parse(src);
-				out = GmxObject.getCode(gmx);
-				if (out != null) {
-					code = out;
-				} else setError(GmxObject.errorText);
-			};
-			case GmxTimelineMoments: {
-				gmx = SfGmx.parse(src);
-				out = GmxTimeline.getCode(gmx);
-				if (out != null) {
-					code = out;
-				} else setError(GmxObject.errorText);
-			};
-			case GmxProjectMacros, GmxConfigMacros: {
-				gmx = SfGmx.parse(src);
-				var notes = FileSystem.existsSync(notePath)
-					? new GmlReader(FileSystem.readTextFileSync(notePath)) : null;
-				code = GmxProject.getMacroCode(gmx, notes, kind == GmxConfigMacros);
-			};
-			case YyObjectEvents: {
-				var obj:YyObject = data;
-				code = obj.getCode(path);
-			};
-			case YyTimelineMoments: {
-				var tl:YyTimeline = data;
-				code = tl.getCode(path);
-			};
-		}
-	}
-	function preprocNormal(code:String) {
-		code = GmlExtArgs.pre(code);
-		code = GmlExtImport.pre(code, path);
-		return code;
+		GmlFileIO.load(this, data);
 	}
 	//
 	public function savePost(?out:String) {
@@ -378,122 +257,7 @@ class GmlFile {
 		}
 	}
 	public function save() {
-		var val = session.getValue();
-		code = val;
-		inline function error(s:String) {
-			Main.window.alert(s);
-			return false;
-		}
-		//
-		var out:String, src:String, gmx:SfGmx;
-		var writeFile:Bool = path != null;
-		switch (kind) {
-			case Extern: out = val;
-			case Plain, GLSL, HLSL, JavaScript: out = val;
-			case Normal: {
-				out = val;
-				out = GmlExtArgs.post(out);
-				if (out == null) {
-					return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				}
-				out = GmlExtImport.post(out, path);
-				// if there are imports, check if we should be updating the code
-				var data = path != null ? GmlSeekData.map[path] : null;
-				if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
-					var next = preprocNormal(out);
-					if (current == this) {
-						if (data != null && data.imports != null) {
-							GmlImports.currentMap = data.imports;
-						} else GmlImports.currentMap = GmlImports.defaultMap;
-					}
-					if (next != val) {
-						var sd = AceSessionData.get(this);
-						session.doc.setValue(next);
-						AceSessionData.set(this, sd);
-						Main.window.setTimeout(function() {
-							var u = session.getUndoManager();
-							if (!ui.Preferences.current.allowImportUndo) {
-								session.setUndoManager(u);
-								u.reset();
-							}
-							u.markClean();
-							changed = false;
-						});
-					}
-				}
-			};
-			case Multifile: {
-				out = val;
-				out = GmlExtArgs.post(out);
-				if (out == null) {
-					return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				}
-				//
-				writeFile = false;
-				var next = GmlMultifile.split(out, "<detached code>");
-				var map0 = new Dictionary<String>();
-				for (item in multidata) map0.set(item.name, item.path);
-				var errors = "";
-				for (item in next) {
-					var itemPath = map0[item.name];
-					if (itemPath != null) {
-						var itemCode = item.code;
-						FileSystem.writeFileSync(itemPath, itemCode);
-					} else errors += "Can't save script " + item.name
-						+ " because it is not among the edited group.\n";
-				}
-				if (errors != "") error(errors);
-			};
-			case SearchResults: {
-				if (searchData != null) {
-					return searchData.save(this);
-				} else return false;
-			};
-			case GmxObjectEvents: {
-				gmx = FileSystem.readGmxFileSync(path);
-				if (!GmxObject.setCode(gmx, val)) {
-					return error("Can't update GMX:\n" + GmxObject.errorText);
-				}
-				out = gmx.toGmxString();
-			};
-			case GmxTimelineMoments: {
-				gmx = FileSystem.readGmxFileSync(path);
-				if (!GmxTimeline.setCode(gmx, val)) {
-					return error("Can't update GMX:\n" + GmxTimeline.errorText);
-				}
-				out = gmx.toGmxString();
-			};
-			case GmxProjectMacros, GmxConfigMacros: {
-				gmx = FileSystem.readGmxFileSync(path);
-				var notes = new StringBuilder();
-				GmxProject.setMacroCode(gmx, val, notes, kind == GmxConfigMacros);
-				if (notes.length > 0) {
-					FileSystem.writeFileSync(notePath, notes.toString());
-				} else if (FileSystem.existsSync(notePath)) {
-					FileSystem.unlinkSync(notePath);
-				}
-				out = gmx.toGmxString();
-			};
-			case YyObjectEvents: {
-				var obj:YyObject = FileSystem.readJsonFileSync(path);
-				if (!obj.setCode(path, val)) {
-					return error("Can't update YY:\n" + YyObject.errorText);
-				}
-				out = haxe.Json.stringify(obj, null, "    ");
-			};
-			case YyTimelineMoments: {
-				var tl:YyTimeline = FileSystem.readJsonFileSync(path);
-				if (!tl.setCode(path, val)) {
-					return error("Can't update YY:\n" + YyTimeline.errorText);
-				}
-				out = haxe.Json.stringify(tl, null, "    ");
-			};
-			default: return false;
-		}
-		//
-		if (writeFile) FileSystem.writeFileSync(path, out);
-		savePost(out);
-		return true;
+		return GmlFileIO.save(this);
 	}
 	//
 	public function liveApply() {
@@ -581,27 +345,6 @@ class GmlFile {
 		}
 		return file;
 	}
-}
-enum GmlFileKind {
-	/** Marks things that cannot be opened in GMEdit itself */
-	Extern;
-	/** Plaintext - no highlighting */
-	Plain;
-	/** */
-	Normal;
-	/** */
-	Multifile;
-	GLSL;
-	HLSL;
-	JavaScript;
-	GmxObjectEvents;
-	GmxTimelineMoments;
-	GmxProjectMacros;
-	GmxConfigMacros;
-	YyObjectEvents;
-	YyTimelineMoments;
-	YyShader;
-	SearchResults;
 }
 typedef GmlFileNav = {
 	/** definition (script/event) */

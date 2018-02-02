@@ -7,7 +7,7 @@ import js.html.DragEvent;
 import electron.Dialog;
 import haxe.io.Path;
 import gml.Project;
-import gml.GmlFile;
+import gml.file.GmlFile;
 
 /**
  * ...

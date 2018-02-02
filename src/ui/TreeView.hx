@@ -1,7 +1,7 @@
 package ui;
 import electron.Dialog;
 import electron.Menu;
-import gml.GmlFile;
+import gml.file.*;
 import gml.Project;
 import js.html.CSSStyleSheet;
 import js.html.Element;

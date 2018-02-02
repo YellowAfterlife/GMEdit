@@ -1,6 +1,6 @@
 package ace;
 import ace.AceWrap;
-import gml.GmlFile;
+import gml.file.GmlFile;
 import haxe.Json;
 import tools.NativeString;
 import ui.Preferences;

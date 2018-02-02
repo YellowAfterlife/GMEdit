@@ -135,7 +135,7 @@ class GmlExtImport {
 		return false;
 	}
 	public static function pre(code:String, path:String) {
-		if (!Preferences.current.importMagic || code.indexOf("///#import") < 0) {
+		if (!Preferences.current.importMagic || code.indexOf("//!#import") < 0) {
 			var data = GmlSeekData.map[path];
 			if (data != null) data.imports = null;
 			return code;
@@ -160,7 +160,7 @@ class GmlExtImport {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
 						q.skipLine();
-						if (q.get(p + 2) == "/".code
+						if (q.get(p + 2) == "!".code
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
@@ -178,7 +178,7 @@ class GmlExtImport {
 					q.skipStringAuto(c, version);
 				};
 				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-					var ctx = q.readContextName("");
+					var ctx = q.readContextName(null);
 					if (ctx != null) {
 						imp = new GmlImports();
 						imps.set(ctx, imp);
@@ -233,12 +233,12 @@ class GmlExtImport {
 			switch (c) {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
-						if (q.get(p + 2) == "/".code
+						if (q.get(p + 2) == "!".code
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							flush(p + 3);
 							out += " ";
-							start = p + 2;
+							start = p + 3;
 						}
 						q.skipLine();
 					};
@@ -254,12 +254,12 @@ class GmlExtImport {
 						var txt = q.substring(p, q.pos);
 						if (rxImport.test(txt) || rxImportFile.test(txt)) {
 							flush(p);
-							out += "///" + txt;
+							out += "//!" + txt;
 							start = q.pos;
 							impc += 1;
 						}
 					} else if (p == 0 || q.get(p - 1) == "\n".code) {
-						var ctx = q.readContextName("");
+						var ctx = q.readContextName(null);
 						if (ctx != null) {
 							imp = imps != null ? imps[ctx] : null;
 						}

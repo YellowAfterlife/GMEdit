@@ -4,7 +4,7 @@ import electron.Dialog;
 import gml.Project;
 import haxe.io.Path;
 import js.html.Element;
-import gml.GmlFile;
+import gml.file.*;
 using tools.HtmlTools;
 using tools.NativeString;
 using tools.NativeArray;
@@ -90,7 +90,7 @@ class TreeViewMenus {
 	//
 	static function openHere() {
 		var path = target.getAttribute(TreeView.attrPath);
-		var pair = GmlFile.getKind(path);
+		var pair = GmlFileKindTools.detect(path);
 		if (pair.kind == GmlFileKind.Extern) {
 			pair.kind = GmlFileKind.Plain;
 		}

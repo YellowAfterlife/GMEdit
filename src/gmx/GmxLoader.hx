@@ -1,6 +1,6 @@
 package gmx;
 import gml.*;
-import gml.GmlFile;
+import gml.file.*;
 import ui.*;
 import electron.FileSystem;
 import js.html.Element;

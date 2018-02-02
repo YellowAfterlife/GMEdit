@@ -1,6 +1,6 @@
 package ui;
 import ace.AceWrap;
-import gml.GmlFile;
+import gml.file.GmlFile;
 import js.RegExp;
 import tools.Dictionary;
 import parsers.GmlReader;

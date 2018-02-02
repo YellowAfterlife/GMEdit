@@ -1,6 +1,6 @@
 package ace;
 import gml.GmlAPI;
-import gml.GmlFile;
+import gml.file.GmlFile;
 import js.RegExp;
 import js.html.DivElement;
 import js.html.Element;

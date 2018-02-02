@@ -1,7 +1,7 @@
 package ui;
 import electron.Dialog;
 import electron.Electron;
-import gml.GmlFile;
+import gml.file.GmlFile;
 import gml.Project;
 import js.html.BeforeUnloadEvent;
 import js.html.CustomEvent;

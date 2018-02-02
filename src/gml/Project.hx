@@ -19,7 +19,7 @@ import yy.*;
 import Main.*;
 import tools.HtmlTools;
 import tools.NativeString;
-import gml.GmlFile;
+import gml.file.GmlFile;
 import ui.GlobalSearch;
 import ui.TreeView;
 

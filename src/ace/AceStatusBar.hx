@@ -4,6 +4,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlLocals;
 import gml.GmlFuncDoc;
+import gml.file.GmlFile;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -133,7 +134,7 @@ class AceStatusBar {
 			}
 		}
 		//
-		var q = gml.GmlFile.current;
+		var q = gml.file.GmlFile.current;
 		if (q != null) q.changed = !session.getUndoManager().isClean();
 		//
 		var ctr = statusSpan, s:String;

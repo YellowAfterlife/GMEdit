@@ -3,6 +3,7 @@ import ace.AceWrap;
 import Main.aceEditor;
 import Main.window;
 import gml.*;
+import gml.file.GmlFile;
 import js.RegExp;
 import js.html.DivElement;
 import js.html.Element;
