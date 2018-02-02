@@ -1,50 +1,6 @@
-// Generated at 23.12.2017 12:49:37
-true
-false
-null
-undefined
-//
+// Generated at 01.02.2018 14:06:19
 :alarm_get(:index):
 :alarm_set(:index, value:number)
-//{ instance vars
-x
-y
-xprevious
-yprevious
-xstart
-ystart
-hspeed
-vspeed
-direction
-speed
-friction
-gravity
-gravity_direction
-visible
-sprite_index
-sprite_width
-sprite_height
-sprite_xoffset
-sprite_yoffset
-image_number
-image_index
-image_speed
-depth
-image_xscale
-image_yscale
-image_angle
-image_alpha
-image_blend
-bbox_left*
-bbox_right*
-bbox_top*
-bbox_bottom*
-object_index*
-id*
-solid
-persistent
-mask_index
-//}
 //{ Instance
 instance_exists(obj:index):
 instance_number(obj:index):
@@ -439,6 +395,7 @@ trace(...values):
 trace_time(?caption)
 trace_color(text:string, :color)
 room_speed
+current_time_scale:number
 //{
 random(x:number)
 irandom(x:number)
@@ -491,6 +448,12 @@ instances_matching_ge(object_or_array, varname:string, value:number):
 variable_instance_exists(instance, varname:string):
 variable_instance_get(instance, varname:string):
 variable_instance_set(instance, varname:string, value)
+/// 
+:motion_add_raw(direction, speed);
+:motion_add(direction, speed);
+:motion_add_ct(direction, speed);
+:motion_set_raw(direction, speed);
+:motion_set(direction, speed);
 /// 
 point_seen(x:number, y:number, player:int):
 point_seen_ext(x:number, y:number, borderx:number, bordery:number, player:int):
@@ -852,6 +815,7 @@ weapon_set_type(wep:index, :index)
 weapon_set_cost(wep:index, :number)
 weapon_set_swap(wep:index, :sound)
 weapon_set_text(wep:index, :string)
+weapon_set_rads(wep:index, :number)
 /// Can be used in weapon_fire for common weapon effects
 :weapon_post(wkick:number, shift:number, shake:number)
 /// Adds all weapons (regular and modded) within the given area range to a list.
@@ -1103,4 +1067,3 @@ crwn_luck = 10
 crwn_curses = 11
 crwn_risk = 12
 crwn_protection = 13
-mod_current = ""
