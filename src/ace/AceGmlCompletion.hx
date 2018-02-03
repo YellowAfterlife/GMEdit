@@ -107,7 +107,7 @@ using tools.NativeString;
 		// tokens to not show normal auto-completion in
 		var excl = [
 			"comment", "comment.doc", "comment.line", "comment.line.doc",
-			"string", "string.quasi",
+			"string", "string.quasi", "string.importpath",
 			"scriptname",
 			"eventname", "eventkeyname", "eventtext",
 			"sectionname",

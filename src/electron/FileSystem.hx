@@ -30,6 +30,8 @@ import haxe.extern.EitherType;
 	//
 	public static function unlinkSync(path:String):Void;
 	//
+	public static function mkdirSync(path:String, ?mode:Int):Void;
+	//
 	public static function readdirSync(path:String, ?options:Dynamic):Array<String>;
 	//
 	public static function statSync(path:String):FileSystemStat;

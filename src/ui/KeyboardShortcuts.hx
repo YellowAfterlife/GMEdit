@@ -240,6 +240,9 @@ class KeyboardShortcuts {
 	}
 	public static function openImportFile(rel:String) {
 		var dir = Path.join([Project.current.dir, "#import"]);
+		if (!FileSystem.existsSync(dir)) {
+			FileSystem.mkdirSync(dir);
+		}
 		var full = Path.join([dir, rel]);
 		var data = null;
 		if (!FileSystem.existsSync(full)) {
