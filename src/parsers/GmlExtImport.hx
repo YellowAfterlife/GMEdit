@@ -187,12 +187,7 @@ class GmlExtImport {
 				};
 				default: {
 					if (c.isIdent0()) {
-						while (q.loop) {
-							c = q.peek();
-							if (c.isIdent1() || c == ".".code) {
-								q.skip();
-							} else break;
-						}
+						q.skipIdent1();
 						var id = imp.shorten[q.substring(p, q.pos)];
 						if (id != null) {
 							flush(p);
@@ -267,10 +262,16 @@ class GmlExtImport {
 				};
 				default: {
 					if (c.isIdent0() && imp != null) {
+						var dot = -1;
 						while (q.loop) {
 							c = q.peek();
-							if (c.isIdent1() || c == ".".code) {
+							if (c.isIdent1()) {
 								q.skip();
+							} else if (c == ".".code) {
+								if (dot == -1) {
+									dot = q.pos;
+									q.skip();
+								} else break;
 							} else break;
 						}
 						var id = imp.longen[q.substring(p, q.pos)];
@@ -278,6 +279,14 @@ class GmlExtImport {
 							flush(p);
 							out += id;
 							start = q.pos;
+						} else if (dot != -1) {
+							id = imp.longen[q.substring(p, dot)];
+							if (id != null) {
+								flush(p);
+								out += id;
+								start = dot;
+								q.pos = dot;
+							}
 						}
 					}
 				};
