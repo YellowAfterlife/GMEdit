@@ -80,7 +80,7 @@ using tools.NativeString;
 		};
 		/** something.field */
 		var rIdentPair:AceLangRule = {
-			regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*)',
+			regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*|)',
 			onMatch: function(
 				value:String, state:String, stack:Array<String>, line:String, row:Int
 			) {
@@ -102,7 +102,7 @@ using tools.NativeString;
 								var ns = imp.namespaces[object];
 								if (ns != null) {
 									objType = "namespace";
-									fdType = jsOr(ns[field], "identifier");
+									fdType = jsOr(ns.kind[field], "identifier");
 								}
 							}
 							if (objType == null) {

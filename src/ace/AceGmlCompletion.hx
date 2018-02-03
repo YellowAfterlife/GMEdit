@@ -6,6 +6,7 @@ import parsers.GmlKeycode;
 import parsers.GmlEvent;
 import shaders.ShaderAPI;
 import tools.Dictionary;
+using tools.NativeString;
 
 /**
  * ...
@@ -20,6 +21,7 @@ import tools.Dictionary;
 	public static var eventCompleter:AceGmlCompletion;
 	public static var localCompleter:AceGmlCompletion;
 	public static var importCompleter:AceGmlCompletion;
+	public static var namespaceCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
 	public static var keynameCompleter:AceGmlCompletion;
 	public static var glslCompleter:AceGmlCompletion;
@@ -31,14 +33,18 @@ import tools.Dictionary;
 	public var modeFilter:AceSession->Bool;
 	public var minLength:Int = 2;
 	//
+	public var dotKind = dotKindNone;
+	public static inline var dotKindNone = 0;
+	public static inline var dotKindGlobal = 1;
+	public static inline var dotKindNamespace = 2;
+	//
 	public function new(
 		items:AceAutoCompleteItems, filters:Array<String>, not:Bool,
 		modeFilter:AceSession->Bool
 	) {
 		items.autoSort();
 		this.items = items;
-		this.tokenFilter = new Dictionary();
-		for (ft in filters) this.tokenFilter.set(ft, true);
+		this.tokenFilter = Dictionary.fromKeys(filters, true);
 		this.tokenFilterNot = not;
 		this.modeFilter = modeFilter;
 	}
@@ -46,17 +52,45 @@ import tools.Dictionary;
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
 	):Void {
+		inline function proc(show:Bool) {
+			callback(null, show ? items : noItems);
+		}
 		if (prefix.length < minLength || !modeFilter(session)) {
-			callback(null, noItems);
+			proc(false);
 			return;
 		}
 		if (editor.completer != null) {
 			editor.completer.exactMatch = true;
 		}
 		var tk = session.getTokenAtPos(pos);
-		if (tokenFilter.exists(tk.type) != tokenFilterNot) {
-			callback(null, items);
-		} else callback(null, noItems);
+		if (dotKind != dotKindNone && tk.type == "punctuation.operator" && tk.value.contains(".")) {
+			var iter = new AceTokenIterator(session, pos.row, pos.column);
+			tk = iter.stepBackward();
+			switch (dotKind) {
+				case dotKindNamespace: {
+					if (dotKind == dotKindNamespace) {
+						var scope = gml.GmlScopes.get(pos.row);
+						if (scope != null) {
+							var imp = gml.GmlImports.currentMap[scope];
+							if (imp != null) {
+								var ns = imp.namespaces[tk.value];
+								if (ns != null) {
+									callback(null, ns.comp);
+									return;
+								}
+							}
+						}
+					}
+					proc(false);
+					return;
+				};
+				case dotKindGlobal: {
+					proc(tk.value == "global");
+				};
+			}
+			return;
+		}
+		proc(tokenFilter.exists(tk.type) != tokenFilterNot);
 	}
 	public function getDocTooltip(item:AceAutoCompleteItem):String {
 		return item.doc;
@@ -82,6 +116,9 @@ import tools.Dictionary;
 			"namespace",
 			"globalfield", // global.<text>
 		];
+		namespaceCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		namespaceCompleter.minLength = 0;
+		namespaceCompleter.dotKind = dotKindNamespace;
 		importCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		localCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, excl, true, gmlf);
@@ -89,6 +126,8 @@ import tools.Dictionary;
 		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, excl, true, gmlf);
 		eventCompleter = new AceGmlCompletion(parsers.GmlEvent.comp, ["eventname"], false, gmlf);
 		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false, gmlf);
+		globalCompleter.minLength = 0;
+		globalCompleter.dotKind = dotKindGlobal;
 		keynameCompleter = new AceGmlCompletion(GmlKeycode.comp, ["eventkeyname"], false, gmlf);
 		//
 		glslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
@@ -107,10 +146,27 @@ import tools.Dictionary;
 				gmlCompleter,
 				eventCompleter,
 				globalCompleter,
+				namespaceCompleter,
 				keynameCompleter,
 				glslCompleter,
 				hlslCompleter,
 			]
+		});
+		//
+		editor.commands.on("afterExec", function(e:Dynamic) {
+			if (e.args != "." || e.command.name != "insertstring") return;
+			if (editor.completer != null && editor.completer.activated) return;
+			var lead = editor.session.selection.lead;
+			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
+			var token = iter.stepBackward();
+			if (token == null) return;
+			if (token.type == "namespace" || token.value == "global") {
+				if (editor.completer == null) {
+					editor.completer = new AceAutocomplete();
+				}
+				editor.completer.autoInsert = false;
+				editor.completer.showPopup(editor);
+			}
 		});
 	}
 }

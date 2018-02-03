@@ -37,6 +37,9 @@ class NativeString {
 	public static inline function endsWith(s:String, q:String):Bool {
 		return untyped s.endsWith(q);
 	}
+	public static inline function contains(s:String, q:String):Bool {
+		return s.indexOf(q) != -1;
+	}
 	private static var escapeRx_1:RegExp = new RegExp('([.*+?^${}()|[\\]\\/\\\\])', 'g');
 	public static inline function escapeRx(s:String):String {
 		return replaceExt(s, escapeRx_1, "\\$1");

@@ -19,8 +19,8 @@ class GmlImports {
 	/** "some" -> "scr_some" */
 	public var longen:Dictionary<String> = new Dictionary();
 	
-	/** "ns" -> "some" -> "script" (for "ns.some")*/
-	public var namespaces:Dictionary<Dictionary<String>> = new Dictionary();
+	/** namespace name -> namespace data */
+	public var namespaces:Dictionary<GmlNamespace> = new Dictionary();
 	
 	/** "some" -> { pre: "scr_some", ... } */
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
@@ -34,12 +34,17 @@ class GmlImports {
 		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc, ?space:String
 	) {
 		if (space != null) {
-			var nsd = namespaces[space];
-			if (nsd == null) {
-				nsd = new Dictionary();
-				namespaces.set(space, nsd);
+			var ns = namespaces[space];
+			if (ns == null) {
+				ns = new GmlNamespace();
+				namespaces.set(space, ns);
 			}
-			nsd.set(short, kind);
+			ns.kind.set(short, kind);
+			if (comp != null) {
+				var nc = comp.makeAlias(short);
+				if (nc.doc == null) nc.doc = long;
+				ns.comp.push(nc);
+			}
 			short = space + "." + short;
 		} else {
 			this.kind.set(short, kind);
@@ -51,10 +56,17 @@ class GmlImports {
 		if (doc != null) docs.set(short, doc);
 		//
 		if (comp != null) {
-			var nc = new AceAutoCompleteItem(short, comp.meta, comp.doc);
+			var nc = comp.makeAlias(short);
 			if (nc.doc == null) nc.doc = long;
 			this.comp.push(nc);
 		}
 	}
 	//
+}
+class GmlNamespace {
+	public var kind:Dictionary<String> = new Dictionary();
+	public var comp:AceAutoCompleteItems = [];
+	public function new() {
+		//
+	}
 }

@@ -8,9 +8,15 @@ package tools;
 @:forward(keys)
 abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function new() {
-		this = untyped Object.create(null);
+		this = js.Object.create(null);
+	}
+	public static function fromKeys<T>(keys:Array<String>, val:T):Dictionary<T> {
+		var out = new Dictionary();
+		for (key in keys) out.set(key, val);
+		return out;
 	}
 	public inline function destroy():Void { }
+	//
 	public inline function exists(k:String):Bool {
 		return get(k) != null;
 	}

@@ -58,6 +58,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
 		window.AceUndoManager = AceWrap.require("ace/undomanager").UndoManager;
 		window.AceTokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
+		window.AceAutocomplete = AceWrap.require("ace/autocomplete").Autocomplete;
 		window.aceEditor = Main.aceEditor;
 	}
 	/*public function setHintError(msg:String, pos:GmlPos) {
@@ -105,7 +106,7 @@ extern class AceEditor {
 	public var selection:AceSelection;
 	public var keyBinding:AceKeybinding;
 	public var commands:AceCommandManager;
-	public var completer:{ exactMatch:Bool, showPopup:AceWrap->Void };
+	public var completer:AceAutocomplete;
 	public var renderer:Dynamic;
 	public var container:Element;
 	public function focus():Void;
@@ -131,6 +132,7 @@ extern class AceCommandManager {
 	public var recording:Bool;
 	public var commands:Dictionary<Dynamic>;
 	public var platform:String;
+	public function on(name:String, fn:Dynamic->Void):Void;
 	public function addCommand(cmd:AceCommand):Void;
 	public function removeCommand(cmd:EitherType<AceCommand, String>):Void;
 	public function bindKey(
@@ -229,7 +231,7 @@ extern class AceBgTokenizer {
 }
 typedef AcePos = { column: Int, row:Int };
 typedef AceRange = { start: AcePos, end:AcePos };
-typedef AceToken = { type:String, value:String, index:Int, start:Int };
+typedef AceToken = { type:String, value:String, ?index:Int, ?start:Int };
 typedef AceAnnotation = { row:Int, column:Int, type:String, text:String }
 extern class AceFold {
 	public var start:AcePos;
@@ -265,6 +267,13 @@ from Array<AceAutoCompleteItem> to Array<AceAutoCompleteItem> {
 	}
 }
 //
+@:native("AceAutocomplete") extern class AceAutocomplete {
+	function new();
+	var exactMatch:Bool;
+	var autoInsert:Bool;
+	var activated:Bool;
+	function showPopup(editor:AceWrap):Void;
+}
 typedef AceAutoCompleteCb = Dynamic->AceAutoCompleteItems->Void;
 interface AceAutoCompleter {
 	function getCompletions(
@@ -277,5 +286,6 @@ extern class AceMarker { }
 @:native("AceTokenIterator") extern class AceTokenIterator {
 	function new(session:AceSession, row:Int, col:Int);
 	function getCurrentToken():AceToken;
-	function stepBackward():Void;
+	function stepBackward():AceToken;
+	function stepForward():AceToken;
 }
