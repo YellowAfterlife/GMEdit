@@ -34,6 +34,13 @@ import haxe.extern.EitherType;
 	//
 	public static function readdirSync(path:String, ?options:Dynamic):Array<String>;
 	//
+	@:native("copyFileSync") private static function copyFileSyncImpl(path:String, dest:String):Void;
+	public static inline function copyFileSync(path:String, dest:String):Void {
+		if (copyFileSyncImpl == null) {
+			writeFileSync(dest, readFileSync(path));
+		} else copyFileSyncImpl(path, dest);
+	}
+	//
 	public static function statSync(path:String):FileSystemStat;
 	public static inline function getMTimeMs(path:String):Float {
 		return statSync(path).mtimeMs;

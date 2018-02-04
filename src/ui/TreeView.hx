@@ -1,5 +1,6 @@
 package ui;
 import electron.Dialog;
+import electron.FileSystem;
 import electron.Menu;
 import gml.file.*;
 import gml.Project;
@@ -139,7 +140,19 @@ class TreeView {
 		e.preventDefault();
 		var el:Element = cast e.target;
 		if (!el.classList.contains("item")) el = el.parentElement;
-		Project.open(el.getAttribute(attrPath));
+		var path = el.getAttribute(attrPath);
+		if (FileSystem.existsSync(path)) {
+			Project.open(path);
+		} else if (Project.current.path == "") {
+			if (Dialog.showMessageBox({
+				message: "Project is missing. Remove from recent project list?",
+				buttons: ["Yes", "No"],
+				cancelId: 1,
+			}) == 0) {
+				RecentProjects.remove(path);
+				el.parentElement.removeChild(el);
+			}
+		}
 	}
 	public static function makeProject(name:String, path:String) {
 		var r = makeItemImpl(name, path, "project");

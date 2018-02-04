@@ -1,4 +1,5 @@
 package ui;
+import electron.FileSystem;
 import haxe.Json;
 import haxe.io.Path;
 
@@ -41,7 +42,16 @@ class RecentProjects {
 					name = Path.withoutDirectory(Path.directory(path));
 				};
 			}
-			el.appendChild(TreeView.makeProject(name, path));
+			var pj = TreeView.makeProject(name, path);
+			if (FileSystem.existsSync(path)) {
+				var th = path + ".png";
+				if (FileSystem.existsSync(th)) {
+					TreeView.setThumb(path, th);
+				}
+			} else {
+				pj.setAttribute("data-missing", "true");
+			}
+			el.appendChild(pj);
 		}
 	}
 }

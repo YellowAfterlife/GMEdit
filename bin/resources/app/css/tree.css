@@ -48,6 +48,9 @@
 	background-size: contain;
 	/*image-rendering: pixelated;*/
 }
+.treeview .item[data-kind="project"][data-missing] {
+	opacity: 0.5;
+}
 .treeview .header > span,
 .treeview .item > span {
 	display: inline-block;

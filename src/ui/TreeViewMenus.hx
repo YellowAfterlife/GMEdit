@@ -70,7 +70,9 @@ class TreeViewMenus {
 	//
 	static var changeIconItem:MenuItem;
 	public static function changeIcon() {
-		var def = Project.current.dir;
+		var pj = Project.current;
+		var itemPath = target.getAttribute(TreeView.attrPath);
+		var def = pj.path != "" ? pj.dir : Path.directory(itemPath);
 		var files = Dialog.showOpenDialog({
 			title: "Hello",
 			defaultPath: def,
@@ -78,13 +80,19 @@ class TreeViewMenus {
 				{ name: "Images", extensions: ["png"] }
 			],
 		});
-		if (files != null && files[0] != null) {
+		if (files == null || files[0] == null) return;
+		var path = files[0];
+		if (pj.path != "") {
 			ProjectStyle.setItemThumb({
-				thumb: files[0],
+				thumb: path,
 				ident: target.getAttribute(TreeView.attrIdent),
 				kind: target.getAttribute(TreeView.attrKind),
 				rel: target.getAttribute(TreeView.attrRel),
 			});
+		} else {
+			var th = itemPath + ".png";
+			electron.FileSystem.copyFileSync(path, th);
+			TreeView.setThumb(itemPath, th + "?v=" + Date.now().getTime());
 		}
 	}
 	//
@@ -119,7 +127,7 @@ class TreeViewMenus {
 		z = gml.GmlAPI.version == v2 && kind == "shader";
 		shaderItems.forEach(function(q) q.visible = z);
 		removeFromRecentProjectsItem.visible = kind == "project";
-		changeIconItem.visible = kind != "project";
+		//changeIconItem.visible = kind != "project";
 		itemMenu.popupAsync();
 	}
 	//
