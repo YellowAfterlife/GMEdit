@@ -281,7 +281,9 @@ class GmlSeeker {
 						en.names.push(s);
 						en.items.set(s, true);
 						var ac = new AceAutoCompleteItem(name + "." + s, "enum");
+						var acf = new AceAutoCompleteItem(s, "enum");
 						en.compList.push(ac);
+						en.fieldComp.push(acf);
 						en.compMap.set(s, ac);
 						out.comp.push(ac);
 						s = find(Comma | SetOp | Cub1);
@@ -290,11 +292,11 @@ class GmlSeeker {
 							s = find(Comma | Cub1);
 							var val = parseConst(q.substring(vp, q.pos - 1).trimBoth());
 							if (val != null) {
-								ac.doc = "" + val;
+								acf.doc = ac.doc = "" + val;
 								nextVal = val + 1;
 							} else nextVal = null;
-						} else {
-							if (nextVal != null) ac.doc = "" + (nextVal++);
+						} else if (nextVal != null) {
+							acf.doc = ac.doc = "" + (nextVal++);
 						}
 						if (s == null || s == "}") break;
 					}

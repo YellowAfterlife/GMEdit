@@ -22,6 +22,7 @@ using tools.NativeString;
 	public static var localCompleter:AceGmlCompletion;
 	public static var importCompleter:AceGmlCompletion;
 	public static var namespaceCompleter:AceGmlCompletion;
+	public static var enumCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
 	public static var keynameCompleter:AceGmlCompletion;
 	public static var glslCompleter:AceGmlCompletion;
@@ -37,6 +38,7 @@ using tools.NativeString;
 	public static inline var dotKindNone = 0;
 	public static inline var dotKindGlobal = 1;
 	public static inline var dotKindNamespace = 2;
+	public static inline var dotKindEnum = 3;
 	//
 	public function new(
 		items:AceAutoCompleteItems, filters:Array<String>, not:Bool,
@@ -68,7 +70,7 @@ using tools.NativeString;
 			tk = iter.stepBackward();
 			switch (dotKind) {
 				case dotKindNamespace: {
-					if (dotKind == dotKindNamespace) {
+					if (tk.type == "namespace") {
 						var scope = gml.GmlScopes.get(pos.row);
 						if (scope != null) {
 							var imp = gml.GmlImports.currentMap[scope];
@@ -82,10 +84,19 @@ using tools.NativeString;
 						}
 					}
 					proc(false);
-					return;
 				};
 				case dotKindGlobal: {
 					proc(tk.value == "global");
+				};
+				case dotKindEnum: {
+					if (tk.type == "enum") {
+						var en = GmlAPI.gmlEnums[tk.value];
+						if (en != null) {
+							callback(null, en.fieldComp);
+							return;
+						}
+					}
+					proc(false);
 				};
 			}
 			return;
@@ -115,20 +126,28 @@ using tools.NativeString;
 			"macroname",
 			"namespace",
 			"globalfield", // global.<text>
+			"enumfield", "enumerror",
 		];
-		namespaceCompleter = new AceGmlCompletion([], excl, true, gmlf);
-		namespaceCompleter.minLength = 0;
-		namespaceCompleter.dotKind = dotKindNamespace;
-		importCompleter = new AceGmlCompletion([], excl, true, gmlf);
-		localCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		//
 		stdCompleter = new AceGmlCompletion(GmlAPI.stdComp, excl, true, gmlf);
 		extCompleter = new AceGmlCompletion(GmlAPI.extComp, excl, true, gmlf);
 		gmlCompleter = new AceGmlCompletion(GmlAPI.gmlComp, excl, true, gmlf);
+		//
 		eventCompleter = new AceGmlCompletion(parsers.GmlEvent.comp, ["eventname"], false, gmlf);
+		keynameCompleter = new AceGmlCompletion(GmlKeycode.comp, ["eventkeyname"], false, gmlf);
+		//
+		importCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		localCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		//
 		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false, gmlf);
 		globalCompleter.minLength = 0;
 		globalCompleter.dotKind = dotKindGlobal;
-		keynameCompleter = new AceGmlCompletion(GmlKeycode.comp, ["eventkeyname"], false, gmlf);
+		namespaceCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		namespaceCompleter.minLength = 0;
+		namespaceCompleter.dotKind = dotKindNamespace;
+		enumCompleter = new AceGmlCompletion([], ["enumfield"], false, gmlf);
+		enumCompleter.minLength = 0;
+		enumCompleter.dotKind = dotKindEnum;
 		//
 		glslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
 			return q.modeId == "ace/mode/shader" && gml.file.GmlFile.current.kind == GLSL;
@@ -145,9 +164,10 @@ using tools.NativeString;
 				extCompleter,
 				gmlCompleter,
 				eventCompleter,
+				keynameCompleter,
 				globalCompleter,
 				namespaceCompleter,
-				keynameCompleter,
+				enumCompleter,
 				glslCompleter,
 				hlslCompleter,
 			]
@@ -160,7 +180,7 @@ using tools.NativeString;
 			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 			var token = iter.stepBackward();
 			if (token == null) return;
-			if (token.type == "namespace" || token.value == "global") {
+			if (token.type == "namespace" || token.type == "enum" || token.value == "global") {
 				if (editor.completer == null) {
 					editor.completer = new AceAutocomplete();
 				}
