@@ -40,10 +40,18 @@ class GmlSeekData {
 		
 	}
 	public static function apply(prev:GmlSeekData, next:GmlSeekData) {
-		if (GmlAPI.version == GmlVersion.live) return;
 		if (prev == null) prev = blank;
 		if (next == null) next = blank;
+		
+		// imports are copied over from previous known version:
+		if (next.imports == null) next.imports = prev.imports;
+		
+		// single-file programs don't do incremental changes
+		// because API context is changed on tab switch:
+		if (GmlAPI.version == GmlVersion.live) return;
+		
 		// todo: it might be <a bit> faster to merge changes instead
+		
 		// enums:
 		for (e in prev.enumList) {
 			for (comp in e.compList) GmlAPI.gmlComp.remove(comp);
@@ -55,6 +63,7 @@ class GmlSeekData {
 			GmlAPI.gmlEnums.set(e.name, e);
 			GmlAPI.gmlKind.set(e.name, "enum");
 		}
+		
 		// globals:
 		for (g in prev.globalVarList) {
 			GmlAPI.gmlKind.remove(g.name);
@@ -64,6 +73,7 @@ class GmlSeekData {
 			GmlAPI.gmlKind.set(g.name, "globalvar");
 			GmlAPI.gmlComp.push(g.comp);
 		}
+		
 		// global fields (delta)
 		for (g in prev.globalFieldList) {
 			if (next.globalFieldMap[g.name] != null) continue;
@@ -79,6 +89,7 @@ class GmlSeekData {
 				GmlAPI.gmlGlobalFieldComp.push(g.comp);
 			}
 		}
+		
 		// macros:
 		for (m in prev.macroList) {
 			GmlAPI.gmlKind.remove(m.name);
@@ -88,8 +99,7 @@ class GmlSeekData {
 			GmlAPI.gmlKind.set(m.name, "macro");
 			GmlAPI.gmlComp.push(m.comp);
 		}
+		
 		// (locals don't have to be added/removed)
-		//
-		if (next.imports == null) next.imports = prev.imports;
 	}
 }

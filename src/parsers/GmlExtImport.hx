@@ -200,6 +200,10 @@ class GmlExtImport {
 		}
 		flush(q.pos);
 		var data = GmlSeekData.map[path];
+		if (data == null && version == live) {
+			data = new GmlSeekData();
+			GmlSeekData.map.set(path, data);
+		}
 		if (data != null) data.imports = imps;
 		return out;
 	}
