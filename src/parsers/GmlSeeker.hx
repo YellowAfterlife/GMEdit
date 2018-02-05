@@ -251,18 +251,31 @@ class GmlSeeker {
 						} else if (s == "=") {
 							// name = (balanced expression)[,;]
 							var depth = 0;
+							var exit = false;
 							while (q.loop) {
+								var ps0 = q.pos;
 								s = find(Par0 | Par1 | Sqb0 | Sqb1 | Cub0 | Cub1
-									| Comma | Semico);
-								if (s == null) break;
+									| Comma | Semico | Ident);
+								// EOF:
+								if (s == null) {
+									exit = true;
+									break;
+								}
 								switch (s) {
 									case "(", "[", "{": depth += 1;
 									case ")", "]", "}": depth -= 1;
 									case ",": if (depth == 0) break;
-									case ";": break;
+									case ";": exit = true; break;
+									default: { // ident
+										if (GmlAPI.kwFlow[s]) {
+											q.pos = ps0;
+											exit = true;
+											break;
+										}
+									};
 								}
 							}
-							if (s == ";" || s == null) break;
+							if (exit) break;
 						} else break;
 					}
 				};

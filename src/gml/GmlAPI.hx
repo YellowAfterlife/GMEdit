@@ -33,11 +33,14 @@ class GmlAPI {
 		"mod", "div", "not", "and", "or", "xor", "enum"
 	];
 	/** whether something is a "flow" (branching, etc. - delimiting) keyword */
-	public static var kwFlow:Dictionary<Bool> = {
-		var q = new Dictionary();
-		for (s in "if|then|else|begin|end|for|while|do|until|repeat|switch|case|default|break|continue|with|exit|return|enum|wait".split("|")) q.set(s, true);
-		return q;
-	};
+	public static var kwFlow:Dictionary<Bool> = Dictionary.fromKeys(
+		("if|then|else|begin|end"
+		+ "|for|while|do|until|repeat|with|break|continue"
+		+ "|switch|case|default"
+		+ "|exit|return|wait"
+		+ "|enum|var|globalvar"
+		).split("|"), true
+	);
 	//
 	public static var scopeResetRx = new js.RegExp('^(?:#define|#event)[ \t]+([\\w:]+)', '');
 	//
