@@ -30,10 +30,16 @@ class ChromeTabMenu {
 	}
 	public static function init() {
 		menu = new Menu();
-		menu.append(new MenuItem({ label: "Close", click: function() {
+		menu.append(new MenuItem({
+			label: "Close",
+			accelerator: "CommandOrControl+W",
+			click: function() {
 			target.querySelector(".chrome-tab-close").click();
 		} }));
-		menu.append(new MenuItem({ label: "Close Others", click: function() {
+		menu.append(new MenuItem({
+			label: "Close Others",
+			accelerator: "CommandOrControl+Shift+W",
+			click: function() {
 			for (tab in target.parentElement.querySelectorEls(".chrome-tab")) {
 				if (tab != target) tab.querySelector(".chrome-tab-close").click();
 			}

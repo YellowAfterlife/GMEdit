@@ -102,6 +102,7 @@ class Main {
 		GlobalSearch.init();
 		GlobalLookup.init();
 		Preferences.initEditor();
+		MainMenu.init();
 		//
 		aceEditor.session = WelcomePage.init(aceEditor);
 		KeyboardShortcuts.initEditor();

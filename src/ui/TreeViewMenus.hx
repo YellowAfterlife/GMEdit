@@ -77,7 +77,8 @@ class TreeViewMenus {
 			title: "Hello",
 			defaultPath: def,
 			filters: [
-				{ name: "Images", extensions: ["png"] }
+				new DialogFilter("Images", ["png"]),
+				new DialogFilter("All files", ["*"]),
 			],
 		});
 		if (files == null || files[0] == null) return;

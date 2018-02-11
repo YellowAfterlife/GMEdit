@@ -16,9 +16,17 @@ typedef DialogOpenOptions = {
 	?title:String,
 	?defaultPath:String,
 	?buttonLabel:String,
-	?filters:Array<{name:String,extensions:Array<String>}>,
+	?filters:Array<DialogFilter>,
 	?properties:Array<DialogOpenFeature>,
 };
+@:forward abstract DialogFilter(DialogFilterImpl)
+from DialogFilterImpl to DialogFilterImpl {
+	public inline function new(name:String, extensions:Array<String>) {
+		this = { name: name, extensions: extensions };
+	}
+}
+private typedef DialogFilterImpl = {name:String, extensions:Array<String>};
+
 @:build(tools.AutoEnum.build("nq"))
 @:enum abstract DialogOpenFeature(String) from String to String {
 	var openFile;
