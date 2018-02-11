@@ -239,6 +239,7 @@ class GmlFile {
 	}
 	//
 	public function savePost(?out:String) {
+		if (path == null) return;
 		syncTime();
 		changed = false;
 		session.getUndoManager().markClean();
@@ -274,53 +275,7 @@ class GmlFile {
 		}
 	}
 	public function checkChanges() {
-		if (path != null && kind != Multifile) try {
-			var time1 = FileSystem.statSync(path).mtimeMs;
-			if (time1 > time) {
-				time = time1;
-				var prev = code;
-				load();
-				if (prev == code) {
-					// OK!
-				} else if (!changed) {
-					session.setValue(code);
-				} else {
-					function printSize(b:Float) {
-						inline function toFixed(f:Float):String {
-							return untyped f.toFixed(n, 2);
-						}
-						if (b < 10000) return b + "B";
-						b /= 1024;
-						if (b < 10000) return toFixed(b) + "KB";
-						b /= 1024;
-						if (b < 10000) return toFixed(b) + "MB";
-						b /= 1024;
-						return toFixed(b) + "GB";
-					}
-					var bt = Dialog.showMessageBox({
-						title: "File conflict for " + name,
-						message: "Source file changed ("
-							+ printSize(code.length)
-							+ ") but you have unsaved changes ("
-							+ printSize(session.getValue().length)
-							+ "). What would you like to do?",
-						buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
-						cancelId: 1,
-					});
-					switch (bt) {
-						case 0: session.setValue(code);
-						case 1: { };
-						case 2: {
-							var name1 = name + " <copy>";
-							GmlFile.next = new GmlFile(name1, null, SearchResults, code);
-							ui.ChromeTabs.addTab(name1);
-						};
-					}
-				}
-			}
-		} catch (e:Dynamic) {
-			trace("Error checking: ", e);
-		}
+		GmlFileIO.checkChanges(this);
 	}
 	/** Executed when the code tab gains focus */
 	public function focus() {

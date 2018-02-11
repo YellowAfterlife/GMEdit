@@ -19,7 +19,7 @@ class GmlFileIO {
 			case GmlFileKind.Normal,
 				GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents,
 				GmlFileKind.GmxTimelineMoments, GmlFileKind.YyTimelineMoments
-			: return true;
+			: return file.path != null;
 			default: return false;
 		}
 	}
@@ -109,6 +109,7 @@ class GmlFileIO {
 			Main.window.alert(s);
 			return false;
 		}
+		GmlFileBackup.save(file, val);
 		//
 		if (canImport(file)) {
 			var val_preImport = val;
@@ -225,5 +226,57 @@ class GmlFileIO {
 		if (writeFile) FileSystem.writeFileSync(path, out);
 		file.savePost(out);
 		return true;
+	}
+	public static function checkChanges(file:GmlFile) {
+		var path = file.path;
+		if (file.path == null) return;
+		if (!FileSystem.existsSync(file.path)) return;
+		try {
+			var time1 = FileSystem.statSync(path).mtimeMs;
+			if (time1 > file.time) {
+				file.time = time1;
+				var prev = file.code;
+				file.load();
+				if (prev == file.code) {
+					// OK!
+				} else if (!file.changed) {
+					file.session.setValue(file.code);
+				} else {
+					function printSize(b:Float) {
+						inline function toFixed(f:Float):String {
+							return untyped f.toFixed(n, 2);
+						}
+						if (b < 10000) return b + "B";
+						b /= 1024;
+						if (b < 10000) return toFixed(b) + "KB";
+						b /= 1024;
+						if (b < 10000) return toFixed(b) + "MB";
+						b /= 1024;
+						return toFixed(b) + "GB";
+					}
+					var bt = electron.Dialog.showMessageBox({
+						title: "File conflict for " + file.name,
+						message: "Source file changed ("
+							+ printSize(file.code.length)
+							+ ") but you have unsaved changes ("
+							+ printSize(file.session.getValue().length)
+							+ "). What would you like to do?",
+						buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
+						cancelId: 1,
+					});
+					switch (bt) {
+						case 0: file.session.setValue(file.code);
+						case 1: { };
+						case 2: {
+							var name1 = file.name + " <copy>";
+							GmlFile.next = new GmlFile(name1, null, SearchResults, file.code);
+							ui.ChromeTabs.addTab(name1);
+						};
+					}
+				}
+			}
+		} catch (e:Dynamic) {
+			trace("Error checking: ", e);
+		}
 	}
 }

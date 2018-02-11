@@ -15,6 +15,13 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 		for (key in keys) out.set(key, val);
 		return out;
 	}
+	public static function fromObject<T>(obj:Dynamic):Dictionary<T> {
+		var out = new Dictionary<T>();
+		NativeObject.forField(obj, function(s) {
+			out.set(s, untyped obj[s]);
+		});
+		return out;
+	}
 	public inline function destroy():Void { }
 	//
 	public inline function exists(k:String):Bool {

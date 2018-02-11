@@ -66,16 +66,29 @@ class ChromeTabs {
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
 			if (gmlFile.changed) {
-				var bt = Dialog.showMessageBox({
-					buttons: ["Yes", "No", "Cancel"],
-					message: "Do you want to save the current changes?",
-					title: "Unsaved changes in " + gmlFile.name,
-					cancelId: 2,
-				});
-				switch (bt) {
-					case 0: gmlFile.save();
-					case 1: { };
-					default: e.preventDefault();
+				if (gmlFile.path != null) {
+					var bt = Dialog.showMessageBox({
+						buttons: ["Yes", "No", "Cancel"],
+						message: "Do you want to save the current changes?",
+						title: "Unsaved changes in " + gmlFile.name,
+						cancelId: 2,
+					});
+					switch (bt) {
+						case 0: gmlFile.save();
+						case 1: { };
+						default: e.preventDefault();
+					}
+				} else {
+					var bt = Dialog.showMessageBox({
+						buttons: ["Yes", "No"],
+						message: "Changes cannot be saved (not a file). Stay here?",
+						title: "Unsaved changes in " + gmlFile.name,
+						cancelId: 0,
+					});
+					switch (bt) {
+						case 1: { };
+						default: e.preventDefault();
+					}
 				}
 			}
 		});

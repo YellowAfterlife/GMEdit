@@ -48,4 +48,7 @@ class NativeString {
 	public static inline function escapeProp(s:String):String {
 		return replaceExt(s, escapeProp_1, "\\$1");
 	}
+	public static function insert(s:String, i:Int, sub:String) {
+		return s.substring(0, i) + sub + s.substring(i);
+	}
 }

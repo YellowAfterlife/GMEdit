@@ -1,5 +1,6 @@
 package ui;
 import electron.Menu;
+import gml.file.GmlFileBackup;
 import js.html.Element;
 import ui.ChromeTabs;
 using tools.HtmlTools;
@@ -13,11 +14,18 @@ class ChromeTabMenu {
 	public static var menu:Menu;
 	static var showInDirectoryItem:MenuItem;
 	static var showInTreeItem:MenuItem;
+	static var backupsItem:MenuItem;
 	public static function show(el:ChromeTab) {
 		target = el;
-		var hasFile = el.gmlFile.path != null;
+		var file = el.gmlFile;
+		var hasFile = file.path != null;
 		showInDirectoryItem.enabled = hasFile;
 		showInTreeItem.enabled = hasFile;
+		var bk = GmlFileBackup.updateMenu(file);
+		if (bk != null) {
+			backupsItem.enabled = bk;
+			backupsItem.visible = true;
+		} else backupsItem.visible = false;
 		menu.popupAsync();
 	}
 	public static function init() {
@@ -58,6 +66,13 @@ class ChromeTabMenu {
 				} while (par != null);
 				untyped item.scrollIntoViewIfNeeded();
 			}
+		}));
+		//
+		GmlFileBackup.init();
+		menu.append(backupsItem = new MenuItem({
+			label: "Previous versions",
+			submenu: GmlFileBackup.menu,
+			type: Sub,
 		}));
 	}
 }

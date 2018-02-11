@@ -139,6 +139,7 @@ class GmlSeeker {
 		} // find
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
 		var s:String, name:String, start:Int, doc:GmlFuncDoc;
+		var p:Int;
 		while (q.loop) {
 			s = find(Ident | Doc | Define | Macro);
 			if (s == null) {
@@ -245,7 +246,8 @@ class GmlSeeker {
 						name = find(Ident);
 						if (name == null) break;
 						locals.add(name);
-						s = find(SetOp | Comma | Semico);
+						p = q.pos;
+						s = find(SetOp | Comma | Semico | Ident);
 						if (s == ",") {
 							// OK, next
 						} else if (s == "=") {
@@ -253,7 +255,7 @@ class GmlSeeker {
 							var depth = 0;
 							var exit = false;
 							while (q.loop) {
-								var ps0 = q.pos;
+								p = q.pos;
 								s = find(Par0 | Par1 | Sqb0 | Sqb1 | Cub0 | Cub1
 									| Comma | Semico | Ident);
 								// EOF:
@@ -268,7 +270,7 @@ class GmlSeeker {
 									case ";": exit = true; break;
 									default: { // ident
 										if (GmlAPI.kwFlow[s]) {
-											q.pos = ps0;
+											q.pos = p;
 											exit = true;
 											break;
 										}
@@ -276,7 +278,11 @@ class GmlSeeker {
 								}
 							}
 							if (exit) break;
-						} else break;
+						} else {
+							// EOF or `var name something_else`
+							q.pos = p;
+							break;
+						}
 					}
 				};
 				case "enum": {

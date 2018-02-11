@@ -75,7 +75,7 @@ class KeyboardShortcuts {
 			};
 			case KeyboardEvent.DOM_VK_I: {
 				if (flags == 3) {
-					untyped require('remote').getCurrentWindow().toggleDevTools();
+					electron.Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
 				}
 			};
 			case KeyboardEvent.DOM_VK_R: {

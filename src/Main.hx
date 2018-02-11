@@ -106,7 +106,7 @@ class Main {
 		aceEditor.session = WelcomePage.init(aceEditor);
 		KeyboardShortcuts.initEditor();
 		ScrollMode.init();
-		ace.AceGmlCommands.init();
+		AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//
 		AceSessionData.init();
@@ -125,7 +125,7 @@ class Main {
 			trace("Couldn't expose hxClasses: " + x);
 		}
 		//
-		trace("hi!");
+		console.log("hello!");
 		return null;
 	}
 }

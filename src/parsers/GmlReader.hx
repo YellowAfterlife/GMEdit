@@ -96,7 +96,10 @@ class GmlReader extends StringReader {
 			};
 			case "@".code: {
 				if (version.hasLiteralStrings()) {
-					return skipString1(read());
+					var c = read();
+					if (c == '"'.code || c == "'".code) {
+						return skipString1(c);
+					} else return 0;
 				} else return 0;
 			};
 			default: return 0;

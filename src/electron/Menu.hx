@@ -9,6 +9,7 @@ import haxe.extern.EitherType;
 @:native("Electron_Menu") extern class Menu {
 	function new():Void;
 	//
+	function clear():Void;
 	function append(item:MenuItem):Void;
 	function insert(pos:Int, item:MenuItem):Void;
 	var items:Array<MenuItem>;

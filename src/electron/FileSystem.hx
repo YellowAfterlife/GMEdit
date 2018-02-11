@@ -28,6 +28,8 @@ import haxe.extern.EitherType;
 	//
 	public static function existsSync(path:String):Bool;
 	//
+	public static function renameSync(old:String, next:String):Void;
+	//
 	public static function unlinkSync(path:String):Void;
 	//
 	public static function mkdirSync(path:String, ?mode:Int):Void;

@@ -66,6 +66,9 @@
 	overflow-y: auto;
 }
 /* */
+.popout-window .plaintext {
+	white-space: pre-wrap;
+}
 .popout-window div:not(:first-child) {
 	margin-top: 4px;
 }
@@ -88,6 +91,9 @@
 .popout-window select {
 	width: 100%;
 	box-sizing: border-box;
+}
+.popout-window input[type="text"].error {
+	border-color: rgb(250, 50, 50);
 }
 /* */
 .ace_closeButton {

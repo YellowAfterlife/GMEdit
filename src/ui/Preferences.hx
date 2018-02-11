@@ -1,14 +1,19 @@
 package ui;
 import ace.AceWrap;
 import electron.FileSystem;
+import electron.Menu;
 import gml.GmlAPI;
 import haxe.Json;
 import haxe.io.Path;
 import js.html.Element;
+import js.html.InputElement;
+import js.html.KeyboardEvent;
 import js.html.MouseEvent;
 import js.html.Window;
 import Main.document;
 import tools.Dictionary;
+import tools.NativeObject;
+using tools.HtmlTools;
 
 /**
  * User preferences are managed here!
@@ -19,81 +24,127 @@ class Preferences {
 	public static var path:String = "user-preferences";
 	public static var current:PrefData;
 	public static var element:Element;
+	public static var subMenu:Element;
+	static function setMenu(el:Element) {
+		if (subMenu != el) {
+			if (subMenu != null) element.removeChild(subMenu);
+			subMenu = el;
+			element.appendChild(el);
+		}
+		return el;
+	}
 	//
-	private static function build(out:Element) {
-		function addRadios(legend:String, curr:String, names:Array<String>, fn:String->Void) {
-			var fs = document.createFieldSetElement();
-			var lg = document.createLegendElement();
-			lg.innerText = legend;
-			fs.appendChild(lg);
-			for (name in names) {
-				var rad = document.createInputElement();
-				rad.type = "radio";
-				rad.name = legend;
-				rad.value = name;
-				rad.addEventListener("change", function(_) {
-					fn(name);
-				});
-				if (curr == name) rad.checked = true;
-				var lb = document.createLabelElement();
-				lb.htmlFor = name;
-				lb.appendChild(document.createTextNode(name));
-				fs.appendChild(rad);
-				fs.appendChild(lb);
-				fs.appendChild(document.createBRElement());
-			}
-			out.appendChild(fs);
-		}
-		function addCheckbox(legend:String, curr:Bool, fn:Bool->Void):Element {
-			var ctr = document.createDivElement();
-			var cb = document.createInputElement();
-			cb.type = "checkbox";
-			cb.checked = curr;
-			cb.name = legend;
-			cb.addEventListener("change", function(_) {
-				fn(cb.checked);
+	private static function addRadios(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
+		var fs = document.createFieldSetElement();
+		var lg = document.createLegendElement();
+		lg.innerText = legend;
+		fs.appendChild(lg);
+		for (name in names) {
+			var rad = document.createInputElement();
+			rad.type = "radio";
+			rad.name = legend;
+			rad.value = name;
+			rad.addEventListener("change", function(_) {
+				fn(name);
 			});
-			ctr.appendChild(cb);
+			if (curr == name) rad.checked = true;
 			var lb = document.createLabelElement();
-			lb.htmlFor = legend;
-			lb.appendChild(document.createTextNode(legend));
-			ctr.appendChild(lb);
-			out.appendChild(ctr);
-			return ctr;
+			lb.htmlFor = name;
+			lb.appendChild(document.createTextNode(name));
+			fs.appendChild(rad);
+			fs.appendChild(lb);
+			fs.appendChild(document.createBRElement());
 		}
-		function addInput(legend:String, curr:String, fn:String->Void):Element {
-			var ctr = document.createDivElement();
-			//
-			var lb = document.createLabelElement();
-			lb.htmlFor = legend;
-			lb.appendChild(document.createTextNode(legend));
-			ctr.appendChild(lb);
-			//
-			var cb = document.createInputElement();
-			cb.type = "text";
-			cb.value = curr;
-			cb.name = legend;
-			cb.addEventListener("change", function(_) {
-				fn(cb.value);
-			});
-			ctr.appendChild(cb);
-			//
-			out.appendChild(ctr);
-			return ctr;
-		}
-		function addButton(text:String, fn:Void->Void):Element {
-			var ctr = document.createDivElement();
-			var el = document.createAnchorElement();
-			el.href = "#";
-			el.appendChild(document.createTextNode(text));
-			el.addEventListener("click", function(e:MouseEvent) {
-				e.preventDefault();
-				fn();
-			});
-			ctr.appendChild(el);
-			out.appendChild(ctr);
-			return ctr;
-		}
+		out.appendChild(fs);
+	}
+	private static function addCheckbox(out:Element, legend:String, curr:Bool, fn:Bool->Void):Element {
+		var ctr = document.createDivElement();
+		var cb = document.createInputElement();
+		cb.type = "checkbox";
+		cb.checked = curr;
+		cb.name = legend;
+		cb.addEventListener("change", function(_) {
+			fn(cb.checked);
+		});
+		ctr.appendChild(cb);
+		var lb = document.createLabelElement();
+		lb.htmlFor = legend;
+		lb.appendChild(document.createTextNode(legend));
+		ctr.appendChild(lb);
+		out.appendChild(ctr);
+		return ctr;
+	}
+	private static function addInput(out:Element, legend:String, curr:String, fn:String->Void):Element {
+		var ctr = document.createDivElement();
+		//
+		var lb = document.createLabelElement();
+		lb.htmlFor = legend;
+		lb.appendChild(document.createTextNode(legend));
+		ctr.appendChild(lb);
+		//
+		var cb = document.createInputElement();
+		cb.type = "text";
+		cb.value = curr;
+		cb.name = legend;
+		cb.addEventListener("change", function(_) {
+			fn(cb.value);
+		});
+		cb.addEventListener("keydown", function(e:KeyboardEvent) {
+			if (e.keyCode == KeyboardEvent.DOM_VK_RETURN) fn(cb.value);
+		});
+		ctr.appendChild(cb);
+		//
+		out.appendChild(ctr);
+		return ctr;
+	}
+	private static function addIntInput(out:Element, legend:String, val:Int, fn:Int->Void):Element {
+		var fd:InputElement = null;
+		var el = addInput(out, legend, val != null ? ("" + val) : "", function(s:String) {
+			var v = Std.parseInt(s);
+			if (v != null) {
+				fd.classList.remove("error");
+				fn(v);
+			} else fd.classList.add("error");
+		});
+		fd = el.querySelectorAuto("input");
+		return el;
+	}
+	private static function addFloatInput(out:Element, legend:String, val:Float, fn:Float->Void):Element {
+		var fd:InputElement = null;
+		var el = addInput(out, legend, val != null ? ("" + val) : "", function(s:String) {
+			var v = Std.parseFloat(s);
+			if (!Math.isNaN(v)) {
+				fd.classList.remove("error");
+				fn(v);
+			} else fd.classList.add("error");
+		});
+		fd = el.querySelectorAuto("input");
+		return el;
+	}
+	private static function addButton(out:Element, text:String, fn:Void->Void):Element {
+		var ctr = document.createDivElement();
+		var el = document.createAnchorElement();
+		el.href = "#";
+		el.appendChild(document.createTextNode(text));
+		el.addEventListener("click", function(e:MouseEvent) {
+			e.preventDefault();
+			fn();
+		});
+		ctr.appendChild(el);
+		out.appendChild(ctr);
+		return ctr;
+	}
+	private static function addText(out:Element, text:String):Element {
+		var ctr = document.createDivElement();
+		ctr.classList.add("plaintext");
+		ctr.appendChild(document.createTextNode(text));
+		out.appendChild(ctr);
+		return ctr;
+	}
+	//
+	private static var menuMain:Element;
+	private static function buildMain() {
+		var out = document.createElement("div");
 		//
 		var themeList = ["default"];
 		for (name in FileSystem.readdirSync(Main.relPath(Theme.path))) {
@@ -101,62 +152,101 @@ class Preferences {
 			var full = Path.join([Main.modulePath, Theme.path, name, "config.json"]);
 			if (FileSystem.existsSync(full)) themeList.push(name);
 		}
-		addRadios("Theme", current.theme, themeList, function(theme) {
+		addRadios(out, "Theme", current.theme, themeList, function(theme) {
 			current.theme = theme;
 			Theme.current = theme;
 			save();
 		});
 		//
-		addCheckbox("Use `#args` magic", current.argsMagic, function(z) {
+		addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
 			current.argsMagic = z;
 			save();
 		}).title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`."
 		+ "\nSee wiki for examples and more information.";
 		//
-		addCheckbox("Use `#import` magic", current.importMagic, function(z) {
+		addCheckbox(out, "Use `#import` magic", current.importMagic, function(z) {
 			current.importMagic = z;
 			save();
 		}).title = "Allows setting up rules for shortening names per-script."
 		+ "\nSee wiki for examples and more information.";
 		//
-		addCheckbox("Allow undo-ing `#import`", current.allowImportUndo, function(z) {
+		addCheckbox(out, "Allow undo-ing `#import`", current.allowImportUndo, function(z) {
 			current.allowImportUndo = z;
 			save();
 		}).title = "Allows undoing name changes made after changing #import rules."
 		+ "\nMakes it easier to break code, so be careful.";
 		//
-		addCheckbox("UK spelling", current.ukSpelling, function(z) {
+		addCheckbox(out, "UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
 			GmlAPI.ukSpelling = z;
 			GmlAPI.init();
 			save();
 		}).title = "Displays UK versions of function/variable names (e.g. draw_set_colour) in auto-completion when available.";
-		addCheckbox("Show asset thumbnails", current.assetThumbs, function(z) {
+		addCheckbox(out, "Show asset thumbnails", current.assetThumbs, function(z) {
 			current.assetThumbs = z;
 			save();
 			gml.Project.current.reload();
 		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
-		addInput("Keep file sessions for (days):",
-		"" + current.fileSessionTime, function(s) {
-			current.fileSessionTime = Std.parseFloat(s); save();
+		//
+		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
+			current.fileSessionTime = v; save();
 		});
-		addInput("Keep project sessions for (d):",
-		"" + current.projectSessionTime, function(s) {
-			current.fileSessionTime = Std.parseFloat(s); save();
+		//
+		addFloatInput(out, "Keep project sessions for (d):", current.projectSessionTime, function(v) {
+			current.projectSessionTime = v; save();
 		});
-		addButton("Code Editor Settings", function() {
+		//
+		addButton(out, "Backup settings", function() {
+			setMenu(menuBackups);
+		});
+		addButton(out, "Code Editor Settings", function() {
 			AceWrap.loadModule("ace/ext/settings_menu", function(module) {
 				module.init(Main.aceEditor);
 				untyped Main.aceEditor.showSettingsMenu();
 			});
 		});
+		//
+		addButton(out, "Close", function() {
+			element.style.display = "none";
+		});
+		//
+		return out;
+	}
+	//
+	private static var menuBackups:Element;
+	private static function buildBackups() {
+		var out = document.createElement("div");
+		//
+		addText(out, "Values are numbers of backup copies per file."
+			+ " See wiki for more information.");
+		addIntInput(out, "for GMS1 projects", current.backupCount.v1, function(n) {
+			current.backupCount.v1 = n; save();
+		});
+		addIntInput(out, "for GMS2 projects", current.backupCount.v2, function(n) {
+			current.backupCount.v2 = n; save();
+		});
+		addIntInput(out, "for other projects", current.backupCount.live, function(n) {
+			current.backupCount.live = n; save();
+		});
+		//
+		addButton(out, "Back", function() {
+			setMenu(menuMain);
+		});
+		//
+		return out;
+	}
+	//
+	private static function build() {
+		element = document.querySelector("#preferences-window");
+		menuMain = buildMain();
+		menuBackups = buildBackups();
 	}
 	public static function open() {
-		if (element == null) {
-			element = document.querySelector("#preferences-window");
-			build(element);
-		}
-		element.style.display = element.style.display != "" ? "" : "none";
+		if (element == null) build();
+		if (element.style.display == "none") {
+			setMenu(menuMain);
+			element.style.display = "";
+		} else element.style.display = "none";
 	}
 	public static function save() {
 		Main.window.localStorage.setItem(path, Json.stringify(current));
@@ -167,24 +257,64 @@ class Preferences {
 			var data = Main.window.localStorage.getItem(path);
 			pref = Json.parse(data);
 		} catch (_:Dynamic) { }
+		// default settings:
+		var def:PrefData = {
+			theme: "dark",
+			ukSpelling: false,
+			argsMagic: true,
+			importMagic: true,
+			allowImportUndo: false,
+			fileSessionTime: 7,
+			projectSessionTime: 14,
+			assetThumbs: true,
+			backupCount: { v1: 2, v2: 0, live: 0 },
+		};
+		// load/merge defaults:
+		var doSave = false;
 		if (pref == null) {
-			pref = { theme: "dark" };
-			save();
-		}
+			pref = def;
+			doSave = true;
+		} else NativeObject.forField(def, function(k) {
+			if (Reflect.field(pref, k) == null) {
+				Reflect.setField(pref, k, Reflect.field(def, k));
+				doSave = true;
+			}
+		});
+		if (doSave) save();
 		//
-		if (pref.argsMagic == null) pref.argsMagic = true;
-		if (pref.importMagic == null) pref.importMagic = true;
-		if (pref.fileSessionTime == null) pref.fileSessionTime = 7;
-		if (pref.projectSessionTime == null) pref.projectSessionTime = 14;
 		if (pref.theme != null) Theme.current = pref.theme;
-		if (pref.assetThumbs == null) pref.assetThumbs = true;
 		GmlAPI.ukSpelling = pref.ukSpelling;
 		//
 		current = pref;
 	}
 	public static function init() {
-		document.querySelector(".system-button.preferences")
-			.addEventListener("click", function(_) open());
+		var menu = new Menu();
+		menu.append(new MenuItem({
+			label: "Reload project",
+			accelerator: "CommandOrControl+R",
+			click: function() gml.Project.current.reload()
+		}));
+		menu.append(new MenuItem({
+			label: "Close project",
+			click: function() gml.Project.open("")
+		}));
+		menu.append(new MenuItem({ type: Sep }));
+		menu.append(new MenuItem({
+			label: "Preferences",
+			click: function() open()
+		}));
+		menu.append(new MenuItem({
+			label: "Dev tools",
+			accelerator: "CommandOrControl+Shift+I",
+			click: function() {
+				electron.Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+			}
+		}));
+		//
+		var btn = document.querySelector(".system-button.preferences");
+		btn.addEventListener("click", function(_) {
+			menu.popupAsync();
+		});
 		load();
 	}
 	public static function initEditor() {
@@ -213,12 +343,13 @@ class Preferences {
 	}
 }
 typedef PrefData = {
-	?theme:String,
-	?ukSpelling:Bool,
-	?fileSessionTime:Float,
-	?projectSessionTime:Float,
-	?argsMagic:Bool,
-	?importMagic:Bool,
-	?allowImportUndo:Bool,
-	?assetThumbs:Bool,
+	theme:String,
+	ukSpelling:Bool,
+	fileSessionTime:Float,
+	projectSessionTime:Float,
+	argsMagic:Bool,
+	importMagic:Bool,
+	allowImportUndo:Bool,
+	assetThumbs:Bool,
+	backupCount:{ v1:Int, v2:Int, live:Int },
 }
