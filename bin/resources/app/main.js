@@ -47,10 +47,6 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.on('ready', function () {
 	createWindow();
-	electron.globalShortcut.register('Ctrl+Shift+I', function(win) {
-		win = win || BrowserWindow.getFocusedWindow();
-		if (win) win.toggleDevTools();
-	});
 })
 
 // https://github.com/electron/electron/issues/4349
