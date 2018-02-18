@@ -142,7 +142,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_variable {
 	color: #58E55A;
 }
-#main .gml .ace_local {
+#main .gml .ace_local,
+#main .gml .ace_flowlabel {
 	color: #FFF899;
 }
 #main .gml .ace_keyword,

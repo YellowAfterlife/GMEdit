@@ -325,7 +325,7 @@ class GmlSeeker {
 	}
 	
 	static inline function finish(orig:String, out:GmlSeekData):Void {
-		GmlSeekData.apply(GmlSeekData.map[orig], out);
+		GmlSeekData.apply(orig, GmlSeekData.map[orig], out);
 		GmlSeekData.map.set(orig, out);
 		out.comp.autoSort();
 	}
@@ -418,7 +418,11 @@ class GmlSeeker {
 			case "yy": return runYyObject(orig, src);
 			case "gmx": return runGmxObject(orig, src);
 		}
+		var src_ncr = src;
+		src = GmlExtCoroutines.pre(src);
+		//
 		var out = new GmlSeekData();
+		out.hasCoroutines = src_ncr != src;
 		out.main = main;
 		var locals = new GmlLocals();
 		out.locals.set("", locals);

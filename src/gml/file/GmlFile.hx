@@ -291,9 +291,11 @@ class GmlFile {
 		if (data != null) {
 			GmlLocals.currentMap = data.locals;
 			GmlImports.currentMap = data.imports;
+			GmlExtCoroutines.update(data.hasCoroutines);
 		} else {
 			GmlLocals.currentMap = GmlLocals.defaultMap;
 			GmlImports.currentMap = null;
+			GmlExtCoroutines.update(false);
 		}
 		if (GmlImports.currentMap == null) {
 			GmlImports.currentMap = GmlImports.defaultMap;

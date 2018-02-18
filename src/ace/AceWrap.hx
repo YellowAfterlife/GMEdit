@@ -231,7 +231,8 @@ extern class AceBgTokenizer {
 }
 typedef AcePos = { column: Int, row:Int };
 typedef AceRange = { start: AcePos, end:AcePos };
-typedef AceToken = { type:String, value:String, ?index:Int, ?start:Int };
+typedef AceToken = { type:AceTokenType, value:String, ?index:Int, ?start:Int };
+typedef AceTokenType = String;
 typedef AceAnnotation = { row:Int, column:Int, type:String, text:String }
 extern class AceFold {
 	public var start:AcePos;

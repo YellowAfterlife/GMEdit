@@ -35,11 +35,12 @@ class GmlSeekData {
 	public var docList:Array<GmlFuncDoc> = [];
 	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	public var imports:Dictionary<GmlImports> = null;
+	public var hasCoroutines:Bool = false;
 	//
 	public function new() {
 		
 	}
-	public static function apply(prev:GmlSeekData, next:GmlSeekData) {
+	public static function apply(path:String, prev:GmlSeekData, next:GmlSeekData) {
 		if (prev == null) prev = blank;
 		if (next == null) next = blank;
 		
@@ -98,6 +99,18 @@ class GmlSeekData {
 		for (m in next.macroList) {
 			GmlAPI.gmlKind.set(m.name, "macro");
 			GmlAPI.gmlComp.push(m.comp);
+		}
+		
+		var file = gml.file.GmlFile.current;
+		if (file != null && file.path == path) {
+			var update = false;
+			if (prev.hasCoroutines != next.hasCoroutines) {
+				GmlExtCoroutines.update(next.hasCoroutines);
+				update = true;
+			}
+			if (update) {
+				Main.aceEditor.session.bgTokenizer.start(0);
+			}
 		}
 		
 		// (locals don't have to be added/removed)

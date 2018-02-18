@@ -2,6 +2,7 @@ package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
 import gml.*;
+import parsers.GmlExtCoroutines;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
 import js.RegExp;
@@ -37,7 +38,9 @@ using tools.NativeString;
 		inline function getGlobalType(name:String, fallback:String) {
 			return jsOr(GmlAPI.gmlKind[name],
 				jsOr(GmlAPI.extKind[name],
-					jsOr(GmlAPI.stdKind[name], fallback)
+					jsOr(GmlAPI.stdKind[name],
+						jsOr(parsers.GmlExtCoroutines.keywordMap[name], fallback)
+					)
 				)
 			);
 		}
@@ -267,6 +270,7 @@ using tools.NativeString;
 			rxRule(["preproc.import", "string.importpath"], ~/(#import\s+)("[^"]*"|'[^']*')/),
 			rxRule("preproc.import", ~/#import\b/),
 			rxRule("preproc.args", ~/#args\b/),
+			rxRule("preproc.gmcr", ~/#gmcr\b/),
 		]; //}
 		if (version == GmlVersion.live) rBase.unshift(rTpl);
 		if (version == GmlVersion.v2) { // regions
@@ -296,6 +300,11 @@ using tools.NativeString;
 			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxRule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
+			rxRule(function(goto, _, label) {
+				if (GmlExtCoroutines.enabled) {
+					return ["keyword", "text", "flowlabel"];
+				} else return [mtIdent(goto), "text", mtIdent(label)];
+			}, ~/(goto|label)(\s+)(\w+)/),
 			rPragma_call,
 			rIdentPair,
 			rIdentLocal,

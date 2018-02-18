@@ -37,7 +37,11 @@ class GmlFileIO {
 			case YyShader: file.code = "";
 			case Plain, GLSL, HLSL, JavaScript: file.code = src;
 			case SearchResults: file.code = data;
-			case Normal: file.code = GmlExtArgs.pre(src);
+			case Normal: {
+				src = GmlExtArgs.pre(src);
+				src = GmlExtCoroutines.pre(src);
+				file.code = src;
+			};
 			case Multifile: {
 				file.multidata = data;
 				out = ""; errors = "";
@@ -149,9 +153,9 @@ class GmlFileIO {
 			case Normal: {
 				out = val;
 				out = GmlExtArgs.post(out);
-				if (out == null) {
-					return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				}
+				if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
+				out = GmlExtCoroutines.post(out);
+				if (out == null) return error(GmlExtCoroutines.errorText);
 			};
 			case Multifile: {
 				out = val;

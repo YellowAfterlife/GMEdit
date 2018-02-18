@@ -263,6 +263,7 @@ class Preferences {
 			ukSpelling: false,
 			argsMagic: true,
 			importMagic: true,
+			coroutineMagic: true,
 			allowImportUndo: false,
 			fileSessionTime: 7,
 			projectSessionTime: 14,
@@ -323,6 +324,7 @@ typedef PrefData = {
 	argsMagic:Bool,
 	importMagic:Bool,
 	allowImportUndo:Bool,
+	coroutineMagic:Bool,
 	assetThumbs:Bool,
 	backupCount:{ v1:Int, v2:Int, live:Int },
 }

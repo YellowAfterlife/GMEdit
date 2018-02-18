@@ -6,3 +6,4 @@
 /art/*.png
 /*.lnk
 .DS_Store
+/bin/resources/app/misc/gmcr.js

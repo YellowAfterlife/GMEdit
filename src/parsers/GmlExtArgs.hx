@@ -30,7 +30,7 @@ class GmlExtArgs {
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
-		function flush(till:Int) {
+		inline function flush(till:Int) {
 			out += q.substring(start, till);
 		}
 		var rxOpt = GmlExtArgs.rxOpt;
