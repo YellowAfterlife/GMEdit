@@ -36,6 +36,7 @@ class Preferences {
 	//
 	private static function addRadios(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
 		var fs = document.createFieldSetElement();
+		fs.classList.add("radios");
 		var lg = document.createLegendElement();
 		lg.innerText = legend;
 		fs.appendChild(lg);
@@ -59,6 +60,7 @@ class Preferences {
 	}
 	private static function addCheckbox(out:Element, legend:String, curr:Bool, fn:Bool->Void):Element {
 		var ctr = document.createDivElement();
+		ctr.classList.add("checkbox");
 		var cb = document.createInputElement();
 		cb.type = "checkbox";
 		cb.checked = curr;
@@ -76,6 +78,7 @@ class Preferences {
 	}
 	private static function addInput(out:Element, legend:String, curr:String, fn:String->Void):Element {
 		var ctr = document.createDivElement();
+		ctr.classList.add("input");
 		//
 		var lb = document.createLabelElement();
 		lb.htmlFor = legend;
@@ -123,6 +126,7 @@ class Preferences {
 	}
 	private static function addButton(out:Element, text:String, fn:Void->Void):Element {
 		var ctr = document.createDivElement();
+		ctr.classList.add("button");
 		var el = document.createAnchorElement();
 		el.href = "#";
 		el.appendChild(document.createTextNode(text));
@@ -141,10 +145,25 @@ class Preferences {
 		out.appendChild(ctr);
 		return ctr;
 	}
+	private static function addWiki(to:Element, url:String) {
+		var lb = to.querySelector("label");
+		lb.appendChild(document.createTextNode(" ("));
+		var a = document.createAnchorElement();
+		a.href = url;
+		a.target = "_blank";
+		a.onclick = function(_) {
+			electron.Shell.openExternal(url);
+			return false;
+		};
+		a.appendChild(document.createTextNode("wiki"));
+		lb.appendChild(a);
+		lb.appendChild(document.createTextNode(")"));
+	}
 	//
 	private static var menuMain:Element;
 	private static function buildMain() {
 		var out = document.createElement("div");
+		var el:Element;
 		//
 		var themeList = ["default"];
 		for (name in FileSystem.readdirSync(Main.relPath(Theme.path))) {
@@ -158,23 +177,31 @@ class Preferences {
 			save();
 		});
 		//
-		addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
+		el = addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
 			current.argsMagic = z;
 			save();
-		}).title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`."
-		+ "\nSee wiki for examples and more information.";
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
+		el.title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`.";
 		//
-		addCheckbox(out, "Use `#import` magic", current.importMagic, function(z) {
+		el = addCheckbox(out, "Use `#import` magic", current.importMagic, function(z) {
 			current.importMagic = z;
 			save();
-		}).title = "Allows setting up rules for shortening names per-script."
-		+ "\nSee wiki for examples and more information.";
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23import-magic");
+		el.title = "Allows setting up rules for shortening names per-script.";
 		//
 		addCheckbox(out, "Allow undo-ing `#import`", current.allowImportUndo, function(z) {
 			current.allowImportUndo = z;
 			save();
 		}).title = "Allows undoing name changes made after changing #import rules."
-		+ "\nMakes it easier to break code, so be careful.";
+			+ "\nMakes it easier to break code, so be careful.";
+		//
+		el = addCheckbox(out, "Use coroutine magic", current.coroutineMagic, function(z) {
+			current.coroutineMagic = z;
+			save();
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-coroutine-magic");
 		//
 		addCheckbox(out, "UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
@@ -192,7 +219,7 @@ class Preferences {
 			current.fileSessionTime = v; save();
 		});
 		//
-		addFloatInput(out, "Keep project sessions for (d):", current.projectSessionTime, function(v) {
+		addFloatInput(out, "Keep project sessions for (days):", current.projectSessionTime, function(v) {
 			current.projectSessionTime = v; save();
 		});
 		//

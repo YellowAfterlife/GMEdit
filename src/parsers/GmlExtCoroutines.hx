@@ -120,12 +120,14 @@ class GmlExtCoroutines {
 		}
 		if (!found) return code;
 		flush(q.pos);
-		var proc:String->GmlExtCoroutinesProc = untyped window.gmcr_proc;
+		var proc:String->Dynamic->GmlExtCoroutinesProc = untyped window.gmcr_proc;
 		if (proc == null) {
 			errorText = "GMCR is not available. Did you copy it from pre-built binary or it's itch.io download?";
 			return null;
 		}
-		var pair = proc(out);
+		var pair = proc(out, {
+			version: version,
+		});
 		if (pair.code == null) {
 			errorText = "Coroutine compilation failed:\n" + pair.error;
 			return null;

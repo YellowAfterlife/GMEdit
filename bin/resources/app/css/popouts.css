@@ -62,8 +62,15 @@
 	right: 20px;
 	top: 40px;
 	bottom: 40px;
-	width: 200px;
+	width: 224px;
 	overflow-y: auto;
+}
+#preferences-window div.input label {
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	display: block;
+	width: 100%;
+	white-space: nowrap;
 }
 /* */
 .popout-window .plaintext {

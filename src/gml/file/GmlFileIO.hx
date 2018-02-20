@@ -38,8 +38,8 @@ class GmlFileIO {
 			case Plain, GLSL, HLSL, JavaScript: file.code = src;
 			case SearchResults: file.code = data;
 			case Normal: {
-				src = GmlExtArgs.pre(src);
 				src = GmlExtCoroutines.pre(src);
+				src = GmlExtArgs.pre(src);
 				file.code = src;
 			};
 			case Multifile: {
