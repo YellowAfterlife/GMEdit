@@ -36,6 +36,7 @@ class GmlParseAPI {
 			var name = rx.matched(2);
 			var args = rx.matched(3);
 			var flags:String = rx.matched(4);
+			if (NativeString.contains(flags, "&")) return;
 			var show = true;
 			var doc = GmlFuncDoc.parse(comp);
 			if (version == GmlVersion.v2) {
@@ -70,6 +71,7 @@ class GmlParseAPI {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var flags = rx.matched(4);
+			if (NativeString.contains(flags, "&")) return;
 			var kind:String;
 			if (flags.indexOf("#") >= 0) {
 				kind = "constant";
