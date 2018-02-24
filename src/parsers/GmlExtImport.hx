@@ -80,12 +80,9 @@ class GmlExtImport {
 			}
 		}
 	}
-	static function parseFile(imp:GmlImports, mt:Array<String>, found:Dictionary<Bool>) {
-		var rel = mt[1];
-		rel = rel.substring(1, rel.length - 1);
+	static function parseFile(imp:GmlImports, rel:String, found:Dictionary<Bool>) {
 		if (found[rel]) return true;
-		var dir = Path.join([Project.current.dir, "#import"]);
-		var full = Path.join([dir, rel]);
+		var full = Path.join([Project.current.dir, "#import", rel]);
 		if (!FileSystem.existsSync(full)) {
 			full += ".gml";
 			if (!FileSystem.existsSync(full)) return false;
@@ -102,7 +99,7 @@ class GmlExtImport {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
 						q.skipLine();
-						if (q.get(p + 2) == "/".code
+						if (q.get(p + 2) == "!".code
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
@@ -129,17 +126,22 @@ class GmlExtImport {
 		}
 		mt = rxImportFile.exec(txt);
 		if (mt != null) {
-			parseFile(imp, mt, found);
+			var rel = mt[1];
+			parseFile(imp, rel.substring(1, rel.length - 1), found);
 			return true;
 		}
 		return false;
 	}
 	public static function pre(code:String, path:String) {
-		if (!Preferences.current.importMagic || code.indexOf("//!#import") < 0) {
+		inline function cancel() {
 			var data = GmlSeekData.map[path];
 			if (data != null) data.imports = null;
 			return code;
 		}
+		if (!Preferences.current.importMagic) return cancel();
+		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
+		var globalExists = FileSystem.existsSync(globalPath);
+		if (code.indexOf("//!#import") < 0 && !globalExists) return cancel();
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
 		var out = "";
@@ -151,6 +153,7 @@ class GmlExtImport {
 		var imp = new GmlImports();
 		var imps = new Dictionary<GmlImports>();
 		var files = new Dictionary<Bool>();
+		if (globalExists) parseFile(imp, "global.gml", files);
 		imps.set("", imp);
 		//
 		while (q.loop) {
