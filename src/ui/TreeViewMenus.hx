@@ -22,6 +22,22 @@ class TreeViewMenus {
 	public static var dirMenu:Menu;
 	private static var items:TreeViewMenuItems;
 	//
+	public static function expandAll() {
+		var cl = target.classList;
+		if (!cl.contains("open")) cl.add("open");
+		for (el in target.querySelectorEls('.dir')) {
+			cl = el.classList;
+			if (!cl.contains("open")) cl.add("open");
+		}
+	}
+	public static function collapseAll() {
+		var cl = target.classList;
+		if (cl.contains("open")) cl.remove("open");
+		for (el in target.querySelectorEls('.dir')) {
+			cl = el.classList;
+			if (cl.contains("open")) cl.remove("open");
+		}
+	}
 	public static function openAll() {
 		var found = 0;
 		var els = target.querySelectorEls('.item');
@@ -36,7 +52,6 @@ class TreeViewMenus {
 			found += 1;
 		}
 	}
-	//
 	public static function openCombined() {
 		var items = [];
 		var error = "";
@@ -159,7 +174,7 @@ class TreeViewMenus {
 			return add(m, { label: label, click: click });
 		}
 		items = new TreeViewMenuItems();
-		//
+		//{
 		var iconMenu = new Menu();
 		addLink(iconMenu, "Change icon", function() {
 			changeIcon({ reset: false, open: false });
@@ -179,7 +194,8 @@ class TreeViewMenus {
 			electron.Shell.openItem(path);
 		});
 		var iconItem = new MenuItem({ label: "Custom icon", type: Sub, submenu: iconMenu });
-		//
+		//}
+		//{
 		itemMenu = new Menu();
 		items.shaderItems = [
 			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
@@ -191,21 +207,26 @@ class TreeViewMenus {
 		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
 		itemMenu.append(iconItem);
-		//
+		//}
+		//{
 		dirMenu = new Menu();
+		addLink(dirMenu, "Expand all", expandAll);
+		addLink(dirMenu, "Collapse all", collapseAll);
 		items.openAll = addLink(dirMenu, "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
 		dirMenu.append(iconItem);
-		//
+		//}
 	}
 }
 private class TreeViewMenuItems {
+	public var openAll:MenuItem;
+	public var openCombined:MenuItem;
+	//
 	public var changeOpenIcon:MenuItem;
 	public var resetOpenIcon:MenuItem;
 	public var openCustomCSS:MenuItem;
+	//
 	public var removeFromRecentProjects:MenuItem;
-	public var openAll:MenuItem;
-	public var openCombined:MenuItem;
 	public var shaderItems:Array<MenuItem>;
 	public function new() { }
 }
