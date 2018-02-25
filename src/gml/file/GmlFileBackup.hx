@@ -74,6 +74,7 @@ class GmlFileBackup {
 		}
 	}
 	static function load(name:String, path:String, kind:GmlFileKind) {
+		if (GmlFileKindTools.isGML(kind)) kind = Normal;
 		var file = new GmlFile(name, path, kind);
 		file.path = null; // prevent from saving a backup
 		GmlFile.openTab(file);
