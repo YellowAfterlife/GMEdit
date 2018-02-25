@@ -257,7 +257,9 @@ oop.inherits(FoldMode, BaseFoldMode);
 		var maxRow = session.getLength();
 		var startCol = line.length;
 		var startRow = row;
-		var re = /^(?:#define|#event|#section|#moment)\b/;
+		var re = /^#section\b/.test(line)
+			? /^(?:#define|#event|#section|#moment)\b/
+			: /^(?:#define|#event|#moment)\b/;
 		var last = line;
 		while (++row < maxRow) {
 			line = session.getLine(row);
