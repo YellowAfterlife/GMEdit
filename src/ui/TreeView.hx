@@ -58,11 +58,23 @@ class TreeView {
 	public static var thumbStyle:StyleElement;
 	public static var thumbSheet:CSSStyleSheet;
 	public static function setThumb(itemPath:String, thumbPath:String) {
+		resetThumb(itemPath);
 		thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
-			+ '"]:before { background-image: url("file:///' + thumbPath.escapeProp()
+			+ '"]::before { background-image: url("file:///' + thumbPath.escapeProp()
 			+ '"); }', thumbSheet.cssRules.length);
 		var item = find(true, { path: itemPath });
 		if (item != null) item.setAttribute(attrThumb, thumbPath);
+	}
+	public static function resetThumb(itemPath:String) {
+		var prefix = '.treeview .item[$attrPath="' + itemPath.escapeProp() + '"]::before {';
+		var sheet = thumbSheet;
+		var rules = sheet.cssRules;
+		var i = rules.length;
+		while (--i >= 0) {
+			if (rules[i].cssText.indexOf(prefix) >= 0) sheet.deleteRule(i);
+		}
+		var item = find(true, { path: itemPath });
+		if (item != null) item.removeAttribute(attrThumb);
 	}
 	//
 	static function handleDirClick(e:MouseEvent) {

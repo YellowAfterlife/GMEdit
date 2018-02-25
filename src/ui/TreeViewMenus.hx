@@ -1,4 +1,5 @@
 package ui;
+import electron.FileSystem;
 import electron.Menu;
 import electron.Dialog;
 import gml.Project;
@@ -19,8 +20,8 @@ class TreeViewMenus {
 	public static var target:Element;
 	public static var itemMenu:Menu;
 	public static var dirMenu:Menu;
+	private static var items:TreeViewMenuItems;
 	//
-	public static var openAllItem:MenuItem;
 	public static function openAll() {
 		var found = 0;
 		var els = target.querySelectorEls('.item');
@@ -36,7 +37,6 @@ class TreeViewMenus {
 		}
 	}
 	//
-	public static var openCombinedItem:MenuItem;
 	public static function openCombined() {
 		var items = [];
 		var error = "";
@@ -54,7 +54,6 @@ class TreeViewMenus {
 		}
 	}
 	//
-	static var shaderItems:Array<MenuItem>;
 	static function openYyShader(ext:String) {
 		var name = target.getAttribute(TreeView.attrIdent) + "." + ext;
 		var path = target.getAttribute(TreeView.attrPath);
@@ -62,38 +61,48 @@ class TreeViewMenus {
 		GmlFile.open(name, path);
 	}
 	//
-	static var removeFromRecentProjectsItem:MenuItem;
 	static function removeFromRecentProjects() {
 		RecentProjects.remove(target.getAttribute(TreeView.attrPath));
 		target.parentElement.removeChild(target);
 	}
 	//
-	static var changeIconItem:MenuItem;
-	public static function changeIcon() {
+	public static function changeIcon(opt:{reset:Bool,open:Bool}) {
 		var pj = Project.current;
 		var itemPath = target.getAttribute(TreeView.attrPath);
 		var def = pj.path != "" ? pj.dir : Path.directory(itemPath);
-		var files = Dialog.showOpenDialog({
-			title: "Hello",
-			defaultPath: def,
-			filters: [
-				new DialogFilter("Images", ["png"]),
-				new DialogFilter("All files", ["*"]),
-			],
-		});
-		if (files == null || files[0] == null) return;
-		var path = files[0];
+		//
+		var path:String;
+		if (!opt.reset) {
+			var files = Dialog.showOpenDialog({
+				title: "Hello",
+				defaultPath: def,
+				filters: [
+					new DialogFilter("Images", ["png"]),
+					new DialogFilter("All files", ["*"]),
+				],
+			});
+			if (files == null || files[0] == null) return;
+			path = files[0];
+		} else path = null;
+		//
 		if (pj.path != "") {
 			ProjectStyle.setItemThumb({
 				thumb: path,
 				ident: target.getAttribute(TreeView.attrIdent),
 				kind: target.getAttribute(TreeView.attrKind),
 				rel: target.getAttribute(TreeView.attrRel),
+				suffix: opt.open ? ".open" : "",
 			});
 		} else {
+			// project icons are stored in <project path>.png
 			var th = itemPath + ".png";
-			electron.FileSystem.copyFileSync(path, th);
-			TreeView.setThumb(itemPath, th + "?v=" + Date.now().getTime());
+			if (path != null) {
+				FileSystem.copyFileSync(path, th);
+				TreeView.setThumb(itemPath, th + "?v=" + Date.now().getTime());
+			} else {
+				if (FileSystem.existsSync(th)) FileSystem.unlinkSync(th);
+				TreeView.resetThumb(itemPath);
+			}
 		}
 	}
 	//
@@ -117,8 +126,11 @@ class TreeViewMenus {
 	//
 	public static function showDirMenu(el:Element) {
 		target = el;
-		openAllItem.enabled = el.querySelector('.item') != null;
-		openCombinedItem.enabled = el.querySelector('.item[${TreeView.attrKind}="script"]') != null;
+		items.openAll.enabled = el.querySelector('.item') != null;
+		items.openCombined.enabled = el.querySelector('.item[${TreeView.attrKind}="script"]') != null;
+		items.changeOpenIcon.visible = true;
+		items.resetOpenIcon.visible = true;
+		items.openCustomCSS.visible = true;
 		dirMenu.popupAsync();
 	}
 	public static function showItemMenu(el:Element) {
@@ -126,9 +138,14 @@ class TreeViewMenus {
 		target = el;
 		var kind = el.getAttribute(TreeView.attrKind);
 		z = gml.GmlAPI.version == v2 && kind == "shader";
-		shaderItems.forEach(function(q) q.visible = z);
-		removeFromRecentProjectsItem.visible = kind == "project";
-		//changeIconItem.visible = kind != "project";
+		items.shaderItems.forEach(function(q) q.visible = z);
+		//
+		z = kind == "project";
+		items.removeFromRecentProjects.visible = z;
+		items.openCustomCSS.visible = !z;
+		//
+		items.changeOpenIcon.visible = false;
+		items.resetOpenIcon.visible = false;
 		itemMenu.popupAsync();
 	}
 	//
@@ -141,25 +158,54 @@ class TreeViewMenus {
 		inline function addLink(m:Menu, label:String, click:Void->Void) {
 			return add(m, { label: label, click: click });
 		}
+		items = new TreeViewMenuItems();
 		//
-		changeIconItem = new MenuItem({ label: "Change icon", click: changeIcon });
+		var iconMenu = new Menu();
+		addLink(iconMenu, "Change icon", function() {
+			changeIcon({ reset: false, open: false });
+		});
+		addLink(iconMenu, "Reset icon", function() {
+			changeIcon({ reset: true, open: false });
+		});
+		items.changeOpenIcon = addLink(iconMenu, 'Change "open" icon', function() {
+			changeIcon({ reset: false, open: true });
+		});
+		items.resetOpenIcon = addLink(iconMenu, 'Reset "open" icon', function() {
+			changeIcon({ reset: true, open: true });
+		});
+		items.openCustomCSS = addLink(iconMenu, "Open custom CSS file", function() {
+			var path = ProjectStyle.getPath();
+			if (!FileSystem.existsSync(path)) FileSystem.writeFileSync(path, "");
+			electron.Shell.openItem(path);
+		});
+		var iconItem = new MenuItem({ label: "Custom icon", type: Sub, submenu: iconMenu });
 		//
 		itemMenu = new Menu();
-		shaderItems = [
+		items.shaderItems = [
 			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
 			addLink(itemMenu, "Open fragment shader", function() openYyShader("fsh")),
 		];
 		addLink(itemMenu, "Open here", openHere);
 		addLink(itemMenu, "Open externally", openExternal);
 		addLink(itemMenu, "Show in directory", openDirectory);
-		removeFromRecentProjectsItem =
+		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
-		itemMenu.append(changeIconItem);
+		itemMenu.append(iconItem);
 		//
 		dirMenu = new Menu();
-		openAllItem = addLink(dirMenu, "Open all", openAll);
-		openCombinedItem = addLink(dirMenu, "Open combined view", openCombined);
-		dirMenu.append(changeIconItem);
+		items.openAll = addLink(dirMenu, "Open all", openAll);
+		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
+		dirMenu.append(iconItem);
 		//
 	}
+}
+private class TreeViewMenuItems {
+	public var changeOpenIcon:MenuItem;
+	public var resetOpenIcon:MenuItem;
+	public var openCustomCSS:MenuItem;
+	public var removeFromRecentProjects:MenuItem;
+	public var openAll:MenuItem;
+	public var openCombined:MenuItem;
+	public var shaderItems:Array<MenuItem>;
+	public function new() { }
 }
