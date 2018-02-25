@@ -21,6 +21,9 @@ using tools.NativeString;
  */
 class GmlSeeker {
 	public static var itemsLeft:Int = 0;
+	public static function start() {
+		itemsLeft = 0;
+	}
 	public static function run(path:String, main:String) {
 		itemsLeft++;
 		FileSystem.readTextFile(path, function(err, text) {
@@ -34,6 +37,7 @@ class GmlSeeker {
 			GmlAPI.gmlComp.autoSort();
 			if (Project.current != null) {
 				Project.nameNode.innerText = Project.current.displayName;
+				if (Project.current.hasGMLive) ui.GMLive.updateAll();
 			}
 			Main.aceEditor.session.bgTokenizer.start(0);
 		}
@@ -322,6 +326,8 @@ class GmlSeeker {
 				};
 			} // switch (s)
 		} // while
+		//
+		if (Project.current.hasGMLive) out.hasGMLive = ui.GMLive.check(src);
 	}
 	
 	static inline function finish(orig:String, out:GmlSeekData):Void {

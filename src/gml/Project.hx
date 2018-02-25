@@ -42,11 +42,14 @@ class Project {
 	public var name:String;
 	/** no directory, no extension */
 	public var displayName:String;
+	/** project directory */
 	public var dir:String;
 	//
 	public var yyObjectNames:Dictionary<String>;
 	public var yyObjectGUIDs:Dictionary<YyGUID>;
 	public var yyResources:Dictionary<YyProjectResource>;
+	//
+	public var hasGMLive:Bool = false;
 	//
 	public function new(path:String) {
 		this.path = path;

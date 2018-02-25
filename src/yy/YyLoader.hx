@@ -33,6 +33,7 @@ class YyLoader {
 		}
 		if (rootView == null) return "Couldn't find a top-level view in project.";
 		//
+		GmlSeeker.start();
 		GmlAPI.gmlClear();
 		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
@@ -134,6 +135,9 @@ class YyLoader {
 										));
 									}
 								}
+							}
+							if (ext.name == "GMLive" && GmlAPI.extKind.exists("live_init")) {
+								project.hasGMLive = true;
 							}
 							out.appendChild(extEl);
 							continue;

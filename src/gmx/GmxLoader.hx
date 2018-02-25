@@ -25,6 +25,7 @@ class GmxLoader {
 		var dir = project.dir;
 		var gmx = FileSystem.readGmxFileSync(path);
 		//
+		GmlSeeker.start();
 		GmlAPI.gmlClear();
 		var rxName = rxAssetName;
 		TreeView.clear();
@@ -41,7 +42,7 @@ class GmxLoader {
 					default: full += '.$one.gmx';
 				}
 				GmlAPI.gmlLookupText += name + "\n";
-				parsers.GmlSeeker.run(full, _main);
+				GmlSeeker.run(full, _main);
 				var item = TreeView.makeItem(name, path, full, one);
 				out.appendChild(item);
 				if (one == "shader") {
@@ -120,6 +121,9 @@ class GmxLoader {
 						}
 					}
 				} // for (extFile)
+				if (extName == "GMLive" && GmlAPI.extKind.exists("live_init")) {
+					project.hasGMLive = true;
+				}
 				extParentDir.treeItems.appendChild(extDir);
 			}
 			tv.appendChild(extParentDir);

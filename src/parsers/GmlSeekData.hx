@@ -36,6 +36,7 @@ class GmlSeekData {
 	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	public var imports:Dictionary<GmlImports> = null;
 	public var hasCoroutines:Bool = false;
+	public var hasGMLive:Bool = false;
 	//
 	public function new() {
 		
@@ -100,6 +101,8 @@ class GmlSeekData {
 			GmlAPI.gmlKind.set(m.name, "macro");
 			GmlAPI.gmlComp.push(m.comp);
 		}
+		
+		if (prev.hasGMLive != next.hasGMLive) ui.GMLive.update(path, next.hasGMLive);
 		
 		var file = gml.file.GmlFile.current;
 		if (file != null && file.path == path) {

@@ -58,6 +58,31 @@ class Preferences {
 		}
 		out.appendChild(fs);
 	}
+	private static function addDropdown(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
+		var ctr = document.createDivElement();
+		ctr.classList.add("select");
+		//
+		var lb = document.createLabelElement();
+		lb.htmlFor = legend;
+		lb.appendChild(document.createTextNode(legend));
+		ctr.appendChild(lb);
+		//
+		var sel = document.createSelectElement();
+		for (name in names) {
+			var opt = document.createOptionElement();
+			opt.value = name;
+			opt.appendChild(document.createTextNode(name));
+			sel.appendChild(opt);
+		}
+		sel.addEventListener("change", function(_) {
+			fn(sel.value);
+		});
+		sel.value = curr;
+		ctr.appendChild(sel);
+		//
+		out.appendChild(ctr);
+		return ctr;
+	}
 	private static function addCheckbox(out:Element, legend:String, curr:Bool, fn:Bool->Void):Element {
 		var ctr = document.createDivElement();
 		ctr.classList.add("checkbox");
@@ -145,7 +170,7 @@ class Preferences {
 		out.appendChild(ctr);
 		return ctr;
 	}
-	private static function addWiki(to:Element, url:String) {
+	private static function addWiki(to:Element, url:String, label:String = "wiki") {
 		var lb = to.querySelector("label");
 		lb.appendChild(document.createTextNode(" ("));
 		var a = document.createAnchorElement();
@@ -155,7 +180,7 @@ class Preferences {
 			electron.Shell.openExternal(url);
 			return false;
 		};
-		a.appendChild(document.createTextNode("wiki"));
+		a.appendChild(document.createTextNode(label));
 		lb.appendChild(a);
 		lb.appendChild(document.createTextNode(")"));
 	}
@@ -202,6 +227,31 @@ class Preferences {
 			save();
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-coroutine-magic");
+		//
+		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
+		el = addDropdown(out, "Show GMLive badges", optGMLive[current.showGMLive], optGMLive, function(v) {
+			var v0:PrefGMLive = current.showGMLive;
+			var v1:PrefGMLive = optGMLive.indexOf(v);
+			if (v0 == v1) return;
+			current.showGMLive = v1;
+			if (gml.Project.current.hasGMLive) {
+				if (v0.isActive() != v1.isActive()) {
+					for (el in TreeView.element.querySelectorEls(".item")) {
+						if (v1.isActive()) {
+							var data = parsers.GmlSeekData.map[el.getAttribute(TreeView.attrPath)];
+							if (data != null) {
+								if (data.hasGMLive) {
+									el.setAttribute(GMLive.attr, "");
+								} else el.removeAttribute(GMLive.attr);
+							}
+						} else el.removeAttribute(GMLive.attr);
+					}
+				}
+				GMLive.updateAll(true);
+			}
+			save();
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GMLive-in-GMEdit");
 		//
 		addCheckbox(out, "UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
@@ -295,6 +345,7 @@ class Preferences {
 			fileSessionTime: 7,
 			projectSessionTime: 14,
 			assetThumbs: true,
+			showGMLive: Everywhere,
 			backupCount: { v1: 2, v2: 0, live: 0 },
 		};
 		// load/merge defaults:
@@ -353,5 +404,14 @@ typedef PrefData = {
 	allowImportUndo:Bool,
 	coroutineMagic:Bool,
 	assetThumbs:Bool,
+	showGMLive:PrefGMLive,
 	backupCount:{ v1:Int, v2:Int, live:Int },
+}
+@:enum abstract PrefGMLive(Int) from Int to Int {
+	var Nowhere = 0;
+	var ItemsOnly = 1;
+	var Everywhere = 2;
+	public inline function isActive():Bool {
+		return this > 0;
+	}
 }

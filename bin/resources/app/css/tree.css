@@ -16,7 +16,7 @@
 /*.treeview .items > div {
 	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAACAQMAAABWsa/UAAAAA1BMVEXz8/ML3eGLAAAACklEQVQI12MAAwAABgAB6AoqpAAAAABJRU5ErkJggg==') 0px 9px no-repeat;
 }*/
-.treeview .dir .header,
+.treeview .dir > .header,
 .treeview .item {
 	display: block;
 	outline: none;
@@ -28,6 +28,20 @@
 	padding-bottom: 1px;
 	cursor: pointer;
 	white-space: nowrap;
+	position: relative;
+}
+.treeview .dir[data-gmlive] > .header:after,
+.treeview .item[data-gmlive]:after {
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #FF7C3C;
+	border: 1px solid rgba(0, 0, 0, 0.7);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+	top: 11px;
+	left: 14px;
 }
 .treeview .dir > .header:before,
 .treeview .item:before {
