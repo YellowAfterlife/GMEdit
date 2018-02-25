@@ -2,12 +2,23 @@ package gml.file;
 import haxe.io.Path;
 import yy.*;
 import electron.*;
+import gml.file.GmlFileKind.*;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 class GmlFileKindTools {
+	public static function isGML(kind:GmlFileKind) {
+		switch (kind) {
+			case Normal,
+				GmxObjectEvents, YyObjectEvents,
+				GmxProjectMacros, GmxConfigMacros,
+				GmxTimelineMoments, YyTimelineMoments
+			: return true;
+			default: return false;
+		}
+	}
 	public static function detect(path:String):{kind:GmlFileKind, data:Null<Dynamic>} {
 		var ext = Path.extension(path).toLowerCase();
 		var data:Dynamic = null;
