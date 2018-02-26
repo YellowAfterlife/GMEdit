@@ -39,7 +39,10 @@ function formatGML(tokenInput, options) {
     token.value = token.type.indexOf('comment') !== -1 ? token.value : token.value.trim();
     if (token.value.length !== 0) fixedInput.push(token);
   });
-  tokenInput = fixedInput;
+	tokenInput = fixedInput;
+	
+	let nextReadNewLine = false;
+	let resume = false;
 
   // Loop through each token
   tokenInput.forEach((token, index) => {
@@ -55,10 +58,30 @@ function formatGML(tokenInput, options) {
     let previousToken = null;
     if (index - 1 > 0) {
       previousToken = tokenInput[index - 1];
-    }
+		}
 
     // Handle each token on a type basis
     switch (token.type) {
+			case 'importfrom':
+			case 'preproc.import':
+				output += token.value + ' ';
+				break;
+			case 'importas':
+				output += token.value + '\n';
+				break;
+			case 'preproc.event':
+				if (index !== 0) output += '\n';
+				output += token.value + ' ';
+				break;
+			case 'eventname':
+				output += token.value;
+				if (nextToken.value !== ':') {
+					output += '\n';
+				}
+				break;
+			case 'eventkeyname':
+				output += token.value;
+				break;
       case 'comment.doc.line':
         output += token.value;
         break;
@@ -67,21 +90,25 @@ function formatGML(tokenInput, options) {
       case 'comment.line':
         output += token.value + '\n' + currentIndentation;
         break;
-      case 'keyword':
-        if (previousToken !== null && previousToken.type.indexOf('comment') === -1 && previousToken.type !== 'keyword' && token.value !== 'then' && token.value !== 'else') {
-          output += '\n' + currentIndentation;
-        }
-
-        if (token.value === 'then' || token.value === 'else') {
-          if (token.value === 'else' && previousToken !== null && previousToken.type === 'curly.paren.rparen') {
-            output = output.substring(0, output.length - 1);
-          }
-
-          output += ' ';
-        }
-
-        output += `${token.value} `;
-        if (token.value === 'for') inFor = true;
+			case 'keyword':
+				if (token.value === 'in') {
+					output += token.value + ' ';
+				} else {
+					if (previousToken !== null && previousToken.type.indexOf('comment') === -1 && previousToken.type !== 'keyword' && token.value !== 'then' && token.value !== 'else') {
+						output += '\n' + currentIndentation;
+					}
+	
+					if (token.value === 'then' || token.value === 'else') {
+						if (token.value === 'else' && previousToken !== null && previousToken.type === 'curly.paren.rparen') {
+							output = output.substring(0, output.length - 1);
+						}
+	
+						output += ' ';
+					}
+	
+					output += `${token.value} `;
+					if (token.value === 'for') inFor = true;
+				}
         break;
       case 'operator':
       case 'set.operator':
@@ -96,8 +123,13 @@ function formatGML(tokenInput, options) {
         }
 
         break;
-      case 'punctuation.operator':
-        output += readPuncOperator(token.value);
+			case 'punctuation.operator':
+				if (previousToken.type === 'eventname') {
+					output += token.value;
+					nextReadNewLine = true;
+				} else {
+					output += readPuncOperator(token.value);
+				}
         break;
       case 'curly.paren.lparen':
         inFor = false;
@@ -128,7 +160,15 @@ function formatGML(tokenInput, options) {
         output += token.value;
         if (token.value === '|') output += ' ';
         break;
-    }
+		}
+
+		if (resume) output += '\n';
+		resume = false;
+
+		if (nextReadNewLine) {
+			resume = true;
+			nextReadNewLine = false;
+		}
   });
 
   /**
