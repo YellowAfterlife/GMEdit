@@ -11,6 +11,7 @@ import js.html.KeyboardEvent;
 import js.html.MouseEvent;
 import js.html.Window;
 import Main.document;
+import Main.console;
 import tools.Dictionary;
 import tools.NativeObject;
 using tools.HtmlTools;
@@ -206,8 +207,18 @@ class Preferences {
 			current.argsMagic = z;
 			save();
 		});
-		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
 		el.title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`.";
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
+		//
+		var noAutoArgs = "Don't auto-generate";
+		el = addDropdown(out, "GMS2 JSDoc format for #args",
+			current.argsFormat != null ? current.argsFormat : noAutoArgs,
+			[noAutoArgs, "@arg", "@param", "@argument"],
+			function(v) {
+				if (v == noAutoArgs) v = null;
+				current.argsFormat = v;
+				save();
+			});
 		//
 		el = addCheckbox(out, "Use `#import` magic", current.importMagic, function(z) {
 			current.importMagic = z;
@@ -326,19 +337,29 @@ class Preferences {
 		} else element.style.display = "none";
 	}
 	public static function save() {
-		Main.window.localStorage.setItem(path, Json.stringify(current));
+		var data = Json.stringify(current);
+		if (data == null) {
+			console.error("Couldn't save preferences", current);
+		} else {
+			Main.window.localStorage.setItem(path, data);
+		}
 	}
 	public static function load() {
 		var pref:PrefData = null;
+		var prefData:String = null;
 		try {
-			var data = Main.window.localStorage.getItem(path);
-			pref = Json.parse(data);
-		} catch (_:Dynamic) { }
+			prefData = Main.window.localStorage.getItem(path);
+			pref = Json.parse(prefData);
+		} catch (e:Dynamic) {
+			console.error("Error loading preferences: ", e);
+			console.error("Source data:", prefData);
+		}
 		// default settings:
 		var def:PrefData = {
 			theme: "dark",
 			ukSpelling: false,
 			argsMagic: true,
+			argsFormat: "@param",
 			importMagic: true,
 			coroutineMagic: true,
 			allowImportUndo: false,
@@ -359,12 +380,11 @@ class Preferences {
 				doSave = true;
 			}
 		});
+		current = pref;
 		if (doSave) save();
 		//
 		if (pref.theme != null) Theme.current = pref.theme;
 		GmlAPI.ukSpelling = pref.ukSpelling;
-		//
-		current = pref;
 	}
 	public static function init() {
 		load();
@@ -374,7 +394,9 @@ class Preferences {
 		try {
 			var text = Main.window.localStorage.getItem("aceOptions");
 			if (text != null) Main.aceEditor.setOptions(Json.parse(text));
-		} catch (_:Dynamic) { };
+		} catch (e:Dynamic) {
+			console.error("Error loading Ace options: " + e);
+		};
 		// flush Ace options on changes (usually only via Ctrl+,):
 		var editor = Main.aceEditor;
 		var origSetOption = editor.setOption;
@@ -400,6 +422,7 @@ typedef PrefData = {
 	fileSessionTime:Float,
 	projectSessionTime:Float,
 	argsMagic:Bool,
+	argsFormat:String,
 	importMagic:Bool,
 	allowImportUndo:Bool,
 	coroutineMagic:Bool,
