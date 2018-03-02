@@ -58,7 +58,7 @@ class AceGotoLine {
         });
 		//
 		var HashHandler = AceWrap.require("ace/keyboard/hash_handler").HashHandler;
-		keyHandler = AceMacro.jsNew(HashHandler);
+		keyHandler = js.Syntax.construct(HashHandler);
 		keyHandler.bindKeys({
 			"Esc": function(q:AceGotoLine) {
 				window.setTimeout(function() q.hide());

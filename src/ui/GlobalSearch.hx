@@ -76,7 +76,7 @@ using tools.HtmlTools;
 		var filterFn:Function = opt.findFilter;
 		var ctxFilter = opt.headerFilter;
 		var isRepl = repl != null;
-		var isReplFn = untyped __typeof__(repl) == "function";
+		var isReplFn = js.Syntax.typeof(repl) == "function";
 		var isPrev = opt.previewReplace;
 		var saveData = new GlobalSeachData(opt);
 		var saveItems = saveData.list;

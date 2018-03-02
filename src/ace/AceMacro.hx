@@ -33,9 +33,6 @@ class AceMacro {
 		return null;
 		#end
 	}
-	public static macro function jsNew(args:Array<Expr>) {
-		return { expr: ECall(macro untyped __new__, args), pos: Context.currentPos() };
-	}
 	public static inline function jsOr<T>(a:T, b:T):T {
 		return untyped (a || b);
 	}
