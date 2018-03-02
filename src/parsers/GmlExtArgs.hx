@@ -3,6 +3,7 @@ import js.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.NativeString;
+import tools.NativeArray;
 import ui.Preferences;
 import gml.GmlAPI;
 
@@ -12,6 +13,8 @@ import gml.GmlAPI;
  */
 class GmlExtArgs {
 	public static var errorText:String;
+	public static var argNames:Array<String> = [];
+	public static var argTexts:Array<String> = [];
 	private static inline var rsOpt0 = '\\s*argument_count\\s*>\\s*(\\d+)\\s*';
 	private static inline var rsOpt1 = '\\s*argument\\s*\\[\\s*(\\d+)\\s*\\]\\s*';
 	private static var rxOpt = new RegExp("^var\\s+(\\w+)\\s*(?:"
@@ -22,6 +25,7 @@ class GmlExtArgs {
 		+ '=$rsOpt0\\?\\s*$rsOpt1\\:'
 	+ ')\\s*([^;]+);', "g");
 	private static var rxHasOpt = new RegExp('(?:\\?|=|,\\s*$)');
+	private static var rxHasTail = new RegExp(',\\s*$');
 	private static var rxNotMagic = new RegExp('var\\s+\\w+\\s*=\\s*'
 		+ 'argument(?:\\s*\\[\\s*\\d+\\s*\\]|\\d+)', 'g');
 	public static function pre(code:String):String {
@@ -183,7 +187,9 @@ class GmlExtArgs {
 	}
 	public static function post(code:String):Null<String> {
 		var version = GmlAPI.version;
-		if (!Preferences.current.argsMagic) return code;
+		NativeArray.clear(argNames);
+		NativeArray.clear(argTexts);
+		if (!Preferences.current.argsMagic || code.indexOf("#args") < 0) return code;
 		var q = new GmlReader(code);
 		var row = 0;
 		var out = "";
@@ -201,25 +207,29 @@ class GmlExtArgs {
 			//
 			var p = q.pos;
 			q.skipLine();
-			var hasOpt = rxHasOpt.test(q.substring(p, q.pos));
+			var line = q.substring(p, q.pos);
+			var hasTail = rxHasTail.test(line);
+			var hasOpt = hasTail || rxHasOpt.test(line);
 			q.pos = p;
 			//
 			while (q.loop) {
 				q.skipSpaces0();
 				//
 				var val:String, set:String = " = ";
+				var docName = "";
+				var docText = "";
 				if (q.peek() == "?".code) {
 					q.skip();
 					q.skipSpaces0();
 					val = "undefined";
-				} else {
-					val = null;
-				}
+					docName += "?";
+				} else val = null;
 				//
 				p = q.pos;
 				q.skipIdent1();
 				var name = q.substring(p, q.pos);
 				if (name == "") return error("Expected an argument name");
+				docName += name;
 				//
 				p = q.pos;
 				q.skipSpaces0();
@@ -254,6 +264,7 @@ class GmlExtArgs {
 				}
 				//
 				if (val != null) {
+					docText = "= " + val;
 					if (reqDone == false) {
 						reqDone = true;
 						out += ";\r\n";
@@ -273,6 +284,8 @@ class GmlExtArgs {
 					} else if (found > 0) out += ", ";
 					out += '$name = argument' + (hasOpt ? '[$found]' : "" + found);
 				}
+				argNames.push(docName);
+				argTexts.push(docText);
 				found += 1;
 				q.skipSpaces0();
 				if (q.loop) switch (q.peek()) {
@@ -286,6 +299,10 @@ class GmlExtArgs {
 					case "\r".code, "\n".code: q.skipLineEnd(); break;
 					default: return error('Expected a comma or end of line after $name');
 				}
+			}
+			if (hasTail) {
+				argNames.push("...");
+				argTexts.push("");
 			}
 			if (found > 0 && reqDone == false) out += ";\r\n";
 			return false;

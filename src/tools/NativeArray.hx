@@ -12,6 +12,9 @@ class NativeArray {
 		untyped arr.length = 0;
 		untyped arr.length = newSize;
 	}
+	public static inline function resize<T>(arr:Array<T>, newSize:Int):Void {
+		untyped arr.length = newSize;
+	}
 	public static inline function forEach<T>(arr:Array<T>, fn:T->Void):Void {
 		untyped arr.forEach(fn);
 	}

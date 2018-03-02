@@ -218,7 +218,10 @@ extern class AceSelection {
 	public var gmlFile:gml.file.GmlFile;
 }
 extern class AceDocument {
-	public function setValue(s:String):Void;
+	function setValue(s:String):Void;
+	function replace(range:AceRange, text:String):Void;
+	function remove(range:AceRange):Void;
+	function insertMergedLines(pos:AcePos, lines:Array<String>):Void;
 }
 extern class AceBgTokenizer {
 	public function start(row:Int):Void;
@@ -287,6 +290,8 @@ extern class AceMarker { }
 @:native("AceTokenIterator") extern class AceTokenIterator {
 	function new(session:AceSession, row:Int, col:Int);
 	function getCurrentToken():AceToken;
+	function getCurrentTokenRange():AceRange;
+	function getCurrentTokenPosition():AcePos;
 	function stepBackward():AceToken;
 	function stepForward():AceToken;
 }
