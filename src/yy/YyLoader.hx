@@ -80,7 +80,9 @@ class YyLoader {
 						"GMObject", "GMRoom": {
 							var atype = type.substring(2).toLowerCase();
 							GmlAPI.gmlKind.set(name, "asset." + atype);
-							comp.push(new AceAutoCompleteItem(name, atype));
+							var next = new AceAutoCompleteItem(name, atype);
+							comp.push(next);
+							GmlAPI.gmlAssetComp.set(name, next);
 						};
 					}
 					if (out == null) continue;

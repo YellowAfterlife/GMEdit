@@ -43,6 +43,11 @@ class GmlSeeker {
 		}
 	}
 	
+	private static var jsDoc_full = new RegExp("^///\\s+"
+		+ "(?:@desc(?:ription)?\\s+)?"
+		+ "\\w+(\\(.+)");
+	private static var jsDoc_param = new RegExp("^///\\s+@(?:arg|param|argument)"
+		+ "\\s+(\\S+(?:\\s+=.+)?)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
 	private static function parseConst(s:String):Null<Int> {
@@ -150,28 +155,52 @@ class GmlSeeker {
 				//
 			} else if (s.fastCodeAt(0) == "/".code) {
 				if (main != null) {
-					if (s.indexOf("(") >= 0) {
-						s = s.substring(3).trimLeft();
-						if (s.startsWith("@description")) {
-							s = s.substring(12).trimLeft();
-						}
-						if (!out.docMap.exists(main)) {
-							doc = GmlFuncDoc.parse(s);
-							out.docList.push(doc);
-							out.docMap.set(main, doc);
-							if (!GmlAPI.gmlDoc.exists(main)) {
-								GmlAPI.gmlDoc.set(main, doc);
+					var check = true, mt;
+					if (v.hasJSDoc()) {
+						mt = jsDoc_param.exec(s);
+						if (mt != null) {
+							doc = out.docMap[main];
+							if (doc == null) {
+								doc = GmlFuncDoc.parse(main + "()");
+								doc.acc = true;
+								out.docList.push(doc);
+								out.docMap.set(main, doc);
+								if (!GmlAPI.gmlDoc.exists(main)) {
+									GmlAPI.gmlDoc.set(main, doc);
+								}
 							}
-							if (mainComp != null && mainComp.doc == null) {
-								mainComp.doc = s;
+							if (doc.acc) {
+								doc.args.push(mt[1]);
+								if (mainComp != null) {
+									mainComp.doc = doc.getAcText();
+								}
 							}
+							check = false;
 						}
-					} else if (v == GmlVersion.live) {
-						s = s.substring(3).trimLeft();
-						doc = out.docMap[main];
-						if (doc == null) {
-							out.docMap.set(main, GmlFuncDoc.parse(main + "(...) " + s));
-						} else doc.post += " " + s;
+					}
+					if (check) {
+						mt = jsDoc_full.exec(s);
+						if (mt != null) {
+							if (!out.docMap.exists(main)) {
+								doc = GmlFuncDoc.parse(main + mt[1]);
+								out.docList.push(doc);
+								out.docMap.set(main, doc);
+								if (!GmlAPI.gmlDoc.exists(main)) {
+									GmlAPI.gmlDoc.set(main, doc);
+								}
+								if (mainComp != null && mainComp.doc == null) {
+									mainComp.doc = s;
+								}
+							}
+							check = false;
+						} else if (v == GmlVersion.live) {
+							// `#define func(a, b)\n/// does things` -> `func(a, b) does things`
+							s = s.substring(3).trimLeft();
+							doc = out.docMap[main];
+							if (doc == null) {
+								out.docMap.set(main, GmlFuncDoc.parse(main + "(...) " + s));
+							} else doc.post += " " + s;
+						}
 					}
 				}
 			} else switch (s) {

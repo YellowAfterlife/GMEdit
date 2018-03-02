@@ -33,6 +33,9 @@ package gml;
 	public inline function hasTernaryOperator() {
 		return this != v1;
 	}
+	public inline function hasJSDoc() {
+		return this == v2;
+	}
 	
 	public function getName() {
 		return null;
