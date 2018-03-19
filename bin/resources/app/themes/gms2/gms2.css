@@ -90,6 +90,8 @@
 	padding: 0 1em;
 	padding-top: 40px;
 	width: 248px;
+	user-select: none;
+	cursor: default;
 }
 
 #preferences-window:after {
@@ -128,6 +130,7 @@
 
 #preferences-window input[type="checkbox"], #preferences-window input[type="radio"] {
 	cursor: pointer;
+	margin-right: 0.5em;
 }
 
 #preferences-window input[type="checkbox"]:checked, #preferences-window input[type="radio"]:checked {
@@ -141,4 +144,23 @@
 
 .popout-window a:hover {
 	text-decoration: underline;
+}
+
+#preferences-window .checkbox, #preferences-window label {
+	cursor: pointer;
+}
+
+#preferences-window label {
+	display: flex;
+	align-items: center;
+}
+
+.popout-window fieldset {
+	padding: 0.3em;
+	padding-left: 0.5em;
+	padding-bottom: 0.45em;
+}
+
+.popout-window fieldset br {
+	display: none;
 }
