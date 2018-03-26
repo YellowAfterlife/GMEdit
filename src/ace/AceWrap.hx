@@ -294,4 +294,7 @@ extern class AceMarker { }
 	function getCurrentTokenPosition():AcePos;
 	function stepBackward():AceToken;
 	function stepForward():AceToken;
+	inline function getCurrentTokenRow():Int {
+		return getCurrentTokenPosition().row;
+	}
 }

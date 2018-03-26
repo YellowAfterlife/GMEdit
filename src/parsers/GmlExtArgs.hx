@@ -2,6 +2,7 @@ package parsers;
 import js.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
+import tools.Dictionary;
 import tools.NativeString;
 import tools.NativeArray;
 import ui.Preferences;
@@ -13,8 +14,9 @@ import gml.GmlAPI;
  */
 class GmlExtArgs {
 	public static var errorText:String;
-	public static var argNames:Array<String> = [];
-	public static var argTexts:Array<String> = [];
+	
+	/** subscript ("" for top) -> argument data; null on error */
+	public static var argData:Dictionary<GmlExtArgData>;
 	private static inline var rsOpt0 = '\\s*argument_count\\s*>\\s*(\\d+)\\s*';
 	private static inline var rsOpt1 = '\\s*argument\\s*\\[\\s*(\\d+)\\s*\\]\\s*';
 	private static var rxOpt = new RegExp("^var\\s+(\\w+)\\s*(?:"
@@ -140,10 +142,17 @@ class GmlExtArgs {
 			}
 			if (req == found && argv) args += ",";
 			//
-			rxNotMagic.lastIndex = q.pos;
-			if (rxNotMagic.test(q.source)) {
-				//q.pos = proc_start;
-				return null;
+			{
+				var trailEnd = code.indexOf("\n#define", q.pos);
+				var trailCode:String;
+				if (trailEnd >= 0) {
+					trailCode = code.substring(q.pos, trailEnd);
+				} else trailCode = code.substring(q.pos);
+				rxNotMagic.lastIndex = 0;
+				if (rxNotMagic.test(trailCode)) {
+					//q.pos = proc_start;
+					return null;
+				}
 			}
 			//
 			return args;
@@ -187,9 +196,14 @@ class GmlExtArgs {
 	}
 	public static function post(code:String):Null<String> {
 		var version = GmlAPI.version;
-		NativeArray.clear(argNames);
-		NativeArray.clear(argTexts);
+		argData = null;
 		if (!Preferences.current.argsMagic || code.indexOf("#args") < 0) return code;
+		var data = new Dictionary();
+		var argNames:Array<String> = [];
+		var argTexts:Array<String> = [];
+		var curr = { names: argNames, texts: argTexts };
+		data.set("", curr);
+		//
 		var q = new GmlReader(code);
 		var row = 0;
 		var out = "";
@@ -317,15 +331,39 @@ class GmlExtArgs {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
-				case "#".code: if (q.substring(p, p + 5) == "#args") {
-					flush(p);
-					q.pos += 4;
-					if (proc()) return null;
-					start = q.pos;
+				case "#".code: {
+					if (q.substring(p, p + 5) == "#args") {
+						flush(p);
+						q.pos += 4;
+						if (proc()) return null;
+						start = q.pos;
+					} else if ((p == 0 || q.get(p - 1) == "\n".code)
+						&& q.substring(p, p + 7) == "#define"
+					) {
+						// context switch
+						flush(p);
+						start = p;
+						q.pos += 6;
+						q.skipSpaces0();
+						p = q.pos;
+						q.skipIdent1();
+						//
+						argNames = [];
+						argTexts = [];
+						curr = { names: argNames, texts: argTexts };
+						data.set(q.substring(p, q.pos), curr);
+						//
+						q.skipLine();
+					}
 				};
 			}
 		}
 		flush(q.pos);
+		argData = data;
 		return out;
 	}
 }
+typedef GmlExtArgData = {
+	names:Array<String>,
+	texts:Array<String>,
+};

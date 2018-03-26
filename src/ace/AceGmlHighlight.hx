@@ -385,8 +385,8 @@ using tools.NativeString;
 				rdef("comment.line"),
 			]), //}
 			"comment.doc.line": rComment.concat([ //{
-				rxRule("comment.line.doc", ~/$/, "start"),
-				rdef("comment.line.doc"),
+				rxRule("comment.doc.line", ~/$/, "start"),
+				rdef("comment.doc.line"),
 			]), //}
 			"comment": rComment.concat([ //{
 				rxRule("comment", ~/.*?\*\//, "start"),
