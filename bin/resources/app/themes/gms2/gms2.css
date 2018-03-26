@@ -81,3 +81,86 @@
 .treeview .dir > .header:before, .treeview .item:before {
 	background-image: url(tree.png);
 }
+
+#preferences-window {
+	right: 0;
+	top: 32px;
+	bottom: 0;
+	border: none;
+	padding: 0 1em;
+	padding-top: 40px;
+	width: 248px;
+	user-select: none;
+	cursor: default;
+}
+
+#preferences-window:after {
+	content: 'Preferences';
+	position: absolute;
+	top: 0;
+	bottom: calc(100% - 32px);
+	left: 0;
+	right: 0;
+	font-size: 1.5em;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #0B9B80;
+}
+
+#preferences-window > div > div:nth-child(5) {
+	margin-bottom: 1em;
+}
+
+#preferences-window fieldset {
+	margin-bottom: 1em;
+}
+
+#preferences-window > div > div.select {
+	margin-bottom: 1em;
+}
+
+#preferences-window > div > div:nth-child(9) {
+	margin-top: 1em;
+}
+
+#preferences-window > div > div:nth-child(10) {
+	margin-bottom: 1em;
+}
+
+#preferences-window input[type="checkbox"], #preferences-window input[type="radio"] {
+	cursor: pointer;
+	margin-right: 0.5em;
+}
+
+#preferences-window input[type="checkbox"]:checked, #preferences-window input[type="radio"]:checked {
+	filter: hue-rotate(305deg);	
+}
+
+.popout-window a {
+	color: #0B9B80;
+	text-decoration: none;
+}
+
+.popout-window a:hover {
+	text-decoration: underline;
+}
+
+#preferences-window .checkbox, #preferences-window label {
+	cursor: pointer;
+}
+
+#preferences-window label {
+	display: flex;
+	align-items: center;
+}
+
+.popout-window fieldset {
+	padding: 0.3em;
+	padding-left: 0.5em;
+	padding-bottom: 0.45em;
+}
+
+.popout-window fieldset br {
+	display: none;
+}

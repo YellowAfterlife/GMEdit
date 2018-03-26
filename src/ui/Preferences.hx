@@ -42,18 +42,20 @@ class Preferences {
 		lg.innerText = legend;
 		fs.appendChild(lg);
 		for (name in names) {
+			var id = createValidIdFromString(name);
 			var rad = document.createInputElement();
 			rad.type = "radio";
 			rad.name = legend;
 			rad.value = name;
+			rad.id = id;
 			rad.addEventListener("change", function(_) {
 				fn(name);
 			});
 			if (curr == name) rad.checked = true;
 			var lb = document.createLabelElement();
-			lb.htmlFor = name;
+			lb.htmlFor = id;
+			lb.appendChild(rad);
 			lb.appendChild(document.createTextNode(name));
-			fs.appendChild(rad);
 			fs.appendChild(lb);
 			fs.appendChild(document.createBRElement());
 		}
@@ -85,6 +87,7 @@ class Preferences {
 		return ctr;
 	}
 	private static function addCheckbox(out:Element, legend:String, curr:Bool, fn:Bool->Void):Element {
+		var id = createValidIdFromString(legend);
 		var ctr = document.createDivElement();
 		ctr.classList.add("checkbox");
 		var cb = document.createInputElement();
@@ -94,9 +97,11 @@ class Preferences {
 		cb.addEventListener("change", function(_) {
 			fn(cb.checked);
 		});
-		ctr.appendChild(cb);
+		cb.id = id;
+		// ctr.appendChild(cb);
 		var lb = document.createLabelElement();
-		lb.htmlFor = legend;
+		lb.htmlFor = id;
+		lb.appendChild(cb);
 		lb.appendChild(document.createTextNode(legend));
 		ctr.appendChild(lb);
 		out.appendChild(ctr);
@@ -328,6 +333,20 @@ class Preferences {
 		element = document.querySelector("#preferences-window");
 		menuMain = buildMain();
 		menuBackups = buildBackups();
+	}
+	private static function createValidIdFromString(str:String) {
+		//Lower case everything
+    str = str.toLowerCase();
+    //Make alphanumeric (removes all other characters)
+		var alphanumeric = ~/[^a-z0-9_\s-]/g;
+		str = alphanumeric.replace(str, "");
+    //Clean up multiple dashes or whitespaces
+		var dashes = ~/[\s-]+/g;
+		str = dashes.replace(str, "");
+    //Convert whitespaces and underscore to dash
+		var whitespace = ~/[\s_]/g;
+		str = whitespace.replace(str, "");
+    return str;
 	}
 	public static function open() {
 		if (element == null) build();
