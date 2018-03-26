@@ -49,7 +49,7 @@
 6:60 mouse_wheel_up
 6:61 mouse_wheel_down
 6:50 mouse_global_left_button
-6:53 mouse_global_left_button
+6:53 mouse_global_left_press
 6:56 mouse_global_left_release
 6:52 mouse_global_middle_button
 6:55 mouse_global_middle_press
