@@ -253,6 +253,7 @@ using tools.NativeString;
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
 			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
+			rxRule(["preproc.action", "actionname"], ~/^(#action[ \t]+)(\w+)/),
 			rxRule(["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
 				~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/),
 			//                      1event       2type   3: 4ctx     5label

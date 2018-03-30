@@ -5,6 +5,7 @@ import parsers.GmlEvent;
 import haxe.ds.StringMap;
 import haxe.io.Path;
 import tools.Dictionary;
+using tools.NativeString;
 
 /**
  * 
@@ -34,7 +35,7 @@ class GmxEvent {
 			//if (head) out += "\n";
 			var code = GmxAction.getCode(action);
 			if (code == null) return false;
-			if (head) {
+			if (head && !code.startsWith("#action ")) {
 				var addSection = true;
 				code = rxHeader.map(code, function(e:EReg) {
 					out += "#section " + e.matched(1);

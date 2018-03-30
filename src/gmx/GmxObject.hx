@@ -50,8 +50,8 @@ class GmxObject {
 					if (pair.name != null) out += " " + pair.name;
 					out += "\n" + pair.code;
 				} else {
-					errors += "Unreadable action in " + name + "\n";
-					errors += "Only self-applied code blocks are supported.\n";
+					errors += "Unreadable action in " + name + ":\n";
+					errors += GmxAction.errorText + "\n";
 				}
 			}
 		}

@@ -25,6 +25,13 @@ class NativeString {
 	public static inline function trimRight(s:String):String {
 		return untyped s.trimRight();
 	}
+	private static var trimTrailBreak_1 = new RegExp("^([\\s\\S]*?)(\r?\n)?$", "g");
+	public static function trimTrailRn(str:String, count:Int = 1):String {
+		while (--count >= 0) {
+			str = replaceExt(str, trimTrailBreak_1, "$1");
+		}
+		return str;
+	}
 	public static inline function trimLeft(s:String):String {
 		return untyped s.trimLeft();
 	}

@@ -11,9 +11,9 @@ package electron;
 		options:DialogOpenOptions, ?async:Array<String>->Void
 	):Array<String>;
 	
-	public static inline function showConfirmBoxSync(text:String, title:String) {
-		if (Dialog 
-	}
+	/*public static inline function showConfirmBoxSync(text:String, title:String) {
+		//if (Dialog 
+	}*/
 }
 private class DialogHelper {
 	

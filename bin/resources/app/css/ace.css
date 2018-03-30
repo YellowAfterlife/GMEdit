@@ -94,6 +94,7 @@
 #main .gml .ace_momentname,
 #main .gml .ace_scriptname,
 #main .gml .ace_eventname,
+#main .gml .ace_actionname,
 #main .gml .ace_eventkeyname {
 	color: #308;
 }
@@ -156,7 +157,8 @@
 }
 #main .gml .ace_line:not(:first-child) .ace_preproc.ace_define::after,
 #main .gml .ace_line:not(:first-child) .ace_preproc.ace_section::after,
-#main .gml .ace_line:not(:first-child) .ace_preproc.ace_event::after {
+#main .gml .ace_line:not(:first-child) .ace_preproc.ace_event::after,
+#main .gml .ace_line:not(:first-child) .ace_preproc.ace_action::after {
     content: "";
     left: -4px;
     /*bottom: -1px;*/

@@ -98,8 +98,9 @@ class GmlEvent {
 		var evName = null;
 		var sctName = null;
 		//
-		function flush(till:Int, ?cont:Bool):Void {
-			var flushCode = tools.NativeString.trimRight(q.substring(evStart, till));
+		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
+			var flushCode = q.substring(evStart, till);
+			flushCode = flushCode.trimTrailRn((eof ? 0 : 1) + (cont ? 0 : 1));
 			if (evName == null) {
 				if (flushCode != "") {
 					errors += "There's code prior to first event definition.\n";
@@ -142,7 +143,7 @@ class GmlEvent {
 					}
 					if (q.substr(q.pos, 5) == "event") {
 						//
-						flush(q.pos - 1);
+						flush(q.pos - 1, false);
 						q.skip(5);
 						// skip spaces:
 						q.skipSpaces0();
@@ -189,7 +190,7 @@ class GmlEvent {
 				default:
 			} // switch (q.read)
 		}
-		flush(q.pos);
+		flush(q.pos, false, true);
 		if (errors != "") {
 			parseError = errors;
 			return null;

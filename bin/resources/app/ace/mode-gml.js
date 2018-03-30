@@ -279,7 +279,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 function ace_mode_gml_1() {
 // a nasty override for Gutter.update to reset line counter on #define:
 var dom = ace.require("ace/lib/dom"); 
-var rxDefine = /^(?:#define|#event|#moment)\b/;
+var rxDefine = /^(?:#define|#event|#action|#moment)\b/;
 var rxSection = /^#section\b/;
 ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
 	var session = this.session;

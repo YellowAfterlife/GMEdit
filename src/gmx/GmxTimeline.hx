@@ -23,8 +23,8 @@ class GmxTimeline {
 				if (event.find("action") != null) out += "\n";
 				out += pair.code;
 			} else {
-				errors += "Unreadable action in moment " + name + "\n";
-				errors += "Only self-applied code blocks are supported.\n";
+				errors += "Unreadable action in moment " + name + ":\n";
+				errors += GmxAction.errorText + "\n";
 			}
 		}
 		if (errors != "") {
