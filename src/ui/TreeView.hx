@@ -89,12 +89,12 @@ class TreeView {
 			if (cl.contains("open")) cl.remove("open"); else cl.add("open");
 		}
 	}
-	static function handleDirCtxMenu(e:Event) {
+	static function handleDirCtxMenu(e:MouseEvent) {
 		var el:Element = cast e.target;
-		TreeViewMenus.showDirMenu(el.parentElement);
+		TreeViewMenus.showDirMenu(el.parentElement, e);
 	}
-	static function handleItemCtxMenu(e:Event) {
-		TreeViewMenus.showItemMenu(cast e.target);
+	static function handleItemCtxMenu(e:MouseEvent) {
+		TreeViewMenus.showItemMenu(cast e.target, e);
 	}
 	public static function makeDir(name:String, rel:String):TreeViewDir {
 		var r:TreeViewDir = cast document.createDivElement();
@@ -194,6 +194,7 @@ class TreeView {
 	//
 	public static function init() {
 		element = document.querySelectorAuto(".treeview");
+		if (element == null) element = document.createDivElement();
 		thumbStyle = document.querySelectorAuto("#tree-thumbs");
 		thumbSheet = cast thumbStyle.sheet;
 	}

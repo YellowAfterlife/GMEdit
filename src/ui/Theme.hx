@@ -26,24 +26,30 @@ class Theme {
 			if (z) cl.add(c); else cl.remove(c);
 		}
 	}
-	private static function add(name:String) {
+	private static function add(name:String):Void {
 		var dir = Path.join([Main.modulePath, path, name]);
 		var fullConf = Path.join([dir, "config.json"]);
-		if (!FileSystem.existsSync(fullConf)) return false;
-		var theme:ThemeImpl = FileSystem.readJsonFileSync(fullConf);
-		//
-		if (theme.parentTheme != null) add(theme.parentTheme);
-		if (theme.darkChromeTabs != null) setDarkTabs(theme.darkChromeTabs);
-		//
-		if (theme.stylesheets != null) for (rel in theme.stylesheets) {
-			var link = Main.document.createLinkElement();
-			link.rel = "stylesheet";
-			link.href = Path.join([path, name, rel]);
-			Main.document.head.appendChild(link);
-			elements.push(link);
+		function proc(theme:ThemeImpl) {
+			if (theme.parentTheme != null) add(theme.parentTheme);
+			if (theme.darkChromeTabs != null) setDarkTabs(theme.darkChromeTabs);
+			//
+			if (theme.stylesheets != null) for (rel in theme.stylesheets) {
+				var link = Main.document.createLinkElement();
+				link.rel = "stylesheet";
+				link.href = Path.join([path, name, rel]);
+				Main.document.head.appendChild(link);
+				elements.push(link);
+			}
 		}
-		//
-		return true;
+		if (FileSystem.canSync) {
+			if (FileSystem.existsSync(fullConf)) {
+				proc(FileSystem.readJsonFileSync(fullConf));
+			}
+		} else {
+			FileSystem.readJsonFile(fullConf, function(err, data) {
+				if (data != null) proc(data);
+			});
+		}
 	}
 	public static var current(default, set):String = "default";
 	private static function set_current(name:String):String {

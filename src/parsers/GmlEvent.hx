@@ -218,11 +218,12 @@ class GmlEvent {
 		comp.push(new AceAutoCompleteItem("keyrelease", "event"));
 		comp.push(new AceAutoCompleteItem("keyboard", "event"));
 		// read event names from the file:
-		var data = FileSystem.readFileSync(Main.relPath("api/events.gml"), "utf8");
-		tools.ERegTools.each(~/^(\d+):(\d+)[ \t]+(\w+)/gm, data, function(rx:EReg) {
-			var name = rx.matched(3);
-			comp.push(new AceAutoCompleteItem(name, "event"));
-			link(Std.parseInt(rx.matched(1)), Std.parseInt(rx.matched(2)), name);
+		FileSystem.readTextFile(Main.relPath("api/events.gml"), function(err, data) {
+			tools.ERegTools.each(~/^(\d+):(\d+)[ \t]+(\w+)/gm, data, function(rx:EReg) {
+				var name = rx.matched(3);
+				comp.push(new AceAutoCompleteItem(name, "event"));
+				link(Std.parseInt(rx.matched(1)), Std.parseInt(rx.matched(2)), name);
+			});
 		});
 	}
 }

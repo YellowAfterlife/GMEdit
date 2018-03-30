@@ -113,3 +113,31 @@ html #ace_settingsmenu {
 #ace_settingsmenu div[contains="setTheme"] {
 	display: none;
 }
+
+.popout-menu {
+	z-index: 1000;
+	position: absolute;
+	overflow: hidden;
+	border: 1px solid #BABABA;
+	background: #fdfdfd;
+	white-space: nowrap;
+	color: black;
+	box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+	list-style: none;
+	margin: 0;
+	padding: 2px 0;
+	font: 9pt "Segoe UI", sans-serif;
+}
+.popout-menu li {
+	padding: 4px 20px;
+	cursor: default;
+}
+.popout-menu .popout-menu-separator {
+	background: #E9E9E9;
+	height: 1px;
+	padding: 0;
+	margin: 5px 1px;
+}
+.popout-menu li:not([disabled]):not(.popout-menu-separator):hover {
+	background: #EBEBEB;
+}

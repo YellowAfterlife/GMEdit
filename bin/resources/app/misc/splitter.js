@@ -1,6 +1,6 @@
 (function() { // splitter
 	var sp = document.getElementById("splitter-td");
-	var eq = document.getElementById("tree-td");
+	var eq = document.getElementById("tree-td") || document.getElementById("game-td");
 	var gq = document.getElementById("main");
 	var ls = window.localStorage;
 	if (ls) eq.style.width = Math.max(0|(ls.getItem("splitter-width") || "200"), 50) + "px";

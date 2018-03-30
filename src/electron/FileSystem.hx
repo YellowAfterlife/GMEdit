@@ -1,5 +1,6 @@
 package electron;
 import gmx.SfGmx;
+import haxe.Json;
 import js.Error;
 import haxe.extern.EitherType;
 
@@ -8,9 +9,20 @@ import haxe.extern.EitherType;
  * @author YellowAfterlife
  */
 @:native("Electron_FS") extern class FileSystem {
+	/** Whether synchronous functions are supported */
+	public static var canSync(get, never):Bool;
+	private static inline function get_canSync():Bool {
+		return existsSync != null;
+	}
+	//
 	public static function readFile(path:String, enc:String, callback:Error->Dynamic->Void):Void;
 	public static inline function readTextFile(path:String, callback:Error->String->Void):Void {
 		readFile(path, "utf8", cast callback);
+	}
+	public static inline function readJsonFile<T:{}>(path:String, callback:Error->T->Void):Void {
+		readFile(path, "utf8", function(e:Error, d:Dynamic) {
+			callback(e, d != null ? Json.parse(d) : null);
+		});
 	}
 	//
 	public static function readFileSync(path:String, ?enc:String):Dynamic;
@@ -21,7 +33,7 @@ import haxe.extern.EitherType;
 		return SfGmx.parse(readTextFileSync(path));
 	}
 	public static inline function readJsonFileSync(path:String):Dynamic {
-		return haxe.Json.parse(readTextFileSync(path));
+		return Json.parse(readTextFileSync(path));
 	}
 	//
 	public static function writeFileSync(path:String, data:Dynamic, ?options:Dynamic):Void;
@@ -46,6 +58,14 @@ import haxe.extern.EitherType;
 	public static function statSync(path:String):FileSystemStat;
 	public static inline function getMTimeMs(path:String):Float {
 		return statSync(path).mtimeMs;
+	}
+}
+@:keep class FileSystemBrowser {
+	static function readFile(path:String, enc:String, callback:Error->Dynamic->Void):Void {
+		var http = new haxe.http.HttpJs(path);
+		http.onError = function(msg) callback(new Error(msg), null);
+		http.onData = function(data) callback(null, data);
+		http.request();
 	}
 }
 extern class FileSystemStat {

@@ -6,6 +6,7 @@ import gml.Project;
 import haxe.io.Path;
 import js.html.Element;
 import gml.file.*;
+import js.html.MouseEvent;
 using tools.HtmlTools;
 using tools.NativeString;
 using tools.NativeArray;
@@ -139,16 +140,16 @@ class TreeViewMenus {
 		electron.Shell.showItemInFolder(path);
 	}
 	//
-	public static function showDirMenu(el:Element) {
+	public static function showDirMenu(el:Element, ev:MouseEvent) {
 		target = el;
 		items.openAll.enabled = el.querySelector('.item') != null;
 		items.openCombined.enabled = el.querySelector('.item[${TreeView.attrKind}="script"]') != null;
 		items.changeOpenIcon.visible = true;
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
-		dirMenu.popupAsync();
+		dirMenu.popupAsync(ev);
 	}
-	public static function showItemMenu(el:Element) {
+	public static function showItemMenu(el:Element, ev:MouseEvent) {
 		var z:Bool;
 		target = el;
 		var kind = el.getAttribute(TreeView.attrKind);
@@ -161,7 +162,7 @@ class TreeViewMenus {
 		//
 		items.changeOpenIcon.visible = false;
 		items.resetOpenIcon.visible = false;
-		itemMenu.popupAsync();
+		itemMenu.popupAsync(ev);
 	}
 	//
 	public static function init() {

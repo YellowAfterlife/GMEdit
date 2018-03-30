@@ -19,12 +19,25 @@ import haxe.extern.EitherType;
 			if (ref == null) throw "Can't find " + hxname;
 			untyped window[hxname] = ref;
 		}
-		load("Electron_API", "electron");
-		load("Electron_FS", "fs");
-		set("Electron_Dialog", remote.dialog);
-		set("Electron_IPC", ipcRenderer);
-		set("Electron_Shell", shell);
-		set("Electron_Menu", remote.Menu);
-		set("Electron_MenuItem", remote.MenuItem);
+		inline function blank(hxname:String) {
+			untyped window[hxname] = null;
+		}
+		if (untyped window.require != null) {
+			load("Electron_API", "electron");
+			load("Electron_FS", "fs");
+			set("Electron_Dialog", remote.dialog);
+			set("Electron_IPC", ipcRenderer);
+			set("Electron_Shell", shell);
+			set("Electron_Menu", remote.Menu);
+			set("Electron_MenuItem", remote.MenuItem);
+		} else {
+			blank("Electron_API");
+			set("Electron_FS", FileSystem.FileSystemBrowser);
+			blank("Electron_Dialog");
+			blank("Electron_IPC");
+			blank("Electron_Shell");
+			set("Electron_Menu", Menu.MenuFallback);
+			set("Electron_MenuItem", Menu.MenuItemFallback);
+		}
 	}
 }

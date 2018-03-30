@@ -80,8 +80,12 @@ class Main {
 			Reflect.callMethod(console, console.log, out);
 		};
 		Electron.init();
+		if (Electron == null) {
+			document.querySelector("#app").classList.add("app-browser");
+		}
 		//
-		modulePath = untyped __dirname;
+		modulePath = untyped window.__dirname;
+		if (modulePath == null) modulePath = ".";
 		Preferences.init();
 		GmlAPI.init();
 		ShaderAPI.init();

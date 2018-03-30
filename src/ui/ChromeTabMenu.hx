@@ -2,6 +2,7 @@ package ui;
 import electron.Menu;
 import gml.file.GmlFileBackup;
 import js.html.Element;
+import js.html.MouseEvent;
 import ui.ChromeTabs;
 using tools.HtmlTools;
 
@@ -15,7 +16,7 @@ class ChromeTabMenu {
 	static var showInDirectoryItem:MenuItem;
 	static var showInTreeItem:MenuItem;
 	static var backupsItem:MenuItem;
-	public static function show(el:ChromeTab) {
+	public static function show(el:ChromeTab, ev:MouseEvent) {
 		target = el;
 		var file = el.gmlFile;
 		var hasFile = file.path != null;
@@ -26,7 +27,7 @@ class ChromeTabMenu {
 			backupsItem.enabled = bk;
 			backupsItem.visible = true;
 		} else backupsItem.visible = false;
-		menu.popupAsync();
+		menu.popupAsync(ev);
 	}
 	public static function init() {
 		menu = new Menu();

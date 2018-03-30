@@ -8,6 +8,6 @@ MAKE FREQUENT BACKUPS
 
 Editor compiled at %%VERSION%%.
 Current versions can be found at
-https://yellowafterlife.itch.io/gml-code-editor
+https://yellowafterlife.itch.io/gmedit
 
 Have fun!

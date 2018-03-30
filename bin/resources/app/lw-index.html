@@ -14,9 +14,9 @@
 	<style id="tree-thumbs"></style>
 </head><body id="app">
 <div id="main">
-	<div id="tree-td" style="width: 200px">
-		<div class="chrome-tabs project-name">
-			<div id="project-name"></div>
+	<div id="editor-td">
+		<div class="chrome-tabs" id="tabs">
+			<div class="chrome-tabs-content"></div>
 			<span class="system-button preferences">
 				<svg width="12" height="12" viewBox="0 0 12 12">
 					<rect width="10" height="1" x="1" y="3" fill="black"></rect>
@@ -24,28 +24,6 @@
 					<rect width="10" height="1" x="1" y="9" fill="black"></rect>
 				</svg>
 			</span>
-			<div class="chrome-tabs-bottom-bar"></div>
-		</div>
-		<div class="bottom treeview">
-			
-		</div>
-	</div>
-	<div width="5" id="splitter-td">
-		
-	</div>
-	<div id="editor-td">
-		<div class="chrome-tabs has-system-buttons" id="tabs">
-			<div class="chrome-tabs-content"></div>
-			<!-- (these are close enough replicas of Win10 icons)-->
-			<div class="system-button close">
-				<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
-			</div>
-			<div class="system-button maximize">
-				<svg  width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
-			</div>
-			<div class="system-button minimize">
-				<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
-			</div>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
 		<div class="bottom gml">
@@ -65,6 +43,27 @@
 				</span>
 				<span id="ace_status-hint" title=""></span>
 			</div>
+		</div>
+	</div>
+	<div width="5" id="splitter-td">
+		
+	</div>
+	<div id="game-td" style="width: 200px">
+		<div class="chrome-tabs">
+			<input type="button" id="refresh" value="Run" title="Runs the game. You can also press F5 or Ctrl+Enter for ease." />
+			<input type="button" id="reload" value="Reload" title="Reloads the game' frame. Use this if it breaks permanently." />
+			<input type="button" id="stop" value="Stop" title="Stops the game' code (without reloading)." />
+			<input type="button" id="share" value="Share" title="Gives an unique URL for sharing your code." />
+			<input type="button" id="showdoc" value="Help" title="Displays the short manual" onclick="var cl = main.classList, s = 'showdoc'; if (cl.contains(s)) cl.remove(s); else cl.add(s);" />
+			<select id="mode" selected="2d">
+				<option title="For smaller 2d experiments. Has leaner external loading restrctions.">2d</option>
+				<option title="For 3d and hardware-intensive experiments. Uses WebGL.">GL</option>
+			</select>
+			<div id="project-name" style="display:none"></div>
+			<div class="chrome-tabs-bottom-bar"></div>
+		</div>
+		<div class="bottom">
+			<iframe id="game" frameborder="0"></iframe>
 		</div>
 	</div>
 </div>
@@ -122,6 +121,6 @@
 <script type="text/javascript" src="./ace/src-noconflict/ace.js" charset="utf-8"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ext-language_tools.js"></script>
 <script type="text/javascript" src="./ace/mode-gml.js"></script>
-<script type="text/javascript" src="./app.js"></script>
+<script type="text/javascript" src="./lw-app.js"></script>
 <script type="text/javascript" src="./misc/gmcr.js" async></script>
 </body>

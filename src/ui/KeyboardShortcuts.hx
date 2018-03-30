@@ -330,12 +330,12 @@ class KeyboardShortcuts {
 		var obj = aceEditor;
 		obj.setOption("fontSize", obj.getOption("fontSize") + delta);
 	}
-	public static function initGlobal() {
+	static function initSystemButtons(closeButton:Element) {
+		if (closeButton == null) return;
 		inline function getCurrentWindow():Dynamic {
 			return Electron.remote.getCurrentWindow();
 		}
-		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
-		document.querySelector(".system-button.close").addEventListener("click", function(_) {
+		closeButton.addEventListener("click", function(_) {
 			var wnd = getCurrentWindow();
 			if (wnd != null) wnd.close();
 		});
@@ -351,6 +351,10 @@ class KeyboardShortcuts {
 			var wnd = getCurrentWindow();
 			if (wnd != null) wnd.minimize();
 		});
+	}
+	public static function initGlobal() {
+		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
+		initSystemButtons(document.querySelector(".system-button.close"));
 	}
 	public static function initEditor() {
 		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);

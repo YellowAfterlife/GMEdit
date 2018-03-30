@@ -17,9 +17,11 @@ class ProjectStyle {
 		return Project.current.path + ".css";
 	}
 	public static function reload() {
-		var path = getPath();
-		if (FileSystem.existsSync(path)) {
-			link.href = "file:///" + path + "?t=" + Date.now().getTime();
+		if (Project.current.path != "") {
+			var path = getPath();
+			if (FileSystem.existsSync(path)) {
+				link.href = "file:///" + path + "?t=" + Date.now().getTime();
+			} else link.href = "";
 		} else link.href = "";
 	}
 	public static function setItemThumb(data:{

@@ -44,8 +44,8 @@ class ChromeTabs {
 				tabEl.gmlFile = gmlFile;
 				tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
 				tabEl.setAttribute(attrContext, gmlFile.context);
-				tabEl.addEventListener("contextmenu", function(_) {
-					ChromeTabMenu.show(tabEl);
+				tabEl.addEventListener("contextmenu", function(e) {
+					ChromeTabMenu.show(tabEl, e);
 				});
 			}
 			var prev = GmlFile.current;
@@ -66,6 +66,7 @@ class ChromeTabs {
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
 			if (gmlFile.changed) {
+				#if (!lwedit)
 				if (gmlFile.path != null) {
 					var bt = Dialog.showMessageBox({
 						buttons: ["Yes", "No", "Cancel"],
@@ -90,6 +91,11 @@ class ChromeTabs {
 						default: e.preventDefault();
 					}
 				}
+				#else
+				if (gmlFile.session.getValue().length > 0) {
+					if (window.confirm(
+				}
+				#end
 			}
 		});
 		element.addEventListener("tabRemove", function(e:CustomEvent) {
@@ -122,6 +128,7 @@ class ChromeTabs {
 			}
 		});
 		// https://github.com/electron/electron/issues/7977:
+		if (Electron != null)
 		window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
 			var changedTabs = document.querySelectorAll('.chrome-tab.chrome-tab-changed');
 			if (changedTabs.length == 0) {

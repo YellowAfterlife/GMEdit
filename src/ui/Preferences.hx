@@ -197,7 +197,10 @@ class Preferences {
 		var el:Element;
 		//
 		var themeList = ["default"];
-		for (name in FileSystem.readdirSync(Main.relPath(Theme.path))) {
+		if (!FileSystem.canSync) {
+			themeList.push("dark");
+			themeList.push("gms2");
+		} else for (name in FileSystem.readdirSync(Main.relPath(Theme.path))) {
 			if (name == "default") continue;
 			var full = Path.join([Main.modulePath, Theme.path, name, "config.json"]);
 			if (FileSystem.existsSync(full)) themeList.push(name);
@@ -427,10 +430,13 @@ class Preferences {
 			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
 		};
 		if (editor.getOption("fontFamily") == null) {
-			var font = switch (untyped process.platform) {
-				case "darwin": "Menlo, monospace";
-				default: "Consolas, Courier New, monospace";
-			}
+			var ep = untyped window.process;
+			var isMac:Bool;
+			if (ep == null) {
+				var np = Main.window.navigator.platform;
+				isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
+			} else isMac = ep.platform == "darwin";
+			var font = isMac ? "Menlo, monospace" : "Consolas, Courier New, monospace";
 			editor.setOption("fontFamily", font);
 		}
 	}

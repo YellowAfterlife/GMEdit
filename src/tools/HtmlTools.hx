@@ -23,6 +23,17 @@ class HtmlTools {
 	):T {
 		return cast asElement(el).querySelector(selectors);
 	}
+	public static function setInnerText(el:Element, text:String) {
+		el.innerHTML = "";
+		el.appendChild(Main.document.createTextNode(text));
+	}
+	public static function setAttributeFlag(el:Element, attr:String, val:Bool) {
+		if (val) {
+			if (!el.hasAttribute(attr)) el.setAttribute(attr, "");
+		} else {
+			if (el.hasAttribute(attr)) el.removeAttribute(attr);
+		}
+	}
 }
 extern class ElementList implements ArrayAccess<Element> {
 	public var length(default, never):Int;

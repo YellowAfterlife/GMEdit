@@ -33,6 +33,36 @@ body {
 	padding: 0px;
 }
 
+#game-td .chrome-tabs {
+	padding-bottom: 9px;
+	padding-left: 4px;
+}
+#game-td .chrome-tabs input,
+#game-td .chrome-tabs select {
+	box-sizing: border-box;
+	height: 100%;
+	margin: 0;
+	border: 1px solid #aaa;
+	padding: 1px 5px;
+	vertical-align: middle;
+}
+#game-td .chrome-tabs input[type="button"] {
+	background: #f0f0f0;
+}
+#game-td .chrome-tabs input[type="button"]:hover {
+	background: #fff;
+}
+#game-td .chrome-tabs select {
+	background-color: white;
+	background-position: center right 6px;
+	background-image: url(data:image/bmp;base64,Qk1mAAAAAAAAADYAAAAoAAAABQAAAAMAAAABABgAAAAAAAAAAADDDgAAww4AAAAAAAAAAAAA////////AAAA/////////////wAAAAAAAAAAAP////8AAAAAAAAAAAAAAAAAAAD/);
+	background-repeat: no-repeat;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	padding-right: 16px;
+}
+
 /* */
 .chrome-tabs {
 	border-radius: 0;
@@ -40,7 +70,7 @@ body {
 	padding-top: 4px;
 	-webkit-user-select: none;
 }
-.chrome-tabs::before {
+#app:not(.app-browser) .chrome-tabs::before {
 	content: "";
 	display: block;
 	position: absolute;
@@ -56,7 +86,7 @@ body {
 .chrome-tabs .chrome-tab, #preferences-button, .system-button {
 	-webkit-app-region: no-drag;
 }
-#tabs.chrome-tabs {
+#tabs.chrome-tabs.has-system-buttons {
 	padding-right: 108px;
 }
 .system-button {
@@ -139,5 +169,9 @@ body {
 	height: 100vh;
 	margin: 0;
 	resize: none;
+}
+#game {
+	height: calc(100% - 36px);
+	height: calc(100vh - 36px);
 }
 
