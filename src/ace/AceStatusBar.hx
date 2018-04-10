@@ -25,13 +25,16 @@ class AceStatusBar {
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
 	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports) {
+		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
-		var tk:AceToken = iter.getCurrentToken();
-		var depth = 0, index = 0;
-		var resetIndex = false;
-		var doc:GmlFuncDoc = null;
-		var docs:Dictionary<GmlFuncDoc> = null;
+		var ctk:AceToken = iter.getCurrentToken(); // cursor token
+		if (ctk != null && ctk.type == "paren.lparen") ctk = iter.stepForward();
+		// go back to find the likely associated function call:
+		var tk:AceToken = ctk;
+		var minDepth = 0; // lowest reached parenthesis depth
+		var depth = 0; // current parenthesis depth
 		var fkw = GmlAPI.kwFlow;
+		var docs:Dictionary<GmlFuncDoc> = null;
 		while (tk != null) {
 			switch (tk.type) {
 				case "keyword": if (fkw[tk.value]) break;
@@ -40,37 +43,30 @@ class AceStatusBar {
 				case "set.operator": break;
 				case "curly.paren.lparen": break;
 				case "curly.paren.rparen": break;
+				case "paren.rparen": depth += 1;
+				case "punctuation.operator" if (tk.value == ";"): break;
 				case "paren.lparen": {
 					depth -= 1;
-					resetIndex = true;
-				};
-				case "paren.rparen": {
-					depth += 1;
-				};
-				case "punctuation.operator": {
-					switch (tk.value) {
-						case ",": {
-							if (depth <= 0) {
-								if (resetIndex) { resetIndex = false; index = 0; }
-								index += 1;
-							}
-						};
-						case ";": break;
+					if (depth < minDepth) {
+						minDepth = depth;
+						tk = iter.stepBackward();
+						if (tk != null) switch (tk.type) {
+							case "asset.script": docs = GmlAPI.gmlDoc;
+							case "function": docs = GmlAPI.stdDoc;
+							case "glsl.function": docs = ShaderAPI.glslDoc;
+							case "hlsl.function": docs = ShaderAPI.hlslDoc;
+							case "extfunction": docs = GmlAPI.extDoc;
+						}
+						if (docs != null) break;
 					}
 				};
-				case "asset.script" if (depth < 0): docs = GmlAPI.gmlDoc; break;
-				case "function" if (depth < 0): docs = GmlAPI.stdDoc; break;
-				case "glsl.function" if (depth < 0): docs = ShaderAPI.glslDoc; break;
-				case "hlsl.function" if (depth < 0): docs = ShaderAPI.hlslDoc; break;
-				case "extfunction" if (depth < 0): docs = GmlAPI.extDoc; break;
-				default:
 			}
-			iter.stepBackward();
-			tk = iter.getCurrentToken();
+			tk = iter.stepBackward();
 		}
-		//
-		if (docs != null) doc = docs[tk.value];
-		if (docs != null && imports != null) {
+		if (docs == null) return;
+		// find the actual doc:
+		var doc:GmlFuncDoc = docs[tk.value];
+		if (imports != null) {
 			var name = tk.value;
 			iter.stepBackward();
 			tk = iter.getCurrentToken();
@@ -80,13 +76,25 @@ class AceStatusBar {
 				if (tk.type == "namespace") {
 					name = tk.value + "." + name;
 					doc = AceMacro.jsOr(imports.docs[name], doc);
-				}
+				} else iter.stepForward();
 			} else {
 				doc = AceMacro.jsOr(imports.docs[name], doc);
+				iter.stepForward();
 			}
 		}
+		// go forward to verify that cursor token is inside that call:
+		depth = -1;
+		var index = 0;
+		while (tk != null && tk != ctk) {
+			switch (tk.type) {
+				case "paren.lparen": depth += 1;
+				case "paren.rparen": depth -= 1;
+				case "punctuation.operator" if (tk.value == "," && depth == 0): index += 1;
+			}
+			tk = iter.stepForward();
+		}
+		if (tk != ctk || depth < 0) return;
 		//
-		statusHint.innerHTML = "";
 		if (doc != null) {
 			var args = doc.args;
 			var argc = args.length;
