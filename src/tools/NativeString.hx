@@ -2,6 +2,7 @@ package tools;
 import haxe.Constraints.Function;
 import haxe.extern.EitherType;
 import js.RegExp;
+import js.Syntax;
 
 /**
  * ...
@@ -31,6 +32,9 @@ class NativeString {
 			str = replaceExt(str, trimTrailBreak_1, "$1");
 		}
 		return str;
+	}
+	public static inline function fastSub(s:String, start:Int, len:Int):String {
+		return Syntax.code("{0}.substr({1},{2})", s, start, len);
 	}
 	public static inline function trimLeft(s:String):String {
 		return untyped s.trimLeft();

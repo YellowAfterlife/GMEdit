@@ -3,6 +3,7 @@ package parsers;
 import gml.GmlVersion;
 import tools.CharCode;
 import tools.StringReader;
+using tools.NativeString;
 
 /**
  * Extends regular string parser with a set of GML-related helpers.
@@ -35,6 +36,14 @@ class GmlReader extends StringReader {
 			case "\n".code: skip();
 		}
 	}
+	private static function skipComment_1(s:String, p:Int) {
+		if (s.fastSub(p, 5) == "event") return true;
+		switch (s.fastSub(p, 6)) {
+			case "moment", "action": return true;
+		}
+		if (s.fastSub(p, 7) == "section") return true;
+		return false;
+	}
 	/** Skips past the end of a comment-block */
 	public inline function skipComment() {
 		var n = 0;
@@ -42,9 +51,12 @@ class GmlReader extends StringReader {
 			var c = read();
 			if (c == "\n".code) {
 				n += 1;
-			} else if (c == "*".code && peek() == "/".code) break;
+				if (peek() == "#".code && skipComment_1(source, pos + 1)) break;
+			} else if (c == "*".code && peek() == "/".code) {
+				skip();
+				break;
+			}
 		}
-		if (loop) skip();
 		return n;
 	}
 	

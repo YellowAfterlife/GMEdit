@@ -34,6 +34,9 @@ using tools.NativeString;
 		function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
 			return { token: tk, regex: rx, push: push };
 		}
+		function rwnext(ruleToCopy:AceLangRule, newNext:String):AceLangRule {
+			return { token: ruleToCopy.token, regex: ruleToCopy.regex, next: newNext };
+		}
 		//
 		inline function getGlobalType(name:String, fallback:String) {
 			return jsOr(GmlAPI.gmlKind[name],
@@ -242,6 +245,20 @@ using tools.NativeString;
 			},
 			next: "pragma",
 		};
+		//
+		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
+		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action[ \t]+)(\w+)/);
+		var rKeyEvent = rxRule(
+			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
+			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
+		);
+		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\s+.+)?)/);
+		var rMoment = rxRule(
+			["preproc.moment", "momenttime", "momentname"],
+			~/^(#moment[ \t]+)(\d+)(.*)/
+		);
+		var rSection = rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/);
+		//
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rQuotes,
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
@@ -252,13 +269,7 @@ using tools.NativeString;
 			rxRule("comment.line", ~/\/\//, "comment.line"),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
-			rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/),
-			rxRule(["preproc.action", "actionname"], ~/^(#action[ \t]+)(\w+)/),
-			rxRule(["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
-				~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/),
-			//                      1event       2type   3: 4ctx     5label
-			rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\s+.+)?)/),
-			rxRule(["preproc.moment", "momenttime", "momentname"], ~/^(#moment[ \t]+)(\d+)(.*)/),
+			rDefine, rAction, rKeyEvent, rEvent, rMoment,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rule(mtImport, "(#import\\b)"
 				+ "([ \t]*)"
@@ -278,7 +289,7 @@ using tools.NativeString;
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
 		} else {
-			rBase.push(rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/));
+			rBase.push(rSection);
 		}
 		if (version == GmlVersion.v2) {
 			rBase.push(rpush("string", '@"', "string.dq"));
@@ -390,6 +401,12 @@ using tools.NativeString;
 				rdef("comment.doc.line"),
 			]), //}
 			"comment": rComment.concat([ //{
+				rwnext(rDefine, "start"),
+				rwnext(rAction, "start"),
+				rwnext(rSection, "start"),
+				rwnext(rMoment, "start"),
+				rwnext(rKeyEvent, "start"),
+				rwnext(rEvent, "start"),
 				rxRule("comment", ~/.*?\*\//, "start"),
 				rxRule("comment", ~/.+/)
 			]), //}
