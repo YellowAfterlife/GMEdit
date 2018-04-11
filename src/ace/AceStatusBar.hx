@@ -28,13 +28,18 @@ class AceStatusBar {
 		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
 		var ctk:AceToken = iter.getCurrentToken(); // cursor token
-		if (ctk != null && ctk.type == "paren.lparen") ctk = iter.stepForward();
-		// go back to find the likely associated function call:
-		var tk:AceToken = ctk;
+		var parEmpty = false;
 		var minDepth = 0; // lowest reached parenthesis depth
 		var depth = 0; // current parenthesis depth
+		if (ctk != null && ctk.type == "paren.lparen") {
+			ctk = iter.stepForward();
+			if (ctk.type == "paren.rparen") depth -= 1;
+		}
+		// go back to find the likely associated function call:
+		var tk:AceToken = ctk;
 		var fkw = GmlAPI.kwFlow;
 		var docs:Dictionary<GmlFuncDoc> = null;
+		var parOpen:AceToken = null;
 		while (tk != null) {
 			switch (tk.type) {
 				case "keyword": if (fkw[tk.value]) break;
@@ -49,6 +54,7 @@ class AceStatusBar {
 					depth -= 1;
 					if (depth < minDepth) {
 						minDepth = depth;
+						parOpen = tk;
 						tk = iter.stepBackward();
 						if (tk != null) switch (tk.type) {
 							case "asset.script": docs = GmlAPI.gmlDoc;
