@@ -97,7 +97,11 @@ class GmlEvent {
 		var evCode:Array<String> = [];
 		var evName = null;
 		var sctName = null;
-		//
+		/**
+		   @param	till	Final character to grab data till
+		   @param	cont	Whether this is a section/action, continuing same event
+		   @param	eof 	Whether called by reaching end of the file
+		**/
 		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
 			var flushCode = q.substring(evStart, till);
 			flushCode = flushCode.trimTrailRn((eof ? 0 : 1) + (cont ? 0 : 1));
@@ -113,7 +117,11 @@ class GmlEvent {
 				}
 				var flushData = GmlEvent.fromString(evName);
 				if (flushData != null) {
-					evCode.push(flushCode);
+					//
+					if (eof || flushCode != "") {
+						evCode.push(flushCode);
+					}
+					//
 					if (!cont) {
 						if (eventMap.exists(evName)) {
 							errors += 'Duplicate event declaration found for `$evName`.\n';
@@ -161,7 +169,8 @@ class GmlEvent {
 						q.skipLineEnd();
 						//
 						evStart = q.pos;
-					} else if (q.substr(q.pos, 7) == "section" && version == GmlVersion.v1) {
+					}
+					else if (version == GmlVersion.v1 && q.substr(q.pos, 7) == "section") {
 						q.skip(7);
 						//
 						var nameStart = q.pos;
@@ -184,6 +193,15 @@ class GmlEvent {
 						flush(nameStart - 8, true);
 						sctName = q.substring(nameStart, nameEnd);
 						//
+						evStart = q.pos;
+					}
+					else if (version == GmlVersion.v1 && q.substr(q.pos, 6) == "action") {
+						q.skip(6);
+						flush(q.pos - 7, true);
+						evStart = q.pos - 7;
+						q.skipLine();
+						q.skipLineEnd();
+						flush(q.pos, true);
 						evStart = q.pos;
 					}
 				};

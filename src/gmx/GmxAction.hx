@@ -20,6 +20,7 @@ class GmxAction {
 		switch (Std.parseInt(aid)) {
 			case 603: return action.find("arguments").find("argument").find("string").text;
 			case 604: return "#action action_inherited\r\n";
+			case 203: return "#action action_kill_object\r\n";
 			default: {
 				errorText = "Action #" + aid + "(" + action.findText("functionname")
 					+ ") is not supported.";
@@ -27,14 +28,14 @@ class GmxAction {
 			};
 		}
 	}
-	static function makeDndBlock(id:Int, fn:String) {
+	static function makeDndBlock(id:Int, fn:String, useapplyto:Int) {
 		var action = new SfGmx("action");
 		action.addTextChild("libid", "1");
 		action.addTextChild("id", "" + id);
 		action.addTextChild("kind", "0");
 		action.addTextChild("userelative", "0");
 		action.addTextChild("isquestion", "0");
-		action.addTextChild("useapplyto", "0");
+		action.addTextChild("useapplyto", "" + useapplyto);
 		action.addTextChild("exetype", "1");
 		action.addTextChild("functionname", fn);
 		action.addTextChild("codestring", "");
@@ -46,7 +47,10 @@ class GmxAction {
 	public static function makeCodeBlock(code:String):SfGmx {
 		if (code.startsWith("#action ")) {
 			switch (code.substring(7).trimBoth()) {
-				case "action_inherited": return makeDndBlock(604, "action_inherited");
+				case "action_inherited":
+					return makeDndBlock(604, "action_inherited", 0);
+				case "action_kill_object":
+					return makeDndBlock(203, "action_kill_object", -1);
 				default: {
 					errorText = "Action `" + code + "` is not supported.";
 					return null;
