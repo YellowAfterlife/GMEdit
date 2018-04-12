@@ -196,9 +196,12 @@ class GmlFileIO {
 				if (errors != "") error(errors);
 			};
 			case SearchResults: {
-				if (file.searchData != null) {
-					return file.searchData.save(file);
-				} else return false;
+				if (file.searchData == null) return false;
+				if (!file.searchData.save(file)) return false;
+				file.changed = false;
+				file.session.getUndoManager().markClean();
+				writeFile = false;
+				out = null;
 			};
 			case GmxObjectEvents: {
 				gmx = FileSystem.readGmxFileSync(path);
