@@ -109,7 +109,8 @@ using tools.HtmlTools;
 					var line = code.substring(sol, eol);
 					var ctxLink = ctxName;
 					if (pos.row >= 0) ctxLink += ":" + (pos.row + 1);
-					if (ctxLink != ctxLast) {
+					if (true || ctxLink != ctxLast) {
+						// todo: show multiple changes on the same line combined
 						var curr:Dynamic = mt.length > 1 ? mt : mt[0];
 						if (filterFn == null || filterFn(curr)) {
 							saveItem = { row: pos.row, code: line, next: null };
