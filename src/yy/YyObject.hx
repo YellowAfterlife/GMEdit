@@ -1,5 +1,6 @@
 package yy;
 import electron.FileSystem;
+import gml.GmlObjectInfo;
 import parsers.GmlEvent;
 import gml.file.GmlFile;
 import haxe.io.Path;
@@ -118,6 +119,19 @@ import ui.TreeView;
 		//
 		return true;
 	}
+	private function getParentJson():YyObject {
+		var parentName = gml.Project.current.yyObjectNames[this.parentObjectId];
+		if (parentName == null) return null;
+		// todo: have an actual asset name -> asset path lookup instead
+		var el = TreeView.element.querySelector('.item['
+			+ TreeView.attrIdent + '="' + NativeString.escapeProp(parentName) + '"]');
+		if (el == null) return null;
+		var path = el.getAttribute(TreeView.attrPath);
+		if (!FileSystem.existsSync(path)) return null;
+		var json:YyObject = FileSystem.readJsonFileSync(path);
+		json.path = path;
+		return json;
+	}
 	public static function openEventInherited(full:String, edef:String):GmlFile {
 		var edata = YyEvent.fromString(edef);
 		if (edata == null) return null;
@@ -129,33 +143,58 @@ import ui.TreeView;
 		var parentId = obj.parentObjectId;
 		var tries = 1024;
 		while (parentId != YyGUID.zero && --tries >= 0) {
-			var parentName = gml.Project.current.yyObjectNames[parentId];
-			if (parentName == null) return null;
-			// todo: have an actual asset name -> asset path lookup instead
-			var el = TreeView.element.querySelector('.item['
-				+ TreeView.attrIdent + '="' + NativeString.escapeProp(parentName) + '"]');
-			if (el == null) return null;
-			var path = el.getAttribute(TreeView.attrPath);
-			if (!FileSystem.existsSync(path)) return null;
-			obj = FileSystem.readJsonFileSync(path);
+			obj = obj.getParentJson();
+			if (obj == null) return null;
 			for (event in obj.eventList) {
 				if (event.eventtype == etype
 				&& event.enumb == enumb
 				&& event.collisionObjectId == eobj) {
-					return GmlFile.open(parentName, path, { def: edef });
+					return GmlFile.open(obj.name, obj.path, { def: edef });
 				}
 			}
 			parentId = obj.parentObjectId;
 		}
 		return null;
 	}
+	public function getInfo(?info:GmlObjectInfo):GmlObjectInfo {
+		var objName = this.name;
+		if (info == null) {
+			info = new GmlObjectInfo();
+			info.objectName = objName;
+			info.spriteName = gml.Project.current.yyObjectNames[this.spriteId];
+			if (info.spriteName == null) info.spriteName = "<undefined>";
+			info.visible = this.visible;
+			info.solid = this.solid;
+			info.persistent = this.persistent;
+		}
+		//
+		for (event in this.eventList) {
+			var eid = YyEvent.toString(event.eventtype, event.enumb, event.collisionObjectId);
+			var elist = info.eventMap[eid];
+			if (elist == null) {
+				elist = [];
+				info.eventList.push(eid);
+				info.eventMap.set(eid, elist);
+			}
+			elist.unshift(objName + "(" + eid + ")");
+		}
+		//
+		var parent = getParentJson();
+		if (parent != null) parent.getInfo(info);
+		//
+		return info;
+	}
 }
 typedef YyObjectImpl = {
 	>YyBase,
+	?path:String,
 	spriteId:YyGUID,
 	name:String,
 	eventList:Array<YyObjectEvent>,
 	parentObjectId:YyGUID,
+	solid:Bool,
+	visible:Bool,
+	persistent:Bool,
 }
 typedef YyObjectEvent = {
 	>YyBase,

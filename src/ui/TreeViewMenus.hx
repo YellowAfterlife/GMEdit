@@ -2,6 +2,7 @@ package ui;
 import electron.FileSystem;
 import electron.Menu;
 import electron.Dialog;
+import gml.GmlObjectInfo;
 import gml.Project;
 import haxe.io.Path;
 import js.html.Element;
@@ -139,6 +140,12 @@ class TreeViewMenus {
 		var path = target.getAttribute(TreeView.attrPath);
 		electron.Shell.showItemInFolder(path);
 	}
+	public static function openObjectInfo() {
+		GmlObjectInfo.showFor(
+			target.getAttribute(TreeView.attrPath),
+			target.getAttribute(TreeView.attrIdent)
+		);
+	}
 	//
 	public static function showDirMenu(el:Element, ev:MouseEvent) {
 		target = el;
@@ -147,6 +154,7 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = true;
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
+		items.objectInfo.visible = false;
 		dirMenu.popupAsync(ev);
 	}
 	public static function showItemMenu(el:Element, ev:MouseEvent) {
@@ -162,6 +170,7 @@ class TreeViewMenus {
 		//
 		items.changeOpenIcon.visible = false;
 		items.resetOpenIcon.visible = false;
+		items.objectInfo.visible = kind == "object";
 		itemMenu.popupAsync(ev);
 	}
 	//
@@ -205,6 +214,7 @@ class TreeViewMenus {
 		addLink(itemMenu, "Open here", openHere);
 		addLink(itemMenu, "Open externally", openExternal);
 		addLink(itemMenu, "Show in directory", openDirectory);
+		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
 		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
 		itemMenu.append(iconItem);
@@ -222,6 +232,8 @@ class TreeViewMenus {
 private class TreeViewMenuItems {
 	public var openAll:MenuItem;
 	public var openCombined:MenuItem;
+	//
+	public var objectInfo:MenuItem;
 	//
 	public var changeOpenIcon:MenuItem;
 	public var resetOpenIcon:MenuItem;

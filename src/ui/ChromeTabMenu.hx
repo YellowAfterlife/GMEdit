@@ -1,6 +1,7 @@
 package ui;
 import electron.Menu;
 import gml.file.GmlFileBackup;
+import gml.file.GmlFileKind;
 import js.html.Element;
 import js.html.MouseEvent;
 import ui.ChromeTabs;
@@ -16,12 +17,17 @@ class ChromeTabMenu {
 	static var showInDirectoryItem:MenuItem;
 	static var showInTreeItem:MenuItem;
 	static var backupsItem:MenuItem;
+	static var showObjectInfo:MenuItem;
 	public static function show(el:ChromeTab, ev:MouseEvent) {
 		target = el;
 		var file = el.gmlFile;
 		var hasFile = file.path != null;
 		showInDirectoryItem.enabled = hasFile;
 		showInTreeItem.enabled = hasFile;
+		showObjectInfo.visible = hasFile && switch (file.kind) {
+			case GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents: true;
+			default: false;
+		};
 		var bk = GmlFileBackup.updateMenu(file);
 		if (bk != null) {
 			backupsItem.enabled = bk;
@@ -72,6 +78,13 @@ class ChromeTabMenu {
 					par = par.parentElement;
 				} while (par != null);
 				untyped item.scrollIntoViewIfNeeded();
+			}
+		}));
+		menu.append(showObjectInfo = new MenuItem({
+			label: "Object information",
+			click: function() {
+				var file = target.gmlFile;
+				gml.GmlObjectInfo.showFor(file.path, file.name);
 			}
 		}));
 		//

@@ -143,4 +143,43 @@ class GmxObject {
 		}
 		return null;
 	}
+	public static function getInfo(gmx:SfGmx, path:String, ?info:GmlObjectInfo):GmlObjectInfo {
+		var objName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(path)));
+		if (info == null) {
+			info = new GmlObjectInfo();
+			info.spriteName = gmx.findText("spriteName");
+			info.objectName = objName;
+			info.visible = gmx.findText("visible") != "0";
+			info.persistent = gmx.findText("persistent") != "0";
+			info.solid = gmx.findText("solid") != "0";
+		}
+		//
+		for (events in gmx.findAll("events"))
+		for (event in events.findAll("event")) {
+			var enumb = event.get("enumb");
+			var eid = GmlEvent.toString(
+				Std.parseInt(event.get("eventtype")),
+				enumb != null ? Std.parseInt(enumb) : null,
+				event.get("ename")
+			);
+			var elist = info.eventMap[eid];
+			if (elist == null) {
+				elist = [];
+				info.eventList.push(eid);
+				info.eventMap.set(eid, elist);
+			}
+			elist.unshift(objName + "(" + eid + ")");
+		}
+		//
+		var parent = gmx.findText("parentName");
+		if (parent != "" && parent != "<undefined>") {
+			var parentPath = Path.join([Path.directory(path), parent + ".object.gmx"]);
+			info.parents.unshift(parent);
+			if (FileSystem.existsSync(parentPath)) {
+				var parentGmx = FileSystem.readGmxFileSync(parentPath);
+				getInfo(parentGmx, parentPath, info);
+			}
+		}
+		return info;
+	}
 }
