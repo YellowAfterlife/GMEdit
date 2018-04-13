@@ -147,7 +147,6 @@ class GmlFileIO {
 			}
 		}
 		//
-		//
 		var out:String, src:String, gmx:SfGmx;
 		var writeFile:Bool = path != null;
 		switch (file.kind) {
@@ -157,17 +156,14 @@ class GmlFileIO {
 				out = val;
 				out = GmlExtArgs.post(out);
 				if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				if (Project.current.version.hasJSDoc()) {
-					var fmt = ui.Preferences.current.argsFormat;
-					if (fmt != null) {
-						if (GmlExtArgsDoc.proc(file, fmt)) {
-							out = file.session.getValue();
-							out = GmlExtArgs.post(out);
-							Main.window.setTimeout(function() {
-								file.session.getUndoManager().markClean();
-								file.changed = false;
-							});
-						}
+				if (ui.Preferences.current.argsFormat != null) {
+					if (GmlExtArgsDoc.proc(file)) {
+						out = file.session.getValue();
+						out = GmlExtArgs.post(out);
+						Main.window.setTimeout(function() {
+							file.session.getUndoManager().markClean();
+							file.changed = false;
+						});
 					}
 				}
 				out = GmlExtCoroutines.post(out);

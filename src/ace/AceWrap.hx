@@ -232,8 +232,26 @@ extern class AceBgTokenizer {
 	public function isClean():Bool;
 	public function markClean():Void;
 }
-typedef AcePos = { column: Int, row:Int };
-typedef AceRange = { start: AcePos, end:AcePos };
+@:forward abstract AcePos(AcePosImpl) from AcePosImpl to AcePosImpl {
+	public inline function new(column:Int, row:Int) {
+		this = { column: column, row: row };
+	}
+}
+private typedef AcePosImpl = { column: Int, row:Int };
+//
+@:forward abstract AceRange(AceRangeImpl) from AceRangeImpl to AceRangeImpl {
+	public function new(col1:Int, row1:Int, col2:Int, row2:Int):AceRange {
+		this = { start: new AcePos(col1, row1), end: new AcePos(col2, row2) };
+	}
+	public static function fromPair(start:AcePos, end:AcePos):AceRange {
+		return { start: start, end: end };
+	}
+	public static function fromPos(pos:AcePos):AceRange {
+		return { start: pos, end: pos };
+	}
+}
+private typedef AceRangeImpl = { start: AcePos, end:AcePos };
+//
 typedef AceToken = { type:AceTokenType, value:String, ?index:Int, ?start:Int };
 typedef AceTokenType = String;
 typedef AceAnnotation = { row:Int, column:Int, type:String, text:String }
