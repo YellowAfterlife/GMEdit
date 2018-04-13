@@ -108,9 +108,11 @@ class GmxObject {
 			if (data.name != null) event.set("ename", "" + data.name);
 			evCtr.addChild(event);
 			//
-			for (gml in source.code) {
-				event.addChild(GmxAction.makeCodeBlock(gml + "\r\n"));
-			}
+			if (source.code.length > 0) {
+				for (gml in source.code) {
+					event.addChild(GmxAction.makeCodeBlock(gml + "\r\n"));
+				}
+			} else event.addChild(GmxAction.makeCodeBlock(""));
 		} // for (source)
 		//
 		//trace(gmx.toGmxString());
