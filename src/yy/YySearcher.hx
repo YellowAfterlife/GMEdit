@@ -13,8 +13,7 @@ class YySearcher {
 	public static function run(
 		pj:Project, fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt
 	):Void {
-		var pjDir = pj.dir;
-		var yyProject:YyProject = FileSystem.readJsonFileSync(pj.path);
+		var yyProject:YyProject = pj.readJsonFileSync(pj.name);
 		var rxName = Project.rxName;
 		var filesLeft = 1;
 		inline function next():Void {
@@ -31,10 +30,9 @@ class YySearcher {
 			switch (res.resourceType) {
 				case "GMScript": if (opt == null || opt.checkScripts) {
 					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = Path.join([pjDir, res.resourcePath]);
-					resFull = Path.withoutExtension(resFull) + ".gml";
+					resFull = Path.withoutExtension(res.resourcePath) + ".gml";
 					filesLeft += 1;
-					FileSystem.readTextFile(resFull, function(error, code) {
+					pj.readTextFile(resFull, function(error, code) {
 						if (error == null) {
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
@@ -46,9 +44,9 @@ class YySearcher {
 				};
 				case "GMObject": if (opt == null || opt.checkObjects) {
 					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = Path.join([pjDir, res.resourcePath]);
+					resFull = res.resourcePath;
 					filesLeft += 1;
-					FileSystem.readTextFile(resFull, function(error, data) {
+					pj.readTextFile(resFull, function(error, data) {
 						if (error == null) try {
 							var resDir = Path.directory(resFull);
 							var obj:YyObject = haxe.Json.parse(data);
@@ -66,9 +64,9 @@ class YySearcher {
 				};
 				case "GMTimeline": if (opt == null || opt.checkObjects) {
 					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = Path.join([pjDir, res.resourcePath]);
+					resFull = res.resourcePath;
 					filesLeft += 1;
-					FileSystem.readTextFile(resFull, function(error, data) {
+					pj.readTextFile(resFull, function(error, data) {
 						if (error == null) try {
 							var resDir = Path.directory(resFull);
 							var tl:YyTimeline = haxe.Json.parse(data);

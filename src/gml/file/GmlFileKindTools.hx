@@ -39,7 +39,11 @@ class GmlFileKindTools {
 				}
 			};
 			case "yy": {
-				var json:YyBase = FileSystem.readJsonFileSync(path);
+				var json:YyBase;
+				
+				if (Path.isAbsolute(path)) {
+					json = FileSystem.readJsonFileSync(path);
+				} else json = Project.current.readJsonFileSync(path);
 				switch (json.modelName) {
 					case "GMObject": {
 						data = json;

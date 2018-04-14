@@ -21,7 +21,7 @@ class MainMenu {
 					],
 				});
 				if (paths != null && paths[0] != null) {
-					FileDrag.handle(paths[0]);
+					FileDrag.handle(paths[0], null);
 				}
 			}
 		}));

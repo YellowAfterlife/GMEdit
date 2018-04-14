@@ -4,6 +4,7 @@ import gml.Project;
 import haxe.io.Path;
 import js.RegExp;
 import js.html.LinkElement;
+import js.html.StyleElement;
 using tools.NativeString;
 using tools.HtmlTools;
 
@@ -13,16 +14,30 @@ using tools.HtmlTools;
  */
 class ProjectStyle {
 	public static var link:LinkElement;
+	public static var style:StyleElement;
 	public static inline function getPath() {
 		return Project.current.path + ".css";
 	}
 	public static function reload() {
-		if (Project.current.path != "") {
-			var path = getPath();
-			if (FileSystem.existsSync(path)) {
-				link.href = "file:///" + path + "?t=" + Date.now().getTime();
-			} else link.href = "";
-		} else link.href = "";
+		var pj = Project.current;
+		if (pj.path != "") {
+			if (pj.isVirtual) {
+				var cssPath = pj.name + ".css";
+				if (pj.existsSync(cssPath)) {
+					style.innerHTML = pj.readTextFileSync(cssPath);
+				} else style.innerHTML = "";
+				link.href = "";
+			} else {
+				var path = getPath();
+				if (FileSystem.existsSync(path)) {
+					link.href = "file:///" + path + "?t=" + Date.now().getTime();
+				} else link.href = "";
+				style.innerHTML = "";
+			}
+		} else {
+			link.href = "";
+			style.innerHTML = "";
+		}
 	}
 	public static function setItemThumb(data:{
 		thumb:String,
@@ -82,5 +97,6 @@ class ProjectStyle {
 	}
 	public static function init() {
 		link = Main.document.querySelectorAuto("#project-style");
+		style = Main.document.querySelectorAuto("#project-style-inline");
 	}
 }

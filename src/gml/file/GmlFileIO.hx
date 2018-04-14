@@ -1,4 +1,5 @@
 package gml.file;
+import electron.FileWrap;
 import gml.file.GmlFile;
 import electron.FileSystem;
 import gmx.*;
@@ -24,7 +25,7 @@ class GmlFileIO {
 		}
 	}
 	public static function load(file:GmlFile, data:Dynamic) {
-		var src:String = data != null ? data : FileSystem.readTextFileSync(file.path);
+		var src:String = data != null ? data : FileWrap.readTextFileSync(file.path);
 		file.syncTime();
 		var gmx:SfGmx, out:String, errors:String;
 		function setError(s:String) {
@@ -48,7 +49,7 @@ class GmlFileIO {
 				for (item in file.multidata) {
 					if (out != "") out += "\n\n";
 					out += "#define " + item.name + "\n";
-					var itemCode = FileSystem.readTextFileSync(item.path);
+					var itemCode = FileWrap.readTextFileSync(item.path);
 					var itemSubs = GmlMultifile.split(itemCode, item.name);
 					if (itemSubs == null) {
 						errors += "Can't open " + item.name
@@ -98,8 +99,8 @@ class GmlFileIO {
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = SfGmx.parse(src);
 				var notePath = file.notePath;
-				var notes = FileSystem.existsSync(notePath)
-					? new GmlReader(FileSystem.readTextFileSync(notePath)) : null;
+				var notes = FileWrap.existsSync(notePath)
+					? new GmlReader(FileWrap.readTextFileSync(notePath)) : null;
 				file.code = GmxProject.getMacroCode(gmx, notes, file.kind == GmxConfigMacros);
 			};
 		}
@@ -185,7 +186,7 @@ class GmlFileIO {
 					var itemPath = map0[item.name];
 					if (itemPath != null) {
 						var itemCode = item.code;
-						FileSystem.writeFileSync(itemPath, itemCode);
+						FileWrap.writeTextFileSync(itemPath, itemCode);
 					} else errors += "Can't save script " + item.name
 						+ " because it is not among the edited group.\n";
 				}
@@ -207,7 +208,7 @@ class GmlFileIO {
 				out = gmx.toGmxString();
 			};
 			case YyObjectEvents: {
-				var obj:YyObject = FileSystem.readJsonFileSync(path);
+				var obj:YyObject = FileWrap.readJsonFileSync(path);
 				if (!obj.setCode(path, val)) {
 					return error("Can't update YY:\n" + YyObject.errorText);
 				}
@@ -221,7 +222,7 @@ class GmlFileIO {
 				out = gmx.toGmxString();
 			};
 			case YyTimelineMoments: {
-				var tl:YyTimeline = FileSystem.readJsonFileSync(path);
+				var tl:YyTimeline = FileWrap.readJsonFileSync(path);
 				if (!tl.setCode(path, val)) {
 					return error("Can't update YY:\n" + YyTimeline.errorText);
 				}
@@ -242,14 +243,14 @@ class GmlFileIO {
 			default: return false;
 		}
 		//
-		if (writeFile) FileSystem.writeFileSync(path, out);
+		if (writeFile) FileWrap.writeTextFileSync(path, out);
 		file.savePost(out);
 		return true;
 	}
 	public static function checkChanges(file:GmlFile) {
 		var path = file.path;
-		if (file.path == null) return;
-		if (!FileSystem.existsSync(file.path)) return;
+		if (path == null || !haxe.io.Path.isAbsolute(path)) return;
+		if (!FileSystem.existsSync(path)) return;
 		try {
 			var time1 = FileSystem.statSync(path).mtimeMs;
 			if (time1 > file.time) {

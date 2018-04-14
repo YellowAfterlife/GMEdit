@@ -5,6 +5,7 @@ import electron.Electron;
 import haxe.Json;
 import haxe.io.Path;
 import js.Boot;
+import js.Error;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -16,7 +17,9 @@ import gml.GmlAPI;
 import ace.AceWrap;
 import gmx.*;
 import yy.*;
-import Main.*;
+import Main.window;
+import Main.document;
+import Main.moduleArgs;
 import tools.HtmlTools;
 import tools.NativeString;
 import gml.file.GmlFile;
@@ -44,6 +47,8 @@ class Project {
 	public var displayName:String;
 	/** project directory */
 	public var dir:String;
+	/** whether this project is stored in memory rather than on disk */
+	public var isVirtual:Bool;
 	//
 	public var yyObjectNames:Dictionary<String>;
 	public var yyObjectGUIDs:Dictionary<YyGUID>;
@@ -55,7 +60,12 @@ class Project {
 		this.path = path;
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
-		if (path == "") {
+		if (NativeString.startsWith(path, "yyz://")) {
+			displayName = Path.withoutExtension(path.substring(6));
+			name = displayName + ".yyp";
+			version = GmlVersion.v2;
+			dir = "";
+		} else if (path == "") {
 			name = "";
 			version = GmlVersion.none;
 			displayName = "Recent projects";
@@ -116,7 +126,7 @@ class Project {
 	}
 	//
 	public function reload(?first:Bool) {
-    nameNode.innerText = "Loading...";
+		nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
 			GmlAPI.version = version;
 			var state:ProjectState = null;
@@ -154,6 +164,36 @@ class Project {
 			default:
 		}
 	}
+	//
+	public inline function relPath(path:String) {
+		return Path.join([dir, path]);
+	}
+	public function existsSync(path:String):Bool {
+		return FileSystem.existsSync(relPath(path));
+	}
+	public function unlinkSync(path:String):Void {
+		FileSystem.unlinkSync(relPath(path));
+	}
+	public function readTextFile(path:String, fn:Error->String->Void):Void {
+		FileSystem.readTextFile(relPath(path), fn);
+	}
+	public function readTextFileSync(path:String):String {
+		return FileSystem.readTextFileSync(relPath(path));
+	}
+	public function readJsonFile<T:{}>(path:String, fn:Error->T->Void):Void {
+		FileSystem.readJsonFile(relPath(path), fn);
+	}
+	public function readJsonFileSync<T>(path:String):T {
+		return FileSystem.readJsonFileSync(relPath(path));
+	}
+	public function writeTextFileSync(path:String, text:String) {
+		FileSystem.writeFileSync(path, text);
+	}
+	public function getImageURL(path:String):String {
+		var full = relPath(path);
+		return FileSystem.existsSync(full) ? ("file:///" + full) : null;
+	}
+	//
 }
 /** (name, path, code) */
 typedef ProjectSearcher = String->String->String->Null<String>;

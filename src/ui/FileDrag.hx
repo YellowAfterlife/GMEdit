@@ -1,5 +1,6 @@
 package ui;
 import Main.document;
+import electron.FileSystem;
 import gml.GmlAPI;
 import gml.GmlVersion;
 import js.html.Event;
@@ -14,7 +15,7 @@ import gml.file.GmlFile;
  * @author YellowAfterlife
  */
 class FileDrag {
-	public static function handle(path:String) {
+	public static function handle(path:String, file:js.html.File) {
 		var name = Path.withoutDirectory(path);
 		inline function decline():Void {
 			Dialog.showMessageBox({
@@ -49,6 +50,21 @@ class FileDrag {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 				GmlFile.open(Path.withoutExtension(name), path);
 			};
+			case "yyz": {
+				if (file != null) {
+					var reader = new js.html.FileReader();
+					reader.onloadend = function(_) {
+						var abuf:js.html.ArrayBuffer = reader.result;
+						var bytes = haxe.io.Bytes.ofData(abuf);
+						yy.YyZip.open(name, bytes);
+					};
+					reader.readAsArrayBuffer(file);
+				} else {
+					var data = electron.FileSystem.readFileSync(path);
+					var bytes = haxe.io.Bytes.ofData(data);
+					yy.YyZip.open(name, bytes);
+				}
+			};
 			default: decline();
 		}
 	}
@@ -64,7 +80,7 @@ class FileDrag {
 			e.preventDefault();
 			var file = e.dataTransfer.files[0];
 			if (file == null) return;
-			handle(untyped file.path);
+			handle(untyped file.path || file.name, file);
 		});
 	}
 }

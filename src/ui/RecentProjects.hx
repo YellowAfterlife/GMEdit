@@ -46,7 +46,7 @@ class RecentProjects {
 			if (FileSystem.existsSync(path)) {
 				var th = path + ".png";
 				if (FileSystem.existsSync(th)) {
-					TreeView.setThumb(path, th);
+					TreeView.setThumb(path, "file:///" + th);
 				}
 			} else {
 				pj.setAttribute("data-missing", "true");

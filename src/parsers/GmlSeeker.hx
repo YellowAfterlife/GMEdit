@@ -26,11 +26,16 @@ class GmlSeeker {
 	}
 	public static function run(path:String, main:String) {
 		itemsLeft++;
-		FileSystem.readTextFile(path, function(err, text) {
+		function next(err, text) {
 			if (runSync(path, text, main)) {
 				runNext();
 			}
-		});
+		}
+		if (Path.isAbsolute(path)) {
+			FileSystem.readTextFile(path, next);
+		} else {
+			Project.current.readTextFile(path, next);
+		}
 	}
 	private static function runNext():Void {
 		if (--itemsLeft <= 0) {
@@ -374,14 +379,13 @@ class GmlSeeker {
 				var pj = Project.current;
 				var res = pj.yyResources[spriteId];
 				if (res != null) {
-					var spritePath = Path.join([pj.dir, res.Value.resourcePath]);
-					FileSystem.readTextFile(spritePath, function(e, raw) {
-						if (e != null) return;
-						var sprite:YySprite = haxe.Json.parse(raw);
+					var spritePath = res.Value.resourcePath;
+					pj.readJsonFile(spritePath, function(e, sprite:YySprite) {
 						var frame = sprite.frames[0];
 						if (frame == null) return;
 						var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
-						if (FileSystem.existsSync(framePath)) TreeView.setThumb(orig, framePath);
+						var frameURL = pj.getImageURL(framePath);
+						if (frameURL != null) TreeView.setThumb(orig, frameURL);
 					});
 				}
 			}
@@ -402,7 +406,7 @@ class GmlSeeker {
 		}
 		if (eventFiles.length == 0) return true;
 		for (file in eventFiles) (function(name, full) {
-			FileSystem.readTextFile(full, function(err, code) {
+			function procEvent(err, code) {
 				if (err == null) try {
 					var locals = new GmlLocals();
 					out.locals.set(name, locals);
@@ -414,7 +418,10 @@ class GmlSeeker {
 					finish(orig, out);
 					runNext();
 				}
-			});
+			}
+			if (Path.isAbsolute(full)) {
+				FileSystem.readTextFile(full, procEvent);
+			} else Project.current.readTextFile(full, procEvent);
 		})(file.name, file.full);
 		return false;
 	}
@@ -425,8 +432,9 @@ class GmlSeeker {
 		if (Preferences.current.assetThumbs) {
 			var sprite = obj.findText("spriteName");
 			if (sprite != "<undefined>") {
-				var thumb = Path.join([Project.current.dir, "sprites", "images", sprite + "_0.png"]);
-				if (FileSystem.existsSync(thumb)) TreeView.setThumb(orig, thumb);
+				var framePath = Path.join(["sprites", "images", sprite + "_0.png"]);
+				var frameURL = Project.current.getImageURL(framePath);
+				if (frameURL != null) TreeView.setThumb(orig, frameURL);
 			}
 		}
 		//

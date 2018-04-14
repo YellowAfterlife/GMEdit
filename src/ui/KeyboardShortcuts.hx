@@ -53,9 +53,11 @@ class KeyboardShortcuts {
 	public static function keydown(e:KeyboardEvent) {
 		var flags = getEventFlags(e);
 		var keyCode = e.keyCode;
+		var isMod = (flags == CTRL || flags == META);
+		var isShiftMod = (flags == SHIFT + CTRL || flags == SHIFT + META);
 		switch (keyCode) {
 			case KeyboardEvent.DOM_VK_F2: {
-				if (flags == CTRL || flags == META) {
+				if (isMod) {
 					untyped __js__("formatAceGMLContents();");
 				}
 			};
@@ -64,29 +66,43 @@ class KeyboardShortcuts {
 				//document.location.reload(true);
 			};
 			case KeyboardEvent.DOM_VK_TAB: {
-				if (flags == 3) prevTab();
-				if (flags == 1) nextTab();
+				if (isShiftMod) {
+					e.preventDefault();
+					prevTab();
+				}
+				if (isMod) {
+					e.preventDefault();
+					nextTab();
+				}
 			};
 			case KeyboardEvent.DOM_VK_PAGE_DOWN: {
-				if (flags == 1) nextTab();
+				if (isMod) {
+					e.preventDefault();
+					nextTab();
+				}
 			};
 			case KeyboardEvent.DOM_VK_PAGE_UP: {
-				if (flags == 1) prevTab();
+				if (isMod) {
+					e.preventDefault();
+					prevTab();
+				}
 			};
 			case KeyboardEvent.DOM_VK_I: {
-				if (flags == 3) {
-					electron.Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+				if (isShiftMod && Electron != null) {
+					Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
 				}
 			};
 			case KeyboardEvent.DOM_VK_R: {
-				if (flags == CTRL || flags == META) {
+				if (isMod) {
+					e.preventDefault();
 					if (Project.current != null) {
 						Project.current.reload();
 					}
 				}
 			};
 			case KeyboardEvent.DOM_VK_W: {
-				if (flags == 1) {
+				if (isMod) {
+					e.preventDefault();
 					var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
 					if (q != null) {
 						q.click();
@@ -94,7 +110,8 @@ class KeyboardShortcuts {
 						Project.open("");
 					}
 				}
-				if (flags == 3) {
+				if (isShiftMod) {
+					e.preventDefault();
 					for (q in document.querySelectorAll(
 						".chrome-tab:not(.chrome-tab-current) .chrome-tab-close"
 					)) {
@@ -103,12 +120,14 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_S: {
-				if (flags == CTRL || flags == META) {
+				if (isMod) {
+					e.preventDefault();
 					var q = GmlFile.current;
 					if (q != null) {
 						q.save();
 					}
-				} else if (flags == CTRL + SHIFT || flags == META + SHIFT) {
+				} else if (isShiftMod) {
+					e.preventDefault();
 					for (tabEl in ChromeTabs.impl.tabEls) {
 						var file = tabEl.gmlFile;
 						if (file != null) file.save();
@@ -123,22 +142,28 @@ class KeyboardShortcuts {
 				}
 			};
 			case KeyboardEvent.DOM_VK_F: {
-				if (flags == CTRL + SHIFT || flags == META + SHIFT) GlobalSearch.toggle();
+				if (isMod) e.preventDefault();
+				if (isShiftMod) GlobalSearch.toggle();
 			};
 			case KeyboardEvent.DOM_VK_T: {
-				if (flags == CTRL || flags == META) GlobalLookup.toggle();
+				if (isMod) {
+					e.preventDefault();
+					GlobalLookup.toggle();
+				}
 			};
 			case KeyboardEvent.DOM_VK_9: {
-				if (flags == CTRL || flags == META) {
+				if (isMod) {
+					e.preventDefault();
 					var tabs = document.querySelectorEls(".chrome-tab");
 					var tabEl:Element = tabs[tabs.length - 1];
 					if (tabEl != null) tabEl.click();
 				}
 			};
 			default: {
-				if ((flags == CTRL || flags == META)
-				&& keyCode >= KeyboardEvent.DOM_VK_0
+				if (isMod
+				&& keyCode >= KeyboardEvent.DOM_VK_1
 				&& keyCode <= KeyboardEvent.DOM_VK_8) {
+					e.preventDefault();
 					var tabs = document.querySelectorEls(".chrome-tab");
 					var tabEl:Element = cast tabs[keyCode - KeyboardEvent.DOM_VK_1];
 					if (tabEl != null) tabEl.click();

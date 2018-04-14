@@ -115,7 +115,7 @@ class TreeViewMenus {
 			var th = itemPath + ".png";
 			if (path != null) {
 				FileSystem.copyFileSync(path, th);
-				TreeView.setThumb(itemPath, th + "?v=" + Date.now().getTime());
+				TreeView.setThumb(itemPath, "file:///" + th + "?v=" + Date.now().getTime());
 			} else {
 				if (FileSystem.existsSync(th)) FileSystem.unlinkSync(th);
 				TreeView.resetThumb(itemPath);

@@ -129,12 +129,17 @@ class GmlAPI {
 		GmlExternAPI.gmlResetOnDefine = version != GmlVersion.live;
 		if (version == GmlVersion.none) return;
 		//
-		var getContent_s:String;
 		var getContent_rx = new RegExp("\r\n", "g");
-		inline function getContent(path:String):String {
-			getContent_s = FileSystem.readFileSync(Main.relPath(path), "utf8");
-			getContent_s = NativeString.replaceExt(getContent_s, getContent_rx, "\n");
-			return getContent_s;
+		inline function getContent(path:String, fn:String->Void):Void {
+			if (FileSystem.canSync) {
+				var s = FileSystem.readFileSync(Main.relPath(path), "utf8");
+				s = NativeString.replaceExt(s, getContent_rx, "\n");
+				fn(s);
+			} else {
+				FileSystem.readTextFile(path, function(e, s) {
+					if (e == null) fn(s);
+				});
+			}
 		}
 		var dir = "api/" + version.getName();
 		//
@@ -144,78 +149,84 @@ class GmlAPI {
 		var confPath = Main.relPath(dir + "/config.json");
 		var files:Array<String> = null;
 		var assets:Array<String> = null;
-		if (FileSystem.existsSync(confPath)) {
-			var conf:GmlConfig = FileSystem.readJsonFileSync(confPath);
-			files = conf.apiFiles;
-			assets = conf.assetFiles;
-			if (ukSpelling == null) ukSpelling = conf.ukSpelling;
-			//
-			var confKeywords = conf.keywords;
-			if (confKeywords != null) for (kw in confKeywords) {
-				stdKind.set(kw, "keyword");
-			}
-			//
-			helpURL = conf.helpURL;
-			var helpIndexPath = conf.helpIndex;
-			if (helpIndexPath != null) {
-				helpIndexPath = Main.relPath(dir + "/" + helpIndexPath);
-				var helpIndexJs = FileSystem.readTextFileSync(helpIndexPath);
-				helpLookup = new Dictionary();
-				helpIndexJs = helpIndexJs.substring(helpIndexJs.indexOf("["));
-				helpIndexJs = helpIndexJs.substring(0, helpIndexJs.indexOf(";"));
-				try {
-					var helpIndexArr:Array<Array<Dynamic>> = haxe.Json.parse(helpIndexJs);
-					for (pair in helpIndexArr) {
-						var item:Dynamic = pair[1];
-						if (Std.is(item, Array)) item = item[0][1];
-						helpLookup.set(pair[0], item);
-					}
-				} catch (x:Dynamic) {
-					trace("Couldn't parse help index:", x);
+		FileSystem.readJsonFile(confPath, function(error, conf:GmlConfig) {
+			if (error == null) {
+				files = conf.apiFiles;
+				assets = conf.assetFiles;
+				if (ukSpelling == null) ukSpelling = conf.ukSpelling;
+				//
+				var confKeywords = conf.keywords;
+				if (confKeywords != null) for (kw in confKeywords) {
+					stdKind.set(kw, "keyword");
+				}
+				//
+				helpURL = conf.helpURL;
+				var helpIndexPath = conf.helpIndex;
+				if (helpIndexPath != null) {
+					helpIndexPath = Main.relPath(dir + "/" + helpIndexPath);
+					FileSystem.readTextFile(helpIndexPath, function(err, helpIndexJs) {
+						if (err != null) return;
+						helpLookup = new Dictionary();
+						helpIndexJs = helpIndexJs.substring(helpIndexJs.indexOf("["));
+						helpIndexJs = helpIndexJs.substring(0, helpIndexJs.indexOf(";"));
+						try {
+							var helpIndexArr:Array<Array<Dynamic>> = haxe.Json.parse(helpIndexJs);
+							for (pair in helpIndexArr) {
+								var item:Dynamic = pair[1];
+								if (Std.is(item, Array)) item = item[0][1];
+								helpLookup.set(pair[0], item);
+							}
+						} catch (x:Dynamic) {
+							trace("Couldn't parse help index:", x);
+						}
+					});
 				}
 			}
-		}
-		//
-		if (assets != null) for (file in assets) {
-			var raw = getContent('$dir/$file');
-			GmlParseAPI.loadAssets(raw, { kind: stdKind, comp: stdComp });
-		}
-		//
-		var data = {
-			kind: stdKind,
-			doc: stdDoc,
-			comp: stdComp,
-			ukSpelling: ukSpelling,
-			version: version,
-		};
-		if (files != null) for (file in files) {
-			var raw = getContent('$dir/$file');
-			GmlParseAPI.loadStd(raw, data);
-		} else {
-			var raw = getContent('$dir/fnames');
-			raw += "\n" + getContent('$dir/extra.gml');
 			//
-			var replace = getContent('$dir/replace.gml');
-			~/^(\w+).+$/gm.each(replace, function(rx:EReg) {
-				var name = rx.matched(1);
-				var code = rx.matched(0);
-				raw = (new EReg('^$name.+$$', "gm")).map(raw, function(r1) {
-					return code;
+			if (assets != null) for (file in assets) {
+				getContent('$dir/$file', function(raw) {
+					GmlParseAPI.loadAssets(raw, { kind: stdKind, comp: stdComp });
 				});
-			});
+			}
 			//
-			var exclude = getContent('$dir/exclude.gml');
-			~/^(\w+)(\*?)$/gm.each(exclude, function(rx:EReg) {
-				var name = rx.matched(1);
-				if (rx.matched(2) != "") {
-					raw = new EReg('^$name.*$', "gm").replace(raw, "");
-				} else {
-					raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
-				}
-			});
-			//
-			GmlParseAPI.loadStd(raw, data);
-		}
+			var data = {
+				kind: stdKind,
+				doc: stdDoc,
+				comp: stdComp,
+				ukSpelling: ukSpelling,
+				version: version,
+			};
+			if (files != null) for (file in files) {
+				getContent('$dir/$file', function(raw) {
+					GmlParseAPI.loadStd(raw, data);
+				});
+			} else getContent('$dir/fnames', function(raw0) {
+				getContent('$dir/extra.gml', function(raw) {
+					raw = raw0 + "\n" + raw;
+					getContent('$dir/replace.gml', function(replace) {
+						~/^(\w+).+$/gm.each(replace, function(rx:EReg) {
+							var name = rx.matched(1);
+							var code = rx.matched(0);
+							raw = (new EReg('^$name.+$$', "gm")).map(raw, function(r1) {
+								return code;
+							});
+						});
+						//
+						getContent('$dir/exclude.gml', function(exclude) {
+							~/^(\w+)(\*?)$/gm.each(exclude, function(rx:EReg) {
+								var name = rx.matched(1);
+								if (rx.matched(2) != "") {
+									raw = new EReg('^$name.*$', "gm").replace(raw, "");
+								} else {
+									raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
+								}
+							});
+							GmlParseAPI.loadStd(raw, data);
+						}); // getContent exclude
+					}); // getContent replace
+				}); // getContent extra
+			}); // if files else getContent fnames
+		}); // getContent conf
 	}
 }
 @:native("window") extern class GmlExternAPI {

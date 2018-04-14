@@ -26,6 +26,12 @@ class ChromeTabs {
 	}
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
+		if (electron.Electron == null) {
+			element.classList.remove("has-system-buttons");
+			for (btn in element.querySelectorAll(".system-button")) {
+				btn.parentElement.removeChild(btn);
+			}
+		}
 		impl = new ChromeTabsImpl();
 		impl.init(element, {
 			tabOverlapDistance: 14, minWidth: 45, maxWidth: 160

@@ -1,6 +1,6 @@
 package parsers;
 import ace.AceWrap.AceAutoCompleteItems;
-import electron.FileSystem;
+import electron.FileWrap;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.GmlImports;
@@ -83,12 +83,12 @@ class GmlExtImport {
 	static function parseFile(imp:GmlImports, rel:String, found:Dictionary<Bool>) {
 		if (found[rel]) return true;
 		var full = Path.join([Project.current.dir, "#import", rel]);
-		if (!FileSystem.existsSync(full)) {
+		if (!FileWrap.existsSync(full)) {
 			full += ".gml";
-			if (!FileSystem.existsSync(full)) return false;
+			if (!FileWrap.existsSync(full)) return false;
 		}
 		found.set(rel, true);
-		var code = FileSystem.readTextFileSync(full);
+		var code = FileWrap.readTextFileSync(full);
 		var q = new GmlReader(code);
 		var version = GmlAPI.version;
 		//
@@ -140,7 +140,7 @@ class GmlExtImport {
 		}
 		if (!Preferences.current.importMagic) return cancel();
 		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
-		var globalExists = FileSystem.existsSync(globalPath);
+		var globalExists = FileWrap.existsSync(globalPath);
 		if (code.indexOf("//!#import") < 0 && !globalExists) return cancel();
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);

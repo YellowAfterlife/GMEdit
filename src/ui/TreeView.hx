@@ -60,7 +60,7 @@ class TreeView {
 	public static function setThumb(itemPath:String, thumbPath:String) {
 		resetThumb(itemPath);
 		thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
-			+ '"]::before { background-image: url("file:///' + thumbPath.escapeProp()
+			+ '"]::before { background-image: url("' + thumbPath.escapeProp()
 			+ '"); }', thumbSheet.cssRules.length);
 		var item = find(true, { path: itemPath });
 		if (item != null) item.setAttribute(attrThumb, thumbPath);

@@ -15,8 +15,7 @@ import ui.TreeView;
  */
 class YyLoader {
 	public static function run(project:Project):String {
-		var dir = project.dir;
-		var yyProject:YyProject = FileSystem.readJsonFileSync(project.path);
+		var yyProject:YyProject = project.readJsonFileSync(project.name);
 		var resources:Dictionary<YyProjectResource> = new Dictionary();
 		project.yyResources = resources;
 		var views:Dictionary<YyView> = new Dictionary();
@@ -26,7 +25,7 @@ class YyLoader {
 			resources.set(key, res);
 			var val = res.Value;
 			if (val.resourceType == "GMFolder") {
-				var view:YyView = FileSystem.readJsonFileSync(Path.join([dir, val.resourcePath]));
+				var view:YyView = project.readJsonFileSync(val.resourcePath);
 				if (view.isDefaultView) rootView = view;
 				views.set(key, view);
 			}
@@ -73,7 +72,7 @@ class YyLoader {
 				} else {
 					name = rxName.replace(val.resourcePath, "$1");
 					rel = path + name;
-					var full = Path.join([dir, val.resourcePath]);
+					var full = val.resourcePath;
 					switch (type) {
 						case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 						"GMScript", "GMShader", "GMFont", "GMTimeline",
@@ -106,7 +105,7 @@ class YyLoader {
 							GmlAPI.gmlLookupText += name + "\n";
 						};
 						case "GMExtension": {
-							var ext:YyExtension = FileSystem.readJsonFileSync(full);
+							var ext:YyExtension = project.readJsonFileSync(full);
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
 							var extEl = TreeView.makeDir(ext.name, extRel);

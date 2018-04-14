@@ -1,5 +1,5 @@
 package yy;
-import electron.FileSystem;
+import electron.FileWrap;
 import gml.GmlObjectInfo;
 import parsers.GmlEvent;
 import gml.file.GmlFile;
@@ -40,7 +40,7 @@ import ui.TreeView;
 			var rel = YyEvent.toPath(type, numb, eid);
 			var name = YyEvent.toString(type, numb, oid);
 			var full = Path.join([dir, rel]);
-			var code = FileSystem.readTextFileSync(full);
+			var code = FileWrap.readTextFileSync(full);
 			if (out != "") out += "\n\n";
 			var pair = parsers.GmlHeader.parse(NativeString.trimRight(code), v2);
 			out += "#event " + name;
@@ -106,14 +106,14 @@ import ui.TreeView;
 		for (i in 0 ... oldList.length) if (!newMap.exists(oldNames[i])) {
 			var ev = oldList[i];
 			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
-			if (FileSystem.existsSync(full)) FileSystem.unlinkSync(full);
+			if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 		}
 		// write used event files:
 		this.eventList = [];
 		for (item in newList) {
 			var ev = item.event;
 			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
-			FileSystem.writeFileSync(full, item.code);
+			FileWrap.writeTextFileSync(full, item.code);
 			this.eventList.push(ev);
 		}
 		//
@@ -127,8 +127,8 @@ import ui.TreeView;
 			+ TreeView.attrIdent + '="' + NativeString.escapeProp(parentName) + '"]');
 		if (el == null) return null;
 		var path = el.getAttribute(TreeView.attrPath);
-		if (!FileSystem.existsSync(path)) return null;
-		var json:YyObject = FileSystem.readJsonFileSync(path);
+		if (!FileWrap.existsSync(path)) return null;
+		var json:YyObject = FileWrap.readJsonFileSync(path);
 		json.path = path;
 		return json;
 	}
@@ -139,7 +139,7 @@ import ui.TreeView;
 		var enumb = edata.numb;
 		var eobj = edata.obj; if (eobj == null) eobj = YyGUID.zero;
 		//
-		var obj:YyObject = FileSystem.readJsonFileSync(full);
+		var obj:YyObject = FileWrap.readJsonFileSync(full);
 		var parentId = obj.parentObjectId;
 		var tries = 1024;
 		while (parentId != YyGUID.zero && --tries >= 0) {
