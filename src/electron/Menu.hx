@@ -112,6 +112,7 @@ typedef MenuPopupOptions = {
 			element.appendChild(labelEl);
 		}
 		if (click != null) element.addEventListener("click", function(e:MouseEvent) {
+			if (!enabled) return;
 			if (parent != null) parent.hide();
 			if (click != null) click();
 		});

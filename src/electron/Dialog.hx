@@ -1,4 +1,6 @@
 package electron;
+import js.html.FormElement;
+import js.html.InputElement;
 
 /**
  * https://electronjs.org/docs/api/dialog
@@ -15,8 +17,34 @@ package electron;
 		//if (Dialog 
 	}*/
 }
-private class DialogHelper {
-	
+@:keep class DialogFallback {
+	private static var form:FormElement;
+	private static var input:InputElement;
+	public static function showOpenDialog(
+		options:DialogOpenOptions, ?async:Array<String>->Void
+	):Array<String> {
+		if (form == null) init();
+		if (options.filters != null) {
+			var acc = "";
+			for (filter in options.filters) {
+				if (acc != "") acc += ";";
+				
+			}
+		} else input.accept = null;
+		form.reset();
+		input.onchange = function(_) {
+			
+		};
+		return null;
+	}
+	static function init() {
+		//
+		form = Main.document.createFormElement();
+		input = Main.document.createInputElement(); 
+		form.appendChild(input);
+		form.style.display = "none";
+		Main.document.body.appendChild(form);
+	}
 }
 //
 typedef DialogOpenOptions = {

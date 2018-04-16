@@ -57,6 +57,7 @@ class TreeView {
 	//
 	public static var thumbStyle:StyleElement;
 	public static var thumbSheet:CSSStyleSheet;
+	public static var thumbMap:Dictionary<String> = new Dictionary();
 	public static function setThumb(itemPath:String, thumbPath:String) {
 		resetThumb(itemPath);
 		thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
@@ -64,6 +65,7 @@ class TreeView {
 			+ '"); }', thumbSheet.cssRules.length);
 		var item = find(true, { path: itemPath });
 		if (item != null) item.setAttribute(attrThumb, thumbPath);
+		thumbMap.set(itemPath, thumbPath);
 	}
 	public static function resetThumb(itemPath:String) {
 		var prefix = '.treeview .item[$attrPath="' + itemPath.escapeProp() + '"]::before {';
@@ -75,6 +77,7 @@ class TreeView {
 		}
 		var item = find(true, { path: itemPath });
 		if (item != null) item.removeAttribute(attrThumb);
+		thumbMap.remove(itemPath);
 	}
 	//
 	static function handleDirClick(e:MouseEvent) {
@@ -143,6 +146,8 @@ class TreeView {
 	public static function makeItem(name:String, rel:String, path:String, kind:String) {
 		var r = makeItemImpl(name, path, kind);
 		r.setAttribute(attrRel, rel);
+		var th = thumbMap[path];
+		if (th != null) r.setAttribute(attrThumb, th);
 		r.addEventListener("dblclick", handleItemClick);
 		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;

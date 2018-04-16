@@ -17,6 +17,9 @@ class NativeString {
 	):String {
 		return untyped s.replace(what, by);
 	}
+	public static inline function splitRx(s:String, at:RegExp):Array<String> {
+		return s.split(cast at);
+	}
 	public static inline function matchRx(s:String, rx:RegExp):Array<String> {
 		return untyped s.match(rx);
 	}

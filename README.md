@@ -4,7 +4,7 @@ This is an experimental open-source code editor for GameMaker: Studio / GameMake
 
 The intent is to have a code editor that supports common features (syntax highlighting, auto-completion, object event editing) while providing a familiar multi-tab editor interface. Such thing would be convenient for any situations where you want project files to be updated in a timely manner when saving (e.g. [GMLive](https://yal.cc/introducing-gmlive-gml/)), but also for any large-scale projects where the whole popup window scheme doesn't really hold up anymore.
 
-Maintained by: YellowAfterlife
+Maintained by: [YellowAfterlife](https://yal.cc)
 
 ### Setting up
 
@@ -27,6 +27,7 @@ Same page also houses screenshots and development log.
 * Native wrapper: [Electron](https://electronjs.org/)
 * Light theme tree icons: [Silk](http://www.famfamfam.com/lab/icons/silk/) (slightly edited)
 * Dark theme tree icons: [Font Awesome](https://fontawesome.com/)
+* zlib decompression: [pako](https://github.com/nodeca/pako)
 
 ### License
 

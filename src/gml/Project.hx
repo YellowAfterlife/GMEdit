@@ -22,6 +22,7 @@ import Main.document;
 import Main.moduleArgs;
 import tools.HtmlTools;
 import tools.NativeString;
+using tools.PathTools;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
 import ui.TreeView;
@@ -60,32 +61,32 @@ class Project {
 		this.path = path;
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
-		if (NativeString.startsWith(path, "yyz://")) {
-			displayName = Path.withoutExtension(path.substring(6));
-			name = displayName + ".yyp";
-			version = GmlVersion.v2;
-			dir = "";
-		} else if (path == "") {
-			name = "";
-			version = GmlVersion.none;
-			displayName = "Recent projects";
-		} else if (Path.extension(path).toLowerCase() == "gmx") {
-			version = GmlVersion.v1;
-			displayName = Path.withoutExtension(Path.withoutExtension(name));
-		} else if (Path.extension(path).toLowerCase() == "yyp") {
-			version = GmlVersion.v2;
-			displayName = Path.withoutExtension(name);
-		} else switch (name.toLowerCase()) {
-			case "main.txt", "main.cfg": {
-				version = GmlVersion.live;
-				name = Path.withoutDirectory(dir);
-				displayName = name;
-			};
-			default: displayName = name;
-		}
+		detectVersion();
 		document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
 		TreeView.clear();
 		reload(true);
+	}
+	public function detectVersion() {
+		if (path == "") {
+			name = "";
+			version = GmlVersion.none;
+			displayName = "Recent projects";
+		} else {
+			version = path.ptDetectProject();
+			switch (version) {
+				case GmlVersion.v2: {
+					displayName = name.ptNoExt();
+				};
+				case GmlVersion.v1: {
+					displayName = name.ptNoExt().ptNoExt();
+				};
+				case GmlVersion.live: {
+					name = dir.ptNoDir();
+					displayName = name;
+				};
+				default: displayName = name;
+			}
+		}
 	}
 	public static function open(path:String) {
 		if (current != null) current.close();
@@ -186,12 +187,27 @@ class Project {
 	public function readJsonFileSync<T>(path:String):T {
 		return FileSystem.readJsonFileSync(relPath(path));
 	}
+	public function readGmxFileSync(path:String):SfGmx {
+		return FileSystem.readGmxFileSync(relPath(path));
+	}
 	public function writeTextFileSync(path:String, text:String) {
 		FileSystem.writeFileSync(path, text);
 	}
 	public function getImageURL(path:String):String {
 		var full = relPath(path);
 		return FileSystem.existsSync(full) ? ("file:///" + full) : null;
+	}
+	public function readdirSync(path:String):Array<ProjectDirInfo> {
+		var full = relPath(path);
+		var out:Array<ProjectDirInfo> = [];
+		for (rel in FileSystem.readdirSync(full)) {
+			var itemFull = Path.join([full, rel]);
+			out.push({
+				fileName: rel,
+				isDirectory: FileSystem.statSync(itemFull).isDirectory()
+			});
+		}
+		return out;
 	}
 	//
 }
@@ -200,4 +216,8 @@ typedef ProjectSearcher = String->String->String->Null<String>;
 typedef ProjectState = {
 	treeviewScrollTop:Int,
 	treeviewOpenNodes:Array<String>,
+}
+typedef ProjectDirInfo = {
+	fileName:String,
+	isDirectory:Bool,
 }

@@ -9,6 +9,7 @@ import parsers.GmlEvent;
 class YyEvent {
 	public static function toPath(type:Int, numb:Int, eid:YyGUID) {
 		var ename = GmlEvent.getTypeNameCap(type);
+		// todo: key*
 		if (type == GmlEvent.typeCollision) {
 			return ename + "_" + eid + ".gml";
 		}

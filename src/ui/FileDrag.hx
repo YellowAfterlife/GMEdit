@@ -50,7 +50,7 @@ class FileDrag {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 				GmlFile.open(Path.withoutExtension(name), path);
 			};
-			case "yyz": {
+			case "yyz", "zip": {
 				if (file != null) {
 					var reader = new js.html.FileReader();
 					reader.onloadend = function(_) {
@@ -78,6 +78,7 @@ class FileDrag {
 		document.body.addEventListener("dragleave", cancelDefault);
 		document.body.addEventListener("drop", function(e:DragEvent) {
 			e.preventDefault();
+			//Main.console.log(e.dataTransfer.files);
 			var file = e.dataTransfer.files[0];
 			if (file == null) return;
 			handle(untyped file.path || file.name, file);

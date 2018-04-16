@@ -132,6 +132,9 @@ html #ace_settingsmenu {
 	padding: 4px 20px;
 	cursor: default;
 }
+.popout-menu li[disabled] {
+	color: #999;
+}
 .popout-menu .popout-menu-separator {
 	background: #E9E9E9;
 	height: 1px;

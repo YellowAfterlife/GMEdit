@@ -46,8 +46,8 @@ class GmlEvent {
 		s2i.set(name, { type: type, numb: numb });
 	}
 	static function linkType(type:Int, name:String) {
-		t2s[type] = name;
-		t2sc[type] = tools.NativeString.capitalize(name);
+		t2s[type] = name.toLowerCase();
+		t2sc[type] = name;
 		s2t.set(name, type);
 	}
 	//
@@ -218,19 +218,19 @@ class GmlEvent {
 	public static function init() {
 		// define event names (used for GMS2 paths and when no name is available):
 		for (i in 0 ... 16) linkType(i, "event" + i);
-		linkType(0, "create");
-		linkType(1, "destroy");
-		linkType(2, "alarm");
-		linkType(3, "step");
-		linkType(4, "collision");
-		linkType(5, "keyboard");
-		linkType(6, "mouse");
-		linkType(7, "other");
-		linkType(8, "draw");
-		linkType(9, "keypress");
-		linkType(10, "keyrelease");
-		linkType(12, "cleanup"); t2sc[12] = "CleanUp";
-		linkType(13, "gesture");
+		linkType(0, "Create");
+		linkType(1, "Destroy");
+		linkType(2, "Alarm");
+		linkType(3, "Step");
+		linkType(4, "Collision");
+		linkType(5, "Keyboard");
+		linkType(6, "Mouse");
+		linkType(7, "Other");
+		linkType(8, "Draw");
+		linkType(9, "KeyPress");
+		linkType(10, "KeyRelease");
+		linkType(12, "CleanUp");
+		linkType(13, "Gesture");
 		// set up auto-completion for events that have ":id" suffix:
 		comp.push(new AceAutoCompleteItem("collision", "event"));
 		comp.push(new AceAutoCompleteItem("keypress", "event"));

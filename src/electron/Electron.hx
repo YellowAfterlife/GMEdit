@@ -33,7 +33,7 @@ import haxe.extern.EitherType;
 		} else {
 			blank("Electron_API");
 			set("Electron_FS", FileSystem.FileSystemBrowser);
-			blank("Electron_Dialog");
+			set("Electron_Dialog", Dialog.DialogFallback);
 			blank("Electron_IPC");
 			blank("Electron_Shell");
 			set("Electron_Menu", Menu.MenuFallback);
