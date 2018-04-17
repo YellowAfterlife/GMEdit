@@ -34,6 +34,7 @@ class GmlFileBackup {
 		//
 		var path = getPath(file);
 		if (path == null) return;
+		if (!Path.isAbsolute(path)) return null;
 		//
 		try {
 			var i = num - 1;
