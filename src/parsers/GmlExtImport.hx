@@ -54,15 +54,25 @@ class GmlExtImport {
 			check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc);
 			check(GmlAPI.extKind, GmlAPI.extComp, GmlAPI.extDoc);
 			check(GmlAPI.gmlKind, GmlAPI.gmlComp, GmlAPI.gmlDoc);
+		} else if (path.startsWith("global.")) {
+			flat = path.substring(7);
+			var ns:String = null;
+			if (alias == null) {
+				alias = flat;
+			} else if (mt[3] != null) {
+				ns = alias;
+				alias = mt[3];
+			}
+			var comp = new ace.AceWrap.AceAutoCompleteItem(path, "global");
+			imp.add(path, alias, "globalfield", comp, null, ns);
 		} else {
 			flat = path.replaceExt(rxPeriod, "_");
+			var ns:String = null;
 			if (alias == null) {
 				var p = path.lastIndexOf(".");
 				if (p < 0) return;
 				alias = flat.substring(p + 1);
-			}
-			var ns:String = null;
-			if (mt[3] != null) {
+			} else if (mt[3] != null) {
 				ns = alias;
 				alias = mt[3];
 			}
@@ -206,10 +216,23 @@ class GmlExtImport {
 				default: {
 					if (c.isIdent0()) {
 						q.skipIdent1();
-						var id = imp.shorten[q.substring(p, q.pos)];
-						if (id != null) {
+						var ident = q.substring(p, q.pos);
+						var next:String = null;
+						if (ident != "global") {
+							next = imp.shorten[ident];
+						} else if (imp.hasGlobal) {
+							q.skipSpaces0();
+							if (q.peek() == ".".code) {
+								q.skip();
+								q.skipSpaces0();
+								var p1 = q.pos;
+								q.skipIdent1();
+								next = imp.shortenGlobal[q.substring(p1, q.pos)];
+							}
+						}
+						if (next != null) {
 							flush(p);
-							out += id;
+							out += next;
 							start = q.pos;
 						}
 					}

@@ -271,14 +271,26 @@ using tools.NativeString;
 			rxRule("comment", ~/\/\*/, "comment"),
 			rDefine, rAction, rKeyEvent, rEvent, rMoment,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
-			rule(mtImport, "(#import\\b)"
-				+ "([ \t]*)"
-				+ "([\\w.]+\\*?)" // com.pkg[.*]
-				+ "([ \t]*)"
-				+ "((?:\\b(?:as|in)\\b)?)" // in
-				+ "([ \t]*)"
-				+ "((?:\\w+)?)" // alias
-			),
+			rule([ //{ #import global.longsome in some
+				"preproc.import", // #import
+				"text",
+				"keyword", // global
+				"punctuation.operator",
+				"globalfield", // longsome
+				"text",
+				"keyword", // in|as
+				"text",
+				"importas" // some
+			], "(#import\\b)"
+				+ "([ \t]*)(global)(\\.?)(\\w*)"
+				+ "([ \t]*)((?:\\b(?:as|in)\\b)?)" // in
+				+ "([ \t]*)((?:\\w+)?)" // alias
+			), //}
+			rule(mtImport, "(#import\\b)" //{
+				+ "([ \t]*)([\\w.]+\\*?)" // com.pkg[.*]
+				+ "([ \t]*)((?:\\b(?:as|in)\\b)?)" // in
+				+ "([ \t]*)((?:\\w+)?)" // alias
+			), //}
 			rxRule(["preproc.import", "string.importpath"], ~/(#import\s+)("[^"]*"|'[^']*')/),
 			rxRule("preproc.import", ~/#import\b/),
 			rxRule("preproc.args", ~/#args\b/),

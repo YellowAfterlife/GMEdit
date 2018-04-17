@@ -16,6 +16,11 @@ class GmlImports {
 	/** "scr_some" -> "some" */
 	public var shorten:Dictionary<String> = new Dictionary();
 	
+	/** [global.]"longsome" -> "shortsome" */
+	public var shortenGlobal:Dictionary<String> = new Dictionary();
+	
+	public var hasGlobal:Bool = false;
+	
 	/** "some" -> "scr_some" */
 	public var longen:Dictionary<String> = new Dictionary();
 	
@@ -50,7 +55,10 @@ class GmlImports {
 			this.kind.set(short, kind);
 		}
 		//
-		shorten.set(long, short);
+		if (tools.NativeString.startsWith(long, "global.")) {
+			hasGlobal = true;
+			shortenGlobal.set(long.substring(7), short);
+		} else shorten.set(long, short);
 		longen.set(short, long);
 		//
 		if (doc != null) docs.set(short, doc);
