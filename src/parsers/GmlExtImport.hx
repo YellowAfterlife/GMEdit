@@ -21,7 +21,7 @@ class GmlExtImport {
 	private static var rxImport = new RegExp((
 		"^#import[ \t]+"
 		+ "([\\w.]+\\*?)" // com.pkg[.*]
-		+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+))?" // in name
+		+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+)(?:\\.(\\w+))?)?" // in name
 	), "");
 	private static var rxImportFile = new RegExp("^#import[ \t]+(\"[^\"]*\"|'[^']*')", "");
 	private static var rxPeriod = new RegExp("\\.", "g");
@@ -61,6 +61,11 @@ class GmlExtImport {
 				if (p < 0) return;
 				alias = flat.substring(p + 1);
 			}
+			var ns:String = null;
+			if (mt[3] != null) {
+				ns = alias;
+				alias = mt[3];
+			}
 			function check(
 				kind:Dictionary<String>, comp:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
 			) {
@@ -69,7 +74,7 @@ class GmlExtImport {
 				var comps = comp.filter(function(comp) {
 					return comp.name == flat;
 				});
-				imp.add(flat, alias, fdk, comps[0], docs[flat]);
+				imp.add(flat, alias, fdk, comps[0], docs[flat], ns);
 				return true;
 			}
 			if(!check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc)
