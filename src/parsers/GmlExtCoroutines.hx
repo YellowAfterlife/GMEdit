@@ -53,8 +53,8 @@ class GmlExtCoroutines {
 				case "/".code: switch (q.peek()) {
 					case "/".code: q.skipLine();
 					case "*".code: {
-						flush(q.pos);
-						start = ++q.pos;
+						//flush(q.pos);
+						//start = ++q.pos;
 						while (q.loop) {
 							c = q.read();
 							if (c == "*".code
@@ -97,8 +97,8 @@ class GmlExtCoroutines {
 				case "/".code: switch (q.peek()) {
 					case "/".code: q.skipLine();
 					case "*".code: {
-						flush(q.pos);
-						start = ++q.pos;
+						//flush(q.pos);
+						//start = ++q.pos;
 						while (q.loop) {
 							c = q.read();
 							if (c == "*".code && q.peek() == "/".code) {
@@ -125,6 +125,7 @@ class GmlExtCoroutines {
 			errorText = "GMCR is not available. Did you copy it from pre-built binary or it's itch.io download?";
 			return null;
 		}
+		trace(out);
 		var pair = proc(out, {
 			version: version,
 		});
