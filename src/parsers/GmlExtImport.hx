@@ -80,15 +80,21 @@ class GmlExtImport {
 			}
 		}
 	}
-	static function parseFile(imp:GmlImports, rel:String, found:Dictionary<Bool>) {
+	static function parseFile(
+		imp:GmlImports, rel:String, found:Dictionary<Bool>, cache:Dictionary<String>
+	) {
 		if (found[rel]) return true;
-		var full = Path.join([Project.current.dir, "#import", rel]);
-		if (!FileWrap.existsSync(full)) {
-			full += ".gml";
-			if (!FileWrap.existsSync(full)) return false;
+		var code = cache[rel];
+		if (code == null) {
+			var full = Path.join([Project.current.dir, "#import", rel]);
+			if (!FileWrap.existsSync(full)) {
+				full += ".gml";
+				if (!FileWrap.existsSync(full)) return false;
+			}
+			code = FileWrap.readTextFileSync(full);
+			cache.set(rel, code);
 		}
 		found.set(rel, true);
-		var code = FileWrap.readTextFileSync(full);
 		var q = new GmlReader(code);
 		var version = GmlAPI.version;
 		//
@@ -103,7 +109,7 @@ class GmlExtImport {
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
-							parseLine(imp, txt, found);
+							parseLine(imp, txt, found, cache);
 						}
 					};
 					case "*".code: q.skip(); q.skipComment();
@@ -118,7 +124,9 @@ class GmlExtImport {
 		//
 		return true;
 	}
-	static function parseLine(imp:GmlImports, txt:String, found:Dictionary<Bool>) {
+	static function parseLine(
+		imp:GmlImports, txt:String, found:Dictionary<Bool>, cache:Dictionary<String>
+	) {
 		var mt = rxImport.exec(txt);
 		if (mt != null) {
 			parseRules(imp, mt);
@@ -127,7 +135,7 @@ class GmlExtImport {
 		mt = rxImportFile.exec(txt);
 		if (mt != null) {
 			var rel = mt[1];
-			parseFile(imp, rel.substring(1, rel.length - 1), found);
+			parseFile(imp, rel.substring(1, rel.length - 1), found, cache);
 			return true;
 		}
 		return false;
@@ -142,6 +150,7 @@ class GmlExtImport {
 		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
 		var globalExists = FileWrap.existsSync(globalPath);
 		if (code.indexOf("//!#import") < 0 && !globalExists) return cancel();
+		var cache = new Dictionary<String>();
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
 		var out = "";
@@ -153,7 +162,7 @@ class GmlExtImport {
 		var imp = new GmlImports();
 		var imps = new Dictionary<GmlImports>();
 		var files = new Dictionary<Bool>();
-		if (globalExists) parseFile(imp, "global.gml", files);
+		if (globalExists) parseFile(imp, "global.gml", files, cache);
 		imps.set("", imp);
 		//
 		while (q.loop) {
@@ -167,7 +176,7 @@ class GmlExtImport {
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
-							if (parseLine(imp, txt, files)) {
+							if (parseLine(imp, txt, files, cache)) {
 								flush(p);
 								out += txt;
 								start = q.pos;
@@ -186,6 +195,7 @@ class GmlExtImport {
 						imp = new GmlImports();
 						imps.set(ctx, imp);
 						files = new Dictionary();
+						if (globalExists) parseFile(imp, "global.gml", files, cache);
 					}
 				};
 				default: {
