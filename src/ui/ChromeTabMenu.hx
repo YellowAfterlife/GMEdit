@@ -61,9 +61,10 @@ class ChromeTabMenu {
 		menu.append(showInDirectoryItem = new MenuItem({
 			label: "Show in directory",
 			click: function() {
-				electron.Shell.showItemInFolder(target.gmlFile.path);
+				electron.FileWrap.showItemInFolder(target.gmlFile.path);
 			}
 		}));
+		if (electron.Electron == null) showInDirectoryItem.visible = false;
 		menu.append(showInTreeItem = new MenuItem({
 			label: "Show in tree",
 			click: function() {

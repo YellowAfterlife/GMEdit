@@ -35,7 +35,7 @@ class RecentProjects {
 	public static function show() {
 		TreeView.clear();
 		var el = TreeView.element;
-		for (path in get()) {
+		if (electron.Electron != null) for (path in get()) {
 			var name = Path.withoutDirectory(path);
 			switch (name.toLowerCase()) {
 				case "main.txt", "main.cfg": {

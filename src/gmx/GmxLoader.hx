@@ -31,7 +31,7 @@ class GmxLoader {
 			if (gmx.name == one) {
 				var path = gmx.text;
 				var name = rxName.replace(path, "$1");
-				var full = path;
+				var full = project.fullPath(path);
 				var _main:String = "";
 				switch (one) {
 					case "script": _main = name;
@@ -62,17 +62,26 @@ class GmxLoader {
 		for (q in gmx.findAll("timelines")) loadrec(q, tv, "timeline", "timelines/");
 		for (q in gmx.findAll("objects")) loadrec(q, tv, "object", "objects/");
 		//
+		function loadinc(gmx:SfGmx, out:Element, path:String) {
+			if (gmx.name == "datafile") {
+				var name = gmx.findText("name");
+				var rel = Path.join(["datafiles", name]);
+				var full = project.fullPath(Path.join([path, name]));
+				var item = TreeView.makeItem(name, rel, full, "datafile") ;
+				out.appendChild(item);
+			} else {
+				var name = gmx.get("name");
+				var next = path + name + "/";
+				var r = TreeView.makeDir(name, next);
+				var c = r.treeItems;
+				for (q in gmx.children) loadinc(q, c, next);
+				out.appendChild(r);
+			}
+		}
 		for (datafiles in gmx.findAll("datafiles")) {
 			var parent = TreeView.makeDir("Included files", "datafiles/");
-			var found = 0;
-			for (datafile in datafiles.findAll("datafile")) {
-				var name = datafile.findText("name");
-				var rel = Path.join(["datafiles", name]);
-				var item = TreeView.makeItem(name, rel, rel, "datafile") ;
-				parent.treeItems.appendChild(item);
-				found += 1;
-			}
-			if (found > 0) tv.appendChild(parent);
+			for (c in datafiles.children) loadinc(c, parent.treeItems, "datafiles/");
+			if (parent.treeItems.children.length > 0) tv.appendChild(parent);
 		}
 		//
 		GmlAPI.extClear();
@@ -91,7 +100,7 @@ class GmxLoader {
 				for (extFile in extFiles.findAll("file")) {
 					var extFileName = extFile.findText("filename");
 					var extFilePath = Path.join([extNode.text, extFileName]);
-					var extFileFull = extFilePath;
+					var extFileFull = project.fullPath(extFilePath);
 					extDir.treeItems.appendChild(TreeView.makeItem(
 						extFileName, extFilePath, extFileFull, "extfile"
 					));
@@ -127,7 +136,7 @@ class GmxLoader {
 		//
 		var mcrDir = TreeView.makeDir("Macros", "macros/");
 		var mcrItems = mcrDir.querySelector(".items");
-		mcrItems.appendChild(TreeView.makeItem(allConfigs, "Configs/default", project.name, "config"));
+		mcrItems.appendChild(TreeView.makeItem(allConfigs, "Configs/default", project.fullPath(project.name), "config"));
 		for (configs in gmx.findAll("Configs")) {
 			for (config in configs.findAll("Config")) {
 				var configPath = config.text;

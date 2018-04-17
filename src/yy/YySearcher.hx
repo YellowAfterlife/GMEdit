@@ -1,5 +1,6 @@
 package yy;
 import electron.FileSystem;
+import electron.FileWrap;
 import gml.Project;
 import haxe.io.Path;
 import js.Error;
@@ -36,7 +37,7 @@ class YySearcher {
 						if (error == null) {
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
-								FileSystem.writeFileSync(resFull, gml1);
+								FileWrap.writeTextFileSync(resFull, gml1);
 							}
 						}
 						next();

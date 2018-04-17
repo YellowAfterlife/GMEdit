@@ -1,6 +1,6 @@
 package gmx;
 import gml.*;
-import electron.FileSystem;
+import electron.FileWrap;
 import gml.file.GmlFile;
 import gmx.GmxEvent;
 import gmx.SfGmx;
@@ -126,13 +126,13 @@ class GmxObject {
 		var ename:String = edata.name;
 		//
 		var dir = Path.directory(full);
-		var gmx = FileSystem.readGmxFileSync(full);
+		var gmx = FileWrap.readGmxFileSync(full);
 		var parent = gmx.findText("parentName");
 		var tries = 1024;
 		while (parent != "<undefined>" && --tries >= 0) {
 			var path = Path.join([dir, parent + ".object.gmx"]);
-			if (!FileSystem.existsSync(path)) return null;
-			gmx = FileSystem.readGmxFileSync(path);
+			if (!FileWrap.existsSync(path)) return null;
+			gmx = FileWrap.readGmxFileSync(path);
 			for (events in gmx.findAll("events"))
 			for (event in events.findAll("event")) {
 				if (event.get("eventtype") == etype
@@ -177,8 +177,8 @@ class GmxObject {
 		if (parent != "" && parent != "<undefined>") {
 			var parentPath = Path.join([Path.directory(path), parent + ".object.gmx"]);
 			info.parents.unshift(parent);
-			if (FileSystem.existsSync(parentPath)) {
-				var parentGmx = FileSystem.readGmxFileSync(parentPath);
+			if (FileWrap.existsSync(parentPath)) {
+				var parentGmx = FileWrap.readGmxFileSync(parentPath);
 				getInfo(parentGmx, parentPath, info);
 			}
 		}

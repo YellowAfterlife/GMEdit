@@ -1,4 +1,5 @@
 package yy;
+import electron.FileWrap;
 import haxe.io.Path;
 import tools.Dictionary;
 import yy.YyObject;
@@ -24,7 +25,7 @@ abstract YyTimeline(YyTimelineImpl) {
 			var time = moment.moment;
 			var rel = getMomentPath(time);
 			var full = Path.join([dir, rel]);
-			var code = FileSystem.readTextFileSync(full);
+			var code = FileWrap.readTextFileSync(full);
 			if (out != "") out += "\n\n";
 			out += "#moment " + time;
 			code = ~/^\/\/\/\s*@desc[ \t]+(.*)\r?\n/g.map(code, function(rx:EReg) {
@@ -77,14 +78,14 @@ abstract YyTimeline(YyTimelineImpl) {
 		// remove moment files that are no longer used:
 		for (mm in oldList) if (newMap[mm.moment] == null) {
 			var full = Path.join([dir, getMomentPath(mm.moment)]);
-			if (FileSystem.existsSync(full)) FileSystem.unlinkSync(full);
+			if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 		}
 		// write used moments:
 		this.momentList = [];
 		for (item in newList) {
 			var mm = item.moment;
 			var full = Path.join([dir, getMomentPath(mm.moment)]);
-			FileSystem.writeFileSync(full, item.code);
+			FileWrap.writeTextFileSync(full, item.code);
 			this.momentList.push(mm);
 		}
 		//

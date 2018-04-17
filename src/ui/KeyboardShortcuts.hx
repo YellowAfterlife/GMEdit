@@ -2,6 +2,7 @@ package ui;
 import Main.*;
 import electron.Electron;
 import electron.FileSystem;
+import electron.FileWrap;
 import electron.Shell;
 import gml.GmlAPI;
 import gml.file.GmlFile;
@@ -264,17 +265,17 @@ class KeyboardShortcuts {
 		return false;
 	}
 	public static function openImportFile(rel:String) {
-		var dir = Path.join([Project.current.dir, "#import"]);
-		if (!FileSystem.existsSync(dir)) {
-			FileSystem.mkdirSync(dir);
+		var dir = "#import";
+		if (!FileWrap.existsSync(dir)) {
+			FileWrap.mkdirSync(dir);
 		}
 		var full = Path.join([dir, rel]);
 		var data = null;
-		if (!FileSystem.existsSync(full)) {
+		if (!FileWrap.existsSync(full)) {
 			full += ".gml";
-			if (!FileSystem.existsSync(full)) data = "";
+			if (!FileWrap.existsSync(full)) data = "";
 		}
-		if (data == null) data = FileSystem.readTextFileSync(full);
+		if (data == null) data = FileWrap.readTextFileSync(full);
 		var file = new GmlFile(rel, full, Normal, data);
 		GmlFile.openTab(file);
 		return true;

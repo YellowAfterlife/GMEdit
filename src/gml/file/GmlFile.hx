@@ -4,6 +4,7 @@ import ace.AceSessionData;
 import electron.Dialog;
 import electron.FileSystem;
 import parsers.*;
+import electron.FileWrap;
 import js.RegExp;
 import js.html.Element;
 import ace.AceWrap;
@@ -200,7 +201,7 @@ class GmlFile {
 		//
 		switch (kind) {
 			case Extern: {
-				electron.Shell.openItem(path);
+				FileWrap.openExternal(path);
 				return null;
 			};
 			case YyShader: {

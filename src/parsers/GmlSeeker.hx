@@ -1,6 +1,7 @@
 package parsers;
 import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
+import electron.FileWrap;
 import gml.GmlAPI;
 import gmx.*;
 import yy.*;
@@ -31,11 +32,7 @@ class GmlSeeker {
 				runNext();
 			}
 		}
-		if (Path.isAbsolute(path)) {
-			FileSystem.readTextFile(path, next);
-		} else {
-			Project.current.readTextFile(path, next);
-		}
+		FileWrap.readTextFile(path, next);
 	}
 	private static function runNext():Void {
 		if (--itemsLeft <= 0) {
@@ -419,9 +416,7 @@ class GmlSeeker {
 					runNext();
 				}
 			}
-			if (Path.isAbsolute(full)) {
-				FileSystem.readTextFile(full, procEvent);
-			} else Project.current.readTextFile(full, procEvent);
+			FileWrap.readTextFile(full, procEvent);
 		})(file.name, file.full);
 		return false;
 	}

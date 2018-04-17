@@ -9,6 +9,7 @@ import js.html.Element;
 import js.html.Event;
 import Main.window;
 import Main.document;
+import js.html.MouseEvent;
 using tools.NativeString;
 
 /**
@@ -50,7 +51,8 @@ class ChromeTabs {
 				tabEl.gmlFile = gmlFile;
 				tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
 				tabEl.setAttribute(attrContext, gmlFile.context);
-				tabEl.addEventListener("contextmenu", function(e) {
+				tabEl.addEventListener("contextmenu", function(e:MouseEvent) {
+					e.preventDefault();
 					ChromeTabMenu.show(tabEl, e);
 				});
 			}

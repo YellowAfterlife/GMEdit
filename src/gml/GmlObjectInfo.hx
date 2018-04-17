@@ -1,4 +1,5 @@
 package gml;
+import electron.FileWrap;
 import haxe.io.Path;
 import tools.Dictionary;
 import tools.StringBuilder;
@@ -44,10 +45,10 @@ class GmlObjectInfo {
 	public static function showFor(path:String, ident:String) {
 		var info:GmlObjectInfo;
 		if (Path.extension(path) == "gmx") {
-			var obj = FileSystem.readGmxFileSync(path);
+			var obj = FileWrap.readGmxFileSync(path);
 			info = gmx.GmxObject.getInfo(obj, path);
 		} else if (Path.extension(path) == "yy") {
-			var yy:yy.YyObject = FileSystem.readJsonFileSync(path);
+			var yy:yy.YyObject = FileWrap.readJsonFileSync(path);
 			info = yy.getInfo();
 		} else return;
 		GmlFile.openTab(new GmlFile(

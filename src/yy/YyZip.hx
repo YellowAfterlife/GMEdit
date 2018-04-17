@@ -272,6 +272,30 @@ class YyZip extends Project {
 		}
 		return out;
 	}
+	override public function mkdirSync(path:String) {
+		// (directories are implicit in ZIP)
+	}
+	static function getMimeType(ext:String) {
+		// todo: get a full list from somewhere if this ever matters
+		return switch (ext) {
+			case "bmp": "image/bmp";
+			case "png": "image/png";
+			case "jpg", "jpeg": "image/jpeg";
+			case "gif": "image/gif";
+			case "svg": "image/svg+xml";
+			case "txt", "conf", "log": "text/plain";
+			case "mp3", "m3a": "audio/mpeg";
+			case "exe", "dll", "com", "bat", "msi": "application/x-msdownload";
+			case "7z": "application/x-7z-compressed";
+			case "zip": "application/zip";
+			case "xml": "application/xml";
+			case "csv": "text/csv";
+			default: "application/octet-stream";
+		}
+	}
+	override public function openExternal(path:String) {
+		
+	}
 }
 class YyZipFile {
 	public var path:String;

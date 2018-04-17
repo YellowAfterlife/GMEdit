@@ -166,39 +166,45 @@ class Project {
 		}
 	}
 	//
-	public inline function relPath(path:String) {
-		return Path.join([dir, path]);
+	public function fullPath(path:String) {
+		if (dir != "") {
+			return dir + "/" + path;
+		} else return path;
 	}
 	public function existsSync(path:String):Bool {
-		return FileSystem.existsSync(relPath(path));
+		return FileSystem.existsSync(fullPath(path));
 	}
 	public function unlinkSync(path:String):Void {
-		FileSystem.unlinkSync(relPath(path));
+		FileSystem.unlinkSync(fullPath(path));
 	}
 	public function readTextFile(path:String, fn:Error->String->Void):Void {
-		FileSystem.readTextFile(relPath(path), fn);
+		FileSystem.readTextFile(fullPath(path), fn);
 	}
 	public function readTextFileSync(path:String):String {
-		return FileSystem.readTextFileSync(relPath(path));
+		return FileSystem.readTextFileSync(fullPath(path));
 	}
 	public function readJsonFile<T:{}>(path:String, fn:Error->T->Void):Void {
-		FileSystem.readJsonFile(relPath(path), fn);
+		FileSystem.readJsonFile(fullPath(path), fn);
 	}
 	public function readJsonFileSync<T>(path:String):T {
-		return FileSystem.readJsonFileSync(relPath(path));
+		return FileSystem.readJsonFileSync(fullPath(path));
 	}
 	public function readGmxFileSync(path:String):SfGmx {
-		return FileSystem.readGmxFileSync(relPath(path));
+		return FileSystem.readGmxFileSync(fullPath(path));
 	}
 	public function writeTextFileSync(path:String, text:String) {
-		FileSystem.writeFileSync(path, text);
+		FileSystem.writeFileSync(fullPath(path), text);
 	}
 	public function getImageURL(path:String):String {
-		var full = relPath(path);
+		var full = fullPath(path);
 		return FileSystem.existsSync(full) ? ("file:///" + full) : null;
 	}
+	//
+	public function mkdirSync(path:String) {
+		FileSystem.mkdirSync(fullPath(path));
+	}
 	public function readdirSync(path:String):Array<ProjectDirInfo> {
-		var full = relPath(path);
+		var full = fullPath(path);
 		var out:Array<ProjectDirInfo> = [];
 		for (rel in FileSystem.readdirSync(full)) {
 			var itemFull = Path.join([full, rel]);
@@ -208,6 +214,13 @@ class Project {
 			});
 		}
 		return out;
+	}
+	//
+	public function openExternal(path:String) {
+		electron.Shell.openItem(fullPath(path));
+	}
+	public function showItemInFolder(path:String) {
+		electron.Shell.showItemInFolder(fullPath(path));
 	}
 	//
 }

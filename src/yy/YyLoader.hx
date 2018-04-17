@@ -3,10 +3,12 @@ import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
 import gml.GmlAPI;
 import gml.Project;
+import js.RegExp;
 import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
 import tools.Dictionary;
+import tools.NativeString;
 import ui.TreeView;
 
 /**
@@ -14,6 +16,7 @@ import ui.TreeView;
  * @author YellowAfterlife
  */
 class YyLoader {
+	private static var rxDatafiles = new RegExp("^datafiles_yy([\\\\/])");
 	public static function run(project:Project):String {
 		var yyProject:YyProject = project.readJsonFileSync(project.name);
 		var resources:Dictionary<YyProjectResource> = new Dictionary();
@@ -60,6 +63,7 @@ class YyLoader {
 						case "objects", "shaders", "scripts", "extensions", "timelines": {
 							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
+						case "datafiles": name = "Included Files";
 						default: {
 							loadrec(null, vdir, null);
 							continue;
@@ -72,11 +76,11 @@ class YyLoader {
 				} else {
 					name = rxName.replace(val.resourcePath, "$1");
 					rel = path + name;
-					var full = val.resourcePath;
+					var full = project.fullPath(val.resourcePath);
 					switch (type) {
 						case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 						"GMScript", "GMShader", "GMFont", "GMTimeline",
-						"GMObject", "GMRoom": {
+						"GMObject", "GMRoom", "GMIncludedFile": {
 							var atype = type.substring(2).toLowerCase();
 							GmlAPI.gmlKind.set(name, "asset." + atype);
 							var next = new AceAutoCompleteItem(name, atype);
@@ -103,6 +107,11 @@ class YyLoader {
 						};
 						case "GMTimeline": {
 							GmlAPI.gmlLookupText += name + "\n";
+						};
+						case "GMIncludedFile": {
+							full = NativeString.replaceExt(full, rxDatafiles, "datafiles$1");
+							full = Path.withoutExtension(full);
+							name = Path.withoutDirectory(full);
 						};
 						case "GMExtension": {
 							var ext:YyExtension = project.readJsonFileSync(full);

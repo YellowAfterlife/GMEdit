@@ -46,9 +46,10 @@ class GmlEvent {
 		s2i.set(name, { type: type, numb: numb });
 	}
 	static function linkType(type:Int, name:String) {
-		t2s[type] = name.toLowerCase();
+		var nlq = name.toLowerCase();
+		t2s[type] = nlq;
 		t2sc[type] = name;
-		s2t.set(name, type);
+		s2t.set(nlq, type);
 	}
 	//
 	public static function toString(type:Int, numb:Int, name:String) {

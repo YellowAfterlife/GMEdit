@@ -201,7 +201,7 @@ class GmlFileIO {
 				out = null;
 			};
 			case GmxObjectEvents: {
-				gmx = FileSystem.readGmxFileSync(path);
+				gmx = FileWrap.readGmxFileSync(path);
 				if (!GmxObject.setCode(gmx, val)) {
 					return error("Can't update GMX:\n" + GmxObject.errorText);
 				}
@@ -215,7 +215,7 @@ class GmlFileIO {
 				out = haxe.Json.stringify(obj, null, "    ");
 			};
 			case GmxTimelineMoments: {
-				gmx = FileSystem.readGmxFileSync(path);
+				gmx = FileWrap.readGmxFileSync(path);
 				if (!GmxTimeline.setCode(gmx, val)) {
 					return error("Can't update GMX:\n" + GmxTimeline.errorText);
 				}
@@ -229,14 +229,14 @@ class GmlFileIO {
 				out = haxe.Json.stringify(tl, null, "    ");
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
-				gmx = FileSystem.readGmxFileSync(path);
+				gmx = FileWrap.readGmxFileSync(path);
 				var notes = new StringBuilder();
 				GmxProject.setMacroCode(gmx, val, notes, file.kind == GmxConfigMacros);
 				var notePath = file.notePath;
 				if (notes.length > 0) {
-					FileSystem.writeFileSync(notePath, notes.toString());
-				} else if (FileSystem.existsSync(notePath)) {
-					FileSystem.unlinkSync(notePath);
+					FileWrap.writeTextFileSync(notePath, notes.toString());
+				} else if (FileWrap.existsSync(notePath)) {
+					FileWrap.unlinkSync(notePath);
 				}
 				out = gmx.toGmxString();
 			};

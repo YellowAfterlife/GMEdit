@@ -1,5 +1,5 @@
 package gmx;
-import electron.FileSystem;
+import electron.FileWrap;
 import gml.Project;
 import haxe.io.Path;
 import js.Error;
@@ -17,7 +17,7 @@ class GmxSearcher {
 	):Void {
 		var isRepl = opt.replaceBy != null;
 		var pjDir = pj.dir;
-		var pjGmx = FileSystem.readGmxFileSync(pj.path);
+		var pjGmx = FileWrap.readGmxFileSync(pj.path);
 		var rxName = GmxLoader.rxAssetName;
 		var filesLeft = 1;
 		inline function next():Void {
@@ -36,7 +36,7 @@ class GmxSearcher {
 					case "object": {
 						full += '.$one.gmx';
 						filesLeft += 1;
-						FileSystem.readTextFile(full, function(err:Error, xml:String) {
+						FileWrap.readTextFile(full, function(err:Error, xml:String) {
 							if (err == null) {
 								var gmx = SfGmx.parse(xml);
 								var gml0 = GmxObject.getCode(gmx);
@@ -44,7 +44,7 @@ class GmxSearcher {
 									var gml1 = fn(name, full, gml0);
 									if (gml1 != null && gml1 != gml0) {
 										if (GmxObject.setCode(gmx, gml1)) {
-											FileSystem.writeFileSync(full, gmx.toGmxString());
+											FileWrap.writeTextFileSync(full, gmx.toGmxString());
 										} else {
 											addError("Failed to modify " + name
 												+ ":\n" + GmxObject.errorText);
@@ -58,7 +58,7 @@ class GmxSearcher {
 					case "timeline": {
 						full += '.$one.gmx';
 						filesLeft += 1;
-						FileSystem.readTextFile(full, function(err:Error, xml:String) {
+						FileWrap.readTextFile(full, function(err:Error, xml:String) {
 							if (err == null) {
 								var gmx = SfGmx.parse(xml);
 								var gml0 = GmxTimeline.getCode(gmx);
@@ -66,7 +66,7 @@ class GmxSearcher {
 									var gml1 = fn(name, full, gml0);
 									if (gml1 != null && gml1 != gml0) {
 										if (GmxTimeline.setCode(gmx, gml1)) {
-											FileSystem.writeFileSync(full, gmx.toGmxString());
+											FileWrap.writeTextFileSync(full, gmx.toGmxString());
 										} else {
 											addError("Failed to modify " + name
 												+ ":\n" + GmxTimeline.errorText);
@@ -79,11 +79,11 @@ class GmxSearcher {
 					};
 					case "script": {
 						filesLeft += 1;
-						FileSystem.readTextFile(full, function(err:Error, code:String) {
+						FileWrap.readTextFile(full, function(err:Error, code:String) {
 							if (err == null) {
 								var gml1 = fn(name, full, code);
 								if (gml1 != null && gml1 != code) {
-									FileSystem.writeFileSync(full, gml1);
+									FileWrap.writeTextFileSync(full, gml1);
 								}
 							}
 							next();
@@ -101,19 +101,19 @@ class GmxSearcher {
 		function findMcr(name:String, full:String, pjGmx:SfGmx) {
 			function procMcr(gmx:SfGmx) {
 				var notePath = GmxProject.getNotePath(full);
-				var notes = FileSystem.existsSync(notePath)
-					? new GmlReader(FileSystem.readTextFileSync(notePath)) : null;
+				var notes = FileWrap.existsSync(notePath)
+					? new GmlReader(FileWrap.readTextFileSync(notePath)) : null;
 				var gml0 = GmxProject.getMacroCode(gmx, notes, pjGmx == null);
 				var gml1 = fn(name, full, gml0);
 				if (gml1 != null && gml1 != gml0) {
 					var notes1 = new StringBuilder();
 					if (GmxProject.setMacroCode(gmx, gml1, notes1, pjGmx == null)) {
 						if (notes1.length > 0) {
-							FileSystem.writeFileSync(notePath, notes1.toString());
-						} else if (FileSystem.existsSync(notePath)) {
-							FileSystem.unlinkSync(notePath);
+							FileWrap.writeTextFileSync(notePath, notes1.toString());
+						} else if (FileWrap.existsSync(notePath)) {
+							FileWrap.unlinkSync(notePath);
 						}
-						FileSystem.writeFileSync(full, gmx.toGmxString());
+						FileWrap.writeTextFileSync(full, gmx.toGmxString());
 					} else {
 						addError("Failed to modify " + name
 							+ ":\n" + GmxTimeline.errorText);
@@ -123,7 +123,7 @@ class GmxSearcher {
 			//
 			if (pjGmx == null) {
 				filesLeft += 1;
-				FileSystem.readTextFile(full, function(err:Error, xml:String) {
+				FileWrap.readTextFile(full, function(err:Error, xml:String) {
 					if (err == null) procMcr(SfGmx.parse(xml));
 					next();
 				});

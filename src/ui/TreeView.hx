@@ -93,10 +93,12 @@ class TreeView {
 		}
 	}
 	static function handleDirCtxMenu(e:MouseEvent) {
+		e.preventDefault();
 		var el:Element = cast e.target;
 		TreeViewMenus.showDirMenu(el.parentElement, e);
 	}
 	static function handleItemCtxMenu(e:MouseEvent) {
+		e.preventDefault();
 		TreeViewMenus.showItemMenu(cast e.target, e);
 	}
 	public static function makeDir(name:String, rel:String):TreeViewDir {

@@ -76,12 +76,15 @@ class GmlFileBackup {
 	static function load(name:String, path:String, kind:GmlFileKind) {
 		if (GmlFileKindTools.isGML(kind)) kind = Normal;
 		var file = new GmlFile(name, path, kind);
-		file.path = null; // prevent from saving a backup
+		file.path = null; // prevent from being able to "save" a backup
 		GmlFile.openTab(file);
 	}
 	public static function updateMenu(file:GmlFile):Bool {
 		var path = getPath(file);
+		// can't make backups for files without paths
 		if (path == null) return null;
+		// and can't make backups for virtual files either
+		if (!Path.isAbsolute(path)) return null;
 		menu.clear();
 		//
 		var name = file.name;

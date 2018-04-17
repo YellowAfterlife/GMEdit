@@ -1,5 +1,6 @@
 package ui;
 import electron.FileSystem;
+import electron.FileWrap;
 import electron.Menu;
 import electron.Dialog;
 import gml.GmlObjectInfo;
@@ -134,11 +135,11 @@ class TreeViewMenus {
 	}
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);
-		electron.Shell.openItem(path);
+		FileWrap.openExternal(path);
 	}
 	public static function openDirectory() {
 		var path = target.getAttribute(TreeView.attrPath);
-		electron.Shell.showItemInFolder(path);
+		FileWrap.showItemInFolder(path);
 	}
 	public static function openObjectInfo() {
 		GmlObjectInfo.showFor(
@@ -213,7 +214,7 @@ class TreeViewMenus {
 		];
 		addLink(itemMenu, "Open here", openHere);
 		addLink(itemMenu, "Open externally", openExternal);
-		addLink(itemMenu, "Show in directory", openDirectory);
+		if (electron.Electron != null) addLink(itemMenu, "Show in directory", openDirectory);
 		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
 		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
