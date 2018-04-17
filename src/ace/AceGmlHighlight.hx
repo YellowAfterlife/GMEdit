@@ -100,6 +100,7 @@ using tools.NativeString;
 				} else {
 					objType = null;
 					fdType = null;
+					var en:GmlEnum;
 					if (row != null) {
 						var scope = GmlScopes.get(row);
 						if (scope != null) {
@@ -109,6 +110,15 @@ using tools.NativeString;
 								if (ns != null) {
 									objType = "namespace";
 									fdType = jsOr(ns.kind[field], "identifier");
+								} else {
+									var e1 = imp.longenEnum[object];
+									if (e1 != null) {
+										en = GmlAPI.gmlEnums[e1];
+										if (en != null) {
+											objType = "enum";
+											fdType = en.items[field] ? "enumfield" : "enumerror";
+										}
+									}
 								}
 							}
 							if (objType == null) {
@@ -117,7 +127,7 @@ using tools.NativeString;
 						}
 					}
 					if (objType == null) {
-						var en = GmlAPI.gmlEnums[object];
+						en = GmlAPI.gmlEnums[object];
 						if (en != null) {
 							objType = "enum";
 							fdType = en.items[field] ? "enumfield" : "enumerror";

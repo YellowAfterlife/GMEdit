@@ -90,7 +90,18 @@ using tools.NativeString;
 				};
 				case dotKindEnum: {
 					if (tk.type == "enum") {
-						var en = GmlAPI.gmlEnums[tk.value];
+						var name = tk.value;
+						//
+						var scope = gml.GmlScopes.get(pos.row);
+						if (scope != null) {
+							var imp = gml.GmlImports.currentMap[scope];
+							if (imp != null) {
+								var s = imp.longenEnum[name];
+								if (s != null) name = s;
+							}
+						}
+						//
+						var en = GmlAPI.gmlEnums[name];
 						if (en != null) {
 							callback(null, en.fieldComp);
 							return;

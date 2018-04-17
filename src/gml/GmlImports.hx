@@ -24,6 +24,9 @@ class GmlImports {
 	/** "some" -> "scr_some" */
 	public var longen:Dictionary<String> = new Dictionary();
 	
+	/** "renamed_enum" -> "original_enum" */
+	public var longenEnum:Dictionary<String> = new Dictionary();
+	
 	/** namespace name -> namespace data */
 	public var namespaces:Dictionary<GmlNamespace> = new Dictionary();
 	
@@ -58,7 +61,21 @@ class GmlImports {
 		if (tools.NativeString.startsWith(long, "global.")) {
 			hasGlobal = true;
 			shortenGlobal.set(long.substring(7), short);
-		} else shorten.set(long, short);
+		} else {
+			shorten.set(long, short);
+			if (kind == "enum") {
+				var en = GmlAPI.gmlEnums[long];
+				if (en != null) {
+					for (comp in en.compList) {
+						this.comp.push(new AceAutoCompleteItem(
+							short + comp.name.substring(comp.name.indexOf(".")),
+							comp.meta, comp.name + " = " + comp.doc
+						));
+					}
+				}
+				longenEnum.set(short, long);
+			}
+		}
 		longen.set(short, long);
 		//
 		if (doc != null) docs.set(short, doc);
