@@ -165,7 +165,11 @@ class GmlEvent {
 						q.skipSpaces0();
 						q.skipLine();
 						sctName = q.substring(nameStart, q.pos);
-						if (sctName == "") sctName = null;
+						if (sctName == "") {
+							sctName = null;
+						} else if (sctName.charCodeAt(0) == "|".code) {
+							sctName = sctName.substring(1);
+						}
 						//
 						q.skipLineEnd();
 						//
@@ -193,6 +197,9 @@ class GmlEvent {
 						if (nameEnd < 0) nameEnd = q.length;
 						flush(nameStart - 8, true);
 						sctName = q.substring(nameStart, nameEnd);
+						if (sctName.charCodeAt(0) == "|".code) {
+							sctName = sctName.substring(1);
+						}
 						//
 						evStart = q.pos;
 					}

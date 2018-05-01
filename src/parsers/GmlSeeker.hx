@@ -155,7 +155,8 @@ class GmlSeeker {
 			s = find(Ident | Doc | Define | Macro);
 			if (s == null) {
 				//
-			} else if (s.fastCodeAt(0) == "/".code) {
+			}
+			else if (s.fastCodeAt(0) == "/".code) {
 				if (main != null) {
 					var check = true, mt;
 					if (v.hasJSDoc()) {
@@ -205,7 +206,8 @@ class GmlSeeker {
 						}
 					}
 				}
-			} else switch (s) {
+			}
+			else switch (s) {
 				case "#define": {
 					main = find(Ident);
 					start = q.pos;

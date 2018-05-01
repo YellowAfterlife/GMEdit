@@ -23,7 +23,7 @@ class GmxEvent {
 	public static inline function fromString(name:String):GmlEventData {
 		return GmlEvent.fromString(name);
 	}
-	private static var rxHeader = ~/^\/\/\/\/? ?(.*)/;
+	private static var rxHeader = ~/^\/\/\/\/?(.*)/;
 	public static function isEmpty(event:SfGmx) {
 		return event.find("action") == null;
 	}
@@ -37,7 +37,10 @@ class GmxEvent {
 			if (head && !code.startsWith("#action ")) {
 				var addSection = true;
 				code = rxHeader.map(code, function(e:EReg) {
-					out += "#section " + e.matched(1);
+					var cap = e.matched(1);
+					out += "#section";
+					if (cap.charCodeAt(0) != " ".code) out += "|";
+					out += cap;
 					addSection = false;
 					return "";
 				});

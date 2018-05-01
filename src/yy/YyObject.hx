@@ -44,7 +44,7 @@ import ui.TreeView;
 			if (out != "") out += "\n\n";
 			var pair = parsers.GmlHeader.parse(NativeString.trimRight(code), v2);
 			out += "#event " + name;
-			if (pair.name != null) out += " " + pair.name;
+			if (pair.name != null) out +=  pair.name;
 			out += "\n" + pair.code;
 		}
 		return out;

@@ -262,7 +262,7 @@ using tools.NativeString;
 			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
 		);
-		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\s+.+)?)/);
+		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
 		var rMoment = rxRule(
 			["preproc.moment", "momenttime", "momentname"],
 			~/^(#moment[ \t]+)(\d+)(.*)/

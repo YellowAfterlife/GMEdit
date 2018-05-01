@@ -19,7 +19,7 @@ class GmxTimeline {
 			var code = GmxEvent.getCode(event);
 			if (code != null) {
 				var pair = GmlHeader.parse(code, v1);
-				if (pair.name != null) out += " " + pair.name;
+				if (pair.name != null) out += pair.name;
 				if (event.find("action") != null) out += "\n";
 				out += pair.code;
 			} else {

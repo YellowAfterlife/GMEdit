@@ -47,7 +47,7 @@ class GmxObject {
 				var code = GmxEvent.getCode(event);
 				if (code != null) {
 					var pair = parsers.GmlHeader.parse(code, v1);
-					if (pair.name != null) out += " " + pair.name;
+					if (pair.name != null) out += pair.name;
 					out += "\n" + pair.code;
 				} else {
 					errors += "Unreadable action in " + name + ":\n";
