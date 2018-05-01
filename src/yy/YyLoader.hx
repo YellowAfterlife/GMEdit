@@ -1,6 +1,7 @@
 package yy;
 import ace.AceWrap.AceAutoCompleteItem;
 import electron.FileSystem;
+import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
 import js.RegExp;
@@ -114,7 +115,7 @@ class YyLoader {
 							name = Path.withoutDirectory(full);
 						};
 						case "GMExtension": {
-							var ext:YyExtension = project.readJsonFileSync(full);
+							var ext:YyExtension = FileWrap.readJsonFileSync(full);
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
 							var extEl = TreeView.makeDir(ext.name, extRel);
