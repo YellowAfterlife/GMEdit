@@ -17,6 +17,7 @@ using tools.HtmlTools;
  */
 class AceGotoLine {
 	public static var inst:AceGotoLine;
+	private static var HashHandler:Dynamic;
 	//
 	public var editor:AceWrap;
 	public var element:Element;
@@ -57,7 +58,7 @@ class AceGotoLine {
             }
         });
 		//
-		var HashHandler = AceWrap.require("ace/keyboard/hash_handler").HashHandler;
+		HashHandler = AceWrap.require("ace/keyboard/hash_handler").HashHandler;
 		keyHandler = js.Syntax.construct(HashHandler);
 		keyHandler.bindKeys({
 			"Esc": function(q:AceGotoLine) {
