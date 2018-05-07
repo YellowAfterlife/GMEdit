@@ -42,7 +42,7 @@ import ui.TreeView;
 			var full = Path.join([dir, rel]);
 			var code = FileWrap.readTextFileSync(full);
 			if (out != "") out += "\n\n";
-			var pair = parsers.GmlHeader.parse(NativeString.trimRight(code), v2);
+			var pair = parsers.GmlHeader.parse(code, v2);
 			out += "#event " + name;
 			if (pair.name != null) out +=  pair.name;
 			out += "\n" + pair.code;
