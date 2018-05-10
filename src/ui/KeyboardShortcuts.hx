@@ -237,8 +237,7 @@ class KeyboardShortcuts {
 		var lookup = GmlAPI.gmlLookup[name];
 		if (lookup != null) {
 			var path = lookup.path;
-			var el = TreeView.element.querySelector('.item['
-				+ TreeView.attrPath + '="' + path + '"]');
+			var el = TreeView.find(true, { path: path });
 			if (el != null) {
 				if (nav != null) {
 					if (nav.def == null) nav.def = lookup.sub;
