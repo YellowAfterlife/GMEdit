@@ -70,8 +70,9 @@ class GmlSeeker {
 		var row = 0;
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
+			if (s != mainTop) GmlAPI.gmlLookupText += s + "\n";
 		}
-		setLookup(main);
+		if (main != null) setLookup(main);
 		/**
 		 * A lazy parser.
 		 * You tell it what you're looking for, and it reads the input till it finds any of that.
@@ -329,7 +330,7 @@ class GmlSeeker {
 					var en = new GmlEnum(name, orig);
 					out.enumList.push(en);
 					out.enumMap.set(name, en);
-					setLookup(s);
+					setLookup(name);
 					var nextVal:Null<Int> = 0;
 					while (q.loop) {
 						s = find(Ident | Cub1);

@@ -121,6 +121,7 @@ class YyLoader {
 							var extEl = TreeView.makeDir(ext.name, extRel);
 							for (file in ext.files) {
 								var fileName = file.filename;
+								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
 								var filePath = Path.join([extDir, fileName]);
 								extEl.treeItems.appendChild(TreeView.makeItem(
 									fileName, extRel + fileName, filePath, "extfile"
@@ -134,6 +135,14 @@ class YyLoader {
 											name, "function", help
 										));
 										GmlAPI.extDoc.set(name, gml.GmlFuncDoc.parse(help));
+										if (isGmlFile) GmlAPI.gmlLookupText += name + "\n";
+									}
+									if (isGmlFile) {
+										GmlAPI.gmlLookup.set(name, {
+											path: filePath,
+											sub: name,
+											row: 0,
+										});
 									}
 								}
 								for (mcr in file.constants) {

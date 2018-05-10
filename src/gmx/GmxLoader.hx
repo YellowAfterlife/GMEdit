@@ -99,6 +99,7 @@ class GmxLoader {
 				for (extFiles in extGmx.findAll("files"))
 				for (extFile in extFiles.findAll("file")) {
 					var extFileName = extFile.findText("filename");
+					var isGmlFile = Path.extension(extFileName).toLowerCase() == "gml";
 					var extFilePath = Path.join([extNode.text, extFileName]);
 					var extFileFull = project.fullPath(extFilePath);
 					extDir.treeItems.appendChild(TreeView.makeItem(
@@ -113,6 +114,14 @@ class GmxLoader {
 						if (help != null && help != "") {
 							GmlAPI.extComp.push(new AceAutoCompleteItem(name, "function", help));
 							GmlAPI.extDoc.set(name, GmlFuncDoc.parse(help));
+							if (isGmlFile) GmlAPI.gmlLookupText += name + "\n";
+						}
+						if (isGmlFile) {
+							GmlAPI.gmlLookup.set(name, {
+								path: extFileFull,
+								sub: name,
+								row: 0,
+							});
 						}
 					}
 					//
