@@ -115,7 +115,7 @@ class ChromeTabs {
 			if (impl.tabEls.length == 0) {
 				GmlFile.current = null;
 				Main.aceEditor.session = WelcomePage.session;
-			} else {
+			} else if (closedTab.classList.contains("chrome-tab-current")) {
 				var tab:Element = null;
 				while (tab == null && pathHistory.length > 0) {
 					tab = document.querySelector('.chrome-tab[' + attrContext + '="'
