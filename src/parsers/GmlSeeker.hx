@@ -360,7 +360,7 @@ class GmlSeeker {
 			} // switch (s)
 		} // while
 		//
-		if (Project.current.hasGMLive) out.hasGMLive = ui.GMLive.check(src);
+		if (Project.current.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
 	}
 	
 	static inline function finish(orig:String, out:GmlSeekData):Void {

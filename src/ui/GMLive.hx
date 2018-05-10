@@ -46,6 +46,7 @@ class GMLive {
 	public static function update(path:String, has:Bool) {
 		var item = TreeView.find(true, { path: path });
 		if (item == null) return;
+		if (has == item.hasAttribute(attr)) return;
 		if (has) {
 			item.setAttribute(attr, "");
 		} else item.removeAttribute(attr);

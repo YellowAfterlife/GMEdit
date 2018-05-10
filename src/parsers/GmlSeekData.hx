@@ -102,7 +102,9 @@ class GmlSeekData {
 			GmlAPI.gmlComp.push(m.comp);
 		}
 		
-		if (prev.hasGMLive != next.hasGMLive) ui.GMLive.update(path, next.hasGMLive);
+		if (prev.hasGMLive || next.hasGMLive) {
+			ui.GMLive.update(path, next.hasGMLive);
+		}
 		
 		var file = gml.file.GmlFile.current;
 		if (file != null && file.path == path) {
