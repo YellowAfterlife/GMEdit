@@ -30,6 +30,12 @@ class GmlExtArgs {
 	private static var rxHasTail = new RegExp(',\\s*$');
 	private static var rxNotMagic = new RegExp('var\\s+\\w+\\s*=\\s*'
 		+ 'argument(?:\\s*\\[\\s*\\d+\\s*\\]|\\d+)', 'g');
+	private static var argKeywords:Dictionary<Bool> = {
+		var out = new Dictionary();
+		out.set("argument", true);
+		for (i in 0 ... 16) out.set("argument" + i, true);
+		out;
+	};
 	public static function pre(code:String):String {
 		var version = GmlAPI.version;
 		if (!Preferences.current.argsMagic) return code;
@@ -107,7 +113,13 @@ class GmlExtArgs {
 				c = q.peek();
 				switch (c) {
 					case ",".code: q.skip();
-					case ";".code: q.skip(); break;
+					case ";".code: {
+						q.skip();
+						q.skipSpaces0();
+						// do not allow #args with trailing data
+						if (!q.peek().isSpace1()) return null;
+						break;
+					};
 					default: if (c.isIdent0()) break; else return null;
 				}
 			}
@@ -177,7 +189,9 @@ class GmlExtArgs {
 				default: {
 					if (checkArgs && c.isIdent0()) {
 						q.skipIdent1();
-						if (q.substring(p, q.pos) == "var") {
+						var id = q.substring(p, q.pos);
+						if (id == "var") {
+							var p1 = q.pos;
 							q.pos = p;
 							var s = proc();
 							if (s != null) {
@@ -185,7 +199,13 @@ class GmlExtArgs {
 								out += s;
 								start = q.pos;
 								checkArgs = false;
+							} else {
+								// if we don't find #args, revert reading position to var|
+								q.pos = p1;
 							}
+						} else if (argKeywords[id]) {
+							// if we find a argument#/argument[#] before #args line, it's not that.
+							checkArgs = false;
 						}
 					}
 				};
