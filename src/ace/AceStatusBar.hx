@@ -76,7 +76,7 @@ class AceStatusBar {
 			var name = tk.value;
 			iter.stepBackward();
 			tk = iter.getCurrentToken();
-			if (tk.value == ".") {
+			if (tk != null && tk.value == ".") {
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
 				if (tk.type == "namespace") {
