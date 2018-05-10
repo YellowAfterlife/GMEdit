@@ -28,6 +28,9 @@ class GmlObjectInfo {
 		var buf = new StringBuilder();
 		buf.addFormat("// Information about object @[%s]:\n", objectName);
 		buf.addFormat("// Sprite: @[%s]\n", spriteName);
+		buf.addFormat("// Visible: %s\n", "" + visible);
+		buf.addFormat("// Soild: %s\n", "" + solid);
+		buf.addFormat("// Persistent: %s\n", "" + persistent);
 		buf.addFormat("#section Parents (%d)\n", parents.length);
 		for (name in parents) {
 			buf.addFormat("// @[%s]\n", name);
