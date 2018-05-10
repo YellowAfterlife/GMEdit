@@ -292,6 +292,10 @@ class Preferences {
 			current.projectSessionTime = v; save();
 		});
 		//
+		addIntInput(out, "Max recent project count:", current.recentProjectCount, function(v) {
+			current.recentProjectCount = v; save();
+		});
+		//
 		addButton(out, "Backup settings", function() {
 			setMenu(menuBackups);
 		});
@@ -339,17 +343,17 @@ class Preferences {
 	}
 	private static function createValidIdFromString(str:String) {
 		//Lower case everything
-    str = str.toLowerCase();
-    //Make alphanumeric (removes all other characters)
+		str = str.toLowerCase();
+		//Make alphanumeric (removes all other characters)
 		var alphanumeric = ~/[^a-z0-9_\s-]/g;
 		str = alphanumeric.replace(str, "");
-    //Clean up multiple dashes or whitespaces
+		//Clean up multiple dashes or whitespaces
 		var dashes = ~/[\s-]+/g;
 		str = dashes.replace(str, "");
-    //Convert whitespaces and underscore to dash
+		//Convert whitespaces and underscore to dash
 		var whitespace = ~/[\s_]/g;
 		str = whitespace.replace(str, "");
-    return str;
+		return str;
 	}
 	public static function open() {
 		if (element == null) build();
@@ -390,6 +394,7 @@ class Preferences {
 			assetThumbs: true,
 			showGMLive: Everywhere,
 			backupCount: { v1: 2, v2: 0, live: 0 },
+			recentProjectCount: 16,
 		};
 		// load/merge defaults:
 		var doSave = false;
@@ -453,6 +458,7 @@ typedef PrefData = {
 	coroutineMagic:Bool,
 	assetThumbs:Bool,
 	showGMLive:PrefGMLive,
+	recentProjectCount:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
 }
 @:enum abstract PrefGMLive(Int) from Int to Int {

@@ -24,7 +24,7 @@ class RecentProjects {
 		var curr = get();
 		curr.remove(path);
 		curr.unshift(path);
-		if (curr.length > 16) curr.pop();
+		if (curr.length > Preferences.current.recentProjectCount) curr.pop();
 		set(curr);
 	}
 	public static function remove(path:String) {
