@@ -192,6 +192,9 @@ class Project {
 	public function readJsonFileSync<T>(path:String):T {
 		return FileSystem.readJsonFileSync(fullPath(path));
 	}
+	public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
+		return FileSystem.readGmxFile(fullPath(path), fn);
+	}
 	public function readGmxFileSync(path:String):SfGmx {
 		return FileSystem.readGmxFileSync(fullPath(path));
 	}

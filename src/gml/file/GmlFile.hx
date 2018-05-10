@@ -209,8 +209,18 @@ class GmlFile {
 					case 2, 4: HLSL;
 					default: GLSL;
 				};
-				open(name + ".vsh", Path.withoutExtension(path) + ".vsh", { kind: shKind });
-				open(name + ".fsh", Path.withoutExtension(path) + ".fsh", { kind: shKind });
+				var nav1:GmlFileNav = { kind: shKind };
+				if (nav != null) {
+					nav1.pos = nav.pos;
+					nav1.ctx = nav.ctx;
+				}
+				var pathNx = Path.withoutExtension(path);
+				if (nav != null) switch (nav.def) {
+					case "vertex": return open(name + ".vsh", pathNx + ".vsh", nav1);
+					case "fragment": return open(name + ".fsh", pathNx + ".fsh", nav1);
+				}
+				open(name + ".vsh", pathNx + ".vsh", nav1);
+				open(name + ".fsh", pathNx + ".fsh", nav1);
 				return null;
 			};
 			default: {

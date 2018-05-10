@@ -12,7 +12,7 @@ import ui.GlobalSearch;
  */
 class YySearcher {
 	public static function run(
-		pj:Project, fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt
+		pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt
 	):Void {
 		var yyProject:YyProject = pj.readJsonFileSync(pj.name);
 		var rxName = Project.rxName;
@@ -29,7 +29,7 @@ class YySearcher {
 			var res = resPair.Value;
 			var resName:String, resFull:String;
 			switch (res.resourceType) {
-				case "GMScript": if (opt == null || opt.checkScripts) {
+				case "GMScript": if (opt.checkScripts) {
 					resName = rxName.replace(res.resourcePath, "$1");
 					resFull = Path.withoutExtension(res.resourcePath) + ".gml";
 					filesLeft += 1;
@@ -43,7 +43,7 @@ class YySearcher {
 						next();
 					});
 				};
-				case "GMObject": if (opt == null || opt.checkObjects) {
+				case "GMObject": if (opt.checkObjects) {
 					resName = rxName.replace(res.resourcePath, "$1");
 					resFull = res.resourcePath;
 					filesLeft += 1;
@@ -63,7 +63,7 @@ class YySearcher {
 						next();
 					});
 				};
-				case "GMTimeline": if (opt == null || opt.checkObjects) {
+				case "GMTimeline": if (opt.checkObjects) {
 					resName = rxName.replace(res.resourcePath, "$1");
 					resFull = res.resourcePath;
 					filesLeft += 1;
@@ -80,6 +80,49 @@ class YySearcher {
 									+ ":\n" + YyObject.errorText);
 							}
 						} catch (_:Dynamic) { };
+						next();
+					});
+				};
+				case "GMShader": if (opt.checkShaders) {
+					resName = rxName.replace(res.resourcePath, "$1");
+					resFull = Path.withoutExtension(res.resourcePath);
+					inline function procShader(ext:String, type:String) {
+						pj.readTextFile(resFull + "." + ext, function(error, code) {
+							if (error == null) {
+								var gml1 = fn(resName + '($type)', resFull, code);
+								if (gml1 != null && gml1 != code) {
+									FileWrap.writeTextFileSync(resFull, gml1);
+								}
+							}
+							next();
+						});
+					}
+					filesLeft += 2;
+					procShader("fsh", "fragment");
+					procShader("vsh", "vertex");
+				};
+				case "GMExtension": {
+					resName = rxName.replace(res.resourcePath, "$1");
+					resFull = res.resourcePath;
+					filesLeft += 1;
+					pj.readJsonFile(resFull, function(err, ext:YyExtension) {
+						if (err != null) { next(); return; }
+						var ext:YyExtension = FileWrap.readJsonFileSync(resFull);
+						var extDir = Path.directory(resFull);
+						for (file in ext.files) {
+							var fileName = file.filename;
+							if (Path.extension(fileName).toLowerCase() != "gml") continue;
+							var filePath = Path.join([extDir, fileName]);
+							filesLeft += 1;
+							pj.readTextFile(filePath, function(err, code) {
+								if (err != null) { next(); return; }
+								var gml1 = fn(fileName, filePath, code);
+								if (gml1 != null && gml1 != code) {
+									FileWrap.writeTextFileSync(filePath, gml1);
+								}
+								next();
+							});
+						}
 						next();
 					});
 				};

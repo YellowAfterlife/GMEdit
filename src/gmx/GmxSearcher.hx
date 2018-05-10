@@ -77,7 +77,7 @@ class GmxSearcher {
 							next();
 						});
 					};
-					case "script": {
+					case "script", "shader": {
 						filesLeft += 1;
 						FileWrap.readTextFile(full, function(err:Error, code:String) {
 							if (err == null) {
@@ -97,6 +97,34 @@ class GmxSearcher {
 		if (opt.checkScripts) for (q in pjGmx.findAll("scripts")) findrec(q, "script");
 		if (opt.checkObjects) for (q in pjGmx.findAll("objects")) findrec(q, "object");
 		if (opt.checkTimelines) for (q in pjGmx.findAll("timelines")) findrec(q, "timeline");
+		if (opt.checkShaders) for (q in pjGmx.findAll("shaders")) findrec(q, "shader");
+		if (opt.checkExtensions) {
+			for (q in pjGmx.findAll("NewExtensions")) for (extNode in q.findAll("extension")) {
+				var extPath = extNode.text + ".extension.gmx";
+				filesLeft += 1;
+				pj.readGmxFile(extPath, function(extError, extGmx:SfGmx) {
+					if (extError == null) {
+						for (extFiles in extGmx.findAll("files"))
+						for (extFile in extFiles.findAll("file")) {
+							var extFileName = extFile.findText("filename");
+							if (Path.extension(extFileName).toLowerCase() != "gml") continue;
+							var extFilePath = Path.join([extNode.text, extFileName]);
+							filesLeft += 1;
+							pj.readTextFile(extFilePath, function(err, code) {
+								if (err == null) {
+									var gml1 = fn(extFilePath, extFilePath, code);
+									if (gml1 != null && gml1 != code) {
+										pj.writeTextFileSync(extFilePath, gml1);
+									}
+								}
+								next();
+							});
+						}
+					}
+					next();
+				});
+			}
+		}
 		//
 		function findMcr(name:String, full:String, pjGmx:SfGmx) {
 			function procMcr(gmx:SfGmx) {

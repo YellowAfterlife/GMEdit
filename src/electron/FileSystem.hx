@@ -24,6 +24,11 @@ import haxe.extern.EitherType;
 			callback(e, d != null ? Json.parse(d) : null);
 		});
 	}
+	public static inline function readGmxFile(path:String, callback:Error->SfGmx->Void):Void {
+		readFile(path, "utf8", function(e:Error, d:Dynamic) {
+			callback(e, d != null ? SfGmx.parse(d) : null);
+		});
+	}
 	//
 	public static function readFileSync(path:String, ?enc:String):Dynamic;
 	public static inline function readTextFileSync(path:String):String {

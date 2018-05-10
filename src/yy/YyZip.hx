@@ -227,6 +227,12 @@ class YyZip extends Project {
 			return Json.parse(file.getText());
 		} else throw new Error("File not found: " + path);
 	}
+	override public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
+		var file = yyzFileMap[fixSlashes(path)];
+		if (file != null) {
+			fn(null, SfGmx.parse(file.getText()));
+		} else fn(new Error("File not found: " + path), null);
+	}
 	override public function readGmxFileSync(path:String):SfGmx {
 		var file = yyzFileMap[fixSlashes(path)];
 		if (file != null) {

@@ -38,6 +38,8 @@ using tools.HtmlTools;
 	public static var cbCheckHeaders:InputElement;
 	public static var cbCheckTimelines:InputElement;
 	public static var cbCheckMacros:InputElement;
+	public static var cbCheckShaders:InputElement;
+	public static var cbCheckExtensions:InputElement;
 	public static var divSearching:DivElement;
 	//
 	static function offsetToPos(code:String, till:Int, rowStart:Int):AcePos {
@@ -240,6 +242,8 @@ using tools.HtmlTools;
 			checkComments: cbCheckComments.checked,
 			checkTimelines: cbCheckTimelines.checked,
 			checkMacros: cbCheckMacros.checked,
+			checkShaders: cbCheckShaders.checked,
+			checkExtensions: cbCheckExtensions.checked,
 		};
 	}
 	public static function runAuto(opt:GlobalSearchOpt) {
@@ -283,6 +287,8 @@ using tools.HtmlTools;
 		cbCheckComments = element.querySelectorAuto('input[name="check-comments"]');
 		cbCheckTimelines = element.querySelectorAuto('input[name="check-timelines"]');
 		cbCheckMacros = element.querySelectorAuto('input[name="check-macros"]');
+		cbCheckShaders = element.querySelectorAuto('input[name="check-shaders"]');
+		cbCheckExtensions = element.querySelectorAuto('input[name="check-extensions"]');
 		//}
 		fdFind.onkeydown = function(e:KeyboardEvent) {
 			switch (e.keyCode) {
@@ -320,6 +326,8 @@ typedef GlobalSearchOpt = {
 	checkComments:Bool,
 	checkTimelines:Bool,
 	checkMacros:Bool,
+	checkShaders:Bool,
+	checkExtensions:Bool,
 	?headerFilter:RegExp,
 	?errors:String,
 };
