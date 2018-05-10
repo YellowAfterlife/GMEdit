@@ -180,7 +180,10 @@ import ui.TreeView;
 		}
 		//
 		var parent = getParentJson();
-		if (parent != null) parent.getInfo(info);
+		if (parent != null) {
+			info.parents.unshift(parent.name);
+			parent.getInfo(info);
+		}
 		//
 		return info;
 	}
