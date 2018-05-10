@@ -17,7 +17,6 @@ class GmlObjectInfo {
 	public var objectName:String = "";
 	public var spriteName:String = "";
 	public var parents:Array<String> = [];
-	public var children:Array<String> = [];
 	public var eventList:Array<String> = [];
 	/** event name -> [parent name, child name] */
 	public var eventMap:Dictionary<Array<String>> = new Dictionary();
@@ -35,6 +34,32 @@ class GmlObjectInfo {
 		for (name in parents) {
 			buf.addFormat("// @[%s]\n", name);
 		}
+		var children = Project.current.objectChildren[objectName];
+		var childCount = children != null ? children.length : 0;
+		if (childCount > 0) {
+			var cbuf = new StringBuilder();
+			function childCountRec(name:String, depth:Int) {
+				if (++depth > 64) return 0;
+				var found = 0;
+				var arr = Project.current.objectChildren[name];
+				if (arr != null) {
+					found += arr.length;
+					for (child in arr) found += childCountRec(child, depth);
+				}
+				return found;
+			}
+			for (child in children) {
+				cbuf.addFormat('// @[%s]', child);
+				var subCount = childCountRec(child, 0);
+				if (subCount > 0) {
+					cbuf.addFormat(' (%d child%s)', subCount, subCount != 1 ? "ren" : "");
+					childCount += subCount;
+				}
+				cbuf.addString('\n');
+			}
+			buf.addFormat("#section Children (%d)\n", childCount);
+			buf.addString(cbuf.toString());
+		} else buf.addFormat("#section Children (0)\n");
 		buf.addFormat("#section Events (%d)\n", eventList.length);
 		for (eid in eventList) {
 			var items = eventMap[eid];

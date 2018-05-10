@@ -368,9 +368,21 @@ class GmlSeeker {
 		GmlSeekData.map.set(orig, out);
 		out.comp.autoSort();
 	}
+	static inline function addObjectChild(parentName:String, childName:String) {
+		var pj = Project.current;
+		var parChildren = pj.objectChildren[parentName];
+		if (parChildren == null) {
+			parChildren = [];
+			pj.objectChildren.set(parentName, parChildren);
+		}
+		parChildren.push(childName);
+	}
 	static function runYyObject(orig:String, src:String) {
 		var obj:YyObject = haxe.Json.parse(src);
 		var dir = Path.directory(orig);
+		//
+		var parentName = Project.current.yyObjectNames[obj.parentObjectId];
+		if (parentName != null) addObjectChild(parentName, obj.name);
 		//
 		if (Preferences.current.assetThumbs) {
 			var spriteId = obj.spriteId;
@@ -425,6 +437,12 @@ class GmlSeeker {
 	static function runGmxObject(orig:String, src:String) {
 		var obj = SfGmx.parse(src);
 		var out = new GmlSeekData();
+		//
+		var parentName = obj.findText("parentName");
+		if (parentName != "<undefined>") {
+			var objectName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(orig)));
+			addObjectChild(parentName, objectName);
+		}
 		//
 		if (Preferences.current.assetThumbs) {
 			var sprite = obj.findText("spriteName");

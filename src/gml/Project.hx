@@ -54,6 +54,8 @@ class Project {
 	public var yyObjectNames:Dictionary<String>;
 	public var yyObjectGUIDs:Dictionary<YyGUID>;
 	public var yyResources:Dictionary<YyProjectResource>;
+	/** object name -> [...child names] */
+	public var objectChildren:Dictionary<Array<String>>;
 	//
 	public var hasGMLive:Bool = false;
 	//
@@ -129,6 +131,7 @@ class Project {
 	public function reload(?first:Bool) {
 		nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
+			objectChildren = new Dictionary();
 			GmlAPI.version = version;
 			var state:ProjectState = null;
 			if (first) {
