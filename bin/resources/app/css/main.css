@@ -7,7 +7,7 @@ body {
 	font: 11pt sans-serif;
 	box-sizing: border-box;
 	overflow: hidden;
-  background: white;
+	background: white;
 }
 /* */
 #main {
@@ -132,6 +132,26 @@ body {
 .chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-changed .chrome-tab-close:not(:hover)::before {
 	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="#5198D9"/></svg>');
 }
+.chrome-tabs-hint {
+	position: absolute;
+	top: 36px;
+	display: none;
+	z-index: 1000;
+	color: white;
+	background: rgba(0,0,0,0.7);
+	padding: 1px 4px;
+	border-radius: 2px;
+	pointer-events: none;
+}
+.chrome-tabs-hint:before {
+	position: absolute;
+	left: calc(50% - 4px);
+	top: -8px;
+	content: "";
+	border: 4px solid transparent;
+	border-bottom-color: rgba(0,0,0,0.7);
+}
+
 .project-name {
 	line-height: 36px;
 	padding-top: 0;

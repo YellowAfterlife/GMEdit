@@ -11,6 +11,7 @@ import Main.window;
 import Main.document;
 import js.html.MouseEvent;
 using tools.NativeString;
+using tools.HtmlTools;
 
 /**
  * ...
@@ -40,6 +41,17 @@ class ChromeTabs {
 		//
 		ChromeTabMenu.init();
 		//
+		var hintEl = document.createDivElement();
+		hintEl.classList.add("chrome-tabs-hint");
+		hintEl.setInnerText("Bock?");
+		element.parentElement.appendChild(hintEl);
+		function showHint(text:String) {
+			
+		}
+		function hideHint(?_) {
+			hintEl.style.display = "none";
+		}
+		//
 		element.addEventListener("activeTabChange", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
 			var gmlFile = tabEl.gmlFile;
@@ -49,12 +61,23 @@ class ChromeTabs {
 				GmlFile.next = null;
 				gmlFile.tabEl = cast tabEl;
 				tabEl.gmlFile = gmlFile;
-				tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
+				//tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
 				tabEl.setAttribute(attrContext, gmlFile.context);
 				tabEl.addEventListener("contextmenu", function(e:MouseEvent) {
 					e.preventDefault();
 					ChromeTabMenu.show(tabEl, e);
 				});
+				tabEl.addEventListener("mouseenter", function(e:MouseEvent) {
+					hintEl.setInnerText(gmlFile.name);
+					hintEl.style.display = "block";
+					var x = impl.tabPositions[impl.tabEls.indexOf(tabEl)]
+						+ tabEl.offsetWidth / 2
+						+ tabEl.parentElement.offsetLeft
+						- hintEl.offsetWidth / 2;
+					hintEl.style.left = x + "px";
+				});
+				tabEl.addEventListener("mouseleave", hideHint);
+				tabEl.addEventListener("mousedown", hideHint);
 			}
 			var prev = GmlFile.current;
 			if (prev != null) {
@@ -174,6 +197,7 @@ class ChromeTabs {
 	public function addTab(tab:Dynamic):Dynamic;
 	public function setCurrentTab(tab:Element):Void;
 	public var tabEls(default, never):Array<ChromeTab>;
+	public var tabPositions(default, never):Array<Float>;
 }
 extern class ChromeTab extends Element {
 	public var gmlFile:GmlFile;
