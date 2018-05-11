@@ -39,12 +39,23 @@ class GmlFile {
 	/** Full path to the source file (null if no source file, e.g. search results) */
 	public var path:String;
 	
+	/**
+	 * If this file-tab represents multiple files that have to be checked for changes,
+	 * this array indicates their paths and last-changed times.
+	 */
+	public var extraFiles:Array<GmlFileExtra> = [];
+	
 	/** Source file change time */
 	public var time:Float = 0;
 	public inline function syncTime() {
-		if (path != null && kind != Multifile) try {
-			time = FileSystem.statSync(path).mtimeMs;
-		} catch (_:Dynamic) { }
+		if (path != null) {
+			if (kind != Multifile) try {
+				time = FileSystem.statSync(path).mtimeMs;
+			} catch (_:Dynamic) { }
+			for (pair in extraFiles) try {
+				pair.time = FileSystem.statSync(pair.path).mtimeMs;
+			} catch (_:Dynamic) { }
+		}
 	}
 	
 	/** Context (used for tagging tabs) */

@@ -1,5 +1,6 @@
 package yy;
 import electron.FileWrap;
+import gml.file.GmlFileExtra;
 import haxe.io.Path;
 import tools.Dictionary;
 import yy.YyObject;
@@ -17,7 +18,7 @@ abstract YyTimeline(YyTimelineImpl) {
 	public static function getMomentPath(time:Int):String {
 		return "moment_" + time + ".gml";
 	}
-	public function getCode(objPath:String) {
+	public function getCode(objPath:String, ?extras:Array<GmlFileExtra>){
 		var dir = Path.directory(objPath);
 		var out = "";
 		var errors = "";
@@ -25,6 +26,7 @@ abstract YyTimeline(YyTimelineImpl) {
 			var time = moment.moment;
 			var rel = getMomentPath(time);
 			var full = Path.join([dir, rel]);
+			if (extras != null) extras.push(new GmlFileExtra(full));
 			var code = FileWrap.readTextFileSync(full);
 			if (out != "") out += "\n\n";
 			out += "#moment " + time;

@@ -6,6 +6,8 @@ import gmx.*;
 import parsers.*;
 import yy.*;
 import ace.AceSessionData;
+import haxe.Json;
+import tools.NativeArray;
 import tools.NativeString;
 import tools.Dictionary;
 import tools.StringBuilder;
@@ -25,8 +27,12 @@ class GmlFileIO {
 		}
 	}
 	public static function load(file:GmlFile, data:Dynamic) {
-		var src:String = data != null ? data : FileWrap.readTextFileSync(file.path);
-		file.syncTime();
+		var src:String;
+		if (data != null) {
+			src = data;
+		} else if (file.kind != Multifile) {
+			src = FileWrap.readTextFileSync(file.path);
+		} else src = "";
 		var gmx:SfGmx, out:String, errors:String;
 		function setError(s:String) {
 			file.code = s;
@@ -44,7 +50,8 @@ class GmlFileIO {
 				file.code = src;
 			};
 			case Multifile: {
-				file.multidata = data;
+				if (data != null) file.multidata = data;
+				NativeArray.clear(file.extraFiles);
 				out = ""; errors = "";
 				for (item in file.multidata) {
 					if (out != "") out += "\n\n";
@@ -63,6 +70,7 @@ class GmlFileIO {
 						default: errors += "Can't open " + item.name
 							+ " for editing because it contains multiple scripts.\n";
 					}
+					file.extraFiles.push(new GmlFileExtra(item.path));
 				}
 				if (errors == "") {
 					// (too buggy)
@@ -80,9 +88,10 @@ class GmlFileIO {
 				} else setError(GmxObject.errorText);
 			};
 			case YyObjectEvents: {
-				if (data == null) return;
+				if (data == null) data = Json.parse(src);
 				var obj:YyObject = data;
-				file.code = obj.getCode(file.path);
+				NativeArray.clear(file.extraFiles);
+				file.code = obj.getCode(file.path, file.extraFiles);
 			};
 			case GmxTimelineMoments: {
 				gmx = SfGmx.parse(src);
@@ -92,9 +101,10 @@ class GmlFileIO {
 				} else setError(GmxObject.errorText);
 			};
 			case YyTimelineMoments: {
-				if (data == null) return;
+				if (data == null) data = Json.parse(src);
 				var tl:YyTimeline = data;
-				file.code = tl.getCode(file.path);
+				NativeArray.clear(file.extraFiles);
+				file.code = tl.getCode(file.path, file.extraFiles);
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = SfGmx.parse(src);
@@ -104,6 +114,7 @@ class GmlFileIO {
 				file.code = GmxProject.getMacroCode(gmx, notes, file.kind == GmxConfigMacros);
 			};
 		}
+		file.syncTime();
 		if (canImport(file)) {
 			file.code = GmlExtImport.pre(file.code, file.path);
 		}
@@ -249,54 +260,73 @@ class GmlFileIO {
 	}
 	public static function checkChanges(file:GmlFile) {
 		var path = file.path;
-		if (path == null || !haxe.io.Path.isAbsolute(path)) return;
-		if (!FileSystem.existsSync(path)) return;
-		try {
+		if (file.kind != Multifile) {
+			if (path == null || !haxe.io.Path.isAbsolute(path)) return;
+			if (!FileSystem.existsSync(path)) return;
+		}
+		var changed = false;
+		if (file.kind != GmlFileKind.Multifile) try {
 			var time1 = FileSystem.statSync(path).mtimeMs;
 			if (time1 > file.time) {
 				file.time = time1;
-				var prev = file.code;
-				file.load();
-				if (prev == file.code) {
-					// OK!
-				} else if (!file.changed) {
-					file.session.setValue(file.code);
-				} else {
-					function printSize(b:Float) {
-						inline function toFixed(f:Float):String {
-							return untyped f.toFixed(n, 2);
-						}
-						if (b < 10000) return b + "B";
-						b /= 1024;
-						if (b < 10000) return toFixed(b) + "KB";
-						b /= 1024;
-						if (b < 10000) return toFixed(b) + "MB";
-						b /= 1024;
-						return toFixed(b) + "GB";
+				changed = true;
+			}
+		} catch (e:Dynamic) {
+			trace("Error checking " + path + ": ", e);
+		}
+		for (pair in file.extraFiles) try {
+			var ppath = pair.path;
+			if (!haxe.io.Path.isAbsolute(ppath) || !FileSystem.existsSync(ppath)) continue;
+			var time1 = FileSystem.statSync(ppath).mtimeMs;
+			if (time1 > pair.time) {
+				pair.time = time1;
+				changed = true;
+			}
+		} catch (e:Dynamic) {
+			trace("Error checking " + pair.path + ": ", e);
+		}
+		if (changed) try {
+			var prev = file.code;
+			file.load();
+			if (prev == file.code) {
+				// OK!
+			} else if (!file.changed) {
+				file.session.setValue(file.code);
+			} else {
+				function printSize(b:Float) {
+					inline function toFixed(f:Float):String {
+						return untyped f.toFixed(n, 2);
 					}
-					var bt = electron.Dialog.showMessageBox({
-						title: "File conflict for " + file.name,
-						message: "Source file changed ("
-							+ printSize(file.code.length)
-							+ ") but you have unsaved changes ("
-							+ printSize(file.session.getValue().length)
-							+ "). What would you like to do?",
-						buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
-						cancelId: 1,
-					});
-					switch (bt) {
-						case 0: file.session.setValue(file.code);
-						case 1: { };
-						case 2: {
-							var name1 = file.name + " <copy>";
-							GmlFile.next = new GmlFile(name1, null, SearchResults, file.code);
-							ui.ChromeTabs.addTab(name1);
-						};
-					}
+					if (b < 10000) return b + "B";
+					b /= 1024;
+					if (b < 10000) return toFixed(b) + "KB";
+					b /= 1024;
+					if (b < 10000) return toFixed(b) + "MB";
+					b /= 1024;
+					return toFixed(b) + "GB";
+				}
+				var bt = electron.Dialog.showMessageBox({
+					title: "File conflict for " + file.name,
+					message: "Source file changed ("
+						+ printSize(file.code.length)
+						+ ") but you have unsaved changes ("
+						+ printSize(file.session.getValue().length)
+						+ "). What would you like to do?",
+					buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
+					cancelId: 1,
+				});
+				switch (bt) {
+					case 0: file.session.setValue(file.code);
+					case 1: { };
+					case 2: {
+						var name1 = file.name + " <copy>";
+						GmlFile.next = new GmlFile(name1, null, SearchResults, file.code);
+						ui.ChromeTabs.addTab(name1);
+					};
 				}
 			}
 		} catch (e:Dynamic) {
-			trace("Error checking: ", e);
+			trace("Error applying changes: ", e);
 		}
 	}
 }

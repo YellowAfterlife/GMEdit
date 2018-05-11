@@ -3,6 +3,7 @@ import electron.FileWrap;
 import gml.GmlObjectInfo;
 import parsers.GmlEvent;
 import gml.file.GmlFile;
+import gml.file.GmlFileExtra;
 import haxe.io.Path;
 import tools.Dictionary;
 import tools.NativeString;
@@ -14,7 +15,7 @@ import ui.TreeView;
  */
 @:forward abstract YyObject(YyObjectImpl) from YyObjectImpl to YyObjectImpl {
 	public static var errorText:String;
-	public function getCode(objPath:String):String {
+	public function getCode(objPath:String, ?extras:Array<GmlFileExtra>):String {
 		var dir = Path.directory(objPath);
 		var out = "";
 		var errors = "";
@@ -40,6 +41,7 @@ import ui.TreeView;
 			var rel = YyEvent.toPath(type, numb, eid);
 			var name = YyEvent.toString(type, numb, oid);
 			var full = Path.join([dir, rel]);
+			if (extras != null) extras.push(new GmlFileExtra(full));
 			var code = FileWrap.readTextFileSync(full);
 			if (out != "") out += "\n\n";
 			var pair = parsers.GmlHeader.parse(code, v2);
