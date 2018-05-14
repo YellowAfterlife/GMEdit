@@ -22,6 +22,7 @@ import tools.NativeString;
 import tools.StringBuilder;
 import yy.*;
 import ui.GlobalSeachData;
+import ui.Preferences;
 using tools.HtmlTools;
 
 /**
@@ -131,6 +132,8 @@ class GmlFile {
 		session.setUndoManager(new AceUndoManager());
 		// todo: does Mac version of GMS2 use Mac line endings? Probably not
 		session.setOption("newLineMode", "windows");
+		session.setOption("tabSize", Preferences.current.tabSize);
+		Preferences.hookSetOption(session);
 		if (this.kind == JavaScript) session.setOption("useWorker", false);
 		session.gmlFile = this;
 	}

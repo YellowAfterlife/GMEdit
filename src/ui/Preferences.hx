@@ -409,6 +409,7 @@ class Preferences {
 			showGMLive: Everywhere,
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,
+			tabSize: 4,
 		};
 		// load/merge defaults:
 		var doSave = false;
@@ -430,6 +431,23 @@ class Preferences {
 	public static function init() {
 		load();
 	}
+	public static function hookSetOption(obj:Dynamic):Void {
+		if (obj.setOption_raw != null) return;
+		obj.setOption_raw = obj.setOption;
+		obj.setOption = function(key:String, val:Dynamic) {
+			obj.setOption_raw(key, val);
+			if (key == "tabSize" && val != current.tabSize) {
+				current.tabSize = val;
+				save();
+			}
+			var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
+			opts.remove("enableLiveAutocompletion");
+			opts.remove("theme");
+			opts.remove("enableSnippets");
+			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
+			//Main.console.log("Ace settings saved.");
+		};
+	}
 	public static function initEditor() {
 		// load Ace options:
 		try {
@@ -442,15 +460,8 @@ class Preferences {
 		};
 		// flush Ace options on changes (usually only via Ctrl+,):
 		var editor = Main.aceEditor;
-		var origSetOption = editor.setOption;
-		untyped editor.setOption = function(key, val) {
-			origSetOption(key, val);
-			var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
-			opts.remove("enableLiveAutocompletion");
-			opts.remove("theme");
-			opts.remove("enableSnippets");
-			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
-		};
+		hookSetOption(editor);
+		hookSetOption(editor.renderer);
 		if (editor.getOption("fontFamily") == null) {
 			var ep = untyped window.process;
 			var isMac:Bool;
@@ -476,6 +487,7 @@ typedef PrefData = {
 	assetThumbs:Bool,
 	showGMLive:PrefGMLive,
 	recentProjectCount:Int,
+	tabSize:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
 }
 @:enum abstract PrefGMLive(Int) from Int to Int {
