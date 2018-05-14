@@ -105,7 +105,7 @@ class GmlEvent {
 		**/
 		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
 			var flushCode = q.substring(evStart, till);
-			flushCode = flushCode.trimTrailRn((eof ? 0 : 1) + (cont ? 0 : 1));
+			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 2));
 			if (evName == null) {
 				if (flushCode != "") {
 					errors += "There's code prior to first event definition.\n";
