@@ -30,4 +30,5 @@ enum GmlFileKind {
 	YyShader;
 	/** Find/replace results */
 	SearchResults;
+	Snippets;
 }

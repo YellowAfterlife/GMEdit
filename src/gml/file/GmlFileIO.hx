@@ -1,4 +1,5 @@
 package gml.file;
+import ace.AceSnippets;
 import electron.FileWrap;
 import gml.file.GmlFile;
 import electron.FileSystem;
@@ -30,9 +31,11 @@ class GmlFileIO {
 		var src:String;
 		if (data != null) {
 			src = data;
-		} else if (file.kind != Multifile) {
-			src = FileWrap.readTextFileSync(file.path);
-		} else src = "";
+		} else switch (file.kind) {
+			case Multifile: src = "";
+			case Snippets: src = AceSnippets.getText(file.path);
+			default: src = FileWrap.readTextFileSync(file.path);
+		}
 		var gmx:SfGmx, out:String, errors:String;
 		function setError(s:String) {
 			file.code = s;
@@ -42,7 +45,7 @@ class GmlFileIO {
 		switch (file.kind) {
 			case Extern: file.code = data != null ? data : "";
 			case YyShader: file.code = "";
-			case Plain, GLSL, HLSL, JavaScript: file.code = src;
+			case Plain, GLSL, HLSL, JavaScript, Snippets: file.code = src;
 			case SearchResults: file.code = data;
 			case Normal: {
 				src = GmlExtCoroutines.pre(src);
@@ -251,6 +254,11 @@ class GmlFileIO {
 				}
 				out = gmx.toGmxString();
 			};
+			case Snippets: {
+				AceSnippets.setText(path, val);
+				writeFile = false;
+				out = null;
+			};
 			default: return false;
 		}
 		//
@@ -260,6 +268,7 @@ class GmlFileIO {
 	}
 	public static function checkChanges(file:GmlFile) {
 		var path = file.path;
+		if (file.kind == Snippets) return;
 		if (file.kind != Multifile) {
 			if (path == null || !haxe.io.Path.isAbsolute(path)) return;
 			if (!FileSystem.existsSync(path)) return;

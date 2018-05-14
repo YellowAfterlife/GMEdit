@@ -33,7 +33,7 @@ class AceStatusBar {
 		var depth = 0; // current parenthesis depth
 		if (ctk != null && ctk.type == "paren.lparen") {
 			ctk = iter.stepForward();
-			if (ctk.type == "paren.rparen") depth -= 1;
+			if (ctk != null && ctk.type == "paren.rparen") depth -= 1;
 		}
 		// go back to find the likely associated function call:
 		var tk:AceToken = ctk;

@@ -310,9 +310,8 @@ using tools.NativeString;
 		if (version == GmlVersion.v2) { // regions
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
-		} else {
-			rBase.push(rSection);
 		}
+		rBase.push(rSection); // only used in v2 for object info
 		if (version == GmlVersion.v2) {
 			rBase.push(rpush("string", '@"', "string.dq"));
 			rBase.push(rpush("string", "@'", "string.sq"));

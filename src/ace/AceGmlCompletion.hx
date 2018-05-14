@@ -167,6 +167,7 @@ using tools.NativeString;
 			return q.modeId == "ace/mode/shader" && gml.file.GmlFile.current.kind == HLSL;
 		});
 		//
+		var snippetCompleter:AceGmlCompletion = AceSnippets.init();
 		editor.setOptions({
 			enableLiveAutocompletion: [
 				localCompleter,
@@ -181,7 +182,9 @@ using tools.NativeString;
 				enumCompleter,
 				glslCompleter,
 				hlslCompleter,
-			]
+				snippetCompleter,
+			],
+			enableSnippets: true,
 		});
 		//
 		editor.commands.on("afterExec", function(e:Dynamic) {

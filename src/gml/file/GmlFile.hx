@@ -116,7 +116,7 @@ class GmlFile {
 		} else context = name;
 		var modePath = switch (this.kind) {
 			case SearchResults: "ace/mode/gml_search";
-			case Extern, Plain: "ace/mode/text";
+			case Extern, Plain, Snippets: "ace/mode/text";
 			case GLSL: ShaderHighlight.nextKind = GLSL; "ace/mode/shader";
 			case HLSL: ShaderHighlight.nextKind = HLSL; "ace/mode/shader";
 			case JavaScript: "ace/mode/javascript";

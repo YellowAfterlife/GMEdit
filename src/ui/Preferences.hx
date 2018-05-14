@@ -3,12 +3,15 @@ import ace.AceWrap;
 import electron.FileSystem;
 import electron.Menu;
 import gml.GmlAPI;
+import gml.file.GmlFile;
+import haxe.DynamicAccess;
 import haxe.Json;
 import haxe.io.Path;
 import js.html.Element;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import js.html.MouseEvent;
+import js.html.SelectElement;
 import js.html.Window;
 import Main.document;
 import Main.console;
@@ -296,6 +299,17 @@ class Preferences {
 			current.recentProjectCount = v; save();
 		});
 		//
+		var optSnippets_0 = ["gml", "gml_search", "shader"];
+		var optSnippets_1 = ["GML", "Search results", "Shaders"];
+		var optSnippets_select:SelectElement = null;
+		el = addDropdown(out, "Edit snippets", "", optSnippets_1, function(name) {
+			var mode = optSnippets_0[optSnippets_1.indexOf(name)];
+			GmlFile.openTab(new GmlFile(mode + ".snippets", mode, Snippets));
+			optSnippets_select.value = "";
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-snippets");
+		optSnippets_select = el.querySelectorAuto("select");
+		//
 		addButton(out, "Backup settings", function() {
 			setMenu(menuBackups);
 		});
@@ -420,7 +434,9 @@ class Preferences {
 		// load Ace options:
 		try {
 			var text = Main.window.localStorage.getItem("aceOptions");
-			if (text != null) Main.aceEditor.setOptions(Json.parse(text));
+			var opts:DynamicAccess<Dynamic> = Json.parse(text);
+			opts.set("enableSnippets", true);
+			if (text != null) Main.aceEditor.setOptions(opts);
 		} catch (e:Dynamic) {
 			console.error("Error loading Ace options: " + e);
 		};
@@ -429,9 +445,10 @@ class Preferences {
 		var origSetOption = editor.setOption;
 		untyped editor.setOption = function(key, val) {
 			origSetOption(key, val);
-			var opts:Dictionary<Dynamic> = Main.aceEditor.getOptions();
+			var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
 			opts.remove("enableLiveAutocompletion");
 			opts.remove("theme");
+			opts.remove("enableSnippets");
 			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
 		};
 		if (editor.getOption("fontFamily") == null) {
