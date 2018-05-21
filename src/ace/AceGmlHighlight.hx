@@ -348,8 +348,10 @@ using tools.NativeString;
 			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
 			rxRule("curly.paren.lparen", ~/\{/),
 			rxRule("curly.paren.rparen", ~/\}/),
-			rxRule("paren.lparen", ~/[\[(]/),
-			rxRule("paren.rparen", ~/[\])]/),
+			rxRule("square.paren.lparen", ~/\[/),
+			rxRule("square.paren.rparen", ~/\]/),
+			rxRule("paren.lparen", ~/\(/),
+			rxRule("paren.rparen", ~/\)/),
 			rxRule("text", ~/\s+/),
 		]); //}
 		//
