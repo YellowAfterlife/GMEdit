@@ -15,28 +15,43 @@ class GmlSeekData {
 	private static var blank:GmlSeekData = new GmlSeekData();
 	//
 	public var main:String;
+	
 	// enums declared in this file
 	public var enumList:Array<GmlEnum> = [];
 	public var enumMap:Dictionary<GmlEnum> = new Dictionary();
+	
 	// globalvars declared in this file
 	public var globalVarList:Array<GmlGlobalVar> = [];
 	public var globalVarMap:Dictionary<GmlGlobalVar> = new Dictionary();
+	
 	// specific globals used in this file
 	public var globalFieldList:Array<GmlGlobalField> = [];
 	public var globalFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
 	public var globalFieldComp:AceAutoCompleteItems = [];
+	
+	// instance variables assigned in this file
+	public var instFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	public var instFieldList:Array<GmlGlobalField> = [];
+	public var instFieldComp:AceAutoCompleteItems = [];
+	
 	// macros declared in this file
 	public var macroList:Array<GmlMacro> = [];
 	public var macroMap:Dictionary<GmlMacro> = new Dictionary();
+	
 	/** scope name -> local variables */
 	public var locals:Dictionary<GmlLocals> = new Dictionary();
+	
 	public var kind:Dictionary<String> = new Dictionary();
 	public var comp:AceAutoCompleteItems = [];
+	
 	public var docList:Array<GmlFuncDoc> = [];
 	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
+	
+	// features
 	public var imports:Dictionary<GmlImports> = null;
 	public var hasCoroutines:Bool = false;
 	public var hasGMLive:Bool = false;
+	
 	//
 	public function new() {
 		
@@ -89,6 +104,22 @@ class GmlSeekData {
 			if (++g.refs == 1) {
 				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
 				GmlAPI.gmlGlobalFieldComp.push(g.comp);
+			}
+		}
+		
+		// instance fields (delta)
+		for (fd in prev.instFieldList) {
+			if (next.instFieldMap[fd.name] != null) continue;
+			if (--fd.refs <= 0) {
+				GmlAPI.gmlInstFieldMap.remove(fd.name);
+				GmlAPI.gmlInstFieldComp.remove(fd.comp);
+			}
+		}
+		for (fd in next.instFieldList) {
+			if (prev.instFieldMap[fd.name] != null) continue;
+			if (++fd.refs == 1) {
+				GmlAPI.gmlInstFieldMap.set(fd.name, fd);
+				GmlAPI.gmlInstFieldComp.push(fd.comp);
 			}
 		}
 		

@@ -30,7 +30,8 @@ class GmlAPI {
 		"if", "then", "else", "begin", "end", "for", "while", "do", "until", "repeat",
 		"switch", "case", "default", "break", "continue", "with", "exit", "return",
 		"self", "other", "noone", "all", "global", "local",
-		"mod", "div", "not", "and", "or", "xor", "enum"
+		"mod", "div", "not", "and", "or", "xor", "enum",
+		"true", "false", // generally handled separately
 	];
 	/** whether something is a "flow" (branching, etc. - delimiting) keyword */
 	public static var kwFlow:Dictionary<Bool> = Dictionary.fromKeys(
@@ -102,6 +103,12 @@ class GmlAPI {
 	/** global field AC items */
 	public static var gmlGlobalFieldComp:AceAutoCompleteItems = [];
 	
+	/** instance variables */
+	public static var gmlInstFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	
+	/** instance variable auto-completion */
+	public static var gmlInstFieldComp:AceAutoCompleteItems = [];
+	
 	/** Used for F12/middle-click */
 	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
 	
@@ -117,6 +124,8 @@ class GmlAPI {
 		gmlAssetComp = new Dictionary();
 		gmlGlobalFieldMap = new Dictionary();
 		gmlGlobalFieldComp.clear();
+		gmlInstFieldMap = new Dictionary();
+		gmlInstFieldComp.clear();
 		gmlLookup = new Dictionary();
 		gmlLookupText = "";
 		for (type in gmx.GmxLoader.assetTypes) {

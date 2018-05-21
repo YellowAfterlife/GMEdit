@@ -270,7 +270,7 @@ class GmlSeeker {
 						if (s != null && out.globalFieldMap[s] == null) {
 							var gfd = GmlAPI.gmlGlobalFieldMap[s];
 							if (gfd == null) {
-								gfd = new GmlGlobalField(s);
+								gfd = new GmlGlobalField(s, "global");
 								GmlAPI.gmlGlobalFieldMap.set(s, gfd);
 							}
 							out.globalFieldList.push(gfd);
@@ -356,6 +356,41 @@ class GmlSeeker {
 							acf.doc = ac.doc = "" + (nextVal++);
 						}
 						if (s == null || s == "}") break;
+					}
+				};
+				default: { // maybe an instance field assignment
+					// skip if it's a local/built-in/project/extension identifier:
+					if (locals.kind[s] != null) continue;
+					if (GmlAPI.gmlKind[s] != null) continue;
+					if (GmlAPI.extKind[s] != null) continue;
+					if (GmlAPI.stdKind[s] != null) continue;
+					var skip = false, i;
+					// skip if it's `field.some`
+					i = q.pos - s.length;
+					while (--i >= 0) switch (q.get(i)) {
+						case " ".code, "\t".code, "\r".code, "\n".code: { };
+						case ".".code: skip = true; break;
+						default: break;
+					}
+					if (skip) continue;
+					// skip unless it's `some =` (and no `some ==`)
+					i = q.pos;
+					while (i < q.length) switch (q.get(i++)) {
+						case " ".code, "\t".code, "\r".code, "\n".code: { };
+						case "=".code: skip = q.get(i) == "=".code; break;
+						default: skip = true; break;
+					}
+					if (skip) continue;
+					// that's an instance variable then
+					if (out.instFieldMap[s] == null) {
+						var fd = GmlAPI.gmlInstFieldMap[s];
+						if (fd == null) {
+							fd = new GmlGlobalField(s, "inst");
+							GmlAPI.gmlInstFieldMap.set(s, fd);
+						}
+						out.instFieldList.push(fd);
+						out.instFieldMap.set(s, fd);
+						out.instFieldComp.push(fd.comp);
 					}
 				};
 			} // switch (s)

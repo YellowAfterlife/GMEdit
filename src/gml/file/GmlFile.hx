@@ -290,13 +290,16 @@ class GmlFile {
 		var data = GmlSeekData.map[path];
 		if (data != null) {
 			AceGmlCompletion.gmlCompleter.items = data.comp;
-			AceGmlCompletion.globalCompleter.items = data.globalFieldComp;
 			GmlAPI.gmlComp = data.comp;
 			GmlAPI.gmlKind = data.kind;
 			GmlAPI.gmlEnums = data.enumMap;
 			GmlAPI.gmlDoc = data.docMap;
+			AceGmlCompletion.globalCompleter.items = data.globalFieldComp;
 			GmlAPI.gmlGlobalFieldComp = data.globalFieldComp;
 			GmlAPI.gmlGlobalFieldMap = data.globalFieldMap;
+			AceGmlCompletion.instCompleter.items = data.instFieldComp;
+			GmlAPI.gmlInstFieldComp = data.instFieldComp;
+			GmlAPI.gmlInstFieldMap = data.instFieldMap;
 		}
 	}
 	public function checkChanges() {

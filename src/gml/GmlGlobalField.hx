@@ -10,9 +10,9 @@ class GmlGlobalField {
 	public var refs:Int = 0;
 	public var name:String;
 	public var comp:AceAutoCompleteItem;
-	public function new(name:String) {
+	public function new(name:String, kind:String) {
 		this.name = name;
-		this.comp = new AceAutoCompleteItem(name, "global");
+		this.comp = new AceAutoCompleteItem(name, kind);
 	}
 	
 }

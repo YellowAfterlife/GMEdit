@@ -24,6 +24,7 @@ using tools.NativeString;
 	public static var namespaceCompleter:AceGmlCompletion;
 	public static var enumCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
+	public static var instCompleter:AceGmlCompletion;
 	public static var keynameCompleter:AceGmlCompletion;
 	public static var glslCompleter:AceGmlCompletion;
 	public static var hlslCompleter:AceGmlCompletion;
@@ -153,9 +154,13 @@ using tools.NativeString;
 		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false, gmlf);
 		globalCompleter.minLength = 0;
 		globalCompleter.dotKind = dotKindGlobal;
+		//
+		instCompleter = new AceGmlCompletion(GmlAPI.gmlInstFieldComp, excl, true, gmlf);
+		//
 		namespaceCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		namespaceCompleter.minLength = 0;
 		namespaceCompleter.dotKind = dotKindNamespace;
+		//
 		enumCompleter = new AceGmlCompletion([], ["enumfield"], false, gmlf);
 		enumCompleter.minLength = 0;
 		enumCompleter.dotKind = dotKindEnum;
@@ -178,6 +183,7 @@ using tools.NativeString;
 				eventCompleter,
 				keynameCompleter,
 				globalCompleter,
+				instCompleter,
 				namespaceCompleter,
 				enumCompleter,
 				glslCompleter,
