@@ -299,8 +299,6 @@ class KeyboardShortcuts {
 			return true;
 		}
 		//
-		if (openLocal(term, pos, null)) return true;
-		//
 		if (term == "event_inherited" || term == "action_inherited") {
 			var def = gml.GmlScopes.get(pos.row);
 			if (def == "") return false;
@@ -313,6 +311,8 @@ class KeyboardShortcuts {
 			}
 			return true;
 		}
+		//
+		if (openLocal(term, pos, null)) return true;
 		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
