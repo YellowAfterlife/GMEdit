@@ -437,7 +437,7 @@ class Preferences {
 		obj.setOption = function(key:String, val:Dynamic) {
 			obj.setOption_raw(key, val);
 			if (key == "tabSize" && val != current.tabSize) {
-				current.tabSize = val;
+				current.tabSize = Std.parseInt(val);
 				save();
 			}
 			var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
