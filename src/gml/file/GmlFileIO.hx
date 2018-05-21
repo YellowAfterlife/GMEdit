@@ -171,7 +171,7 @@ class GmlFileIO {
 				out = val;
 				out = GmlExtArgs.post(out);
 				if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				if (ui.Preferences.current.argsFormat != null) {
+				if (ui.Preferences.current.argsFormat != "") {
 					if (GmlExtArgsDoc.proc(file)) {
 						out = file.session.getValue();
 						out = GmlExtArgs.post(out);

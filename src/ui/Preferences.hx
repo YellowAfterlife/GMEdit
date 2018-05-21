@@ -222,11 +222,11 @@ class Preferences {
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
 		//
 		var noAutoArgs = "Don't auto-generate";
-		el = addDropdown(out, "GMS2 JSDoc format for #args",
-			current.argsFormat != null ? current.argsFormat : noAutoArgs,
+		el = addDropdown(out, "JSDoc format for #args",
+			current.argsFormat != "" ? current.argsFormat : noAutoArgs,
 			[noAutoArgs, "@arg", "@param", "@argument"],
 			function(v) {
-				if (v == noAutoArgs) v = null;
+				if (v == noAutoArgs) v = "";
 				current.argsFormat = v;
 				save();
 			});
