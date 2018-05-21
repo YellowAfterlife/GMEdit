@@ -1077,7 +1077,10 @@ var AcePopup = function(parentNode) {
             if (metaData.length + data.caption.length > maxW - 2) {
                 metaData = metaData.substr(0, maxW - data.caption.length - 3) + "\u2026";
             }
-            tokens.push({type: "rightAlignedText", value: metaData});
+			// +y: append type
+			var metaType = "rightAlignedText";
+			if (/^\w+$/.test(metaData)) metaType += ".comp_" + metaData;
+            tokens.push({type: metaType, value: metaData});
         }
         return tokens;
     };

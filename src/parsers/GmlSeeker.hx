@@ -385,7 +385,7 @@ class GmlSeeker {
 					if (out.instFieldMap[s] == null) {
 						var fd = GmlAPI.gmlInstFieldMap[s];
 						if (fd == null) {
-							fd = new GmlGlobalField(s, "inst");
+							fd = new GmlGlobalField(s, "variable");
 							GmlAPI.gmlInstFieldMap.set(s, fd);
 						}
 						out.instFieldList.push(fd);
