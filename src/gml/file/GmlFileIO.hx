@@ -226,7 +226,7 @@ class GmlFileIO {
 				if (!obj.setCode(path, val)) {
 					return error("Can't update YY:\n" + YyObject.errorText);
 				}
-				out = haxe.Json.stringify(obj, null, "    ");
+				out = NativeString.yyJson(obj);
 			};
 			case GmxTimelineMoments: {
 				gmx = FileWrap.readGmxFileSync(path);
@@ -240,7 +240,7 @@ class GmlFileIO {
 				if (!tl.setCode(path, val)) {
 					return error("Can't update YY:\n" + YyTimeline.errorText);
 				}
-				out = haxe.Json.stringify(tl, null, "    ");
+				out = NativeString.yyJson(tl);
 			};
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = FileWrap.readGmxFileSync(path);
