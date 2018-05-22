@@ -98,7 +98,8 @@ class GmlExtImport {
 	static function parseFile(
 		imp:GmlImports, rel:String, found:Dictionary<Bool>, cache:Dictionary<String>
 	) {
-		if (found[rel]) return true;
+		var fp = Path.withoutExtension(rel.toLowerCase());
+		if (found[fp]) return true;
 		var code = cache[rel];
 		if (code == null) {
 			var full = Path.join([Project.current.dir, "#import", rel]);
@@ -109,7 +110,7 @@ class GmlExtImport {
 			code = FileWrap.readTextFileSync(full);
 			cache.set(rel, code);
 		}
-		found.set(rel, true);
+		found.set(fp, true);
 		var q = new GmlReader(code);
 		var version = GmlAPI.version;
 		//
