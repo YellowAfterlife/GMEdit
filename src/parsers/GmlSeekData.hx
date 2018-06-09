@@ -93,14 +93,14 @@ class GmlSeekData {
 		
 		// global fields (delta)
 		for (g in prev.globalFieldList) {
-			if (next.globalFieldMap[g.name] != null) continue;
+			if (next.globalFieldMap[g.name] == g) continue;
 			if (--g.refs <= 0) {
 				GmlAPI.gmlGlobalFieldMap.remove(g.name);
 				GmlAPI.gmlGlobalFieldComp.remove(g.comp);
 			}
 		}
 		for (g in next.globalFieldList) {
-			if (prev.globalFieldMap[g.name] != null) continue;
+			if (prev.globalFieldMap[g.name] == g) continue;
 			if (++g.refs == 1) {
 				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
 				GmlAPI.gmlGlobalFieldComp.push(g.comp);
@@ -109,14 +109,14 @@ class GmlSeekData {
 		
 		// instance fields (delta)
 		for (fd in prev.instFieldList) {
-			if (next.instFieldMap[fd.name] != null) continue;
+			if (next.instFieldMap[fd.name] == fd) continue;
 			if (--fd.refs <= 0) {
 				GmlAPI.gmlInstFieldMap.remove(fd.name);
 				GmlAPI.gmlInstFieldComp.remove(fd.comp);
 			}
 		}
 		for (fd in next.instFieldList) {
-			if (prev.instFieldMap[fd.name] != null) continue;
+			if (prev.instFieldMap[fd.name] == fd) continue;
 			if (++fd.refs == 1) {
 				GmlAPI.gmlInstFieldMap.set(fd.name, fd);
 				GmlAPI.gmlInstFieldComp.push(fd.comp);
