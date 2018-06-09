@@ -105,9 +105,9 @@ class MainMenu {
 		#else
 		menu.append(new MenuItem({ label: "New project",
 			click: function() {
-				
+				// todo
 			}
-		});
+		}));
 		#end
 		//
 		menu.append(new MenuItem({ type: Sep }));
@@ -124,7 +124,9 @@ class MainMenu {
 		var btn = Main.document.querySelector(".system-button.preferences");
 		btn.addEventListener("click", function(e) {
 			var pj = Project.current;
+			#if !lwedit
 			exportItem.enabled = pj.version != none && Std.is(pj, YyZip);
+			#end
 			menu.popupAsync(e);
 		});
 	}

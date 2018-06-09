@@ -23,6 +23,12 @@ class GmlParseAPI {
 		?ukSpelling:Bool,
 		?version:GmlVersion,
 		?kindPrefix:String,
+		#if lwedit
+		?lwArgc:Dictionary<Int>,
+		?lwConst:Dictionary<Bool>,
+		?lwFlags:Dictionary<Int>,
+		?lwInst:Dictionary<Bool>,
+		#end
 	}) {
 		var stdKind = data.kind;
 		var stdComp = data.comp;
@@ -30,13 +36,33 @@ class GmlParseAPI {
 		var ukSpelling = data.ukSpelling;
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
-		//  1func (2args ) 3flags
+		#if lwedit
+		var lwArgc = data.lwArgc;
+		var lwInst = data.lwInst;
+		var lwConst = data.lwConst;
+		var lwFlags = data.lwFlags;
+		#end
+		//  : 1func (2args ) 3flags
 		~/^(:?(\w+)\((.*?)\))([~\$#*@&£!:]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var args = rx.matched(3);
 			var flags:String = rx.matched(4);
 			if (NativeString.contains(flags, "&")) return;
+			#if lwedit
+			if (lwInst != null && (
+				comp.charCodeAt(0) == ":".code || NativeString.contains(flags, "@")
+			)) lwInst.set(name, true);
+			if (lwArgc != null) {
+				if (NativeString.contains(args, "...") || NativeString.contains(args, "?")) {
+					lwArgc.set(name, -1);
+				} else if (NativeString.contains(args, ",")) {
+					lwArgc.set(name, args.split(",").length);
+				} else {
+					lwArgc.set(name, NativeString.trimBoth(args).length > 0 ? 1 : 0);
+				}
+			}
+			#end
 			var show = true;
 			var doc = GmlFuncDoc.parse(comp);
 			if (version == GmlVersion.v2) {
@@ -75,8 +101,19 @@ class GmlParseAPI {
 			var kind:String;
 			if (flags.indexOf("#") >= 0) {
 				kind = "constant";
+				#if lwedit
+				if (lwConst != null) lwConst.set(name, true);
+				#end
 			} else kind = "variable";
-			//if (rx.matched(3) != null) kind += "[]";
+			#if lwedit
+			if (lwFlags != null) {
+				var lwBits = 0x0;
+				if (NativeString.contains(flags, "*")) lwBits |= 1;
+				if (rx.matched(3) != null) lwBits |= 2;
+				if (NativeString.contains(flags, "@")) lwBits |= 4;
+				lwFlags.set(name, lwBits);
+			}
+			#end
 			stdKind.set(name, kindPrefix + kind);
 			stdComp.push({
 				name: name,

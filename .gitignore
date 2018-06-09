@@ -7,4 +7,6 @@
 /*.lnk
 .DS_Store
 /bin/resources/app/misc/gmcr.js
+/bin/resources/app/misc/gml.js
 /bin/resources/app/lw-app.js
+/bin/resources/app/lw

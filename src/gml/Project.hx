@@ -63,10 +63,15 @@ class Project {
 		this.path = path;
 		dir = Path.directory(path);
 		name = Path.withoutDirectory(path);
+		#if !lwedit
 		detectVersion();
 		document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
 		TreeView.clear();
 		reload(true);
+		#else
+		version = GmlVersion.v1;
+		GmlAPI.version = version;
+		#end
 	}
 	public function detectVersion() {
 		if (path == "") {
@@ -123,9 +128,13 @@ class Project {
 		}
 		for (remKey in remList) ls.removeItem(remKey);
 		//
+		#if !lwedit
 		var path = moduleArgs["open"];
 		if (path == null || path == "") path = window.localStorage.getItem("autoload");
 		open(path != null ? path : "");
+		#else
+		current = new YyZip("", "", []);
+		#end
 	}
 	//
 	public function reload(?first:Bool) {

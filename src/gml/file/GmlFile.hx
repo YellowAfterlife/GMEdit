@@ -138,7 +138,12 @@ class GmlFile {
 		session.gmlFile = this;
 	}
 	public function close():Void {
+		#if !lwedit
 		AceSessionData.store(this);
+		#else
+		GmlSeeker.runSync(path, "", "");
+		GmlSeekData.map.remove(path);
+		#end
 	}
 	//
 	public function navigate(nav:GmlFileNav):Bool {
@@ -309,7 +314,7 @@ class GmlFile {
 	public function focus() {
 		checkChanges();
 		var version = GmlAPI.version;
-		GmlExternAPI.gmlResetOnDefine = version != GmlVersion.live && kind != SearchResults;
+		GmlExternAPI.gmlResetOnDefine = version.resetOnDefine() && kind != SearchResults;
 		if (version == GmlVersion.live) liveApply();
 	}
 	//

@@ -32,7 +32,17 @@ class AceGmlCommands {
 				});
 			}
 		});
+		#if lwedit
+		commands.addCommand({
+			name: "lw_execute",
+			bindKey: {win: "Ctrl-Enter", mac: "Command-Enter|Ctrl-Enter"},
+			exec: function(editor) {
+				Main.document.getElementById("refresh").click();
+			}
+		});
+		#else
 		commands.bindKey(wm("Ctrl-Enter", "Command-Enter"), "toggleFoldWidget");
+		#end
 		commands.bindKey(wm("Ctrl-M", "Command-M"), "foldall");
 		commands.bindKey(wm("Ctrl-U", "Command-U"), "unfoldall");
 		commands.bindKey(wm("Ctrl-Alt-Up", "Command-Alt-Up"), "movelinesup");

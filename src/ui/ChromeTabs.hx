@@ -10,6 +10,8 @@ import js.html.Event;
 import Main.window;
 import Main.document;
 import js.html.MouseEvent;
+import parsers.GmlSeekData;
+import parsers.GmlSeeker;
 using tools.NativeString;
 using tools.HtmlTools;
 
@@ -30,7 +32,7 @@ class ChromeTabs {
 		element = Main.document.querySelector("#tabs");
 		if (electron.Electron == null) {
 			element.classList.remove("has-system-buttons");
-			for (btn in element.querySelectorAll(".system-button")) {
+			for (btn in element.querySelectorAll(".system-button:not(.preferences)")) {
 				btn.parentElement.removeChild(btn);
 			}
 		}
@@ -45,17 +47,14 @@ class ChromeTabs {
 		hintEl.classList.add("chrome-tabs-hint");
 		hintEl.setInnerText("Bock?");
 		element.parentElement.appendChild(hintEl);
-		function showHint(text:String) {
-			
-		}
-		function hideHint(?_) {
+		function hideHint(?ev:Event):Void {
 			hintEl.style.display = "none";
 		}
 		//
 		element.addEventListener("activeTabChange", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
 			var gmlFile = tabEl.gmlFile;
-			if (gmlFile == null) {
+			if (gmlFile == null) { // bind newly made gmlFile
 				gmlFile = GmlFile.next;
 				if (gmlFile == null) return;
 				GmlFile.next = null;
@@ -85,10 +84,12 @@ class ChromeTabs {
 				if (pathHistory.length > pathHistorySize) pathHistory.pop();
 			}
 			GmlFile.current = gmlFile;
+			// set container attributes so that themes can style the editor per them:
 			var ctr = Main.aceEditor.container;
 			ctr.setAttribute("file-name", gmlFile.name);
 			ctr.setAttribute("file-path", gmlFile.path);
 			ctr.setAttribute("file-kind", gmlFile.kind.getName());
+			//
 			gmlFile.focus();
 			Main.aceEditor.setSession(gmlFile.session);
 		});
@@ -110,7 +111,8 @@ class ChromeTabs {
 						case 1: { };
 						default: e.preventDefault();
 					}
-				} else {
+				}
+				else {
 					var bt = Dialog.showMessageBox({
 						buttons: ["Yes", "No"],
 						message: "Changes cannot be saved (not a file). Stay here?",
@@ -124,7 +126,9 @@ class ChromeTabs {
 				}
 				#else
 				if (gmlFile.session.getValue().length > 0) {
-					if (window.confirm(
+					if (!window.confirm(
+						"Are you sure you want to discard this tab? Contents will be lost"
+					)) e.preventDefault();
 				}
 				#end
 			}
@@ -158,9 +162,36 @@ class ChromeTabs {
 				ctr.removeAttribute("file-kind");
 			}
 		});
-		// https://github.com/electron/electron/issues/7977:
-		if (Electron != null)
-		window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
+		#if lwedit
+		element.addEventListener("dblclick", function(e:MouseEvent) {
+			if (e.target != element.querySelector(".chrome-tabs-content")) return;
+			var name = window.prompt("New tab title?", "");
+			if (name == null || name == "") return;
+			var file = new GmlFile(name, name, Normal, "");
+			GmlFile.openTab(file);
+			GmlSeeker.runSync(name, name, "");
+		});
+		Reflect.setField(window, "aceGetPairs", function() {
+			var out = [];
+			for (tab in impl.tabEls) {
+				var file = tab.gmlFile;
+				out.push({
+					name: file.name,
+					code: file.session.getValue(),
+				});
+			}
+			return out;
+		});
+		Reflect.setField(window, "aceSetPairs", function(tabs:Array<{name:String,code:String}>) {
+			for (tab in impl.tabEls) impl.removeTab(tab);
+			for (pair in tabs) {
+				GmlFile.next = new GmlFile(pair.name, pair.name, Normal, pair.code);
+				addTab(pair.name);
+			}
+		});
+		#end
+		//
+		if (Electron!=null) window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
 			var changedTabs = document.querySelectorAll('.chrome-tab.chrome-tab-changed');
 			if (changedTabs.length == 0) {
 				for (tabNode in element.querySelectorAll('.chrome-tab')) {
@@ -183,6 +214,11 @@ class ChromeTabs {
 				}
 			});
 		});
+		else window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
+			if (document.querySelectorAll('.chrome-tab.chrome-tab-changed').length > 0) {
+				return "";
+			} else return null;
+		});
 		//
 		window.addEventListener("focus", function(_) {
 			if (GmlFile.current != null) GmlFile.current.checkChanges();
@@ -196,6 +232,7 @@ class ChromeTabs {
 	public function init(el:Element, opt:Dynamic):Void;
 	public function addTab(tab:Dynamic):Dynamic;
 	public function setCurrentTab(tab:Element):Void;
+	public function removeTab(tabEl:ChromeTab):Void;
 	public var tabEls(default, never):Array<ChromeTab>;
 	public var tabPositions(default, never):Array<Float>;
 }

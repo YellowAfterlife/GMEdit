@@ -1067,3 +1067,5 @@ crwn_luck = 10
 crwn_curses = 11
 crwn_risk = 12
 crwn_protection = 13
+//
+mod_current = "<mod name>.<kind>.gml"
