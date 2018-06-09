@@ -27,14 +27,42 @@ package gml;
 	public inline function hasSingleQuoteStrings() {
 		return this != v2;
 	}
+	
+	/** Whether GMLive specific string interpolation is supported */
 	public inline function hasTemplateStrings() {
+		#if lwedit
+		return true;
+		#else
 		return this == live;
+		#end
 	}
+	
+	/** Whether the ternary operator is supported */
 	public inline function hasTernaryOperator() {
 		return this != v1;
 	}
+	
+	/** Whether GMS2 style `/// @meta` docs are used */
 	public inline function hasJSDoc() {
 		return this == v2;
+	}
+	
+	/** Whether it's allowed to do `#define script(arg1, arg2)` */
+	public inline function hasScriptArgs() {
+		#if lwedit
+		return true;
+		#else
+		return this == live;
+		#end
+	}
+	
+	/** Whether a #define/#event/etc. resets line counter */
+	public inline function resetOnDefine() {
+		#if lwedit
+		return false;
+		#else
+		return this != live;
+		#end
 	}
 	
 	public function getName() {

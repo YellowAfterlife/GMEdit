@@ -310,7 +310,7 @@ class Preferences {
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-snippets");
 		optSnippets_select = el.querySelectorAuto("select");
 		//
-		addButton(out, "Backup settings", function() {
+		if (FileSystem.canSync) addButton(out, "Backup settings", function() {
 			setMenu(menuBackups);
 		});
 		addButton(out, "Code Editor Settings", function() {

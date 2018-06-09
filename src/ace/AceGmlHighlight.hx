@@ -306,7 +306,7 @@ using tools.NativeString;
 			rxRule("preproc.args", ~/#args\b/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
 		]; //}
-		if (version == GmlVersion.live) rBase.unshift(rTpl);
+		if (version.hasTemplateStrings()) rBase.unshift(rTpl);
 		if (version == GmlVersion.v2) { // regions
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
@@ -358,6 +358,8 @@ using tools.NativeString;
 		var rEnum = [ //{
 			rxRule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "enumvalue"),
 			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
+			// todo: need to make an actual push/pop system
+			rxRule("comment", ~/\/\/.*$/),
 			// todo: see if there's a better method of detecting the last item:
 			rxRule(["enumfield", "text"], ~/(\w+)(\s*)$/),
 			rxRule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "start"),

@@ -24,6 +24,7 @@ class GmlFileBackup {
 		return path + ".backup" + i;
 	}
 	public static function save(file:GmlFile, code:String) {
+		if (!FileSystem.canSync) return;
 		var num = switch (Project.current.version) {
 			case GmlVersion.v1: Preferences.current.backupCount.v1;
 			case GmlVersion.v2: Preferences.current.backupCount.v2;

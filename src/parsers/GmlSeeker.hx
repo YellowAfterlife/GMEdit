@@ -197,7 +197,7 @@ class GmlSeeker {
 								}
 							}
 							check = false;
-						} else if (v == GmlVersion.live) {
+						} else if (v.hasScriptArgs()) {
 							// `#define func(a, b)\n/// does things` -> `func(a, b) does things`
 							s = s.substring(3).trimLeft();
 							doc = out.docMap[main];
@@ -217,7 +217,7 @@ class GmlSeeker {
 					setLookup(main, true);
 					locals = new GmlLocals();
 					out.locals.set(main, locals);
-					if (v == GmlVersion.live) {
+					if (v.hasScriptArgs()) {
 						s = find(Line | Par0);
 						if (s == "(") {
 							while (q.loop) {

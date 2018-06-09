@@ -137,7 +137,7 @@ class AceStatusBar {
 		var checkRx = GmlAPI.scopeResetRx;
 		var startRow = showRow + 1;
 		var session = editor.getSession();
-		var resetOnDefine:Bool = untyped window.gmlResetOnDefine;
+		var resetOnDefine:Bool = GmlExternAPI.gmlResetOnDefine;
 		var scope:String = "";
 		while (--startRow >= 0) {
 			var checkResult = checkRx.exec(session.getLine(startRow));
