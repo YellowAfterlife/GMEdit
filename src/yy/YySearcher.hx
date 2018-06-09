@@ -101,7 +101,7 @@ class YySearcher {
 					procShader("fsh", "fragment");
 					procShader("vsh", "vertex");
 				};
-				case "GMExtension": {
+				case "GMExtension": if (opt.checkExtensions) {
 					resName = rxName.replace(res.resourcePath, "$1");
 					resFull = res.resourcePath;
 					filesLeft += 1;
