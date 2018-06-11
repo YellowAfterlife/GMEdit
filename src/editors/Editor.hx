@@ -9,6 +9,12 @@ import js.html.Element;
 class Editor {
 	
 	public static var container:Element;
+	public static function init() {
+		EditCode.container = Main.document.getElementById("ace_container");
+		container = EditCode.container.parentElement;
+	}
+	
+	public var element:Element;
 	public var file:GmlFile;
 	
 	public function new(file:GmlFile) {
@@ -28,10 +34,14 @@ class Editor {
 	}
 	
 	public function focusGain(prev:Editor):Void {
-		//
+		if (prev.element != element) {
+			container.appendChild(element);
+		}
 	}
 	public function focusLost(next:Editor):Void {
-		//
+		if (next.element != element) {
+			container.removeChild(element);
+		}
 	}
 	
 	public function load(data:Dynamic):Void {

@@ -61,7 +61,8 @@ class YyLoader {
 					}
 					name = vdir.folderName;
 					if (path == "") switch (name) {
-						case "objects", "shaders", "scripts", "extensions", "timelines": {
+						case"sprites",
+							"objects", "shaders", "scripts", "extensions", "timelines": {
 							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
 						case "datafiles": name = "Included Files";
@@ -91,6 +92,9 @@ class YyLoader {
 					}
 					if (out == null) continue;
 					switch (type) {
+						case "GMSprite": {
+							
+						};
 						case "GMScript": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";

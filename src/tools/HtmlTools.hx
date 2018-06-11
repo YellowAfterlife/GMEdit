@@ -23,6 +23,9 @@ class HtmlTools {
 	):T {
 		return cast asElement(el).querySelector(selectors);
 	}
+	public static function clearInner(el:Element) {
+		el.innerHTML = "";
+	}
 	public static function setInnerText(el:Element, text:String) {
 		el.innerHTML = "";
 		el.appendChild(Main.document.createTextNode(text));

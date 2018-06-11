@@ -2,6 +2,10 @@
 	border-color: #161719;
 	background: #495057;
 }
+#main #editor-td {
+	background-color: #222222;
+	color: #C0C0C0;
+}
 .project-name {
 	color: white;
 	text-shadow: none;

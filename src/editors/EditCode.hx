@@ -9,6 +9,7 @@ import gml.GmlImports;
 import electron.FileWrap;
 import electron.FileSystem;
 import parsers.*;
+import js.html.Element;
 import ui.Preferences;
 import gmx.*;
 import yy.*;
@@ -24,12 +25,14 @@ import haxe.Json;
  */
 class EditCode extends Editor {
 	
+	public static var container:Element;
 	public var session:AceSession;
 	private var modePath:String;
 	
 	public function new(file:GmlFile, modePath:String) {
 		super(file);
 		this.modePath = modePath;
+		element = container;
 	}
 	
 	override public function ready():Void {
@@ -58,15 +61,8 @@ class EditCode extends Editor {
 	}
 	
 	override public function focusGain(prev:Editor):Void {
-		if (!Std.is(prev, EditCode)) {
-			Editor.container.appendChild(Main.aceEditor.container);
-		}
+		super.focusGain(prev);
 		Main.aceEditor.setSession(session);
-	}
-	override public function focusLost(next:Editor):Void {
-		if (!Std.is(next, EditCode)) {
-			Editor.container.removeChild(Main.aceEditor.container);
-		}
 	}
 	
 	static function canImport(file:GmlFile) {
