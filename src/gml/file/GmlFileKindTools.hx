@@ -61,6 +61,10 @@ class GmlFileKindTools {
 						path = Path.withoutExtension(path) + ".gml";
 						kind = Normal;
 					};
+					case "GMSprite": {
+						data = json;
+						kind = YySpriteView;
+					};
 					default: kind = Extern;
 				};
 			};

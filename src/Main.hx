@@ -97,6 +97,7 @@ class Main {
 		var aceEl = document.querySelector("#source");
 		var acePar = aceEl.parentElement;
 		aceEditor = new AceWrap(aceEl);
+		editors.Editor.container = aceEditor.container.parentElement;
 		AceWrap.init();
 		untyped aceEditor.$blockScrolling = Infinity;
 		AceStatusBar.init(aceEditor, acePar);

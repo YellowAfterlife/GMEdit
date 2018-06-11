@@ -148,8 +148,8 @@ class AceStatusBar {
 			}
 		}
 		//
-		var q = gml.file.GmlFile.current;
-		if (q != null) q.changed = !session.getUndoManager().isClean();
+		var q = GmlFile.current;
+		if (q != ui.WelcomePage.file) q.changed = !session.getUndoManager().isClean();
 		//
 		var ctr = statusSpan, s:String;
 		function set(q:String, v:String) {

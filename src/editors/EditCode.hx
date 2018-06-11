@@ -1,24 +1,75 @@
-package gml.file;
-import ace.AceSnippets;
+package editors;
+import ace.AceWrap;
+import ace.*;
+import editors.Editor;
+import gml.file.*;
+import gml.GmlAPI;
+import gml.GmlVersion;
+import gml.GmlImports;
 import electron.FileWrap;
-import gml.file.GmlFile;
 import electron.FileSystem;
-import gmx.*;
 import parsers.*;
+import ui.Preferences;
+import gmx.*;
 import yy.*;
-import ace.AceSessionData;
-import haxe.Json;
 import tools.NativeArray;
 import tools.NativeString;
 import tools.Dictionary;
 import tools.StringBuilder;
+import haxe.Json;
 
 /**
  * ...
  * @author YellowAfterlife
  */
-class GmlFileIO {
-	public static function canImport(file:GmlFile) {
+class EditCode extends Editor {
+	
+	public var session:AceSession;
+	private var modePath:String;
+	
+	public function new(file:GmlFile, modePath:String) {
+		super(file);
+		this.modePath = modePath;
+	}
+	
+	override public function ready():Void {
+		if (GmlAPI.version == GmlVersion.live) {
+			GmlSeeker.runSync(file.path, file.code, null);
+		}
+		// todo: this does not seem to cache per-version, but not a performance hit either?
+		session = new AceSession(file.code, { path: modePath, version: GmlAPI.version });
+		session.setUndoManager(new AceUndoManager());
+		// todo: does Mac version of GMS2 use Mac line endings? Probably not
+		session.setOption("newLineMode", "windows");
+		session.setOption("tabSize", Preferences.current.tabSize);
+		Preferences.hookSetOption(session);
+		if (modePath == "ace/mode/javascript") {
+			session.setOption("useWorker", false);
+		}
+		session.gmlFile = file;
+		session.gmlEdit = this;
+	}
+	
+	override public function stateLoad() {
+		if (file.path != null) AceSessionData.restore(this);
+	}
+	override public function stateSave() {
+		AceSessionData.store(this);
+	}
+	
+	override public function focusGain(prev:Editor):Void {
+		if (!Std.is(prev, EditCode)) {
+			Editor.container.appendChild(Main.aceEditor.container);
+		}
+		Main.aceEditor.setSession(session);
+	}
+	override public function focusLost(next:Editor):Void {
+		if (!Std.is(next, EditCode)) {
+			Editor.container.removeChild(Main.aceEditor.container);
+		}
+	}
+	
+	static function canImport(file:GmlFile) {
 		switch (file.kind) {
 			case GmlFileKind.Normal,
 				GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents,
@@ -27,7 +78,8 @@ class GmlFileIO {
 			default: return false;
 		}
 	}
-	public static function load(file:GmlFile, data:Dynamic) {
+	
+	override public function load(data:Dynamic):Void {
 		var src:String;
 		if (data != null) {
 			src = data;
@@ -83,6 +135,7 @@ class GmlFileIO {
 					file.code = out;
 				} else setError(errors);
 			};
+			//
 			case GmxObjectEvents: {
 				gmx = SfGmx.parse(src);
 				out = GmxObject.getCode(gmx);
@@ -96,6 +149,7 @@ class GmlFileIO {
 				NativeArray.clear(file.extraFiles);
 				file.code = obj.getCode(file.path, file.extraFiles);
 			};
+			//
 			case GmxTimelineMoments: {
 				gmx = SfGmx.parse(src);
 				out = GmxTimeline.getCode(gmx);
@@ -109,6 +163,7 @@ class GmlFileIO {
 				NativeArray.clear(file.extraFiles);
 				file.code = tl.getCode(file.path, file.extraFiles);
 			};
+			//
 			case GmxProjectMacros, GmxConfigMacros: {
 				gmx = SfGmx.parse(src);
 				var notePath = file.notePath;
@@ -116,14 +171,19 @@ class GmlFileIO {
 					? new GmlReader(FileWrap.readTextFileSync(notePath)) : null;
 				file.code = GmxProject.getMacroCode(gmx, notes, file.kind == GmxConfigMacros);
 			};
+			//
+			case YySpriteView: {
+				if (data == null) data = Json.parse(src);
+			};
 		}
 		file.syncTime();
 		if (canImport(file)) {
 			file.code = GmlExtImport.pre(file.code, file.path);
 		}
 	}
-	public static function save(file:GmlFile) {
-		var val = file.session.getValue();
+	
+	override public function save():Bool {
+		var val = session.getValue();
 		var path = file.path;
 		file.code = val;
 		inline function error(s:String) {
@@ -145,10 +205,10 @@ class GmlFileIO {
 					} else GmlImports.currentMap = GmlImports.defaultMap;
 				}
 				if (next != val_preImport) {
-					var sd = AceSessionData.get(file);
-					var session = file.session;
+					var sd = AceSessionData.get(this);
+					var session = session;
 					session.doc.setValue(next);
-					AceSessionData.set(file, sd);
+					AceSessionData.set(this, sd);
 					Main.window.setTimeout(function() {
 						var undoManager = session.getUndoManager();
 						if (!ui.Preferences.current.allowImportUndo) {
@@ -173,11 +233,10 @@ class GmlFileIO {
 				if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
 				if (ui.Preferences.current.argsFormat != "") {
 					if (GmlExtArgsDoc.proc(file)) {
-						out = file.session.getValue();
+						out = session.getValue();
 						out = GmlExtArgs.post(out);
 						Main.window.setTimeout(function() {
-							file.session.getUndoManager().markClean();
-							file.changed = false;
+							file.markClean();
 						});
 					}
 				}
@@ -209,8 +268,7 @@ class GmlFileIO {
 			case SearchResults: {
 				if (file.searchData == null) return false;
 				if (!file.searchData.save(file)) return false;
-				file.changed = false;
-				file.session.getUndoManager().markClean();
+				file.markClean();
 				writeFile = false;
 				out = null;
 			};
@@ -266,7 +324,7 @@ class GmlFileIO {
 		file.savePost(out);
 		return true;
 	}
-	public static function checkChanges(file:GmlFile) {
+	override public function checkChanges():Void {
 		var path = file.path;
 		if (file.kind == Snippets) return;
 		if (file.kind != Multifile) {
@@ -300,7 +358,7 @@ class GmlFileIO {
 			if (prev == file.code) {
 				// OK!
 			} else if (!file.changed) {
-				file.session.setValue(file.code);
+				session.setValue(file.code);
 			} else {
 				function printSize(b:Float) {
 					inline function toFixed(f:Float):String {
@@ -319,13 +377,13 @@ class GmlFileIO {
 					message: "Source file changed ("
 						+ printSize(file.code.length)
 						+ ") but you have unsaved changes ("
-						+ printSize(file.session.getValue().length)
+						+ printSize(session.getValue().length)
 						+ "). What would you like to do?",
 					buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
 					cancelId: 1,
 				});
 				switch (bt) {
-					case 0: file.session.setValue(file.code);
+					case 0: session.setValue(file.code);
 					case 1: { };
 					case 2: {
 						var name1 = file.name + " <copy>";

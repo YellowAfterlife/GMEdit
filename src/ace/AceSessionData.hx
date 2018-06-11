@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap;
+import editors.EditCode;
 import gml.file.GmlFile;
 import haxe.Json;
 import tools.NativeString;
@@ -10,8 +11,8 @@ import ui.Preferences;
  * @author YellowAfterlife
  */
 class AceSessionData {
-	public static function get(file:GmlFile):AceSessionDataImpl {
-		var session = file.session;
+	public static function get(edit:EditCode):AceSessionDataImpl {
+		var session = edit.session;
 		//
 		var foldLines:Array<Int> = [];
 		function getFoldsRec(out:Array<Int>, fold:AceFold, ofs:Int):Void {
@@ -30,21 +31,22 @@ class AceSessionData {
 			foldLines: foldLines,
 		};
 	}
-	public static function store(file:GmlFile) {
-		var data = get(file);
+	public static function store(edit:EditCode) {
+		var data = get(edit);
+		var file = edit.file;
 		Main.window.localStorage.setItem("session:" + file.path, Json.stringify(data));
 		Main.window.localStorage.setItem("@session:" + file.path, "" + Date.now().getTime());
 	}
 	//
-	public static function set(file:GmlFile, data:AceSessionDataImpl) {
-		var session = file.session;
+	public static function set(edit:EditCode, data:AceSessionDataImpl) {
+		var session = edit.session;
 		session.selection.fromJSON(data.selection);
 		for (row in data.foldLines) session.toggleFoldWidgetRaw(row, {});
 		session.setScrollLeft(data.scrollLeft);
 		session.setScrollTop(data.scrollTop);
 	}
-	public static function restore(file:GmlFile) {
-		var text = Main.window.localStorage.getItem("session:" + file.path);
+	public static function restore(edit:EditCode) {
+		var text = Main.window.localStorage.getItem("session:" + edit.file.path);
 		if (text == null) return false;
 		var data:AceSessionDataImpl = null;
 		try {
@@ -52,7 +54,7 @@ class AceSessionData {
 		} catch (_:Dynamic) return false;
 		if (data == null) return false;
 		//
-		set(file, data);
+		set(edit, data);
 		return true;
 	}
 	public static function init() {

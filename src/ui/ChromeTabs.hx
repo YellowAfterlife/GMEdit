@@ -28,6 +28,29 @@ class ChromeTabs {
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
 	}
+	static function sync(gmlFile:GmlFile) {
+		var prev = GmlFile.current;
+		if (prev != WelcomePage.file) {
+			pathHistory.unshift(prev.context);
+			if (pathHistory.length > pathHistorySize) pathHistory.pop();
+		}
+		GmlFile.current = gmlFile;
+		// set container attributes so that themes can style the editor per them:
+		var ctr = Main.aceEditor.container;
+		if (gmlFile != WelcomePage.file) {
+			ctr.setAttribute("file-name", gmlFile.name);
+			ctr.setAttribute("file-path", gmlFile.path);
+			ctr.setAttribute("file-kind", gmlFile.kind.getName());
+		} else {
+			ctr.removeAttribute("file-name");
+			ctr.removeAttribute("file-path");
+			ctr.removeAttribute("file-kind");
+		}
+		//
+		prev.editor.focusLost(gmlFile.editor);
+		gmlFile.focus();
+		gmlFile.editor.focusGain(prev.editor);
+	}
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
 		if (electron.Electron == null) {
@@ -78,20 +101,7 @@ class ChromeTabs {
 				tabEl.addEventListener("mouseleave", hideHint);
 				tabEl.addEventListener("mousedown", hideHint);
 			}
-			var prev = GmlFile.current;
-			if (prev != null) {
-				pathHistory.unshift(prev.context);
-				if (pathHistory.length > pathHistorySize) pathHistory.pop();
-			}
-			GmlFile.current = gmlFile;
-			// set container attributes so that themes can style the editor per them:
-			var ctr = Main.aceEditor.container;
-			ctr.setAttribute("file-name", gmlFile.name);
-			ctr.setAttribute("file-path", gmlFile.path);
-			ctr.setAttribute("file-kind", gmlFile.kind.getName());
-			//
-			gmlFile.focus();
-			Main.aceEditor.setSession(gmlFile.session);
+			sync(gmlFile);
 		});
 		element.addEventListener("tabClose", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
@@ -140,8 +150,7 @@ class ChromeTabs {
 			if (closedFile != null) closedFile.close();
 			//
 			if (impl.tabEls.length == 0) {
-				GmlFile.current = null;
-				Main.aceEditor.session = WelcomePage.session;
+				sync(WelcomePage.file);
 			} else if (closedTab.classList.contains("chrome-tab-current")) {
 				var tab:Element = null;
 				while (tab == null && pathHistory.length > 0) {
@@ -152,14 +161,8 @@ class ChromeTabs {
 				if (tab == null) tab = e.detail.prevTab;
 				if (tab == null) tab = e.detail.nextTab;
 				if (tab == null) {
-					Main.aceEditor.session = WelcomePage.session;
+					sync(WelcomePage.file);
 				} else impl.setCurrentTab(tab);
-			}
-			if (Main.aceEditor.session == WelcomePage.session) {
-				var ctr = Main.aceEditor.container;
-				ctr.removeAttribute("file-name");
-				ctr.removeAttribute("file-path");
-				ctr.removeAttribute("file-kind");
 			}
 		});
 		#if lwedit

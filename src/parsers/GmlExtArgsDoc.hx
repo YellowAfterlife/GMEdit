@@ -16,14 +16,14 @@ class GmlExtArgsDoc {
 	static var rxArg = new RegExp("^(///\\s*(@(?:arg|param|argument))\\s+(\\S+)\\s*)(.*)");
 	/** Modifies `/// func(...args)` line as per #args */
 	public static function proc1(file:GmlFile):Bool {
-		var session = file.session;
+		var session = file.getAceSession();
 		if (session.getValue().indexOf("#args") < 0) return false;
 		var document = session.doc;
 		var argData = GmlExtArgs.argData;
 		var curr = argData[""];
 		var scriptName = file.name;
 		var replace = [];
-		var iter = new AceTokenIterator(file.session, 0, 0);
+		var iter = new AceTokenIterator(session, 0, 0);
 		var tk = iter.getCurrentToken();
 		var foundDoc = false;
 		var hasArgs = false;
@@ -97,14 +97,14 @@ class GmlExtArgsDoc {
 	}
 	/** Adds/removes javadoc argument lines for GMS2 format */
 	public static function proc2(file:GmlFile, meta:String):Bool {
-		var session = file.session;
+		var session = file.getAceSession();
 		if (session.getValue().indexOf("#args") < 0) return false;
 		var argData = GmlExtArgs.argData;
 		var curr = argData[""];
 		var names = curr.names;
 		var texts = curr.texts;
 		var aceDoc = session.doc;
-		var iter = new AceTokenIterator(file.session, 0, 0);
+		var iter = new AceTokenIterator(session, 0, 0);
 		var tk = iter.getCurrentToken();
 		var lastRow = -1;
 		var count = names.length;

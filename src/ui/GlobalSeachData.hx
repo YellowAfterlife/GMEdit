@@ -45,7 +45,7 @@ class GlobalSeachData {
 	}
 	public function save(file:GmlFile) {
 		if (saving) return false;
-		sync(file.session.getValue());
+		sync((cast file.editor:editors.EditCode).session.getValue());
 		var project = gml.Project.current;
 		var version = project.version;
 		var errors = "";

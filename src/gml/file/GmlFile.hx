@@ -1,6 +1,7 @@
 package gml.file;
 import ace.AceGmlCompletion;
 import ace.AceSessionData;
+import editors.*;
 import electron.Dialog;
 import electron.FileSystem;
 import parsers.*;
@@ -74,8 +75,7 @@ class GmlFile {
 	/** Loading/saving mode of operation */
 	public var kind:GmlFileKind = Normal;
 	
-	/** Code editing session (contains up to date code) */
-	public var session:AceSession;
+	public var editor:Editor;
 	
 	/** Associated chrome tab */
 	public var tabEl:Element;
@@ -109,45 +109,44 @@ class GmlFile {
 		this.name = name;
 		this.path = path;
 		this.kind = kind;
-		load(data);
+		//
 		if (path != null) {
 			context = path;
 		} else if (kind == SearchResults) {
 			context = name + "#" + (searchId++);
 		} else context = name;
-		var modePath = switch (this.kind) {
-			case SearchResults: "ace/mode/gml_search";
-			case Extern, Plain, Snippets: "ace/mode/text";
-			case GLSL: ShaderHighlight.nextKind = GLSL; "ace/mode/shader";
-			case HLSL: ShaderHighlight.nextKind = HLSL; "ace/mode/shader";
-			case JavaScript: "ace/mode/javascript";
-			default: "ace/mode/gml";
+		// determine how we're supposed to show this:
+		var modePath = null;
+		switch (kind) {
+			case SearchResults: modePath = "ace/mode/gml_search";
+			case Extern, Plain, Snippets: modePath = "ace/mode/text";
+			case GLSL: ShaderHighlight.nextKind = GLSL; modePath = "ace/mode/shader";
+			case HLSL: ShaderHighlight.nextKind = HLSL; modePath = "ace/mode/shader";
+			case JavaScript: modePath = "ace/mode/javascript";
+			default: modePath = "ace/mode/gml";
 		}
-		//
-		if (GmlAPI.version == GmlVersion.live) {
-			GmlSeeker.runSync(path, code, null);
-		}
-		// todo: this does not seem to cache per-version, but not a performance hit either?
-		session = new AceSession(code, { path: modePath, version: GmlAPI.version });
-		session.setUndoManager(new AceUndoManager());
-		// todo: does Mac version of GMS2 use Mac line endings? Probably not
-		session.setOption("newLineMode", "windows");
-		session.setOption("tabSize", Preferences.current.tabSize);
-		Preferences.hookSetOption(session);
-		if (this.kind == JavaScript) session.setOption("useWorker", false);
-		session.gmlFile = this;
+		if (modePath != null) editor = new EditCode(this, modePath);
+		load(data);
+		editor.ready();
 	}
 	public function close():Void {
 		#if !lwedit
-		AceSessionData.store(this);
+		editor.stateSave();
 		#else
 		GmlSeeker.runSync(path, "", "");
 		GmlSeekData.map.remove(path);
 		#end
 	}
 	//
+	public function getAceSession():AceSession {
+		if (Std.is(editor, EditCode)) {
+			return (cast editor:EditCode).session;
+		} else return null;
+	}
+	//
 	public function navigate(nav:GmlFileNav):Bool {
-		var editor = Main.aceEditor;
+		var session:AceSession = getAceSession();
+		if (session == null) return false;
 		var len = session.getLength();
 		//
 		var found = false;
@@ -196,7 +195,7 @@ class GmlFile {
 			found = true;
 		}
 		if (found) {
-			editor.gotoLine0(row, col);
+			Main.aceEditor.gotoLine0(row, col);
 		}
 		return found;
 	}
@@ -254,7 +253,7 @@ class GmlFile {
 		}
 	}
 	public static function openTab(file:GmlFile) {
-		if (file.path != null) AceSessionData.restore(file);
+		file.editor.stateLoad();
 		// addTab doesn't return the new tab so we bind it up in the "active tab change" event:
 		GmlFile.next = file;
 		ui.ChromeTabs.addTab(file.name);
@@ -265,14 +264,19 @@ class GmlFile {
 	 * @param	data	If provided, is used instead of reading from FS.
 	 */
 	public function load(?data:Dynamic) {
-		GmlFileIO.load(this, data);
+		editor.load(data);
+	}
+	//
+	public function markClean() {
+		changed = false;
+		var q = getAceSession();
+		if (q != null) q.getUndoManager().markClean();
 	}
 	//
 	public function savePost(?out:String) {
 		if (path == null) return;
 		syncTime();
-		changed = false;
-		session.getUndoManager().markClean();
+		markClean();
 		// update things if this is the active tab:
 		if (current == this && path != null && out != null) {
 			var data = GmlSeekData.map[path];
@@ -288,7 +292,7 @@ class GmlFile {
 		}
 	}
 	public function save() {
-		return GmlFileIO.save(this);
+		return editor.save();
 	}
 	//
 	public function liveApply() {
@@ -308,7 +312,7 @@ class GmlFile {
 		}
 	}
 	public function checkChanges() {
-		GmlFileIO.checkChanges(this);
+		editor.checkChanges();
 	}
 	/** Executed when the code tab gains focus */
 	public function focus() {

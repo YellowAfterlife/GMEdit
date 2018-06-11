@@ -216,6 +216,7 @@ extern class AceSelection {
 	public var selection:AceSelection;
 	// non-standard:
 	public var gmlFile:gml.file.GmlFile;
+	public var gmlEdit:editors.EditCode;
 }
 extern class AceDocument {
 	function setValue(s:String):Void;
