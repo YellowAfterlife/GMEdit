@@ -126,6 +126,9 @@ class YyLoader {
 								extEl.treeItems.appendChild(TreeView.makeItem(
 									fileName, extRel + fileName, filePath, "extfile"
 								));
+								//
+								if (isGmlFile) GmlSeeker.run(filePath, "");
+								//
 								for (func in file.functions) {
 									var name = func.name;
 									var help = func.help;

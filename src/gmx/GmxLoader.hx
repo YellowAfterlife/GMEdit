@@ -106,6 +106,8 @@ class GmxLoader {
 						extFileName, extFilePath, extFileFull, "extfile"
 					));
 					//
+					if (isGmlFile) GmlSeeker.run(extFileFull, "");
+					//
 					for (funcs in extFile.findAll("functions"))
 					for (func in funcs.findAll("function")) {
 						var name = func.findText("name");
