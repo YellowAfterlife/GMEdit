@@ -82,6 +82,7 @@ class GmlFileBackup {
 		GmlFile.openTab(file);
 	}
 	public static function updateMenu(file:GmlFile):Bool {
+		if (!FileSystem.canSync) return null;
 		var path = getPath(file);
 		// can't make backups for files without paths
 		if (path == null) return null;

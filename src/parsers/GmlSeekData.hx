@@ -56,6 +56,26 @@ class GmlSeekData {
 	public function new() {
 		
 	}
+	public static function add(path:String) {
+		if (map.exists(path)) return;
+		var next = new GmlSeekData();
+		map.set(path, next);
+		apply(path, null, next);
+	}
+	public static function remove(path:String) {
+		var curr = map[path];
+		if (curr != null) {
+			apply(path, curr, null);
+			map.remove(path);
+		}
+	}
+	public static function rename(pathOld:String, pathNew:String) {
+		var curr = map[pathOld];
+		if (curr != null) {
+			map.remove(pathOld);
+			map.set(pathNew, curr);
+		}
+	}
 	public static function apply(path:String, prev:GmlSeekData, next:GmlSeekData) {
 		if (prev == null) prev = blank;
 		if (next == null) next = blank;

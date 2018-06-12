@@ -134,8 +134,7 @@ class GmlFile {
 		#if !lwedit
 		editor.stateSave();
 		#else
-		GmlSeeker.runSync(path, "", "");
-		GmlSeekData.map.remove(path);
+		GmlSeekData.remove(path);
 		#end
 	}
 	//

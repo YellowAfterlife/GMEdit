@@ -28,7 +28,7 @@ class ChromeTabs {
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
 	}
-	static function sync(gmlFile:GmlFile) {
+	public static function sync(gmlFile:GmlFile) {
 		var prev = GmlFile.current;
 		if (prev != WelcomePage.file) {
 			pathHistory.unshift(prev.context);
@@ -100,6 +100,9 @@ class ChromeTabs {
 				});
 				tabEl.addEventListener("mouseleave", hideHint);
 				tabEl.addEventListener("mousedown", hideHint);
+				#if lwedit
+				GmlSeekData.add(gmlFile.path);
+				#end
 			}
 			sync(gmlFile);
 		});
@@ -107,8 +110,8 @@ class ChromeTabs {
 			var tabEl:ChromeTab = e.detail.tabEl;
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
+			#if (!lwedit)
 			if (gmlFile.changed) {
-				#if (!lwedit)
 				if (gmlFile.path != null) {
 					var bt = Dialog.showMessageBox({
 						buttons: ["Yes", "No", "Cancel"],
@@ -134,14 +137,14 @@ class ChromeTabs {
 						default: e.preventDefault();
 					}
 				}
-				#else
-				if (gmlFile.session.getValue().length > 0) {
-					if (!window.confirm(
-						"Are you sure you want to discard this tab? Contents will be lost"
-					)) e.preventDefault();
-				}
-				#end
+			} // changed
+			#else
+			if (gmlFile.getAceSession().getValue().length > 0) {
+				if (!window.confirm(
+					"Are you sure you want to discard this tab? Contents will be lost"
+				)) e.preventDefault();
 			}
+			#end
 		});
 		element.addEventListener("tabRemove", function(e:CustomEvent) {
 			//
@@ -174,24 +177,6 @@ class ChromeTabs {
 			GmlFile.openTab(file);
 			GmlSeeker.runSync(name, name, "");
 		});
-		Reflect.setField(window, "aceGetPairs", function() {
-			var out = [];
-			for (tab in impl.tabEls) {
-				var file = tab.gmlFile;
-				out.push({
-					name: file.name,
-					code: file.session.getValue(),
-				});
-			}
-			return out;
-		});
-		Reflect.setField(window, "aceSetPairs", function(tabs:Array<{name:String,code:String}>) {
-			for (tab in impl.tabEls) impl.removeTab(tab);
-			for (pair in tabs) {
-				GmlFile.next = new GmlFile(pair.name, pair.name, Normal, pair.code);
-				addTab(pair.name);
-			}
-		});
 		#end
 		//
 		if (Electron!=null) window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
@@ -218,9 +203,7 @@ class ChromeTabs {
 			});
 		});
 		else window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
-			if (document.querySelectorAll('.chrome-tab.chrome-tab-changed').length > 0) {
-				return "";
-			} else return null;
+			LiveWeb.saveState();
 		});
 		//
 		window.addEventListener("focus", function(_) {

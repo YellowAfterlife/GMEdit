@@ -78,15 +78,4 @@ class GMLive {
 			} else dir.removeAttribute(attr);
 		}
 	}
-	public static function init() {
-		#if lwedit
-		Reflect.setField(Main.window, "aceTabFlush", function() {
-			for (tab in ChromeTabs.impl.tabEls) {
-				tab.gmlFile.session.getUndoManager().markClean();
-				tab.gmlFile.changed = false;
-			}
-			//Main.window.
-		});
-		#end
-	}
 }

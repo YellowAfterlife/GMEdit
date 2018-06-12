@@ -106,7 +106,6 @@ class Main {
 		ColorPicker.init();
 		GlobalSearch.init();
 		GlobalLookup.init();
-		GMLive.init();
 		Preferences.initEditor();
 		MainMenu.init();
 		//
@@ -124,6 +123,7 @@ class Main {
 		ChromeTabs.init();
 		Project.init();
 		AceStatusBar.statusUpdate();
+		LiveWeb.init();
 		//
 		try {
 			Type.resolveClass("Main");

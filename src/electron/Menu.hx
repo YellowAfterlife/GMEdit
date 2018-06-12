@@ -41,6 +41,10 @@ using tools.HtmlTools;
 		element.classList.add("popout-menu");
 	}
 	//
+	public function clear():Void {
+		items.resize(0);
+		HtmlTools.clearInner(element);
+	}
 	public function append(item:MenuItemFallback):Void {
 		item.parent = this;
 		items.push(item);

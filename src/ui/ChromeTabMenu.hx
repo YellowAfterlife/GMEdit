@@ -14,14 +14,17 @@ using tools.HtmlTools;
 class ChromeTabMenu {
 	public static var target:ChromeTab;
 	public static var menu:Menu;
+	#if !lwedit
 	static var showInDirectoryItem:MenuItem;
 	static var showInTreeItem:MenuItem;
 	static var backupsItem:MenuItem;
 	static var showObjectInfo:MenuItem;
+	#end
 	public static function show(el:ChromeTab, ev:MouseEvent) {
 		target = el;
 		var file = el.gmlFile;
 		var hasFile = file.path != null;
+		#if !lwedit
 		showInDirectoryItem.enabled = hasFile;
 		showInTreeItem.enabled = hasFile;
 		showObjectInfo.visible = hasFile && switch (file.kind) {
@@ -33,6 +36,7 @@ class ChromeTabMenu {
 			backupsItem.enabled = bk;
 			backupsItem.visible = true;
 		} else backupsItem.visible = false;
+		#end
 		menu.popupAsync(ev);
 	}
 	public static function init() {
@@ -57,7 +61,26 @@ class ChromeTabMenu {
 			}
 		} }));
 		menu.append(new MenuItem({ type: MenuItemType.Sep }));
-		//
+		#if lwedit
+		menu.append(new MenuItem({
+			label: "Rename",
+			click: function() {
+				var gmlFile = target.gmlFile;
+				var s0 = gmlFile.name;
+				var s1 = Main.window.prompt("New name?", s0);
+				if (s1 == null || s1 == "" || s1 == s0) return;
+				for (tab in ChromeTabs.impl.tabEls) if (tab.gmlFile.name == s1) {
+					Main.window.alert("A tab with this name already exists.");
+					return;
+				}
+				parsers.GmlSeekData.rename(s0, s1);
+				gmlFile.name = s1;
+				gmlFile.path = s1;
+				target.querySelector(".chrome-tab-title-text").setInnerText(s1);
+				ChromeTabs.sync(gmlFile);
+			}
+		}));
+		#else
 		menu.append(showInDirectoryItem = new MenuItem({
 			label: "Show in directory",
 			click: function() {
@@ -89,11 +112,13 @@ class ChromeTabMenu {
 			}
 		}));
 		//
-		GmlFileBackup.init();
 		menu.append(backupsItem = new MenuItem({
 			label: "Previous versions",
 			submenu: GmlFileBackup.menu,
 			type: Sub,
 		}));
+		if (electron.Electron == null) backupsItem.visible = false;
+		#end
+		GmlFileBackup.init();
 	}
 }

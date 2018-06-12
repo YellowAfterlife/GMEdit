@@ -247,6 +247,7 @@ class GmlAPI {
 					if (lwArgc != null) { // give GMLive a copy of data
 						var cb = Reflect.field(Main.window, "lwSetAPI");
 						if (cb != null) cb(data);
+						ui.LiveWeb.loadState();
 					}
 					#end
 				}
