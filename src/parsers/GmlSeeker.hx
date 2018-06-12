@@ -169,9 +169,6 @@ class GmlSeeker {
 								doc.acc = true;
 								out.docList.push(doc);
 								out.docMap.set(main, doc);
-								if (!GmlAPI.gmlDoc.exists(main)) {
-									GmlAPI.gmlDoc.set(main, doc);
-								}
 							}
 							if (doc.acc) {
 								doc.args.push(mt[1]);
@@ -189,9 +186,6 @@ class GmlSeeker {
 								doc = GmlFuncDoc.parse(main + mt[1]);
 								out.docList.push(doc);
 								out.docMap.set(main, doc);
-								if (!GmlAPI.gmlDoc.exists(main)) {
-									GmlAPI.gmlDoc.set(main, doc);
-								}
 								if (mainComp != null && mainComp.doc == null) {
 									mainComp.doc = s;
 								}
@@ -202,7 +196,9 @@ class GmlSeeker {
 							s = s.substring(3).trimLeft();
 							doc = out.docMap[main];
 							if (doc == null) {
-								out.docMap.set(main, GmlFuncDoc.parse(main + "(...) " + s));
+								doc = GmlFuncDoc.parse(main + "(...) " + s);
+								out.docList.push(doc);
+								out.docMap.set(main, doc);
 							} else doc.post += " " + s;
 						}
 					}
@@ -225,7 +221,9 @@ class GmlSeeker {
 								if (s == ")" || s == "\n" || s == null) break;
 								locals.add(s);
 							}
-							out.docMap.set(main, GmlFuncDoc.parse(main + q.substring(start, q.pos)));
+							doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
+							out.docList.push(doc);
+							out.docMap.set(main, doc);
 						}
 					}
 					//

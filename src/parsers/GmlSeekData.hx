@@ -89,6 +89,16 @@ class GmlSeekData {
 		
 		// todo: it might be <a bit> faster to merge changes instead
 		
+		// doc:
+		for (d in prev.docList) {
+			if (!next.docMap.exists(d.name)) {
+				GmlAPI.gmlDoc.remove(d.name);
+			}
+		}
+		for (d in next.docList) {
+			GmlAPI.gmlDoc.set(d.name, d);
+		}
+		
 		// enums:
 		for (e in prev.enumList) {
 			for (comp in e.compList) GmlAPI.gmlComp.remove(comp);
