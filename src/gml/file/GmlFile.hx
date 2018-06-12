@@ -298,9 +298,9 @@ class GmlFile {
 	public function liveApply() {
 		var data = GmlSeekData.map[path];
 		if (data != null) {
-			AceGmlCompletion.gmlCompleter.items = data.comp;
-			GmlAPI.gmlComp = data.comp;
-			GmlAPI.gmlKind = data.kind;
+			AceGmlCompletion.gmlCompleter.items = data.compList;
+			GmlAPI.gmlComp = data.compList;
+			GmlAPI.gmlKind = data.kindMap;
 			GmlAPI.gmlEnums = data.enumMap;
 			GmlAPI.gmlDoc = data.docMap;
 			AceGmlCompletion.globalCompleter.items = data.globalFieldComp;

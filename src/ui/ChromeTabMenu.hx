@@ -112,6 +112,7 @@ class ChromeTabMenu {
 			}
 		}));
 		//
+		GmlFileBackup.init();
 		menu.append(backupsItem = new MenuItem({
 			label: "Previous versions",
 			submenu: GmlFileBackup.menu,
@@ -119,6 +120,5 @@ class ChromeTabMenu {
 		}));
 		if (electron.Electron == null) backupsItem.visible = false;
 		#end
-		GmlFileBackup.init();
 	}
 }

@@ -272,6 +272,13 @@ from AceAutoCompleteItemImpl to AceAutoCompleteItemImpl {
 	public inline function makeAlias(alias:String) {
 		return new AceAutoCompleteItem(alias, this.meta, this.doc);
 	}
+	public function setTo(c:AceAutoCompleteItem) {
+		this.doc = c.doc;
+		this.name = c.name;
+		this.meta = c.meta;
+		this.value = c.value;
+		this.score = c.score;
+	}
 }
 typedef AceAutoCompleteItemImpl = { name:String, value:String, score:Int, meta:String, doc:String };
 //

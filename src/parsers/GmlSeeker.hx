@@ -229,13 +229,10 @@ class GmlSeeker {
 					//
 					mainComp = new AceAutoCompleteItem(main, "script",
 						q.pos > start ? main + q.substring(start, q.pos) : null);
-					out.comp.push(mainComp);
-					out.kind.set(main, "asset.script");
-					//
-					if (!GmlAPI.gmlKind.exists(main)) {
-						GmlAPI.gmlKind.set(main, "asset.script");
-						GmlAPI.gmlComp.push(mainComp);
-					}
+					out.compList.push(mainComp);
+					out.compMap.set(main, mainComp);
+					out.kindList.push(main);
+					out.kindMap.set(main, "asset.script");
 				};
 				case "#macro": {
 					name = find(Ident);
@@ -244,8 +241,10 @@ class GmlSeeker {
 					find(Line);
 					s = q.substring(start, q.pos - 1);
 					var m = new GmlMacro(name, orig, s.trimBoth());
-					out.kind.set(name, "macro");
-					out.comp.push(m.comp);
+					out.kindList.push(name);
+					out.kindMap.set(name, "macro");
+					out.compList.push(m.comp);
+					out.compMap.set(name, m.comp);
 					out.macroList.push(m);
 					out.macroMap.set(name, m);
 					setLookup(name, true);
@@ -257,8 +256,10 @@ class GmlSeeker {
 						var g = new GmlGlobalVar(s, orig);
 						out.globalVarList.push(g);
 						out.globalVarMap.set(s, g);
-						out.comp.push(g.comp);
-						out.kind.set(s, "globalvar");
+						out.compList.push(g.comp);
+						out.compMap.set(s, g.comp);
+						out.kindList.push(s);
+						out.kindMap.set(s, "globalvar");
 						setLookup(s);
 					}
 				};
@@ -340,7 +341,8 @@ class GmlSeeker {
 						en.compList.push(ac);
 						en.fieldComp.push(acf);
 						en.compMap.set(s, ac);
-						out.comp.push(ac);
+						out.compList.push(ac);
+						out.compMap.set(s, ac);
 						s = find(Comma | SetOp | Cub1);
 						if (s == "=") {
 							var vp = q.pos;
@@ -400,7 +402,7 @@ class GmlSeeker {
 	static inline function finish(orig:String, out:GmlSeekData):Void {
 		GmlSeekData.apply(orig, GmlSeekData.map[orig], out);
 		GmlSeekData.map.set(orig, out);
-		out.comp.autoSort();
+		out.compList.autoSort();
 	}
 	static inline function addObjectChild(parentName:String, childName:String) {
 		var pj = Project.current;

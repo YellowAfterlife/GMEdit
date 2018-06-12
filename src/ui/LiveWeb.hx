@@ -111,6 +111,7 @@ class LiveWeb {
 	
 	//
 	public static function init() {
+		#if lwedit
 		Reflect.setField(window, "aceGetPairs", getPairs);
 		Reflect.setField(window, "aceSetPairs", setPairs);
 		Reflect.setField(window, "aceTabFlush", function() {
@@ -142,6 +143,7 @@ class LiveWeb {
 			document.querySelector("#lw_share").style.display = "";
 			textarea.select();
 		}
+		#end
 	}
 }
 @:native("LZString") extern class LZString {

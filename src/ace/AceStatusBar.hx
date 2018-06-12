@@ -46,8 +46,10 @@ class AceStatusBar {
 				case "preproc.macro": break;
 				case "macroname": break;
 				case "set.operator": break;
+				#if !lwedit
 				case "curly.paren.lparen": break;
 				case "curly.paren.rparen": break;
+				#end
 				case "paren.rparen": depth += 1;
 				case "punctuation.operator" if (tk.value == ";"): break;
 				case "paren.lparen": {

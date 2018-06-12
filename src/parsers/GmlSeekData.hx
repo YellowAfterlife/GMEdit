@@ -41,8 +41,11 @@ class GmlSeekData {
 	/** scope name -> local variables */
 	public var locals:Dictionary<GmlLocals> = new Dictionary();
 	
-	public var kind:Dictionary<String> = new Dictionary();
-	public var comp:AceAutoCompleteItems = [];
+	public var kindList:Array<String> = [];
+	public var kindMap:Dictionary<String> = new Dictionary();
+	
+	public var compList:AceAutoCompleteItems = [];
+	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	
 	public var docList:Array<GmlFuncDoc> = [];
 	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
@@ -99,6 +102,23 @@ class GmlSeekData {
 			GmlAPI.gmlDoc.set(d.name, d);
 		}
 		
+		// kind:
+		for (k in prev.kindList) {
+			if (!next.kindMap.exists(k)) GmlAPI.gmlKind.remove(k);
+		}
+		for (k in next.kindList) GmlAPI.gmlKind.set(k, next.kindMap[k]);
+		
+		// comp:
+		for (c in prev.compList) {
+			if (!next.compMap.exists(c.name)) GmlAPI.gmlComp.remove(c);
+		}
+		for (c1 in next.compList) {
+			var c0 = prev.compMap[c1.name];
+			if (c0 != null) {
+				c0.setTo(c1);
+			} else GmlAPI.gmlComp.push(c1);
+		}
+		
 		// enums:
 		for (e in prev.enumList) {
 			for (comp in e.compList) GmlAPI.gmlComp.remove(comp);
@@ -109,16 +129,6 @@ class GmlSeekData {
 			for (comp in e.compList) GmlAPI.gmlComp.push(comp);
 			GmlAPI.gmlEnums.set(e.name, e);
 			GmlAPI.gmlKind.set(e.name, "enum");
-		}
-		
-		// globals:
-		for (g in prev.globalVarList) {
-			GmlAPI.gmlKind.remove(g.name);
-			GmlAPI.gmlComp.remove(g.comp);
-		}
-		for (g in next.globalVarList) {
-			GmlAPI.gmlKind.set(g.name, "globalvar");
-			GmlAPI.gmlComp.push(g.comp);
 		}
 		
 		// global fields (delta)
@@ -151,16 +161,6 @@ class GmlSeekData {
 				GmlAPI.gmlInstFieldMap.set(fd.name, fd);
 				GmlAPI.gmlInstFieldComp.push(fd.comp);
 			}
-		}
-		
-		// macros:
-		for (m in prev.macroList) {
-			GmlAPI.gmlKind.remove(m.name);
-			GmlAPI.gmlComp.remove(m.comp);
-		}
-		for (m in next.macroList) {
-			GmlAPI.gmlKind.set(m.name, "macro");
-			GmlAPI.gmlComp.push(m.comp);
 		}
 		
 		if (prev.hasGMLive || next.hasGMLive) {
