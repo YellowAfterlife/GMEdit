@@ -250,6 +250,7 @@ class Preferences {
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-coroutine-magic");
 		//
+		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
 		el = addDropdown(out, "Show GMLive badges", optGMLive[current.showGMLive], optGMLive, function(v) {
 			var v0:PrefGMLive = current.showGMLive;
@@ -274,6 +275,7 @@ class Preferences {
 			save();
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GMLive-in-GMEdit");
+		#end
 		//
 		addCheckbox(out, "UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;

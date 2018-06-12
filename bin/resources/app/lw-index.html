@@ -118,13 +118,21 @@
 </form>
 <div id="preferences-window" class="popout-window" style="display:none"></div>
 <input type="color" id="color-picker" style="display:none"/>
+<div id="lw_share" style="display: none">
+	<div class="overlay" onclick="lw_share.style.display='none';"></div>
+	<div class="window">
+		Here's your custom URL (<span id="lw_share_size">??</span>):<br/>
+		<textarea id="lw_share_code"></textarea>
+	</div>
+</div>
 <!-- -->
 <script type="text/javascript" src="./formatter.js"></script>
 <script type="text/javascript" src="./misc/splitter.js"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ace.js" charset="utf-8"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ext-language_tools.js"></script>
 <script type="text/javascript" src="./ace/mode-gml.js"></script>
-<script type="text/javascript" src="./misc/gml.js"></script>
-<script type="text/javascript" src="./lw-app.js"></script>
+<script type="text/javascript" src="./lw/lzstring.js"></script>
+<script type="text/javascript" src="./lw/gmlive-web.js"></script>
+<script type="text/javascript" src="./lw/app.js"></script>
 <script type="text/javascript" src="./misc/gmcr.js" async></script>
 </body>
