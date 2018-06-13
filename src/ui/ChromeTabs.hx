@@ -112,10 +112,24 @@ class ChromeTabs {
 			if (tabEl.classList.contains("chrome-tab-force-close")) return;
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
-			#if (!lwedit)
+			#if (lwedit)
+			if (gmlFile.kind == Normal) {
+				if (gmlFile.getAceSession().getValue().length > 0) {
+					if (!window.confirm(
+						"Are you sure you want to discard this tab? Contents will be lost"
+					)) e.preventDefault();
+				}
+			} else
+			#end
 			if (gmlFile.changed) {
 				if (gmlFile.path != null) {
-					var bt = Dialog.showMessageBox({
+					var bt:Int;
+					if (Electron == null) {
+						bt = window.confirm(
+							"Are you sure you want to close " + gmlFile.name + "?" +
+							"\nThere are unsaved changes."
+						) ? 1 : 2;
+					} else bt = Dialog.showMessageBox({
 						buttons: ["Yes", "No", "Cancel"],
 						message: "Do you want to save the current changes?",
 						title: "Unsaved changes in " + gmlFile.name,
@@ -140,13 +154,6 @@ class ChromeTabs {
 					}
 				}
 			} // changed
-			#else
-			if (gmlFile.getAceSession().getValue().length > 0) {
-				if (!window.confirm(
-					"Are you sure you want to discard this tab? Contents will be lost"
-				)) e.preventDefault();
-			}
-			#end
 		});
 		element.addEventListener("tabRemove", function(e:CustomEvent) {
 			//
