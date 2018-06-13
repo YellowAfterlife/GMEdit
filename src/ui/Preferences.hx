@@ -283,23 +283,25 @@ class Preferences {
 			GmlAPI.init();
 			save();
 		}).title = "Displays UK versions of function/variable names (e.g. draw_set_colour) in auto-completion when available.";
+		#if !lwedit
 		addCheckbox(out, "Show asset thumbnails", current.assetThumbs, function(z) {
 			current.assetThumbs = z;
 			save();
 			gml.Project.current.reload();
 		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
+		#end
 		//
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
 			current.fileSessionTime = v; save();
 		});
-		//
+		#if !lwedit
 		addFloatInput(out, "Keep project sessions for (days):", current.projectSessionTime, function(v) {
 			current.projectSessionTime = v; save();
 		});
-		//
 		addIntInput(out, "Max recent project count:", current.recentProjectCount, function(v) {
 			current.recentProjectCount = v; save();
 		});
+		#end
 		//
 		var optSnippets_0 = ["gml", "gml_search", "shader"];
 		var optSnippets_1 = ["GML", "Search results", "Shaders"];
