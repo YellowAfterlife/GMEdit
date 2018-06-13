@@ -97,7 +97,7 @@ import ui.TreeView;
 				mvc: "1.0",
 				IsDnD: false,
 				eventtype: idat.type,
-				enumb: idat.numb,
+				enumb: idat.numb != null ? idat.numb : 0,
 				collisionObjectId: idat.obj,
 				m_owner: this.id,
 			};
