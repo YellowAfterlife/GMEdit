@@ -32,6 +32,9 @@ class GmlAPI {
 		"switch", "case", "default", "break", "continue", "with", "exit", "return",
 		"self", "other", "noone", "all", "global", "local",
 		"mod", "div", "not", "and", "or", "xor", "enum",
+		#if lwedit
+		"in", "debugger",
+		#end
 		"true", "false", // generally handled separately
 	];
 	/** whether something is a "flow" (branching, etc. - delimiting) keyword */
