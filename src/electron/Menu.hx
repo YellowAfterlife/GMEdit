@@ -42,7 +42,7 @@ using tools.HtmlTools;
 	}
 	//
 	public function clear():Void {
-		items.resize(0);
+		tools.NativeArray.clear(items);
 		HtmlTools.clearInner(element);
 	}
 	public function append(item:MenuItemFallback):Void {

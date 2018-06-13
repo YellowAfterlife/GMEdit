@@ -1,4 +1,5 @@
 package ace;
+import haxe.io.Path;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
@@ -10,7 +11,12 @@ class AceMacro {
 	public static macro function timestamp() {
 		var now = Date.now();
 		var out = DateTools.format(now, "%b %e, %Y");
-		sys.io.File.saveContent("../bin/buildnumber.txt", out);
+		var dir = Sys.getCwd();
+		dir = Path.removeTrailingSlashes(dir);
+		dir = Path.withoutDirectory(dir);
+		var path = "bin/buildnumber.txt";
+		if (dir == "src") path = "../" + path;
+		sys.io.File.saveContent(path, out);
 		return macro $v{out};
 	}
 	public static macro function rxRule(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
