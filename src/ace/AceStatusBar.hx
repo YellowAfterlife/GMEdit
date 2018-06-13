@@ -19,9 +19,9 @@ import tools.Dictionary;
  */
 class AceStatusBar {
 	static var lang:Dynamic;
-	static var statusBar:DivElement;
-	static var statusSpan:SpanElement;
-	static var statusHint:SpanElement;
+	public static var statusBar:DivElement;
+	public static var statusSpan:SpanElement;
+	public static var statusHint:SpanElement;
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
 	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports) {
@@ -123,13 +123,19 @@ class AceStatusBar {
 			statusHint.title = out.innerText;
 			statusHint.classList.remove("active");
 		} else statusHint.title = "";
+		statusHint.onclick = null;
 	}
 	public static function setStatusHint(s:String) {
 		statusHint.innerHTML = "";
 		statusHint.appendChild(document.createTextNode(s));
 		statusHint.title = s;
+		statusHint.onclick = null;
+		statusHint.classList.remove("active");
 	}
+	public static var ignoreUntil:Float;
+	public static inline var delayTime:Float = 100;
 	public static function statusUpdate() {
+		if (Main.window.performance.now() < ignoreUntil) return;
 		//
 		var editor = Main.aceEditor;
 		var sel = editor.selection;
@@ -213,7 +219,8 @@ class AceStatusBar {
 		});
 		editor.statusHint = statusHint;
 		//
-		var dcUpdate = lang.delayedCall(statusUpdate).schedule.bind(null, 100);
+		ignoreUntil = Main.window.performance.now();
+		var dcUpdate = lang.delayedCall(statusUpdate).schedule.bind(null, delayTime);
 		editor.on("changeStatus", dcUpdate);
 		editor.on("changeSelection", dcUpdate);
 		editor.on("keyboardActivity", dcUpdate);

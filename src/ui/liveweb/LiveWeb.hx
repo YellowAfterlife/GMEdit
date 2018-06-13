@@ -1,4 +1,6 @@
 package ui.liveweb;
+import ace.AceStatusBar;
+import ace.AceWrap;
 import editors.EditCode;
 import gml.file.GmlFile;
 import haxe.Json;
@@ -20,6 +22,7 @@ class LiveWeb {
 		var out = [];
 		for (tab in ChromeTabs.impl.tabEls) {
 			var file:GmlFile = tab.gmlFile;
+			if (file.kind != gml.file.GmlFileKind.Normal) continue;
 			var edit:EditCode = cast file.editor;
 			var val = edit.session.getValue();
 			if (post) {
@@ -147,6 +150,59 @@ class LiveWeb {
 				tab.gmlFile.markClean();
 			}
 			saveState();
+		});
+		Reflect.setField(window, "aceClearErrors", function() {
+			for (tab in ChromeTabs.impl.tabEls) {
+				var es = tab.gmlFile.getAceSession();
+				if (es == null) continue;
+				var mk = es.gmlErrorMarker;
+				if (mk == null) continue;
+				es.removeMarker(mk);
+				es.gmlErrorMarker = null;
+				es.clearAnnotations();
+			}
+		});
+		Reflect.setField(window, "aceHintText", function(msg:String) {
+			AceStatusBar.setStatusHint(msg);
+			AceStatusBar.ignoreUntil = window.performance.now() + AceStatusBar.delayTime + 50;
+			for (tab in ChromeTabs.impl.tabEls) {
+				var es = tab.gmlFile.getAceSession();
+				if (es == null) continue;
+				es.clearAnnotations();
+			}
+		});
+		Reflect.setField(window, "aceHintError", function(path:String, pos:AcePos, msg:String) {
+			var col = pos.column;
+			var row = pos.row;
+			//
+			var hint = AceStatusBar.statusHint;
+			hint.setInnerText(msg);
+			hint.classList.add("active");
+			hint.onclick = function(_) {
+				if (GmlFile.current.path != path) {
+					for (tab in ChromeTabs.impl.tabEls) {
+						if (tab.gmlFile.path != path) continue;
+						tab.click();
+						break;
+					}
+					window.setTimeout(function() {
+						Main.aceEditor.gotoLine0(row, col);
+					});
+				} else Main.aceEditor.gotoLine0(row, col);
+			};
+			AceStatusBar.ignoreUntil = window.performance.now() + AceStatusBar.delayTime + 50;
+			//
+			for (tab in ChromeTabs.impl.tabEls) {
+				if (tab.gmlFile.path != path) continue;
+				var session = tab.gmlFile.getAceSession();
+				if (session == null) continue;
+				var range = new AceRange(col, row, col, row + 1);
+				session.gmlErrorMarker = session.addMarker(range, "ace_error-line", "fullLine");
+				session.setAnnotations([{
+					row: row, column: col, type: "error", text: msg
+				}]);
+				break;
+			}
 		});
 		//
 		modeEl = document.querySelectorAuto("#mode");
