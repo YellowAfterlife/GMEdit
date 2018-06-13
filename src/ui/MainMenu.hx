@@ -115,6 +115,14 @@ class MainMenu {
 		#end
 		//
 		menu.append(new MenuItem({ type: Sep }));
+		menu.append(new MenuItem({ label: "Help",
+			click: function() {
+				var url:String = "https://github.com/GameMakerDiscord/GMEdit/wiki";
+				if (Electron != null) {
+					electron.Shell.openExternal(url);
+				} else Main.window.open(url, "_blank");
+			}
+		}));
 		menu.append(new MenuItem({ label: "Preferences",
 			click: function() Preferences.open()
 		}));
