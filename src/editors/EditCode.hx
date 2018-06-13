@@ -178,6 +178,63 @@ class EditCode extends Editor {
 		}
 	}
 	
+	public function postpImport(val:String):String {
+		var val_preImport = val;
+		var path = file.path;
+		val = GmlExtImport.post(val, path);
+		// if there are imports, check if we should be updating the code
+		var data = path != null ? GmlSeekData.map[path] : null;
+		if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
+			var next = GmlExtImport.pre(val, path);
+			if (GmlFile.current == file) {
+				if (data != null && data.imports != null) {
+					GmlImports.currentMap = data.imports;
+				} else GmlImports.currentMap = GmlImports.defaultMap;
+			}
+			if (next != val_preImport) {
+				var sd = AceSessionData.get(this);
+				var session = session;
+				session.doc.setValue(next);
+				AceSessionData.set(this, sd);
+				Main.window.setTimeout(function() {
+					var undoManager = session.getUndoManager();
+					if (!Preferences.current.allowImportUndo) {
+						session.setUndoManager(undoManager);
+						undoManager.reset();
+					}
+					undoManager.markClean();
+					file.changed = false;
+				});
+			}
+		}
+		return val;
+	}
+	
+	public function postpNormal(out:String):String {
+		inline function error(s:String) {
+			Main.window.alert(s);
+			return null;
+		}
+		//
+		out = GmlExtArgs.post(out);
+		if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
+		//
+		if (Preferences.current.argsFormat != "") {
+			if (GmlExtArgsDoc.proc(file)) {
+				out = session.getValue();
+				out = GmlExtArgs.post(out);
+				Main.window.setTimeout(function() {
+					file.markClean();
+				});
+			}
+		}
+		//
+		out = GmlExtCoroutines.post(out);
+		if (out == null) return error(GmlExtCoroutines.errorText);
+		//
+		return out;
+	}
+	
 	override public function save():Bool {
 		var val = session.getValue();
 		var path = file.path;
@@ -188,35 +245,7 @@ class EditCode extends Editor {
 		}
 		GmlFileBackup.save(file, val);
 		//
-		if (canImport(file)) {
-			var val_preImport = val;
-			val = GmlExtImport.post(val, path);
-			// if there are imports, check if we should be updating the code
-			var data = path != null ? GmlSeekData.map[path] : null;
-			if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
-				var next = GmlExtImport.pre(val, path);
-				if (GmlFile.current == file) {
-					if (data != null && data.imports != null) {
-						GmlImports.currentMap = data.imports;
-					} else GmlImports.currentMap = GmlImports.defaultMap;
-				}
-				if (next != val_preImport) {
-					var sd = AceSessionData.get(this);
-					var session = session;
-					session.doc.setValue(next);
-					AceSessionData.set(this, sd);
-					Main.window.setTimeout(function() {
-						var undoManager = session.getUndoManager();
-						if (!ui.Preferences.current.allowImportUndo) {
-							session.setUndoManager(undoManager);
-							undoManager.reset();
-						}
-						undoManager.markClean();
-						file.changed = false;
-					});
-				}
-			}
-		}
+		if (canImport(file)) val = postpImport(val);
 		//
 		var out:String, src:String, gmx:SfGmx;
 		var writeFile:Bool = path != null;
@@ -224,20 +253,8 @@ class EditCode extends Editor {
 			case Extern: out = val;
 			case Plain, GLSL, HLSL, JavaScript: out = val;
 			case Normal: {
-				out = val;
-				out = GmlExtArgs.post(out);
-				if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				if (ui.Preferences.current.argsFormat != "") {
-					if (GmlExtArgsDoc.proc(file)) {
-						out = session.getValue();
-						out = GmlExtArgs.post(out);
-						Main.window.setTimeout(function() {
-							file.markClean();
-						});
-					}
-				}
-				out = GmlExtCoroutines.post(out);
-				if (out == null) return error(GmlExtCoroutines.errorText);
+				out = postpNormal(val);
+				if (out == null) return false;
 			};
 			case Multifile: {
 				out = val;

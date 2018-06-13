@@ -35,4 +35,30 @@ class BufferTools {
 			return "data:" + type + ";base64," + toBase64(bytes, 0, bytes.length);
 		}
 	}
+	public static function inflate(bytes:Bytes):Bytes {
+		if (bytes.length > 0) {
+			var data = bytes.getData();
+			data = untyped Main.window.pako.inflateRaw(data);
+			return Bytes.ofData(data);
+		} else return Bytes.alloc(0);
+	}
+	public static function saveAs(bytes:Bytes, path:String, mimetype:String) {
+		var url = toObjectURL(bytes, path, mimetype);
+		if (url == null) return false;
+		var link = Main.document.createAnchorElement();
+		link.href = url;
+		link.download = path;
+		Main.document.body.appendChild(link);
+		link.click();
+		
+		Main.window.setTimeout(function() {
+			link.parentElement.removeChild(link);
+			try {
+				js.html.URL.revokeObjectURL(url);
+			} catch (_:Dynamic) {
+				//
+			}
+		});
+		return true;
+	}
 }

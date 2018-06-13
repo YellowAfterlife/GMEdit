@@ -93,6 +93,7 @@ class KeyboardShortcuts {
 					Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
 				}
 			};
+			#if !lwedit
 			case KeyboardEvent.DOM_VK_R: {
 				if (isMod) {
 					e.preventDefault();
@@ -101,6 +102,7 @@ class KeyboardShortcuts {
 					}
 				}
 			};
+			#end
 			case KeyboardEvent.DOM_VK_W: {
 				if (isMod) {
 					e.preventDefault();

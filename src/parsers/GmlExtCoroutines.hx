@@ -125,7 +125,7 @@ class GmlExtCoroutines {
 			errorText = "GMCR is not available. Did you copy it from pre-built binary or it's itch.io download?";
 			return null;
 		}
-		trace(out);
+		//trace(out);
 		var pair = proc(out, {
 			version: version,
 		});

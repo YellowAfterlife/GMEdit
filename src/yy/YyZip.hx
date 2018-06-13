@@ -314,16 +314,11 @@ class YyZipFile {
 		this.path = path;
 	}
 	private function uncompress() {
-		if (bytes.length > 0) {
-			var data = bytes.getData();
-			data = untyped window.pako.inflateRaw(data);
-			bytes = Bytes.ofData(data);
-		}
+		bytes = tools.BufferTools.inflate(bytes);
 		compressed = false;
 	}
 	public function getBytes():Bytes {
 		if (bytes == null) {
-			if (compressed) uncompress();
 			bytes = Bytes.ofString(text);
 		}
 		return bytes;

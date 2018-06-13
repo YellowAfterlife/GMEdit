@@ -6,6 +6,7 @@ import electron.Electron;
 import gml.Project;
 import haxe.io.Path;
 import tools.NativeString;
+import ui.liveweb.*;
 import yy.YyZip;
 
 /**
@@ -76,25 +77,7 @@ class MainMenu {
 						type = "application/zip";
 					}
 					//
-					var url = tools.BufferTools.toObjectURL(zip, path, type);
-					if (url != null) {
-						var link = Main.document.createAnchorElement();
-						link.href = url;
-						link.download = path;
-						Main.document.body.appendChild(link);
-						link.click();
-						
-						// I'm not sure when exactly you are supposed to dealloc your URLs
-						// if the user is going to be busy picking a save location meanwhile
-						Main.window.setTimeout(function() {
-							link.parentElement.removeChild(link);
-							try {
-								js.html.URL.revokeObjectURL(url);
-							} catch (_:Dynamic) {
-								//
-							}
-						}, 7000);
-					}
+					tools.BufferTools.saveAs(zip, path, type);
 				}
 			}
 		});
@@ -103,10 +86,31 @@ class MainMenu {
 			click: function() gml.Project.open("")
 		}));
 		#else
+		menu.append(new MenuItem({ label: "New tab",
+			click: function() LiveWeb.newTabDialog()
+		}));
 		menu.append(new MenuItem({ label: "New project",
 			click: function() {
-				// todo
+				var tabEls = ChromeTabs.impl.tabEls;
+				if (tabEls.length > 0) {
+					if (!Main.window.confirm(
+						"Are you sure you want to start a new project?" +
+						"\nAll tabs will be closed."
+					)) return;
+					var i = tabEls.length;
+					while (--i >= 0) {
+						var tab = tabEls[i];
+						tab.classList.add("chrome-tab-force-close");
+						tab.querySelector(".chrome-tab-close").click();
+					}
+				}
 			}
+		}));
+		menu.append(new MenuItem({ label: "Import...",
+			click: function() LiveWebIO.importDialog()
+		}));
+		menu.append(new MenuItem({ label: "Export...",
+			click: function() LiveWebIO.exportDialog()
 		}));
 		#end
 		//

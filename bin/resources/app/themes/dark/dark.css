@@ -6,6 +6,22 @@
 	background-color: #222222;
 	color: #C0C0C0;
 }
+#game-td .chrome-tabs input,
+#game-td .chrome-tabs select {
+	color: white;
+	border-color: #555;
+}
+#game-td .chrome-tabs input[type="button"] {
+	background: #373737;
+}
+#game-td .chrome-tabs input[type="button"]:hover {
+	background: #505050;
+}
+#game-td .chrome-tabs select {
+	background-color: #373737;
+	background-position: center right 6px;
+	background-image: url(data:image/bmp;base64,Qk1mAAAAAAAAADYAAAAoAAAABQAAAAMAAAABABgAAAAAAAAAAADEDgAAxA4AAAAAAAAAAAAANzc3Nzc3////Nzc3Nzc3/zc3N////////////zc3N///////////////////////);
+}
 .project-name {
 	color: white;
 	text-shadow: none;

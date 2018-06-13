@@ -79,9 +79,15 @@ class FileDrag {
 		document.body.addEventListener("drop", function(e:DragEvent) {
 			e.preventDefault();
 			//Main.console.log(e.dataTransfer.files);
+			#if lwedit
+			for (file in e.dataTransfer.files) {
+				ui.liveweb.LiveWebIO.acceptFile(file);
+			}
+			#else
 			var file = e.dataTransfer.files[0];
 			if (file == null) return;
 			handle(untyped file.path || file.name, file);
+			#end
 		});
 	}
 }

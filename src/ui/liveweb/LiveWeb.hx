@@ -1,4 +1,5 @@
-package ui;
+package ui.liveweb;
+import editors.EditCode;
 import gml.file.GmlFile;
 import haxe.Json;
 import js.html.SelectElement;
@@ -15,13 +16,19 @@ import Main.window;
  */
 class LiveWeb {
 	//
-	public static function getPairs():Array<LiveWebTab> {
+	public static function getPairs(?post:Bool):Array<LiveWebTab> {
 		var out = [];
 		for (tab in ChromeTabs.impl.tabEls) {
-			var file = tab.gmlFile;
+			var file:GmlFile = tab.gmlFile;
+			var edit:EditCode = cast file.editor;
+			var val = edit.session.getValue();
+			if (post) {
+				val = edit.postpImport(val);
+				val = edit.postpNormal(val);
+			}
 			out.push({
 				name: file.name,
-				code: file.getAceSession().getValue(),
+				code: val,
 			});
 		}
 		return out;
@@ -33,9 +40,12 @@ class LiveWeb {
 		for (pair in pairs) {
 			var path = pair.name;
 			var code = pair.code;
-			GmlFile.next = new GmlFile(path, path, Normal, code);
+			var file = new GmlFile(path, path, Normal, code);
+			GmlFile.next = file;
 			ChromeTabs.addTab(pair.name);
 			parsers.GmlSeeker.runSync(path, code, "");
+			var edit:EditCode = cast file.editor;
+			edit.postpImport(edit.session.getValue());
 		}
 	}
 	
@@ -107,6 +117,24 @@ class LiveWeb {
 				window.alert("Decode error:\n" + x);
 			}
 		} else loadState();
+	}
+	
+	public static function addTab(name:String, code:String) {
+		for (tab in ChromeTabs.impl.tabEls) {
+			if (tab.gmlFile.name == name) {
+				window.alert("A tab with this name already exists.");
+				return;
+			}
+		}
+		var file = new GmlFile(name, name, Normal, code);
+		GmlFile.openTab(file);
+		parsers.GmlSeeker.runSync(name, name, code);
+	}
+	
+	public static function newTabDialog() {
+		var name = window.prompt("New tab title?", "");
+		if (name == null || name == "") return;
+		addTab(name, "");
 	}
 	
 	//

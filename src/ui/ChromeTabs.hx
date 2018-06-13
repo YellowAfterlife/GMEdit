@@ -12,6 +12,7 @@ import Main.document;
 import js.html.MouseEvent;
 import parsers.GmlSeekData;
 import parsers.GmlSeeker;
+import ui.liveweb.LiveWeb;
 using tools.NativeString;
 using tools.HtmlTools;
 
@@ -108,6 +109,7 @@ class ChromeTabs {
 		});
 		element.addEventListener("tabClose", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
+			if (tabEl.classList.contains("chrome-tab-force-close")) return;
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
 			#if (!lwedit)
@@ -171,11 +173,7 @@ class ChromeTabs {
 		#if lwedit
 		element.addEventListener("dblclick", function(e:MouseEvent) {
 			if (e.target != element.querySelector(".chrome-tabs-content")) return;
-			var name = window.prompt("New tab title?", "");
-			if (name == null || name == "") return;
-			var file = new GmlFile(name, name, Normal, "");
-			GmlFile.openTab(file);
-			GmlSeeker.runSync(name, name, "");
+			LiveWeb.newTabDialog();
 		});
 		#end
 		//

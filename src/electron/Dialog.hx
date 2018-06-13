@@ -1,6 +1,9 @@
 package electron;
+import js.html.FileList;
 import js.html.FormElement;
 import js.html.InputElement;
+import js.html.File;
+import js.html.Uint8Array;
 
 /**
  * https://electronjs.org/docs/api/dialog
@@ -13,6 +16,12 @@ import js.html.InputElement;
 		options:DialogOpenOptions, ?async:Array<String>->Void
 	):Array<String>;
 	
+	public static inline function showOpenDialogWrap(
+		options:DialogOpenOptions, func:FileList->Void
+	):Void {
+		DialogFallback.showOpenDialogWrap(options, func);
+	}
+	
 	/*public static inline function showConfirmBoxSync(text:String, title:String) {
 		//if (Dialog 
 	}*/
@@ -20,27 +29,48 @@ import js.html.InputElement;
 @:keep class DialogFallback {
 	private static var form:FormElement;
 	private static var input:InputElement;
-	public static function showOpenDialog(
-		options:DialogOpenOptions, ?async:Array<String>->Void
-	):Array<String> {
+	public static function showOpenDialogWrap(
+		options:DialogOpenOptions, func:FileList->Void
+	):Void {
+		if (Electron != null) {
+			Dialog.showOpenDialog(options, function(paths:Array<String>) {
+				var files:Array<File> = [];
+				for (path in paths) {
+					var raw = FileSystem.readFileSync(path);
+					var ua:Uint8Array = untyped Uint8Array.from(raw);
+					var abuf = ua.buffer;
+					files.push(new File(abuf, {
+						name: path
+					}));
+				}
+				func(cast files);
+			});
+			return;
+		}
 		if (form == null) init();
 		if (options.filters != null) {
-			var acc = "";
+			var accept = [];
 			for (filter in options.filters) {
-				if (acc != "") acc += ";";
-				
+				for (ext in filter.extensions) accept.push("." + ext);
 			}
+			input.accept = accept.join(",");
 		} else input.accept = null;
 		form.reset();
 		input.onchange = function(_) {
-			
+			if (input.files.length > 0) func(input.files);
 		};
+		input.click();
+	}
+	public static function showOpenDialog(
+		options:DialogOpenOptions, ?async:Array<String>->Void
+	):Array<String> {
 		return null;
 	}
 	static function init() {
 		//
 		form = Main.document.createFormElement();
 		input = Main.document.createInputElement(); 
+		input.type = "file";
 		form.appendChild(input);
 		form.style.display = "none";
 		Main.document.body.appendChild(form);
