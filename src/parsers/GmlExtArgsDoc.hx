@@ -157,10 +157,7 @@ class GmlExtArgsDoc {
 									});
 								}
 							} else {
-								remove.push({
-									start: { row: row, column: 0 },
-									end: { row: row + 1, column: 0 }
-								});
+								remove.push(new AceRange(0, row, 0, row + 1));
 								delOffset += 1;
 							}
 						}

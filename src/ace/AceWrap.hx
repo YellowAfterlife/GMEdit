@@ -59,6 +59,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceUndoManager = AceWrap.require("ace/undomanager").UndoManager;
 		window.AceTokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
 		window.AceAutocomplete = AceWrap.require("ace/autocomplete").Autocomplete;
+		window.AceRange = AceWrap.require("ace/range").Range;
 		window.aceEditor = Main.aceEditor;
 	}
 	/*public function setHintError(msg:String, pos:GmlPos) {
@@ -217,6 +218,7 @@ extern class AceSelection {
 	// non-standard:
 	public var gmlFile:gml.file.GmlFile;
 	public var gmlEdit:editors.EditCode;
+	public var gmlErrorMarker:AceMarker;
 }
 extern class AceDocument {
 	function setValue(s:String):Void;
@@ -242,16 +244,21 @@ private typedef AcePosImpl = { column: Int, row:Int };
 //
 @:forward abstract AceRange(AceRangeImpl) from AceRangeImpl to AceRangeImpl {
 	public function new(col1:Int, row1:Int, col2:Int, row2:Int):AceRange {
-		this = { start: new AcePos(col1, row1), end: new AcePos(col2, row2) };
+		this = new AceRangeImpl(row1, col1, row2, col2);
 	}
 	public static function fromPair(start:AcePos, end:AcePos):AceRange {
-		return { start: start, end: end };
+		return new AceRange(start.column, start.row, end.column, end.row);
 	}
 	public static function fromPos(pos:AcePos):AceRange {
-		return { start: pos, end: pos };
+		return new AceRange(pos.column, pos.row, pos.column, pos.row);
 	}
 }
-private typedef AceRangeImpl = { start: AcePos, end:AcePos };
+@:native("AceRange") private extern class AceRangeImpl {
+	public var start:AcePos;
+	public var end:AcePos;
+	public function new(startRow:Int, startCol:Int, endRow:Int, endCol:Int):Void;
+	// todo
+}
 //
 typedef AceToken = { type:AceTokenType, value:String, ?index:Int, ?start:Int };
 typedef AceTokenType = String;
