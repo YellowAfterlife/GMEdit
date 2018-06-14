@@ -10,13 +10,50 @@ import gml.file.GmlFile;
 class WelcomePage {
 	public static var file:GmlFile;
 	public static function init(e:AceEditor) {
-		file = new GmlFile("WelcomePage", null, Plain, "");
-		GmlFile.current = file;
-		var session = (cast file.editor:editors.EditCode).session;
-		FileSystem.readTextFile(Main.relPath("misc/welcome.txt"), function(err, text) {
-			text = tools.NativeString.replaceExt(text, "%%VERSION%%", ace.AceMacro.timestamp());
-			session.setValue(text);
-		});
+		var session:AceSession;
+		#if lwedit
+			file = new GmlFile("WelcomePage", null, Normal, "");
+			GmlFile.current = file;
+			session = (cast file.editor:editors.EditCode).session;
+			session.setValue(lwText);
+		#else
+			file = new GmlFile("WelcomePage", null, Plain, "");
+			GmlFile.current = file;
+			session = (cast file.editor:editors.EditCode).session;
+			FileSystem.readTextFile(Main.relPath("misc/welcome.txt"), function(err, text) {
+				text = tools.NativeString.replaceExt(text, "%%VERSION%%", ace.AceMacro.timestamp());
+				session.setValue(text);
+			});
+		#end
 		return session;
 	}
+	#if lwedit
+	static var lwText:String = [
+		'/*',
+		'Hello!',
+		'',
+		'Double-click the top panel to add a code tab.',
+		'Ctrl+Enter or F5 to run your code.',
+		'',
+		'Also check out Help in the main menu.',
+		'',
+		'Try copying the following to a new code tab for a test:',
+		'*/',
+		'// init',
+		'trace("hi!");',
+		'frame = 0;',
+		'',
+		'#define step',
+		'// step event code', 
+		'frame += delta_time/1000000;',
+		'',
+		'#define draw',
+		'// draw event code',
+		'scr_show("hi!");',
+		'',
+		'#define scr_show',
+		'// define scripts like this',
+		'draw_text(10, 10 + sin(frame / 0.7) * 3, argument0);'
+	].join("\n");
+	#end
 }
