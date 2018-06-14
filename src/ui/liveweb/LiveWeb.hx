@@ -3,6 +3,8 @@ import ace.AceStatusBar;
 import ace.AceWrap;
 import editors.EditCode;
 import gml.file.GmlFile;
+import gml.*;
+import parsers.*;
 import haxe.Json;
 import js.html.SelectElement;
 import js.html.TextAreaElement;
@@ -40,15 +42,22 @@ class LiveWeb {
 		for (tab in ChromeTabs.impl.tabEls) {
 			ChromeTabs.impl.removeTab(tab);
 		}
+		var first = null;
 		for (pair in pairs) {
 			var path = pair.name;
 			var code = pair.code;
 			var file = new GmlFile(path, path, Normal, code);
+			if (first == null) first = file;
 			GmlFile.next = file;
 			ChromeTabs.addTab(pair.name);
-			parsers.GmlSeeker.runSync(path, code, "");
+			GmlSeeker.runSync(path, code, "");
 			var edit:EditCode = cast file.editor;
 			edit.postpImport(edit.session.getValue());
+		}
+		if (first != null) for (tab in ChromeTabs.impl.tabEls) {
+			if (tab.gmlFile != first) continue;
+			tab.click();
+			break;
 		}
 	}
 	
@@ -115,7 +124,7 @@ class LiveWeb {
 			}
 		} else if ((s = sp["gml"]) != null) {
 			try {
-				setPairs([{name:"main", code:LZString.decompressFromEncodedURIComponent(s)}]);
+				setPairs([{name:"main", code:Base64.decode(s)}]);
 			} catch (x:Dynamic) {
 				window.alert("Decode error:\n" + x);
 			}
@@ -147,7 +156,8 @@ class LiveWeb {
 		Reflect.setField(window, "aceSetPairs", setPairs);
 		Reflect.setField(window, "aceTabFlush", function() {
 			for (tab in ChromeTabs.impl.tabEls) {
-				tab.gmlFile.markClean();
+				var file = tab.gmlFile;
+				file.save();
 			}
 			saveState();
 		});
@@ -196,7 +206,7 @@ class LiveWeb {
 				if (tab.gmlFile.path != path) continue;
 				var session = tab.gmlFile.getAceSession();
 				if (session == null) continue;
-				var range = new AceRange(col, row, col, row + 1);
+				var range = new AceRange(0, row, session.getLine(row).length, row);
 				session.gmlErrorMarker = session.addMarker(range, "ace_error-line", "fullLine");
 				session.setAnnotations([{
 					row: row, column: col, type: "error", text: msg

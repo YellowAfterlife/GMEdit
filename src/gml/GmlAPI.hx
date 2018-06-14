@@ -251,8 +251,10 @@ class GmlAPI {
 					if (lwArgc != null) { // give GMLive a copy of data
 						var cb = Reflect.field(Main.window, "lwSetAPI");
 						if (cb != null) cb(data);
-						ui.liveweb.LiveWeb.loadState();
+						LiveWeb.readyUp();
 					}
+					// so that the welcome page highlights correctly:
+					Main.aceEditor.session.bgTokenizer.start(0);
 					#end
 				}
 				function fin_exclude(s:String) {
