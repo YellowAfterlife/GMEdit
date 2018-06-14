@@ -49,20 +49,8 @@ class GmlParseAPI {
 			var args = rx.matched(3);
 			var flags:String = rx.matched(4);
 			if (NativeString.contains(flags, "&")) return;
-			#if lwedit
-			if (lwInst != null && (
-				comp.charCodeAt(0) == ":".code || NativeString.contains(flags, "@")
-			)) lwInst.set(name, true);
-			if (lwArgc != null) {
-				if (NativeString.contains(args, "...") || NativeString.contains(args, "?")) {
-					lwArgc.set(name, -1);
-				} else if (NativeString.contains(args, ",")) {
-					lwArgc.set(name, args.split(",").length);
-				} else {
-					lwArgc.set(name, NativeString.trimBoth(args).length > 0 ? 1 : 0);
-				}
-			}
-			#end
+			//
+			var orig = name;
 			var show = true;
 			var doc = GmlFuncDoc.parse(comp);
 			if (version == GmlVersion.v2) {
@@ -71,15 +59,36 @@ class GmlParseAPI {
 				} else {
 					if (flags.indexOf("£") >= 0) show = false;
 				}
-			} else if (version != GmlVersion.none && !ukSpelling) {
-				var orig = name;
+			} else if (version != GmlVersion.none) {
 				// (todo: were there other things?)
-				name = NativeString.replaceExt(name, "colour", "color");
+				var usn = NativeString.replaceExt(name, "colour", "color");
+				if (ukSpelling) orig = usn; else name = usn;
 				if (orig != name) {
 					stdKind.set(orig, "function");
-					stdDoc.set(name, doc);
+					stdDoc.set(orig, doc);
 				}
 			}
+			//
+			#if lwedit
+			if (lwInst != null && (
+				comp.charCodeAt(0) == ":".code || NativeString.contains(flags, "@")
+			)) {
+				lwInst.set(name, true);
+				if (orig != name) lwInst.set(orig, true);
+			}
+			if (lwArgc != null) {
+				var argc:Int;
+				if (NativeString.contains(args, "...") || NativeString.contains(args, "?")) {
+					argc = -1;
+				} else if (NativeString.contains(args, ",")) {
+					argc = args.split(",").length;
+				} else {
+					argc = NativeString.trimBoth(args).length > 0 ? 1 : 0;
+				}
+				lwArgc.set(name, argc);
+				if (orig != name) lwArgc.set(orig, argc);
+			}
+			#end
 			//
 			if (stdKind.exists(name)) return;
 			stdKind.set(name, kindPrefix + "function");
@@ -98,20 +107,30 @@ class GmlParseAPI {
 			var name = rx.matched(2);
 			var flags = rx.matched(4);
 			if (NativeString.contains(flags, "&")) return;
-			var kind:String;
-			if (flags.indexOf("#") >= 0) {
-				kind = "constant";
-				#if lwedit
-				if (lwConst != null) lwConst.set(name, true);
-				#end
-			} else kind = "variable";
+			//
+			var isConst:Bool = flags.indexOf("#") >= 0;
+			var kind:String = isConst ? "constant" : "variable";
+			//
+			var orig = name;
+			if (version != GmlVersion.v2 && version != GmlVersion.none) {
+				// (todo: were there other things?)
+				var usn = NativeString.replaceExt(name, "colour", "color");
+				if (ukSpelling) orig = usn; else name = usn;
+				if (orig != name) stdKind.set(orig, kindPrefix + kind);
+			}
+			//
 			#if lwedit
+			if (isConst && lwConst != null) {
+				lwConst.set(name, true);
+				if (orig != name) lwConst.set(orig, true);
+			}
 			if (lwFlags != null) {
 				var lwBits = 0x0;
 				if (NativeString.contains(flags, "*")) lwBits |= 1;
 				if (rx.matched(3) != null) lwBits |= 2;
 				if (NativeString.contains(flags, "@")) lwBits |= 4;
 				lwFlags.set(name, lwBits);
+				if (orig != name) lwFlags.set(orig, lwBits);
 			}
 			#end
 			stdKind.set(name, kindPrefix + kind);
