@@ -118,6 +118,9 @@ class MainMenu {
 		menu.append(new MenuItem({ label: "Help",
 			click: function() {
 				var url:String = "https://github.com/GameMakerDiscord/GMEdit/wiki";
+				#if lwedit
+				url += '/GMLive.js';
+				#end
 				if (Electron != null) {
 					electron.Shell.openExternal(url);
 				} else Main.window.open(url, "_blank");
