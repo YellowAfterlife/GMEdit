@@ -50,7 +50,8 @@ class GmlFile {
 	/** Source file change time */
 	public var time:Float = 0;
 	public inline function syncTime() {
-		if (path != null) {
+		#if !lwedit
+		if (path != null && FileSystem.canSync) {
 			if (kind != Multifile) try {
 				time = FileSystem.statSync(path).mtimeMs;
 			} catch (_:Dynamic) { }
@@ -58,6 +59,7 @@ class GmlFile {
 				pair.time = FileSystem.statSync(pair.path).mtimeMs;
 			} catch (_:Dynamic) { }
 		}
+		#end
 	}
 	
 	/** Context (used for tagging tabs) */
@@ -278,7 +280,7 @@ class GmlFile {
 		syncTime();
 		markClean();
 		// update things if this is the active tab:
-		if (current == this && path != null && out != null) {
+		if (path != null && out != null && Std.is(editor, EditCode) && current == this) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
 				GmlSeeker.runSync(path, out, data.main);
@@ -286,7 +288,7 @@ class GmlFile {
 				var next = GmlSeekData.map[path];
 				if (next != data) {
 					GmlLocals.currentMap = next.locals;
-					Main.aceEditor.session.bgTokenizer.start(0);
+					(cast editor:EditCode).session.bgTokenizer.start(0);
 				}
 			}
 		}

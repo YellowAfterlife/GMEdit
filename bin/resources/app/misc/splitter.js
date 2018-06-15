@@ -1,9 +1,10 @@
 (function() { // splitter
 	var sp = document.getElementById("splitter-td");
-	var eq = document.getElementById("tree-td") || document.getElementById("game-td");
+	var eq = document.getElementById("tree-td") || document.getElementById("editor-td");
 	var gq = document.getElementById("main");
 	var ls = window.localStorage;
 	if (ls) eq.style.width = Math.max(0|(ls.getItem("splitter-width") || "200"), 50) + "px";
+	eq.style.setProperty("flex-grow", "inherit")
 	var sp_mousemove, sp_mouseup, sp_x, sp_y;
 	sp_mousemove = function(e) {
 		var nx = e.pageX, dx = nx - sp_x; sp_x = nx;
@@ -11,6 +12,7 @@
 		var nw = parseFloat(eq.style.width) + dx * (eq.parentElement.children[0] == eq ? 1 : -1);
 		if (nw < 50) nw = 50;
 		eq.style.width = nw + "px";
+		if (window.$hxClasses) $hxClasses["ui.ChromeTabs"].impl.layoutTabs()
 	};
 	sp_mouseup = function(e) {
 		document.removeEventListener("mousemove", sp_mousemove);

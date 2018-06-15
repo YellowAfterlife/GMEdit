@@ -4,8 +4,9 @@
 	<title>GMLive.js - try GameMaker Language online</title>
 	<link rel="stylesheet" href="chrome-tabs/chrome-tabs.css" />
     <link rel="stylesheet" href="chrome-tabs/chrome-tabs-dark-theme.css" />
+	<script src="misc/polyfills.js"></script>
 	<script src="chrome-tabs/draggabilly.pkgd.min.js"></script>
-	<script src="chrome-tabs/chrome-tabs.js"></script>
+	<script src="chrome-tabs/chrome-tabs.es5.js"></script>
 	<link rel="stylesheet" href="css/main.css" />
 	<link rel="stylesheet" href="css/popouts.css" />
 	<link rel="stylesheet" href="css/ace.css" />
@@ -15,8 +16,8 @@
 	<style id="tree-thumbs"></style>
 </head><body id="app">
 <div id="main">
-	<div id="editor-td">
-		<div class="chrome-tabs" id="tabs">
+	<div id="editor-td" style="width: 520px">
+		<div class="chrome-tabs" id="tabs" style="padding-right: 32px">
 			<div class="chrome-tabs-content"></div>
 			<span class="system-button preferences">
 				<svg width="12" height="12" viewBox="0 0 12 12">
@@ -51,7 +52,7 @@
 	<div width="5" id="splitter-td">
 		
 	</div>
-	<div id="game-td" style="width: 300px">
+	<div id="game-td" style="flex-grow: 1">
 		<div class="chrome-tabs">
 			<input type="button" id="refresh" value="Run" title="Runs the game. You can also press F5 or Ctrl+Enter for ease." />
 			<input type="button" id="reload" value="Reload" title="Reloads the game' frame. Use this if it breaks permanently." />
@@ -126,12 +127,12 @@
 </div>
 <!-- -->
 <script type="text/javascript" src="./formatter.js"></script>
-<script type="text/javascript" src="./misc/splitter.js"></script>
+<script type="text/javascript" src="./misc/splitter.js?v=18-06-15-1"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ace.js" charset="utf-8"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ext-language_tools.js"></script>
 <script type="text/javascript" src="./ace/mode-gml.js"></script>
 <script type="text/javascript" src="./lw/lzstring.js"></script>
 <script type="text/javascript" src="./lw/gmlive-web.js"></script>
-<script type="text/javascript" src="./lw/app.js"></script>
+<script type="text/javascript" src="./lw/app.js?v=18-06-14-4"></script>
 <script type="text/javascript" src="./misc/gmcr.js" async></script>
 </body>

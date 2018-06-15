@@ -51,6 +51,9 @@ class ScrollMode {
 		}
 	}
 	public static function init() {
+		try {
+			new MouseEvent("mousedown");
+		} catch (_:Dynamic) return;
 		container = aceEditor.container;
 		scrollbar = aceEditor.renderer.scrollBar.element;
 		scrollbarWidth = scrollbar.style.width;
