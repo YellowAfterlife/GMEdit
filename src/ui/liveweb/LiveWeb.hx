@@ -22,9 +22,8 @@ class LiveWeb {
 	//
 	public static function getPairs(?post:Bool):Array<LiveWebTab> {
 		var out = [];
-		for (tab in ChromeTabs.impl.tabEls) {
-			var file:GmlFile = tab.gmlFile;
-			if (file.kind != gml.file.GmlFileKind.Normal) continue;
+		function proc(file:GmlFile) {
+			if (file.kind != gml.file.GmlFileKind.Normal) return;
 			var edit:EditCode = cast file.editor;
 			var val = edit.session.getValue();
 			if (post) {
@@ -36,6 +35,8 @@ class LiveWeb {
 				code: val,
 			});
 		}
+		for (tab in ChromeTabs.impl.tabEls) proc(tab.gmlFile);
+		if (ChromeTabs.impl.tabEls.length == 0) proc(GmlFile.current);
 		return out;
 	}
 	public static function setPairs(pairs:Array<LiveWebTab>):Void {
@@ -53,6 +54,7 @@ class LiveWeb {
 			GmlSeeker.runSync(path, code, "");
 			var edit:EditCode = cast file.editor;
 			edit.postpImport(edit.session.getValue());
+			edit.session.bgTokenizer.start(0);
 		}
 		if (first != null) for (tab in ChromeTabs.impl.tabEls) {
 			if (tab.gmlFile != first) continue;
@@ -101,6 +103,11 @@ class LiveWeb {
 	
 	//
 	static var isReady = false;
+	static function postfixColors(s:String):String {
+		if (!~/#define draw\b/g.match(s)) return s;
+		if (~/\b(?:background_color|background_colour|draw_clear)\b/g.match(s)) return s;
+		return "background_color = $F5F5F5; draw_set_color(0); // (legacy colors)\n" + s;
+	}
 	public static function readyUp() {
 		if (isReady) return;
 		isReady = true;
@@ -118,13 +125,15 @@ class LiveWeb {
 			loadState(Base64.decode(s));
 		} else if ((s = sp["lzgml"]) != null) {
 			try {
-				setPairs([{name:"main", code:LZString.decompressFromEncodedURIComponent(s)}]);
+				s = LZString.decompressFromEncodedURIComponent(s);
+				setPairs([{ name: "main", code: postfixColors(s) }]);
 			} catch (x:Dynamic) {
 				window.alert("Decompression error:\n" + x);
 			}
 		} else if ((s = sp["gml"]) != null) {
 			try {
-				setPairs([{name:"main", code:Base64.decode(s)}]);
+				s = Base64.decode(s);
+				setPairs([{ name:"main", code: postfixColors(s) }]);
 			} catch (x:Dynamic) {
 				window.alert("Decode error:\n" + x);
 			}
