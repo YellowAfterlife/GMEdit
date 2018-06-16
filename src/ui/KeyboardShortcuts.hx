@@ -136,6 +136,9 @@ class KeyboardShortcuts {
 						if (file != null) file.save();
 					}
 				}
+				#if lwedit
+				ui.liveweb.LiveWeb.saveState();
+				#end
 			};
 			case KeyboardEvent.DOM_VK_F12: {
 				if (flags == 0) {
@@ -146,14 +149,18 @@ class KeyboardShortcuts {
 			};
 			case KeyboardEvent.DOM_VK_F: {
 				if (isMod) e.preventDefault();
+				#if !lwedit
 				if (isShiftMod) GlobalSearch.toggle();
+				#end
 			};
+			#if !lwedit
 			case KeyboardEvent.DOM_VK_T: {
 				if (isMod) {
 					e.preventDefault();
 					GlobalLookup.toggle();
 				}
 			};
+			#end
 			case KeyboardEvent.DOM_VK_9: {
 				if (isMod) {
 					e.preventDefault();
