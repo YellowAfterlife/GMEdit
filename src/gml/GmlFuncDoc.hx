@@ -33,7 +33,7 @@ class GmlFuncDoc {
 	}
 	
 	public function getAcText() {
-		return pre + "(" + args.join(", ") + ")";
+		return pre + args.join(", ") + post;
 	}
 	
 	public static function parse(s:String, ?out:GmlFuncDoc) {
