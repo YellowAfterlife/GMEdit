@@ -119,7 +119,6 @@ class Project {
 		for (i in 0 ... ls.length) {
 			var k = ls.key(i);
 			if (NativeString.startsWith(k, "@project:")) {
-				var t = Std.parseFloat(ls.getItem(k));
 				if (Std.parseFloat(ls.getItem(k)) < remTime) {
 					remList.push(k);
 					remList.push(k.substring(1));
