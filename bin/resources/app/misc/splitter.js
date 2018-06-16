@@ -3,7 +3,10 @@
 	var eq = document.getElementById("tree-td") || document.getElementById("editor-td");
 	var gq = document.getElementById("main");
 	var ls = window.localStorage;
-	if (ls) eq.style.width = Math.max(0|(ls.getItem("splitter-width") || "200"), 50) + "px";
+	var lsk = "splitter-width";
+	var lw = !!document.getElementById("game");
+	if (lw) lsk = "lw-" + lsk;
+	if (ls) eq.style.width = Math.max(0|(ls.getItem(lsk) || (lw ? "520" : "200")), 50) + "px";
 	eq.style.setProperty("flex-grow", "inherit")
 	var sp_mousemove, sp_mouseup, sp_x, sp_y;
 	sp_mousemove = function(e) {
@@ -18,7 +21,7 @@
 		document.removeEventListener("mousemove", sp_mousemove);
 		document.removeEventListener("mouseup", sp_mouseup);
 		gq.classList.remove("resizing");
-		if (ls) ls.setItem("splitter-width", "" + parseFloat(eq.style.width));
+		if (ls) ls.setItem(lsk, "" + parseFloat(eq.style.width));
 	};
 	sp.addEventListener("mousedown", function(e) {
 		sp_x = e.pageX; sp_y = e.pageY;
