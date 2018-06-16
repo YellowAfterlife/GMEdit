@@ -45,11 +45,12 @@ class GmlSeeker {
 		}
 	}
 	
-	private static var jsDoc_full = new RegExp("^///\\s*"
-		+ "(?:@desc(?:ription)?\\s+)?"
+	private static var jsDoc_full = new RegExp("^///\\s*" // start
+		+ "(?:@desc(?:ription)?\\s+)?" // opt: "@desc "
 		+ "\\w+(\\(.+)");
-	private static var jsDoc_param = new RegExp("^///\\s+@(?:arg|param|argument)"
+	private static var jsDoc_param = new RegExp("^///\\s*@(?:arg|param|argument)"
 		+ "\\s+(\\S+(?:\\s+=.+)?)");
+	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
 	private static function parseConst(s:String):Null<Int> {
@@ -196,10 +197,20 @@ class GmlSeeker {
 							s = s.substring(3).trimLeft();
 							doc = out.docMap[main];
 							if (doc == null) {
-								doc = GmlFuncDoc.parse(main + "(...) " + s);
+								if (gmlDoc_full.test(s)) {
+									doc = GmlFuncDoc.parse(s);
+									doc.name = main;
+									doc.pre = main + "(";
+								} else doc = GmlFuncDoc.parse(main + "(...) " + s);
 								out.docList.push(doc);
 								out.docMap.set(main, doc);
-							} else doc.post += " " + s;
+							} else {
+								if (gmlDoc_full.test(s)) {
+									GmlFuncDoc.parse(s, doc);
+									doc.name = main;
+									doc.pre = main + "(";
+								} else doc.post += " " + s;
+							}
 						}
 					}
 				}
