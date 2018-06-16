@@ -58,7 +58,7 @@ class GmxObject {
 		if (errors != "") {
 			errorText = errors;
 			return null;
-		} else return out;
+		} else return tools.NativeString.trimTrailRn(out);
 	}
 	
 	/**
@@ -110,7 +110,11 @@ class GmxObject {
 			//
 			if (source.code.length > 0) {
 				for (gml in source.code) {
-					event.addChild(GmxAction.makeCodeBlock(gml + "\r\n"));
+					var a = GmxAction.makeCodeBlock(gml + "\r\n");
+					if (a == null) {
+						errorText = GmxAction.errorText;
+						return false;
+					} else event.addChild(a);
 				}
 			} else event.addChild(GmxAction.makeCodeBlock(""));
 		} // for (source)

@@ -257,7 +257,7 @@ using tools.NativeString;
 		};
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
-		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action[ \t]+)(\w+)/);
+		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
 		var rKeyEvent = rxRule(
 			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/

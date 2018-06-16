@@ -30,7 +30,7 @@ class GmxTimeline {
 		if (errors != "") {
 			errorText = errors;
 			return null;
-		} else return out;
+		} else return tools.NativeString.trimTrailRn(out);
 	}
 	public static function setCode(tl:SfGmx, gmlCode:String):Bool {
 		var data = GmlTimeline.parse(gmlCode, gml.GmlVersion.v1);
@@ -44,7 +44,13 @@ class GmxTimeline {
 			var entry = new SfGmx("entry"); tl.addChild(entry);
 			entry.addTextChild("step", "" + item.moment);
 			var event = new SfGmx("event"); entry.addChild(event);
-			for (code in item.code) event.addChild(GmxAction.makeCodeBlock(code + "\r\n"));
+			for (code in item.code) {
+				var a = GmxAction.makeCodeBlock(code + "\r\n");
+				if (a == null) {
+					errorText = GmxAction.errorText;
+					return false;
+				} else event.addChild(a);
+			}
 		}
 		return true;
 	}
