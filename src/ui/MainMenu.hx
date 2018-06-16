@@ -8,6 +8,7 @@ import haxe.io.Path;
 import tools.NativeString;
 import ui.liveweb.*;
 import yy.YyZip;
+import Main.window;
 
 /**
  * That thing that shows up when you click on the triple-line icon next to project name.
@@ -93,7 +94,7 @@ class MainMenu {
 			click: function() {
 				var tabEls = ChromeTabs.impl.tabEls;
 				if (tabEls.length > 0) {
-					if (!Main.window.confirm(
+					if (!window.confirm(
 						"Are you sure you want to start a new project?" +
 						"\nAll tabs will be closed."
 					)) return;
@@ -123,11 +124,22 @@ class MainMenu {
 				#end
 				if (Electron != null) {
 					electron.Shell.openExternal(url);
-				} else Main.window.open(url, "_blank");
+				} else window.open(url, "_blank");
 			}
 		}));
 		menu.append(new MenuItem({ label: "Preferences",
 			click: function() Preferences.open()
+		}));
+		if (Electron != null && window.location.host == "") menu.append(new MenuItem({
+			#if lwedit
+			label: "Switch to GMEdit",
+			click: function() window.location.href = StringTools.replace(window.location.href, 
+				"index-live.html", "index.html"),
+			#else
+			label: "Switch to GMLive.js",
+			click: function() window.location.href = StringTools.replace(window.location.href, 
+				"index.html", "index-live.html"),
+			#end
 		}));
 		if (Electron != null) menu.append(new MenuItem({ label: "Dev tools",
 			accelerator: "CommandOrControl+Shift+I",
