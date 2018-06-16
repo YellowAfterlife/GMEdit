@@ -69,10 +69,10 @@ body {
 	pointer-events: none;
 }
 
-#lw_share > * {
+.lw_modal > * {
 	z-index: 100;
 }
-#lw_share .overlay {
+.lw_modal .overlay {
 	position: absolute;
 	width: 100%;
 	height: 100%;
@@ -81,7 +81,7 @@ body {
 	margin: auto;
 	background: rgba(0, 0, 0, 0.6);
 }
-#lw_share .window {
+.lw_modal .window {
 	position: absolute;
 	width: 400px;
 	height: 100px;
@@ -95,11 +95,24 @@ body {
 	overflow: hidden;
 	resize: both;
 }
-#lw_share textarea {
+#lw_prompt .window {
+	height: 85px;
+	resize: horizontal;
+}
+.lw_modal textarea {
 	box-sizing: border-box;
 	width: 100%;
 	height: calc(100% - 20px);
 	resize: none;
+}
+#lw_prompt input[type="text"] {
+	box-sizing: border-box;
+	width: 100%;
+	height: 20px;
+	margin-bottom: 5px;
+}
+#lw_prompt .buttons {
+	text-align: right;
 }
 
 /* */
@@ -122,8 +135,11 @@ body {
 .chrome-tabs .chrome-tab-title-text {
 	float: right;
 }
-.chrome-tabs .chrome-tab, #preferences-button, .system-button {
+.chrome-tabs .chrome-tab, .system-button, .chrome-tabs .lw-controls {
 	-webkit-app-region: no-drag;
+}
+#app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
+	left: 230px;
 }
 #tabs.chrome-tabs.has-system-buttons {
 	padding-right: 108px;

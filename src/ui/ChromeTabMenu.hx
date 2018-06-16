@@ -67,17 +67,18 @@ class ChromeTabMenu {
 			click: function() {
 				var gmlFile = target.gmlFile;
 				var s0 = gmlFile.name;
-				var s1 = Main.window.prompt("New name?", s0);
-				if (s1 == null || s1 == "" || s1 == s0) return;
-				for (tab in ChromeTabs.impl.tabEls) if (tab.gmlFile.name == s1) {
-					Main.window.alert("A tab with this name already exists.");
-					return;
-				}
-				parsers.GmlSeekData.rename(s0, s1);
-				gmlFile.name = s1;
-				gmlFile.path = s1;
-				target.querySelector(".chrome-tab-title-text").setInnerText(s1);
-				ChromeTabs.sync(gmlFile);
+				electron.Dialog.showPrompt("New tab name?", s0, function(s1) {
+					if (s1 == null || s1 == "" || s1 == s0) return;
+					for (tab in ChromeTabs.impl.tabEls) if (tab.gmlFile.name == s1) {
+						Main.window.alert("A tab with this name already exists.");
+						return;
+					}
+					parsers.GmlSeekData.rename(s0, s1);
+					gmlFile.name = s1;
+					gmlFile.path = s1;
+					target.querySelector(".chrome-tab-title-text").setInnerText(s1);
+					ChromeTabs.sync(gmlFile);
+				});
 			}
 		}));
 		#else

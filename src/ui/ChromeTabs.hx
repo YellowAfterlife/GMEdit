@@ -56,7 +56,7 @@ class ChromeTabs {
 		element = Main.document.querySelector("#tabs");
 		if (electron.Electron == null) {
 			element.classList.remove("has-system-buttons");
-			for (btn in element.querySelectorAll(".system-button:not(.preferences)")) {
+			for (btn in document.querySelectorAll(".system-button:not(.preferences)")) {
 				btn.parentElement.removeChild(btn);
 			}
 		}

@@ -7,7 +7,7 @@
 	<script src="misc/polyfills.js"></script>
 	<script src="chrome-tabs/draggabilly.pkgd.min.js"></script>
 	<script src="chrome-tabs/chrome-tabs.es5.js"></script>
-	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/main.css?v=18-06-16-1" />
 	<link rel="stylesheet" href="css/popouts.css" />
 	<link rel="stylesheet" href="css/ace.css" />
 	<link rel="stylesheet" href="css/tree.css" />
@@ -53,7 +53,7 @@
 		
 	</div>
 	<div id="game-td" style="flex-grow: 1">
-		<div class="chrome-tabs">
+		<div class="chrome-tabs has-lw-buttons">
 			<input type="button" id="refresh" value="Run" title="Runs the game. You can also press F5 or Ctrl+Enter for ease." />
 			<input type="button" id="reload" value="Reload" title="Reloads the game' frame. Use this if it breaks permanently." />
 			<input type="button" id="stop" value="Stop" title="Stops the game' code (without reloading)." />
@@ -63,6 +63,24 @@
 				<option title="For 3d and hardware-intensive experiments. Uses WebGL.">GL</option>
 			</select>
 			<div id="project-name" style="display:none"></div>
+			<!-- (these are close enough replicas of Win10 icons)-->
+			<div class="system-button close">
+				<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
+			</div>
+			<div class="system-button maximize">
+				<svg  width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
+			</div>
+			<div class="system-button minimize">
+				<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
+			</div>
+			<script>
+			try {
+				var _ = require("electron").remote;
+			} catch (_) {
+				var bts = document.querySelectorAll(".system-button:not(.preferences)");
+				for (var i = 0; i < bts.length; i++) bts[i].parentElement.removeChild(bts[i]);
+			}
+			</script>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
 		<div class="bottom">
@@ -113,26 +131,39 @@
 			<input type="checkbox" name="check-objects" checked /><label for="">Objects</label><br/>
 			<input type="checkbox" name="check-timelines" checked /><label for="">Timelines</label><br/>
 			<input type="checkbox" name="check-macros" checked /><label for="">Macros</label><br/>
+			<input type="checkbox" name="check-shaders" /><label for="">Shaders</label><br/>
+			<input type="checkbox" name="check-extensions" /><label for="">Extensions</label><br/>
 		</fieldset>
 	</div>
 </form>
 <div id="preferences-window" class="popout-window" style="display:none"></div>
 <input type="color" id="color-picker" style="display:none"/>
-<div id="lw_share" style="display: none">
+<div id="lw_share" class="lw_modal" style="display: none">
 	<div class="overlay" onclick="lw_share.style.display='none';"></div>
 	<div class="window">
 		Here's your custom URL (<span id="lw_share_size">??</span>):<br/>
 		<textarea id="lw_share_code"></textarea>
 	</div>
 </div>
+<div id="lw_prompt" class="lw_modal" style="display: none">
+	<div class="overlay"></div>
+	<div class="window">
+		<span id="lw_prompt_text">??</span><br/>
+		<input type="text" id="lw_prompt_input"/><br/>
+		<div class="buttons">
+		<input type="button" id="lw_prompt_ok" value="OK"/>
+		<input type="button" id="lw_prompt_cancel" value="Cancel"/>
+		</div>
+	</div>
+</div>
 <!-- -->
 <script type="text/javascript" src="./formatter.js"></script>
-<script type="text/javascript" src="./misc/splitter.js?v=18-06-15-1"></script>
+<script type="text/javascript" src="./misc/splitter.js?v=18-06-16-1"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ace.js" charset="utf-8"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ext-language_tools.js"></script>
 <script type="text/javascript" src="./ace/mode-gml.js"></script>
 <script type="text/javascript" src="./lw/lzstring.js"></script>
-<script type="text/javascript" src="./lw/gmlive-web.js"></script>
-<script type="text/javascript" src="./lw/app.js?v=18-06-14-4"></script>
+<script type="text/javascript" src="./lw/gmlive-web.js?v=18-06-16-1"></script>
+<script type="text/javascript" src="./lw/app.js?v=18-06-16-1"></script>
 <script type="text/javascript" src="./misc/gmcr.js" async></script>
 </body>

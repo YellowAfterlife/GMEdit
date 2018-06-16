@@ -1,9 +1,12 @@
 package electron;
+import js.html.Element;
 import js.html.FileList;
 import js.html.FormElement;
 import js.html.InputElement;
 import js.html.File;
+import js.html.KeyboardEvent;
 import js.html.Uint8Array;
+import Main.document;
 
 /**
  * https://electronjs.org/docs/api/dialog
@@ -22,11 +25,16 @@ import js.html.Uint8Array;
 		DialogFallback.showOpenDialogWrap(options, func);
 	}
 	
+	public static inline function showPrompt(text:String, def:String, fn:String->Void):Void {
+		DialogFallback.showPrompt(text, def, fn);
+	}
+	
 	/*public static inline function showConfirmBoxSync(text:String, title:String) {
 		//if (Dialog 
 	}*/
 }
 @:keep class DialogFallback {
+	//
 	private static var form:FormElement;
 	private static var input:InputElement;
 	public static function showOpenDialogWrap(
@@ -35,7 +43,7 @@ import js.html.Uint8Array;
 		if (Electron != null) {
 			Dialog.showOpenDialog(options, function(paths:Array<String>) {
 				var files:Array<File> = [];
-				for (path in paths) {
+				if (paths != null) for (path in paths) {
 					var raw = FileSystem.readFileSync(path);
 					var ua:Uint8Array = untyped Uint8Array.from(raw);
 					var abuf = ua.buffer;
@@ -47,7 +55,7 @@ import js.html.Uint8Array;
 			});
 			return;
 		}
-		if (form == null) init();
+		if (form == null) initDialog();
 		if (options.filters != null) {
 			var accept = [];
 			for (filter in options.filters) {
@@ -61,19 +69,76 @@ import js.html.Uint8Array;
 		};
 		input.click();
 	}
-	public static function showOpenDialog(
-		options:DialogOpenOptions, ?async:Array<String>->Void
-	):Array<String> {
-		return null;
-	}
-	static function init() {
+	static function initDialog() {
 		//
-		form = Main.document.createFormElement();
-		input = Main.document.createInputElement(); 
+		form = document.createFormElement();
+		input = document.createInputElement(); 
 		input.type = "file";
 		form.appendChild(input);
 		form.style.display = "none";
 		Main.document.body.appendChild(form);
+	}
+	//
+	static var promptCtr:Element;
+	static var promptSpan:Element;
+	static var promptInput:InputElement;
+	static var promptFunc:String->Void;
+	public static function showPrompt(text:String, def:String, fn:String->Void):Void {
+		if (promptCtr == null) initPrompt();
+		promptFunc = fn;
+		tools.HtmlTools.setInnerText(promptSpan, text);
+		promptInput.value = def;
+		promptFunc = fn;
+		promptCtr.style.display = "";
+		promptInput.focus();
+	}
+	static function initPrompt() {
+		function proc(ok:Bool):Void {
+			var fn = promptFunc; promptFunc = null;
+			promptCtr.style.display = "none";
+			fn(ok ? promptInput.value : null);
+		}
+		promptCtr = document.createDivElement();
+		promptCtr.id = "lw_prompt";
+		promptCtr.className = "lw_modal";
+		promptCtr.style.display = "none";
+		document.body.appendChild(promptCtr);
+		//
+		var overlay = document.createDivElement();
+		overlay.className = "overlay";
+		overlay.addEventListener("click", function(_) proc(false));
+		promptCtr.appendChild(overlay);
+		//
+		var promptw = document.createDivElement();
+		promptw.className = "window";
+		promptCtr.appendChild(promptw);
+		//
+		promptSpan = document.createSpanElement();
+		promptw.appendChild(promptSpan);
+		promptw.appendChild(document.createBRElement());
+		//
+		promptInput = document.createInputElement();
+		promptInput.type = "text";
+		promptInput.addEventListener("keydown", function(e:KeyboardEvent) {
+			switch (e.keyCode) {
+				case KeyboardEvent.DOM_VK_RETURN: proc(true);
+				case KeyboardEvent.DOM_VK_ESCAPE: proc(false);
+			}
+		});
+		promptw.appendChild(promptInput);
+		//
+		var buttons = document.createDivElement();
+		buttons.className = "buttons";
+		promptw.appendChild(buttons);
+		//
+		for (z in [true, false]) {
+			var bt = document.createInputElement();
+			bt.type = "button";
+			bt.addEventListener("click", function(_) proc(z));
+			bt.value = z ? "OK" : "Cancel";
+			if (!z) buttons.appendChild(document.createTextNode(" "));
+			buttons.appendChild(bt);
+		}
 	}
 }
 //

@@ -115,8 +115,11 @@ class LiveWeb {
 		var s:String;
 		//
 		if ((s = sp["mode"]) != null) {
+			var mc = modeEl.onchange;
+			modeEl.onchange = null;
 			modeEl.value = s;
 			if (modeEl.value == "") modeEl.value = "2d";
+			modeEl.onchange = mc;
 		}
 		//
 		if ((s = sp["tabs_lz"]) != null) {
@@ -138,6 +141,7 @@ class LiveWeb {
 				window.alert("Decode error:\n" + x);
 			}
 		} else loadState();
+		Reflect.field(window, "lwRunBlank")();
 	}
 	
 	public static function addTab(name:String, code:String) {
@@ -153,9 +157,10 @@ class LiveWeb {
 	}
 	
 	public static function newTabDialog() {
-		var name = window.prompt("New tab title?", "");
-		if (name == null || name == "") return;
-		addTab(name, "");
+		electron.Dialog.showPrompt("New tab name?", "", function(name) {
+			if (name == null || name == "") return;
+			addTab(name, "");
+		});
 	}
 	
 	//
@@ -225,6 +230,12 @@ class LiveWeb {
 		});
 		//
 		modeEl = document.querySelectorAuto("#mode");
+		modeEl.onchange = function(_) {
+			if (modeEl.value != "") {
+				Reflect.field(window, "lwModeChanged")();
+			}
+		};
+		//
 		document.getElementById("share").onclick = function() {
 			var params = ["mode=" + modeEl.value];
 			//
