@@ -301,6 +301,14 @@ class Preferences {
 		addIntInput(out, "Max recent project count:", current.recentProjectCount, function(v) {
 			current.recentProjectCount = v; save();
 		});
+		var fileChangeActions = [
+			"Do nothing",
+			"Ask what to do",
+			"Reload unless conflicting",
+		];
+		addDropdown(out, "If the source file changes:", fileChangeActions[current.fileChangeAction], fileChangeActions, function(v) {
+			current.fileChangeAction = fileChangeActions.indexOf(v); save();
+		});
 		#end
 		//
 		var optSnippets_0 = ["gml", "gml_search", "shader"];
@@ -411,6 +419,7 @@ class Preferences {
 			projectSessionTime: 14,
 			assetThumbs: true,
 			showGMLive: Everywhere,
+			fileChangeAction: Ask,
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,
 			tabSize: 4,
@@ -490,9 +499,15 @@ typedef PrefData = {
 	coroutineMagic:Bool,
 	assetThumbs:Bool,
 	showGMLive:PrefGMLive,
+	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,
 	tabSize:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
+}
+@:enum abstract PrefFileChangeAction(Int) from Int to Int {
+	var Nothing = 0;
+	var Ask = 1;
+	var Reload = 2;
 }
 @:enum abstract PrefGMLive(Int) from Int to Int {
 	var Nowhere = 0;

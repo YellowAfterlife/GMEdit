@@ -11,6 +11,7 @@ import ui.TreeView;
  */
 class GmlLoader {
 	public static function run(project:Project) {
+		var pfx = Std.is(project, yy.YyZip) ? "" : project.dir;
 		function loadrec(out:Element, dirFull:String, dirRel:String):Void {
 			var rd = [], rf = [];
 			for (pair in project.readdirSync(dirFull)) {
@@ -21,7 +22,10 @@ class GmlLoader {
 					var nd = TreeView.makeDir(item, rel);
 					loadrec(nd.treeItems, full, rel);
 					rd.push(nd);
-				} else rf.push(TreeView.makeItem(item, rel, full, "module"));
+				} else {
+					var ifull = Path.join([pfx, full]);
+					rf.push(TreeView.makeItem(item, rel, ifull, "file"));
+				}
 			}
 			for (el in rd) out.appendChild(el);
 			for (el in rf) out.appendChild(el);

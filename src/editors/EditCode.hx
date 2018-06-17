@@ -2,6 +2,7 @@ package editors;
 import ace.AceWrap;
 import ace.*;
 import editors.Editor;
+import electron.Dialog;
 import gml.file.*;
 import gml.GmlAPI;
 import gml.GmlVersion;
@@ -338,11 +339,30 @@ class EditCode extends Editor {
 		return true;
 	}
 	override public function checkChanges():Void {
+		#if lwedit
+		return;
+		#end
+		var act = Preferences.current.fileChangeAction;
+		if (act == Nothing) return;
 		var path = file.path;
 		if (file.kind == Snippets) return;
 		if (file.kind != Multifile) {
 			if (path == null || !haxe.io.Path.isAbsolute(path)) return;
-			if (!FileSystem.existsSync(path)) return;
+			if (!FileSystem.existsSync(path)) {
+				switch (Dialog.showMessageBox({
+					title: "File missing: " + file.name,
+					message: "The source file is no longer found on disk. "
+						+ "What would you like to do?",
+					buttons: [
+						"Keep editing",
+						"Close the file"
+					], cancelId: 0,
+				})) {
+					case 1: file.tabEl.querySelector(".chrome-tab-close").click();
+					default: file.path = null;
+				}
+				return;
+			}
 		}
 		var changed = false;
 		if (file.kind != GmlFileKind.Multifile) try {
@@ -368,11 +388,16 @@ class EditCode extends Editor {
 		if (changed) try {
 			var prev = file.code;
 			file.load();
+			var dlg:Int = 0;
 			if (prev == file.code) {
 				// OK!
 			} else if (!file.changed) {
-				session.setValue(file.code);
-			} else {
+				if (act != Ask) {
+					session.setValue(file.code);
+				} else dlg = 1;
+			} else dlg = 2;
+			//
+			if (dlg != 0) {
 				function printSize(b:Float) {
 					inline function toFixed(f:Float):String {
 						return untyped f.toFixed(n, 2);
@@ -385,13 +410,14 @@ class EditCode extends Editor {
 					b /= 1024;
 					return toFixed(b) + "GB";
 				}
-				var bt = electron.Dialog.showMessageBox({
+				var sz1 = printSize(file.code.length);
+				var sz2 = printSize(session.getValue().length);
+				var bt = Dialog.showMessageBox({
 					title: "File conflict for " + file.name,
-					message: "Source file changed ("
-						+ printSize(file.code.length)
-						+ ") but you have unsaved changes ("
-						+ printSize(session.getValue().length)
-						+ "). What would you like to do?",
+					message: 'Source file changed ($sz1) ' + (dlg == 2
+						? 'but you have unsaved changes ($sz2)'
+						: 'while the current version is $sz2'
+					) + '. What would you like to do?',
 					buttons: ["Reload file", "Keep current", "Open changes in a new tab"],
 					cancelId: 1,
 				});
