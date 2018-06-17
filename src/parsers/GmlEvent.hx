@@ -113,7 +113,7 @@ class GmlEvent {
 				}
 			} else {
 				if (sctName != null && sctName != "") {
-					flushCode = (version == v2 ? '/// @description' : '///') + sctName + '\r\n' + flushCode;
+					flushCode = '///' + sctName + '\r\n' + flushCode;
 					sctName = null;
 				}
 				var flushData = GmlEvent.fromString(evName);
@@ -167,7 +167,14 @@ class GmlEvent {
 						sctName = q.substring(nameStart, q.pos);
 						if (sctName == "") {
 							sctName = null;
+						} else if (version == GmlVersion.v2) {
+							if (sctName.charCodeAt(0) == "|".code) {
+								sctName = ' @desc ' + sctName.substring(1);
+							} else {
+								sctName = ' @description' + sctName;
+							}
 						} else if (sctName.charCodeAt(0) == "|".code) {
+							// `#event name|text` -> `///text`
 							sctName = sctName.substring(1);
 						}
 						//

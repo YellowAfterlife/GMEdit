@@ -11,15 +11,23 @@ import js.RegExp;
  */
 class GmlHeader {
 	private static var rx1 = new RegExp("^///(.*)(?:\r?\n|$)");
-	private static var rx2 = new RegExp("^///[ \t]*@desc(?:ription)?([ \t]+.*)(?:\r?\n|$)");
+	private static var rx2 = new RegExp("^///[ \t]*@(description|desc)?( .*)(?:\r?\n|$)");
 	public static function parse(code:String, version:GmlVersion):GmlHeaderData {
-		var jsdoc = version.hasJSDoc();
-		var rx = jsdoc ? rx2 : rx1;
-		var mt = rx.exec(code);
-		var name:String = null;
+		var mt:RegExpMatch, name:String = null;
+		if (version.hasJSDoc()) {
+			mt = rx2.exec(code);
+			if (mt != null) {
+				name = mt[2];
+				if (mt[1] == "desc") name = "|" + name.substring(1);
+			}
+		} else {
+			mt = rx1.exec(code);
+			if (mt != null) {
+				name = mt[1];
+				if (name.charCodeAt(0) != " ".code) name = "|" + name;
+			}
+		}
 		if (mt != null) {
-			var name = mt[1];
-			if (name.charCodeAt(0) != " ".code) name = "|" + name;
 			return { name: name, code: code.substring(mt[0].length) };
 		} else return { name: null, code: code };
 	}
