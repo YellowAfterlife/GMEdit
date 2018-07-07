@@ -24,6 +24,7 @@ class AceStatusBar {
 	public static var statusHint:SpanElement;
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
+	private static var emptyToken:AceToken = { type:"", value:"" };
 	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports) {
 		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
@@ -33,7 +34,9 @@ class AceStatusBar {
 		var depth = 0; // current parenthesis depth
 		if (ctk != null && ctk.type == "paren.lparen") {
 			ctk = iter.stepForward();
-			if (ctk != null && ctk.type == "paren.rparen") depth -= 1;
+			if (ctk != null) {
+				if (ctk.type == "paren.rparen") depth -= 1;
+			} else ctk = emptyToken;
 		}
 		// go back to find the likely associated function call:
 		var tk:AceToken = ctk;
@@ -101,7 +104,7 @@ class AceStatusBar {
 			}
 			tk = iter.stepForward();
 		}
-		if (tk != ctk || depth < 0) return;
+		if ((tk == null ? ctk != emptyToken : tk != ctk) || depth < 0) return;
 		//
 		if (doc != null) {
 			var args = doc.args;
