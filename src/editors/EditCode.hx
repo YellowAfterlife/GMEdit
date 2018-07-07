@@ -400,7 +400,7 @@ class EditCode extends Editor {
 			if (dlg != 0) {
 				function printSize(b:Float) {
 					inline function toFixed(f:Float):String {
-						return untyped f.toFixed(n, 2);
+						return (untyped f.toFixed)(f, 2);
 					}
 					if (b < 10000) return b + "B";
 					b /= 1024;
