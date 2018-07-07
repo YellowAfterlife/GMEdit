@@ -56,7 +56,7 @@ class GmxAction {
 		var action = new SfGmx("action");
 		action.addTextChild("libid", s(d.libid, 1));
 		action.addTextChild("id", "" + d.id);
-		action.addTextChild("kind", s(d.kind, 0));
+		action.addTextChild("kind", s(d.kind, GmxActionKind.Normal));
 		action.addTextChild("userelative", d.rel != null ? "-1" : "0");
 		action.addTextChild("isquestion", d.isQuestion ? "-1" : "0");
 		action.addTextChild("useapplyto", d.who != null ? "-1" : "0");
@@ -87,7 +87,7 @@ class GmxAction {
 				actData = actData.substring(actData.charCodeAt(2) == " ".code ? 3 : 2);
 				return makeDndBlock({
 					id: 605,
-					kind: None,
+					kind: Normal,
 					exeType: None,
 					args: [{ s: actData }]
 				});
@@ -114,7 +114,7 @@ class GmxAction {
 				};
 				case "action_if", "action_if_not": {
 					return makeDndBlock({
-						id: 408, isQuestion: true, exeType: 1,
+						id: 408, isQuestion: true, exeType: Func,
 						fn: "action_if", who: "self",
 						not: actName == "action_if_not",
 						args: [{s:actData}]
@@ -122,11 +122,11 @@ class GmxAction {
 				};
 				case "{": {
 					if (actData != "") return noArgs();
-					return makeDndBlock({ id: 422, kind: 1 });
+					return makeDndBlock({ id: 422, kind: CubOpen });
 				};
 				case "}": {
 					if (actData != "") return noArgs();
-					return makeDndBlock({ id: 424, kind: 1 });
+					return makeDndBlock({ id: 424, kind: CubClose });
 				};
 				default: {
 					errorText = "Action `" + code.trimRight() + "` is not supported.";
@@ -136,25 +136,28 @@ class GmxAction {
 		}
 		return makeDndBlock({
 			id: 603,
-			kind: Code,
-			exeType: Code,
+			kind: GmxActionKind.Code,
+			exeType: GmxActionExeType.Code,
+			who: "self",
 			args: [{ s: code }]
 		});
 	}
 }
 typedef GmxActionData = {
-	?libid:Int, id:Int, ?kind:Int,
+	?libid:Int, id:Int, ?kind:GmxActionKind,
 	?isQuestion:Bool,
 	?exeType:GmxActionExeType,
 	?fn:String, ?code:String,
 	?who:String, ?rel:Bool, ?not:Bool,
 	?args:Array<GmxActionArg>,
 };
-@:enum abstract GmxActionKind(Int) from Int to Int {
+@:enum abstract GmxActionKind(Int) {
 	var Normal = 0;
+	var CubOpen = 1;
+	var CubClose = 2;
 	var Code = 7;
 }
-@:enum abstract GmxActionExeType(Int) from Int to Int {
+@:enum abstract GmxActionExeType(Int) {
 	var None = 0;
 	var Func = 1;
 	var Code = 2;
