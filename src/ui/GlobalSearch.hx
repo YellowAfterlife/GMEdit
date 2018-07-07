@@ -129,9 +129,9 @@ using tools.HtmlTools;
 										+ next + code.substring(replStart, eol);
 								}
 							} else results += head;
+							found += 1;
 						}
 					}
-					found += 1;
 					mt = rx.exec(subc);
 				}
 			}
