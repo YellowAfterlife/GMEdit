@@ -51,6 +51,7 @@ using tools.NativeString;
 		this.tokenFilterNot = not;
 		this.modeFilter = modeFilter;
 	}
+	//private static var tkBlank:AceToken = 
 	// interface AceAutoCompleter
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
@@ -166,10 +167,10 @@ using tools.NativeString;
 		enumCompleter.dotKind = dotKindEnum;
 		//
 		glslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
-			return q.modeId == "ace/mode/shader" && gml.file.GmlFile.current.kind == GLSL;
+			return q.modeId == "ace/mode/shader" && GmlFile.current.kind == GLSL;
 		});
 		hlslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
-			return q.modeId == "ace/mode/shader" && gml.file.GmlFile.current.kind == HLSL;
+			return q.modeId == "ace/mode/shader" && GmlFile.current.kind == HLSL;
 		});
 		//
 		var snippetCompleter:AceGmlCompletion = AceSnippets.init();
@@ -192,7 +193,7 @@ using tools.NativeString;
 			],
 			enableSnippets: true,
 		});
-		//
+		// automatically open completion when typing things like "global.|"
 		editor.commands.on("afterExec", function(e:Dynamic) {
 			if (e.args != "." || e.command.name != "insertstring") return;
 			if (editor.completer != null && editor.completer.activated) return;
