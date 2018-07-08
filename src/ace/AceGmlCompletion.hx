@@ -22,6 +22,7 @@ using tools.NativeString;
 	public static var localCompleter:AceGmlCompletion;
 	public static var importCompleter:AceGmlCompletion;
 	public static var namespaceCompleter:AceGmlCompletion;
+	public static var localTypeCompleter:AceGmlCompletion;
 	public static var enumCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
 	public static var instCompleter:AceGmlCompletion;
@@ -40,6 +41,7 @@ using tools.NativeString;
 	public static inline var dotKindGlobal = 1;
 	public static inline var dotKindNamespace = 2;
 	public static inline var dotKindEnum = 3;
+	public static inline var dotKindLocalType = 4;
 	//
 	public function new(
 		items:AceAutoCompleteItems, filters:Array<String>, not:Bool,
@@ -81,6 +83,31 @@ using tools.NativeString;
 								if (ns != null) {
 									callback(null, ns.comp);
 									return;
+								}
+							}
+						}
+					}
+					proc(false);
+				};
+				case dotKindLocalType: {
+					if (tk.type == "local") {
+						var scope = gml.GmlScopes.get(pos.row);
+						if (scope != null) {
+							var imp = gml.GmlImports.currentMap[scope];
+							if (imp != null) {
+								var t = imp.localTypes[tk.value];
+								if (t != null) {
+									var ns = imp.namespaces[t];
+									if (ns != null) {
+										callback(null, ns.comp);
+										return;
+									} else {
+										var en = GmlAPI.gmlEnums[t];
+										if (en != null) {
+											callback(null, en.fieldComp);
+											return;
+										}
+									}
 								}
 							}
 						}
@@ -162,6 +189,10 @@ using tools.NativeString;
 		namespaceCompleter.minLength = 0;
 		namespaceCompleter.dotKind = dotKindNamespace;
 		//
+		localTypeCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		localTypeCompleter.minLength = 0;
+		localTypeCompleter.dotKind = dotKindLocalType;
+		//
 		enumCompleter = new AceGmlCompletion([], ["enumfield"], false, gmlf);
 		enumCompleter.minLength = 0;
 		enumCompleter.dotKind = dotKindEnum;
@@ -186,6 +217,7 @@ using tools.NativeString;
 				globalCompleter,
 				instCompleter,
 				namespaceCompleter,
+				localTypeCompleter,
 				enumCompleter,
 				glslCompleter,
 				hlslCompleter,
@@ -201,7 +233,16 @@ using tools.NativeString;
 			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 			var token = iter.stepBackward();
 			if (token == null) return;
-			if (token.type == "namespace" || token.type == "enum" || token.value == "global") {
+			var open = switch (token.type) {
+				case "namespace", "enum": true;
+				case "local": {
+					var scope = gml.GmlScopes.get(lead.row);
+					var imp = gml.GmlImports.currentMap[scope];
+					(imp != null ? imp.localTypes[token.value] != null : false);
+				};
+				default: token.value == "global";
+			};
+			if (open) {
 				if (editor.completer == null) {
 					editor.completer = new AceAutocomplete();
 				}

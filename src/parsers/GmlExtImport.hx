@@ -2,13 +2,16 @@ package parsers;
 import ace.AceWrap.AceAutoCompleteItems;
 import electron.FileWrap;
 import gml.GmlAPI;
+import gml.GmlEnum;
 import gml.GmlFuncDoc;
 import gml.GmlImports;
+import gml.GmlLocals;
 import gml.Project;
 import haxe.io.Path;
 import js.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
+import parsers.GmlReader.SkipVarsData;
 using tools.NativeString;
 using tools.NativeObject;
 using tools.NativeArray;
@@ -156,16 +159,77 @@ class GmlExtImport {
 		}
 		return false;
 	}
+	/** `var v:Enum`, "v[Enum.field]" -> "v.field" */
+	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, t:String, p1:Int):String {
+		var ns:GmlNamespace = imp.namespaces[t];
+		var e:GmlEnum;
+		if (ns == null) {
+			e = GmlAPI.gmlEnums[t];
+			if (e == null) return null;
+		} else e = null;
+		// spaces between `$id` and `[`
+		q.skipSpaces0();
+		var preSpaceEnd = q.pos;
+		// `[` or `[@`:
+		if (q.read() != "[".code) return null;
+		var acc = q.peek() == "@".code;
+		if (acc) q.skip();
+		// spaces before the index:
+		var posIndexPre = q.pos;
+		q.skipSpaces0();
+		// index (Enum.field for enums, full for namespaces):
+		var posIndexStart = q.pos;
+		q.skipIdent1();
+		var index1:String = q.substring(posIndexStart, q.pos);
+		var indexField:String;
+		if (ns != null) {
+			indexField = ns.shorten[index1];
+			if (indexField == null) return null; // must be a member of namespace
+		} else {
+			if (index1 != t) return null; // must be <enum name>
+			if (q.read() != ".".code) return null;
+			var p = q.pos;
+			q.skipIdent1();
+			indexField = q.substring(p, q.pos);
+			if (!e.items.exists(indexField)) return null; // must be member of enum
+		}
+		if (q.read() != "]".code) return null;
+		// [] for reading, [@] for writing:
+		if (acc != q.checkWrites(p1, q.pos)) return null;
+		// whew,
+		return ident + "." + indexField;
+	}
+	static function pre_mapIdent(imp:GmlImports, q:GmlReader, ident:String, p1:Int):String {
+		var next = null;
+		var t = imp.localTypes[ident];
+		if (t != null) {
+			next = pre_mapIdent_local(q, imp, ident, t, p1);
+			if (next == null) q.pos = p1;
+		} else if (ident != "global") {
+			next = imp.shorten[ident];
+		} else if (imp.hasGlobal) {
+			q.skipSpaces0();
+			if (q.peek() == ".".code) {
+				q.skip();
+				q.skipSpaces0();
+				var p1 = q.pos;
+				q.skipIdent1();
+				next = imp.shortenGlobal[q.substring(p1, q.pos)];
+			}
+		}
+		return next;
+	}
 	public static function pre(code:String, path:String) {
+		var seekData = GmlSeekData.map[path];
 		inline function cancel() {
-			var data = GmlSeekData.map[path];
-			if (data != null) data.imports = null;
+			if (seekData != null) seekData.imports = null;
 			return code;
 		}
 		if (!Preferences.current.importMagic) return cancel();
 		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
 		var globalExists = FileWrap.existsSync(globalPath);
 		if (code.indexOf("//!#import") < 0 && !globalExists) return cancel();
+		var seekLocals = seekData != null ? seekData.locals : null;
 		var cache = new Dictionary<String>();
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
@@ -217,20 +281,55 @@ class GmlExtImport {
 				default: {
 					if (c.isIdent0()) {
 						q.skipIdent1();
-						var ident = q.substring(p, q.pos);
+						var p1 = q.pos;
+						var ident = q.substring(p, p1);
 						var next:String = null;
-						if (ident != "global") {
+						if (ident == "var") {
 							next = imp.shorten[ident];
-						} else if (imp.hasGlobal) {
-							q.skipSpaces0();
-							if (q.peek() == ".".code) {
-								q.skip();
-								q.skipSpaces0();
-								var p1 = q.pos;
-								q.skipIdent1();
-								next = imp.shortenGlobal[q.substring(p1, q.pos)];
+							if (next != null) {
+								flush(p);
+								out += next;
+								start = q.pos;
+								next = null;
 							}
-						}
+							q.skipVars(function(d:SkipVarsData) {
+								var p = q.pos;
+								flush(d.type0);
+								if (d.type != null) {
+									imp.localTypes.set(d.name, d.type);
+									out += ":" + d.type;
+								}
+								out += q.substring(d.type1, d.expr0);
+								q.pos = d.expr0;
+								start = q.pos;
+								while (q.pos < d.expr1) {
+									var p0 = q.pos;
+									var c = q.read();
+									switch (c) {
+										case "/".code: switch (q.peek()) {
+											case "/".code: q.skipLine();
+											case "*".code: q.skip(); q.skipComment();
+											default:
+										};
+										case '"'.code, "'".code, "`".code, "@".code: {
+											q.skipStringAuto(c, version);
+										};
+										default: if (c.isIdent0()) {
+											var p1 = q.pos;
+											q.skipIdent1();
+											var id = q.substring(p0, p1);
+											var idn = pre_mapIdent(imp, q, id, p1);
+											if (idn != null) {
+												flush(p0);
+												out += idn;
+												start = q.pos;
+											}
+										};
+									}
+								}
+								q.pos = p;
+							}, version);
+						} else next = pre_mapIdent(imp, q, ident, p1);
 						if (next != null) {
 							flush(p);
 							out += next;
@@ -241,15 +340,51 @@ class GmlExtImport {
 			}
 		}
 		flush(q.pos);
-		var data = GmlSeekData.map[path];
-		if (data == null && version == live) {
-			data = new GmlSeekData();
-			GmlSeekData.map.set(path, data);
+		if (seekData == null && version == live) {
+			seekData = new GmlSeekData();
+			GmlSeekData.map.set(path, seekData);
 		}
-		if (data != null) data.imports = imps;
+		if (seekData != null) seekData.imports = imps;
 		return out;
 	}
+	
 	public static var post_numImports = 0;
+	static var post_procIdent_p1:Int = 0;
+	static function post_procIdent(q:GmlReader, imp:GmlImports, p0:Int, dot:Int, full:String) {
+		var p1 = q.pos;
+		var one:String = dot != -1 ? q.substring(p0, dot) : null;
+		var type = imp.localTypes[one];
+		if (type != null) {
+			var ns:GmlNamespace = imp.namespaces[type];
+			var ind:String = null;
+			if (ns != null) {
+				ind = ns.longen[q.substring(dot + 1, p1)];
+			} else {
+				var en:GmlEnum = GmlAPI.gmlEnums[type];
+				if (en != null) {
+					var fd = q.substring(dot + 1, p1);
+					if (en.items.exists(fd)) ind = type + '.' + fd;
+				}
+			}
+			if (ind != null) {
+				post_procIdent_p1 = p1;
+				return one + (q.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
+			}
+		}
+		//
+		var id = imp.longen[full];
+		if (id != null) {
+			post_procIdent_p1 = p1;
+			return id;
+		}
+		//
+		id = imp.longen[one];
+		if (id != null) {
+			post_procIdent_p1 = dot;
+			return id;
+		}
+		return null;
+	}
 	public static function post(code:String, path:String) {
 		if (!Preferences.current.importMagic) {
 			post_numImports = 0;
@@ -308,32 +443,73 @@ class GmlExtImport {
 				};
 				default: {
 					if (c.isIdent0() && imp != null) {
-						var dot = -1;
-						while (q.loop) {
-							c = q.peek();
-							if (c.isIdent1()) {
-								q.skip();
-							} else if (c == ".".code) {
-								if (dot == -1) {
-									dot = q.pos;
+						//
+						var dotStart:Int, dotPos:Int, dotFull:String;
+						inline function readDotPair() {
+							dotStart = q.pos;
+							dotPos = -1;
+							while (q.loop) {
+								c = q.peek();
+								if (c.isIdent1()) {
 									q.skip();
+								} else if (c == ".".code) {
+									if (dotPos == -1) {
+										dotPos = q.pos;
+										q.skip();
+									} else break;
 								} else break;
-							} else break;
+							}
+							dotFull = q.substring(dotStart, q.pos);
 						}
-						var id = imp.longen[q.substring(p, q.pos)];
-						if (id != null) {
-							flush(p);
-							out += id;
-							start = q.pos;
-						} else if (dot != -1) {
-							id = imp.longen[q.substring(p, dot)];
-							if (id != null) {
-								flush(p);
-								out += id;
-								start = dot;
-								q.pos = dot;
+						//
+						var procIdent_next:String;
+						inline function procIdent() {
+							procIdent_next = post_procIdent(q, imp, dotStart, dotPos, dotFull);
+							if (procIdent_next != null) {
+								flush(dotStart);
+								out += procIdent_next;
+								start = post_procIdent_p1;
 							}
 						}
+						//
+						q.pos -= 1;
+						readDotPair();
+						if (dotFull == "var") {
+							procIdent_next = imp.longen["var"];
+							if (procIdent_next != null) {
+								flush(p);
+								out += procIdent_next;
+								start = q.pos;
+							}
+							q.skipVars(function(d:SkipVarsData) {
+								var p = q.pos;
+								flush(d.type0);
+								if (d.type != null) out += "/*:" + d.type + "*/";
+								out += q.substring(d.type1, d.expr0);
+								q.pos = d.expr0;
+								start = q.pos;
+								while (q.pos < d.expr1) {
+									var p1 = q.pos;
+									var c = q.read();
+									switch (c) {
+										case "/".code: switch (q.peek()) {
+											case "/".code: q.skipLine();
+											case "*".code: q.skip(); q.skipComment();
+											default:
+										};
+										case '"'.code, "'".code, "`".code, "@".code: {
+											q.skipStringAuto(c, version);
+										};
+										default: if (c.isIdent0()) {
+											q.pos -= 1;
+											readDotPair();
+											procIdent();
+										};
+									}
+								}
+								q.pos = p;
+							}, version);
+						} else procIdent();
 					}
 				};
 			}

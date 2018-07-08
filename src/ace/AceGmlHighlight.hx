@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import gml.GmlAPI;
+import gml.GmlImports;
 import gml.*;
 import parsers.GmlExtCoroutines;
 import parsers.GmlKeycode;
@@ -105,8 +106,9 @@ using tools.NativeString;
 						var scope = GmlScopes.get(row);
 						if (scope != null) {
 							var imp = GmlImports.currentMap[scope];
+							var ns:GmlNamespace;
 							if (imp != null) {
-								var ns = imp.namespaces[object];
+								ns = imp.namespaces[object];
 								if (ns != null) {
 									objType = "namespace";
 									fdType = jsOr(ns.kind[field], "identifier");
@@ -123,6 +125,18 @@ using tools.NativeString;
 							}
 							if (objType == null) {
 								objType = getLocalType_1(object, scope);
+								if (objType == "local" && imp != null) {
+									var lt = imp.localTypes[object];
+									ns = imp.namespaces[lt];
+									if (ns != null) {
+										fdType = ns.kind[field];
+									} else {
+										en = GmlAPI.gmlEnums[lt];
+										if (en != null) {
+											fdType = en.items[field] ? "enumfield" : "enumerror";
+										} else fdType = "identifier";
+									}
+								}
 							}
 						}
 					}

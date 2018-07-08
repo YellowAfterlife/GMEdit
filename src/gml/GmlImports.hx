@@ -1,5 +1,6 @@
 package gml;
 import tools.Dictionary;
+using tools.NativeString;
 import ace.AceWrap;
 
 /**
@@ -33,6 +34,9 @@ class GmlImports {
 	/** "some" -> { pre: "scr_some", ... } */
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	
+	/** "v" -> "Some" for `var v:Some` */
+	public var localTypes:Dictionary<String> = new Dictionary();
+	
 	//
 	public function new() {
 		//
@@ -41,6 +45,8 @@ class GmlImports {
 	public function add(
 		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc, ?space:String
 	) {
+		var isGlobal = long.startsWith("global.");
+		//
 		if (space != null) {
 			var ns = namespaces[space];
 			if (ns == null) {
@@ -48,6 +54,10 @@ class GmlImports {
 				namespaces.set(space, ns);
 			}
 			ns.kind.set(short, kind);
+			if (!isGlobal) {
+				ns.shorten.set(long, short);
+				ns.longen.set(short, long);
+			}
 			if (comp != null) {
 				var nc = comp.makeAlias(short);
 				if (nc.doc == null) nc.doc = long;
@@ -58,7 +68,7 @@ class GmlImports {
 			this.kind.set(short, kind);
 		}
 		//
-		if (tools.NativeString.startsWith(long, "global.")) {
+		if (isGlobal) {
 			hasGlobal = true;
 			shortenGlobal.set(long.substring(7), short);
 		} else {
@@ -90,6 +100,9 @@ class GmlImports {
 }
 class GmlNamespace {
 	public var kind:Dictionary<String> = new Dictionary();
+	/** "draw_text" in ns:"draw" -> "text" */
+	public var shorten:Dictionary<String> = new Dictionary();
+	public var longen:Dictionary<String> = new Dictionary();
 	public var comp:AceAutoCompleteItems = [];
 	public function new() {
 		//

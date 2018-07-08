@@ -53,6 +53,7 @@ class GmlSeeker {
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
+	private static var localType = new RegExp("^/\\*[ \t]*:[ \t]*(\\w+)\\*/$");
 	private static function parseConst(s:String):Null<Int> {
 		var mt = parseConst_rx10.exec(s);
 		if (mt != null) return Std.parseInt(s);
@@ -109,6 +110,9 @@ class GmlSeeker {
 						case "*".code: {
 							q.skip();
 							row += q.skipComment();
+							if (flags.has(ComBlock)) {
+								return q.substring(start, q.pos);
+							}
 						};
 						default:
 					};
@@ -152,7 +156,7 @@ class GmlSeeker {
 		} // find
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
 		var s:String, name:String, start:Int, doc:GmlFuncDoc;
-		var p:Int;
+		var p:Int, flags:Int, mt:RegExpMatch;
 		while (q.loop) {
 			s = find(Ident | Doc | Define | Macro);
 			if (s == null) {
@@ -295,7 +299,15 @@ class GmlSeeker {
 						if (name == null) break;
 						locals.add(name);
 						p = q.pos;
-						s = find(SetOp | Comma | Semico | Ident);
+						flags = SetOp | Comma | Semico | Ident | ComBlock;
+						s = find(flags);
+						if (s.startsWith("/*")) { // name/*...*/
+							mt = localType.exec(s);
+							if (mt != null) {
+								locals.type.set(name, mt[1]);
+							}
+							s = find(flags);
+						}
 						if (s == ",") {
 							// OK, next
 						} else if (s == "=") {
@@ -340,6 +352,7 @@ class GmlSeeker {
 					var en = new GmlEnum(name, orig);
 					out.enumList.push(en);
 					out.enumMap.set(name, en);
+					out.compList.push(new AceAutoCompleteItem(name, "enum"));
 					setLookup(name);
 					var nextVal:Null<Int> = 0;
 					while (q.loop) {
@@ -352,8 +365,8 @@ class GmlSeeker {
 						en.compList.push(ac);
 						en.fieldComp.push(acf);
 						en.compMap.set(s, ac);
-						out.compList.push(ac);
-						out.compMap.set(s, ac);
+						//out.compList.push(ac);
+						//out.compMap.set(s, ac);
 						s = find(Comma | SetOp | Cub1);
 						if (s == "=") {
 							var vp = q.pos;
@@ -540,8 +553,12 @@ class GmlSeeker {
 @:enum abstract GmlSeekerFlags(Int) from Int to Int {
 	var Ident;
 	var Define;
+	/** `#macro` */
 	var Macro;
+	/** `/// ...` */
 	var Doc;
+	/** `/* ...` */
+	var ComBlock;
 	var Cub0;
 	var Cub1;
 	var Comma;

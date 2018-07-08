@@ -17,6 +17,7 @@ class GmlReader extends StringReader {
 			} else break;
 		}
 	}
+	
 	/** Skips to the end of the current line */
 	public inline function skipLine() {
 		while (loop) {
@@ -26,6 +27,7 @@ class GmlReader extends StringReader {
 			}; break;
 		}
 	}
+	
 	/** Skips a single `\n` / `\r\n`, if any */
 	public inline function skipLineEnd() {
 		if (loop) switch (peek()) {
@@ -36,6 +38,7 @@ class GmlReader extends StringReader {
 			case "\n".code: skip();
 		}
 	}
+	
 	private static function skipComment_1(s:String, p:Int) {
 		if (s.fastSub(p, 5) == "event") return true;
 		switch (s.fastSub(p, 6)) {
@@ -44,6 +47,7 @@ class GmlReader extends StringReader {
 		if (s.fastSub(p, 7) == "section") return true;
 		return false;
 	}
+	
 	/** Skips past the end of a comment-block */
 	public inline function skipComment() {
 		var n = 0;
@@ -117,6 +121,7 @@ class GmlReader extends StringReader {
 			default: return 0;
 		}
 	}
+	
 	/** Skips spaces/tabs */
 	public inline function skipSpaces0() {
 		while (loop) {
@@ -127,6 +132,8 @@ class GmlReader extends StringReader {
 			}; break;
 		}
 	}
+	
+	/** Skips spaces, tabs, `\r`, `\n` */
 	public inline function skipSpaces1() {
 		while (loop) {
 			switch (peek()) {
@@ -185,4 +192,149 @@ class GmlReader extends StringReader {
 			default: return null;
 		}
 	}
+	
+	/** Skips comments and whitespace */
+	public function skipNops():Int {
+		var n = 0;
+		while (loop) {
+			var c = peek();
+			switch (c) {
+				case " ".code, "\t".code, "\r".code: skip();
+				case "\n".code: skip(); n += 1;
+				case "/".code: switch (peek(1)) {
+					case "/".code: skipLine();
+					case "*".code: skip(2); n += skipComment();
+					default: break;
+				};
+				default: break;
+			}
+		}
+		return n;
+	}
+	
+	/**
+	 * this"var a=¦1+f(1,2)," -> this"var a=1+f(1,2)¦,"
+	 * It's not _very_ smart
+	 */
+	public function skipVarExpr(v:GmlVersion, ?ret:Bool):Int {
+		var start = pos;
+		var depth = 0;
+		var n:Int = 0;
+		while (pos < length) {
+			var p = pos;
+			var c:CharCode = read();
+			switch (c) {
+				case " ".code, "\t".code, "\r".code:
+				case "\n".code: n += 1;
+				case "/".code: switch (peek()) {
+					case "/".code: skipLine();
+					case "*".code: skip(); skipComment();
+					default:
+				};
+				case "(".code, "[".code, "{".code: depth += 1;
+				case ")".code, "]".code, "}".code: depth -= 1;
+				case ",".code: if (depth == 0) { pos = p; break; }
+				case ";".code: pos = p; break;
+				case '"'.code, "'".code, "@".code, "`".code: skipStringAuto(c, v);
+				case "#".code: if (p == 0 || get(p - 1) == "\n".code) {
+					var ctx = readContextName(null);
+					if (ctx != null) { pos = p; break; }
+				};
+				default: {
+					if (c.isIdent0()) {
+						skipIdent1();
+						if (gml.GmlAPI.kwFlow[substring(p, pos)]) {
+							pos = p;
+							break;
+						}
+					}
+				};
+			}
+		}
+		return n;
+	}
+	private static var rxVarType = new js.RegExp("^/\\*[ \t]*:[ \t]*(\\w+)\\*/$");
+	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion):Int {
+		var n = 0;
+		var d:SkipVarsData = {
+			name: null, name0: 0, name1: 0,
+			type: null, type0: 0, type1: 0,
+			expr0: 0, expr1: 0,
+		};
+		skipNops();
+		while (loop) {
+			var c = peek();
+			if (!c.isIdent0()) break;
+			var p = pos;
+			d.name0 = p;
+			skipIdent1();
+			d.name1 = pos;
+			d.name = substring(p, pos);
+			// handle `:type` or `/*:type*/`:
+			skipSpaces1();
+			d.type0 = pos;
+			var type = null;
+			if (peek() == ":".code) {
+				skip(); skipSpaces1();
+				var p1 = pos;
+				skipIdent1();
+				d.type = pos > p1 ? substring(p1, pos) : null;
+			} else if (peek() == "/".code && peek(1) == "*".code) {
+				p = pos;
+				skip(2); skipComment();
+				var mt = rxVarType.exec(substring(p, pos));
+				d.type = mt != null ? mt[1] : null;
+			} else d.type = null;
+			d.type1 = pos;
+			// see if there's `= value`:
+			skipSpaces1();
+			if (peek() == "=".code) {
+				skip(); skipSpaces1();
+				d.expr0 = pos;
+				skipVarExpr(v, true);
+			} else d.expr0 = pos;
+			d.expr1 = pos;
+			skipNops();
+			fn(d);
+			if (peek() != ",".code) break;
+		}
+		return n;
+	}
+	/**
+	 * `a = {p0}v{p1} + 1;` -> false
+	 * `{p0}v{p1} = 1;` -> true
+	 * `++{p0}v{p1}` -> true
+	 */
+	public function checkWrites(p0:Int, p1:Int) {
+		// prefix:
+		while (--p0 >= 0) switch (get(p0)) {
+			case " ".code, "\t".code, "\r".code, "\n".code: { };
+			case "+".code: if (get(--p0) == "+".code) return true; else break;
+			case "-".code: if (get(--p0) == "-".code) return true; else break;
+			default: break;
+		}
+		// postfix/setop:
+		while (p1 < length) switch (get(p1++)) {
+			case " ".code, "\t".code, "\r".code, "\n".code: { };
+			case "=".code: return get(p1) != "=".code;
+			case "+".code: switch (get(p1)) {
+				case "+".code, "=".code: return true;
+				default: return false;
+			};
+			case "-".code: switch (get(p1)) {
+				case "-".code, "=".code: return true;
+				default: return false;
+			};
+			case "*".code, "/".code, "%".code, "^".code, "|".code, "&".code: {
+				return get(p1) == "=".code;
+			};
+			default: return false;
+		}
+		return false;
+	}
 }
+typedef SkipVarsData = {
+	name:String, name0:Int, name1:Int,
+	type:String, type0:Int, type1:Int,
+	expr0:Int, expr1:Int,
+};

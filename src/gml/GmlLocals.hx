@@ -12,6 +12,7 @@ class GmlLocals {
 	//
 	public var comp:AceAutoCompleteItems = [];
 	public var kind:Dictionary<String> = new Dictionary();
+	public var type:Dictionary<String> = new Dictionary();
 	public function add(name:String) {
 		if (kind[name] == null) {
 			kind.set(name, "local");
