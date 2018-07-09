@@ -260,7 +260,7 @@ class GmlReader extends StringReader {
 		var d:SkipVarsData = {
 			name: null, name0: 0, name1: 0,
 			type: null, type0: 0, type1: 0,
-			expr0: 0, expr1: 0,
+			expr0: 0, expr1: 0, opt: false,
 		};
 		skipNops();
 		while (loop) {
@@ -268,6 +268,10 @@ class GmlReader extends StringReader {
 			if (!c.isIdent0()) break;
 			var p = pos;
 			d.name0 = p;
+			if (peek() == "?".code) {
+				d.opt = true; skip(); skipNops();
+			} else d.opt = false;
+			if (d.opt) skip();
 			skipIdent1();
 			d.name1 = pos;
 			d.name = substring(p, pos);
@@ -352,5 +356,5 @@ class GmlReader extends StringReader {
 typedef SkipVarsData = {
 	name:String, name0:Int, name1:Int,
 	type:String, type0:Int, type1:Int,
-	expr0:Int, expr1:Int,
+	expr0:Int, expr1:Int, opt:Bool,
 };

@@ -17,15 +17,28 @@ class GmlExtArgs {
 	
 	/** subscript ("" for top) -> argument data; null on error */
 	public static var argData:Dictionary<GmlExtArgData>;
+	
+	/** `argument_count > n` */
 	private static inline var rsOpt0 = '\\s*argument_count\\s*>\\s*(\\d+)\\s*';
+	
+	/** `argument[n]` */
 	private static inline var rsOpt1 = '\\s*argument\\s*\\[\\s*(\\d+)\\s*\\]\\s*';
-	private static var rxOpt = new RegExp("^var\\s+(\\w+)\\s*(?:"
+	private static var rxOpt = new RegExp("^var\\s+(\\w+)"
+	// `/*:Type*/` (optional)
+	+ "(?:\\s*(" + GmlExtImport.rsLocalType + "))?"
+	+ "\\s*(?:"
 		// `var q; if (argument_count > 3) q = argument[3]; else q = `
 		+ ';\\s*if\\s\\($rsOpt0\\)\\s*(\\w+)\\s*=$rsOpt1;\\s*else\\s*(\\w+)\\s*='
 	+ '|'
 		// `var q = argument_count > 3 ? argument[3] : `
 		+ '=$rsOpt0\\?\\s*$rsOpt1\\:'
 	+ ')\\s*([^;]+);', "g");
+	private static inline var rxOpt_name = 1;
+	private static inline var rxOpt_type = 2;
+	private static inline var rxOpt_then = 3;
+	private static inline var rxOpt_tern = 7;
+	private static inline var rxOpt_value = 9;
+	
 	private static var rxHasOpt = new RegExp('(?:\\?|=|,\\s*$)');
 	private static var rxHasTail = new RegExp(',\\s*$');
 	private static var rxNotMagic = new RegExp('var\\s+\\w+\\s*=\\s*'
@@ -46,6 +59,7 @@ class GmlExtArgs {
 			out += q.substring(start, till);
 		}
 		var rxOpt = GmlExtArgs.rxOpt;
+		var rxType = GmlExtImport.rxLocalType;
 		function proc() {
 			var args = "#args";
 			var argv = false;
@@ -74,8 +88,17 @@ class GmlExtArgs {
 				// add to args:
 				if (found > 0) args += ",";
 				args += " " + s;
-				// match `=`:
 				q.skipSpaces0();
+				// type?
+				if (q.peek() == "/".code && q.peek(1) == "*".code) {
+					var typePos = q.pos;
+					q.skip(2);
+					q.skipComment();
+					var type = GmlExtImport.rxLocalType.exec(q.substring(typePos, q.pos));
+					if (type != null) args += ":" + type[1];
+					q.skipSpaces0();
+				}
+				// match `=`:
 				if (q.eof || q.peek() != "=".code) return null;
 				q.skip();
 				// match `argument`:
@@ -138,16 +161,20 @@ class GmlExtArgs {
 				if (mt == null) { q.pos = till; break; }
 				q.pos = pos + rxOpt.lastIndex;
 				//
-				var name = mt[1];
+				var name = mt[rxOpt_name];
+				var type:Null<String> = mt[rxOpt_type];
 				var fs = "" + found;
-				if (mt[2] != null
-					? (mt[2] != fs || mt[4] != fs || mt[3] != name || mt[5] != name)
-					: (mt[6] != fs || mt[7] != fs)
+				if (mt[rxOpt_then] != null
+					? (mt[rxOpt_then] != fs || mt[rxOpt_then + 1] != name
+					|| mt[rxOpt_then + 2] != fs || mt[rxOpt_then + 3] != name)
+					: (mt[rxOpt_tern] != fs || mt[rxOpt_tern + 1] != fs)
 				) { q.pos = till; break; }
 				//
-				var val = mt[8];
+				var val = mt[rxOpt_value];
 				if (found > 0) args += ",";
-				args += val == "undefined" ? ' ?$name' : ' $name = $val';
+				var isOpt:Bool = (val == "undefined");
+				args += (isOpt ? " ?" : " ") + name + (type != null ? ":" + type : "")
+					+ (isOpt ? "" : " = " + val);
 				found += 1;
 				//
 				till = q.pos;
@@ -262,11 +289,21 @@ class GmlExtArgs {
 				p = q.pos;
 				q.skipIdent1();
 				var name = q.substring(p, q.pos);
+				var type = "";
 				if (name == "") return error("Expected an argument name");
 				docName += name;
 				//
 				p = q.pos;
 				q.skipSpaces0();
+				if (q.peek() == ":".code) {
+					q.skip();
+					q.skipSpaces0();
+					var typePos = q.pos;
+					q.skipIdent1();
+					type = q.substring(typePos, q.pos);
+					if (type != "") type = "/*:" + type + "*/";
+					q.skipSpaces0();
+				}
 				if (q.peek() == "=".code) {
 					if (val != null) return error('?$name means that default value is undefined, why assign another default value after that');
 					q.skip();
@@ -304,10 +341,10 @@ class GmlExtArgs {
 						out += ";\r\n";
 					}
 					if (version.hasTernaryOperator()) {
-						out += 'var $name = argument_count > $found'
+						out += 'var $name$type = argument_count > $found'
 							+ ' ? argument[$found] : $val;\r\n';
 					} else {
-						out += 'var $name; if (argument_count > $found)'
+						out += 'var $name$type; if (argument_count > $found)'
 							+ ' $name = argument[$found]; else $name = $val;\r\n';
 					}
 				} else {
@@ -316,7 +353,7 @@ class GmlExtArgs {
 					if (found == 0) {
 						out += "var ";
 					} else if (found > 0) out += ", ";
-					out += '$name = argument' + (hasOpt ? '[$found]' : "" + found);
+					out += '$name$type = argument' + (hasOpt ? '[$found]' : "" + found);
 				}
 				argNames.push(docName);
 				argTexts.push(docText);

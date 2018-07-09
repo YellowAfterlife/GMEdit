@@ -28,6 +28,8 @@ class GmlExtImport {
 		+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+)(?:\\.(\\w+))?)?" // in name
 	), "");
 	private static var rxImportFile = new RegExp("^#import[ \t]+(\"[^\"]*\"|'[^']*')", "");
+	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+)\\*/";
+	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
 	private static var rxPeriod = new RegExp("\\.", "g");
 	public static var errorText:String;
 	//
@@ -334,7 +336,7 @@ class GmlExtImport {
 						imps.set(ctx, imp);
 						files = new Dictionary();
 						if (globalExists) parseFile(imp, "global.gml", files, cache);
-					}
+					} else q.pos = p + 1;
 				};
 				default: {
 					if (c.isIdent0()) {
@@ -342,8 +344,8 @@ class GmlExtImport {
 						var p1 = q.pos;
 						var ident = q.substring(p, p1);
 						var next:String = null;
-						if (ident == "var") {
-							next = imp.shorten[ident];
+						if (ident == "var" || ident == "args" && q.get(p - 1) == "#".code) {
+							next = ident == "var" ? imp.shorten[ident] : null;
 							if (next != null) {
 								flush(p);
 								out += next;
