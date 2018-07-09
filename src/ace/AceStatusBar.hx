@@ -42,6 +42,7 @@ class AceStatusBar {
 		var tk:AceToken = ctk;
 		var fkw = GmlAPI.kwFlow;
 		var docs:Dictionary<GmlFuncDoc> = null;
+		var doc:GmlFuncDoc = null;
 		var parOpen:AceToken = null;
 		while (tk != null) {
 			switch (tk.type) {
@@ -67,6 +68,18 @@ class AceStatusBar {
 							case "glsl.function": docs = ShaderAPI.glslDoc;
 							case "hlsl.function": docs = ShaderAPI.hlslDoc;
 							case "extfunction": docs = GmlAPI.extDoc;
+							case "namespace": {
+								var ns = imports.namespaces[tk.value];
+								tk = iter.stepBackward();
+								if (tk != null && tk.type == "text") {
+									tk = iter.stepBackward();
+									iter.stepForward();
+									iter.stepForward();
+								} else iter.stepForward();
+								if (tk != null && tk.value == "new") {
+									doc = ns.docs["create"];
+								}
+							}
 						}
 						if (docs != null) break;
 					}
@@ -74,33 +87,35 @@ class AceStatusBar {
 			}
 			tk = iter.stepBackward();
 		}
-		if (docs == null) return;
+		if (docs == null && doc == null) return;
 		// find the actual doc:
-		var doc:GmlFuncDoc = docs[tk.value];
 		var argStart = 0;
-		if (imports != null) {
-			var name = tk.value;
-			iter.stepBackward();
-			tk = iter.getCurrentToken();
-			if (tk != null && tk.value == ".") {
+		if (doc == null) {
+			doc = docs[tk.value];
+			if (imports != null) {
+				var name = tk.value;
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
-				if (tk.type == "namespace") {
-					name = tk.value + "." + name;
-					doc = AceMacro.jsOr(imports.docs[name], doc);
-				} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
-					var ns = imports.namespaces[imports.localTypes[tk.value]];
-					if (ns != null) {
-						var td = ns.docs[name];
-						if (td != null) {
-							doc = td;
-							argStart = 1;
+				if (tk != null && tk.value == ".") {
+					iter.stepBackward();
+					tk = iter.getCurrentToken();
+					if (tk.type == "namespace") {
+						name = tk.value + "." + name;
+						doc = AceMacro.jsOr(imports.docs[name], doc);
+					} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
+						var ns = imports.namespaces[imports.localTypes[tk.value]];
+						if (ns != null) {
+							var td = ns.docs[name];
+							if (td != null) {
+								doc = td;
+								argStart = 1;
+							}
 						}
-					}
-				} else iter.stepForward();
-			} else {
-				doc = AceMacro.jsOr(imports.docs[name], doc);
-				iter.stepForward();
+					} else iter.stepForward();
+				} else {
+					doc = AceMacro.jsOr(imports.docs[name], doc);
+					iter.stepForward();
+				}
 			}
 		}
 		// go forward to verify that cursor token is inside that call:
