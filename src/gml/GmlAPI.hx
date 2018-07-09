@@ -71,6 +71,7 @@ class GmlAPI {
 			add("catch");
 			add("throw");
 		}
+		if (Preferences.current.importMagic) add("new");
 		stdKind = sk;
 	}
 	// extension scope

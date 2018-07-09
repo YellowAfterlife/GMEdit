@@ -358,6 +358,7 @@ class GmlSeeker {
 					while (q.loop) {
 						s = find(Ident | Cub1);
 						if (s == null || s == "}") break;
+						en.lastItem = s;
 						en.names.push(s);
 						en.items.set(s, true);
 						var ac = new AceAutoCompleteItem(name + "." + s, "enum");

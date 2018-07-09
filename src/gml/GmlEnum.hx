@@ -13,6 +13,7 @@ class GmlEnum extends GmlStruct {
 	public var compList:AceAutoCompleteItems = [];
 	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public var fieldComp:AceAutoCompleteItems = [];
+	public var lastItem:String = null;
 	//
 	public function new(name:String, orig:String) {
 		super(name, orig);

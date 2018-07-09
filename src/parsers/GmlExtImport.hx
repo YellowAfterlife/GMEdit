@@ -1,4 +1,5 @@
 package parsers;
+import ace.AceMacro;
 import ace.AceWrap.AceAutoCompleteItems;
 import electron.FileWrap;
 import gml.GmlAPI;
@@ -205,7 +206,7 @@ class GmlExtImport {
 		return ident + "." + indexField;
 	}
 	static function pre_mapIdent(imp:GmlImports, q:GmlReader, ident:String, p0:Int):String {
-		var next = null;
+		var next:String = null;
 		var t = imp.localTypes[ident];
 		var p1:Int = q.pos;
 		if (t != null) {
@@ -213,9 +214,15 @@ class GmlExtImport {
 			if (next == null) q.pos = p1;
 		} else if (ident != "global") {
 			next = imp.shorten[ident];
-			do { // `var v:T` .. `func(v, 0)` -> `v.func(0)`
+			// `var v:T` .. `func(v, 0)` -> `v.func(0)`
+			// `enum T { x, y, sizeof }` .. `array_create(T.sizeof)` -> `T()`
+			// `thing_create(` -> `Thing.create(` -> `new Thing(`
+			do {
 				q.skipSpaces1();
 				if (q.read() != "(".code) break;
+				if (next != null && next.endsWith(".create")) { // Thing.create -> new Thing
+					return "new " + next.substring(0, next.length - 7) + "(";
+				}
 				// `func(¦ v`:
 				q.skipSpaces1();
 				if (!q.peek().isIdent0()) break;
@@ -226,7 +233,24 @@ class GmlExtImport {
 				// ident -> type -> namespace -> method name:
 				var self = q.substring(selfPos, q.pos);
 				var selfType = imp.localTypes[self];
-				if (selfType == null) break;
+				if (selfType == null) {
+					if (ident != "array_create") break;
+					var selfEnumName = self;
+					var selfEnum = GmlAPI.gmlEnums[selfEnumName];
+					if (selfEnum == null) {
+						selfEnumName = imp.shorten[self];
+						selfEnum = GmlAPI.gmlEnums[selfEnumName];
+					}
+					if (selfEnum == null) break;
+					if (q.read() != ".".code) break;
+					var selfDot = q.pos;
+					q.skipIdent1();
+					if (q.substring(selfDot, q.pos) != selfEnum.lastItem) break;
+					q.skipSpaces1();
+					if (q.read() != ")".code) break;
+					return selfEnumName + "()";
+					break;
+				}
 				var selfNs = imp.namespaces[selfType];
 				if (selfNs == null) break;
 				var selfFunc = selfNs.shorten[ident];
@@ -386,6 +410,17 @@ class GmlExtImport {
 	static function post_procIdent(q:GmlReader, imp:GmlImports, p0:Int, dot:Int, full:String) {
 		var p1 = q.pos;
 		var one:String = dot != -1 ? q.substring(p0, dot) : null;
+		if (full == "new") {
+			q.skipSpaces1();
+			var typePos = q.pos;
+			if (q.read().isIdent0()) {
+				q.skipIdent1();
+				one = q.substring(typePos, q.pos);
+				full = one + ".create";
+				dot = q.pos;
+				p1 = q.pos;
+			} else q.pos = p1;
+		}
 		var type = dot != -1 ? imp.localTypes[one] : null;
 		if (type != null) {
 			var ns:GmlNamespace = imp.namespaces[type], en:GmlEnum;
@@ -420,15 +455,27 @@ class GmlExtImport {
 		}
 		//
 		var id = imp.longen[full];
+		var en = dot == -1 ? GmlAPI.gmlEnums[AceMacro.jsOr(id, full)] : null;
+		if (en != null) do {
+			q.skipSpaces1();
+			if (q.read() != "(".code) break;
+			q.skipSpaces1();
+			if (q.read() != ")".code) break;
+			post_procIdent_p1 = q.pos;
+			return "array_create(" + en.name + "." + en.lastItem + ")";
+		} while (false);
+		//
 		if (id != null) {
 			post_procIdent_p1 = p1;
 			return id;
 		}
 		//
-		id = imp.longen[one];
-		if (id != null) {
-			post_procIdent_p1 = dot;
-			return id;
+		if (one != null) {
+			id = imp.longen[one];
+			if (id != null) {
+				post_procIdent_p1 = dot;
+				return id;
+			}
 		}
 		return null;
 	}
