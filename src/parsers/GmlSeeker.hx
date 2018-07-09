@@ -365,8 +365,6 @@ class GmlSeeker {
 						en.compList.push(ac);
 						en.fieldComp.push(acf);
 						en.compMap.set(s, ac);
-						//out.compList.push(ac);
-						//out.compMap.set(s, ac);
 						s = find(Comma | SetOp | Cub1);
 						if (s == "=") {
 							var vp = q.pos;

@@ -297,6 +297,8 @@ class GmlReader extends StringReader {
 			skipNops();
 			fn(d);
 			if (peek() != ",".code) break;
+			skip();
+			skipNops();
 		}
 		return n;
 	}

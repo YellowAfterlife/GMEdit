@@ -77,6 +77,7 @@ class AceStatusBar {
 		if (docs == null) return;
 		// find the actual doc:
 		var doc:GmlFuncDoc = docs[tk.value];
+		var argStart = 0;
 		if (imports != null) {
 			var name = tk.value;
 			iter.stepBackward();
@@ -87,6 +88,15 @@ class AceStatusBar {
 				if (tk.type == "namespace") {
 					name = tk.value + "." + name;
 					doc = AceMacro.jsOr(imports.docs[name], doc);
+				} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
+					var ns = imports.namespaces[imports.localTypes[tk.value]];
+					if (ns != null) {
+						var td = ns.docs[name];
+						if (td != null) {
+							doc = td;
+							argStart = 1;
+						}
+					}
 				} else iter.stepForward();
 			} else {
 				doc = AceMacro.jsOr(imports.docs[name], doc);
@@ -95,15 +105,16 @@ class AceStatusBar {
 		}
 		// go forward to verify that cursor token is inside that call:
 		depth = -1;
-		var index = 0;
+		var argCurr = 0;
 		while (tk != null && tk != ctk) {
 			switch (tk.type) {
 				case "paren.lparen": depth += 1;
 				case "paren.rparen": depth -= 1;
-				case "punctuation.operator" if (tk.value == "," && depth == 0): index += 1;
+				case "punctuation.operator" if (tk.value == "," && depth == 0): argCurr += 1;
 			}
 			tk = iter.stepForward();
 		}
+		argCurr += argStart;
 		if ((tk == null ? ctk != emptyToken : tk != ctk) || depth < 0) return;
 		//
 		if (doc != null) {
@@ -117,7 +128,7 @@ class AceStatusBar {
 				if (i > 0) out.appendChild(document.createTextNode(", "));
 				var span = document.createElement("span");
 				span.classList.add("argument");
-				if (i == index || i == argc - 1 && index >= i) span.classList.add("current");
+				if (i == argCurr || i == argc - 1 && argCurr >= i) span.classList.add("current");
 				span.appendChild(document.createTextNode(args[i]));
 				out.appendChild(span);
 			}

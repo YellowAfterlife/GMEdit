@@ -160,7 +160,7 @@ class GmlExtImport {
 		return false;
 	}
 	/** `var v:Enum`, "v[Enum.field]" -> "v.field" */
-	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, t:String, p1:Int):String {
+	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, t:String, p0:Int):String {
 		var ns:GmlNamespace = imp.namespaces[t];
 		var e:GmlEnum;
 		if (ns == null) {
@@ -181,38 +181,72 @@ class GmlExtImport {
 		var posIndexStart = q.pos;
 		q.skipIdent1();
 		var index1:String = q.substring(posIndexStart, q.pos);
-		var indexField:String;
+		var indexField:String, indexDot:Int;
 		if (ns != null) {
 			indexField = ns.shorten[index1];
-			if (indexField == null) return null; // must be a member of namespace
+			if (indexField == null) {
+				if (q.read() != ".".code) return null;
+				q.skipIdent1();
+				indexField = ns.shorten[q.substring(posIndexStart, q.pos)];
+				if (indexField == null) return null; // must be a member of namespace
+			}
 		} else {
 			if (index1 != t) return null; // must be <enum name>
 			if (q.read() != ".".code) return null;
-			var p = q.pos;
+			var indexDot = q.pos;
 			q.skipIdent1();
-			indexField = q.substring(p, q.pos);
+			indexField = q.substring(indexDot, q.pos);
 			if (!e.items.exists(indexField)) return null; // must be member of enum
 		}
 		if (q.read() != "]".code) return null;
 		// [] for reading, [@] for writing:
-		if (acc != q.checkWrites(p1, q.pos)) return null;
+		if (acc != q.checkWrites(p0, q.pos)) return null;
 		// whew,
 		return ident + "." + indexField;
 	}
-	static function pre_mapIdent(imp:GmlImports, q:GmlReader, ident:String, p1:Int):String {
+	static function pre_mapIdent(imp:GmlImports, q:GmlReader, ident:String, p0:Int):String {
 		var next = null;
 		var t = imp.localTypes[ident];
+		var p1:Int = q.pos;
 		if (t != null) {
-			next = pre_mapIdent_local(q, imp, ident, t, p1);
+			next = pre_mapIdent_local(q, imp, ident, t, p0);
 			if (next == null) q.pos = p1;
 		} else if (ident != "global") {
 			next = imp.shorten[ident];
+			do { // `var v:T` .. `func(v, 0)` -> `v.func(0)`
+				q.skipSpaces1();
+				if (q.read() != "(".code) break;
+				// `func(¦ v`:
+				q.skipSpaces1();
+				if (!q.peek().isIdent0()) break;
+				var selfPos = q.pos;
+				q.skipIdent1();
+				// no `func(v¦[`:
+				if (q.peek() == "[".code) break;
+				// ident -> type -> namespace -> method name:
+				var self = q.substring(selfPos, q.pos);
+				var selfType = imp.localTypes[self];
+				if (selfType == null) break;
+				var selfNs = imp.namespaces[selfType];
+				if (selfNs == null) break;
+				var selfFunc = selfNs.shorten[ident];
+				if (selfFunc == null) break;
+				var selfEnd = q.pos;
+				// `func(v¦, 1)` -> `func(v, ¦1)`:
+				q.skipSpaces1();
+				if (q.read() == ",".code) {
+					q.skipSpaces1();
+				} else q.pos = selfEnd;
+				// OK!
+				return self + "." + selfFunc + "(";
+			} while (false);
+			q.pos = p1;
 		} else if (imp.hasGlobal) {
 			q.skipSpaces0();
 			if (q.peek() == ".".code) {
 				q.skip();
 				q.skipSpaces0();
-				var p1 = q.pos;
+				p1 = q.pos;
 				q.skipIdent1();
 				next = imp.shortenGlobal[q.substring(p1, q.pos)];
 			}
@@ -315,10 +349,9 @@ class GmlExtImport {
 											q.skipStringAuto(c, version);
 										};
 										default: if (c.isIdent0()) {
-											var p1 = q.pos;
 											q.skipIdent1();
-											var id = q.substring(p0, p1);
-											var idn = pre_mapIdent(imp, q, id, p1);
+											var id = q.substring(p0, q.pos);
+											var idn = pre_mapIdent(imp, q, id, p0);
 											if (idn != null) {
 												flush(p0);
 												out += idn;
@@ -367,6 +400,15 @@ class GmlExtImport {
 				}
 			}
 			if (ind != null) {
+				q.skipSpaces1();
+				if (q.read() == "(".code) {
+					var argPos = q.pos;
+					q.skipSpaces0();
+					var argPre = q.peek() != ")".code ? ", " : "";
+					q.pos = argPos;
+					post_procIdent_p1 = argPos;
+					return ind + "(" + one + argPre;
+				} else q.pos = p1;
 				post_procIdent_p1 = p1;
 				return one + (q.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
 			}

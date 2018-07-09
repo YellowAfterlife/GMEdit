@@ -47,11 +47,36 @@ class GmlImports {
 	) {
 		var isGlobal = long.startsWith("global.");
 		//
+		inline function enumCompToNsComp(comp:AceAutoCompleteItem):AceAutoCompleteItem {
+			return new AceAutoCompleteItem(
+				comp.name.substring(comp.name.indexOf(".") + 1),
+				comp.meta, comp.name + " = " + comp.doc
+			);
+		}
+		//
+		var ns:GmlNamespace, en:GmlEnum;
 		if (space != null) {
-			var ns = namespaces[space];
+			ns = namespaces[space];
 			if (ns == null) {
 				ns = new GmlNamespace();
 				namespaces.set(space, ns);
+				var enLong:String;
+				if (this.kind[space] == "enum") {
+					enLong = longen[space];
+					en = GmlAPI.gmlEnums[enLong];
+				} else {
+					enLong = space;
+					en = GmlAPI.gmlEnums[space];
+				}
+				if (en != null) {
+					for (comp in en.compList) ns.comp.push(enumCompToNsComp(comp));
+					for (name in en.names) {
+						var full = enLong + "." + name;
+						ns.longen.set(name, full);
+						ns.shorten.set(full, name);
+						ns.kind.set(name, "enumfield");
+					}
+				}
 			}
 			ns.kind.set(short, kind);
 			if (!isGlobal) {
@@ -63,6 +88,7 @@ class GmlImports {
 				if (nc.doc == null) nc.doc = long;
 				ns.comp.push(nc);
 			}
+			if (doc != null) ns.docs.set(short, doc);
 			short = space + "." + short;
 		} else {
 			this.kind.set(short, kind);
@@ -74,13 +100,20 @@ class GmlImports {
 		} else {
 			shorten.set(long, short);
 			if (kind == "enum") {
-				var en = GmlAPI.gmlEnums[long];
+				en = GmlAPI.gmlEnums[long];
 				if (en != null) {
+					ns = namespaces[short];
 					for (comp in en.compList) {
 						this.comp.push(new AceAutoCompleteItem(
 							short + comp.name.substring(comp.name.indexOf(".")),
 							comp.meta, comp.name + " = " + comp.doc
 						));
+						if (ns != null) ns.comp.push(enumCompToNsComp(comp));
+					}
+					if (ns != null) for (name in en.names) {
+						var full = long + "." + name;
+						ns.longen.set(name, full);
+						ns.shorten.set(full, name);
 					}
 				}
 				longenEnum.set(short, long);
@@ -104,6 +137,7 @@ class GmlNamespace {
 	public var shorten:Dictionary<String> = new Dictionary();
 	public var longen:Dictionary<String> = new Dictionary();
 	public var comp:AceAutoCompleteItems = [];
+	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	public function new() {
 		//
 	}
