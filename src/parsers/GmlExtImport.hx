@@ -447,7 +447,7 @@ class GmlExtImport {
 				} else q.pos = p1;
 				post_procIdent_p1 = p1;
 				return one + (q.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
-			} else {
+			} else if (en != null || ns != null && ns.isStruct) {
 				if (errorText != "") errorText += "\n";
 				errorText += q.getPos(dot + 1).toString() + ' Could not find field $fd in '
 					+ (ns != null ? 'namespace' : en != null ? 'enum' : 'unknown type')

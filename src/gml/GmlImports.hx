@@ -73,6 +73,7 @@ class GmlImports {
 					en = GmlAPI.gmlEnums[space];
 				}
 				if (en != null) {
+					ns.isStruct = true;
 					for (comp in en.compList) ns.comp.push(enumCompToNsComp(comp));
 					for (name in en.names) {
 						var full = enLong + "." + name;
@@ -110,6 +111,7 @@ class GmlImports {
 				en = GmlAPI.gmlEnums[long];
 				if (en != null) {
 					ns = namespaces[short];
+					if (ns != null) ns.isStruct = true;
 					for (comp in en.compList) {
 						this.comp.push(new AceAutoCompleteItem(
 							short + comp.name.substring(comp.name.indexOf(".")),
@@ -149,6 +151,8 @@ class GmlNamespace {
 	public var comp:AceAutoCompleteItems = [];
 	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
+	
+	public var isStruct:Bool = false;
 	public function new() {
 		//
 	}
