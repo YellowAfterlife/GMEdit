@@ -129,7 +129,7 @@ using tools.NativeString;
 									var lt = imp.localTypes[object];
 									ns = imp.namespaces[lt];
 									if (ns != null) {
-										fdType = ns.kind[field];
+										fdType = jsOr(ns.kind[field], "typeerror");
 									} else {
 										en = GmlAPI.gmlEnums[lt];
 										if (en != null) {

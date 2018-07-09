@@ -386,18 +386,17 @@ class GmlExtImport {
 	static function post_procIdent(q:GmlReader, imp:GmlImports, p0:Int, dot:Int, full:String) {
 		var p1 = q.pos;
 		var one:String = dot != -1 ? q.substring(p0, dot) : null;
-		var type = imp.localTypes[one];
+		var type = dot != -1 ? imp.localTypes[one] : null;
 		if (type != null) {
-			var ns:GmlNamespace = imp.namespaces[type];
+			var ns:GmlNamespace = imp.namespaces[type], en:GmlEnum;
 			var ind:String = null;
+			var fd = q.substring(dot + 1, p1);
 			if (ns != null) {
-				ind = ns.longen[q.substring(dot + 1, p1)];
+				ind = ns.longen[fd];
+				en = null;
 			} else {
-				var en:GmlEnum = GmlAPI.gmlEnums[type];
-				if (en != null) {
-					var fd = q.substring(dot + 1, p1);
-					if (en.items.exists(fd)) ind = type + '.' + fd;
-				}
+				en = GmlAPI.gmlEnums[type];
+				if (en != null && en.items.exists(fd)) ind = type + '.' + fd;
 			}
 			if (ind != null) {
 				q.skipSpaces1();
@@ -411,6 +410,12 @@ class GmlExtImport {
 				} else q.pos = p1;
 				post_procIdent_p1 = p1;
 				return one + (q.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
+			} else {
+				if (errorText != "") errorText += "\n";
+				errorText += q.getPos(dot + 1).toString() + ' Could not find field $fd in '
+					+ (ns != null ? 'namespace' : en != null ? 'enum' : 'unknown type')
+					+ ' ' + type + '.';
+				return null;
 			}
 		}
 		//
@@ -428,6 +433,7 @@ class GmlExtImport {
 		return null;
 	}
 	public static function post(code:String, path:String) {
+		errorText = "";
 		if (!Preferences.current.importMagic) {
 			post_numImports = 0;
 			return code;
@@ -552,10 +558,11 @@ class GmlExtImport {
 								q.pos = p;
 							}, version);
 						} else procIdent();
-					}
-				};
-			}
-		}
+						if (errorText != "") return null;
+					} // c.isIdent && imp
+				}; // default
+			} // switch
+		} // loop
 		post_numImports = impc;
 		flush(q.pos);
 		return out;

@@ -183,6 +183,10 @@ class EditCode extends Editor {
 		var val_preImport = val;
 		var path = file.path;
 		val = GmlExtImport.post(val, path);
+		if (val == null) {
+			Main.window.alert(GmlExtImport.errorText);
+			return null;
+		}
 		// if there are imports, check if we should be updating the code
 		var data = path != null ? GmlSeekData.map[path] : null;
 		if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
@@ -246,7 +250,10 @@ class EditCode extends Editor {
 		}
 		GmlFileBackup.save(file, val);
 		//
-		if (canImport(file)) val = postpImport(val);
+		if (canImport(file)) {
+			val = postpImport(val);
+			if (val == null) return false;
+		}
 		//
 		var out:String, src:String, gmx:SfGmx;
 		var writeFile:Bool = path != null;

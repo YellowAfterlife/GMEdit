@@ -1,5 +1,6 @@
 package parsers;
 
+import ace.AceWrap.AcePos;
 import gml.GmlVersion;
 import tools.CharCode;
 import tools.StringReader;
@@ -333,6 +334,19 @@ class GmlReader extends StringReader {
 			default: return false;
 		}
 		return false;
+	}
+	
+	/** offset to row+column */
+	public function getPos(p:Int):AcePos {
+		var row = 0;
+		var rowStart = 0;
+		for (i in 0 ... p) {
+			if (get(i) == "\n".code) {
+				row += 1;
+				rowStart = i + 1;
+			}
+		}
+		return new AcePos(p - rowStart, row);
 	}
 }
 typedef SkipVarsData = {

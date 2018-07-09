@@ -28,6 +28,7 @@ class LiveWeb {
 			var val = edit.session.getValue();
 			if (post) {
 				val = edit.postpImport(val);
+				if (val == null) return;
 				val = edit.postpNormal(val);
 			}
 			out.push({
