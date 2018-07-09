@@ -12,6 +12,8 @@ class GmlImports {
 	public static var currentMap:Dictionary<GmlImports> = new Dictionary();
 	//
 	public var comp:AceAutoCompleteItems = [];
+	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	
 	public var kind:Dictionary<String> = new Dictionary();
 	
 	/** "scr_some" -> "some" */
@@ -55,10 +57,12 @@ class GmlImports {
 		}
 		//
 		var ns:GmlNamespace, en:GmlEnum;
+		var nc:AceAutoCompleteItem;
 		if (space != null) {
 			ns = namespaces[space];
 			if (ns == null) {
 				ns = new GmlNamespace();
+				this.kind.set(space, "namespace");
 				namespaces.set(space, ns);
 				var enLong:String;
 				if (this.kind[space] == "enum") {
@@ -84,8 +88,11 @@ class GmlImports {
 				ns.longen.set(short, long);
 			}
 			if (comp != null) {
-				var nc = comp.makeAlias(short);
+				nc = ns.compMap[short];
+				if (nc != null) ns.comp.remove(nc);
+				nc = comp.makeAlias(short);
 				if (nc.doc == null) nc.doc = long;
+				ns.compMap.set(short, nc);
 				ns.comp.push(nc);
 			}
 			if (doc != null) ns.docs.set(short, doc);
@@ -124,8 +131,11 @@ class GmlImports {
 		if (doc != null) docs.set(short, doc);
 		//
 		if (comp != null) {
-			var nc = comp.makeAlias(short);
+			nc = compMap[short];
+			if (nc != null) this.comp.remove(nc);
+			nc = comp.makeAlias(short);
 			if (nc.doc == null) nc.doc = long;
+			this.compMap.set(short, nc);
 			this.comp.push(nc);
 		}
 	}
@@ -137,6 +147,7 @@ class GmlNamespace {
 	public var shorten:Dictionary<String> = new Dictionary();
 	public var longen:Dictionary<String> = new Dictionary();
 	public var comp:AceAutoCompleteItems = [];
+	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	public function new() {
 		//
