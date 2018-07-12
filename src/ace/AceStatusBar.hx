@@ -121,12 +121,13 @@ class AceStatusBar {
 		// go forward to verify that cursor token is inside that call:
 		depth = -1;
 		var argCurr = 0;
-		while (tk != null && tk != ctk) {
+		while (tk != null) {
 			switch (tk.type) {
 				case "paren.lparen": depth += 1;
 				case "paren.rparen": depth -= 1;
 				case "punctuation.operator" if (tk.value == "," && depth == 0): argCurr += 1;
 			}
+			if (tk == ctk) break;
 			tk = iter.stepForward();
 		}
 		argCurr += argStart;
