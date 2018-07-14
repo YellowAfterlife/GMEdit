@@ -110,13 +110,10 @@ class GmlSeekData {
 		
 		// comp:
 		for (c in prev.compList) {
-			if (!next.compMap.exists(c.name)) GmlAPI.gmlComp.remove(c);
+			GmlAPI.gmlComp.remove(c);
 		}
 		for (c1 in next.compList) {
-			var c0 = prev.compMap[c1.name];
-			if (c0 != null) {
-				c0.setTo(c1);
-			} else GmlAPI.gmlComp.push(c1);
+			GmlAPI.gmlComp.push(c1);
 		}
 		
 		// enums:
