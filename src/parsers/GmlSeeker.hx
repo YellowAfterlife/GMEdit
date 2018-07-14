@@ -9,6 +9,7 @@ import gml.*;
 import haxe.io.Path;
 import js.RegExp;
 import parsers.GmlReader;
+import tools.CharCode;
 import tools.Dictionary;
 import ui.Preferences;
 import ui.TreeView;
@@ -156,7 +157,8 @@ class GmlSeeker {
 		} // find
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
 		var s:String, name:String, start:Int, doc:GmlFuncDoc;
-		var p:Int, flags:Int, mt:RegExpMatch;
+		var p:Int, flags:Int;
+		var c:CharCode, mt:RegExpMatch;
 		while (q.loop) {
 			s = find(Ident | Doc | Define | Macro);
 			if (s == null) {
@@ -250,19 +252,39 @@ class GmlSeeker {
 					out.kindMap.set(main, "asset.script");
 				};
 				case "#macro": {
-					name = find(Ident);
-					if (name == null) continue;
-					start = q.pos;
-					find(Line);
-					s = q.substring(start, q.pos - 1);
-					var m = new GmlMacro(name, orig, s.trimBoth());
-					out.kindList.push(name);
-					out.kindMap.set(name, "macro");
-					out.compList.push(m.comp);
-					out.compMap.set(name, m.comp);
-					out.macroList.push(m);
-					out.macroMap.set(name, m);
-					setLookup(name, true);
+					q.skipSpaces0();
+					c = q.peek(); if (!c.isIdent0()) continue;
+					p = q.pos;
+					q.skipIdent1();
+					name = q.substring(p, q.pos);
+					q.skipSpaces0();
+					// `#macro Config:name`?
+					var cfg:String;
+					if (q.peek() == ":".code) {
+						cfg = name;
+						q.skip();
+						q.skipSpaces0();
+						c = q.peek(); if (!c.isIdent0()) continue;
+						p = q.pos;
+						q.skipIdent1();
+						name = q.substring(p, q.pos);
+						q.skipSpaces0();
+					} else cfg = null;
+					// value:
+					p = q.pos;
+					q.skipLine();
+					s = q.substring(p, q.pos);
+					// only add default-config macros for now:
+					if (cfg == null) {
+						var m = new GmlMacro(name, orig, s);
+						out.kindList.push(name);
+						out.kindMap.set(name, "macro");
+						out.compList.push(m.comp);
+						out.compMap.set(name, m.comp);
+						out.macroList.push(m);
+						out.macroMap.set(name, m);
+						setLookup(name, true);
+					}
 				};
 				case "globalvar": {
 					while (q.loop) {
