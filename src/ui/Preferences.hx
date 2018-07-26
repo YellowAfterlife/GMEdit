@@ -283,6 +283,14 @@ class Preferences {
 			GmlAPI.init();
 			save();
 		}).title = "Displays UK versions of function/variable names (e.g. draw_set_colour) in auto-completion when available.";
+		addCheckbox(out, "Smart match completion", !current.compExactMatch, function(z) {
+			current.compExactMatch = !z;
+			if (Main.aceEditor.completer != null) {
+				Main.aceEditor.completer.exactMatch = !z;
+			}
+			save();
+		}).title = "If enabled, show_debug_message will show up in results for `sdm`";
+		//
 		#if !lwedit
 		addCheckbox(out, "Show asset thumbnails", current.assetThumbs, function(z) {
 			current.assetThumbs = z;
@@ -410,6 +418,7 @@ class Preferences {
 		var def:PrefData = {
 			theme: "dark",
 			ukSpelling: false,
+			compExactMatch: true,
 			argsMagic: true,
 			argsFormat: "@param",
 			importMagic: true,
@@ -490,6 +499,7 @@ class Preferences {
 typedef PrefData = {
 	theme:String,
 	ukSpelling:Bool,
+	compExactMatch:Bool,
 	fileSessionTime:Float,
 	projectSessionTime:Float,
 	argsMagic:Bool,

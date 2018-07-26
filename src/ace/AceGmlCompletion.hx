@@ -66,7 +66,7 @@ using tools.NativeString;
 			return;
 		}
 		if (editor.completer != null) {
-			editor.completer.exactMatch = true;
+			editor.completer.exactMatch = ui.Preferences.current.compExactMatch;
 		}
 		var tk = session.getTokenAtPos(pos);
 		if (dotKind != dotKindNone && tk.type == "punctuation.operator" && tk.value.contains(".")) {
