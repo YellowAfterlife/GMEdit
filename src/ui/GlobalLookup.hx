@@ -106,7 +106,7 @@ class GlobalLookup {
 				e.preventDefault();
 				var term = list.value;
 				if (term == "") term = field.value;
-				if (KeyboardShortcuts.openLocal(term, null)) {
+				if (OpenDeclaration.openLocal(term, null)) {
 					toggle();
 				}
 			};
@@ -123,7 +123,7 @@ class GlobalLookup {
 			window.setTimeout(function() {
 				var term = list.value;
 				if (term != "") {
-					KeyboardShortcuts.openLocal(term, null);
+					OpenDeclaration.openLocal(term, null);
 					toggle();
 				}
 			});
