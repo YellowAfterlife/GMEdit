@@ -345,13 +345,15 @@ class GmlExtImport {
 						var ident = q.substring(p, p1);
 						var next:String = null;
 						if (ident == "var" || ident == "args" && q.get(p - 1) == "#".code) {
-							next = ident == "var" ? imp.shorten[ident] : null;
+							var isVar = ident == "var";
+							next = isVar ? imp.shorten[ident] : null;
 							if (next != null) {
 								flush(p);
 								out += next;
 								start = q.pos;
 								next = null;
 							}
+							// todo: #args should terminate at EOL
 							q.skipVars(function(d:SkipVarsData) {
 								var p = q.pos;
 								flush(d.type0);
@@ -387,7 +389,7 @@ class GmlExtImport {
 									}
 								}
 								q.pos = p;
-							}, version);
+							}, version, !isVar);
 						} else next = pre_mapIdent(imp, q, ident, p1);
 						if (next != null) {
 							flush(p);
@@ -605,7 +607,7 @@ class GmlExtImport {
 									}
 								}
 								q.pos = p;
-							}, version);
+							}, version, false);
 						} else procIdent();
 						if (errorText != "") return null;
 					} // c.isIdent && imp

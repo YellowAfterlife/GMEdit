@@ -255,7 +255,7 @@ class GmlReader extends StringReader {
 		return n;
 	}
 	private static var rxVarType = new js.RegExp("^/\\*[ \t]*:[ \t]*(\\w+)\\*/$");
-	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion):Int {
+	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool):Int {
 		var n = 0;
 		var d:SkipVarsData = {
 			name: null, name0: 0, name1: 0,
@@ -263,7 +263,12 @@ class GmlReader extends StringReader {
 			expr0: 0, expr1: 0, opt: false,
 		};
 		skipNops();
-		while (loop) {
+		var till:Int;
+		if (isArgs) {
+			till = source.indexOf("\n", pos);
+			if (till < 0) till = length;
+		} else till = length;
+		while (pos < till) {
 			var c = peek();
 			if (!c.isIdent0()) break;
 			var p = pos;
