@@ -23,12 +23,12 @@ class GmlExtArgs {
 	
 	/** `argument[n]` */
 	private static inline var rsOpt1 = '\\s*argument\\s*\\[\\s*(\\d+)\\s*\\]\\s*';
-	private static var rxOpt = new RegExp("^var\\s+(\\w+)"
-	// `/*:Type*/` (optional)
-	+ "(?:\\s*(" + GmlExtImport.rsLocalType + "))?"
+	private static var rxOpt = new RegExp("^var\\s+(\\w+)" // -> name
+	+ "(?:" + GmlExtImport.rsLocalType + ")?" // -> :type (opt.)
 	+ "\\s*(?:"
 		// `var q; if (argument_count > 3) q = argument[3]; else q = `
 		+ ';\\s*if\\s\\($rsOpt0\\)\\s*(\\w+)\\s*=$rsOpt1;\\s*else\\s*(\\w+)\\s*='
+		// -> 
 	+ '|'
 		// `var q = argument_count > 3 ? argument[3] : `
 		+ '=$rsOpt0\\?\\s*$rsOpt1\\:'

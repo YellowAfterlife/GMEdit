@@ -353,7 +353,6 @@ class GmlExtImport {
 								start = q.pos;
 								next = null;
 							}
-							// todo: #args should terminate at EOL
 							q.skipVars(function(d:SkipVarsData) {
 								var p = q.pos;
 								flush(d.type0);
