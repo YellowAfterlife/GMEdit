@@ -31,6 +31,7 @@ class GmlExtImport {
 	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+)\\*/";
 	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
 	private static var rxPeriod = new RegExp("\\.", "g");
+	private static var rxHasType = new RegExp("(?:\\w/\\*:|var.+?\\w:|#args.+?\\w:)", "");
 	public static var errorText:String;
 	//
 	static function parseRules(imp:GmlImports, mt:Array<String>) {
@@ -288,7 +289,10 @@ class GmlExtImport {
 		if (!Preferences.current.importMagic) return cancel();
 		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
 		var globalExists = FileWrap.existsSync(globalPath);
-		if (code.indexOf("//!#import") < 0 && !globalExists) return cancel();
+		if (code.indexOf("//!#import") < 0
+			&& !rxHasType.test(code)
+			&& !globalExists
+		) return cancel();
 		var seekLocals = seekData != null ? seekData.locals : null;
 		var cache = new Dictionary<String>();
 		var version = GmlAPI.version;
