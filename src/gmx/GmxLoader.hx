@@ -92,6 +92,7 @@ class GmxLoader {
 			var extParentDir = TreeView.makeDir("Extensions", "extensions/");
 			for (extNode in extNodes) {
 				var extRel = extNode.text;
+				extRel = StringTools.replace(extRel, "\x5c", "/"); // no backslashes
 				var extPath = extRel + ".extension.gmx";
 				var extGmx = project.readGmxFileSync(extPath);
 				var extName = extGmx.findText("name");
