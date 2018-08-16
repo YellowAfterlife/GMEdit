@@ -145,6 +145,13 @@ class GmlReader extends StringReader {
 		}
 	}
 	
+	public function skipSpaces1x(till:Int) {
+		while (pos < till) switch (peek()) {
+			case " ".code, "\t".code, "\r".code, "\n".code: skip();
+			default: break;
+		}
+	}
+	
 	public inline function skipIdent1() {
 		while (loop) {
 			if (peek().isIdent1()) {
@@ -195,9 +202,10 @@ class GmlReader extends StringReader {
 	}
 	
 	/** Skips comments and whitespace */
-	public function skipNops():Int {
+	public function skipNops(?till:Int):Int {
 		var n = 0;
-		while (loop) {
+		if (till == null) till = length;
+		while (pos < till) {
 			var c = peek();
 			switch (c) {
 				case " ".code, "\t".code, "\r".code: skip();
@@ -276,16 +284,15 @@ class GmlReader extends StringReader {
 			if (peek() == "?".code) {
 				d.opt = true; skip(); skipNops();
 			} else d.opt = false;
-			if (d.opt) skip();
 			skipIdent1();
 			d.name1 = pos;
 			d.name = substring(p, pos);
 			// handle `:type` or `/*:type*/`:
-			skipSpaces1();
+			skipSpaces1x(till);
 			d.type0 = pos;
 			var type = null;
 			if (peek() == ":".code) {
-				skip(); skipSpaces1();
+				skip(); skipSpaces1x(till);
 				var p1 = pos;
 				skipIdent1();
 				d.type = pos > p1 ? substring(p1, pos) : null;
@@ -297,18 +304,18 @@ class GmlReader extends StringReader {
 			} else d.type = null;
 			d.type1 = pos;
 			// see if there's `= value`:
-			skipSpaces1();
+			skipSpaces1x(till);
 			if (peek() == "=".code) {
 				skip(); skipSpaces1();
 				d.expr0 = pos;
 				skipVarExpr(v, true);
 			} else d.expr0 = pos;
 			d.expr1 = pos;
-			skipNops();
+			skipNops(till);
 			fn(d);
 			if (peek() != ",".code) break;
 			skip();
-			skipNops();
+			skipNops(till);
 		}
 		return n;
 	}

@@ -389,7 +389,8 @@ class GmlExtImport {
 								}
 								q.pos = p;
 							}, version, !isVar);
-						} else next = pre_mapIdent(imp, q, ident, p1);
+						}
+						else next = pre_mapIdent(imp, q, ident, p1);
 						if (next != null) {
 							flush(p);
 							out += next;
@@ -536,7 +537,7 @@ class GmlExtImport {
 						var ctx = q.readContextName(null);
 						if (ctx != null) {
 							imp = imps != null ? imps[ctx] : null;
-						}
+						} else q.pos = p + 1;
 					};
 				};
 				default: {
@@ -572,8 +573,9 @@ class GmlExtImport {
 						//
 						q.pos -= 1;
 						readDotPair();
-						if (dotFull == "var") {
-							procIdent_next = imp.longen["var"];
+						if (dotFull == "var" || dotFull == "args" && q.get(p - 1) == "#".code) {
+							var isVar = dotFull == "var";
+							procIdent_next = isVar ? imp.longen["var"] : null;
 							if (procIdent_next != null) {
 								flush(p);
 								out += procIdent_next;
@@ -582,7 +584,9 @@ class GmlExtImport {
 							q.skipVars(function(d:SkipVarsData) {
 								var p = q.pos;
 								flush(d.type0);
-								if (d.type != null) out += "/*:" + d.type + "*/";
+								if (d.type != null) {
+									out += isVar ? "/*:" + d.type + "*/" : ":" + d.type;
+								}
 								out += q.substring(d.type1, d.expr0);
 								q.pos = d.expr0;
 								start = q.pos;
@@ -606,7 +610,7 @@ class GmlExtImport {
 									}
 								}
 								q.pos = p;
-							}, version, false);
+							}, version, !isVar);
 						} else procIdent();
 						if (errorText != "") return null;
 					} // c.isIdent && imp
