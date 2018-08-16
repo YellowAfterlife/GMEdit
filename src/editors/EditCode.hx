@@ -396,7 +396,7 @@ class EditCode extends Editor {
 			var prev = file.code;
 			file.load();
 			var dlg:Int = 0;
-			if (prev == file.code) {
+			if (NativeString.trimRight(prev) == NativeString.trimRight(file.code)) {
 				// OK!
 			} else if (!file.changed) {
 				if (act != Ask) {
