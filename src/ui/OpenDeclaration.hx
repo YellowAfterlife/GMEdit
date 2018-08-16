@@ -175,6 +175,10 @@ class OpenDeclaration {
 			var helpLookup = GmlAPI.helpLookup;
 			if (helpLookup != null) {
 				var helpTerm = helpLookup[term];
+				if (helpTerm == null) {
+					var gbTerm = StringTools.replace(term, "color", "colour");
+					helpTerm = helpLookup[gbTerm];
+				}
 				if (helpTerm != null) {
 					Shell.openExternal(helpURL.replace("$1", helpTerm));
 					return true;
