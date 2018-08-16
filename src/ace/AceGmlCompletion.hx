@@ -228,7 +228,7 @@ using tools.NativeString;
 		// automatically open completion when typing things like "global.|"
 		editor.commands.on("afterExec", function(e:Dynamic) {
 			if (e.args != "." || e.command.name != "insertstring") return;
-			if (editor.completer != null && editor.completer.activated) return;
+			//if (editor.completer != null && editor.completer.activated) return;
 			var lead = editor.session.selection.lead;
 			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 			var token = iter.stepBackward();
