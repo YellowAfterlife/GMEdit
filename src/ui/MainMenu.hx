@@ -15,9 +15,9 @@ import Main.window;
  * @author YellowAfterlife
  */
 class MainMenu {
-	public static function init() {
-		var menu = new Menu();
-		#if (!lwedit)
+	static var exportItem:MenuItem;
+	static function addProjectItems(menu:Menu) {
+		#if !lwedit
 		if (Electron == null) {
 			var form = Main.document.createFormElement();
 			var input = Main.document.createInputElement();
@@ -61,7 +61,7 @@ class MainMenu {
 			accelerator: "CommandOrControl+R",
 			click: function() gml.Project.current.reload()
 		}));
-		var exportItem = new MenuItem({ label: "Export project...",
+		exportItem = new MenuItem({ label: "Export project...",
 			click: function() {
 				var pj = Project.current;
 				var yyz:YyZip = cast pj;
@@ -86,7 +86,16 @@ class MainMenu {
 		menu.append(new MenuItem({ label: "Close project",
 			click: function() gml.Project.open("")
 		}));
-		#else
+		if (Electron != null) {
+			menu.append(new MenuItem({ type: Sep }));
+			menu.append(new MenuItem({ label: "Show in directory",
+				click: function() electron.Shell.showItemInFolder(Project.current.path)
+			}));
+		}
+		#end
+	}
+	static function addGMLiveWebItems(menu:Menu) {
+		#if lwedit
 		menu.append(new MenuItem({ label: "New tab",
 			click: function() LiveWeb.newTabDialog()
 		}));
@@ -113,6 +122,14 @@ class MainMenu {
 		menu.append(new MenuItem({ label: "Export...",
 			click: function() LiveWebIO.exportDialog()
 		}));
+		#end
+	}
+	public static function init() {
+		var menu = new Menu();
+		#if (!lwedit)
+		addProjectItems(menu);
+		#else
+		addGMLiveWebItems(menu);
 		#end
 		//
 		menu.append(new MenuItem({ type: Sep }));
