@@ -28,7 +28,7 @@ class GmlExtImport {
 		+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+)(?:\\.(\\w+))?)?" // in name
 	), "");
 	private static var rxImportFile = new RegExp("^#import[ \t]+(\"[^\"]*\"|'[^']*')", "");
-	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+)\\*/";
+	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+(?:<.*?>)?)\\*/";
 	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
 	private static var rxPeriod = new RegExp("\\.", "g");
 	private static var rxHasType = new RegExp("(?:\\w/\\*:|var.+?\\w:|#args.+?\\w:)", "");

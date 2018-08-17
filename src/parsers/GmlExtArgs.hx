@@ -300,6 +300,10 @@ class GmlExtArgs {
 					q.skipSpaces0();
 					var typePos = q.pos;
 					q.skipIdent1();
+					if (q.pos > typePos) {
+						if (q.peek() == "<".code) q.skipTypeParams();
+						type = "/*:" + q.substring(typePos, q.pos) + "*/";
+					} else type = "";
 					type = q.substring(typePos, q.pos);
 					if (type != "") type = "/*:" + type + "*/";
 					q.skipSpaces0();

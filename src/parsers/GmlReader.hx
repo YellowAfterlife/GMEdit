@@ -262,7 +262,32 @@ class GmlReader extends StringReader {
 		}
 		return n;
 	}
-	private static var rxVarType = new js.RegExp("^/\\*[ \t]*:[ \t]*(\\w+)\\*/$");
+	
+	/**
+	 * this"var a:Map¦<Int>" -> this"var a:Map<Int>¦"
+	 * this"var a:Map¦<=" -> this"var a:Map¦<="
+	 */
+	public inline function skipTypeParams(?till:Int) {
+		if (till == null) till = length;
+		var p2 = pos;
+		var depth = 1;
+		skip();
+		while (pos < till) {
+			var c:CharCode = read();
+			switch (c) {
+				case " ".code, "\t".code: {};
+				case "<".code: depth++;
+				case ">".code: if (--depth <= 0) break;
+				case ",".code: {};
+				default: if (!c.isIdent1()) break;
+			}
+		}
+		if (depth > 0) {
+			pos = p2;
+			return false;
+		} else return true;
+	}
+	private static var rxVarType = new js.RegExp("^" + GmlExtImport.rsLocalType + "$");
 	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool):Int {
 		var n = 0;
 		var d:SkipVarsData = {
@@ -295,7 +320,10 @@ class GmlReader extends StringReader {
 				skip(); skipSpaces1x(till);
 				var p1 = pos;
 				skipIdent1();
-				d.type = pos > p1 ? substring(p1, pos) : null;
+				if (pos > p1) {
+					if (peek() == "<".code) skipTypeParams(till);
+					d.type = substring(p1, pos);
+				} else d.type = null;
 			} else if (peek() == "/".code && peek(1) == "*".code) {
 				p = pos;
 				skip(2); skipComment();
