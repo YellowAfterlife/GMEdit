@@ -173,6 +173,7 @@ class GmlFile {
 			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
 			var rxEof = new RegExp("^(#define|#event|#moment)");
 			i = row;
+			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;
 			while (i < len) {
 				s = session.getLine(i);
 				if (rxEof.test(s)) break;
@@ -192,9 +193,11 @@ class GmlFile {
 				col = 0;
 				row += 1;
 			}
-			row += pos.row;
-			col += pos.column;
-			found = true;
+			if (!found || !nav.ctxAfter) {
+				row += pos.row;
+				col += pos.column;
+				found = true;
+			}
 		}
 		if (found) {
 			Main.aceEditor.gotoLine0(row, col);
@@ -349,6 +352,8 @@ typedef GmlFileNav = {
 	?pos:AcePos,
 	/** code to scroll to */
 	?ctx:String,
+	/** if set, looks for ctx after pos rather than ctx offset by pos */
+	?ctxAfter:Bool,
 	/** file kind override */
 	?kind:GmlFileKind,
 }

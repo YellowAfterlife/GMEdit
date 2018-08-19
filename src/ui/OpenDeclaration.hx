@@ -53,27 +53,28 @@ class OpenDeclaration {
 		openLocal(name, pos, nav);
 		return true;
 	}
-	public static function openLocal(name:String, pos:AcePos, ?nav:GmlFileNav):Bool {
-		//
-		var lookup = GmlAPI.gmlLookup[name];
-		if (lookup != null) {
-			var path = lookup.path;
-			var el = TreeView.find(true, { path: path });
-			if (el != null) {
-				if (nav != null) {
-					if (nav.def == null) nav.def = lookup.sub;
-					if (nav.pos != null) {
-						nav.pos.row += lookup.row;
-						nav.pos.column += lookup.col;
-					} else nav.pos = { row: lookup.row, column: lookup.col };
-				}; else nav = {
-					def: lookup.sub,
-					pos: { row: lookup.row, column: lookup.col }
-				};
-				GmlFile.open(el.title, path, nav);
-				return true;
-			}
+	static function openLookup(lookup:GmlLookup, ?nav:GmlFileNav) {
+		if (lookup == null) return false;
+		var path = lookup.path;
+		var el = TreeView.find(true, { path: path });
+		if (el != null) {
+			if (nav != null) {
+				if (nav.def == null) nav.def = lookup.sub;
+				if (nav.pos != null) {
+					nav.pos.row += lookup.row;
+					nav.pos.column += lookup.col;
+				} else nav.pos = { row: lookup.row, column: lookup.col };
+			}; else nav = {
+				def: lookup.sub,
+				pos: { row: lookup.row, column: lookup.col }
+			};
+			GmlFile.open(el.title, path, nav);
+			return true;
 		}
+		return false;
+	}
+	public static function openLocal(name:String, pos:AcePos, ?nav:GmlFileNav):Bool {
+		if (openLookup(GmlAPI.gmlLookup[name], nav)) return true;
 		//
 		var ename = tools.NativeString.escapeProp(name);
 		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$ename"]');
@@ -145,6 +146,15 @@ class OpenDeclaration {
 			if (tk != null && tk.value == ".") {
 				tk = iter.stepBackward();
 				if (tk != null) switch (tk.type) {
+					case "enum": {
+						var en = GmlAPI.gmlEnums[tk.value];
+						if (en == null) break;
+						return openLookup(en.fieldLookup[term], {
+							ctx:term,
+							pos:new AcePos(0, 0),
+							ctxAfter:true,
+						});
+					};
 					case "namespace": {
 						ns = imp.namespaces[tk.value];
 						if (ns == null) break;

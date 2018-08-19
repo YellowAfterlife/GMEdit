@@ -1,6 +1,7 @@
 package gml;
 import ace.AceWrap;
 import tools.Dictionary;
+import gml.GmlAPI;
 
 /**
  * ...
@@ -13,6 +14,7 @@ class GmlEnum extends GmlStruct {
 	public var compList:AceAutoCompleteItems = [];
 	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public var fieldComp:AceAutoCompleteItems = [];
+	public var fieldLookup:Dictionary<GmlLookup> = new Dictionary();
 	public var lastItem:String = null;
 	//
 	public function new(name:String, orig:String) {
