@@ -8,6 +8,7 @@ import electron.Shell;
 import haxe.io.Path;
 import gml.GmlAPI;
 import gml.GmlImports;
+import ui.treeview.TreeView;
 using tools.NativeString;
 using StringTools;
 import Main.aceEditor;

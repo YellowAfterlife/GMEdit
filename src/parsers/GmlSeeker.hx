@@ -12,7 +12,7 @@ import parsers.GmlReader;
 import tools.CharCode;
 import tools.Dictionary;
 import ui.Preferences;
-import ui.TreeView;
+import ui.treeview.TreeView;
 import yy.YyObject;
 using StringTools;
 using tools.NativeString;

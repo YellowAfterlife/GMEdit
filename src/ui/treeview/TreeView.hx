@@ -1,4 +1,4 @@
-package ui;
+package ui.treeview;
 import electron.Dialog;
 import electron.FileSystem;
 import electron.Menu;
@@ -21,15 +21,21 @@ using tools.NativeString;
  */
 class TreeView {
 	//
+	/** Names of items - used for lookups */
 	public static inline var attrIdent:String = "data-ident";
+	/** Labels for directories - only used for nesting resolution */
+	public static inline var attrLabel:String = "data-label";
 	public static inline var attrPath:String = "data-full-path";
 	public static inline var attrRel:String = "data-rel-path";
 	public static inline var attrKind:String = "data-kind";
 	public static inline var attrThumb:String = "data-thumb";
 	public static inline var attrOpenAs:String = "data-open-as";
+	/** Resource GUID (GMS2 only) */
+	public static inline var attrYYID:String = "data-yyid";
 	//
 	public static inline var clDir:String = "dir";
 	public static inline var clItem:String = "item";
+	public static inline var clOpen:String = "open";
 	//
 	public static var element:DivElement;
 	public static function clear() {
@@ -89,7 +95,7 @@ class TreeView {
 			TreeViewMenus.openCombined();
 		} else {
 			var cl = el.classList;
-			if (cl.contains("open")) cl.remove("open"); else cl.add("open");
+			if (cl.contains(clOpen)) cl.remove(clOpen); else cl.add(clOpen);
 		}
 	}
 	static function handleDirCtxMenu(e:MouseEvent) {
@@ -116,6 +122,7 @@ class TreeView {
 		span.appendChild(document.createTextNode(name));
 		header.appendChild(span);
 		//
+		r.setAttribute(attrLabel, name);
 		r.setAttribute(attrRel, rel);
 		var c = document.createDivElement();
 		c.className = "items";
@@ -184,7 +191,7 @@ class TreeView {
 	public static var openPaths:Array<String> = [];
 	public static function saveOpen() {
 		var r:Array<String> = [];
-		for (dir in element.querySelectorEls(".dir.open")) {
+		for (dir in element.querySelectorEls('.$clDir.$clOpen')) {
 			r.push(dir.getAttribute(attrRel));
 		}
 		openPaths = r;
@@ -195,7 +202,7 @@ class TreeView {
 		for (path in paths) {
 			var epath = tools.NativeString.escapeProp(path);
 			var dir = el.querySelector('.dir[$attrRel="$epath"]');
-			if (dir != null) dir.classList.add("open");
+			if (dir != null) dir.classList.add(clOpen);
 		}
 	}
 	//

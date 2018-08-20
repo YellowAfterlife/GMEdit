@@ -7,7 +7,7 @@ import gml.file.GmlFileExtra;
 import haxe.io.Path;
 import tools.Dictionary;
 import tools.NativeString;
-import ui.TreeView;
+import ui.treeview.TreeView;
 
 /**
  * ...

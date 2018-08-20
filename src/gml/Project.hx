@@ -25,7 +25,7 @@ import tools.NativeString;
 using tools.PathTools;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
-import ui.TreeView;
+import ui.treeview.TreeView;
 
 /**
  * ...
@@ -215,7 +215,16 @@ class Project {
 	}
 	//
 	public function mkdirSync(path:String) {
-		FileSystem.mkdirSync(fullPath(path));
+		var full = fullPath(path);
+		if (!FileSystem.existsSync(full)) {
+			FileSystem.mkdirSync(full);
+		}
+	}
+	public function rmdirSync(path:String) {
+		var full = fullPath(path);
+		if (FileSystem.existsSync(full)) {
+			FileSystem.rmdirSync(full);
+		}
 	}
 	public function readdirSync(path:String):Array<ProjectDirInfo> {
 		var full = fullPath(path);

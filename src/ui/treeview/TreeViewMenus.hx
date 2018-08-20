@@ -1,4 +1,4 @@
-package ui;
+package ui.treeview;
 import electron.FileSystem;
 import electron.FileWrap;
 import electron.Menu;
@@ -9,6 +9,7 @@ import haxe.io.Path;
 import js.html.Element;
 import gml.file.*;
 import js.html.MouseEvent;
+import ui.treeview.TreeView;
 using tools.HtmlTools;
 using tools.NativeString;
 using tools.NativeArray;
@@ -23,7 +24,7 @@ class TreeViewMenus {
 	public static var target:Element;
 	public static var itemMenu:Menu;
 	public static var dirMenu:Menu;
-	private static var items:TreeViewMenuItems;
+	public static var items:TreeViewMenuData;
 	//
 	public static function expandAll() {
 		var cl = target.classList;
@@ -156,6 +157,7 @@ class TreeViewMenus {
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
 		items.objectInfo.visible = false;
+		TreeViewItemMenus.update(true);
 		dirMenu.popupAsync(ev);
 	}
 	public static function showItemMenu(el:Element, ev:MouseEvent) {
@@ -172,20 +174,11 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = false;
 		items.resetOpenIcon.visible = false;
 		items.objectInfo.visible = kind == "object";
+		TreeViewItemMenus.update(false);
 		itemMenu.popupAsync(ev);
 	}
 	//
-	public static function init() {
-		function add(m:Menu, o:MenuItemOptions) {
-			var r = new MenuItem(o);
-			m.append(r);
-			return r;
-		}
-		inline function addLink(m:Menu, label:String, click:Void->Void) {
-			return add(m, { label: label, click: click });
-		}
-		items = new TreeViewMenuItems();
-		//{
+	static function initIconMenu() {
 		var iconMenu = new Menu();
 		addLink(iconMenu, "Change icon", function() {
 			changeIcon({ reset: false, open: false });
@@ -204,8 +197,21 @@ class TreeViewMenus {
 			if (!FileSystem.existsSync(path)) FileSystem.writeFileSync(path, "");
 			electron.Shell.openItem(path);
 		});
-		var iconItem = new MenuItem({ label: "Custom icon", type: Sub, submenu: iconMenu });
-		//}
+		return new MenuItem({ label: "Custom icon", type: Sub, submenu: iconMenu });
+	}
+	//
+	public static function add(m:Menu, o:MenuItemOptions) {
+		var r = new MenuItem(o);
+		m.append(r);
+		return r;
+	}
+	public static inline function addLink(m:Menu, label:String, click:Void->Void) {
+		return add(m, { label: label, click: click });
+	}
+	public static function init() {
+		items = new TreeViewMenuData();
+		var iconItem = initIconMenu();
+		TreeViewItemMenus.init();
 		//{
 		itemMenu = new Menu();
 		items.shaderItems = [
@@ -218,6 +224,7 @@ class TreeViewMenus {
 		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
 		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
+		for (q in items.manipOuter) itemMenu.append(q);
 		itemMenu.append(iconItem);
 		//}
 		//{
@@ -226,11 +233,12 @@ class TreeViewMenus {
 		addLink(dirMenu, "Collapse all", collapseAll);
 		items.openAll = addLink(dirMenu, "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
+		for (q in items.manipOuter) dirMenu.append(q);
 		dirMenu.append(iconItem);
 		//}
 	}
 }
-private class TreeViewMenuItems {
+private class TreeViewMenuData {
 	public var openAll:MenuItem;
 	public var openCombined:MenuItem;
 	//
@@ -239,6 +247,11 @@ private class TreeViewMenuItems {
 	public var changeOpenIcon:MenuItem;
 	public var resetOpenIcon:MenuItem;
 	public var openCustomCSS:MenuItem;
+	//
+	public var manipCreate:MenuItem;
+	public var manipOuter:Array<MenuItem> = [];
+	public var manipDirOnly:Array<MenuItem> = [];
+	public var manipNonRoot:Array<MenuItem> = [];
 	//
 	public var removeFromRecentProjects:MenuItem;
 	public var shaderItems:Array<MenuItem>;

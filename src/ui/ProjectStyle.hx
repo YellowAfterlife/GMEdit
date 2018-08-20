@@ -5,6 +5,7 @@ import haxe.io.Path;
 import js.RegExp;
 import js.html.LinkElement;
 import js.html.StyleElement;
+import ui.treeview.TreeView;
 using tools.NativeString;
 using tools.HtmlTools;
 

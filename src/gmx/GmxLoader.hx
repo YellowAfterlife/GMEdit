@@ -7,6 +7,8 @@ import haxe.io.Path;
 import ace.AceWrap;
 import parsers.GmlSeeker;
 import tools.Dictionary;
+import tools.NativeString;
+import ui.treeview.TreeView;
 
 /**
  * ...
@@ -57,10 +59,25 @@ class GmxLoader {
 				out.appendChild(r);
 			}
 		}
-		for (q in gmx.findAll("scripts")) loadrec(q, tv, "script", "scripts/");
-		for (q in gmx.findAll("shaders")) loadrec(q, tv, "shader", "shaders/");
-		for (q in gmx.findAll("timelines")) loadrec(q, tv, "timeline", "timelines/");
-		for (q in gmx.findAll("objects")) loadrec(q, tv, "object", "objects/");
+		function loadtop(one:String, ?plural:String):Void {
+			if (plural == null) plural = one + "s";
+			var dir = null;
+			var pfx = plural + "/";
+			for (p in gmx.findAll(plural)) {
+				if (dir == null) {
+					dir = TreeView.makeDir(NativeString.capitalize(plural), pfx);
+					tv.appendChild(dir);
+				}
+				for (q in p.children) {
+					loadrec(q, dir.treeItems, one, pfx);
+				}
+			}
+		}
+		//
+		loadtop("script");
+		loadtop("shader");
+		loadtop("timeline");
+		loadtop("object");
 		//
 		function loadinc(gmx:SfGmx, out:Element, path:String) {
 			if (gmx.name == "datafile") {

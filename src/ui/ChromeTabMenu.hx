@@ -5,6 +5,7 @@ import gml.file.GmlFileKind;
 import js.html.Element;
 import js.html.MouseEvent;
 import ui.ChromeTabs;
+import ui.treeview.TreeView;
 using tools.HtmlTools;
 
 /**

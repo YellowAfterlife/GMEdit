@@ -15,6 +15,10 @@ import Main.document;
 @:native("Electron_Dialog") extern class Dialog {
 	public static function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int;
 	
+	public static inline function showAlert(s:String):Void {
+		Main.window.alert(s);
+	}
+	
 	public static function showOpenDialog(
 		options:DialogOpenOptions, ?async:Array<String>->Void
 	):Array<String>;
@@ -27,6 +31,10 @@ import Main.document;
 	
 	public static inline function showPrompt(text:String, def:String, fn:String->Void):Void {
 		DialogFallback.showPrompt(text, def, fn);
+	}
+	
+	public static inline function showConfirm(text:String):Bool {
+		return Main.window.confirm(text);
 	}
 	
 	/*public static inline function showConfirmBoxSync(text:String, title:String) {
@@ -91,6 +99,7 @@ import Main.document;
 		promptFunc = fn;
 		promptCtr.style.display = "";
 		promptInput.focus();
+		promptInput.select();
 	}
 	static function initPrompt() {
 		function proc(ok:Bool):Void {

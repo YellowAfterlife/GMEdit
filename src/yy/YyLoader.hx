@@ -10,7 +10,7 @@ import haxe.io.Path;
 import js.html.Element;
 import tools.Dictionary;
 import tools.NativeString;
-import ui.TreeView;
+import ui.treeview.TreeView;
 
 /**
  * ...
@@ -73,6 +73,7 @@ class YyLoader {
 					}
 					rel = path + name + "/";
 					var dir = TreeView.makeDir(name, rel);
+					dir.setAttribute(TreeView.attrYYID, res.Key);
 					loadrec(dir.treeItems, vdir, rel);
 					out.appendChild(dir);
 				} else {
@@ -123,6 +124,7 @@ class YyLoader {
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
 							var extEl = TreeView.makeDir(ext.name, extRel);
+							extEl.setAttribute(TreeView.attrYYID, res.Key);
 							for (file in ext.files) {
 								var fileName = file.filename;
 								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
@@ -172,7 +174,9 @@ class YyLoader {
 						default: continue;
 					}
 					var kind = type.substring(2).toLowerCase(); // GMScript -> script
-					out.appendChild(TreeView.makeItem(name, rel, full, kind));
+					var item = TreeView.makeItem(name, rel, full, kind);
+					item.setAttribute(TreeView.attrYYID, res.Key);
+					out.appendChild(item);
 				}
 			}
 		}

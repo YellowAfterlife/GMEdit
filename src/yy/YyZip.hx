@@ -281,6 +281,9 @@ class YyZip extends Project {
 	override public function mkdirSync(path:String) {
 		// (directories are implicit in ZIP)
 	}
+	override public function rmdirSync(path:String) {
+		//
+	}
 	static function getMimeType(ext:String) {
 		// todo: get a full list from somewhere if this ever matters
 		return switch (ext) {

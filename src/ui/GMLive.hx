@@ -2,6 +2,7 @@ package ui;
 import js.RegExp;
 import parsers.GmlReader;
 import parsers.GmlSeeker;
+import ui.treeview.TreeView;
 using tools.HtmlTools;
 
 /**

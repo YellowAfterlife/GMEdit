@@ -16,6 +16,22 @@ abstract YyGUID(String) to String {
 		}
 		return result;
 	}
+	public static function createNum(count:Int, ?pj:YyProject):Array<YyGUID> {
+		var out = [];
+		var taken = new Map();
+		if (pj != null) for (pair in pj.resources) {
+			taken.set(pair.Key, true);
+			taken.set(pair.Value.id, true);
+		}
+		for (i in 0 ... count) {
+			var id:YyGUID;
+			do {
+				id = new YyGUID();
+			} while (taken.exists(id));
+			out.push(id);
+		}
+		return out;
+	}
 	public inline function new() {
 		this = create();
 	}
