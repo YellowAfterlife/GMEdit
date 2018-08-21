@@ -139,4 +139,32 @@ class GmxManip {
 		pj.reload();
 		return true;
 	}
+	public static function rename(q:TreeViewItemRename) {
+		var d = resolve(q);
+		if (d == null) return false;
+		var pj = d.pj;
+		var single = d.single;
+		var gmx = d.ref;
+		if (gmx.name != single) {
+			gmx.set("name", q.name);
+		} else {
+			var p0 = gmx.text;
+			switch (single) {
+				case "script": {};
+				default: p0 += '.$single.gmx';
+			}
+			var mt = new RegExp("^(\\w+[/\\\\])(\\w+)(.*)$").exec(p0);
+			if (mt == null) {
+				Dialog.showAlert("Can't match resource name");
+				return false;
+			}
+			var p1 = mt[1] + q.name + mt[3];
+			pj.renameSync(p0, p1);
+			gmx.text = p1;
+		}
+		TreeViewItemMenus.renameImpl_1(q);
+		pj.writeTextFileSync(pj.name, d.root.toGmxString());
+		pj.reload();
+		return false;
+	}
 }

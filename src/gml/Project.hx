@@ -209,6 +209,14 @@ class Project {
 	public function writeTextFileSync(path:String, text:String) {
 		FileSystem.writeFileSync(fullPath(path), text);
 	}
+	public inline function writeJsonFileSync(path:String, value:Dynamic) {
+		writeTextFileSync(path, NativeString.yyJson(value));
+	}
+	public function renameSync(prev:String, next:String) {
+		if (existsSync(prev)) {
+			FileSystem.renameSync(fullPath(prev), fullPath(next));
+		}
+	}
 	public function getImageURL(path:String):String {
 		var full = fullPath(path);
 		return FileSystem.existsSync(full) ? ("file:///" + full) : null;

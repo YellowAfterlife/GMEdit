@@ -8,6 +8,7 @@ import js.html.Element;
 import tools.NativeString;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
+import yy.YyProjectResource;
 
 /**
  * ...
@@ -194,6 +195,47 @@ class YyManip {
 			pj.writeTextFileSync(d.vp, NativeString.yyJson(d.vy));
 		}
 		//
+		pj.reload();
+		return true;
+	}
+	public static function rename(q:TreeViewItemRename) {
+		var d = resolve(q);
+		if (d == null) return false;
+		var pair:YyProjectResourceValue = null;
+		for (pair1 in d.py.resources) {
+			if (pair1.Key == d.ri) {
+				pair = pair1.Value;
+				break;
+			}
+		}
+		if (pair == null) return false;
+		var pj = d.pj;
+		switch (pair.resourceType) {
+			case "GMFolder": {
+				var vj:YyView = pj.readJsonFileSync(pair.resourcePath);
+				vj.folderName = q.name;
+				pj.writeJsonFileSync(pair.resourcePath, vj);
+			};
+			case "GMScript": {
+				var path = pair.resourcePath;
+				var dir = Path.directory(path);
+				var ndir = Path.join([Path.directory(dir), q.name]);
+				var rel = Path.withoutDirectory(path);
+				pj.renameSync(dir, ndir);
+				var path1 = Path.join([ndir, rel]);
+				var npath1 = Path.join([ndir, q.name + ".yy"]);
+				pair.resourcePath = npath1;
+				pj.renameSync(path1, npath1);
+				var path2 = Path.withoutExtension(path1) + ".gml";
+				pj.renameSync(path2, Path.join([ndir, q.name + ".gml"]));
+			};
+			default: {
+				Dialog.showAlert('No idea how to rename type=${pair.resourceType}, sorry');
+				return false;
+			};
+		}
+		TreeViewItemMenus.renameImpl_1(q);
+		pj.writeJsonFileSync(pj.name, d.py);
 		pj.reload();
 		return true;
 	}

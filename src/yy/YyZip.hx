@@ -187,7 +187,8 @@ class YyZip extends Project {
 		return yyzFileMap[fixSlashes(path)] != null;
 	}
 	override public function unlinkSync(path:String):Void {
-		var file = yyzFileMap[fixSlashes(path)];
+		path = fixSlashes(path);
+		var file = yyzFileMap[path];
 		if (file != null) {
 			yyzFileMap.remove(path);
 			yyzFileList.remove(file);
@@ -244,6 +245,25 @@ class YyZip extends Project {
 		if (file != null) {
 			return file.getDataURL();
 		} else return null;
+	}
+	override public function renameSync(prev:String, next:String) {
+		prev = fixSlashes(prev);
+		next = fixSlashes(next);
+		var file = yyzFileMap[prev];
+		if (file != null) {
+			file.path = next;
+			yyzFileMap.remove(prev);
+			yyzFileMap.set(next, file);
+		} else {
+			var rx = new RegExp("^" + NativeString.escapeRx(prev) + "([/\\\\].+)$");
+			for (file in yyzFileList) {
+				var mt = rx.exec(file.path);
+				if (mt == null) continue;
+				yyzFileMap.remove(file.path);
+				file.path = next + mt[1];
+				yyzFileMap.set(file.path, file);
+			}
+		}
 	}
 	override public function readdirSync(path:String):Array<ProjectDirInfo> {
 		var out = [];

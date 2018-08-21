@@ -19,6 +19,9 @@ using tools.HtmlTools;
 	//
 	function clear():Void;
 	function append(item:MenuItem):Void;
+	inline function appendSep():Void {
+		append(new MenuItem({ type:Sep }));
+	}
 	function insert(pos:Int, item:MenuItem):Void;
 	var items:Array<MenuItem>;
 	//

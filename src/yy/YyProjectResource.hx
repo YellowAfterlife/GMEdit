@@ -6,9 +6,10 @@ package yy;
  */
 typedef YyProjectResource = {
 	Key:YyGUID,
-	Value:{
-		id:YyGUID,
-		resourcePath:String,
-		resourceType:String,
-	}
+	Value:YyProjectResourceValue,
+};
+typedef YyProjectResourceValue = {
+	id:YyGUID,
+	resourcePath:String,
+	resourceType:String,
 };

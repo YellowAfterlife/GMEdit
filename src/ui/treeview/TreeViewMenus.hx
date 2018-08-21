@@ -224,6 +224,7 @@ class TreeViewMenus {
 		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
 		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
+		itemMenu.appendSep();
 		for (q in items.manipOuter) itemMenu.append(q);
 		itemMenu.append(iconItem);
 		//}
@@ -233,6 +234,7 @@ class TreeViewMenus {
 		addLink(dirMenu, "Collapse all", collapseAll);
 		items.openAll = addLink(dirMenu, "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
+		dirMenu.appendSep();
 		for (q in items.manipOuter) dirMenu.append(q);
 		dirMenu.append(iconItem);
 		//}
