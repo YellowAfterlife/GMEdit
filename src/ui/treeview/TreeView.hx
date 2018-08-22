@@ -4,7 +4,9 @@ import electron.FileSystem;
 import electron.Menu;
 import gml.file.*;
 import gml.Project;
+import js.RegExp;
 import js.html.CSSStyleSheet;
+import js.html.DragEvent;
 import js.html.Element;
 import js.html.DivElement;
 import js.html.Event;
@@ -58,6 +60,7 @@ class TreeView {
 		prop(attrIdent, query.ident);
 		prop(attrPath, query.path);
 		prop(attrKind, query.kind);
+		prop(attrRel, query.rel);
 		return element.querySelector(qjs);
 	}
 	//
@@ -107,6 +110,7 @@ class TreeView {
 		e.preventDefault();
 		TreeViewMenus.showItemMenu(cast e.target, e);
 	}
+	//
 	public static function makeDir(name:String, rel:String):TreeViewDir {
 		var r:TreeViewDir = cast document.createDivElement();
 		r.className = "dir";
@@ -117,6 +121,7 @@ class TreeView {
 		header.addEventListener("contextmenu", handleDirCtxMenu);
 		header.title = name;
 		r.appendChild(header);
+		TreeViewDnD.bind(header, rel);
 		//
 		var span = document.createSpanElement();
 		span.appendChild(document.createTextNode(name));
@@ -155,6 +160,7 @@ class TreeView {
 	public static function makeItem(name:String, rel:String, path:String, kind:String) {
 		var r = makeItemImpl(name, path, kind);
 		r.setAttribute(attrRel, rel);
+		TreeViewDnD.bind(r, rel);
 		var th = thumbMap[path];
 		if (th != null) r.setAttribute(attrThumb, th);
 		r.addEventListener("dblclick", handleItemClick);
@@ -217,6 +223,7 @@ typedef TreeViewQuery = {
 	?extra:String,
 	?path:String,
 	?kind:String,
+	?rel:String,
 	?ident:String,
 };
 extern class TreeViewDir extends DivElement {

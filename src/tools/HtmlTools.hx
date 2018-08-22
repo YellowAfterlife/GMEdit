@@ -5,6 +5,7 @@ import js.html.Document;
 import js.html.Element;
 import js.html.MouseEvent;
 import haxe.extern.EitherType;
+import js.html.Node;
 
 /**
  * ...
@@ -36,6 +37,20 @@ class HtmlTools {
 		} else {
 			if (el.hasAttribute(attr)) el.removeAttribute(attr);
 		}
+	}
+	
+	public static inline function insertBeforeEl(ctr:Element, insertWhat:Element, beforeWhat:Element) {
+		ctr.insertBefore(insertWhat, beforeWhat);
+	}
+	public static function insertAfterEl(ctr:Element, insertWhat:Element, afterWhat:Element) {
+		var next = afterWhat.nextElementSibling;
+		insertBeforeEl(ctr, insertWhat, next);
+	}
+	public static function insertBeforeSelf(el:Element, insertWhat:Element) {
+		insertBeforeEl(el.parentElement, insertWhat, el);
+	}
+	public static function insertAfterSelf(el:Element, insertWhat:Element) {
+		insertAfterEl(el.parentElement, insertWhat, el);
 	}
 }
 extern class ElementList implements ArrayAccess<Element> {

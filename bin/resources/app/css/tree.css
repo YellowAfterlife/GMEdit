@@ -77,9 +77,23 @@
 .treeview .dir.open > .header:before {
 	background-position: -40px 0;
 }
-.treeview .header:hover, .treeview .header:hover > span,
-.treeview .item:hover, .treeview .item:hover > span {
+.treeview .header:not(:active):hover,
+.treeview .header:not(:active):hover > span,
+.treeview .item:not(:active):hover,
+.treeview .item:not(:active):hover > span {
 	background: #f3f3f3;
+}
+.treeview .header.drop-before,
+.treeview .item.drop-before {
+	box-shadow: 0 -1px 0 red;
+}
+.treeview .header.drop-after,
+.treeview .item.drop-after {
+	box-shadow: 0 -1px 0 red inset;
+}
+.treeview .header.drop-into,
+.treeview .item.drop-into {
+	box-shadow: 0 0 2px red inset;
 }
 .treeview .dir:not(.open) > .items {
 	display: none;

@@ -9,15 +9,16 @@ import tools.NativeString;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
 import yy.YyProjectResource;
+using tools.HtmlTools;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 class YyManip {
-	static function resolve(q:TreeViewItemBase) {
+	static function resolve(q:TreeViewItemBase, ?py:YyProject) {
 		var pj = Project.current;
-		var py:YyProject = pj.readJsonFileSync(pj.name);
+		if (py == null) py = pj.readJsonFileSync(pj.name);
 		var vp = "views/" + q.tvDir.getAttribute(TreeView.attrYYID) + ".yy";
 		var vy:YyView = pj.readJsonFileSync(vp);
 		var ri:YyGUID = cast q.tvRef.getAttribute(TreeView.attrYYID);
@@ -237,6 +238,40 @@ class YyManip {
 		TreeViewItemMenus.renameImpl_1(q);
 		pj.writeJsonFileSync(pj.name, d.py);
 		pj.reload();
+		return true;
+	}
+	public static function move(q:TreeViewItemMove) {
+		var d = resolve(q);
+		if (d == null) return false;
+		var pj = d.pj;
+		var vy = d.vy;
+		var sp = "views/" + q.srcDir.getAttribute(TreeView.attrYYID) + ".yy";
+		var sy = d.vp != sp ? pj.readJsonFileSync(sp) : vy;
+		var si = (cast q.srcRef.getAttribute(TreeView.attrYYID):YyGUID);
+		//
+		sy.children.remove(si);
+		switch (q.order) {
+			case 1: {
+				var i = vy.children.indexOf(d.ri);
+				if (i >= 0) vy.children.insert(i + 1, si); else vy.children.push(si);
+			};
+			case -1: {
+				var i = vy.children.indexOf(d.ri);
+				if (i >= 0) vy.children.insert(i, si); else vy.children.unshift(si);
+			};
+			default: vy.children.push(si);
+		}
+		//
+		pj.writeTextFileSync(d.vp, NativeString.yyJson(vy));
+		if (vy != sy) pj.writeTextFileSync(sp, NativeString.yyJson(sy));
+		//
+		q.srcRef.parentElement.removeChild(q.srcRef);
+		switch (q.order) {
+			case 1: q.tvRef.insertAfterSelf(q.srcRef);
+			case -1: q.tvRef.insertBeforeSelf(q.srcRef);
+			default: q.tvDir.treeItems.appendChild(q.srcRef);
+		}
+		//
 		return true;
 	}
 }

@@ -16,8 +16,8 @@ import ui.treeview.TreeView;
  */
 class TreeViewItemMenus {
 	static var prefix:String;
-	static function getItemData(incSelf:Bool) {
-		var par = incSelf ? target : target.parentElement;
+	public static function getItemData(el:Element) {
+		var par = el.parentElement;
 		var root = TreeView.element;
 		var chain = [];
 		while (par != null && par != root) {
@@ -25,8 +25,8 @@ class TreeViewItemMenus {
 			if (d != null) chain.unshift(d);
 			par = par.parentElement;
 		}
-		var name = target.getAttribute(TreeView.attrIdent);
-		if (name == null) name = target.getAttribute(TreeView.attrLabel);
+		var name = el.getAttribute(TreeView.attrIdent);
+		if (name == null) name = el.getAttribute(TreeView.attrLabel);
 		return {
 			chain: chain,
 			last: name,
@@ -35,8 +35,7 @@ class TreeViewItemMenus {
 			single: prefix.substring(0, prefix.length - 2),
 		};
 	}
-	static function updateCreateMenu(dir:Bool) {
-		var par = target;
+	public static function updatePrefix(par:Element) {
 		var root = TreeView.element;
 		prefix = "unknown/";
 		while (par != null && par != root) {
@@ -46,6 +45,9 @@ class TreeViewItemMenus {
 			par = par.parentElement;
 		}
 		prefix = prefix.toLowerCase();
+	}
+	static function updateCreateMenu(dir:Bool) {
+		updatePrefix(target);
 		switch (Project.current.version) {
 			case v1 | v2: {
 				for (q in items.manipOuter) q.visible = true;
@@ -113,7 +115,7 @@ class TreeViewItemMenus {
 		return true;
 	}
 	static function createImpl(z:Bool, order:Int) {
-		var d = getItemData(false);
+		var d = getItemData(target);
 		Dialog.showPrompt("Name?", "", function(s:String) {
 			if (s == "" || s == null) return;
 			//
@@ -140,7 +142,7 @@ class TreeViewItemMenus {
 	}
 	//
 	static function removeImpl() {
-		var d = getItemData(false);
+		var d = getItemData(target);
 		if (!Dialog.showConfirm("Are you sure you want to delete " + d.last + "?")) return;
 		var args:TreeViewItemBase = {
 			prefix: d.prefix,
@@ -162,7 +164,7 @@ class TreeViewItemMenus {
 		
 	}
 	static function renameImpl() {
-		var d = getItemData(false);
+		var d = getItemData(target);
 		Dialog.showPrompt("New name?", d.last, function(s:String) {
 			if (s == d.last || s == "" || s == null) return;
 			var dir = target.classList.contains(TreeView.clDir);
@@ -238,4 +240,12 @@ typedef TreeViewItemCreate = {
 typedef TreeViewItemRename = {
 	>TreeViewItemBase,
 	name:String,
+}
+typedef TreeViewItemMove = {
+	>TreeViewItemBase,
+	srcChain:Array<String>,
+	srcLast:String,
+	srcDir:TreeViewDir,
+	srcRef:Element,
+	order:Int,
 }
