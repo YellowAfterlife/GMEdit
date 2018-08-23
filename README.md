@@ -10,7 +10,7 @@ Maintained by: [YellowAfterlife](https://yal.cc)
 
 * Download/clone the repository
 * Download [a pre-built Electron binary](https://github.com/electron/electron/releases) and extract the files into bin/ directory (so that you have `bin/electron.exe`).
-* Build the project via `haxe -cp src -js ./bin/resources/app/app.js -D nodejs -main Main -dce full` or `npm run compile` (or open and run the included FlashDevelop project)
+* Build the project via `haxe -cp src -js ./bin/resources/app/app.js -main Main -dce full` or `npm run compile` (or open and run the included FlashDevelop project)
 
   You'll need at least a [preview version of Haxe 4](https://haxe.org/download/version/4.0.0-preview.4/) - Haxe 3 will not work out of box due to API changes between the two.
 * Run the compiled output with electron via `npm start` or just run the according Electron binary in bin/
