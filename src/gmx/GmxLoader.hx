@@ -62,7 +62,7 @@ class GmxLoader {
 		function loadtop(one:String, ?plural:String):Void {
 			if (plural == null) plural = one + "s";
 			var dir = null;
-			var pfx = plural + "/";
+			var pfx = NativeString.capitalize(plural) + "/";
 			for (p in gmx.findAll(plural)) {
 				if (dir == null) {
 					dir = TreeView.makeDir(NativeString.capitalize(plural), pfx);
@@ -96,8 +96,8 @@ class GmxLoader {
 			}
 		}
 		for (datafiles in gmx.findAll("datafiles")) {
-			var parent = TreeView.makeDir("Included files", "datafiles/");
-			for (c in datafiles.children) loadinc(c, parent.treeItems, "datafiles/");
+			var parent = TreeView.makeDir("Included files", "Included files/");
+			for (c in datafiles.children) loadinc(c, parent.treeItems, "Included files/");
 			if (parent.treeItems.children.length > 0) tv.appendChild(parent);
 		}
 		//
@@ -106,7 +106,7 @@ class GmxLoader {
 		for (extParent in gmx.findAll("NewExtensions")) {
 			var extNodes = extParent.findAll("extension");
 			if (extNodes.length == 0) continue;
-			var extParentDir = TreeView.makeDir("Extensions", "extensions/");
+			var extParentDir = TreeView.makeDir("Extensions", "Extensions/");
 			for (extNode in extNodes) {
 				var extRel = extNode.text;
 				extRel = StringTools.replace(extRel, "\x5c", "/"); // no backslashes
