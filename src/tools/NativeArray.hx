@@ -18,4 +18,16 @@ class NativeArray {
 	public static inline function forEach<T>(arr:Array<T>, fn:T->Void):Void {
 		untyped arr.forEach(fn);
 	}
+	public static function insertAfter<T>(arr:Array<T>, insertWhat:T, afterWhat:T):Void {
+		var i = arr.indexOf(afterWhat);
+		if (i >= 0) {
+			arr.insert(i + 1, insertWhat);
+		} else arr.push(insertWhat);
+	}
+	public static function insertBefore<T>(arr:Array<T>, insertWhat:T, beforeWhat:T):Void {
+		var i = arr.indexOf(beforeWhat);
+		if (i >= 0) {
+			arr.insert(i, insertWhat);
+		} else arr.unshift(insertWhat);
+	}
 }

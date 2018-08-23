@@ -5,19 +5,20 @@ import js.RegExp;
 import js.html.Element;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
+using tools.NativeArray;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 class GmxManip {
-	static function resolve(q:TreeViewItemBase) {
+	static function resolve(q:TreeViewItemBase, ?root:SfGmx) {
 		if (q.chain.length > 0) {
 			q.chain[0] = q.chain[0].toLowerCase();
 		} else q.last = q.last.toLowerCase();
 		var pj = Project.current;
 		q.pj = pj;
-		var root = pj.readGmxFileSync(pj.name);
+		if (root == null) root = pj.readGmxFileSync(pj.name);
 		var plural = q.plural, single = q.single;
 		//
 		var dir = root;
@@ -165,6 +166,23 @@ class GmxManip {
 		TreeViewItemMenus.renameImpl_1(q);
 		pj.writeTextFileSync(pj.name, d.root.toGmxString());
 		pj.reload();
-		return false;
+		return true;
+	}
+	public static function move(q:TreeViewItemMove) {
+		var d = resolve(q);
+		if (d == null) return false;
+		q.chain = q.srcChain;
+		q.last = q.srcLast;
+		var sd = resolve(q, d.root);
+		if (sd == null) return false;
+		sd.dir.children.remove(sd.ref);
+		switch (q.order) {
+			case 1: d.dir.children.insertAfter(sd.ref, d.ref);
+			case -1: d.dir.children.insertBefore(sd.ref, d.ref);
+			default: d.ref.children.push(sd.ref);
+		}
+		d.pj.writeTextFileSync(d.pj.name, d.root.toGmxString());
+		yy.YyManip.moveTV(q);
+		return true;
 	}
 }

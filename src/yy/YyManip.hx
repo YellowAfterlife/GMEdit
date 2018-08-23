@@ -265,13 +265,16 @@ class YyManip {
 		pj.writeTextFileSync(d.vp, NativeString.yyJson(vy));
 		if (vy != sy) pj.writeTextFileSync(sp, NativeString.yyJson(sy));
 		//
+		moveTV(q);
+		//
+		return true;
+	}
+	public static function moveTV(q:TreeViewItemMove) {
 		q.srcRef.parentElement.removeChild(q.srcRef);
 		switch (q.order) {
 			case 1: q.tvRef.insertAfterSelf(q.srcRef);
 			case -1: q.tvRef.insertBeforeSelf(q.srcRef);
 			default: q.tvDir.treeItems.appendChild(q.srcRef);
 		}
-		//
-		return true;
 	}
 }

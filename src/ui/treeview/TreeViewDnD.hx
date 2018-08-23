@@ -37,7 +37,7 @@ class TreeViewDnD {
 	}
 	//
 	static inline var dropType = "text/gmedit-rel-path";
-	static inline var rsCanDrop = "^scripts/";
+	static inline var rsCanDrop = "^scripts[\\\\/]";
 	static var rxCanDropTo = new RegExp(rsCanDrop, "i");
 	static var rxCanDrag = new RegExp(rsCanDrop + ".+", "i");
 	static function hasType(e:DragEvent, t:String):Bool {
@@ -102,6 +102,7 @@ class TreeViewDnD {
 				};
 				switch (Project.current.version) {
 					case v2: yy.YyManip.move(args);
+					case v1: gmx.GmxManip.move(args);
 					default:
 				}
 			}
