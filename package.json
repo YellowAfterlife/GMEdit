@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "compile": "haxe -cp src -js ./bin/resources/app/app.js -D nodejs -main Main -dce full",
+    "compile": "haxe -cp src -js ./bin/resources/app/app.js -main Main -dce full",
     "start": "electron ./bin/resources/app"
   },
   "author": "YellowAfterlife"
