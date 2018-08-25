@@ -59,12 +59,93 @@ class Project {
 	//
 	public var hasGMLive:Bool = false;
 	//
-	public function new(path:String) {
-		this.path = path;
-		dir = Path.directory(path);
-		name = Path.withoutDirectory(path);
+	#if !lwedit
+	private function new_procSingle() {
+		var _path = path;
+		inline function findV1(dir:String):Void {
+			for (rel in FileSystem.readdirSync(dir)) {
+				if (rel.ptExt() == "gmx" && rel.ptExt2() == "project") {
+					path = dir.ptJoin(rel);
+					break;
+				}
+			}
+		}
+		inline function findV2(dir:String):Void {
+			for (rel in FileSystem.readdirSync(dir)) {
+				if (rel.ptExt() == "yyp") {
+					path = dir.ptJoin(rel);
+					break;
+				}
+			}
+		}
+		inline function delayTab():Void {
+			window.setTimeout(function() {
+				var tabName = _path.ptNoDir();
+				switch (tabName.ptExt()) {
+					case "gmx": tabName = tabName.ptNoExt().ptNoExt();
+					default: tabName = tabName.ptNoExt();
+				}
+				GmlFile.open(tabName, _path);
+			}, 100);
+		}
+		if (Electron != null) switch (path.ptExt()) {
+			case "gmx": switch (path.ptExt2()) {
+				case "object", "extension": {
+					version = GmlVersion.v1;
+					path = null;
+					findV1(_path.ptDir().ptDir());
+					delayTab();
+				};
+			};
+			case "yy": {
+				version = GmlVersion.v2;
+				path = null;
+				findV2(_path.ptDir().ptDir().ptDir());
+				delayTab();
+			};
+			case "gml": {
+				var dir = path.ptDir(); // ".../some_yy/extensions/ext1"
+				var dirName = dir.ptNoDir(); // "ext1"
+				var outer:String = dir.ptDir(); // ".../some_yy/extensions"
+				var outer2:String = outer.ptDir(); // ".../some_yy"
+				version = GmlVersion.none;
+				path = null;
+				if (FileSystem.existsSync(dir.ptJoin(dirName + ".yy"))) { // ".../some/some.yy"
+					version = GmlVersion.v2;
+					findV2(outer2);
+				}
+				else if (dirName == "scripts") {
+					findV1(outer);
+					if (path != null) version = GmlVersion.v1;
+				}
+				else if (FileSystem.existsSync(dir + ".extension.gmx")) {
+					version = v1;
+					findV1(outer2);
+				}
+				if (version == GmlVersion.none) {
+					version = GmlVersion.detect(FileSystem.readTextFileSync(_path));
+					if (version == GmlVersion.none) version = v2;
+				}
+				delayTab();
+			};
+		}
+	}
+	#end
+	public function new(_path:String) {
+		path = _path;
 		#if !lwedit
-		detectVersion();
+		new_procSingle();
+		#end
+		if (path != null) {
+			dir = path.ptDir();
+			name = path.ptNoDir();
+		} else {
+			dir = _path.ptDir();
+			name = _path.ptNoDir();
+			displayName = name;
+		}
+		#if !lwedit
+		if (path != null) detectVersion();
 		document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
 		TreeView.clear();
 		reload(true);
@@ -129,7 +210,7 @@ class Project {
 		//
 		#if !lwedit
 		var path = moduleArgs["open"];
-		if (path == null || path == "") path = window.localStorage.getItem("autoload");
+		//if (path == null || path == "") path = window.localStorage.getItem("autoload");
 		open(path != null ? path : "");
 		#else
 		current = new YyZip("", "", []);
@@ -159,11 +240,14 @@ class Project {
 		}, 1);
 	}
 	private function reload_1() {
-		switch (version) {
+		if (version == GmlVersion.none) {
+			ui.RecentProjects.show();
+		} else if (path == null) {
+			TreeView.clear();
+		} else switch (version) {
 			case GmlVersion.v1: GmxLoader.run(this);
 			case GmlVersion.v2: YyLoader.run(this);
 			case GmlVersion.live: GmlLoader.run(this);
-			case GmlVersion.none: ui.RecentProjects.show();
 			default:
 		}
 	}

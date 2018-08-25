@@ -2,6 +2,7 @@ package tools;
 import gml.GmlVersion;
 import haxe.io.Path;
 import js.RegExp;
+import haxe.extern.Rest;
 using tools.PathTools;
 
 /**
@@ -29,13 +30,18 @@ class PathTools {
 		return Path.withoutExtension(path);
 	}
 	
+	/** "some.project.gmx" -> "project" */
+	public static inline function ptExt2(path:String):String {
+		return ptExt(ptNoExt(path));
+	}
+	
 	/** Returns file name (no directory, no extension) */
 	public static inline function ptName(path:String):String {
 		return path.ptNoDir().ptNoExt();
 	}
 	
 	/** ("a/b", "c") -> "a/b/c" */
-	public static var ptJoin:haxe.extern.Rest<String>->String = (
+	public static var ptJoin:String->Rest<String>->String = (
 		Reflect.makeVarArgs(function(args:Array<Dynamic>) {
 			return Path.join(cast args);
 		})

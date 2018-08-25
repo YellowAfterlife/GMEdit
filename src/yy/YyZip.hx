@@ -269,10 +269,10 @@ class YyZip extends Project {
 		var out = [];
 		var foundDirs = new Dictionary();
 		var full = fixSlashes(path);
-		var prefix = full != "" ? full + "/" : "";
+		var prefix = full != "" ? full + "/" : ""; // -> "a/b/"
 		var prefixLen = prefix.length;
 		for (file in yyzFileList) {
-			var filePath = file.path;
+			var filePath = file.path; // -> "a/b/f.x"|"a/b/c/f.y"
 			if (filePath.startsWith(prefix)) {
 				if (Path.directory(filePath) == full) {
 					var cut = Path.withoutDirectory(filePath);
@@ -281,7 +281,8 @@ class YyZip extends Project {
 						isDirectory: false
 					});
 				} else {
-					var cut = filePath.substring(prefixLen);
+					var cut = filePath.substring(prefixLen); // "a/b/f.x" -> "f.x"
+					// "c/f.y" -> "c":
 					var ofs = cut.indexOf("/");
 					if (ofs >= 0) {
 						var dir = cut.substring(0, ofs);
