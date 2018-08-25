@@ -34,8 +34,8 @@
 	background: #222222;
 	color: #D0D0D0;
 }
-.treeview .header:hover, .treeview .header:hover > span,
-.treeview .item:hover, .treeview .item:hover > span {
+.treeview .header:not(:active):hover, .treeview .header:not(:active):hover > span,
+.treeview .item:not(:active):hover, .treeview .item:not(:active):hover > span {
 	background: #495057;
 }
 .treeview .dir .header, .treeview .item, .treeview .items {
