@@ -205,6 +205,7 @@ class GmlFile {
 		return found;
 	}
 	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
+		path = Path.normalize(path);
 		// todo: perhaps completely eliminate "name" from here and rely on file data
 		// see if there's an existing tab for this:
 		for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
