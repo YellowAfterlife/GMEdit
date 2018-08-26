@@ -178,8 +178,8 @@ class Project {
 	}
 	public static function open(path:String) {
 		if (current != null) current.close();
-		if (path != "") ui.RecentProjects.add(path);
 		current = new Project(path);
+		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
 	}
 	public function close() {
 		TreeView.saveOpen();
