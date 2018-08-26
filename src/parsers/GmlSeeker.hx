@@ -16,6 +16,7 @@ import ui.treeview.TreeView;
 import yy.YyObject;
 using StringTools;
 using tools.NativeString;
+using tools.PathTools;
 
 /**
  * Looks for definitions in files/code (for syntax highlighing, auto-completion, etc.)
@@ -28,6 +29,7 @@ class GmlSeeker {
 	}
 	public static function run(path:String, main:String) {
 		itemsLeft++;
+		path = path.ptNoBS();
 		function next(err, text) {
 			if (runSync(path, text, main)) {
 				runNext();

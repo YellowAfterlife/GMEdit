@@ -16,6 +16,7 @@ import js.html.StyleElement;
 import tools.Dictionary;
 using tools.HtmlTools;
 using tools.NativeString;
+using tools.PathTools;
 
 /**
  * ...
@@ -57,10 +58,14 @@ class TreeView {
 			check_1 = value;
 			if (check_1 != null) qjs += '[$name="' + check_1.escapeProp() + '"]';
 		}
+		inline function propPath(name:String, value:String) {
+			check_1 = value;
+			if (check_1 != null) qjs += '[$name="' + check_1.ptNoBS().escapeProp() + '"]';
+		}
 		prop(attrIdent, query.ident);
-		prop(attrPath, query.path);
+		propPath(attrPath, query.path);
 		prop(attrKind, query.kind);
-		prop(attrRel, query.rel);
+		propPath(attrRel, query.rel);
 		return element.querySelector(qjs);
 	}
 	//
@@ -112,6 +117,7 @@ class TreeView {
 	}
 	//
 	public static function makeDir(name:String, rel:String):TreeViewDir {
+		rel = rel.ptNoBS();
 		var r:TreeViewDir = cast document.createDivElement();
 		r.className = "dir";
 		//
@@ -151,13 +157,14 @@ class TreeView {
 		span.appendChild(document.createTextNode(name));
 		r.appendChild(span);
 		r.title = name;
-		r.setAttribute(attrPath, path);
+		r.setAttribute(attrPath, path.ptNoBS());
 		r.setAttribute(attrIdent, name);
 		if (kind != null) r.setAttribute(attrKind, kind);
 		return r;
 	}
 	//
 	public static function makeItem(name:String, rel:String, path:String, kind:String) {
+		rel = rel.ptNoBS();
 		var r = makeItemImpl(name, path, kind);
 		r.setAttribute(attrRel, rel);
 		TreeViewDnD.bind(r, rel);

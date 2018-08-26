@@ -97,7 +97,7 @@ class GmxLoader {
 		}
 		for (datafiles in gmx.findAll("datafiles")) {
 			var parent = TreeView.makeDir("Included files", "Included files/");
-			for (c in datafiles.children) loadinc(c, parent.treeItems, "Included files/");
+			for (c in datafiles.children) loadinc(c, parent.treeItems, "datafiles/");
 			if (parent.treeItems.children.length > 0) tv.appendChild(parent);
 		}
 		//

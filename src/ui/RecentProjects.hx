@@ -14,8 +14,12 @@ class RecentProjects {
 		try {
 			var text = Main.window.localStorage.getItem(lsPath);
 			if (text == null) return [];
-			var curr = Json.parse(text);
-			return Std.is(curr, Array) ? curr : [];
+			var curr:Array<String> = Json.parse(text);
+			if (!Std.is(curr, Array)) return [];
+			for (i in 0 ... curr.length) {
+				curr[i] = tools.PathTools.ptNoBS(curr[i]);
+			}
+			return curr;
 		} catch (_:Dynamic) return [];
 	}
 	private static function set(list:Array<String>) {

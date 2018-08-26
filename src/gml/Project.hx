@@ -194,19 +194,32 @@ class Project {
 	public static function init() {
 		//
 		var ls = window.localStorage;
+		var renList:Array<String> = [];
 		var remList:Array<String> = [];
 		var remTime:Float = Date.now().getTime()
 			- (1000 * 60 * 60 * 24 * ui.Preferences.current.projectSessionTime);
 		for (i in 0 ... ls.length) {
 			var k = ls.key(i);
 			if (NativeString.startsWith(k, "@project:")) {
-				if (Std.parseFloat(ls.getItem(k)) < remTime) {
+				if (k.indexOf("\x5c") >= 0) {
+					renList.push(k);
+				}
+				else if (Std.parseFloat(ls.getItem(k)) < remTime) {
 					remList.push(k);
 					remList.push(k.substring(1));
 				}
 			}
 		}
 		for (remKey in remList) ls.removeItem(remKey);
+		for (renKey in renList) {
+			var renKey1 = renKey.substring(1);
+			var v0 = ls.getItem(renKey);
+			var v1 = ls.getItem(renKey1);
+			ls.removeItem(renKey);
+			ls.removeItem(renKey1);
+			ls.setItem(renKey.ptNoBS(), v0);
+			ls.setItem(renKey1.ptNoBS(), v1);
+		}
 		//
 		#if !lwedit
 		var path = moduleArgs["open"];

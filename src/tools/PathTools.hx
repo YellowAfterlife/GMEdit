@@ -48,9 +48,7 @@ class PathTools {
 	);
 	
 	public static function ptDepth(path:String):Int {
-		var dir = ptDir(path);
-		dir = StringTools.replace(dir, "\\", "/");
-		return dir.split("/").length;
+		return ptNoBS(ptDir(path)).split("/").length;
 	}
 	
 	public static function ptDetectProject(path:String):GmlVersion {
@@ -60,5 +58,10 @@ class PathTools {
 			case "txt", "cfg" if (path.ptName().toLowerCase() == "main"): return GmlVersion.live;
 		}
 		return GmlVersion.none;
+	}
+	
+	/** no backslashes */
+	public static inline function ptNoBS(path:String):String {
+		return StringTools.replace(path, "\\", "/");
 	}
 }
