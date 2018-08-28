@@ -227,6 +227,9 @@ class YyManip {
 				var npath1 = Path.join([ndir, q.name + ".yy"]);
 				pair.resourcePath = npath1;
 				pj.renameSync(path1, npath1);
+				var scr:YyScript = pj.readJsonFileSync(npath1);
+				scr.name = q.name;
+				pj.writeJsonFileSync(npath1, scr);
 				var path2 = Path.withoutExtension(path1) + ".gml";
 				pj.renameSync(path2, Path.join([ndir, q.name + ".gml"]));
 			};
