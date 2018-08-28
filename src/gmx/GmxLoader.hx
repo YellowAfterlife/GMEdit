@@ -130,7 +130,7 @@ class GmxLoader {
 					//
 					if (isGmlFile) {
 						if (lm != null) {
-							project.lambdaGml = extFilePath;
+							project.lambdaGml = extFileFull;
 						} else GmlSeeker.run(extFileFull, "");
 					}
 					//

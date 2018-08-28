@@ -89,7 +89,7 @@ class GmlExtLambda {
 		var pj = Project.current;
 		if (!Preferences.current.lambdaMagic) return code;
 		if (pj.lambdaGml == null) return code;
-		if (edit.file.path == pj.fullPath(pj.lambdaGml)) return code;
+		if (edit.file.path == pj.lambdaGml) return code;
 		var d:GmlExtLambdaPre = {
 			project: pj,
 			version: pj.version,
@@ -293,13 +293,7 @@ class GmlExtLambda {
 				break;
 			}
 		}
-		for (s in d.list1) if (!d.map0.exists(s)) {
-			var skip = false;
-			for (fn in fns.findAll("function")) if (fn.findText("name") == s) {
-				skip = true; break;
-			}
-			if (skip) continue;
-			extz = true;
+		function makeFn(s:String) {
 			var fn = new SfGmx("function");
 			fn.addTextChild("name", s);
 			fn.addTextChild("externalName", s);
@@ -308,7 +302,22 @@ class GmlExtLambda {
 			fn.addTextChild("returnType", "2");
 			fn.addTextChild("argCount", "-1");
 			fn.addChild(new SfGmx("args"));
-			fns.addChild(fn);
+			return fn;
+		}
+		for (s in d.list1) if (!d.map0.exists(s)) {
+			var skip = false;
+			for (fn in fns.findAll("function")) if (fn.findText("name") == s) {
+				skip = true; break;
+			}
+			if (skip) continue;
+			extz = true;
+			fns.addChild(makeFn(s));
+		}
+		if (file.findText("init") == "") {
+			file.find("init").text = lfPrefix;
+			fns.children.unshift(makeFn(lfPrefix));
+			extz = true;
+			d.checkInit = true;
 		}
 		if (extz) FileWrap.writeTextFileSync(pj.lambdaExt, ext.toGmxString());
 	}
@@ -327,18 +336,9 @@ class GmlExtLambda {
 				break;
 			}
 		}
-		for (s in d.list1) if (!d.map0.exists(s)) {
-			var skip = false;
-			for (fn in fns) if (fn.name == s) {
-				skip = true;
-				break;
-			}
-			if (skip) continue;
-			extz = true;
-			var id = new YyGUID();
-			order.push(id);
-			fns.push({
-				id: id,
+		function makeFn(s:String) {
+			return {
+				id: new YyGUID(),
 				modelName: "GMExtensionFunction",
 				mvc: "1.0",
 				argCount: -1,
@@ -349,13 +349,34 @@ class GmlExtLambda {
 				kind: 11,
 				name: s,
 				returnType: 2,
-			});
+			};
+		}
+		for (s in d.list1) if (!d.map0.exists(s)) {
+			var skip = false;
+			for (fn in fns) if (fn.name == s) {
+				skip = true;
+				break;
+			}
+			if (skip) continue;
+			extz = true;
+			var fn = makeFn(s);
+			order.push(fn.id);
+			fns.push(fn);
+		}
+		if (file.init == "") {
+			file.init = lfPrefix;
+			var fn = makeFn(lfPrefix);
+			order.unshift(fn.id);
+			fns.unshift(fn);
+			extz = true;
+			d.checkInit = true;
 		}
 		if (extz) FileWrap.writeJsonFileSync(pj.lambdaExt, ext);
 	}
 	public static function post(edit:EditCode, code:String):String {
 		if (!Preferences.current.lambdaMagic) return code;
-		if (code.indexOf("#lambda") < 0) return code;
+		var hasLambda = code.indexOf("#lambda") >= 0;
+		if (!hasLambda && edit.lambdaList.length == 0) return code;
 		//
 		var pj = Project.current;
 		var data:GmlExtLambdaPost = {
@@ -365,8 +386,9 @@ class GmlExtLambda {
 			map0: edit.lambdaMap,
 			list1: [],
 			map1: new Dictionary(),
+			checkInit: false,
 		};
-		var out = post_1(edit, code, edit.file.name, data);
+		var out = hasLambda ? post_1(edit, code, edit.file.name, data) : code;
 		if (data.list0.length != 0 || data.list1.length != 0) {
 			switch (pj.version) {
 				case v1, v2: {}; // OK!
@@ -381,10 +403,18 @@ class GmlExtLambda {
 				return null;
 			}
 			//
-			//
 			var gml:String = null;
 			inline function prepare():Void {
 				if (gml == null) gml = FileWrap.readTextFileSync(pj.lambdaGml);
+			}
+			//
+			if (data.checkInit) {
+				prepare();
+				if (!(new RegExp('#define $lfPrefix\\b')).test(gml)) {
+					gml = '#define $lfPrefix\n'
+						+ '// https://bugs.yoyogames.com/view.php?id=29984\n'
+						+ gml;
+				}
 			}
 			var remList = [];
 			var setList = [];
@@ -403,13 +433,14 @@ class GmlExtLambda {
 			if (changed) {
 				var gml = FileWrap.readTextFileSync(pj.lambdaGml);
 				for (s in remList) {
-					gml = gml.replaceExt(rxExtScript(s), "");
+					gml = gml.replaceExt(rxExtScript(s), "$3");
 					pj.lambdaMap.remove(s);
 				}
 				for (s in setList) {
 					pj.lambdaMap.set(s, true);
 					var add = true;
 					gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
+						trace(s0, c, s1);
 						add = false;
 						return s0 + data.map1[s] + s1;
 					});
@@ -449,4 +480,5 @@ private typedef GmlExtLambdaPost = {
 	map0:Dictionary<String>,
 	list1:Array<String>,
 	map1:Dictionary<String>,
+	checkInit:Bool,
 }

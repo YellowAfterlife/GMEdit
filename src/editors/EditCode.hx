@@ -78,6 +78,17 @@ class EditCode extends Editor {
 		}
 	}
 	
+	static function canLambda(file:GmlFile) {
+		switch (file.kind) {
+			case GmlFileKind.Normal,
+				GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents,
+				GmlFileKind.GmxTimelineMoments, GmlFileKind.YyTimelineMoments,
+				GmlFileKind.GmxConfigMacros, GmlFileKind.GmxProjectMacros
+			: return file.path != null;
+			default: return false;
+		}
+	}
+	
 	override public function load(data:Dynamic):Void {
 		var src:String;
 		if (data != null) {
@@ -177,6 +188,9 @@ class EditCode extends Editor {
 			};
 		}
 		file.syncTime();
+		if (file.kind != GmlFileKind.Normal && canLambda(file)) {
+			file.code = GmlExtLambda.pre(this, file.code);
+		}
 		if (canImport(file)) {
 			file.code = GmlExtImport.pre(file.code, file.path);
 		}
@@ -224,9 +238,6 @@ class EditCode extends Editor {
 			return null;
 		}
 		//
-		out = GmlExtLambda.post(this, out);
-		if (out == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
-		//
 		out = GmlExtArgs.post(out);
 		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
 		//
@@ -259,6 +270,11 @@ class EditCode extends Editor {
 		if (canImport(file)) {
 			val = postpImport(val);
 			if (val == null) return false;
+		}
+		//
+		if (canLambda(file)) {
+			val = GmlExtLambda.post(this, val);
+			if (val == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
 		}
 		//
 		var out:String, src:String, gmx:SfGmx;

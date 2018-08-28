@@ -15,6 +15,7 @@ typedef YyExtensionFile = {
 	functions:Array<YyExtensionFunc>,
 	constants:Array<YyExtensionMacro>,
 	order:Array<YyGUID>,
+	init:String,
 }
 typedef YyExtensionFunc = {
 	>YyBase,
