@@ -251,6 +251,12 @@ class Preferences {
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-coroutine-magic");
 		//
+		el = addCheckbox(out, "Use lambda magic", current.lambdaMagic, function(z) {
+			current.lambdaMagic = z;
+			save();
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-lambda-magic");
+		//
 		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
 		el = addDropdown(out, "Show GMLive badges", optGMLive[current.showGMLive], optGMLive, function(v) {
@@ -423,8 +429,9 @@ class Preferences {
 			argsMagic: true,
 			argsFormat: "@param",
 			importMagic: true,
-			coroutineMagic: true,
 			allowImportUndo: false,
+			coroutineMagic: true,
+			lambdaMagic: true,
 			fileSessionTime: 7,
 			projectSessionTime: 14,
 			assetThumbs: true,
@@ -508,6 +515,7 @@ typedef PrefData = {
 	importMagic:Bool,
 	allowImportUndo:Bool,
 	coroutineMagic:Bool,
+	lambdaMagic:Bool,
 	assetThumbs:Bool,
 	showGMLive:PrefGMLive,
 	fileChangeAction:PrefFileChangeAction,

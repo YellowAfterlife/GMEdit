@@ -58,6 +58,11 @@ class Project {
 	public var objectChildren:Dictionary<Array<String>>;
 	//
 	public var hasGMLive:Bool = false;
+	
+	/** whether X is a lambda script */
+	public var lambdaMap:Dictionary<Bool> = new Dictionary();
+	public var lambdaExt:String = null;
+	public var lambdaGml:String = null;
 	//
 	#if !lwedit
 	private function new_procSingle() {

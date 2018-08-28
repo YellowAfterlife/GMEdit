@@ -46,6 +46,8 @@ class YyLoader {
 		var objectGUIDs = new Dictionary<YyGUID>();
 		project.yyObjectNames = objectNames;
 		project.yyObjectGUIDs = objectGUIDs;
+		project.lambdaMap = new Dictionary();
+		var lz = ui.Preferences.current.lambdaMagic;
 		function loadrec(out:Element, view:YyView, path:String) {
 			for (el in view.children) {
 				var res = resources[el];
@@ -76,7 +78,8 @@ class YyLoader {
 					dir.setAttribute(TreeView.attrYYID, res.Key);
 					loadrec(dir.treeItems, vdir, rel);
 					out.appendChild(dir);
-				} else {
+				}
+				else {
 					name = rxName.replace(val.resourcePath, "$1");
 					rel = path + name;
 					var full = project.fullPath(val.resourcePath);
@@ -125,6 +128,8 @@ class YyLoader {
 							var extRel = path + ext.name + "/";
 							var extEl = TreeView.makeDir(ext.name, extRel);
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
+							var lm = lz && ext.name.toLowerCase() == parsers.GmlExtLambda.extensionName ? project.lambdaMap : null;
+							if (lm != null) project.lambdaExt = full;
 							for (file in ext.files) {
 								var fileName = file.filename;
 								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
@@ -133,9 +138,17 @@ class YyLoader {
 									fileName, extRel + fileName, filePath, "extfile"
 								));
 								//
-								if (isGmlFile) GmlSeeker.run(filePath, "");
+								if (isGmlFile) {
+									if (lm != null) {
+										project.lambdaGml = filePath;
+									} else GmlSeeker.run(filePath, "");
+								}
 								//
-								for (func in file.functions) {
+								if (lm != null) {
+									for (func in file.functions) {
+										lm.set(func.name, true);
+									}
+								} else for (func in file.functions) {
 									var name = func.name;
 									var help = func.help;
 									GmlAPI.extKind.set(name, "extfunction");

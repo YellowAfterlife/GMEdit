@@ -259,7 +259,7 @@ class GmlExtArgs {
 			out += q.substring(start, till);
 		}
 		inline function error(s:String) {
-			errorText = '[row $row] #args: ' + s;
+			errorText = '[row $row]: ' + s;
 			return true;
 		}
 		function proc() {

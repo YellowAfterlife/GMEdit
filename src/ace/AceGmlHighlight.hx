@@ -318,6 +318,7 @@ using tools.NativeString;
 			rxRule(["preproc.import", "string.importpath"], ~/(#import\s+)("[^"]*"|'[^']*')/),
 			rxRule("preproc.import", ~/#import\b/),
 			rxRule("preproc.args", ~/#args\b/),
+			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#lambda\b)([ \t]*)(\w*)/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
 		]; //}
 		if (version.hasTemplateStrings()) rBase.unshift(rTpl);

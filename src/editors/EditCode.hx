@@ -29,6 +29,8 @@ class EditCode extends Editor {
 	public static var container:Element;
 	public var session:AceSession;
 	private var modePath:String;
+	public var lambdaList:Array<String> = [];
+	public var lambdaMap:Dictionary<String> = new Dictionary();
 	
 	public function new(file:GmlFile, modePath:String) {
 		super(file);
@@ -98,6 +100,7 @@ class EditCode extends Editor {
 			case SearchResults: file.code = data;
 			case Normal: {
 				src = GmlExtCoroutines.pre(src);
+				src = GmlExtLambda.pre(this, src);
 				src = GmlExtArgs.pre(src);
 				file.code = src;
 			};
@@ -221,8 +224,11 @@ class EditCode extends Editor {
 			return null;
 		}
 		//
+		out = GmlExtLambda.post(this, out);
+		if (out == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
+		//
 		out = GmlExtArgs.post(out);
-		if (out == null) return error("Can't process macro:\n" + GmlExtArgs.errorText);
+		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
 		//
 		if (Preferences.current.argsFormat != "") {
 			if (GmlExtArgsDoc.proc(file)) {

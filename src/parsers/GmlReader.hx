@@ -194,7 +194,10 @@ class GmlReader extends StringReader {
 						skipIdent1();
 						return name != null ? name + "(" + next() + ")" : next();
 					};
-					default: return null;
+					default: {
+						// todo: see if rewinding to orig-p is OK here
+						return null;
+					};
 				}
 			};
 			default: return null;

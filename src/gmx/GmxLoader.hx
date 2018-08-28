@@ -103,6 +103,8 @@ class GmxLoader {
 		//
 		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
+		project.lambdaMap = new Dictionary();
+		var lz = ui.Preferences.current.lambdaMagic;
 		for (extParent in gmx.findAll("NewExtensions")) {
 			var extNodes = extParent.findAll("extension");
 			if (extNodes.length == 0) continue;
@@ -114,6 +116,8 @@ class GmxLoader {
 				var extGmx = project.readGmxFileSync(extPath);
 				var extName = extGmx.findText("name");
 				var extDir = TreeView.makeDir(extName, "extensions/" + extName + "/");
+				var lm = lz && extName.toLowerCase() == parsers.GmlExtLambda.extensionName ? project.lambdaMap : null;
+				if (lm != null) project.lambdaExt = extPath;
 				for (extFiles in extGmx.findAll("files"))
 				for (extFile in extFiles.findAll("file")) {
 					var extFileName = extFile.findText("filename");
@@ -124,9 +128,18 @@ class GmxLoader {
 						extFileName, extFilePath, extFileFull, "extfile"
 					));
 					//
-					if (isGmlFile) GmlSeeker.run(extFileFull, "");
+					if (isGmlFile) {
+						if (lm != null) {
+							project.lambdaGml = extFilePath;
+						} else GmlSeeker.run(extFileFull, "");
+					}
 					//
-					for (funcs in extFile.findAll("functions"))
+					if (lm != null) {
+						for (funcs in extFile.findAll("functions"))
+						for (func in funcs.findAll("function")) {
+							lm.set(func.findText("name"), true);
+						}
+					} else for (funcs in extFile.findAll("functions"))
 					for (func in funcs.findAll("function")) {
 						var name = func.findText("name");
 						GmlAPI.extKind.set(name, "extfunction");

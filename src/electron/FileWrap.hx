@@ -4,6 +4,7 @@ import gmx.SfGmx;
 import haxe.Json;
 import haxe.io.Path;
 import js.Error;
+import tools.NativeString;
 
 /**
  * A not-so-elegant workaround for memory-only project editing.
@@ -44,6 +45,9 @@ class FileWrap {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.readJsonFileSync(path);
 		} else return Project.current.readJsonFileSync(path);
+	}
+	public static inline function writeJsonFileSync(path:String, value:Dynamic) {
+		writeTextFileSync(path, NativeString.yyJson(value));
 	}
 	public static function readGmxFileSync(path:String):SfGmx {
 		if (Path.isAbsolute(path)) {
