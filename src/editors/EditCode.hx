@@ -31,6 +31,7 @@ class EditCode extends Editor {
 	private var modePath:String;
 	public var lambdaList:Array<String> = [];
 	public var lambdaMap:Dictionary<String> = new Dictionary();
+	public var lambdas:Dictionary<GmlExtLambda> = new Dictionary();
 	
 	public function new(file:GmlFile, modePath:String) {
 		super(file);

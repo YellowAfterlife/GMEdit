@@ -1,6 +1,8 @@
 package parsers;
+import ace.AceWrap;
 import editors.EditCode;
 import electron.FileWrap;
+import gml.GmlFuncDoc;
 import gml.GmlVersion;
 import gml.Project;
 import gml.file.GmlFile;
@@ -18,6 +20,18 @@ using StringTools;
  * @author YellowAfterlife
  */
 class GmlExtLambda {
+	public static var defaultMap:Dictionary<GmlExtLambda> = new Dictionary();
+	public static var currentMap:Dictionary<GmlExtLambda> = defaultMap;
+	//
+	public var comp:AceAutoCompleteItems = [];
+	public var kind:Dictionary<String> = new Dictionary();
+	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
+	private var remap:Dictionary<String> = new Dictionary();
+	public function new() {
+		
+	}
+	//
+	
 	private static inline var lfPrefix = "__lf_";
 	public static inline var extensionName = "gmedit_lambda";
 	public static var errorText:String;
@@ -39,6 +53,7 @@ class GmlExtLambda {
 		var version = data.version;
 		var list = data.list;
 		var map = data.map;
+		var scope = data.scope;
 		//
 		var q = new GmlReader(code);
 		var row = 0;
@@ -58,27 +73,53 @@ class GmlExtLambda {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
-				default: if (c.isIdent0()) {
+				case "#".code: {
+					var ctx = q.readContextName(null);
+					if (ctx != null) {
+						scope = new GmlExtLambda();
+						data.scopes.set(ctx, scope);
+						data.scope = scope;
+					}
+				};
+				case _ if (c.isIdent0()): {
 					q.skipIdent1();
 					var s = q.substring(p, q.pos);
-					if (lambdaMap[s]) {
-						if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
-						var mt = rxExtScript(s).exec(data.gml);
-						if (mt == null) continue;
-						var impl = mt[2];
-						impl = GmlExtArgs.pre(impl);
-						mt = rxLambdaPre.exec(impl);
-						if (mt == null) continue;
+					if (!lambdaMap[s]) continue;
+					//
+					var rs = scope.remap[s];
+					if (rs != null) {
 						flush(p);
-						var laCode = mt[8];
-						laCode = pre_1(edit, laCode, data);
-						out += "#lambda" + mt[2] + (mt[3] != "$" ? mt[3] : "")
-							+ mt[4] + (mt[7] != null ? "(" + mt[5] + mt[7] + mt[6] + ")" : "")
-							+ laCode;
-						list.push(s);
-						map.set(s, laCode);
+						out += rs;
 						start = q.pos;
+						continue;
 					}
+					//
+					if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
+					var mt = rxExtScript(s).exec(data.gml);
+					if (mt == null) continue;
+					//
+					var impl = mt[2];
+					impl = GmlExtArgs.pre(impl);
+					mt = rxLambdaPre.exec(impl);
+					if (mt == null) continue;
+					//
+					flush(p);
+					var laName = mt[3];
+					var laArgs = (mt[7] != null ? "(" + mt[5] + mt[7] + mt[6] + ")" : "");
+					if (laName != "$") {
+						scope.remap.set(s, laName);
+						scope.kind.set(laName, "lambda.function");
+						scope.comp.push(new AceAutoCompleteItem(laName, "lambda",
+							laArgs != "" ? laName + laArgs : null));
+						scope.docs.set(laName, GmlFuncDoc.parse(laName + laArgs));
+					}
+					var laCode = mt[8];
+					laCode = pre_1(edit, laCode, data);
+					out += "#lambda" + mt[2] + (laName != "$" ? laName : "")
+						+ mt[4] + laArgs + laCode;
+					list.push(s);
+					map.set(s, laCode);
+					start = q.pos;
 				};
 			}
 		}
@@ -90,16 +131,22 @@ class GmlExtLambda {
 		if (!Preferences.current.lambdaMagic) return code;
 		if (pj.lambdaGml == null) return code;
 		if (edit.file.path == pj.lambdaGml) return code;
+		var scopes = new Dictionary();
+		var scope = new GmlExtLambda();
+		scopes.set("", scope);
 		var d:GmlExtLambdaPre = {
 			project: pj,
 			version: pj.version,
 			list: [],
 			map: new Dictionary(),
+			scopes: scopes,
+			scope: scope,
 			gml: null,
 		};
 		var out = pre_1(edit, code, d);
 		edit.lambdaList = d.list;
 		edit.lambdaMap = d.map;
+		edit.lambdas = scopes;
 		return out;
 	}
 	//
@@ -110,6 +157,7 @@ class GmlExtLambda {
 		var map0 = data.map0;
 		var list1 = data.list1;
 		var map1 = data.map1;
+		var scope = data.scope;
 		//
 		var q = new GmlReader(code);
 		var row = 0;
@@ -214,6 +262,16 @@ class GmlExtLambda {
 					|| !map0.exists(laFull) && project.lambdaMap.exists(laFull)
 				);
 				//
+				if (laName != null) {
+					if (scope.remap.exists(laName)) return error(
+						'There\'s already a lambda named $laName in this scope!');
+					scope.remap.set(laName, laFull);
+					scope.kind.set(laName, "lambda.function");
+					scope.comp.push(new AceAutoCompleteItem(laName, "lambda",
+						laArgs != null ? '$laName($laArgs)' : null));
+					scope.docs.set(laName, GmlFuncDoc.parse(laName + '(${laArgs!=null?laArgs:""})'));
+				}
+				//
 				laCode = post_1(edit, laCode, laFull.substring(lfPrefix.length), data);
 				if (laCode == null) return null;
 				//
@@ -254,23 +312,54 @@ class GmlExtLambda {
 						case "#define", "#event", "#moment": {
 							q.skipSpaces0();
 							var p1 = q.pos;
+							var ct:String;
+							inline function ct_proc():Void {
+								ct = q.substring(p1, q.pos);
+							}
+							scope = new GmlExtLambda();
+							data.scope = scope;
 							switch (hash) {
 								case "#define": {
 									q.skipIdent1();
-									prefix = q.substring(p1, q.pos);
+									ct_proc();
+									prefix = ct;
 								};
 								case "#event": {
 									q.skipEventName();
-									prefix = edit.file.name + "_" + q.substring(p1, q.pos).replace(":", "_");
+									ct_proc();
+									prefix = edit.file.name + "_" + ct.replace(":", "_");
 								};
 								case "#moment": {
 									q.skipIdent1();
-									prefix = edit.file.name + "_" + q.substring(p1, q.pos);
+									ct_proc();
+									prefix = edit.file.name + "_" + ct;
 								};
+								default: ct = null;
 							}
+							data.scopes.set(ct, scope);
 						};
 						default: q.pos = p + 1;
 					} else q.pos = p + 1;
+				};
+				case _ if (c.isIdent0()): {
+					q.skipIdent1();
+					var s = q.substring(p, q.pos);
+					var rs = scope.remap[s];
+					if (rs != null) {
+						// make sure we don't do inst.lf -> inst.__lf__:
+						var z = true;
+						var p1 = p;
+						while (--p1 >= 0) switch (q.get(p1)) {
+							case " ".code, "\t".code, "\r".code, "\n".code: {};
+							case ".".code: z = false; break;
+							default: break;
+						}
+						if (z) {
+							flush(p);
+							out += rs;
+							start = q.pos;
+						}
+					}
 				};
 			}
 		}
@@ -379,6 +468,9 @@ class GmlExtLambda {
 		if (!hasLambda && edit.lambdaList.length == 0) return code;
 		//
 		var pj = Project.current;
+		var scopes = new Dictionary();
+		var scope = new GmlExtLambda();
+		scopes.set("", scope);
 		var data:GmlExtLambdaPost = {
 			project: pj,
 			version: pj.version,
@@ -386,11 +478,14 @@ class GmlExtLambda {
 			map0: edit.lambdaMap,
 			list1: [],
 			map1: new Dictionary(),
+			scopes: scopes,
+			scope: scope,
 			checkInit: false,
 		};
 		var out = hasLambda ? post_1(edit, code, edit.file.name, data) : code;
+		if (out == null) return null;
 		if (data.list0.length != 0 || data.list1.length != 0) {
-			switch (pj.version) {
+			switch (pj.version) { // verify that we can at all
 				case v1, v2: {}; // OK!
 				default: {
 					errorText = "Lambdas are not supported for this version of GM.";
@@ -412,8 +507,8 @@ class GmlExtLambda {
 				prepare();
 				if (!(new RegExp('#define $lfPrefix\\b')).test(gml)) {
 					gml = '#define $lfPrefix\n'
-						+ '// https://bugs.yoyogames.com/view.php?id=29984\n'
-						+ gml;
+						+ '// https://bugs.yoyogames.com/view.php?id=29984'
+						+ (gml != "" ? "\n" + gml : "");
 				}
 			}
 			var remList = [];
@@ -451,6 +546,7 @@ class GmlExtLambda {
 				}
 				FileWrap.writeTextFileSync(pj.lambdaGml, gml);
 			}
+			edit.lambdas = scopes;
 			edit.lambdaList = data.list1;
 			edit.lambdaMap = data.map1;
 			//
@@ -472,6 +568,8 @@ private typedef GmlExtLambdaPre = {
 	list:Array<String>,
 	map:Dictionary<String>,
 	gml:String,
+	scopes:Dictionary<GmlExtLambda>,
+	scope:GmlExtLambda,
 }
 private typedef GmlExtLambdaPost = {
 	project:Project,
@@ -481,4 +579,6 @@ private typedef GmlExtLambdaPost = {
 	list1:Array<String>,
 	map1:Dictionary<String>,
 	checkInit:Bool,
+	scopes:Dictionary<GmlExtLambda>,
+	scope:GmlExtLambda,
 }

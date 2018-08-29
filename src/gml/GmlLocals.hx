@@ -12,6 +12,7 @@ class GmlLocals {
 	//
 	public var comp:AceAutoCompleteItems = [];
 	public var kind:Dictionary<String> = new Dictionary();
+	/** T of `var v:T` in type magic */
 	public var type:Dictionary<String> = new Dictionary();
 	public function add(name:String) {
 		if (kind[name] == null) {

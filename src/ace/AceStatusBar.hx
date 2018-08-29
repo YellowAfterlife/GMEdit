@@ -10,6 +10,7 @@ import js.html.Element;
 import js.html.MouseEvent;
 import js.html.SpanElement;
 import Main.document;
+import parsers.GmlExtLambda;
 import shaders.ShaderAPI;
 import tools.Dictionary;
 
@@ -25,7 +26,7 @@ class AceStatusBar {
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
 	private static var emptyToken:AceToken = { type:"", value:"" };
-	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports) {
+	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda) {
 		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
 		var ctk:AceToken = iter.getCurrentToken(); // cursor token
@@ -67,6 +68,7 @@ class AceStatusBar {
 							case "function": docs = GmlAPI.stdDoc;
 							case "glsl.function": docs = ShaderAPI.glslDoc;
 							case "hlsl.function": docs = ShaderAPI.hlslDoc;
+							case "lambda.function": docs = lambdas.docs;
 							case "extfunction": docs = GmlAPI.extDoc;
 							case "namespace": {
 								var ns = imports.namespaces[tk.value];
@@ -235,7 +237,11 @@ class AceStatusBar {
 		AceGmlCompletion.importCompleter.items = imports != null
 			? imports.comp : AceGmlCompletion.noItems;
 		//
-		updateComp(editor, pos.row, pos.column, imports);
+		var lambdas = GmlExtLambda.currentMap[scope];
+		AceGmlCompletion.lambdaCompleter.items = lambdas != null
+			? lambdas.comp : AceGmlCompletion.noItems;
+		//
+		updateComp(editor, pos.row, pos.column, imports, lambdas);
 	}
 	public static function init(editor:AceWrap, ectr:Element) {
 		lang = AceWrap.require("ace/lib/lang");

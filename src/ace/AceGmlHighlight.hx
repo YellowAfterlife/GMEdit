@@ -56,12 +56,17 @@ using tools.NativeString;
 		inline function getLocalType_1(name:String, scope:String):String {
 			var kind:String = null;
 			//
-			var locals = GmlLocals.currentMap[scope];
-			if (locals != null) kind = locals.kind[name];
+			var lambdas = parsers.GmlExtLambda.currentMap[scope];
+			if (lambdas != null) kind = lambdas.kind[name];
 			//
 			if (kind == null) {
-				var imports = GmlImports.currentMap[scope];
-				if (imports != null) kind = imports.kind[name];
+				var locals = GmlLocals.currentMap[scope];
+				if (locals != null) kind = locals.kind[name];
+				//
+				if (kind == null) {
+					var imports = GmlImports.currentMap[scope];
+					if (imports != null) kind = imports.kind[name];
+				}
 			}
 			//
 			return kind;

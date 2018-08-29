@@ -22,6 +22,7 @@ using tools.NativeString;
 	public static var localCompleter:AceGmlCompletion;
 	public static var importCompleter:AceGmlCompletion;
 	public static var namespaceCompleter:AceGmlCompletion;
+	public static var lambdaCompleter:AceGmlCompletion;
 	public static var localTypeCompleter:AceGmlCompletion;
 	public static var enumCompleter:AceGmlCompletion;
 	public static var globalCompleter:AceGmlCompletion;
@@ -178,6 +179,7 @@ using tools.NativeString;
 		//
 		importCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		localCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		lambdaCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		//
 		globalCompleter = new AceGmlCompletion(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false, gmlf);
 		globalCompleter.minLength = 0;
@@ -209,6 +211,7 @@ using tools.NativeString;
 			enableLiveAutocompletion: [
 				localCompleter,
 				importCompleter,
+				lambdaCompleter,
 				stdCompleter,
 				extCompleter,
 				gmlCompleter,

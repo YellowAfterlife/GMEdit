@@ -290,10 +290,12 @@ class GmlFile {
 				GmlSeeker.runSync(path, out, data.main);
 				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
+				var editCode:EditCode = cast editor;
 				if (next != data) {
 					GmlLocals.currentMap = next.locals;
-					(cast editor:EditCode).session.bgTokenizer.start(0);
+					editCode.session.bgTokenizer.start(0);
 				}
+				GmlExtLambda.currentMap = editCode.lambdas;
 			}
 		}
 	}
@@ -340,6 +342,8 @@ class GmlFile {
 			GmlImports.currentMap = null;
 			GmlExtCoroutines.update(false);
 		}
+		GmlExtLambda.currentMap = Std.is(file.editor, EditCode)
+			? (cast file.editor:EditCode).lambdas : GmlExtLambda.defaultMap;
 		if (GmlImports.currentMap == null) {
 			GmlImports.currentMap = GmlImports.defaultMap;
 		}
