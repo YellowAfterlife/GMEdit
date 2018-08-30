@@ -255,7 +255,7 @@ class Preferences {
 			current.lambdaMagic = z;
 			save();
 		});
-		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-lambda-magic");
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23lambda-magic");
 		//
 		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
