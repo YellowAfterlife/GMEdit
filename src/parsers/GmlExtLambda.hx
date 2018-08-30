@@ -46,6 +46,7 @@ class GmlExtLambda {
 		+ ".*\r?\n)"
 		+ "(?:#args\\b[ \t]*(.+)\r?\n)?" // -> argsData
 	+ "([ \t]*\\{[\\s\\S]*)$");
+	static var rxLambdaDef = new RegExp("^/\\*!#lamdef (\\w+)\\*/");
 	//
 	static function pre_1(edit:EditCode, code:String, data:GmlExtLambdaPre) {
 		var project = data.project;
@@ -63,6 +64,35 @@ class GmlExtLambda {
 			out += q.substring(start, till);
 		}
 		//
+		function proc(s:String, def:String, p:Int) {
+			//
+			if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
+			var mt = rxExtScript(s).exec(data.gml);
+			if (mt == null) return false;
+			//
+			var impl = mt[2];
+			impl = GmlExtArgs.pre(impl);
+			mt = rxLambdaPre.exec(impl);
+			if (mt == null) return false;
+			//
+			flush(p);
+			var laName = mt[3];
+			var laArgs = (mt[7] != null ? "(" + mt[5] + mt[7] + mt[6] + ")" : "");
+			if (laName != "$") {
+				scope.remap.set(s, laName);
+				scope.kind.set(laName, "lambda.function");
+				scope.comp.push(new AceAutoCompleteItem(laName, "lambda",
+					laArgs != "" ? laName + laArgs : null));
+				scope.docs.set(laName, GmlFuncDoc.parse(laName + laArgs));
+			}
+			var laCode = mt[8];
+			laCode = pre_1(edit, laCode, data);
+			out += def + mt[2] + (laName != "$" ? laName : "")
+				+ mt[4] + laArgs + laCode;
+			list.push(s);
+			map.set(s, laCode);
+			return true;
+		}
 		while (q.loop) {
 			var p = q.pos;
 			var c = q.read();
@@ -81,6 +111,18 @@ class GmlExtLambda {
 						data.scope = scope;
 					}
 				};
+				case "{".code: {
+					if (q.substring(q.pos, q.pos + 10) == "/*!#lamdef") {
+						var p1 = q.source.indexOf("}", q.pos);
+						if (p1 < 0) continue;
+						var mt = rxLambdaDef.exec(q.substring(p + 1, p1));
+						if (mt == null) continue;
+						if (proc(mt[1], "#lamdef", p)) {
+							q.pos = p1 + 1;
+							start = q.pos;
+						}
+					}
+				};
 				case _ if (c.isIdent0()): {
 					q.skipIdent1();
 					var s = q.substring(p, q.pos);
@@ -94,32 +136,9 @@ class GmlExtLambda {
 						continue;
 					}
 					//
-					if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
-					var mt = rxExtScript(s).exec(data.gml);
-					if (mt == null) continue;
-					//
-					var impl = mt[2];
-					impl = GmlExtArgs.pre(impl);
-					mt = rxLambdaPre.exec(impl);
-					if (mt == null) continue;
-					//
-					flush(p);
-					var laName = mt[3];
-					var laArgs = (mt[7] != null ? "(" + mt[5] + mt[7] + mt[6] + ")" : "");
-					if (laName != "$") {
-						scope.remap.set(s, laName);
-						scope.kind.set(laName, "lambda.function");
-						scope.comp.push(new AceAutoCompleteItem(laName, "lambda",
-							laArgs != "" ? laName + laArgs : null));
-						scope.docs.set(laName, GmlFuncDoc.parse(laName + laArgs));
+					if (proc(s, "#lambda", p)) {
+						start = q.pos;
 					}
-					var laCode = mt[8];
-					laCode = pre_1(edit, laCode, data);
-					out += "#lambda" + mt[2] + (laName != "$" ? laName : "")
-						+ mt[4] + laArgs + laCode;
-					list.push(s);
-					map.set(s, laCode);
-					start = q.pos;
 				};
 			}
 		}
@@ -302,13 +321,17 @@ class GmlExtLambda {
 				case "#".code: {
 					q.skipIdent1();
 					var hash = q.substring(p, q.pos);
-					if (hash == "#lambda") {
+					var isDef = hash == "#lamdef";
+					if (isDef || hash == "#lambda") {
 						var full = proc();
 						if (full == null) return null;
 						flush(p);
-						out += full;
+						if (isDef) {
+							out += '{/*!#lamdef $full*/}';
+						} else out += full;
 						start = q.pos;
-					} else if (p == 0 || q.get(p - 1) == "\n".code) switch (hash) {
+					}
+					else if (p == 0 || q.get(p - 1) == "\n".code) switch (hash) {
 						case "#define", "#event", "#moment": {
 							q.skipSpaces0();
 							var p1 = q.pos;
@@ -464,7 +487,7 @@ class GmlExtLambda {
 	}
 	public static function post(edit:EditCode, code:String):String {
 		if (!Preferences.current.lambdaMagic) return code;
-		var hasLambda = code.indexOf("#lambda") >= 0;
+		var hasLambda = code.indexOf("#lambda") >= 0 || code.indexOf("#lamdef") >= 0;
 		if (!hasLambda && edit.lambdaList.length == 0) return code;
 		//
 		var pj = Project.current;
@@ -535,7 +558,6 @@ class GmlExtLambda {
 					pj.lambdaMap.set(s, true);
 					var add = true;
 					gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
-						trace(s0, c, s1);
 						add = false;
 						return s0 + data.map1[s] + s1;
 					});
