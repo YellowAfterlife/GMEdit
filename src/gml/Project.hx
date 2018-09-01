@@ -281,7 +281,7 @@ class Project {
 	//
 	public function fullPath(path:String) {
 		if (dir != "") {
-			return dir + "/" + path;
+			return (dir + "/" + path).ptNoBS();
 		} else return path;
 	}
 	public function existsSync(path:String):Bool {

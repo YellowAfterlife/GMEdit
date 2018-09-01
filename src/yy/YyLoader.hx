@@ -17,7 +17,7 @@ import ui.treeview.TreeView;
  * @author YellowAfterlife
  */
 class YyLoader {
-	private static var rxDatafiles = new RegExp("^datafiles_yy([\\\\/])");
+	private static var rxDatafiles = new RegExp("\\bdatafiles_yy([\\\\/])");
 	public static function run(project:Project):String {
 		var yyProject:YyProject = project.readJsonFileSync(project.name);
 		var resources:Dictionary<YyProjectResource> = new Dictionary();
@@ -118,6 +118,7 @@ class YyLoader {
 							GmlAPI.gmlLookupText += name + "\n";
 						};
 						case "GMIncludedFile": {
+							rel = Path.withoutExtension(rel);
 							full = NativeString.replaceExt(full, rxDatafiles, "datafiles$1");
 							full = Path.withoutExtension(full);
 							name = Path.withoutDirectory(full);
