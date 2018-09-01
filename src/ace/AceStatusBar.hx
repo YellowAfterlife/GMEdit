@@ -80,8 +80,18 @@ class AceStatusBar {
 								} else iter.stepForward();
 								if (tk != null && tk.value == "new") {
 									doc = ns.docs["create"];
+									break;
 								}
 							}
+							case "macro": {
+								var m = GmlAPI.gmlMacros[tk.value];
+								if (m != null) {
+									var mx = m.expr;
+									doc = GmlAPI.gmlDoc[mx]; if (doc != null) break;
+									doc = GmlAPI.extDoc[mx]; if (doc != null) break;
+									doc = GmlAPI.stdDoc[mx]; if (doc != null) break;
+								}
+							};
 						}
 						if (docs != null) break;
 					}
@@ -92,7 +102,7 @@ class AceStatusBar {
 		if (docs == null && doc == null) return;
 		// find the actual doc:
 		var argStart = 0;
-		if (doc == null) {
+		if (doc == null) { // import magic fixes
 			doc = docs[tk.value];
 			if (imports != null) {
 				var name = tk.value;

@@ -10,6 +10,7 @@ class GmlMacro extends GmlStruct {
 	public var expr:String;
 	public function new(name:String, orig:String, expr:String) {
 		super(name, orig);
+		this.expr = expr;
 		comp = new AceAutoCompleteItem(name, "macro", expr);
 	}
 	

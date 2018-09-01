@@ -2,6 +2,7 @@ package parsers;
 import ace.AceWrap;
 import editors.EditCode;
 import electron.FileWrap;
+import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.GmlVersion;
 import gml.Project;
@@ -40,6 +41,7 @@ class GmlExtLambda {
 	}
 	static var rxLambdaArgsSp = new RegExp("^([ \t]*)([\\s\\S]*)([ \t]*)$");
 	static var rxLambdaPre = new RegExp("^"
+		+ "(?:///.*\r?\n)?"
 		+ "(//!#lambda" // -> has meta?
 			+ "([ \t]*)(\\$|\\w+)" // -> namePre, name
 			+ "([ \t]*)(?:\\(([ \t]*)\\$([ \t]*)\\))?" // -> argsPre, args0, args1
@@ -256,18 +258,17 @@ class GmlExtLambda {
 				q.skip();
 				var laCode = q.substring(p0, q.pos);
 				//
-				var laArgsMt;
+				var laArgsMt, laArgsDoc;
 				if (laArgs != null) {
 					laArgsMt = rxLambdaArgsSp.exec(laArgs);
 					laCode = '#args $laArgs\n' + laCode;
 					laCode = GmlExtArgs.post(laCode);
+					laArgsDoc = laArgs;
 					if (laCode == null) return error("Arguments error:\n" + GmlExtArgs.errorText);
-				} else laArgsMt = null;
-				//
-				laCode = '//!#lambda'
-					+ laNamePre + (laName != null ? laName : "$")
-					+ laArgsPre + (laArgsMt != null ? "(" + laArgsMt[1] + "$" + laArgsMt[3] + ")" : "")
-					+ "\n" + laCode;
+				} else {
+					laArgsMt = null;
+					laArgsDoc = GmlFuncDoc.autoArgs(laCode);
+				}
 				// pick an unoccupied name:
 				var laFull_0 = lfPrefix + prefix + "_" + (laName != null ? laName : "");
 				var laFull_i = 0;
@@ -280,6 +281,12 @@ class GmlExtLambda {
 					// and not taken by something from outside this script:
 					|| !map0.exists(laFull) && project.lambdaMap.exists(laFull)
 				);
+				//
+				laCode = '/// $laFull($laArgsDoc)\n'
+					+ '//!#lambda'
+					+ laNamePre + (laName != null ? laName : "$")
+					+ laArgsPre + (laArgsMt != null ? "(" + laArgsMt[1] + "$" + laArgsMt[3] + ")" : "")
+					+ "\n" + laCode;
 				//
 				if (laName != null) {
 					if (scope.remap.exists(laName)) return error(
@@ -553,17 +560,20 @@ class GmlExtLambda {
 				for (s in remList) {
 					gml = gml.replaceExt(rxExtScript(s), "$3");
 					pj.lambdaMap.remove(s);
+					GmlAPI.extDoc.remove(s);
 				}
 				for (s in setList) {
 					pj.lambdaMap.set(s, true);
+					var scr = data.map1[s];
+					readDefs_1(scr); // maybe change map1 to have code+docs pairs later
 					var add = true;
 					gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
 						add = false;
-						return s0 + data.map1[s] + s1;
+						return s0 + scr + s1;
 					});
 					if (add) {
 						if (gml != "") gml += "\n";
-						gml += '#define $s\n' + data.map1[s];
+						gml += '#define $s\n' + scr;
 					}
 				}
 				FileWrap.writeTextFileSync(pj.lambdaGml, gml);
@@ -582,6 +592,23 @@ class GmlExtLambda {
 			}
 		}
 		return out;
+	}
+	static var readDefs_rx = new RegExp('^///\\s*(($lfPrefix\\w+).+)', "gm");
+	static function readDefs_1(code:String) {
+		var rx = readDefs_rx, mt;
+		rx.lastIndex = 0;
+		mt = rx.exec(code);
+		while (mt != null) {
+			GmlAPI.extDoc.set(mt[2], GmlFuncDoc.parse(mt[1]));
+			mt = rx.exec(code);
+		}
+	}
+	/** loads up definitions from a file */
+	public static function readDefs(path:String) {
+		FileWrap.readTextFile(path, function(e, code:String) {
+			if (e != null) return;
+			readDefs_1(code);
+		});
 	}
 }
 private typedef GmlExtLambdaPre = {

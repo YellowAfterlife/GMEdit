@@ -131,6 +131,7 @@ class GmxLoader {
 					if (isGmlFile) {
 						if (lm != null) {
 							project.lambdaGml = extFileFull;
+							parsers.GmlExtLambda.readDefs(extFileFull);
 						} else GmlSeeker.run(extFileFull, "");
 					}
 					//

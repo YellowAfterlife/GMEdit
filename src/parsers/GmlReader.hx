@@ -11,6 +11,11 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class GmlReader extends StringReader {
+	public var version:GmlVersion;
+	public inline function new(gmlCode:String, ?version:GmlVersion) {
+		super(gmlCode);
+		this.version = version != null ? version : gml.Project.current.version;
+	}
 	public inline function skipWhile(fn:CharCode-> Bool) {
 		while (loop) {
 			if (fn(peek())) {
@@ -290,6 +295,25 @@ class GmlReader extends StringReader {
 			return false;
 		} else return true;
 	}
+	
+	public inline function skipCommon_inline():Int {
+		switch (peek()) {
+			case "/".code: switch (peek(1)) {
+				case "/".code: pos += 2; skipLine(); return 0;
+				case "*".code: pos += 2; return skipComment();
+				default: return -1;
+			};
+			case '"'.code, "'".code, "`".code, "@".code: {
+				pos += 1;
+				return skipStringAuto(peek(-1), version);
+			};
+			default: return -1;
+		}
+	}
+	public function skipCommon():Int {
+		return skipCommon_inline();
+	}
+	
 	private static var rxVarType = new js.RegExp("^" + GmlExtImport.rsLocalType + "$");
 	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool):Int {
 		var n = 0;

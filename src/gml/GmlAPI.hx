@@ -96,6 +96,9 @@ class GmlAPI {
 	/** enum name -> enum, for highlighting */
 	public static var gmlEnums:Dictionary<GmlEnum> = new Dictionary();
 	
+	/** macro name -> macro */
+	public static var gmlMacros:Dictionary<GmlMacro> = new Dictionary();
+	
 	/** asset type -> asset name -> id*/
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
 	

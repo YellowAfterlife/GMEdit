@@ -141,6 +141,7 @@ class YyLoader {
 								if (isGmlFile) {
 									if (lm != null) {
 										project.lambdaGml = filePath;
+										parsers.GmlExtLambda.readDefs(filePath);
 									} else GmlSeeker.run(filePath, "");
 								}
 								//

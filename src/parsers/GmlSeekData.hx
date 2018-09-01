@@ -128,6 +128,12 @@ class GmlSeekData {
 			GmlAPI.gmlKind.set(e.name, "enum");
 		}
 		
+		// macros:
+		for (m in prev.macroList) {
+			if (!next.macroMap.exists(m.name)) GmlAPI.gmlMacros.remove(m.name);
+		}
+		for (m in next.macroList) GmlAPI.gmlMacros.set(m.name, m);
+		
 		// global fields (delta)
 		for (g in prev.globalFieldList) {
 			if (next.globalFieldMap[g.name] == g) continue;
