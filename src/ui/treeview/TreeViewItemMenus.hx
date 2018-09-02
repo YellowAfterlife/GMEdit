@@ -50,11 +50,14 @@ class TreeViewItemMenus {
 		updatePrefix(target);
 		switch (Project.current.version) {
 			case v1 | v2: {
-				for (q in items.manipOuter) q.visible = true;
-				items.manipCreate.enabled = switch (prefix) {
+				var supported = switch (prefix) {
 					case "scripts/": true;
 					default: false;
 				};
+				for (q in items.manipOuter) {
+					q.visible = true;
+					q.enabled = supported;
+				}
 				var nonRoot = target.getAttribute(TreeView.attrRel).toLowerCase() != prefix;
 				for (q in items.manipNonRoot) q.enabled = nonRoot;
 				for (q in items.manipDirOnly) q.enabled = dir;
