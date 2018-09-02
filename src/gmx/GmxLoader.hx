@@ -146,11 +146,7 @@ class GmxLoader {
 						GmlAPI.extKind.set(name, "extfunction");
 						var help = func.findText("help");
 						if (help != null && help != "") {
-							if (!GmlAPI.extCompMap.exists(name)) {
-								var comp = new AceAutoCompleteItem(name, "function", help);
-								GmlAPI.extComp.push(comp);
-								GmlAPI.extCompMap.set(name, comp);
-							}
+							GmlAPI.extCompAdd(new AceAutoCompleteItem(name, "function", help));
 							GmlAPI.extDoc.set(name, GmlFuncDoc.parse(help));
 							if (isGmlFile) GmlAPI.gmlLookupText += name + "\n";
 						}
@@ -169,7 +165,7 @@ class GmxLoader {
 						GmlAPI.extKind.set(name, "extmacro");
 						if (mcr.findText("hidden") == "0") {
 							var expr = mcr.findText("value");
-							GmlAPI.extComp.push(new AceAutoCompleteItem(name, "macro", expr));
+							GmlAPI.extCompAdd(new AceAutoCompleteItem(name, "macro", expr));
 						}
 					}
 				} // for (extFile)

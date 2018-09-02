@@ -155,7 +155,7 @@ class YyLoader {
 									var help = func.help;
 									GmlAPI.extKind.set(name, "extfunction");
 									if (help != null && help != "" && !func.hidden) {
-										GmlAPI.extComp.push(new AceAutoCompleteItem(
+										GmlAPI.extCompAdd(new AceAutoCompleteItem(
 											name, "function", help
 										));
 										GmlAPI.extDoc.set(name, gml.GmlFuncDoc.parse(help));
@@ -174,7 +174,7 @@ class YyLoader {
 									GmlAPI.extKind.set(name, "extmacro");
 									if (!mcr.hidden) {
 										var expr = mcr.value;
-										GmlAPI.extComp.push(new AceAutoCompleteItem(
+										GmlAPI.extCompAdd(new AceAutoCompleteItem(
 											name, "macro", expr
 										));
 									}

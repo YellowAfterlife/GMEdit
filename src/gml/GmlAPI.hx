@@ -79,6 +79,12 @@ class GmlAPI {
 	public static var extKind:Dictionary<String> = new Dictionary();
 	public static var extComp:AceAutoCompleteItems = [];
 	public static var extCompMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	public static function extCompAdd(comp:AceAutoCompleteItem) {
+		if (!extCompMap.exists(comp.name)) {
+			extCompMap.set(comp.name, comp);
+			extComp.push(comp);
+		}
+	}
 	public static function extClear() {
 		extDoc = new Dictionary();
 		extKind = new Dictionary();
