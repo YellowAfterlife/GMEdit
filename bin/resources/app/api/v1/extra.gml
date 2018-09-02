@@ -10,3 +10,4 @@ variable_global_get(inst, name)
 variable_global_set(inst, name, value)
 debug_get_callstack();
 undefined;
+pointer_null
