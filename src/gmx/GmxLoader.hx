@@ -146,7 +146,11 @@ class GmxLoader {
 						GmlAPI.extKind.set(name, "extfunction");
 						var help = func.findText("help");
 						if (help != null && help != "") {
-							GmlAPI.extComp.push(new AceAutoCompleteItem(name, "function", help));
+							if (!GmlAPI.extCompMap.exists(name)) {
+								var comp = new AceAutoCompleteItem(name, "function", help);
+								GmlAPI.extComp.push(comp);
+								GmlAPI.extCompMap.set(name, comp);
+							}
 							GmlAPI.extDoc.set(name, GmlFuncDoc.parse(help));
 							if (isGmlFile) GmlAPI.gmlLookupText += name + "\n";
 						}

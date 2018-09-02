@@ -78,10 +78,12 @@ class GmlAPI {
 	public static var extDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var extKind:Dictionary<String> = new Dictionary();
 	public static var extComp:AceAutoCompleteItems = [];
+	public static var extCompMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public static function extClear() {
 		extDoc = new Dictionary();
 		extKind = new Dictionary();
 		extComp.clear();
+		extCompMap = new Dictionary();
 	}
 	// script/object scope
 	/** script name -> doc */
