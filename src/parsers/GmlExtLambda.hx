@@ -525,22 +525,10 @@ class GmlExtLambda {
 			if (pj.lambdaExt == null || pj.lambdaGml == null) {
 				errorText = 'Please add an extension called `$extensionName` to the project,'
 					+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
+				if (pj.version == GmlVersion.v1) errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
 				return null;
 			}
 			//
-			var gml:String = null;
-			inline function prepare():Void {
-				if (gml == null) gml = FileWrap.readTextFileSync(pj.lambdaGml);
-			}
-			//
-			if (data.checkInit) {
-				prepare();
-				if (!(new RegExp('#define $lfPrefix\\b')).test(gml)) {
-					gml = '#define $lfPrefix\n'
-						+ '// https://bugs.yoyogames.com/view.php?id=29984'
-						+ (gml != "" ? "\n" + gml : "");
-				}
-			}
 			var remList = [];
 			var setList = [];
 			for (s in data.list0) {
@@ -555,8 +543,32 @@ class GmlExtLambda {
 				setList.push(s);
 			}
 			var changed = remList.length > 0 || setList.length > 0;
+			//
+			var gml:String = null;
+			inline function prepare():Void {
+				if (gml == null) gml = FileWrap.readTextFileSync(pj.lambdaGml);
+			}
+			//
+			if (changed) switch (pj.version) {
+				case v1: postGMS1(data);
+				case v2: postGMS2(data);
+				default: {
+					errorText = "Lambdas are not supported in this version of GM.";
+					return null;
+				};
+			}
+			//
+			if (data.checkInit) {
+				prepare();
+				if (!(new RegExp('^#define $lfPrefix$', 'm')).test(gml)) {
+					gml = '#define $lfPrefix\n'
+						+ '// https://bugs.yoyogames.com/view.php?id=29984'
+						+ (gml != "" ? "\n" + gml : "");
+				}
+			}
+			//
 			if (changed) {
-				var gml = FileWrap.readTextFileSync(pj.lambdaGml);
+				prepare();
 				for (s in remList) {
 					gml = gml.replaceExt(rxExtScript(s), "$3");
 					pj.lambdaMap.remove(s);
@@ -581,15 +593,6 @@ class GmlExtLambda {
 			edit.lambdas = scopes;
 			edit.lambdaList = data.list1;
 			edit.lambdaMap = data.map1;
-			//
-			if (changed) switch (pj.version) {
-				case v1: postGMS1(data);
-				case v2: postGMS2(data);
-				default: {
-					errorText = "Lambdas are not supported in this version of GM.";
-					return null;
-				};
-			}
 		}
 		return out;
 	}
