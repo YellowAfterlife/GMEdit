@@ -33,15 +33,25 @@ class AceStatusBar {
 		var parEmpty = false;
 		var minDepth = 0; // lowest reached parenthesis depth
 		var depth = 0; // current parenthesis depth
+		var fkw = GmlAPI.kwFlow;
 		if (ctk != null && ctk.type == "paren.lparen") {
 			ctk = iter.stepForward();
 			if (ctk != null) {
-				if (ctk.type == "paren.rparen") depth -= 1;
+				switch (ctk.type) {
+					case "paren.rparen": depth -= 1;
+					case "punctuation.operator" if (ctk.value == ";"): ctk = iter.stepBackward();
+					case  "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
+					case "preproc.macro": ctk = iter.stepBackward();
+					#if !lwedit
+					case "curly.paren.lparen", "curly.paren.rparen": {
+						ctk = iter.stepBackward();
+					};
+					#end
+				}
 			} else ctk = emptyToken;
 		}
 		// go back to find the likely associated function call:
 		var tk:AceToken = ctk;
-		var fkw = GmlAPI.kwFlow;
 		var docs:Dictionary<GmlFuncDoc> = null;
 		var doc:GmlFuncDoc = null;
 		var parOpen:AceToken = null;
@@ -55,10 +65,10 @@ class AceStatusBar {
 				case "curly.paren.lparen": break;
 				case "curly.paren.rparen": break;
 				#end
-				case "paren.rparen": depth += 1;
+				case "paren.rparen": depth += tk.value.length;
 				case "punctuation.operator" if (tk.value == ";"): break;
 				case "paren.lparen": {
-					depth -= 1;
+					depth -= tk.value.length;
 					if (depth < minDepth) {
 						minDepth = depth;
 						parOpen = tk;
@@ -135,8 +145,8 @@ class AceStatusBar {
 		var argCurr = 0;
 		while (tk != null) {
 			switch (tk.type) {
-				case "paren.lparen": depth += 1;
-				case "paren.rparen": depth -= 1;
+				case "paren.lparen": depth += tk.value.length;
+				case "paren.rparen": depth -= tk.value.length;
 				case "punctuation.operator" if (tk.value == "," && depth == 0): argCurr += 1;
 			}
 			if (tk == ctk) break;
