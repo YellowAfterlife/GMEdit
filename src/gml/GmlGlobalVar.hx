@@ -1,5 +1,6 @@
 package gml;
 import ace.AceWrap;
+import ace.extern.*;
 
 /**
  * Represents a single globalvar declaration.

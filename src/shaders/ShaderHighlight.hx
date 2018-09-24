@@ -2,6 +2,7 @@ package shaders;
 import ace.AceMacro.jsOr;
 import ace.AceMacro.rxRule;
 import ace.AceWrap;
+import ace.extern.*;
 import ace.AceGmlHighlight;
 
 /**

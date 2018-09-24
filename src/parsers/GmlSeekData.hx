@@ -1,5 +1,6 @@
 package parsers;
 import ace.AceWrap;
+import ace.extern.*;
 import gml.GmlAPI;
 import gml.*;
 import tools.Dictionary;

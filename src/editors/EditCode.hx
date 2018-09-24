@@ -1,5 +1,6 @@
 package editors;
 import ace.AceWrap;
+import ace.extern.*;
 import ace.*;
 import editors.Editor;
 import electron.Dialog;

@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap;
+import ace.extern.*;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
@@ -11,6 +12,7 @@ import tools.Dictionary;
 import ace.AceMacro.rxRule;
 import ace.AceMacro.jsOr;
 import ace.AceMacro.jsThis;
+import ace.raw.*;
 import haxe.extern.EitherType;
 using tools.NativeString;
 
@@ -477,11 +479,3 @@ using tools.NativeString;
 		], define);
 	}
 }
-typedef AceLangRule = {
-	?token: EitherType<String, String->String>,
-	regex:EitherType<String, RegExp>,
-	?onMatch:haxe.Constraints.Function,
-	?next: String,
-	?nextState: String,
-	?push:EitherType<String, Array<AceLangRule>>,
-};

@@ -6,6 +6,7 @@ import js.RegExp;
 import parsers.GmlParseAPI;
 import tools.Dictionary;
 import ace.AceWrap;
+import ace.extern.*;
 import tools.NativeString;
 import ui.Preferences;
 import ui.liveweb.LiveWeb;

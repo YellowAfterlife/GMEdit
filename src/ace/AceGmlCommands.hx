@@ -1,5 +1,7 @@
 package ace;
 import ace.AceWrap;
+import ace.extern.*;
+import ace.extern.AceCommandManager;
 import js.RegExp;
 
 /**

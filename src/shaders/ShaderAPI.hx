@@ -1,5 +1,6 @@
 package shaders;
 import ace.AceWrap;
+import ace.extern.*;
 import electron.FileSystem;
 import gml.GmlFuncDoc;
 import parsers.GmlParseAPI;

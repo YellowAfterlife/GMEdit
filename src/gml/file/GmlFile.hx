@@ -1,6 +1,7 @@
 package gml.file;
 import ace.AceGmlCompletion;
 import ace.AceSessionData;
+import ace.extern.*;
 import editors.*;
 import electron.Dialog;
 import electron.FileSystem;

@@ -2,6 +2,7 @@ package gml;
 import tools.Dictionary;
 using tools.NativeString;
 import ace.AceWrap;
+import ace.extern.*;
 
 /**
  * ...

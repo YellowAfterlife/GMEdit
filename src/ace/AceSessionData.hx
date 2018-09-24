@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap;
+import ace.extern.*;
 import editors.EditCode;
 import gml.file.GmlFile;
 import haxe.Json;

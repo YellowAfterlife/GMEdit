@@ -1,5 +1,6 @@
 package gml;
 import ace.AceWrap;
+import ace.extern.*;
 
 /**
  * Represents an unique global variable (global.some).

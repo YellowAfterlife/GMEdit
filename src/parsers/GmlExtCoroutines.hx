@@ -4,6 +4,7 @@ import gml.GmlAPI;
 import js.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
+import ace.extern.*;
 
 /**
  * Handles conversion from/to #gmcr magic.

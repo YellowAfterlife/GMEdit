@@ -1,5 +1,6 @@
 package parsers;
 import ace.AceWrap;
+import ace.extern.*;
 import tools.Dictionary;
 import tools.NativeString;
 

@@ -1,6 +1,6 @@
 package parsers;
 
-import ace.AceWrap.AcePos;
+import ace.extern.*;
 import gml.GmlVersion;
 import tools.CharCode;
 import tools.StringReader;

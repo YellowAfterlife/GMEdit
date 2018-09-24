@@ -1,5 +1,5 @@
 package yy;
-import ace.AceWrap.AceAutoCompleteItem;
+import ace.extern.*;
 import electron.FileSystem;
 import electron.FileWrap;
 import gml.GmlAPI;

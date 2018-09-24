@@ -5,6 +5,7 @@ import ui.*;
 import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
+import ace.extern.*;
 import parsers.GmlSeeker;
 import tools.Dictionary;
 import tools.NativeString;

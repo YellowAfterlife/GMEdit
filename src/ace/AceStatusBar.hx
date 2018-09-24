@@ -1,5 +1,6 @@
 package ace;
 import ace.AceWrap;
+import ace.extern.*;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlLocals;

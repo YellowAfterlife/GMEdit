@@ -1,6 +1,6 @@
 package parsers;
 import ace.AceMacro;
-import ace.AceWrap.AceAutoCompleteItems;
+import ace.extern.*;
 import electron.FileWrap;
 import gml.GmlAPI;
 import gml.GmlEnum;
@@ -70,7 +70,7 @@ class GmlExtImport {
 				ns = alias;
 				alias = mt[3];
 			}
-			var comp = new ace.AceWrap.AceAutoCompleteItem(path, "global");
+			var comp = new ace.extern.AceAutoCompleteItem(path, "global");
 			imp.add(path, alias, "globalfield", comp, null, ns);
 		} else {
 			flat = path.replaceExt(rxPeriod, "_");

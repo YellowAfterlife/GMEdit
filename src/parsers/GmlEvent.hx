@@ -1,5 +1,6 @@
 package parsers;
 import ace.AceWrap;
+import ace.extern.*;
 import electron.FileSystem;
 import gml.GmlVersion;
 import haxe.ds.StringMap;

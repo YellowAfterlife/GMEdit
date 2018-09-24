@@ -1,6 +1,7 @@
 package ui;
 import Main.*;
 import ace.AceWrap;
+import ace.extern.*;
 import js.html.Element;
 import js.html.MouseEvent;
 

@@ -1,5 +1,5 @@
 package gml;
-import ace.AceWrap.AceAutoCompleteItem;
+import ace.extern.*;
 import electron.FileSystem;
 import electron.Electron;
 import haxe.Json;

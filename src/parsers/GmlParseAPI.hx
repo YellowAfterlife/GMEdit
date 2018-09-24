@@ -5,6 +5,7 @@ import gml.GmlFuncDoc;
 import gml.GmlVersion;
 import tools.Dictionary;
 import ace.AceWrap;
+import ace.extern.*;
 import tools.NativeString;
 using tools.ERegTools;
 

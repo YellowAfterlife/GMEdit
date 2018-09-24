@@ -1,5 +1,6 @@
 package parsers;
 import ace.AceWrap;
+import ace.extern.*;
 import gml.Project;
 import gml.file.GmlFile;
 import js.RegExp;
