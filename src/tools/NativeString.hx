@@ -64,7 +64,7 @@ class NativeString {
 	}
 	
 	public static inline function contains(s:String, q:String):Bool {
-		return s.indexOf(q) != -1;
+		return untyped s.includes(q);
 	}
 	
 	private static var escapeRx_1:RegExp = new RegExp('([.*+?^${}()|[\\]\\/\\\\])', 'g');
