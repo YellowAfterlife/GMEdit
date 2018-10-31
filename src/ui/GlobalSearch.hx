@@ -6,6 +6,7 @@ import Main.window;
 import gml.*;
 import gml.file.GmlFile;
 import js.RegExp;
+import js.Syntax;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.InputElement;
@@ -42,6 +43,7 @@ using tools.HtmlTools;
 	public static var cbCheckShaders:InputElement;
 	public static var cbCheckExtensions:InputElement;
 	public static var divSearching:DivElement;
+	public static var currentPath:String;
 	//
 	static function offsetToPos(code:String, till:Int, rowStart:Int):AcePos {
 		var pos:Int;
@@ -78,14 +80,17 @@ using tools.HtmlTools;
 		var repl:Dynamic = opt.replaceBy;
 		var filterFn:Function = opt.findFilter;
 		var ctxFilter = opt.headerFilter;
+		var ctxFilterFn:GlobalSearchCtxFilter = Syntax.typeof(ctxFilter) == "function" ? ctxFilter : null;
+		var ctxFilterRx:RegExp = Std.is(ctxFilter, RegExp) ? ctxFilter : null;
 		var isRepl = repl != null;
-		var isReplFn = js.Syntax.typeof(repl) == "function";
+		var isReplFn = Syntax.typeof(repl) == "function";
 		var isPrev = opt.previewReplace;
 		var saveData = new GlobalSeachData(opt);
 		var saveItems = saveData.list;
 		var saveItem:GlobalSearchItem;
 		var saveCtxItems:Array<GlobalSearchItem>;
 		pj.search(function(name:String, path:String, code:String) {
+			currentPath = path;
 			var q = new GmlReader(code);
 			var start = 0;
 			var row = 0;
@@ -93,7 +98,15 @@ using tools.HtmlTools;
 			saveCtxItems = [];
 			saveData.map.set(ctxName, saveCtxItems);
 			var ctxStart = 0;
-			var ctxCheck = ctxFilter == null || ctxFilter.test("#define " + name);
+			var ctxCheck:Bool;
+			inline function ctxCheckProc(s:String):Void {
+				if (ctxFilterFn != null) {
+					ctxCheck = ctxFilterFn(s, path);
+				} else if (ctxFilterRx != null) {
+					ctxCheck = ctxFilterRx.test(s);
+				} else ctxCheck = true;
+			}
+			ctxCheckProc(name);
 			var ctxLast = null;
 			var out = isRepl ? "" : null;
 			var replStart = 0;
@@ -122,7 +135,10 @@ using tools.HtmlTools;
 							ctxLast = ctxLink;
 							var head = '\n\n// in @[$ctxLink]:\n' + line;
 							if (isRepl) {
-								var next:String = isReplFn ? repl(curr) : repl;
+								var next:String = isReplFn ? repl(curr, {
+									ctx: ctxName,
+									row: pos.row,
+								}) : repl;
 								out += q.substring(replStart, ofs) + next;
 								replStart = ofs + mt[0].length;
 								if (mt[0] != next) {
@@ -178,7 +194,7 @@ using tools.HtmlTools;
 							ctxName = ctxNameNext;
 							q.skipLine(); q.skipLineEnd();
 							ctxStart = q.pos;
-							ctxCheck = ctxFilter == null || ctxFilter.test(q.substring(p, q.pos));
+							ctxCheckProc(ctxName);
 							if (opt.checkHeaders) {
 								start = p;
 								flush(q.pos);
@@ -329,6 +345,7 @@ typedef GlobalSearchOpt = {
 	checkMacros:Bool,
 	checkShaders:Bool,
 	checkExtensions:Bool,
-	?headerFilter:RegExp,
+	?headerFilter:EitherType<RegExp, GlobalSearchCtxFilter>,
 	?errors:String,
 };
+typedef GlobalSearchCtxFilter = (ctx:String, path:String)->Bool;
