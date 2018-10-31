@@ -102,7 +102,7 @@ import ui.treeview.TreeView;
 				m_owner: this.id,
 			};
 			newMap.set(newName, ev);
-			newList.push({ event: ev, code: item.code[0] });
+			newList.push({ event: ev, code: item.code.join("\r\n") });
 		}
 		// remove event files that are no longer used:
 		for (i in 0 ... oldList.length) if (!newMap.exists(oldNames[i])) {
