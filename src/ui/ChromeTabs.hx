@@ -106,6 +106,11 @@ class ChromeTabs {
 				#end
 			}
 			sync(gmlFile);
+			if (Std.is(gmlFile.editor, editors.EditCode)) {
+				window.setTimeout(function() {
+					Main.aceEditor.focus();
+				});
+			}
 		});
 		element.addEventListener("tabClose", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
