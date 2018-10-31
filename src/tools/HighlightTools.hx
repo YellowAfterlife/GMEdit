@@ -9,4 +9,18 @@ class HighlightTools {
 	public static function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
 		return { token: tk, regex: rx, next: next };
 	}
+	public static function rdef(tk:String):Dynamic {
+		return { defaultToken: tk };
+	}
+	public static function rulePairs(pairs_rx_tk:Array<String>, ?next:String):AceLangRule {
+		var rs = "";
+		var i = 0;
+		var tokens = [];
+		while (i < pairs_rx_tk.length) {
+			rs += "(" + pairs_rx_tk[i] + ")";
+			tokens.push(pairs_rx_tk[i + 1]);
+			i += 2;
+		}
+		return { token: tokens, regex: rs, next: next };
+	}
 }

@@ -23,10 +23,11 @@ using tools.NativeArray;
  */
 class GmlExtImport {
 	private static var rxImport = new RegExp((
-		"^#import[ \t]+"
-		+ "([\\w.]+\\*?)" // com.pkg[.*]
-		+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+)(?:\\.(\\w+))?)?" // in name
-	), "");
+		"^#import[ \t]+(?:"
+			+ "([\\w.]+\\*?)" // com.pkg[.*]
+			+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+)(?:\\.(\\w+))?)?" // in name
+		//+ "|([\\w]\\(.*\\))[ \t]+(?:in|as)[ \t]+([\\w]\\(.*\\))" // func(...) in func(...)
+	+ ")"), "");
 	private static var rxImportFile = new RegExp("^#import[ \t]+(\"[^\"]*\"|'[^']*')", "");
 	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+(?:<.*?>)?)\\*/";
 	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
@@ -42,7 +43,7 @@ class GmlExtImport {
 		var short:String;
 		var check:Dictionary<String>->AceAutoCompleteItems->Void;
 		var errors = "";
-		if (path.endsWith("*")) {
+		if (path.endsWith("*")) { // #import pkg.*
 			flat = path.substring(0, path.length - 1).replaceExt(rxPeriod, "_");
 			flen = flat.length;
 			function check(
@@ -61,7 +62,8 @@ class GmlExtImport {
 			check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc);
 			check(GmlAPI.extKind, GmlAPI.extComp, GmlAPI.extDoc);
 			check(GmlAPI.gmlKind, GmlAPI.gmlComp, GmlAPI.gmlDoc);
-		} else if (path.startsWith("global.")) {
+		}
+		else if (path.startsWith("global.")) { // #import global.fd
 			flat = path.substring(7);
 			var ns:String = null;
 			if (alias == null) {
@@ -72,7 +74,8 @@ class GmlExtImport {
 			}
 			var comp = new ace.extern.AceAutoCompleteItem(path, "global");
 			imp.add(path, alias, "globalfield", comp, null, ns);
-		} else {
+		}
+		else { // #import ident
 			flat = path.replaceExt(rxPeriod, "_");
 			var ns:String = null;
 			if (alias == null) {
