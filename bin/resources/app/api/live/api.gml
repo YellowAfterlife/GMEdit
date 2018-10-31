@@ -1,4 +1,96 @@
-// Generated at 01.02.2018 14:06:19
+// Generated at 09.10.2018 16:34:27
+:script_execute(script:index, ...args):
+script_get_name(script:index):
+script_get_index(script_name:string):
+//{ arr
+array_create(size:int, val=0):
+array_clear(arr:array, val):
+array_clone(arr:array):
+array_slice(arr:array, start:int, length:int):
+array_copy(dest:array, dest_index:int, source:array, source_index:int, length:int)
+array_length(val):
+/// Alias for array_length
+array_push(arr, val):
+array_insert(arr:array, pos:int, val)
+array_find_index(arr:array, val):
+array_find_index_ext(arr:array, val, start:int):
+array_find_last_index(arr:array, val):
+array_find_last_index_ext(arr:array, val, start:int):
+array_sort(arr:array, ascend:bool)
+array_sort_sub(arr:array, sub_index:int, ascend:bool)
+array_join(:array, :string):
+//}
+ds_list_create():
+ds_list_destroy(list):
+ds_list_valid(list):
+ds_list_clear(list)
+ds_list_size(list):
+ds_list_shuffle(list)
+ds_list_find_value(list, index:int):
+/// Alias for ds_list_find_value
+ds_list_set(list, index:int, val)
+ds_list_add(list, ...values)
+ds_list_add_array(list, array:array)
+ds_list_insert(list, index:int, val)
+ds_list_delete(list, index:int)
+ds_list_find_index(list, val):
+ds_list_remove(list, val):
+ds_list_join(list, sep:string):
+ds_list_to_array(list):
+ds_map_create():
+ds_map_destroy(map):
+ds_map_valid(map):
+ds_map_clear(map)
+ds_map_size(map):
+ds_map_keys(map):
+ds_map_values(map):
+ds_map_find_value(map, key):
+ds_map_set(map, key, val)
+ds_map_exists(map, key):
+ds_map_delete(map, key):
+ds_grid_create(w:int, h:int):
+ds_grid_destroy(grid):
+ds_grid_valid(grid):
+ds_grid_clear(grid, val)
+ds_grid_width(grid):
+ds_grid_height(grid):
+ds_grid_resize(grid, w:int, h:int)
+ds_grid_get(grid, x:number, y:number):
+ds_grid_set(grid, x:number, y:number, val)
+ds_grid_set_region(grid, x1:number, y1:number, x2:number, y2:number, val)
+ds_grid_sort(grid, column:int, ascending:bool)
+vertex_create_buffer():
+vertex_create_buffer_ext(size:int):
+vertex_delete_buffer(vbuf):
+vertex_begin(vbuf, vfmt)
+vertex_float1(vbuf, v1:number)
+vertex_float2(vbuf, v1:number, v2:number)
+vertex_float2(vbuf, v1:number, v2:number, v3:number)
+vertex_float2(vbuf, v1:number, v2:number, v3:number, v4:number)
+vertex_color(vbuf, c:int, a:number)
+vertex_texcoord(vbuf, tx:number, ty:number)
+vertex_position(vbuf, x:number, y:number)
+vertex_position_3d(vbuf, x:number, y:number, z:number)
+vertex_normal(vbuf, nx:number, ny:number, nz:number)
+vertex_argb(vbuf, v:int)
+vertex_end(vbuf)
+vertex_freeze(vbuf)
+vertex_submit(vbuf, prType:int, tex=Texture.defValue)
+vertex_format_begin():
+vertex_format_end():
+vertex_format_delete(vfmt):
+vertex_format_add_color()
+vertex_format_add_colour()
+vertex_format_add_normal()
+vertex_format_add_position()
+vertex_format_add_position_3d()
+vertex_format_add_texcoord()
+vertex_format_add_custom(type:int, usage:int)
+chat_comp_add(command:string, ...args_n_help:string):
+chat_comp_remove(command:string):
+chat_comp_add_arg(command:string, arg:int, value:string, help:string=""):
+chat_comp_remove_arg(command:string, arg:int, value:string):
+chat_comp_clear_arg(command:string, arg:int):
 :alarm_get(:index):
 :alarm_set(:index, value:number)
 //{ Instance
@@ -11,7 +103,7 @@ instance_place(x:number, y:number, obj:index):
 instance_find(obj:index, n:index);
 //}
 //{ event_
-:event_perform(etype:int, enumb:int)
+::event_perform(etype:int, enumb:int)
 ev_create = 0
 ev_destroy = 1
 ev_alarm = 2
@@ -123,18 +215,6 @@ rectangle_in_rectangle(sx1:number, sy1:number, sx2:number, sy2:number, dx1:numbe
 rectangle_in_triangle(sx1:number, sy1:number, sx2:number, sy2:number, x1:number, y1:number, x2:number, y2:number, x3:number, y3:number):
 rectangle_in_circle(sx1:number, sy1:number, sx2:number, sy2:number, cx:number, cy:number, rad:number):
 //}
-//{ Arrays
-array_create(size:number):
-array_length_1d(value):
-array_length(value):
-array_push(array, value):
-array_find_index(:array, value):
-array_join(:array, separator:string):
-array_clear(:array, value)
-array_clone(:array):
-array_slice(:array, start:number, length:number):
-array_copy(dest:array, dest_index:number, source:array, source_index:number, length:number):
-//}
 //{ Math
 abs(x:number):
 round(x:number):
@@ -166,10 +246,10 @@ degtorad(x:number):
 radtodeg(x:number):
 power(x:number, n:number):
 logn(n:number, x:number):
-min(x1:number, x2:number, x3:number, ...):
-max(x1:number, x2:number, x3:number, ...):
-mean(x1:number, x2:number, x3:number, ...):
-median(x1:number, x2:number, x3:number, ...):
+min(...:number):
+max(...:number):
+mean(...:number):
+median(...:number):
 clamp(val:number, min:number, max:number):
 lerp(val1:number, val2:number, amount:number):
 dot_product(x1:number, y1:number, x2:number, y2:number):
@@ -223,7 +303,7 @@ string_trim(str:string):
 string_ltrim(str:string):
 string_rtrim(str:string):
 string_split(str:string, delim:string):
-string_split_list(str:string, delim:string, ?list:id):
+string_split_list(str:string, delim:string, ?list):
 string_save(str:string, path:string):
 string_load(path:string):
 //}
@@ -319,13 +399,17 @@ bm_subtract = 3
 draw_set_blend_mode_ext(src:int, dest:int)
 bm_zero = 1
 bm_one = 2
+bm_src_color = 3
 bm_src_colour = 3
+bm_inv_src_color = 4
 bm_inv_src_colour = 4
 bm_src_alpha = 5
 bm_inv_src_alpha = 6
 bm_dest_alpha = 7
 bm_inv_dest_alpha = 8
+bm_dest_color = 9
 bm_dest_colour = 9
+bm_inv_dest_color = 10
 bm_inv_dest_colour = 10
 bm_src_alpha_sat = 11
 draw_set_colour_write_enable(red:bool, green:bool, blue:bool, alpha:bool)
@@ -343,7 +427,6 @@ asset_unknown = -1
 asset_sprite = 1
 asset_sound = 2
 asset_room = 3
-asset_background = 4
 asset_path = 5
 asset_script = 6
 asset_font = 7
@@ -380,6 +463,37 @@ object_is_ancestor(ind_child:index, ind_parent:index):
 :mp_linear_step_object(x:number, y:number, speed:number, obj:index)
 :mp_potential_step_object(x:number, y:number, speed:number, obj:index)
 //}
+//{ Raw audio
+audio_play_sound(soundid:index,priority:number,loops:bool):
+audio_play_sound_at(soundid:index, x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:number):
+audio_stop_sound(soundid:index)
+audio_resume_sound(soundid:index)
+audio_pause_sound(soundid:index)
+audio_sound_length_nonsync(soundid:index):
+audio_get_type(soundid:index):
+audio_sound_gain(soundid:index,volume:number,time:number):
+audio_sound_pitch(soundid:index,pitch:number):
+audio_stop_all()
+audio_resume_all()
+audio_pause_all()
+audio_is_playing(soundid:index):
+audio_is_paused(soundid:index):
+audio_exists(soundid:index):
+audio_sound_get_gain(soundid:index):
+audio_sound_get_pitch(soundid:index):
+audio_get_name(soundid:index):
+audio_sound_set_track_position(soundid:index, time:number)
+audio_sound_get_track_position_nonsync(soundid:index):
+//}
+//{
+matrix_view = 0
+matrix_projection = 1
+matrix_world = 2
+matrix_get(type:int):
+matrix_set(type:int,matrix:array)
+matrix_build(x:number,y:number,z:number,xrotation:number,yrotation:number,zrotation:number,xscale:number,yscale:number,zscale:number):
+matrix_multiply(matrix:array,matrix:array):
+//}
 /**
  * Creates a copy of the current pseudo-thread that will execute
  * the current script (from the current position) before terminating. Returns
@@ -396,13 +510,15 @@ trace_time(?caption)
 trace_color(text:string, :color)
 room_speed
 current_time_scale:number
+/// input and network delay, in frames
+current_delay*
 //{
-random(x:number)
-irandom(x:number)
-random_range(min:number, max:number)
-irandom_range(min:number, max:number)
-choose(...values)
-game_set_seed(seed:int):
+random(x:number):
+irandom(x:number):
+random_range(min:number, max:number):
+irandom_range(min:number, max:number):
+choose(...values):
+game_set_seed(seed:int)
 random_set_seed(seed:int)
 random_get_seed():
 //}
@@ -422,7 +538,7 @@ game_set_size(w:real, h:real)
 game_letterbox:bool
 fntM*
 fntBigName*
-pi = 3.14159265358979
+pi = 3.141592653589793
 //{ Instance API
 instance_create(x:number, y:number, object:object):
 :instance_destroy()
@@ -473,57 +589,11 @@ sprite_restore(:sprite):
 sprite_delete(:sprite):
 sprite_collision_mask(:sprite, sepmasks:bool, bboxmode:int, bbleft:number, bbtop:number, bbright:number, bbbottom:number, kind:int, tolerance:number):
 sprite_skin(bskin, ...sprites:sprite):
+font_add_sprite(:sprite, first:int, prop:bool, sep:number):
+font_add_sprite_ext(:sprite, chars:string, prop:bool, sep:number):
+font_delete(:font)
 current_time*
 current_frame*
-//{ ds_list
-ds_list_create():
-ds_list_destroy(list:index)
-ds_list_clear(list:index)
-ds_list_size(list:index):
-ds_list_shuffle(list:index)
-ds_list_find_value(list:index, index:number):
-ds_list_set(list:index, index:number, val)
-ds_list_add(list:index, ...values)
-/// adds each element of the array to the list
-ds_list_add_array(list:index, array)
-ds_list_insert(list:index, index:number, value)
-ds_list_delete(list:index, index:number):
-ds_list_find_index(list:index, value):
-/// Removes the first occurence of value in a list.
-ds_list_remove(list:index, value):
-/// Returns a string, containing list' elements separated by given string.
-ds_list_join(list:index, separator:string):
-/// Creates an array with all current contents of a list
-ds_list_to_array(list:index):
-//}
-//{ ds_map
-ds_map_create():
-ds_map_destroy(map:index)
-ds_map_clear(map:index)
-ds_map_size(map:index):
-/// Returns an array with all keys of given map
-ds_map_keys(map:index):
-/// Returns an array with all values of given map
-ds_map_values(map:index):
-ds_map_find_value(map:index, key):
-/// Alias for ds_map_find_value
-ds_map_get(map:index, key):
-ds_map_set(map:index, key, val)
-ds_map_exists(map:index, key)
-ds_map_delete(map:index, key)
-//}
-//{ ds_grid
-ds_grid_create(width:number, height:number):
-ds_grid_destroy(grid:index)
-ds_grid_clear(grid:index, value)
-ds_grid_width(grid:index):
-ds_grid_height(grid:index):
-ds_grid_resize(grid:index, width:number, height:number)
-ds_grid_get(grid:index, x:number, y:number):
-ds_grid_set(grid:index, x:number, y:number, value)
-ds_grid_set_region(grid:index, x1:number, y1:number, x2:number, y2:number, value)
-ds_grid_sort(grid:index, column:number, asc:bool)
-//}
 //{ Lightweight object API
 lq_get(obj, field)
 lq_defget(obj, field, defValue)
@@ -561,6 +631,7 @@ surface_set_target(sf)
 surface_reset_target()
 /// Copies the current contents of application_surface to the given surface.
 surface_screenshot(sf)
+surface_get_texture(sf)
 /// 
 draw_surface(sf, x:number, y:number)
 draw_surface_ext(sf, x:number, y:number, xscale:number, yscale:number, rot:number, :color, alpha:number)
@@ -683,6 +754,19 @@ draw_set_fog(enable:bool, color:color, start:number, end:number)
 /// 2: Player HUD (index specifies player)
 draw_set_projection(mode:int, ?index:int)
 draw_reset_projection()
+//{
+shader_create(vertex_code:string, fragment_code:string):
+shader_destroy(:array)
+shader_set(:array)
+shader_reset()
+texture_set_stage(sampler_id:int, texture)
+shader_set_vertex_constant_f(start_register:int, :array)
+shader_set_vertex_constant_i(start_register:int, :array)
+shader_set_vertex_constant_b(start_register:int, :array)
+shader_set_fragment_constant_f(start_register:int, :array)
+shader_set_fragment_constant_i(start_register:int, :array)
+shader_set_fragment_constant_b(start_register:int, :array)
+//}
 background_color
 //{ Mod API
 /// NTT mod version
@@ -692,9 +776,14 @@ mod_exists(type:string, name:string):
 mod_get_names(type:string):
 mod_variable_exists(type:string, name:string, varName:string):
 mod_variable_get(type:string, name:string, varName:string):
-mod_variable_set(type:string, name:string, varName:string, value:number)
+mod_variable_set(type:string, name:string, varName:string, value):
 mod_script_exists(type:string, name:string, scrName:string):
-:mod_script_call(type:string, name:string, scrName:string, ...args):
+::mod_script_call(type:string, name:string, scrName:string, ...args):
+/// mod_script_call but without passing self/other.
+/// as result, self/other in called script can be very arbitrary, especially after `wait`.
+mod_script_call_nc(type:string, name:string, scrName:string, ...args):
+/// mod_script_call but only passing self - akin to above.
+:mod_script_call_self(type:string, name:string, scrName:string, ...args):
 //{
 mod_sideload():
 mod_load(path:string):
@@ -722,8 +811,8 @@ sound_play_pitchvol(:sound, pitch:number, volume:number):
 /// faded (to `fade` volume) for a few moments after each shot.
 /// Regular guns use fade=0.3, small guns use fade=0.6, large guns use fade=-0.5
 sound_play_gun(:sound, pitch_spread:number, fade:number):
-sound_play_hit(:sound, pitch_spread:number):
-sound_play_hit_big(:sound, pitch_spread:number):
+:sound_play_hit(:sound, pitch_spread:number):
+:sound_play_hit_big(:sound, pitch_spread:number):
 sound_stop(:sound)
 sound_stop_all()
 sound_set_track_position(:sound, seconds:number)
@@ -742,8 +831,8 @@ sound_restore(original:sound)
 //}
 //{ Player API
 /**
- * A constant that holds the number of player slots (2) used in player functions. 
- * Intended to be used instead of hardcoding `2` everywhere.
+ * A constant that holds the number of player slots (4) used in player functions. 
+ * Intended to be used instead of hardcoding `4` everywhere.
  * e.g. for (var p = 0; p < maxp; p++) { ... }
  */
 maxp = 4
@@ -787,6 +876,22 @@ player_get_show_skills(to_player:int):
 player_set_show_skills(to_player:int, show:bool)
 :player_fire(?direction:number)
 :player_fire_ext(?direction:number, ?wep, ?x:number, ?y:number, ?team:number, ?creator:id, ...):
+//{ non-sync functions (BE CAREFUL)
+player_is_local_nonsync(player:int):
+player_find_local_nonsync(local_index:int=0):
+button_check_nonsync(player:int, button:string):
+button_pressed_nonsync(player:int, button:string):
+button_released_nonsync(player:int, button:string):
+/// Local mouse coordinates (note: currently gamepads have no effect on these)
+mouse_x_nonsync*
+mouse_y_nonsync*
+/// Local view coordinates
+view_xview_nonsync*
+view_yview_nonsync*
+/// Used by audio functions, does not modify primary RNG state.
+random_nonsync(x:number):
+get_timer_nonsync():
+//}
 //}
 //{ Weapon API
 weapon_get_name(wep):
@@ -820,9 +925,13 @@ weapon_set_rads(wep:index, :number)
 :weapon_post(wkick:number, shift:number, shake:number)
 /// Adds all weapons (regular and modded) within the given area range to a list.
 /// Returns the number of weapons found.
-:weapon_get_list(list:index, ?minarea:number, ?maxarea:number):
+:weapon_get_list(list, ?minarea:number, ?maxarea:number):
 //}
 //{ Projectile helpers
+/// Sets projectile's team,creator
+/// Also adjusts position based on direction,speed if current_time_scale < 1
+/// (to make sure that projectiles are always on the right spot when first seen)
+:projectile_init(team:id, creator:id)
 /// Checks if a bullet can hit the given target (team comparison)
 :projectile_canhit(hitme:id):
 /// Checks if a swing can hit the given target (team and iframe comparison)
@@ -839,6 +948,9 @@ weapon_set_rads(wep:index, :number)
 /// hurt_snd is 0 for no sound, 1 for regular sound, 2 for 'hit by large object' sound
 projectile_hit_raw(hitme:id, damage:number, hurt_snd:int)
 //}
+:pickup_drop(pickupChancePercent:number, weaponChancePercent:number, ?attemptNumber:int)
+/// 
+pickup_chance_multiplier*
 //{ Skill API
 skill_get(skill):
 skill_set(skill, value:bool):
@@ -847,9 +959,15 @@ skill_clear()
 skill_get_active(skill):
 skill_set_active(skill, active:bool)
 skill_get_name(skill)
+skill_get_text(skill)
 ultra_get(race, index:int)
 ultra_set(race, index:int, active:bool)
 ultra_count(race):
+//}
+//{ Skill API
+crown_get_name(crown):
+crown_get_text(crown):
+crown_current:any
 //}
 //{ Race API
 race_get_active(race):
@@ -870,7 +988,8 @@ file_size(path:string):
 file_md5(path:string):
 file_sha1(path:string):
 file_delete(path:string):
-file_download(url:string, path:string)
+file_download(url_to_get_from:string, path:string)
+file_upload(path_to_upload:string, url_to_post_to:string, ?path_for_response:string)
 file_load_bytes(path:string):
 file_save_bytes(path:string, bytes):
 file_save_bytes_ext(path:string, bytes, start:int, length:int):
@@ -1067,5 +1186,4 @@ crwn_luck = 10
 crwn_curses = 11
 crwn_risk = 12
 crwn_protection = 13
-//
 mod_current = "<mod name>.<kind>.gml"

@@ -56,6 +56,7 @@ false#
 pi#
 GM_build_date#
 GM_version#
+GM_runtime_version#
 
 // section 2.2
 
@@ -82,7 +83,7 @@ array_length_1d(variable)
 array_length_2d(variable, index)
 array_height_2d(variable)
 array_equals(var1,var2)
-array_create(size, val, ...)
+array_create(size, [value])
 array_copy(dest,dest_index,src,src_index,length)
 random(x)
 random_range(x1,x2)
@@ -146,7 +147,8 @@ lengthdir_y(len,dir)
 
 // section 2.3
 
-real(str)
+real(val)
+bool(val)
 string(val)
 int64(val)
 ptr(val)
@@ -291,10 +293,10 @@ mp_potential_step(x,y,speed,checkall)
 mp_linear_step_object(x,y,speed,obj)
 mp_potential_step_object(x,y,speed,obj)
 mp_potential_settings(maxrot,rotstep,ahead,onspot)
-mp_linear_path(path,xg,yg,stepsize,checkall) 
-mp_potential_path(path,xg,yg,stepsize,factor,checkall) 
-mp_linear_path_object(path,xg,yg,stepsize,obj) 
-mp_potential_path_object(path,xg,yg,stepsize,factor,obj) 
+mp_linear_path(path,xg,yg,stepsize,checkall)
+mp_potential_path(path,xg,yg,stepsize,factor,checkall)
+mp_linear_path_object(path,xg,yg,stepsize,obj)
+mp_potential_path_object(path,xg,yg,stepsize,factor,obj)
 mp_grid_create(left,top,hcells,vcells,cellwidth,cellheight)
 mp_grid_destroy(id)
 mp_grid_clear_all(id)
@@ -316,6 +318,13 @@ collision_circle(x1,y1,radius,obj,prec,notme)
 collision_ellipse(x1,y1,x2,y2,obj,prec,notme)
 collision_line(x1,y1,x2,y2,obj,prec,notme)
 
+collision_point_list(x,y,obj,prec,notme,list,ordered)
+collision_rectangle_list(x1,y1,x2,y2,obj,prec,notme,list,ordered)
+collision_circle_list(x1,y1,radius,obj,prec,notme,list,ordered)
+collision_ellipse_list(x1,y1,x2,y2,obj,prec,notme,list,ordered)
+collision_line_list(x1,y1,x2,y2,obj,prec,notme,list,ordered)
+instance_position_list(x,y,obj,list,ordered)
+instance_place_list(x,y,obj,list,ordered)
 
 point_in_rectangle(px,py,x1,y1,x2,y2)
 point_in_triangle(px,py,x1,y1,x2,y2,x3,y3)
@@ -520,6 +529,7 @@ ev_step_end#
 ev_gui#
 ev_gui_begin#
 ev_gui_end#
+ev_cleanup#
 
 ev_gesture#
 
@@ -699,7 +709,7 @@ layer@
 
 // section 5.2
 
-background_colour£ 
+background_colour£
 background_showcolour£
 background_color$
 background_showcolor$
@@ -711,39 +721,39 @@ draw_sprite(sprite,subimg,x,y)
 draw_sprite_pos(sprite,subimg,x1,y1,x2,y2,x3,y3,x4,y4,alpha)
 draw_sprite_ext(sprite,subimg,x,y,xscale,yscale,rot,col,alpha)
 draw_sprite_stretched(sprite,subimg,x,y,w,h)
-draw_sprite_stretched_ext(sprite,subimg,x,y,w,h,col,alpha) 
-draw_sprite_tiled(sprite,subimg,x,y) 
-draw_sprite_tiled_ext(sprite,subimg,x,y,xscale,yscale,col,alpha) 
-draw_sprite_part(sprite,subimg,left,top,width,height,x,y) 
-draw_sprite_part_ext(sprite,subimg,left,top,width,height,x,y,xscale,yscale,col,alpha) 
+draw_sprite_stretched_ext(sprite,subimg,x,y,w,h,col,alpha)
+draw_sprite_tiled(sprite,subimg,x,y)
+draw_sprite_tiled_ext(sprite,subimg,x,y,xscale,yscale,col,alpha)
+draw_sprite_part(sprite,subimg,left,top,width,height,x,y)
+draw_sprite_part_ext(sprite,subimg,left,top,width,height,x,y,xscale,yscale,col,alpha)
 draw_sprite_general(sprite,subimg,left,top,width,height,x,y,xscale,yscale,rot,c1,c2,c3,c4,alpha)
 
 // section 5.4
 
-draw_clear(col) 
-draw_clear_alpha(col,alpha) 
-draw_point(x,y) 
-draw_line(x1,y1,x2,y2) 
-draw_line_width(x1,y1,x2,y2,w) 
-draw_rectangle(x1,y1,x2,y2,outline) 
-draw_roundrect(x1,y1,x2,y2,outline) 
-draw_roundrect_ext(x1,y1,x2,y2,radiusx,radiusy,outline) 
-draw_triangle(x1,y1,x2,y2,x3,y3,outline) 
-draw_circle(x,y,r,outline) 
-draw_ellipse(x1,y1,x2,y2,outline) 
+draw_clear(col)
+draw_clear_alpha(col,alpha)
+draw_point(x,y)
+draw_line(x1,y1,x2,y2)
+draw_line_width(x1,y1,x2,y2,w)
+draw_rectangle(x1,y1,x2,y2,outline)
+draw_roundrect(x1,y1,x2,y2,outline)
+draw_roundrect_ext(x1,y1,x2,y2,radiusx,radiusy,outline)
+draw_triangle(x1,y1,x2,y2,x3,y3,outline)
+draw_circle(x,y,r,outline)
+draw_ellipse(x1,y1,x2,y2,outline)
 draw_set_circle_precision(precision)
-draw_arrow(x1,y1,x2,y2,size) 
-draw_button(x1,y1,x2,y2,up) 
-draw_path(path,x,y,absolute) 
-draw_healthbar(x1,y1,x2,y2,amount,backcol,mincol,maxcol,direction,showback,showborder) 
+draw_arrow(x1,y1,x2,y2,size)
+draw_button(x1,y1,x2,y2,up)
+draw_path(path,x,y,absolute)
+draw_healthbar(x1,y1,x2,y2,amount,backcol,mincol,maxcol,direction,showback,showborder)
 draw_getpixel(x,y)
 draw_getpixel_ext(x,y)
 draw_set_colour(col)£
 draw_set_color(col)$
-draw_set_alpha(alpha) 
+draw_set_alpha(alpha)
 draw_get_colour()£
 draw_get_color() $
-draw_get_alpha() 
+draw_get_alpha()
 c_aqua#
 c_black#
 c_blue#
@@ -772,7 +782,7 @@ colour_get_blue(col)£
 colour_get_hue(col)£
 colour_get_saturation(col)£
 colour_get_value(col)£
-merge_colour(col1,col2,amount)$
+merge_color(col1,col2,amount)$
 make_color_rgb(red,green,blue)$
 make_color_hsv(hue,saturation,value)$
 color_get_red(col)$
@@ -782,8 +792,9 @@ color_get_hue(col)$
 color_get_saturation(col)$
 color_get_value(col)$
 merge_color(col1,col2,amount)$
-screen_save(fname) 
-screen_save_part(fname,x,y,w,h) 
+screen_save(fname)
+screen_save_part(fname,x,y,w,h)
+
 
 // section 5.5
 
@@ -792,7 +803,7 @@ draw_set_halign(halign)
 fa_left#
 fa_center#
 fa_right#
-draw_set_valign(valign) 
+draw_set_valign(valign)
 fa_top#
 fa_middle#
 fa_bottom#
@@ -856,7 +867,7 @@ draw_vertex_texture(x,y,xtex,ytex)
 draw_vertex_texture_colour(x,y,xtex,ytex,col,alpha)£
 draw_vertex_texture_color(x,y,xtex,ytex,col,alpha)$
 texture_global_scale(pow2integer)
-bm_complex#
+bm_complex&
 bm_normal#
 bm_add#
 bm_max#
@@ -913,6 +924,8 @@ surface_get_texture(id)
 surface_set_target(id)
 surface_set_target_ext(index,id)
 surface_reset_target()
+surface_depth_disable(disable)
+surface_get_depth_disable()
 draw_surface(id,x,y)
 draw_surface_stretched(id,x,y,w,h)
 draw_surface_tiled(id,x,y)
@@ -924,8 +937,8 @@ draw_surface_part_ext(id,left,top,width,height,x,y,xscale,yscale,col,alpha)
 draw_surface_general(id,left,top,width,height,x,y,xscale,yscale,rot,c1,c2,c3,c4,alpha)
 surface_getpixel(id,x,y)
 surface_getpixel_ext(id,x,y)
-surface_save(id,fname) 
-surface_save_part(id,fname,x,y,w,h) 
+surface_save(id,fname)
+surface_save_part(id,fname,x,y,w,h)
 surface_copy(destination,x,y,source)
 surface_copy_part(destination,x,y,source,xs,ys,ws,hs)
 
@@ -948,6 +961,7 @@ display_mouse_get_x()
 display_mouse_get_y()
 display_mouse_set(x,y)
 
+display_set_ui_visibility(flags)
 
 // section 5.9
 
@@ -1032,7 +1046,7 @@ audio_listener_orientation(lookat_x,lookat_y,lookat_z,up_x,up_y,up_z)
 audio_emitter_position(emitterid,x,y,z)
 audio_emitter_create()
 audio_emitter_free(emitterid)
-audio_emitter_exists(emitterid);
+audio_emitter_exists(emitterid)
 audio_emitter_pitch(emitterid,pitch)
 audio_emitter_velocity(emitterid,vx,vy,vz)
 audio_emitter_falloff(emitterid, falloff_ref_dist,falloff_max_dist,falloff_factor)
@@ -1180,10 +1194,14 @@ sprite_get_width(ind)
 sprite_get_height(ind)
 sprite_get_xoffset(ind)
 sprite_get_yoffset(ind)
+sprite_get_bbox_mode(ind)
 sprite_get_bbox_left(ind)
 sprite_get_bbox_right(ind)
 sprite_get_bbox_top(ind)
 sprite_get_bbox_bottom(ind)
+
+sprite_set_bbox_mode(ind,mode)
+sprite_set_bbox(ind,left,top,right,bottom)
 
 sprite_save(ind,subimg,fname)
 sprite_save_strip(ind,fname)
@@ -1201,6 +1219,17 @@ sprite_flush_multi(indarray)
 sprite_set_speed(ind,speed,type)
 sprite_get_speed_type(ind)
 sprite_get_speed(ind)
+
+texture_is_ready(tex_id)
+texture_prefetch(tex_id_or_groupname)
+texture_flush(tex_id_or_groupname)
+
+texturegroup_get_textures(groupname)
+texturegroup_get_sprites(groupname)
+texturegroup_get_fonts(groupname)
+texturegroup_get_tilesets(groupname)
+
+texture_debug_messages(enable)
 
 spritespeed_framespersecond#
 spritespeed_framespergameframe#
@@ -1284,10 +1313,12 @@ sprite_create_from_surface(id,x,y,w,h,removeback,smooth,xorig,yorig)!
 sprite_add_from_surface(ind,id,x,y,w,h,removeback,smooth)!
 sprite_delete(ind)!
 sprite_set_alpha_from_sprite(ind,spr)
-sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbright,bbtop,bbbottom,kind,tolerance)
+sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbtop,bbright,bbbottom,kind,tolerance)
 
 // section 9.4
 
+font_add_enable_aa(enable)
+font_add_get_enable_aa()
 font_add(name,size,bold,italic,first,last)!
 font_add_sprite(spr,first,prop,sep)!
 font_add_sprite_ext(spr,mapstring,prop,sep)!
@@ -1335,8 +1366,8 @@ object_set_mask(ind,spr)
 room_set_width(ind,w)
 room_set_height(ind,h)
 room_set_persistent(ind,pers)
-room_set_background_colour(ind,col,show)£
-room_set_background_color(ind,col,show)$
+room_set_background_colour(ind,col,show)£&
+room_set_background_color(ind,col,show)$&
 // room_set_view(ind,vind,vis,xview,yview,wview,hview,xport,yport,wport,hport,hborder,vborder,hspeed,vspeed,obj)
 room_set_viewport(ind,vind,vis,xport,yport,wport,hport)
 room_get_viewport(ind,vind)
@@ -1507,7 +1538,7 @@ ds_list_sort(id,ascending)
 ds_list_shuffle(id)
 ds_list_write(id)
 ds_list_read(id,str,...)
-ds_list_set(id,pos,value);
+ds_list_set(id,pos,value)
 
 
 // section 11.4
@@ -1561,41 +1592,41 @@ ds_priority_read(id,str,...)
 
 // section 11.6
 
-ds_grid_create(w,h) 
-ds_grid_destroy(id) 
+ds_grid_create(w,h)
+ds_grid_destroy(id)
 ds_grid_copy(id,source)
-ds_grid_resize(id,w,h) 
-ds_grid_width(id) 
-ds_grid_height(id) 
-ds_grid_clear(id,val) 
-ds_grid_set(id,x,y,val) 
-ds_grid_add(id,x,y,val) 
-ds_grid_multiply(id,x,y,val) 
-ds_grid_set_region(id,x1,y1,x2,y2,val) 
-ds_grid_add_region(id,x1,y1,x2,y2,val) 
-ds_grid_multiply_region(id,x1,y1,x2,y2,val) 
-ds_grid_set_disk(id,xm,ym,r,val) 
-ds_grid_add_disk(id,xm,ym,r,val) 
-ds_grid_multiply_disk(id,xm,ym,r,val) 
+ds_grid_resize(id,w,h)
+ds_grid_width(id)
+ds_grid_height(id)
+ds_grid_clear(id,val)
+ds_grid_set(id,x,y,val)
+ds_grid_add(id,x,y,val)
+ds_grid_multiply(id,x,y,val)
+ds_grid_set_region(id,x1,y1,x2,y2,val)
+ds_grid_add_region(id,x1,y1,x2,y2,val)
+ds_grid_multiply_region(id,x1,y1,x2,y2,val)
+ds_grid_set_disk(id,xm,ym,r,val)
+ds_grid_add_disk(id,xm,ym,r,val)
+ds_grid_multiply_disk(id,xm,ym,r,val)
 ds_grid_set_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
 ds_grid_add_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
 ds_grid_multiply_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
-ds_grid_get(id,x,y) 
-ds_grid_get_sum(id,x1,y1,x2,y2) 
-ds_grid_get_max(id,x1,y1,x2,y2) 
-ds_grid_get_min(id,x1,y1,x2,y2) 
-ds_grid_get_mean(id,x1,y1,x2,y2) 
-ds_grid_get_disk_sum(id,xm,ym,r) 
-ds_grid_get_disk_min(id,xm,ym,r) 
-ds_grid_get_disk_max(id,xm,ym,r) 
-ds_grid_get_disk_mean(id,xm,ym,r) 
-ds_grid_value_exists(id,x1,y1,x2,y2,val) 
-ds_grid_value_x(id,x1,y1,x2,y2,val) 
-ds_grid_value_y(id,x1,y1,x2,y2,val) 
-ds_grid_value_disk_exists(id,xm,ym,r,val) 
-ds_grid_value_disk_x(id,xm,ym,r,val) 
-ds_grid_value_disk_y(id,xm,ym,r,val) 
-ds_grid_shuffle(id) 
+ds_grid_get(id,x,y)
+ds_grid_get_sum(id,x1,y1,x2,y2)
+ds_grid_get_max(id,x1,y1,x2,y2)
+ds_grid_get_min(id,x1,y1,x2,y2)
+ds_grid_get_mean(id,x1,y1,x2,y2)
+ds_grid_get_disk_sum(id,xm,ym,r)
+ds_grid_get_disk_min(id,xm,ym,r)
+ds_grid_get_disk_max(id,xm,ym,r)
+ds_grid_get_disk_mean(id,xm,ym,r)
+ds_grid_value_exists(id,x1,y1,x2,y2,val)
+ds_grid_value_x(id,x1,y1,x2,y2,val)
+ds_grid_value_y(id,x1,y1,x2,y2,val)
+ds_grid_value_disk_exists(id,xm,ym,r,val)
+ds_grid_value_disk_x(id,xm,ym,r,val)
+ds_grid_value_disk_y(id,xm,ym,r,val)
+ds_grid_shuffle(id)
 ds_grid_write(id)
 ds_grid_read(id,str,...)
 ds_grid_sort(id,column,ascending)
@@ -1775,6 +1806,8 @@ os_xboxone#
 os_ps3#
 //os_xbox360#
 os_uwp#
+os_tvos#
+os_switch#
 
 browser_not_a_browser#
 browser_unknown#
@@ -1821,13 +1854,22 @@ os_lock_orientation(flag)
 display_get_dpi_x()
 display_get_dpi_y()
 display_set_gui_size(width,height)
-display_set_gui_maximise(xscale,yscale,xoffset,yoffset,...)
+display_set_gui_maximise(xscale,yscale,xoffset,yoffset,...)£
+display_set_gui_maximize(xscale,yscale,xoffset,yoffset,...)$
 device_mouse_dbclick_enable(enable)
 display_aa*
 async_load*
 delta_time*
 webgl_enabled*
 event_data*
+
+display_set_timing_method(method)
+display_get_timing_method()
+tm_sleep#
+tm_countvsyncs#
+
+display_set_sleep_margin(milliseconds)
+display_get_sleep_margin()
 
 of_challenge_win#
 of_challen
@@ -2141,64 +2183,94 @@ sha1_string_unicode(string)
 sha1_string_utf8(string)
 sha1_file(fname)
 os_powersave_enable(enable)
-analytics_event(string)
-analytics_event_ext(string, string_param_name1, number_value1, ...)
+analytics_event(string)&
+analytics_event_ext(string, string_param_name1, number_value1, ...)&
 
 // Metro live tile commands
-win8_livetile_tile_notification(template, ds_map, expiry, tag)
-win8_livetile_tile_clear()
-win8_livetile_badge_notification(id)
-win8_livetile_badge_clear()
-win8_livetile_queue_enable(flag)
+win8_livetile_tile_notification(template, ds_map, expiry, tag)&
+win8_livetile_tile_clear()&
+win8_livetile_badge_notification(id)&
+win8_livetile_badge_clear()&
+win8_livetile_queue_enable(flag)&
 
 // Metro secondary tiles
-win8_secondarytile_pin(id, shortName, displayName, cmdLineArgs, dsListOptions, tileImg, wideTileImg, textCol)
-win8_secondarytile_badge_notification(id, tileId)
-win8_secondarytile_delete(id)
+win8_secondarytile_pin(id, shortName, displayName, cmdLineArgs, dsListOptions, tileImg, wideTileImg, textCol)&
+win8_secondarytile_badge_notification(id, tileId)&
+win8_secondarytile_delete(id)&
 
 // Metro live tile command list
-win8_livetile_notification_begin(template);
-win8_livetile_notification_secondary_begin(template, tileId);
-win8_livetile_notification_expiry(expiryTime);
-win8_livetile_notification_tag(tag);
-win8_livetile_notification_text_add(text);
-win8_livetile_notification_image_add(image);
-win8_livetile_notification_end();
+win8_livetile_notification_begin(template)&
+win8_livetile_notification_secondary_begin(template, tileId)&
+win8_livetile_notification_expiry(expiryTime)&
+win8_livetile_notification_tag(tag)&
+win8_livetile_notification_text_add(text)&
+win8_livetile_notification_image_add(image)&
+win8_livetile_notification_end()&
 
 // Metro appbar commands
-win8_appbar_enable(flag)
-win8_appbar_add_element(type, icon, label, section, toolTip, callback)
-win8_appbar_remove_element(id)
+win8_appbar_enable(flag)&
+win8_appbar_add_element(type, icon, label, section, toolTip, callback)&
+win8_appbar_remove_element(id)&
 
 // Metro charms
-win8_settingscharm_add_entry(name, callback)
-win8_settingscharm_add_html_entry(id, name, htmlPath)
-win8_settingscharm_add_xaml_entry(name, xamlPath, headerRGB, callback, wideFlyout)
-win8_settingscharm_set_xaml_property(entryName, elementName, propertyName, newValue )
-win8_settingscharm_get_xaml_property(entryName, elementName, propertyName)
-win8_settingscharm_remove_entry(name)
+win8_settingscharm_add_entry(name, callback)&
+win8_settingscharm_add_html_entry(id, name, htmlPath)&
+win8_settingscharm_add_xaml_entry(name, xamlPath, headerRGB, callback, wideFlyout)&
+win8_settingscharm_set_xaml_property(entryName, elementName, propertyName, newValue )&
+win8_settingscharm_get_xaml_property(entryName, elementName, propertyName)&
+win8_settingscharm_remove_entry(name)&
 
 // Metro share
-win8_share_image(image_filename, title, description, immediate)
-win8_share_screenshot(title, description, immediate)
-win8_share_file(filename, title, description, immediate)
-win8_share_url(url, title, description, immediate)
-win8_share_text(text, title, description, immediate)
+win8_share_image(image_filename, title, description, immediate)&
+win8_share_screenshot(title, description, immediate)&
+win8_share_file(filename, title, description, immediate)&
+win8_share_url(url, title, description, immediate)&
+win8_share_text(text, title, description, immediate)&
 
 // Metro search
-win8_search_enable(_selectionCallback)
-win8_search_disable()
-win8_search_add_suggestions(_dslist)
+win8_search_enable(_selectionCallback)&
+win8_search_disable()&
+win8_search_add_suggestions(_dslist)&
 
 // Metro device presence
-win8_device_touchscreen_available()
+win8_device_touchscreen_available()&
 
 // Metro licensing (Yank spelling)
-win8_license_initialize_sandbox(_licenseString)
-win8_license_trial_version()
+win8_license_initialize_sandbox(_licenseString)&
+win8_license_trial_version()&
 
+//uwp win8 mirror functions --------
+uwp_livetile_tile_clear()
+uwp_livetile_badge_notification(id)
+uwp_livetile_badge_clear()
+uwp_livetile_queue_enable(flag)
 
-// windows phone 
+//uwp secondary tiles
+uwp_secondarytile_pin(tileId, displayName, cmdLineArgs, tileImage, wideTileImage, largeTileImage, textCol, tileSize)
+uwp_secondarytile_badge_notification(id, tileId)
+uwp_secondarytile_delete(tileId)
+uwp_secondarytile_badge_clear(tileId)
+uwp_secondarytile_tile_clear(tileId)
+
+//uwp livetile notifications
+uwp_livetile_notification_begin(template)
+uwp_livetile_notification_secondary_begin(template, tileId)
+uwp_livetile_notification_expiry(expiryTime)
+uwp_livetile_notification_tag(tag)
+uwp_livetile_notification_text_add(text)
+uwp_livetile_notification_image_add(image)
+uwp_livetile_notification_end()
+uwp_livetile_notification_template_add(template)
+
+//uwp appbar commands
+uwp_appbar_enable(flag)
+uwp_appbar_add_element(id, type, icon, label, section, toolTip, callback)
+uwp_appbar_remove_element(id)
+
+uwp_device_touchscreen_available()
+//-------------------
+
+// windows phone
 winphone_license_trial_version()
 winphone_tile_title(title)
 winphone_tile_count(count)
@@ -2449,10 +2521,10 @@ network_create_server_raw(type, port, maxclients)
 network_connect(socket, url, port)
 network_connect_raw(socket, url, port)
 network_send_packet(socket, bufferid, size)
-network_send_raw(socket, buffer_id, size)
+network_send_raw(socket, bufferid, size)
 network_send_broadcast(socket, port, bufferid, size)
-network_send_udp(socket, URL, port, data, size)
-network_send_udp_raw(socket, URL, port, data, size)
+network_send_udp(socket, URL, port, bufferid, size)
+network_send_udp_raw(socket, URL, port, bufferid, size)
 network_set_timeout(socket, read, write)
 network_set_config(parameter, value)
 network_resolve(url)
@@ -2507,6 +2579,8 @@ buffer_async_group_option(optionname,optionvalue)
 buffer_async_group_end()
 buffer_load_async(bufferid,filename,offset,size)
 buffer_save_async(bufferid,filename,offset,size)
+buffer_compress(bufferid,offset,size)
+buffer_decompress(bufferId)
 buffer_fixed#
 buffer_grow#
 buffer_wrap#
@@ -2526,6 +2600,7 @@ buffer_f64#
 buffer_bool#
 buffer_text#
 buffer_string#
+buffer_surface_copy#
 buffer_seek_start#
 buffer_seek_relative#
 buffer_seek_end#
@@ -2647,7 +2722,7 @@ steam_ugc_create_item( consumer_app_id, file_type )
 steam_ugc_start_item_update( consumer_app_id, published_file_id )
 steam_ugc_set_item_title( ugc_update_handle, title)
 steam_ugc_set_item_description( ugc_update_handle, description )
-steam_ugc_set_item_visibility(ugc_update_handle, visibility ) 
+steam_ugc_set_item_visibility(ugc_update_handle, visibility )
 steam_ugc_set_item_tags( ugc_update_handle, tag_array )
 steam_ugc_set_item_content( ugc_update_handle, directory )
 steam_ugc_set_item_preview( ugc_update_handle, image_path )
@@ -2698,7 +2773,7 @@ lb_disp_time_ms#
 //steam ugc constants
 ugc_result_success#
 ugc_filetype_community#
-ugc_filetype_microtrans# 
+ugc_filetype_microtrans#
 ugc_visibility_public#
 ugc_visibility_friends_only#
 ugc_visibility_private#
@@ -2711,7 +2786,7 @@ ugc_query_RankedByTrend#
 ugc_query_FavoritedByFriendsRankedByPublicationDate#
 ugc_query_CreatedByFriendsRankedByPublicationDate#
 ugc_query_RankedByNumTimesReported#
-ugc_query_CreatedByFollowedUsersRankedByPublicationDate
+ugc_query_CreatedByFollowedUsersRankedByPublicationDate#
 ugc_query_NotYetRated#
 ugc_query_RankedByTotalVotesAsc#
 ugc_query_RankedByVotesUp#
@@ -2752,6 +2827,7 @@ ugc_match_UsableInGame#
 ugc_match_ControllerBindings#
 
 shader_set(shader)
+shader_get_name(shader)
 shader_reset()
 shader_current()
 shader_is_compiled(shader)
@@ -2833,6 +2909,8 @@ push_local_notification(fire_time, title, message, data)
 push_get_first_local_notification( ds_map )
 push_get_next_local_notification( ds_map )
 push_cancel_local_notification( id )
+push_get_application_badge_number()
+push_set_application_badge_number( num )
 
 
 // Instance specific
@@ -3009,6 +3087,9 @@ tilemap_get_tile_width(tilemap_element_id)
 tilemap_get_tile_height(tilemap_element_id)
 tilemap_get_width(tilemap_element_id)
 tilemap_get_height(tilemap_element_id)
+tilemap_set_width(tilemap_element_id, width)
+tilemap_set_height(tilemap_element_id, height)
+
 tilemap_get_x(tilemap_element_id)
 tilemap_get_y(tilemap_element_id)
 
@@ -3083,7 +3164,7 @@ instance_deactivate_layer(layer_id)
 
 // Camera functions
 camera_create()
-camera_create_view(room_x,room_y,width,height,angle,object,x_speed,y_speed,x_border,y_border)
+camera_create_view(room_x,room_y,width,height,[angle,object,x_speed,y_speed,x_border,y_border])
 camera_destroy(camera)
 camera_apply(camera)
 
@@ -3169,3 +3250,35 @@ gesture_get_rotate_time()
 gesture_get_rotate_angle()
 
 gesture_get_tap_count()
+
+// Virtual keyboard
+keyboard_virtual_show(virtual_keyboard_type, virtual_return_key_type, auto_capitalization_type, predictive_text_enabled)
+keyboard_virtual_hide()
+keyboard_virtual_status()
+keyboard_virtual_height()
+
+kbv_type_default#
+kbv_type_ascii#
+kbv_type_url#
+kbv_type_email#
+kbv_type_numbers#
+kbv_type_phone#
+kbv_type_phone_name#
+
+kbv_returnkey_default#
+kbv_returnkey_go#
+kbv_returnkey_google#
+kbv_returnkey_join#
+kbv_returnkey_next#
+kbv_returnkey_route#
+kbv_returnkey_search#
+kbv_returnkey_send#
+kbv_returnkey_yahoo#
+kbv_returnkey_done#
+kbv_returnkey_continue#
+kbv_returnkey_emergency#
+
+kbv_autocapitalize_none#
+kbv_autocapitalize_words#
+kbv_autocapitalize_sentences#
+kbv_autocapitalize_characters#
