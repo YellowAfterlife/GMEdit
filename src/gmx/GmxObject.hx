@@ -158,6 +158,7 @@ class GmxObject {
 			info.visible = gmx.findText("visible") != "0";
 			info.persistent = gmx.findText("persistent") != "0";
 			info.solid = gmx.findText("solid") != "0";
+			info.depth = Std.parseFloat(gmx.findText("depth"));
 		}
 		//
 		for (events in gmx.findAll("events"))

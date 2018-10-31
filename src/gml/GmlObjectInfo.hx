@@ -18,6 +18,7 @@ class GmlObjectInfo {
 	public var spriteName:String = "";
 	public var parents:Array<String> = [];
 	public var eventList:Array<String> = [];
+	public var depth:Float = null;
 	/** event name -> [parent name, child name] */
 	public var eventMap:Dictionary<Array<String>> = new Dictionary();
 	public function new() {
@@ -30,6 +31,7 @@ class GmlObjectInfo {
 		buf.addFormat("// Visible: %s\n", "" + visible);
 		buf.addFormat("// Soild: %s\n", "" + solid);
 		buf.addFormat("// Persistent: %s\n", "" + persistent);
+		if (depth != null) buf.addFormat("// Depth: %s\n", "" + depth);
 		buf.addFormat("#section Parents (%d)\n", parents.length);
 		for (name in parents) {
 			buf.addFormat("// @[%s]\n", name);
