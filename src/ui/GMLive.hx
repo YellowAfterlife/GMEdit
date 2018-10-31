@@ -10,7 +10,7 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class GMLive {
-	static var rxLive = new RegExp("if\\b\\s*\\("
+	static var rxLive:RegExp = new RegExp("if\\b\\s*\\("
 		+ "\\b(?:live_call|live_call_ext|live_defcall|live_defcall_ext)"
 	, "g");
 	public static var attr:String = "data-gmlive";
@@ -20,6 +20,7 @@ class GMLive {
 		var start = 0;
 		function flush(till:Int) {
 			var sub = q.substring(start, till);
+			rxLive.lastIndex = -1;
 			return rxLive.test(sub);
 		}
 		while (q.loop) {
