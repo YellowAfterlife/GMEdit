@@ -1,5 +1,7 @@
 package yy;
+import ace.extern.AceAutoCompleteItem;
 import electron.Dialog;
+import gml.GmlAPI;
 import gml.Project;
 import haxe.ds.Map;
 import haxe.io.Path;
@@ -140,7 +142,15 @@ class YyManip {
 		pj.writeTextFileSync(pj.name, NativeString.yyJson(py));
 		var ntv:Element = TreeViewItemMenus.createImplTV(q);
 		ntv.setAttribute(TreeView.attrYYID, ni);
-		d.pj.reload();
+		if (q.mkdir) {
+			//
+		} else if (kind == "script") {
+			GmlAPI.gmlComp.push(new AceAutoCompleteItem(q.name, "script"));
+			GmlAPI.gmlKind.set(q.name, "script");
+			GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
+			GmlAPI.gmlLookupText += q.name + "\n";
+			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name);
+		} else d.pj.reload();
 		//
 		return true;
 	}
