@@ -11,6 +11,7 @@ import gml.GmlImports;
 import electron.FileWrap;
 import electron.FileSystem;
 import parsers.*;
+import js.RegExp;
 import js.html.Element;
 import ui.Preferences;
 import gmx.*;
@@ -419,8 +420,15 @@ class EditCode extends Editor {
 		if (changed) try {
 			var prev = file.code;
 			file.load();
+			//
+			var rxr = new RegExp("\\r", "g");
+			var check_0 = NativeString.trimRight(prev);
+			check_0 = NativeString.replaceExt(check_0, rxr, "");
+			var check_1 = NativeString.trimRight(file.code);
+			check_1 = NativeString.replaceExt(check_1, rxr, "");
+			//
 			var dlg:Int = 0;
-			if (NativeString.trimRight(prev) == NativeString.trimRight(file.code)) {
+			if (check_0 == check_1) {
 				// OK!
 			} else if (!file.changed) {
 				if (act != Ask) {
@@ -429,6 +437,8 @@ class EditCode extends Editor {
 			} else dlg = 2;
 			//
 			if (dlg != 0) {
+				//Main.console.log(StringTools.replace(prev, "\r", "\\r"));
+				//Main.console.log(StringTools.replace(file.code, "\r", "\\r"));
 				function printSize(b:Float) {
 					inline function toFixed(f:Float):String {
 						return (untyped f.toFixed)(2);
