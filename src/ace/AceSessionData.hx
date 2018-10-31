@@ -43,7 +43,9 @@ class AceSessionData {
 	public static function set(edit:EditCode, data:AceSessionDataImpl) {
 		var session = edit.session;
 		session.selection.fromJSON(data.selection);
-		for (row in data.foldLines) session.toggleFoldWidgetRaw(row, {});
+		for (row in data.foldLines) try {
+			session.toggleFoldWidgetRaw(row, {});
+		} catch (_:Dynamic) {};
 		session.setScrollLeft(data.scrollLeft);
 		session.setScrollTop(data.scrollTop);
 	}
