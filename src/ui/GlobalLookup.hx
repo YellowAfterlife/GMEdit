@@ -35,6 +35,25 @@ class GlobalLookup {
 			var foundMap = new Dictionary<Bool>();
 			list.selectedIndex = -1;
 			var data = gml.GmlAPI.gmlLookupText;
+			//
+			inline function addOption(name:String):Void {
+				var option = list.children[found];
+				if (option == null) {
+					option = pool.pop();
+					if (option == null) option = document.createOptionElement();
+					list.appendChild(option);
+				}
+				option.textContent = name;
+				if (name == selection) list.selectedIndex = found;
+				found += 1;
+			}
+			//
+			var dmt = new RegExp('^$pattern$', 'gmi').exec(data);
+			if (dmt != null) {
+				foundMap.set(dmt[0], true);
+				addOption(dmt[0]);
+			}
+			//
 			for (iter in 0 ... 2) {
 				var ipatt = iter == 0 ? '^($pattern.*)$' : '^(.+$pattern.*)$';
 				var regex = new RegExp(ipatt, 'gmi');
@@ -43,15 +62,7 @@ class GlobalLookup {
 					var name = match[1];
 					if (!foundMap[name]) {
 						foundMap.set(name, true);
-						var option = list.children[found];
-						if (option == null) {
-							option = pool.pop();
-							if (option == null) option = document.createOptionElement();
-							list.appendChild(option);
-						}
-						option.textContent = name;
-						if (name == selection) list.selectedIndex = found;
-						found += 1;
+						addOption(name);
 					}
 					match = regex.exec(data);
 				}
