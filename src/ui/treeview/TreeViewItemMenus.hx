@@ -59,8 +59,8 @@ class TreeViewItemMenus {
 					q.enabled = supported;
 				}
 				var nonRoot = target.getAttribute(TreeView.attrRel).toLowerCase() != prefix;
-				for (q in items.manipNonRoot) q.enabled = nonRoot;
-				for (q in items.manipDirOnly) q.enabled = dir;
+				for (q in items.manipNonRoot) q.enabled = supported && nonRoot;
+				for (q in items.manipDirOnly) q.enabled = supported && dir;
 			};
 			default: {
 				for (q in items.manipOuter) q.visible = false;
