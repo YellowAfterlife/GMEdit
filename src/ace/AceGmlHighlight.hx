@@ -11,9 +11,11 @@ import js.RegExp;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;
 import ace.AceMacro.jsOr;
+import ace.AceMacro.jsOrx;
 import ace.AceMacro.jsThis;
 import ace.raw.*;
 import haxe.extern.EitherType;
+import tools.HighlightTools.*;
 using tools.NativeString;
 
 /**
@@ -28,12 +30,6 @@ using tools.NativeString;
 	public function new() {
 		var version = GmlAPI.version;
 		//
-		function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
-			return { token: tk, regex: rx, next: next };
-		}
-		function rdef(tk:String):Dynamic {
-			return { defaultToken: tk };
-		}
 		function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
 			return { token: tk, regex: rx, push: push };
 		}
@@ -42,12 +38,12 @@ using tools.NativeString;
 		}
 		//
 		inline function getGlobalType(name:String, fallback:String) {
-			return jsOr(GmlAPI.gmlKind[name],
-				jsOr(GmlAPI.extKind[name],
-					jsOr(GmlAPI.stdKind[name],
-						jsOr(parsers.GmlExtCoroutines.keywordMap[name], fallback)
-					)
-				)
+			return jsOrx(
+				GmlAPI.gmlKind[name],
+				GmlAPI.extKind[name],
+				GmlAPI.stdKind[name],
+				parsers.GmlExtCoroutines.keywordMap[name],
+				fallback
 			);
 		}
 		//
@@ -302,28 +298,11 @@ using tools.NativeString;
 			rxRule("comment", ~/\/\*/, "comment"),
 			rDefine, rAction, rKeyEvent, rEvent, rMoment,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
-			rule([ //{ #import global.longsome in some
-				"preproc.import", // #import
-				"text",
-				"keyword", // global
-				"punctuation.operator",
-				"globalfield", // longsome
-				"text",
-				"keyword", // in|as
-				"text",
-				"importas" // some
-			], "(#import\\b)"
-				+ "([ \t]*)(global)(\\.?)(\\w*)"
-				+ "([ \t]*)((?:\\b(?:as|in)\\b)?)" // in
-				+ "([ \t]*)((?:\\w+)?)" // alias
-			), //}
-			rule(mtImport, "(#import\\b)" //{
-				+ "([ \t]*)([\\w.]+\\*?)" // com.pkg[.*]
-				+ "([ \t]*)((?:\\b(?:as|in)\\b)?)" // in
-				+ "([ \t]*)((?:\\w+)?)" // alias
-			), //}
-			rxRule(["preproc.import", "string.importpath"], ~/(#import\s+)("[^"]*"|'[^']*')/),
-			rxRule("preproc.import", ~/#import\b/),
+			rulePairs([
+				"#import\\s+", "preproc.import",
+				"\"[^\"]*\"|'[^']*'", "string.importpath"
+			]),
+			rpush("preproc.import", "#import\\b", "import"),
 			rxRule("preproc.args", ~/#args\b/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
@@ -415,6 +394,11 @@ using tools.NativeString;
 			"tplexpr": rTemplateExpr,
 			"pragma.sq": rPragma_sq,
 			"pragma.dq": rPragma_dq,
+			"import": [ //{
+				rule("keyword", "(in|as)\\b"),
+				rule("impfield", "@\\w+"),
+				rule("text", "[ \t]*$", "pop"),
+			].concat(rBase), //}
 			"string.esc": [ //{ GMS2 strings with escape characters
 				rule("string.escape", "\\\\(?:"
 					+ "x[0-9a-fA-F]{2}|" // \x41
@@ -422,7 +406,7 @@ using tools.NativeString;
 					// there's also octal which doesn't work (?)
 				+ ".)"),
 				// (this is to allow escaping linebreaks, which is honestly a strange thing)
-				cast { token : "string", regex : "\\\\$", consumeLineEnd : true },
+				({ token : "string", regex : "\\\\$", consumeLineEnd : true }:AceLangRule),
 				rule("string", '"|$', "pop"),
 				rdef("string"),
 			], //}

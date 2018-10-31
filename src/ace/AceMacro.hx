@@ -42,4 +42,13 @@ class AceMacro {
 	public static inline function jsOr<T>(a:T, b:T):T {
 		return untyped (a || b);
 	}
+	/** (a, b, c) -> (a || b) || c */
+	public static macro function jsOrx<T>(exprs:Array<ExprOf<T>>):ExprOf<T> {
+		var p = Context.currentPos();
+		var q = macro @:pos(p) ace.AceMacro.jsOr(${exprs[0]}, ${exprs[1]});
+		for (i in 2 ... exprs.length) {
+			q = macro @:pos(p) ace.AceMacro.jsOr($q, ${exprs[i]});
+		}
+		return q;
+	}
 }
