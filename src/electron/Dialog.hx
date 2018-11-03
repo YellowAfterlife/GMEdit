@@ -55,7 +55,7 @@ import Main.document;
 					var raw = FileSystem.readFileSync(path);
 					var ua:Uint8Array = untyped Uint8Array.from(raw);
 					var abuf = ua.buffer;
-					files.push(new File(abuf, {
+					files.push(new File(cast abuf, cast {
 						name: path
 					}));
 				}
