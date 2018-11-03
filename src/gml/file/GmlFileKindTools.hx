@@ -40,7 +40,6 @@ class GmlFileKindTools {
 			};
 			case "yy": {
 				var json:YyBase;
-				
 				if (Path.isAbsolute(path)) {
 					json = FileSystem.readJsonFileSync(path);
 				} else json = Project.current.readJsonFileSync(path);

@@ -43,7 +43,7 @@ class EditCode extends Editor {
 	
 	override public function ready():Void {
 		if (GmlAPI.version == GmlVersion.live) {
-			GmlSeeker.runSync(file.path, file.code, null);
+			GmlSeeker.runSync(file.path, file.code, null, file.kind);
 		}
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(file.code, { path: modePath, version: GmlAPI.version });
@@ -110,7 +110,7 @@ class EditCode extends Editor {
 		switch (file.kind) {
 			case Extern: file.code = data != null ? data : "";
 			case YyShader: file.code = "";
-			case Plain, GLSL, HLSL, JavaScript, Snippets: file.code = src;
+			case Plain, ExtGML, GLSL, HLSL, JavaScript, Snippets: file.code = src;
 			case SearchResults: file.code = data;
 			case Normal: {
 				src = GmlExtCoroutines.pre(src);
@@ -145,7 +145,7 @@ class EditCode extends Editor {
 					// (too buggy)
 					//out = GmlExtArgs.pre(out);
 					//out = GmlExtImport.pre(out, path);
-					GmlSeeker.runSync(file.path, out, "");
+					GmlSeeker.runSync(file.path, out, "", file.kind);
 					file.code = out;
 				} else setError(errors);
 			};
@@ -244,7 +244,7 @@ class EditCode extends Editor {
 		out = GmlExtArgs.post(out);
 		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
 		//
-		if (Preferences.current.argsFormat != "") {
+		if (file.kind != ExtGML && Preferences.current.argsFormat != "") {
 			if (GmlExtArgsDoc.proc(file)) {
 				out = session.getValue();
 				out = GmlExtArgs.post(out);
@@ -254,8 +254,10 @@ class EditCode extends Editor {
 			}
 		}
 		//
-		out = GmlExtCoroutines.post(out);
-		if (out == null) return error(GmlExtCoroutines.errorText);
+		if (file.kind != ExtGML) {
+			out = GmlExtCoroutines.post(out);
+			if (out == null) return error(GmlExtCoroutines.errorText);
+		}
 		//
 		return out;
 	}
@@ -285,7 +287,7 @@ class EditCode extends Editor {
 		switch (file.kind) {
 			case Extern: out = val;
 			case Plain, GLSL, HLSL, JavaScript: out = val;
-			case Normal: {
+			case Normal, ExtGML: {
 				out = postpNormal(val);
 				if (out == null) return false;
 			};

@@ -52,7 +52,7 @@ class LiveWeb {
 			if (first == null) first = file;
 			GmlFile.next = file;
 			ChromeTabs.addTab(pair.name);
-			GmlSeeker.runSync(path, code, "");
+			GmlSeeker.runSync(path, code, "", Normal);
 			var edit:EditCode = cast file.editor;
 			edit.postpImport(edit.session.getValue());
 			edit.session.bgTokenizer.start(0);
@@ -154,7 +154,7 @@ class LiveWeb {
 		}
 		var file = new GmlFile(name, name, Normal, code);
 		GmlFile.openTab(file);
-		parsers.GmlSeeker.runSync(name, name, code);
+		parsers.GmlSeeker.runSync(name, name, code, Normal);
 	}
 	
 	public static function newTabDialog() {

@@ -4,6 +4,7 @@ import electron.FileSystem;
 import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
+import gml.file.GmlFileKind;
 import js.RegExp;
 import parsers.GmlSeeker;
 import haxe.io.Path;
@@ -102,13 +103,13 @@ class YyLoader {
 						case "GMScript": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
-							GmlSeeker.run(full, name);
+							GmlSeeker.run(full, name, Normal);
 						};
 						case "GMObject": {
 							GmlAPI.gmlLookupText += name + "\n";
 							objectNames.set(res.Key, name);
 							objectGUIDs.set(name, res.Key);
-							GmlSeeker.run(full, null);
+							GmlSeeker.run(full, null, GmlFileKind.YyObjectEvents);
 						};
 						case "GMShader": {
 							GmlAPI.gmlLookupText += name + "\n";
@@ -135,15 +136,20 @@ class YyLoader {
 								var fileName = file.filename;
 								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
 								var filePath = Path.join([extDir, fileName]);
-								extEl.treeItems.appendChild(TreeView.makeItem(
+								var fileItem = TreeView.makeItem(
 									fileName, extRel + fileName, filePath, "extfile"
-								));
+								);
+								extEl.treeItems.appendChild(fileItem);
 								//
 								if (isGmlFile) {
 									if (lm != null) {
 										project.lambdaGml = filePath;
 										parsers.GmlExtLambda.readDefs(filePath);
-									} else GmlSeeker.run(filePath, "");
+									} else {
+										GmlSeeker.run(filePath, "", GmlFileKind.ExtGML);
+									}
+									fileItem.setAttribute(TreeView.attrOpenAs,
+										GmlFileKind.ExtGML.getName());
 								}
 								//
 								if (lm != null) {

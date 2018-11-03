@@ -149,7 +149,7 @@ class YyManip {
 			GmlAPI.gmlKind.set(q.name, "script");
 			GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
 			GmlAPI.gmlLookupText += q.name + "\n";
-			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name);
+			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name, Normal);
 		} else d.pj.reload();
 		//
 		return true;

@@ -36,17 +36,24 @@ class GmxLoader {
 				var name = rxName.replace(path, "$1");
 				var full = project.fullPath(path);
 				var _main:String = "";
+				var kind:GmlFileKind = Normal;
 				switch (one) {
 					case "script": _main = name;
 					case "shader": { };
-					default: full += '.$one.gmx';
+					default: {
+						full += '.$one.gmx';
+						switch (one) {
+							case "object": kind = GmlFileKind.GmxObjectEvents;
+							case "timeline": kind = GmlFileKind.GmxTimelineMoments;
+						}
+					};
 				}
 				GmlAPI.gmlLookupText += name + "\n";
-				GmlSeeker.run(full, _main);
+				GmlSeeker.run(full, _main, kind);
 				var item = TreeView.makeItem(name, path, full, one);
 				out.appendChild(item);
 				if (one == "shader") {
-					var kind:GmlFileKind = gmx.get("type").indexOf("HLSL") >= 0
+					kind = gmx.get("type").indexOf("HLSL") >= 0
 						? GmlFileKind.HLSL : GmlFileKind.GLSL;
 					item.setAttribute(TreeView.attrOpenAs, kind.getName());
 				}
@@ -133,7 +140,7 @@ class GmxLoader {
 						if (lm != null) {
 							project.lambdaGml = extFileFull;
 							parsers.GmlExtLambda.readDefs(extFileFull);
-						} else GmlSeeker.run(extFileFull, "");
+						} else GmlSeeker.run(extFileFull, "", ExtGML);
 					}
 					//
 					if (lm != null) {

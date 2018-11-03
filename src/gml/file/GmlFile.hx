@@ -288,7 +288,7 @@ class GmlFile {
 		if (path != null && out != null && Std.is(editor, EditCode) && current == this) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
-				GmlSeeker.runSync(path, out, data.main);
+				GmlSeeker.runSync(path, out, data.main, kind);
 				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
 				var editCode:EditCode = cast editor;
