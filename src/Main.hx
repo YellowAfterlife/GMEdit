@@ -35,7 +35,7 @@ class Main {
 		return untyped __js__("window");
 	}
 	//
-	public static var console(get, never):Console;
+	public static var console(get, never):RawConsole;
 	private static inline function get_console() {
 		return untyped __js__("console");
 	}
