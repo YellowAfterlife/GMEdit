@@ -199,7 +199,7 @@ class EditCode extends Editor {
 		}
 	}
 	
-	public function postpImport(val:String):String {
+	public function postpImport(val:String):{val:String,sessionChanged:Bool} {
 		var val_preImport = val;
 		var path = file.path;
 		val = GmlExtImport.post(val, path);
@@ -209,6 +209,7 @@ class EditCode extends Editor {
 		}
 		// if there are imports, check if we should be updating the code
 		var data = path != null ? GmlSeekData.map[path] : null;
+		var sessionChanged = false;
 		if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
 			var next = GmlExtImport.pre(val, path);
 			if (GmlFile.current == file) {
@@ -221,6 +222,7 @@ class EditCode extends Editor {
 				var session = session;
 				session.doc.setValue(next);
 				AceSessionData.set(this, sd);
+				sessionChanged = true;
 				Main.window.setTimeout(function() {
 					var undoManager = session.getUndoManager();
 					if (!Preferences.current.allowImportUndo) {
@@ -232,10 +234,10 @@ class EditCode extends Editor {
 				});
 			}
 		}
-		return val;
+		return {val:val,sessionChanged:sessionChanged};
 	}
 	
-	public function postpNormal(out:String):String {
+	public function postpNormal(out:String, sessionChanged:Bool):String {
 		inline function error(s:String) {
 			Main.window.alert(s);
 			return null;
@@ -244,17 +246,32 @@ class EditCode extends Editor {
 		out = GmlExtArgs.post(out);
 		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
 		//
+		var canCoroutines = file.kind != ExtGML;
 		if (file.kind != ExtGML && Preferences.current.argsFormat != "") {
-			if (GmlExtArgsDoc.proc(file)) {
+			if (!sessionChanged && GmlExtArgsDoc.proc(file)) {
+				sessionChanged = true;
 				out = session.getValue();
-				out = GmlExtArgs.post(out);
+				// hm, yeah, I guess we have to do it all again now?
+				// think of something better later
+				if (canImport(file)) {
+					var pair = postpImport(out);
+					if (pair == null) return null;
+					out = pair.val;
+				}
+				if (canLambda(file)) {
+					out = GmlExtLambda.post(this, out);
+					if (out == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
+				}
+				out = postpNormal(out, true);
+				if (out == null) return null;
+				canCoroutines = false;
 				Main.window.setTimeout(function() {
 					file.markClean();
 				});
 			}
 		}
 		//
-		if (file.kind != ExtGML) {
+		if (canCoroutines) {
 			out = GmlExtCoroutines.post(out);
 			if (out == null) return error(GmlExtCoroutines.errorText);
 		}
@@ -272,9 +289,12 @@ class EditCode extends Editor {
 		}
 		GmlFileBackup.save(file, val);
 		//
+		var sessionChanged = false;
 		if (canImport(file)) {
-			val = postpImport(val);
-			if (val == null) return false;
+			var pair = postpImport(val);
+			if (pair == null) return false;
+			val = pair.val;
+			if (pair.sessionChanged) sessionChanged = true;
 		}
 		//
 		if (canLambda(file)) {
@@ -288,7 +308,7 @@ class EditCode extends Editor {
 			case Extern: out = val;
 			case Plain, GLSL, HLSL, JavaScript: out = val;
 			case Normal, ExtGML: {
-				out = postpNormal(val);
+				out = postpNormal(val, sessionChanged);
 				if (out == null) return false;
 			};
 			case Multifile: {

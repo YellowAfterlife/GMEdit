@@ -27,9 +27,10 @@ class LiveWeb {
 			var edit:EditCode = cast file.editor;
 			var val = edit.session.getValue();
 			if (post) {
-				val = edit.postpImport(val);
-				if (val == null) return;
-				val = edit.postpNormal(val);
+				var pair = edit.postpImport(val);
+				if (pair == null) return;
+				val = pair.val;
+				val = edit.postpNormal(val, pair.sessionChanged);
 			}
 			out.push({
 				name: file.name,
