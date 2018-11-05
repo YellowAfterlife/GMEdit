@@ -292,7 +292,7 @@ class GmlFile {
 				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
 				var editCode:EditCode = cast editor;
-				if (next != data) {
+				if (GmlLocals.currentMap != next.locals) {
 					GmlLocals.currentMap = next.locals;
 					editCode.session.bgTokenizer.start(0);
 				}
