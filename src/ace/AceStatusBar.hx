@@ -39,9 +39,9 @@ class AceStatusBar {
 			ctk = iter.stepForward();
 			if (ctk != null) {
 				switch (ctk.type) {
-					case "paren.rparen": depth -= 1;
+					case "paren.rparen": depth -= 1; parEmpty = true;
 					case "punctuation.operator" if (ctk.value == ";"): ctk = iter.stepBackward();
-					case  "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
+					case "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
 					case "preproc.macro": ctk = iter.stepBackward();
 					#if !lwedit
 					case "curly.paren.lparen", "curly.paren.rparen": {
@@ -117,8 +117,7 @@ class AceStatusBar {
 			doc = docs[tk.value];
 			if (imports != null) {
 				var name = tk.value;
-				iter.stepBackward();
-				tk = iter.getCurrentToken();
+				tk = iter.stepBackward();
 				if (tk != null && tk.value == ".") {
 					iter.stepBackward();
 					tk = iter.getCurrentToken();
@@ -137,7 +136,7 @@ class AceStatusBar {
 					} else iter.stepForward();
 				} else {
 					doc = AceMacro.jsOr(imports.docs[name], doc);
-					iter.stepForward();
+					tk = iter.stepForward();
 				}
 			}
 		}
@@ -154,7 +153,7 @@ class AceStatusBar {
 			tk = iter.stepForward();
 		}
 		argCurr += argStart;
-		if ((tk == null ? ctk != emptyToken : tk != ctk) || depth < 0) return;
+		if ((tk == null ? ctk != emptyToken : tk != ctk) || depth < 0 && !parEmpty) return;
 		//
 		if (doc != null) {
 			var args = doc.args;
