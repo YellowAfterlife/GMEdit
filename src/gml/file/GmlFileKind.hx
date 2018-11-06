@@ -54,6 +54,9 @@ enum GmlFileKind {
 	YyShader;
 	
 	YySpriteView;
+	
+	/** Combined room creation codes */
+	YyRoomCCs;
 	//}
 	
 	/** Find/replace results */

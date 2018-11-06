@@ -189,6 +189,11 @@ class EditCode extends Editor {
 			case YySpriteView: {
 				if (data == null) data = Json.parse(src);
 			};
+			case YyRoomCCs: {
+				if (data == null) data = Json.parse(src);
+				NativeArray.clear(file.extraFiles);
+				file.code = YyRooms.getCCs(file.path, data, file.extraFiles);
+			}
 		}
 		file.syncTime();
 		if (file.kind != GmlFileKind.Normal && canLambda(file)) {
@@ -382,6 +387,13 @@ class EditCode extends Editor {
 			};
 			case Snippets: {
 				AceSnippets.setText(path, val);
+				writeFile = false;
+				out = null;
+			};
+			case YyRoomCCs: {
+				if (!YyRooms.setCCs(path, val, file.extraFiles)) {
+					return error("Can't update CCs:\n" + YyRooms.errorText);
+				}
 				writeFile = false;
 				out = null;
 			};

@@ -280,6 +280,7 @@ using tools.NativeString;
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
 		);
 		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
+		var rRoomCC = rxRule("preproc.roomcc", ~/^(#roomcc\b)/);
 		var rMoment = rxRule(
 			["preproc.moment", "momenttime", "momentname"],
 			~/^(#moment[ \t]+)(\d+)(.*)/
@@ -296,7 +297,7 @@ using tools.NativeString;
 			rxRule("comment.line", ~/\/\//, "comment.line"),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
-			rDefine, rAction, rKeyEvent, rEvent, rMoment,
+			rDefine, rAction, rKeyEvent, rEvent, rMoment, rRoomCC,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rulePairs([
 				"#import\\s+", "preproc.import",
@@ -438,6 +439,7 @@ using tools.NativeString;
 				rwnext(rMoment, "start"),
 				rwnext(rKeyEvent, "start"),
 				rwnext(rEvent, "start"),
+				rwnext(rRoomCC, "start"),
 				rxRule("comment", ~/.*?\*\//, "start"),
 				rxRule("comment", ~/.+/)
 			]), //}

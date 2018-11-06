@@ -65,7 +65,12 @@ class YyLoader {
 					name = vdir.folderName;
 					if (path == "") switch (name) {
 						case"sprites",
-							"objects", "shaders", "scripts", "extensions", "timelines": {
+							"objects",
+							"shaders",
+							"scripts",
+							"extensions",
+							"timelines",
+							"rooms": {
 							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
 						case "datafiles": name = "Included Files";
@@ -77,7 +82,17 @@ class YyLoader {
 					rel = path + name + "/";
 					var dir = TreeView.makeDir(name, rel);
 					dir.setAttribute(TreeView.attrYYID, res.Key);
-					loadrec(dir.treeItems, vdir, rel);
+					var nextOut = dir.treeItems;
+					if (path == "" && vdir.folderName == "rooms") {
+						var ccs = TreeView.makeItem("Creation codes",
+							project.name, project.path, "roomccs");
+						ccs.removeAttribute(TreeView.attrThumb);
+						ccs.setAttribute(TreeView.attrOpenAs, GmlFileKind.YyRoomCCs.getName());
+						dir.treeItems.appendChild(ccs);
+						// consume the room items:
+						nextOut = Main.document.createDivElement();
+					}
+					loadrec(nextOut, vdir, rel);
 					out.appendChild(dir);
 				}
 				else {

@@ -51,4 +51,14 @@ class AceMacro {
 		}
 		return q;
 	}
+	
+	public static macro function jsRx(e:ExprOf<EReg>) {
+		switch (e.expr) {
+			case EConst(CRegexp(s, o)): {
+				var s = '/$s/$o';
+				return macro (cast js.Syntax.code($v{s}):js.RegExp);
+			};
+			default: throw Context.error("Expected a regexp literal", e.pos);
+		}
+	}
 }
