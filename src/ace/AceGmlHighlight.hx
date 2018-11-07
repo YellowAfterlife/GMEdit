@@ -286,13 +286,24 @@ using tools.NativeString;
 			~/^(#moment[ \t]+)(\d+)(.*)/
 		);
 		var rSection = rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/);
+		var commentDocLineType:String = "comment.doc.line";
 		//
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rQuotes,
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
-			rxRule("comment.doc.line", ~/\/\/\/$/),
-			rxRule("comment.doc.line", ~/\/\/\//, "comment.doc.line"),
+			rxRule("comment.doc.line", ~/\/\/\/$/), // a blank doc-line
+			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
+				return "comment.doc.line.startswith_" + s;
+			}, ~/\/\/\/(\S+)(?:(?!@\[).)*$/),
+			rxRule(function(s) { // a doc-line starting with X
+				commentDocLineType = "comment.doc.line.startswith_" + s;
+				return commentDocLineType;
+			}, ~/\/\/\/(\S+)/, "comment.doc.line"),
+			rxRule(function(_) { // a regular doc-line
+				commentDocLineType = "comment.doc.line";
+				return "comment.doc.line";
+			}, ~/\/\/\//, "comment.doc.line"),
 			rxRule("comment.line", ~/\/\/$/),
 			rxRule("comment.line", ~/\/\//, "comment.line"),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
@@ -429,7 +440,7 @@ using tools.NativeString;
 				rdef("comment.line"),
 			]), //}
 			"comment.doc.line": rComment.concat([ //{
-				rxRule("comment.doc.line", ~/$/, "start"),
+				rxRule((_) -> commentDocLineType, ~/.*$/, "start"),
 				rdef("comment.doc.line"),
 			]), //}
 			"comment": rComment.concat([ //{
