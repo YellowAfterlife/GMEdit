@@ -144,6 +144,8 @@ class YyLoader {
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
 							var extEl = TreeView.makeDir(ext.name, extRel);
+							extEl.setAttribute(TreeView.attrPath, full);
+							extEl.setAttribute(TreeView.attrIdent, ext.name);
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
 							var lm = lz && ext.name.toLowerCase() == parsers.GmlExtLambda.extensionName ? project.lambdaMap : null;
 							if (lm != null) project.lambdaExt = full;

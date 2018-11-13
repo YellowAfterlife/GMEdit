@@ -193,7 +193,11 @@ class EditCode extends Editor {
 				if (data == null) data = Json.parse(src);
 				NativeArray.clear(file.extraFiles);
 				file.code = YyRooms.getCCs(file.path, data, file.extraFiles);
-			}
+			};
+			case YyExtensionAPI: {
+				if (data == null) data = Json.parse(src);
+				file.code = gml.GmlExtensionAPI.get2(data);
+			};
 		}
 		file.syncTime();
 		if (file.kind != GmlFileKind.Normal && canLambda(file)) {
@@ -397,6 +401,9 @@ class EditCode extends Editor {
 				writeFile = false;
 				out = null;
 			};
+			case YyExtensionAPI: {
+				return false;
+			}
 			default: return false;
 		}
 		//
