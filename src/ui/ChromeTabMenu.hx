@@ -20,6 +20,8 @@ class ChromeTabMenu {
 	static var showInTreeItem:MenuItem;
 	static var backupsItem:MenuItem;
 	static var showObjectInfo:MenuItem;
+	static var openExternally:MenuItem;
+	static var findReferences:MenuItem;
 	#end
 	public static function show(el:ChromeTab, ev:MouseEvent) {
 		target = el;
@@ -27,7 +29,8 @@ class ChromeTabMenu {
 		var hasFile = file.path != null;
 		#if !lwedit
 		showInDirectoryItem.enabled = hasFile;
-		showInTreeItem.enabled = hasFile;
+		openExternally.enabled = hasFile;
+		showInTreeItem.enabled = ~/^\w+$/g.match(file.name) && gml.GmlAPI.gmlKind.exists(file.name);
 		showObjectInfo.visible = hasFile && switch (file.kind) {
 			case GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents: true;
 			default: false;
@@ -89,6 +92,12 @@ class ChromeTabMenu {
 				electron.FileWrap.showItemInFolder(target.gmlFile.path);
 			}
 		}));
+		menu.append(openExternally = new MenuItem({
+			label: "Open externally",
+			click: function() {
+				electron.FileWrap.openExternal(target.gmlFile.path);
+			}
+		}));
 		if (electron.Electron == null) showInDirectoryItem.visible = false;
 		menu.append(showInTreeItem = new MenuItem({
 			label: "Show in tree",
@@ -105,6 +114,10 @@ class ChromeTabMenu {
 				} while (par != null);
 				untyped item.scrollIntoViewIfNeeded();
 			}
+		}));
+		menu.append(findReferences = new MenuItem({
+			label: "Find references",
+			click: function() GlobalSearch.findReferences(target.gmlFile.name)
 		}));
 		menu.append(showObjectInfo = new MenuItem({
 			label: "Object information",

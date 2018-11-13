@@ -231,6 +231,22 @@ using tools.HtmlTools;
 			});
 		}, opt);
 	}
+	public static function findReferences(id:String) {
+		run({
+			find: id,
+			wholeWord: true,
+			matchCase: true,
+			checkStrings: false,
+			checkComments: false,
+			checkHeaders: true,
+			checkScripts: true,
+			checkTimelines: true,
+			checkObjects: true,
+			checkMacros: true,
+			checkShaders: false,
+			checkExtensions: true,
+		});
+	}
 	public static function toggle() {
 		if (element.style.display == "none") {
 			element.style.display = "";

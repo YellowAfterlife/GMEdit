@@ -148,6 +148,15 @@ class TreeViewMenus {
 			target.getAttribute(TreeView.attrIdent)
 		);
 	}
+	static function findReferences() {
+		GlobalSearch.findReferences(target.getAttribute(TreeView.attrIdent));
+	}
+	public static function showAPI() {
+		gml.GmlExtensionAPI.showFor(
+			target.getAttribute(TreeView.attrPath),
+			target.getAttribute(TreeView.attrIdent)
+		);
+	}
 	//
 	public static function showDirMenu(el:Element, ev:MouseEvent) {
 		target = el;
@@ -156,7 +165,7 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = true;
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
-		items.objectInfo.visible = false;
+		items.showAPI.visible = Project.current.version == v2 && el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
 		TreeViewItemMenus.update(true);
 		dirMenu.popupAsync(ev);
 	}
@@ -174,6 +183,7 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = false;
 		items.resetOpenIcon.visible = false;
 		items.objectInfo.visible = kind == "object";
+		items.findReferences.enabled = ~/^\w+$/g.match(el.getAttribute(TreeView.attrIdent));
 		TreeViewItemMenus.update(false);
 		itemMenu.popupAsync(ev);
 	}
@@ -222,6 +232,7 @@ class TreeViewMenus {
 		addLink(itemMenu, "Open externally", openExternal);
 		if (electron.Electron != null) addLink(itemMenu, "Show in directory", openDirectory);
 		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
+		items.findReferences = addLink(itemMenu, "Find references", findReferences);
 		items.removeFromRecentProjects =
 			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
 		itemMenu.appendSep();
@@ -232,6 +243,7 @@ class TreeViewMenus {
 		dirMenu = new Menu();
 		addLink(dirMenu, "Expand all", expandAll);
 		addLink(dirMenu, "Collapse all", collapseAll);
+		items.showAPI = addLink(dirMenu, "Show API", showAPI);
 		items.openAll = addLink(dirMenu, "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
 		dirMenu.appendSep();
@@ -245,6 +257,8 @@ private class TreeViewMenuData {
 	public var openCombined:MenuItem;
 	//
 	public var objectInfo:MenuItem;
+	public var findReferences:MenuItem;
+	public var showAPI:MenuItem;
 	//
 	public var changeOpenIcon:MenuItem;
 	public var resetOpenIcon:MenuItem;
