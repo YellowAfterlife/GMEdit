@@ -467,7 +467,7 @@ class GmlSeeker {
 		}
 		parChildren.push(childName);
 	}
-	static function runYyObject(orig:String, src:String) {
+	public static function runYyObject(orig:String, src:String, ?allSync:Bool) {
 		var obj:YyObject = haxe.Json.parse(src);
 		var dir = Path.directory(orig);
 		//
@@ -507,24 +507,34 @@ class GmlSeeker {
 		}
 		if (eventFiles.length == 0) return true;
 		for (file in eventFiles) (function(name, full) {
-			function procEvent(err, code) {
-				if (err == null) try {
-					var locals = new GmlLocals();
-					out.locals.set(name, locals);
-					runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
-				} catch (_:Dynamic) {
-					//
+			if (!allSync) {
+				function procEvent(err, code) {
+					if (err == null) try {
+						var locals = new GmlLocals();
+						out.locals.set(name, locals);
+						runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
+					} catch (_:Dynamic) {
+						//
+					}
+					if (--eventsLeft <= 0) {
+						finish(orig, out);
+						runNext();
+					}
 				}
-				if (--eventsLeft <= 0) {
-					finish(orig, out);
-					runNext();
-				}
+				FileWrap.readTextFile(full, procEvent);
+			} else try {
+				var code = FileWrap.readTextFileSync(full);
+				var locals = new GmlLocals();
+				out.locals.set(name, locals);
+				runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
+			} catch (_:Dynamic) {
+				//
 			}
-			FileWrap.readTextFile(full, procEvent);
 		})(file.name, file.full);
+		if (allSync) finish(orig, out);
 		return false;
 	}
-	static function runGmxObject(orig:String, src:String) {
+	public static function runGmxObject(orig:String, src:String) {
 		var obj = SfGmx.parse(src);
 		var out = new GmlSeekData();
 		//
