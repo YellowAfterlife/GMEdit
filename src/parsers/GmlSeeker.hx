@@ -68,7 +68,7 @@ class GmlSeeker {
 		return null;
 	}
 	
-	private static function runSyncImpl(
+	public static function runSyncImpl(
 		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals, kind:GmlFileKind
 	):Void {
 		var mainTop = main;
@@ -76,7 +76,10 @@ class GmlSeeker {
 		var q = new GmlReader(src);
 		var v = GmlAPI.version;
 		var row = 0;
-		var notExt = kind != GmlFileKind.ExtGML;
+		var notLam = kind != GmlFileKind.LambdaGML;
+		var canLam = notLam && Project.current.lambdaGml != null;
+		var notExt = notLam && kind != GmlFileKind.ExtGML;
+		var localKind = notLam ? "local" : "sublocal";
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
 			if (s != mainTop) GmlAPI.gmlLookupText += s + "\n";
@@ -242,7 +245,7 @@ class GmlSeeker {
 							while (q.loop) {
 								s = find(Ident | Line | Par1);
 								if (s == ")" || s == "\n" || s == null) break;
-								locals.add(s);
+								locals.add(s, localKind);
 							}
 							doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 							out.docList.push(doc);
@@ -327,7 +330,7 @@ class GmlSeeker {
 					while (q.loop) {
 						name = find(Ident);
 						if (name == null) break;
-						locals.add(name);
+						locals.add(name, localKind);
 						p = q.pos;
 						flags = SetOp | Comma | Semico | Ident | ComBlock;
 						s = find(flags);
@@ -415,6 +418,11 @@ class GmlSeeker {
 				default: { // maybe an instance field assignment
 					// skip if it's a local/built-in/project/extension identifier:
 					if (locals.kind[s] != null) continue;
+					if (canLam && NativeString.startsWith(s, GmlExtLambda.lfPrefix)) {
+						var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
+						if (lfLocals != null) locals.addLocals(lfLocals);
+						continue;
+					}
 					if (GmlAPI.gmlKind[s] != null) continue;
 					if (GmlAPI.extKind[s] != null) continue;
 					if (GmlAPI.stdKind[s] != null) continue;

@@ -110,7 +110,7 @@ class EditCode extends Editor {
 		switch (file.kind) {
 			case Extern: file.code = data != null ? data : "";
 			case YyShader: file.code = "";
-			case Plain, ExtGML, GLSL, HLSL, JavaScript, Snippets: file.code = src;
+			case Plain, ExtGML, GLSL, HLSL, JavaScript, Snippets, LambdaGML: file.code = src;
 			case SearchResults: file.code = data;
 			case Normal: {
 				src = GmlExtCoroutines.pre(src);

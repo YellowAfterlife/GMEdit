@@ -5,9 +5,11 @@ import editors.EditCode;
 import electron.FileWrap;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
+import gml.GmlLocals;
 import gml.GmlVersion;
 import gml.Project;
 import gml.file.GmlFile;
+import gml.file.GmlFileKind;
 import gmx.SfGmx;
 import js.RegExp;
 import tools.Dictionary;
@@ -24,6 +26,8 @@ using StringTools;
 class GmlExtLambda {
 	public static var defaultMap:Dictionary<GmlExtLambda> = new Dictionary();
 	public static var currentMap:Dictionary<GmlExtLambda> = defaultMap;
+	public static var seekData:GmlSeekData = new GmlSeekData();
+	public static var seekPath:String = "";
 	//
 	public var comp:AceAutoCompleteItems = [];
 	public var kind:Dictionary<String> = new Dictionary();
@@ -34,7 +38,7 @@ class GmlExtLambda {
 	}
 	//
 	
-	private static inline var lfPrefix = "__lf_";
+	public static inline var lfPrefix = "__lf_";
 	public static inline var extensionName = "gmedit_lambda";
 	public static var errorText:String;
 	public static function rxExtScript(name:String):RegExp {
@@ -574,10 +578,14 @@ class GmlExtLambda {
 					gml = gml.replaceExt(rxExtScript(s), "$3");
 					pj.lambdaMap.remove(s);
 					GmlAPI.extDoc.remove(s);
+					seekData.locals.remove(s);
 				}
 				for (s in setList) {
 					pj.lambdaMap.set(s, true);
 					var scr = data.map1[s];
+					var locals = new GmlLocals();
+					seekData.locals.set(s, locals);
+					GmlSeeker.runSyncImpl(seekPath, scr, s, seekData, locals, GmlFileKind.LambdaGML);
 					readDefs_1(scr); // maybe change map1 to have code+docs pairs later
 					var add = true;
 					gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
@@ -609,6 +617,14 @@ class GmlExtLambda {
 	}
 	/** loads up definitions from a file */
 	public static function readDefs(path:String) {
+		try {
+			var code = FileWrap.readTextFileSync(path);
+			GmlSeeker.runSync(path, code, "", gml.file.GmlFileKind.LambdaGML);
+			seekPath = path;
+			seekData = GmlSeekData.map[path];
+		} catch (e:Dynamic) {
+			
+		}
 		FileWrap.readTextFile(path, function(e, code:String) {
 			if (e != null) return;
 			readDefs_1(code);

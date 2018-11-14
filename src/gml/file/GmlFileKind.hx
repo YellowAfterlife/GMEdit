@@ -66,4 +66,7 @@ enum GmlFileKind {
 	
 	/** Snippets editor */
 	Snippets;
+	
+	/** Only used for special-case parsing */
+	LambdaGML;
 }
