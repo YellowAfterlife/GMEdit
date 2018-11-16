@@ -115,6 +115,9 @@
 #main .gml .ace_flowlabel {
 	color: #748;
 }
+#main .gml .ace_sublocal {
+	color: #764;
+}
 /*#main .gml .ace_enumerror {
 	color: red;
 }*/

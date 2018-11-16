@@ -366,6 +366,10 @@ class GmlSeeker {
 											q.pos = p;
 											exit = true;
 											break;
+										} else if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
+											var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
+											if (lfLocals != null) locals.addLocals(lfLocals);
+											continue;
 										}
 									};
 								}
@@ -418,7 +422,7 @@ class GmlSeeker {
 				default: { // maybe an instance field assignment
 					// skip if it's a local/built-in/project/extension identifier:
 					if (locals.kind[s] != null) continue;
-					if (canLam && NativeString.startsWith(s, GmlExtLambda.lfPrefix)) {
+					if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
 						var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
 						if (lfLocals != null) locals.addLocals(lfLocals);
 						continue;

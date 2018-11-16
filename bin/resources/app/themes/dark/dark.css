@@ -166,6 +166,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .gml .ace_flowlabel {
 	color: #FFF899;
 }
+#main .gml .ace_sublocal {
+	color: #FF99F8;
+}
 #main .gml .ace_keyword,
 #main .gml .ace_type,
 #main .gml .ace_curly.ace_paren,
