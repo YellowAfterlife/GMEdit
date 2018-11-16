@@ -6,6 +6,7 @@ import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
 import ace.extern.*;
+import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import tools.Dictionary;
 import tools.NativeString;
@@ -146,7 +147,9 @@ class GmxLoader {
 					if (lm != null) {
 						for (funcs in extFile.findAll("functions"))
 						for (func in funcs.findAll("function")) {
-							lm.set(func.findText("name"), true);
+							var ls = func.findText("name");
+							ls = NativeString.replaceExt(ls, GmlExtLambda.rxlcPrefix, GmlExtLambda.lfPrefix);
+							lm.set(ls, true);
 						}
 					} else for (funcs in extFile.findAll("functions"))
 					for (func in funcs.findAll("function")) {

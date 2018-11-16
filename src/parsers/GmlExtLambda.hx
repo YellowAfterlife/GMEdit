@@ -1,6 +1,7 @@
 package parsers;
 import ace.AceWrap;
 import ace.extern.*;
+import ace.AceMacro.jsRx;
 import editors.EditCode;
 import electron.FileWrap;
 import gml.GmlAPI;
@@ -38,10 +39,33 @@ class GmlExtLambda {
 	}
 	//
 	
+	// todo: ticket #
+	public static var useVars:Bool = false;
 	public static inline var lfPrefix = "__lf_";
+	public static inline var lcPrefix = "__lc_";
+	public static var rxlfPrefix:RegExp = new RegExp("^__lf_");
+	public static var rxlcPrefix:RegExp = new RegExp("^__lc_");
+	public static var rxPrefix:RegExp = new RegExp("^__(?:lf|lc)_");
+	public static var rxlfInit:RegExp = new RegExp('(^#define $lfPrefix\r?\n)([\\s\\S]*?)($|\\s*\r?\n#define)');
+	
+	/** An ode to strange workarounds */
+	public static function prefixSwap(name:String):String {
+		if(name.charCodeAt(0) == "_".code
+		&& name.charCodeAt(1) == "_".code
+		&& name.charCodeAt(2) == "l".code) {
+			switch (name.charCodeAt(3)) {
+				case "f".code: return "__lc" + name.substring(4);
+				case "c".code: return "__lf" + name.substring(4);
+				default: return name;
+			}
+		} else return name;
+	}
+	
 	public static inline var extensionName = "gmedit_lambda";
+	
 	public static var errorText:String;
 	public static function rxExtScript(name:String):RegExp {
+		if (useVars) name = name.replaceExt(rxlfPrefix, lcPrefix);
 		return new RegExp('((?:^|\n)#define $name\r?\n)([\\s\\S]*?)($|\r?\n#define)');
 	}
 	static var rxLambdaArgsSp = new RegExp("^([ \t]*)([\\s\\S]*)([ \t]*)$");
@@ -72,16 +96,16 @@ class GmlExtLambda {
 		}
 		//
 		function proc(s:String, def:String, p:Int) {
-			//
+			// fetch lambda script:
 			if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
 			var mt = rxExtScript(s).exec(data.gml);
 			if (mt == null) return false;
-			//
+			// convert #args (if used) and match extras:
 			var impl = mt[2];
 			impl = GmlExtArgs.pre(impl);
 			mt = rxLambdaPre.exec(impl);
 			if (mt == null) return false;
-			//
+			// form the magic code:
 			flush(p);
 			var laName = mt[3];
 			var laArgs = (mt[7] != null ? "(" + mt[5] + mt[7] + mt[6] + ")" : "");
@@ -409,9 +433,17 @@ class GmlExtLambda {
 			file = f; break;
 		}
 		var fns:SfGmx = file.find("functions");
+		var mcs:SfGmx = file.find("constants");
 		var extz = false;
 		for (s in d.list0) if (!d.map1.exists(s)) {
 			extz = true;
+			if (useVars) {
+				for (mc in mcs.findAll("constant")) if (mc.findText("name") == s) {
+					mcs.removeChild(mc);
+					break;
+				}
+				s = s.replaceExt(rxlfPrefix, lcPrefix);
+			}
 			for (f in fns.findAll("function")) if (f.findText("name") == s) {
 				fns.removeChild(f);
 				break;
@@ -430,6 +462,18 @@ class GmlExtLambda {
 		}
 		for (s in d.list1) if (!d.map0.exists(s)) {
 			var skip = false;
+			if (useVars) {
+				for (mc in mcs.findAll("constant")) if (mc.findText("name") == s) {
+					skip = true; break;
+				}
+				if (skip) continue;
+				var mc = new SfGmx("constant");
+				mc.addTextChild("name", s);
+				mc.addTextChild("value", "global.g" + s);
+				mc.addTextChild("hidden", "-1");
+				mcs.addChild(mc);
+				s = s.replaceExt(rxlfPrefix, lcPrefix);
+			}
 			for (fn in fns.findAll("function")) if (fn.findText("name") == s) {
 				skip = true; break;
 			}
@@ -450,13 +494,29 @@ class GmlExtLambda {
 		var ext:YyExtension = FileWrap.readJsonFileSync(pj.lambdaExt);
 		var file = ext.files[0];
 		var fns:Array<YyExtensionFunc> = file.functions;
+		var mcs:Array<YyExtensionMacro> = file.constants;
 		var order = file.order;
 		var extz = false;
+		var i:Int;
 		for (s in d.list0) if (!d.map1.exists(s)) {
 			extz = true;
-			for (f in fns) if (f.name == s) {
-				fns.remove(f);
-				order.remove(f.id);
+			//
+			if (useVars) {
+				i = mcs.length;
+				while (--i >= 0) {
+					var mc = mcs[i];
+					if (mc.constantName != s) continue;
+					mcs.splice(i, 1);
+					break;
+				}
+				s = s.replaceExt(rxlfPrefix, lcPrefix);
+			}
+			i = fns.length;
+			while (--i >= 0) {
+				var fn = fns[i];
+				if (fn.name != s) continue;
+				order.remove(fn.id);
+				fns.splice(i, 1);
 				break;
 			}
 		}
@@ -477,6 +537,22 @@ class GmlExtLambda {
 		}
 		for (s in d.list1) if (!d.map0.exists(s)) {
 			var skip = false;
+			if (useVars) {
+				for (mc in mcs) if (mc.constantName == s) {
+					skip = true;
+					break;
+				}
+				if (skip) continue;
+				mcs.push({
+					id: new YyGUID(),
+					modelName: "GMExtensionConstant",
+					mvc: "1.0",
+					constantName: s,
+					hidden: true,
+					value: "global.g" + s
+				});
+				s = s.replaceExt(rxlfPrefix, lcPrefix);
+			}
 			for (fn in fns) if (fn.name == s) {
 				skip = true;
 				break;
@@ -576,6 +652,7 @@ class GmlExtLambda {
 				prepare();
 				for (s in remList) {
 					gml = gml.replaceExt(rxExtScript(s), "$3");
+					gml = gml.replaceExt(new RegExp('\n$s = .+'), "");
 					pj.lambdaMap.remove(s);
 					GmlAPI.extDoc.remove(s);
 					seekData.locals.remove(s);
@@ -594,7 +671,14 @@ class GmlExtLambda {
 					});
 					if (add) {
 						if (gml != "") gml += "\n";
-						gml += '#define $s\n' + scr;
+						var scrName = s;
+						if (useVars) {
+							scrName = s.replaceExt(rxlfPrefix, lcPrefix);
+							gml = gml.replaceExt(rxlfInit, function(_, s0, init, s1) {
+								return '$s0$init\n$s = asset_get_index("$scrName");$s1';
+							});
+						}
+						gml += '#define $scrName\n' + scr;
 					}
 				}
 				FileWrap.writeTextFileSync(pj.lambdaGml, gml);
@@ -619,9 +703,20 @@ class GmlExtLambda {
 	public static function readDefs(path:String) {
 		try {
 			var code = FileWrap.readTextFileSync(path);
-			GmlSeeker.runSync(path, code, "", gml.file.GmlFileKind.LambdaGML);
+			useVars = code.indexOf("//!usevars") >= 0;
+			GmlSeeker.runSync(path, code, "", GmlFileKind.LambdaGML);
 			seekPath = path;
 			seekData = GmlSeekData.map[path];
+			if (useVars) {
+				var locals = seekData.locals;
+				for (fd in locals.keys()) {
+					if (fd.startsWith(lcPrefix)) {
+						var v = locals[fd];
+						locals.remove(fd);
+						locals.set(lfPrefix + fd.substring(lcPrefix.length), v);
+					}
+				}
+			}
 		} catch (e:Dynamic) {
 			
 		}

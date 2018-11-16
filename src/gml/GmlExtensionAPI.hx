@@ -17,6 +17,7 @@ class GmlExtensionAPI {
 	public static function get2(ext:YyExtension):String {
 		var out = "";
 		for (file in ext.files) {
+			if (out != "") out += "\n";
 			out += "#section " + file.filename;
 			var lines = [], s:String;
 			for (fn in file.functions) {

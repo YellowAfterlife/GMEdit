@@ -6,6 +6,7 @@ import gml.GmlAPI;
 import gml.Project;
 import gml.file.GmlFileKind;
 import js.RegExp;
+import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
@@ -171,7 +172,7 @@ class YyLoader {
 								//
 								if (lm != null) {
 									for (func in file.functions) {
-										lm.set(func.name, true);
+										lm.set(NativeString.replaceExt(func.name, GmlExtLambda.rxlcPrefix, GmlExtLambda.lfPrefix), true);
 									}
 								} else for (func in file.functions) {
 									var name = func.name;
