@@ -200,7 +200,7 @@ class GmlExtLambda {
 		return out;
 	}
 	//
-	static function post_1(edit:EditCode, code:String, prefix:String, data:GmlExtLambdaPost) {
+	static function post_1(fileName:String, code:String, prefix:String, data:GmlExtLambdaPost) {
 		var project = data.project;
 		var version = data.version;
 		var list0 = data.list0;
@@ -327,7 +327,7 @@ class GmlExtLambda {
 					scope.docs.set(laName, GmlFuncDoc.parse(laName + '(${laArgs!=null?laArgs:""})'));
 				}
 				//
-				laCode = post_1(edit, laCode, laFull.substring(lfPrefix.length), data);
+				laCode = post_1(fileName, laCode, laFull.substring(lfPrefix.length), data);
 				if (laCode == null) return null;
 				//
 				list1.push(laFull);
@@ -386,12 +386,12 @@ class GmlExtLambda {
 								case "#event": {
 									q.skipEventName();
 									ct_proc();
-									prefix = edit.file.name + "_" + ct.replace(":", "_");
+									prefix = fileName + "_" + ct.replace(":", "_");
 								};
 								case "#moment": {
 									q.skipIdent1();
 									ct_proc();
-									prefix = edit.file.name + "_" + ct;
+									prefix = fileName + "_" + ct;
 								};
 								default: ct = null;
 							}
@@ -573,120 +573,139 @@ class GmlExtLambda {
 		}
 		if (extz) FileWrap.writeJsonFileSync(pj.lambdaExt, ext);
 	}
-	public static function post(edit:EditCode, code:String):String {
+	public static function postImpl(code:String, data:GmlExtLambdaPost) {
 		if (!Preferences.current.lambdaMagic) return code;
-		var hasLambda = code.indexOf("#lambda") >= 0 || code.indexOf("#lamdef") >= 0;
-		if (!hasLambda && edit.lambdaList.length == 0) return code;
+		var hasLambda = data.hasLambda;
+		if (hasLambda == null) {
+			hasLambda = code.indexOf("#lambda") >= 0 || code.indexOf("#lamdef") >= 0;
+			data.hasLambda = hasLambda;
+		}
+		// had no lambdas before and clearly has no lambdas?:
+		if (!hasLambda && data.list0.length == 0) return code;
+		var out = hasLambda ? post_1(data.name, code, data.name, data) : code;
+		if (out == null) return null; // syntax error
+		var pj = data.project;
+		// had no lambdas and still has no actual lambdas?:
+		if (data.list0.length == 0 && data.list1.length == 0) return out;
+		switch (pj.version) { // verify that we can at all
+			case v1, v2: {}; // OK!
+			default: {
+				errorText = "Lambdas are not supported for this version of GM.";
+				return null;
+			};
+		}
+		if (pj.lambdaExt == null || pj.lambdaGml == null) {
+			errorText = 'Please add an extension called `$extensionName` to the project,'
+				+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
+			if (pj.version == GmlVersion.v1) errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
+			return null;
+		}
 		//
-		var pj = Project.current;
+		var remList = [];
+		var setList = [];
+		for (s in data.list0) {
+			var s1 = data.map1[s];
+			if (s1 == null) {
+				remList.push(s);
+			} else if (s1 != data.map0[s]) {
+				setList.push(s);
+			}
+		}
+		for (s in data.list1) if (!data.map0.exists(s)) {
+			setList.push(s);
+		}
+		var changed = remList.length > 0 || setList.length > 0;
+		//
+		var gml:String = null;
+		inline function prepare():Void {
+			if (gml == null) gml = FileWrap.readTextFileSync(pj.lambdaGml);
+		}
+		// apply extension changes if lambdas were added/removed:
+		if (changed) switch (pj.version) {
+			case v1: postGMS1(data);
+			case v2: postGMS2(data);
+			default: {
+				errorText = "Lambdas are not supported in this version of GM.";
+				return null;
+			};
+		}
+		// ensure that the extension has an init function:
+		if (data.checkInit) {
+			prepare();
+			if (!(new RegExp('^#define $lfPrefix$', 'm')).test(gml)) {
+				gml = '#define $lfPrefix\n'
+					+ '// https://bugs.yoyogames.com/view.php?id=29984'
+					+ (gml != "" ? "\n" + gml : "");
+			}
+		}
+		// apply changes to the GML file:
+		if (changed) {
+			prepare();
+			for (s in remList) {
+				gml = gml.replaceExt(rxExtScript(s), "$3");
+				gml = gml.replaceExt(new RegExp('\n$s = .+'), "");
+				pj.lambdaMap.remove(s);
+				GmlAPI.extDoc.remove(s);
+				seekData.locals.remove(s);
+			}
+			for (s in setList) {
+				pj.lambdaMap.set(s, true);
+				var scr = data.map1[s];
+				var locals = new GmlLocals();
+				seekData.locals.set(s, locals);
+				GmlSeeker.runSyncImpl(seekPath, scr, s, seekData, locals, GmlFileKind.LambdaGML);
+				readDefs_1(scr); // maybe change map1 to have code+docs pairs later
+				var add = true;
+				gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
+					add = false;
+					return s0 + scr + s1;
+				});
+				if (add) {
+					if (gml != "") gml += "\n";
+					var scrName = s;
+					if (useVars) {
+						scrName = s.replaceExt(rxlfPrefix, lcPrefix);
+						gml = gml.replaceExt(rxlfInit, function(_, s0, init, s1) {
+							return '$s0$init\n$s = asset_get_index("$scrName");$s1';
+						});
+					}
+					gml += '#define $scrName\n' + scr;
+				}
+			}
+			FileWrap.writeTextFileSync(pj.lambdaGml, gml);
+		}
+		return out;
+	}
+	public static function postInit(name:String,
+		pj:Project, lambdaList:Array<String>, lambdaMap:Dictionary<String>
+	):GmlExtLambdaPost {
 		var scopes = new Dictionary();
 		var scope = new GmlExtLambda();
 		scopes.set("", scope);
-		var data:GmlExtLambdaPost = {
+		return {
+			name: name,
 			project: pj,
 			version: pj.version,
-			list0: edit.lambdaList,
-			map0: edit.lambdaMap,
+			list0: lambdaList,
+			map0: lambdaMap,
 			list1: [],
 			map1: new Dictionary(),
 			scopes: scopes,
 			scope: scope,
 			checkInit: false,
+			hasLambda: null,
 		};
-		var out = hasLambda ? post_1(edit, code, edit.file.name, data) : code;
-		if (out == null) return null;
-		if (data.list0.length != 0 || data.list1.length != 0) {
-			switch (pj.version) { // verify that we can at all
-				case v1, v2: {}; // OK!
-				default: {
-					errorText = "Lambdas are not supported for this version of GM.";
-					return null;
-				};
-			}
-			if (pj.lambdaExt == null || pj.lambdaGml == null) {
-				errorText = 'Please add an extension called `$extensionName` to the project,'
-					+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
-				if (pj.version == GmlVersion.v1) errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
-				return null;
-			}
-			//
-			var remList = [];
-			var setList = [];
-			for (s in data.list0) {
-				var s1 = data.map1[s];
-				if (s1 == null) {
-					remList.push(s);
-				} else if (s1 != data.map0[s]) {
-					setList.push(s);
-				}
-			}
-			for (s in data.list1) if (!data.map0.exists(s)) {
-				setList.push(s);
-			}
-			var changed = remList.length > 0 || setList.length > 0;
-			//
-			var gml:String = null;
-			inline function prepare():Void {
-				if (gml == null) gml = FileWrap.readTextFileSync(pj.lambdaGml);
-			}
-			//
-			if (changed) switch (pj.version) {
-				case v1: postGMS1(data);
-				case v2: postGMS2(data);
-				default: {
-					errorText = "Lambdas are not supported in this version of GM.";
-					return null;
-				};
-			}
-			//
-			if (data.checkInit) {
-				prepare();
-				if (!(new RegExp('^#define $lfPrefix$', 'm')).test(gml)) {
-					gml = '#define $lfPrefix\n'
-						+ '// https://bugs.yoyogames.com/view.php?id=29984'
-						+ (gml != "" ? "\n" + gml : "");
-				}
-			}
-			//
-			if (changed) {
-				prepare();
-				for (s in remList) {
-					gml = gml.replaceExt(rxExtScript(s), "$3");
-					gml = gml.replaceExt(new RegExp('\n$s = .+'), "");
-					pj.lambdaMap.remove(s);
-					GmlAPI.extDoc.remove(s);
-					seekData.locals.remove(s);
-				}
-				for (s in setList) {
-					pj.lambdaMap.set(s, true);
-					var scr = data.map1[s];
-					var locals = new GmlLocals();
-					seekData.locals.set(s, locals);
-					GmlSeeker.runSyncImpl(seekPath, scr, s, seekData, locals, GmlFileKind.LambdaGML);
-					readDefs_1(scr); // maybe change map1 to have code+docs pairs later
-					var add = true;
-					gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
-						add = false;
-						return s0 + scr + s1;
-					});
-					if (add) {
-						if (gml != "") gml += "\n";
-						var scrName = s;
-						if (useVars) {
-							scrName = s.replaceExt(rxlfPrefix, lcPrefix);
-							gml = gml.replaceExt(rxlfInit, function(_, s0, init, s1) {
-								return '$s0$init\n$s = asset_get_index("$scrName");$s1';
-							});
-						}
-						gml += '#define $scrName\n' + scr;
-					}
-				}
-				FileWrap.writeTextFileSync(pj.lambdaGml, gml);
-			}
-			edit.lambdas = scopes;
-			edit.lambdaList = data.list1;
-			edit.lambdaMap = data.map1;
-		}
+	}
+	public static function post(edit:EditCode, code:String):String {
+		if (!Preferences.current.lambdaMagic) return code;
+		var hasLambda = code.indexOf("#lambda") >= 0 || code.indexOf("#lamdef") >= 0;
+		if (!hasLambda && edit.lambdaList.length == 0) return code;
+		var data = postInit(edit.file.name, Project.current, edit.lambdaList, edit.lambdaMap);
+		data.hasLambda = hasLambda;
+		var out = postImpl(code, data);
+		edit.lambdas = data.scopes;
+		edit.lambdaList = data.list1;
+		edit.lambdaMap = data.map1;
 		return out;
 	}
 	static var readDefs_rx = new RegExp('^///\\s*(($lfPrefix\\w+).+)', "gm");
@@ -726,7 +745,7 @@ class GmlExtLambda {
 		});
 	}
 }
-private typedef GmlExtLambdaPre = {
+typedef GmlExtLambdaPre = {
 	project:Project,
 	version:GmlVersion,
 	list:Array<String>,
@@ -735,7 +754,8 @@ private typedef GmlExtLambdaPre = {
 	scopes:Dictionary<GmlExtLambda>,
 	scope:GmlExtLambda,
 }
-private typedef GmlExtLambdaPost = {
+typedef GmlExtLambdaPost = {
+	name:String,
 	project:Project,
 	version:GmlVersion,
 	list0:Array<String>,
@@ -745,4 +765,5 @@ private typedef GmlExtLambdaPost = {
 	checkInit:Bool,
 	scopes:Dictionary<GmlExtLambda>,
 	scope:GmlExtLambda,
+	hasLambda:Null<Bool>,
 }
