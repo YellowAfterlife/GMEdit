@@ -1,6 +1,7 @@
 package ui;
 import ace.AceWrap;
 import electron.FileSystem;
+import electron.FileWrap;
 import electron.Menu;
 import gml.GmlAPI;
 import gml.file.GmlFile;
@@ -22,7 +23,6 @@ using tools.HtmlTools;
 
 /**
  * User preferences are managed here!
- * Currently everything is just dumped into LocalStorage in JSON format.
  * @author YellowAfterlife
  */
 class Preferences {
@@ -404,22 +404,14 @@ class Preferences {
 		} else element.style.display = "none";
 	}
 	public static function save() {
-		var data = Json.stringify(current);
-		if (data == null) {
-			console.error("Couldn't save preferences", current);
-		} else {
-			Main.window.localStorage.setItem(path, data);
-		}
+		FileWrap.writeConfigSync("config", path, current);
 	}
 	public static function load() {
 		var pref:PrefData = null;
-		var prefData:String = null;
 		try {
-			prefData = Main.window.localStorage.getItem(path);
-			pref = Json.parse(prefData);
+			pref = FileWrap.readConfigSync("config", path);
 		} catch (e:Dynamic) {
 			console.error("Error loading preferences: ", e);
-			console.error("Source data:", prefData);
 		}
 		// default settings:
 		var def:PrefData = {
@@ -474,17 +466,18 @@ class Preferences {
 			opts.remove("enableLiveAutocompletion");
 			opts.remove("theme");
 			opts.remove("enableSnippets");
-			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
+			FileWrap.writeConfigSync("config", "aceOptions", cast opts);
 			//Main.console.log("Ace settings saved.");
 		};
 	}
 	public static function initEditor() {
 		// load Ace options:
 		try {
-			var text = Main.window.localStorage.getItem("aceOptions");
-			var opts:DynamicAccess<Dynamic> = Json.parse(text);
-			opts.set("enableSnippets", true);
-			if (text != null) Main.aceEditor.setOptions(opts);
+			var opts:DynamicAccess<Dynamic> = cast FileWrap.readConfigSync("config", "aceOptions");
+			if (opts != null) {
+				opts.set("enableSnippets", true);
+				Main.aceEditor.setOptions(opts);
+			}
 		} catch (e:Dynamic) {
 			console.error("Error loading Ace options: " + e);
 		};

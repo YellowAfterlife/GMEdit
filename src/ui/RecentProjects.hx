@@ -1,5 +1,6 @@
 package ui;
 import electron.FileSystem;
+import electron.FileWrap;
 import haxe.Json;
 import haxe.io.Path;
 import ui.treeview.TreeView;
@@ -9,12 +10,9 @@ import ui.treeview.TreeView;
  * @author YellowAfterlife
  */
 class RecentProjects {
-	private static inline var lsPath:String = "recent-projects";
 	private static function get():Array<String> {
 		try {
-			var text = Main.window.localStorage.getItem(lsPath);
-			if (text == null) return [];
-			var curr:Array<String> = Json.parse(text);
+			var curr:Array<String> = FileWrap.readConfigSync("session",  "recent-projects");
 			if (!Std.is(curr, Array)) return [];
 			for (i in 0 ... curr.length) {
 				curr[i] = tools.PathTools.ptNoBS(curr[i]);
@@ -23,7 +21,7 @@ class RecentProjects {
 		} catch (_:Dynamic) return [];
 	}
 	private static function set(list:Array<String>) {
-		Main.window.localStorage.setItem(lsPath, Json.stringify(list));
+		FileWrap.writeConfigSync("session",  "recent-projects", list);
 	}
 	public static function add(path:String) {
 		var curr = get();

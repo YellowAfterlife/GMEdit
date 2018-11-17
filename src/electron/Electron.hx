@@ -30,12 +30,24 @@ import haxe.extern.EitherType;
 			set("Electron_Shell", shell);
 			set("Electron_Menu", remote.Menu);
 			set("Electron_MenuItem", remote.MenuItem);
+			set("Electron_App", remote.app);
+			function ensure(dir:String) {
+				FileSystem.ensureDirSync(dir);
+			}
+			var path = AppTools.getPath("userData") + "/GMEdit";
+			FileWrap.userPath = path;
+			ensure(path);
+			ensure(path + "/session");
+			ensure(path + "/snippets");
+			ensure(path + "/config");
+			ensure(path + "/themes");
 		} else {
 			blank("Electron_API");
 			set("Electron_FS", FileSystem.FileSystemBrowser);
 			set("Electron_Dialog", Dialog.DialogFallback);
 			blank("Electron_IPC");
 			blank("Electron_Shell");
+			blank("Electron_App");
 			set("Electron_Menu", Menu.MenuFallback);
 			set("Electron_MenuItem", Menu.MenuItemFallback);
 		}
