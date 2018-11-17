@@ -79,7 +79,7 @@ class GmlExtLambda {
 	+ "([ \t]*\\{[\\s\\S]*)$");
 	static var rxLambdaDef = new RegExp("^/\\*!#lamdef (\\w+)\\*/");
 	//
-	static function pre_1(edit:EditCode, code:String, data:GmlExtLambdaPre) {
+	public static function preImpl(code:String, data:GmlExtLambdaPre) {
 		var project = data.project;
 		var lambdaMap = project.lambdaMap;
 		var version = data.version;
@@ -117,7 +117,7 @@ class GmlExtLambda {
 				scope.docs.set(laName, GmlFuncDoc.parse(laName + laArgs));
 			}
 			var laCode = mt[8];
-			laCode = pre_1(edit, laCode, data);
+			laCode = preImpl(laCode, data);
 			out += def + mt[2] + (laName != "$" ? laName : "")
 				+ mt[4] + laArgs + laCode;
 			list.push(s);
@@ -176,15 +176,11 @@ class GmlExtLambda {
 		flush(q.pos);
 		return out;
 	}
-	public static function pre(edit:EditCode, code:String):String {
-		var pj = Project.current;
-		if (!Preferences.current.lambdaMagic) return code;
-		if (pj.lambdaGml == null) return code;
-		if (edit.file.path == pj.lambdaGml) return code;
+	public static function preInit(pj:Project):GmlExtLambdaPre {
 		var scopes = new Dictionary();
 		var scope = new GmlExtLambda();
 		scopes.set("", scope);
-		var d:GmlExtLambdaPre = {
+		return {
 			project: pj,
 			version: pj.version,
 			list: [],
@@ -193,10 +189,17 @@ class GmlExtLambda {
 			scope: scope,
 			gml: null,
 		};
-		var out = pre_1(edit, code, d);
+	}
+	public static function pre(edit:EditCode, code:String):String {
+		var pj = Project.current;
+		if (!Preferences.current.lambdaMagic) return code;
+		if (pj.lambdaGml == null) return code;
+		if (edit.file.path == pj.lambdaGml) return code;
+		var d = preInit(pj);
+		var out = preImpl(code, d);
 		edit.lambdaList = d.list;
 		edit.lambdaMap = d.map;
-		edit.lambdas = scopes;
+		edit.lambdas = d.scopes;
 		return out;
 	}
 	//
@@ -573,11 +576,19 @@ class GmlExtLambda {
 		}
 		if (extz) FileWrap.writeJsonFileSync(pj.lambdaExt, ext);
 	}
-	public static function postImpl(code:String, data:GmlExtLambdaPost) {
+	
+	/**
+	 * Returns whether a code-string has #lambda/#lamdef
+	 * Not a warranty of lambda magic being actually used.
+	 */
+	public static inline function hasHashLambda(s:String) {
+		return s.contains("#lambda") || s.contains("#lamdef");
+	}
+	public static function postImpl(code:String, data:GmlExtLambdaPost):String {
 		if (!Preferences.current.lambdaMagic) return code;
 		var hasLambda = data.hasLambda;
 		if (hasLambda == null) {
-			hasLambda = code.indexOf("#lambda") >= 0 || code.indexOf("#lamdef") >= 0;
+			hasLambda = hasHashLambda(code);
 			data.hasLambda = hasLambda;
 		}
 		// had no lambdas before and clearly has no lambdas?:
@@ -698,7 +709,7 @@ class GmlExtLambda {
 	}
 	public static function post(edit:EditCode, code:String):String {
 		if (!Preferences.current.lambdaMagic) return code;
-		var hasLambda = code.indexOf("#lambda") >= 0 || code.indexOf("#lamdef") >= 0;
+		var hasLambda = hasHashLambda(code);
 		if (!hasLambda && edit.lambdaList.length == 0) return code;
 		var data = postInit(edit.file.name, Project.current, edit.lambdaList, edit.lambdaMap);
 		data.hasLambda = hasLambda;

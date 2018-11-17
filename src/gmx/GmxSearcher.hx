@@ -109,6 +109,7 @@ class GmxSearcher {
 							var extFileName = extFile.findText("filename");
 							if (Path.extension(extFileName).toLowerCase() != "gml") continue;
 							var extFilePath = Path.join([extNode.text, extFileName]);
+							if (opt.expandLambdas && extFilePath == pj.lambdaGml) continue;
 							filesLeft += 1;
 							pj.readTextFile(extFilePath, function(err, code) {
 								if (err == null) {

@@ -113,6 +113,7 @@ class YySearcher {
 							var fileName = file.filename;
 							if (Path.extension(fileName).toLowerCase() != "gml") continue;
 							var filePath = Path.join([extDir, fileName]);
+							if (opt.expandLambdas && filePath == pj.lambdaGml) continue;
 							filesLeft += 1;
 							pj.readTextFile(filePath, function(err, code) {
 								if (err != null) { next(); return; }

@@ -11,6 +11,7 @@ import js.html.DivElement;
 import js.html.Element;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
+import parsers.GmlExtLambda;
 import parsers.GmlReader;
 import tools.Dictionary;
 import tools.NativeString;
@@ -42,6 +43,7 @@ using tools.HtmlTools;
 	public static var cbCheckMacros:InputElement;
 	public static var cbCheckShaders:InputElement;
 	public static var cbCheckExtensions:InputElement;
+	public static var cbExpandLambdas:InputElement;
 	public static var divSearching:DivElement;
 	public static var currentPath:String;
 	//
@@ -89,7 +91,16 @@ using tools.HtmlTools;
 		var saveItems = saveData.list;
 		var saveItem:GlobalSearchItem;
 		var saveCtxItems:Array<GlobalSearchItem>;
+		var canLambda = Preferences.current.lambdaMagic && pj.lambdaGml != null;
+		var lambdaGml:String = null;
 		pj.search(function(name:String, path:String, code:String) {
+			var lambdaPre:GmlExtLambdaPre;
+			if (canLambda) {
+				lambdaPre = GmlExtLambda.preInit(pj);
+				lambdaPre.gml = lambdaGml;
+				code = GmlExtLambda.preImpl(code, lambdaPre);
+				lambdaGml = lambdaPre.gml;
+			} else lambdaPre = null;
 			currentPath = path;
 			var q = new GmlReader(code);
 			var start = 0;
@@ -207,7 +218,18 @@ using tools.HtmlTools;
 				}
 			}
 			flush(q.pos);
-			if (isRepl) out += q.substring(replStart, q.length);
+			if (isRepl) {
+				out += q.substring(replStart, q.length);
+				var hasLambda = canLambda && !isPrev && GmlExtLambda.hasHashLambda(out);
+				if (canLambda && !isPrev && (hasLambda || lambdaPre.list.length > 0)) {
+					var lambdaPost = GmlExtLambda.postInit(name, pj, lambdaPre.list, lambdaPre.map);
+					out = GmlExtLambda.postImpl(out, lambdaPost);
+					if (out == null) {
+						var e = "Failed to update #lambda in " + name + ": " + GmlExtLambda.errorText;
+						opt.errors = (opt.errors == null ? e : opt.errors + "\n" + e);
+					}
+				}
+			}
 			return isRepl && !isPrev ? out : null;
 		}, function() {
 			if (finish != null) finish();
@@ -245,6 +267,7 @@ using tools.HtmlTools;
 			checkMacros: true,
 			checkShaders: false,
 			checkExtensions: true,
+			expandLambdas: true,
 		});
 	}
 	public static function toggle() {
@@ -277,6 +300,7 @@ using tools.HtmlTools;
 			checkMacros: cbCheckMacros.checked,
 			checkShaders: cbCheckShaders.checked,
 			checkExtensions: cbCheckExtensions.checked,
+			expandLambdas: cbExpandLambdas.checked
 		};
 	}
 	public static function runAuto(opt:GlobalSearchOpt) {
@@ -302,26 +326,27 @@ using tools.HtmlTools;
 	}
 	public static function init() {
 		//{
-		element = Main.document.querySelector("#global-search");
-		fdFind = element.querySelectorAuto('input[name="find-text"]');
-		fdReplace = element.querySelectorAuto('input[name="replace-text"]');
-		btFind = element.querySelectorAuto('input[name="find"]');
-		btReplace = element.querySelectorAuto('input[name="replace"]');
-		btPreview = element.querySelectorAuto('input[name="preview"]');
-		btCancel = element.querySelectorAuto('input[name="cancel"]');
+        element = Main.document.querySelector("#global-search");
+        fdFind = element.querySelectorAuto('input[name="find-text"]');
+        fdReplace = element.querySelectorAuto('input[name="replace-text"]');
+        btFind = element.querySelectorAuto('input[name="find"]');
+        btReplace = element.querySelectorAuto('input[name="replace"]');
+        btPreview = element.querySelectorAuto('input[name="preview"]');
+        btCancel = element.querySelectorAuto('input[name="cancel"]');
 		divSearching = element.querySelectorAuto('.searching-text');
 		//
-		cbWholeWord = element.querySelectorAuto('input[name="whole-word"]');
-		cbMatchCase = element.querySelectorAuto('input[name="match-case"]');
-		cbCheckStrings = element.querySelectorAuto('input[name="check-strings"]');
-		cbCheckObjects = element.querySelectorAuto('input[name="check-objects"]');
-		cbCheckScripts = element.querySelectorAuto('input[name="check-scripts"]');
-		cbCheckHeaders = element.querySelectorAuto('input[name="check-headers"]');
-		cbCheckComments = element.querySelectorAuto('input[name="check-comments"]');
-		cbCheckTimelines = element.querySelectorAuto('input[name="check-timelines"]');
-		cbCheckMacros = element.querySelectorAuto('input[name="check-macros"]');
-		cbCheckShaders = element.querySelectorAuto('input[name="check-shaders"]');
-		cbCheckExtensions = element.querySelectorAuto('input[name="check-extensions"]');
+		cbWholeWord = element.querySelectorAuto('#global-search-whole-word');
+		cbMatchCase = element.querySelectorAuto('#global-search-match-case');
+		cbCheckStrings = element.querySelectorAuto('#global-search-check-strings');
+		cbCheckObjects = element.querySelectorAuto('#global-search-check-objects');
+		cbCheckScripts = element.querySelectorAuto('#global-search-check-scripts');
+		cbCheckHeaders = element.querySelectorAuto('#global-search-check-headers');
+		cbCheckComments = element.querySelectorAuto('#global-search-check-comments');
+		cbCheckTimelines = element.querySelectorAuto('#global-search-check-timelines');
+		cbCheckMacros = element.querySelectorAuto('#global-search-check-macros');
+		cbCheckShaders = element.querySelectorAuto('#global-search-check-shaders');
+		cbCheckExtensions = element.querySelectorAuto('#global-search-check-extensions');
+		cbExpandLambdas = element.querySelectorAuto('#global-search-expand-lambdas');
 		//}
 		fdFind.onkeydown = function(e:KeyboardEvent) {
 			switch (e.keyCode) {
@@ -361,6 +386,7 @@ typedef GlobalSearchOpt = {
 	checkMacros:Bool,
 	checkShaders:Bool,
 	checkExtensions:Bool,
+	expandLambdas:Bool,
 	?headerFilter:EitherType<RegExp, GlobalSearchCtxFilter>,
 	?errors:String,
 };
