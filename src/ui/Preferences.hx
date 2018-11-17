@@ -64,6 +64,7 @@ class Preferences {
 			fs.appendChild(document.createBRElement());
 		}
 		out.appendChild(fs);
+		return fs;
 	}
 	private static function addDropdown(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
 		var ctr = document.createDivElement();
@@ -180,9 +181,7 @@ class Preferences {
 		out.appendChild(ctr);
 		return ctr;
 	}
-	private static function addWiki(to:Element, url:String, label:String = "wiki") {
-		var lb = to.querySelector("label");
-		lb.appendChild(document.createTextNode(" ("));
+	private static function createShellAnchor(url:String, label:String) {
 		var a = document.createAnchorElement();
 		a.href = url;
 		a.target = "_blank";
@@ -191,7 +190,12 @@ class Preferences {
 			return false;
 		};
 		a.appendChild(document.createTextNode(label));
-		lb.appendChild(a);
+		return a;
+	}
+	private static function addWiki(to:Element, url:String, label:String = "wiki") {
+		var lb = to.querySelector("label");
+		lb.appendChild(document.createTextNode(" ("));
+		lb.appendChild(createShellAnchor(url, label));
 		lb.appendChild(document.createTextNode(")"));
 	}
 	//
@@ -204,16 +208,27 @@ class Preferences {
 		if (!FileSystem.canSync) {
 			themeList.push("dark");
 			themeList.push("gms2");
-		} else for (name in FileSystem.readdirSync(Main.relPath(Theme.path))) {
-			if (name == "default") continue;
-			var full = Path.join([Main.modulePath, Theme.path, name, "config.json"]);
-			if (FileSystem.existsSync(full)) themeList.push(name);
+		} else {
+			for (dir in [
+				Main.relPath(Theme.path),
+				FileWrap.userPath + "/themes" 
+			]) for (name in FileSystem.readdirSync(dir)) {
+				if (name == "default") continue;
+				var full = Path.join([dir, name, "config.json"]);
+				if (FileSystem.existsSync(full)) themeList.push(name);
+			}
 		}
-		addRadios(out, "Theme", current.theme, themeList, function(theme) {
+		el = addRadios(out, "Theme", current.theme, themeList, function(theme) {
 			current.theme = theme;
 			Theme.current = theme;
 			save();
 		});
+		el = el.querySelector('legend');
+		el.appendChild(document.createTextNode(" ("));
+		el.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-themes", "wiki"));
+		el.appendChild(document.createTextNode("; "));
+		el.append(createShellAnchor(FileWrap.userPath + "/themes", "dir"));
+		el.appendChild(document.createTextNode(")"));
 		//
 		el = addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
 			current.argsMagic = z;
