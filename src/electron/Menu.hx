@@ -19,6 +19,9 @@ using tools.HtmlTools;
 	//
 	function clear():Void;
 	function append(item:MenuItem):Void;
+	inline function appendOpt(opt:MenuItemOptions):MenuItem {
+		return MenuFallback.appendOpt(this, opt);
+	}
 	inline function appendSep():Void {
 		append(new MenuItem({ type:Sep }));
 	}
@@ -52,6 +55,11 @@ using tools.HtmlTools;
 		item.parent = this;
 		items.push(item);
 		element.appendChild(item.element);
+	}
+	public static function appendOpt(menu:Menu, opt:MenuItemOptions):MenuItem {
+		var item = new MenuItem(opt);
+		menu.append(item);
+		return item;
 	}
 	public function insert(pos:Int, item:MenuItemFallback):Void {
 		item.parent = this;

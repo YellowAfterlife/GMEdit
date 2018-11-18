@@ -105,6 +105,8 @@ extern class AceEditor {
 	public function getSelectionRange():{ start:AcePos, end:AcePos };
 	public function getSelectedText():String;
 	public function insert(text:String, ?pasted:Bool):Void;
+	public function execCommand(name:String, ?args:Dynamic):Dynamic;
+	//
 	public var selection:AceSelection;
 	public var keyBinding:AceKeybinding;
 	public var commands:AceCommandManager;

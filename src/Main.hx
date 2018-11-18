@@ -125,6 +125,7 @@ class Main {
 		FileDrag.init();
 		ChromeTabs.init();
 		Project.init();
+		AceCtxMenu.init();
 		AceStatusBar.statusUpdate();
 		LiveWeb.init();
 		//

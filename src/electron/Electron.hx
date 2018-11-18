@@ -10,6 +10,7 @@ import haxe.extern.EitherType;
 @:native("Electron_API") extern class Electron {
 	public static var shell:Dynamic;
 	public static var remote:Dynamic;
+	public static var clipboard:Clipboard;
 	public static var ipcRenderer:Dynamic;
 	public static inline function init():Void {
 		inline function load(hxname:String, ename:String):Void {

@@ -1,4 +1,5 @@
 package ui;
+import ace.AceMacro.jsRx;
 import ace.AceWrap;
 import ace.extern.*;
 import Main.aceEditor;
@@ -73,8 +74,17 @@ using tools.HtmlTools;
 		} else {
 			term = opt.find;
 			var eterm = NativeString.escapeRx(term);
-			if (opt.wholeWord) eterm = "\\b" + eterm + "\\b";
-			rx = new RegExp(eterm, opt.matchCase ? "g" : "ig");
+			var eopt:String = opt.matchCase ? "g" : "ig";
+			if (opt.wholeWord) {
+				if (jsRx(~/^\/\//).test(term)) {
+					eterm += "$";
+					eopt += "m";
+				} else {
+					if (jsRx(~/^\w/).test(term)) eterm = "\\b" + eterm;
+					if (jsRx(~/\w$/).test(term)) eterm = eterm + "\\b";
+				}
+			}
+			rx = new RegExp(eterm, eopt);
 		}
 		if (term == "") return;
 		var results = "";
@@ -258,8 +268,8 @@ using tools.HtmlTools;
 			find: id,
 			wholeWord: true,
 			matchCase: true,
-			checkStrings: false,
-			checkComments: false,
+			checkStrings: jsRx(~/^@?["']/).test(id),
+			checkComments: jsRx(~/(?:\/\/|\/\*)/).test(id),
 			checkHeaders: true,
 			checkScripts: true,
 			checkTimelines: true,

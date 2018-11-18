@@ -9,4 +9,6 @@ package ace.extern;
 	public function reset():Void;
 	public function isClean():Bool;
 	public function markClean():Void;
+	public function hasUndo():Bool;
+	public function hasRedo():Bool;
 }

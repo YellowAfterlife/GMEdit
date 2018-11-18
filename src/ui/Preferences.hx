@@ -227,7 +227,7 @@ class Preferences {
 		el.appendChild(document.createTextNode(" ("));
 		el.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-themes", "wiki"));
 		el.appendChild(document.createTextNode("; "));
-		el.append(createShellAnchor(FileWrap.userPath + "/themes", "dir"));
+		el.append(createShellAnchor(FileWrap.userPath + "/themes", "manage"));
 		el.appendChild(document.createTextNode(")"));
 		//
 		el = addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
@@ -496,17 +496,19 @@ class Preferences {
 		} catch (e:Dynamic) {
 			console.error("Error loading Ace options: " + e);
 		};
+		//
+		var isMac:Bool;
+		var ep = untyped window.process;
+		if (ep == null) {
+			var np = Main.window.navigator.platform;
+			isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
+		} else isMac = ep.platform == "darwin";
+		FileWrap.isMac = isMac;
 		// flush Ace options on changes (usually only via Ctrl+,):
 		var editor = Main.aceEditor;
 		hookSetOption(editor);
 		hookSetOption(editor.renderer);
 		if (editor.getOption("fontFamily") == null) {
-			var ep = untyped window.process;
-			var isMac:Bool;
-			if (ep == null) {
-				var np = Main.window.navigator.platform;
-				isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
-			} else isMac = ep.platform == "darwin";
 			var font = isMac ? "Menlo, monospace" : "Consolas, Courier New, monospace";
 			editor.setOption("fontFamily", font);
 		}
