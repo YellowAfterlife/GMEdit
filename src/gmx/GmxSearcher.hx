@@ -101,6 +101,7 @@ class GmxSearcher {
 		if (opt.checkExtensions) {
 			for (q in pjGmx.findAll("NewExtensions")) for (extNode in q.findAll("extension")) {
 				var extPath = extNode.text + ".extension.gmx";
+				if (opt.expandLambdas && extNode.text == parsers.GmlExtLambda.extensionName) continue;
 				filesLeft += 1;
 				pj.readGmxFile(extPath, function(extError, extGmx:SfGmx) {
 					if (extError == null) {
@@ -109,7 +110,6 @@ class GmxSearcher {
 							var extFileName = extFile.findText("filename");
 							if (Path.extension(extFileName).toLowerCase() != "gml") continue;
 							var extFilePath = Path.join([extNode.text, extFileName]);
-							if (opt.expandLambdas && extFilePath == pj.lambdaGml) continue;
 							filesLeft += 1;
 							pj.readTextFile(extFilePath, function(err, code) {
 								if (err == null) {
