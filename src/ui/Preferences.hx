@@ -330,6 +330,17 @@ class Preferences {
 		});
 		#end
 		//
+		var tooltipDelay:InputElement = null;
+		var tooltipKinds = ["None", "Custom"];
+		addDropdown(out, "Code tooltips", tooltipKinds[current.tooltipKind], tooltipKinds, function(s) {
+			current.tooltipKind = tooltipKinds.indexOf(s);
+			save();
+		});
+		addIntInput(out, "Code tooltip delay (ms):", current.tooltipDelay, function(t) {
+			current.tooltipDelay = t;
+			save();
+		});
+		//
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
 			current.fileSessionTime = v; save();
 		});
@@ -345,7 +356,7 @@ class Preferences {
 			"Ask what to do",
 			"Reload unless conflicting",
 		];
-		addDropdown(out, "If the source file changes:", fileChangeActions[current.fileChangeAction], fileChangeActions, function(v) {
+		addDropdown(out, "If the source file changes", fileChangeActions[current.fileChangeAction], fileChangeActions, function(v) {
 			current.fileChangeAction = fileChangeActions.indexOf(v); save();
 		});
 		#end
@@ -457,6 +468,8 @@ class Preferences {
 			recentProjectCount: 16,
 			tabSize: 4,
 			eventOrder: 1,
+			tooltipDelay: 350,
+			tooltipKind: Custom,
 		};
 		// load/merge defaults:
 		var doSave = false;
@@ -543,6 +556,12 @@ typedef PrefData = {
 	tabSize:Int,
 	eventOrder:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
+	tooltipKind:PrefTooltipKind,
+	tooltipDelay:Int,
+}
+@:enum abstract PrefTooltipKind(Int) from Int to Int {
+	var None = 0;
+	var Custom = 1;
 }
 @:enum abstract PrefFileChangeAction(Int) from Int to Int {
 	var Nothing = 0;

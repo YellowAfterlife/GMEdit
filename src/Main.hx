@@ -126,6 +126,7 @@ class Main {
 		ChromeTabs.init();
 		Project.init();
 		AceCtxMenu.init();
+		AceTooltips.init();
 		AceStatusBar.statusUpdate();
 		LiveWeb.init();
 		//

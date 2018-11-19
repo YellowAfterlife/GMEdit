@@ -61,6 +61,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceTokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
 		window.AceAutocomplete = AceWrap.require("ace/autocomplete").Autocomplete;
 		window.AceRange = AceWrap.require("ace/range").Range;
+		window.AceTooltip = AceWrap.require("ace/tooltip").Tooltip;
 		window.aceEditor = Main.aceEditor;
 	}
 	/*public function setHintError(msg:String, pos:GmlPos) {

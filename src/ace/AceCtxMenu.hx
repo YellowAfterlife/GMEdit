@@ -11,7 +11,7 @@ import ui.OpenDeclaration;
 using tools.NativeString;
 
 /**
- * ...
+ * The context menu that pops up when you right-click the code editor
  * @author YellowAfterlife
  */
 class AceCtxMenu {
