@@ -194,21 +194,17 @@ class TreeViewItemMenus {
 	static function initCreateMenu() {
 		var createMenu = new Menu();
 		for (kind in 0 ... 2) {
-			var sub = new Menu();
-			items.manipNonRoot.push(addLink(sub, "Before this", function() {
+			if (kind > 0) createMenu.appendSep();
+			var s = kind > 0 ? "Group" : "Item";
+			items.manipNonRoot.push(addLink(createMenu, s + " before", function() {
 				createImpl(kind > 0, -1);
 			}));
-			items.manipDirOnly.push(addLink(sub, "Inside this", function() {
+			items.manipDirOnly.push(addLink(createMenu, s + " inside", function() {
 				createImpl(kind > 0, 0);
 			}));
-			items.manipNonRoot.push(addLink(sub, "After this", function() {
+			items.manipNonRoot.push(addLink(createMenu, s + " after", function() {
 				createImpl(kind > 0, 1);
 			}));
-			add(createMenu, {
-				label: kind > 0 ? "Group" : "Item",
-				type: Sub,
-				submenu: sub
-			});
 		}
 		var createItem = new MenuItem({ label: "Create", type: Sub, submenu: createMenu });
 		var removeItem = new MenuItem({ label: "Remove", click: removeImpl });
