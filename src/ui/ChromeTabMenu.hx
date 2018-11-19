@@ -107,6 +107,17 @@ class ChromeTabMenu {
 				var epath = tools.NativeString.escapeProp(path);
 				var item = tree.querySelector('.item[${TreeView.attrPath}="$epath"]');
 				if (item == null) return;
+				//
+				var flashStep = 0;
+				var flashInt = 0;
+				function flashFunc() {
+					if (flashStep % 2 == 0) {
+						item.classList.add("show-in-treeview-flash");
+					} else item.classList.remove("show-in-treeview-flash");
+					if (++flashStep >= 6) Main.window.clearInterval(flashInt);
+				}
+				flashInt = Main.window.setInterval(flashFunc, 300);
+				//
 				var par = item;
 				do {
 					if (par.classList.contains("dir")) par.classList.add("open");
