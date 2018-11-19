@@ -21,17 +21,19 @@ import ui.treeview.TreeView;
 		var errors = "";
 		// GMS2 doesn't sort events so not doing anything means
 		// that the events will maintain order as authored.
-		/*var evOrder:Dictionary<Int> = new Dictionary();
-		var evCount = 0;
-		for (ev in this.eventList) evOrder.set(ev.id, evCount++);
-		this.eventList.sort(function(a, b) {
-			var at = a.eventtype, bt = b.eventtype;
-			if (at != bt) return at - bt;
-			//
-			if (at == gmx.GmxEvent.typeCollision) {
-				return evOrder[a.id] - evOrder[b.id];
-			} else return a.enumb - b.enumb;
-		});*/
+		if (ui.Preferences.current.eventOrder == 1) {
+			var evOrder:Dictionary<Int> = new Dictionary();
+			var evCount = 0;
+			for (ev in this.eventList) evOrder.set(ev.id, evCount++);
+			this.eventList.sort(function(a, b) {
+				var at = a.eventtype, bt = b.eventtype;
+				if (at != bt) return at - bt;
+				//
+				if (at == 4) { // collision
+					return evOrder[a.id] - evOrder[b.id];
+				} else return a.enumb - b.enumb;
+			});
+		}
 		//
 		for (ev in this.eventList) {
 			var eid = ev.id;

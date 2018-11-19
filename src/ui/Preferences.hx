@@ -319,6 +319,15 @@ class Preferences {
 			save();
 			gml.Project.current.reload();
 		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
+		//
+		var eventOrder = [
+			"As authored",
+			"By event type",
+		];
+		addDropdown(out, "GMS2 event order", eventOrder[current.eventOrder], eventOrder, function(s:String) {
+			current.eventOrder = eventOrder.indexOf(s);
+			save();
+		});
 		#end
 		//
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
@@ -447,6 +456,7 @@ class Preferences {
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,
 			tabSize: 4,
+			eventOrder: 1,
 		};
 		// load/merge defaults:
 		var doSave = false;
@@ -531,6 +541,7 @@ typedef PrefData = {
 	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,
 	tabSize:Int,
+	eventOrder:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
 }
 @:enum abstract PrefFileChangeAction(Int) from Int to Int {
