@@ -172,7 +172,7 @@ using tools.NativeString;
 			if (kind != null) {
 				var kc = StringTools.fastCodeAt(kind, 0);
 				if (kc >= "0".code && kc <= "9".code) {
-					kindToken = "constant.numeric";
+					kindToken = "numeric";
 				} else kindToken = getGlobalType(kind, "identifier");
 			} else kindToken = "identifier";
 			return [
@@ -342,8 +342,8 @@ using tools.NativeString;
 			//rBase.push(rxRule("string", ~/`/, "string.tpl"));
 		}
 		rBase = rBase.concat([ //{
-			rxRule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
-			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
+			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
+			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxRule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
 			rxRule(function(goto, _, label) {
