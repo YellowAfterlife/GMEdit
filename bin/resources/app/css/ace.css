@@ -76,74 +76,74 @@
 #main .ace_active-line {
 	background: rgba(255, 253, 205, 0.5);
 }
-#main .gml .ace_comment,
-#main .gml .ace_eventtext {
+#main .ace-tm .ace_comment,
+#main .ace-tm .ace_eventtext {
 	color: #008000;
 	/*font-style: italic;*/
 }
-#main .gml .ace_comment.ace_link {
+#main .ace-tm .ace_comment.ace_link {
 	color: #0000FF;
 }
-/*#main .gml .ace_comment.ace_doc,
-#main .gml .ace_regionname,
-#main .gml .ace_sectionname {
+/*#main .ace-tm .ace_comment.ace_doc,
+#main .ace-tm .ace_regionname,
+#main .ace-tm .ace_sectionname {
 	color: #008080;
 }*/
-#main .gml .ace_regionname,
-#main .gml .ace_sectionname,
-#main .gml .ace_momentname,
-#main .gml .ace_scriptname,
-#main .gml .ace_eventname,
-#main .gml .ace_eventkeyname {
+#main .ace-tm .ace_regionname,
+#main .ace-tm .ace_sectionname,
+#main .ace-tm .ace_momentname,
+#main .ace-tm .ace_scriptname,
+#main .ace-tm .ace_eventname,
+#main .ace-tm .ace_eventkeyname {
 	color: #308;
 }
-#main .gml .ace_function,
-#main .gml .ace_variable,
-#main .gml .ace_constant,
-#main .gml .ace_macro,
-#main .gml .ace_globalvar,
-#main .gml .ace_extfunction,
-#main .gml .ace_extmacro,
-#main .gml .ace_macroname,
-#main .gml .ace_enum,
-#main .gml .ace_enumfield,
-#main .gml .ace_actionname,
-#main .gml .ace_namespace {
+#main .ace-tm .ace_function,
+#main .ace-tm .ace_variable,
+#main .ace-tm .ace_constant,
+#main .ace-tm .ace_macro,
+#main .ace-tm .ace_globalvar,
+#main .ace-tm .ace_extfunction,
+#main .ace-tm .ace_extmacro,
+#main .ace-tm .ace_macroname,
+#main .ace-tm .ace_enum,
+#main .ace-tm .ace_enumfield,
+#main .ace-tm .ace_actionname,
+#main .ace-tm .ace_namespace {
 	color: #990000;
 }
-#main .gml .ace_local,
-#main .gml .ace_flowlabel {
+#main .ace-tm .ace_local,
+#main .ace-tm .ace_flowlabel {
 	color: #748;
 }
-#main .gml .ace_sublocal {
+#main .ace-tm .ace_sublocal {
 	color: #764;
 }
-/*#main .gml .ace_enumerror {
+/*#main .ace-tm .ace_enumerror {
 	color: red;
 }*/
-#main .gml .ace_asset {
+#main .ace-tm .ace_asset {
 	color: rgb(0, 128, 160);
 }
-#main .gml .ace_script {
+#main .ace-tm .ace_script {
 	color: #990099;
 }
-#main .gml .ace_keyword,
-#main .gml .ace_type,
-#main .gml .ace_curly.ace_paren,
-#main .gml .ace_quasi.ace_paren {
+#main .ace-tm .ace_keyword,
+#main .ace-tm .ace_type,
+#main .ace-tm .ace_curly.ace_paren,
+#main .ace-tm .ace_quasi.ace_paren {
 	color: #00379B;
 	font-weight: bold;
 }
-#main .gml .ace_preproc {
+#main .ace-tm .ace_preproc {
 	/*color: rgb(0, 120, 170);*/
 	/*color: #7A81A9;*/
 	color: #768;
 }
-#main .gml .ace_numeric,
-#main .gml .ace_momenttime {
+#main .ace-tm .ace_numeric,
+#main .ace-tm .ace_momenttime {
 	color: #00f;
 }
-#main .gml .ace_string {
+#main .ace-tm .ace_string {
 	color: #00f;
 }
 #main .ace_error-line {
@@ -158,14 +158,14 @@
 #main .ace_gutter-define:not(:first-child) {
 	box-shadow: 0 1px 0px #d0d0d0 inset;
 }
-#main .gml .ace_line:not(:first-child) .ace_preproc.ace_define::after,
-#main .gml .ace_line:not(:first-child) .ace_preproc.ace_section::after,
-#main .gml .ace_line:not(:first-child) .ace_preproc.ace_event::after,
-#main .gml .ace_line:not(:first-child) .ace_preproc.ace_action::after {
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_define::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_section::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_event::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_action::after {
     content: "";
     left: -4px;
     /*bottom: -1px;*/
-	top: 0;px;
+	top: 0;
     right: 0;
     height: 1px;
     position: absolute;
