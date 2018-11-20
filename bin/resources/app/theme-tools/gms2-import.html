@@ -31,7 +31,6 @@ function proc() {
 	let css = "";
 	//
 	function map(obj, fn) {
-		console.log(Object.keys(obj));
 		for (let k of Object.keys(obj)) fn(k, obj[k]);
 	}
 	//
@@ -46,45 +45,69 @@ function proc() {
 			return `rgba(${h2d(mt[4])},${h2d(mt[3])},${h2d(mt[2])},${a.toFixed(3)})`
 		} else return "#" + mt[4] + mt[3] + mt[2];
 	}
-	//
-	let def = json["cloud.Text Editors.Code Editor.Colours.Default.colour"];
-	if (def) {
-		def = abgr2css(def);
-		if (def) css += `#main .ace-tm {\n\tcolor: ${def};\n}\n`;
-	}
+	// map background colors:
 	map({
+		"Background": [""],
+		"HighlightColour": ["selected-word"],
+		"CurrentLine": ["active-line"],
+		"Selections": ["selection"]
+	}, (key, arr) => {
+		let c = json[`cloud.Text Editors.Code Editor.Colours.${key}`];
+		if (!c) return;
+		c = abgr2css(c);
+		if (!c) return;
+		//
+		let start = "";
+		for (let s of arr) {
+			if (start != "") start += ",\n";
+			start += "#main .ace-tm";
+			if (s) start += " .ace_" + s.split(".").join(".ace_");
+		}
+		//
+		css += start + ` {\n\tbackground-color: ${c};\n}\n`;
+	});
+	// map foreground colors and font styles:
+	map({
+		"Normal Text": [""],
 		"Comments": ["comment", "eventtext"],
 		"Constants": ["constant", "extmacro"],
-		"Strings": "string",
+		"Strings": ["string"],
 		"Values": ["numeric", "momenttime"],
-		"Builtin Variables": "variable",
+		"Builtin Variables": ["variable"],
 		"Object Variables": ["field", "localfield"],
 		"Functions": ["function", "extfunction"],
-		"Script Names": "script",
+		"Script Names": ["script"],
 		"Resource Names": ["asset", "namespace", "type"],
-		"Enums": "enum",
-		"Enum Entries": "enumfield",
+		"Enums": ["enum"],
+		"Enum Entries": ["enumfield"],
 		"Macros": ["macro", "macroname"],
 		"Local Variables": ["local", "sublocal"],
 		"Global Variables": ["globalvar", "globalfield"],
 		"Keyword": ["keyword", "preproc"],
-		"Braces": ["curly.paren"]
-	}, (k, v) => {
+		"Braces": ["curly.paren"],
+		"Line Number Text": ["gutter"]
+	}, (k, arr) => {
 		let r = "";
+		// color:
 		let c = json[`cloud.Text Editors.Code Editor.Colours.${k}.colour`];
 		if (c) {
 			c = abgr2css(c);
 			if (c) r += `\tcolor: ${c};\n`;
 		}
+		// style:
 		let i = json[`cloud.Text Editors.Code Editor.Colours.${k}.style`];
 		if (i != null && i >= 0) {
 			r += `\tfont-style: ${i & 2 ? "italic" : "normal"};\n`;
 			r += `\tfont-weight: ${i & 1 ? "bold" : "normal"};\n`;
 		}
+		//
 		if (r) {
-			let start = "." + (Array.isArray(v) ? v.join(",\n.") : v);
-			start = start.split(".").join(".ace_");
-			start = start.replace(/^.ace_/gm, "#main .ace-tm .ace_");
+			let start = "";
+			for (let s of arr) {
+				if (start != "") start += ",\n";
+				start += "#main .ace-tm";
+				if (s) start += " .ace_" + s.split(".").join(".ace_");
+			}
 			css += start + ` {\n${r}}\n`;
 		}
 	});

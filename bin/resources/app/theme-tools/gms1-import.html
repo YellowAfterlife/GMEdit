@@ -54,41 +54,37 @@ function proc() {
 	//
 	let fg = null, bg = null;
 	map({
-		"0": "",
-		"1": ["keyword", "preproc"],
+		"0": ["", "local", "sublocal", "field", "localfield", "globalfield"],
+		"1": ["keyword", "preproc", "curly.paren"],
 		"2": ["numeric", "string", "momenttime"],
 		"3": ["comment", "eventtext"],
-		"4": ["constant", "extmacro"],
-		"5": ["variable"],
+		"4": ["constant", "extmacro", "enum", "enumfield"],
+		"5": ["variable", "globalvar"],
 		"6": ["function", "extfunction"],
 		"7": ["asset.script"],
 		"8": ["asset", "namespace", "type"],
-		"9": "@",
-		"10": "@active-line",
-		"11": "@selection",
-		"12": "gutter",
-		"13": "@gutter",
-		"14": "error",
-		"15": "gutter-active-line"
+		"9": ["@"],
+		"10": ["@active-line"],
+		"11": ["@selection"],
+		"12": ["gutter"],
+		"13": ["@gutter", "@gutter-active-line"],
+		"14": ["error"],
+		// "15": ["gutter-active-line"] // won't work, Ace uses background color for active line
 		// 16 -> changed line
 	}, (k, v) => {
 		let mt = (new RegExp(`<Color${k}>(\\d+)`)).exec(xml);
 		if (!mt) return;
 		let col = d2h(parseInt(mt[1]));
 		let prop = "color";
-		let start;
-		if (Array.isArray(v)) {
-			start = "." + v.join(",\n.");
-			start = start.split(".").join(".ace_");
-			start = start.replace(/^.ace_/gm, "#main .ace-tm .ace_");
-		} else {
-			if (v.startsWith("@")) {
+		let start = "";
+		for (let q of v) {
+			if (start != "") start += ",\n";
+			if (q.startsWith("@")) {
 				prop = "background-color";
-				v = v.substring(1);
+				q = q.substring(1);
 			}
-			if (v != "") {
-				start = "#main .ace-tm .ace_" + v;
-			} else start = "#main .ace-tm";
+			start += "#main .ace-tm";
+			if (q) start += " .ace_" + q.split(".").join(".ace_");
 		}
 		css += start + ` {\n\t${prop}: ${col};\n}\n`;
 	});
