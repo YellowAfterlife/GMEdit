@@ -51,6 +51,9 @@ import haxe.extern.EitherType;
 	//
 	public static function mkdirSync(path:String, ?mode:Int):Void;
 	public static function rmdirSync(path:String):Void;
+	public static inline function ensureDirSync(path:String):Void {
+		if (!existsSync(path)) mkdirSync(path);
+	}
 	//
 	public static function readdirSync(path:String, ?options:Dynamic):Array<String>;
 	//

@@ -43,7 +43,7 @@ class EditCode extends Editor {
 	
 	override public function ready():Void {
 		if (GmlAPI.version == GmlVersion.live) {
-			GmlSeeker.runSync(file.path, file.code, null);
+			GmlSeeker.runSync(file.path, file.code, null, file.kind);
 		}
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(file.code, { path: modePath, version: GmlAPI.version });
@@ -110,7 +110,7 @@ class EditCode extends Editor {
 		switch (file.kind) {
 			case Extern: file.code = data != null ? data : "";
 			case YyShader: file.code = "";
-			case Plain, GLSL, HLSL, JavaScript, Snippets: file.code = src;
+			case Plain, ExtGML, GLSL, HLSL, JavaScript, Snippets, LambdaGML: file.code = src;
 			case SearchResults: file.code = data;
 			case Normal: {
 				src = GmlExtCoroutines.pre(src);
@@ -145,7 +145,7 @@ class EditCode extends Editor {
 					// (too buggy)
 					//out = GmlExtArgs.pre(out);
 					//out = GmlExtImport.pre(out, path);
-					GmlSeeker.runSync(file.path, out, "");
+					GmlSeeker.runSync(file.path, out, "", file.kind);
 					file.code = out;
 				} else setError(errors);
 			};
@@ -189,6 +189,15 @@ class EditCode extends Editor {
 			case YySpriteView: {
 				if (data == null) data = Json.parse(src);
 			};
+			case YyRoomCCs: {
+				if (data == null) data = Json.parse(src);
+				NativeArray.clear(file.extraFiles);
+				file.code = YyRooms.getCCs(file.path, data, file.extraFiles);
+			};
+			case YyExtensionAPI: {
+				if (data == null) data = Json.parse(src);
+				file.code = gml.GmlExtensionAPI.get2(data);
+			};
 		}
 		file.syncTime();
 		if (file.kind != GmlFileKind.Normal && canLambda(file)) {
@@ -199,7 +208,7 @@ class EditCode extends Editor {
 		}
 	}
 	
-	public function postpImport(val:String):String {
+	public function postpImport(val:String):{val:String,sessionChanged:Bool} {
 		var val_preImport = val;
 		var path = file.path;
 		val = GmlExtImport.post(val, path);
@@ -209,6 +218,7 @@ class EditCode extends Editor {
 		}
 		// if there are imports, check if we should be updating the code
 		var data = path != null ? GmlSeekData.map[path] : null;
+		var sessionChanged = false;
 		if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
 			var next = GmlExtImport.pre(val, path);
 			if (GmlFile.current == file) {
@@ -221,6 +231,7 @@ class EditCode extends Editor {
 				var session = session;
 				session.doc.setValue(next);
 				AceSessionData.set(this, sd);
+				sessionChanged = true;
 				Main.window.setTimeout(function() {
 					var undoManager = session.getUndoManager();
 					if (!Preferences.current.allowImportUndo) {
@@ -232,10 +243,10 @@ class EditCode extends Editor {
 				});
 			}
 		}
-		return val;
+		return {val:val,sessionChanged:sessionChanged};
 	}
 	
-	public function postpNormal(out:String):String {
+	public function postpNormal(out:String, sessionChanged:Bool):String {
 		inline function error(s:String) {
 			Main.window.alert(s);
 			return null;
@@ -244,18 +255,35 @@ class EditCode extends Editor {
 		out = GmlExtArgs.post(out);
 		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
 		//
-		if (Preferences.current.argsFormat != "") {
-			if (GmlExtArgsDoc.proc(file)) {
+		var canCoroutines = file.kind != ExtGML;
+		if (file.kind != ExtGML && Preferences.current.argsFormat != "") {
+			if (!sessionChanged && GmlExtArgsDoc.proc(file)) {
+				sessionChanged = true;
 				out = session.getValue();
-				out = GmlExtArgs.post(out);
+				// hm, yeah, I guess we have to do it all again now?
+				// think of something better later
+				if (canImport(file)) {
+					var pair = postpImport(out);
+					if (pair == null) return null;
+					out = pair.val;
+				}
+				if (canLambda(file)) {
+					out = GmlExtLambda.post(this, out);
+					if (out == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
+				}
+				out = postpNormal(out, true);
+				if (out == null) return null;
+				canCoroutines = false;
 				Main.window.setTimeout(function() {
 					file.markClean();
 				});
 			}
 		}
 		//
-		out = GmlExtCoroutines.post(out);
-		if (out == null) return error(GmlExtCoroutines.errorText);
+		if (canCoroutines) {
+			out = GmlExtCoroutines.post(out);
+			if (out == null) return error(GmlExtCoroutines.errorText);
+		}
 		//
 		return out;
 	}
@@ -270,9 +298,12 @@ class EditCode extends Editor {
 		}
 		GmlFileBackup.save(file, val);
 		//
+		var sessionChanged = false;
 		if (canImport(file)) {
-			val = postpImport(val);
-			if (val == null) return false;
+			var pair = postpImport(val);
+			if (pair == null) return false;
+			val = pair.val;
+			if (pair.sessionChanged) sessionChanged = true;
 		}
 		//
 		if (canLambda(file)) {
@@ -285,8 +316,8 @@ class EditCode extends Editor {
 		switch (file.kind) {
 			case Extern: out = val;
 			case Plain, GLSL, HLSL, JavaScript: out = val;
-			case Normal: {
-				out = postpNormal(val);
+			case Normal, ExtGML: {
+				out = postpNormal(val, sessionChanged);
 				if (out == null) return false;
 			};
 			case Multifile: {
@@ -363,6 +394,16 @@ class EditCode extends Editor {
 				writeFile = false;
 				out = null;
 			};
+			case YyRoomCCs: {
+				if (!YyRooms.setCCs(path, val, file.extraFiles)) {
+					return error("Can't update CCs:\n" + YyRooms.errorText);
+				}
+				writeFile = false;
+				out = null;
+			};
+			case YyExtensionAPI: {
+				return false;
+			}
 			default: return false;
 		}
 		//

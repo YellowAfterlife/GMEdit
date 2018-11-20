@@ -56,6 +56,7 @@ class KeyboardShortcuts {
 		var flags = getEventFlags(e);
 		var keyCode = e.keyCode;
 		var isMod = (flags == CTRL || flags == META);
+		var isShift = flags == SHIFT;
 		var isShiftMod = (flags == SHIFT + CTRL || flags == SHIFT + META);
 		switch (keyCode) {
 			case KeyboardEvent.DOM_VK_F2: {
@@ -141,11 +142,13 @@ class KeyboardShortcuts {
 				ui.liveweb.LiveWeb.saveState();
 				#end
 			};
-			case KeyboardEvent.DOM_VK_F12: {
+			case KeyboardEvent.DOM_VK_F12, KeyboardEvent.DOM_VK_F1: {
+				var pos = aceEditor.getCursorPosition();
+				var tk = aceEditor.session.getTokenAtPos(pos);
 				if (flags == 0) {
-					var pos = aceEditor.getCursorPosition();
-					var tk = aceEditor.session.getTokenAtPos(pos);
 					OpenDeclaration.proc(pos, tk);
+				} else if (isShift) {
+					if (tk != null) GlobalSearch.findReferences(tk.value);
 				}
 			};
 			case KeyboardEvent.DOM_VK_F: {

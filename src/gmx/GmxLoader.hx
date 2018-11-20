@@ -6,6 +6,7 @@ import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
 import ace.extern.*;
+import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import tools.Dictionary;
 import tools.NativeString;
@@ -36,17 +37,24 @@ class GmxLoader {
 				var name = rxName.replace(path, "$1");
 				var full = project.fullPath(path);
 				var _main:String = "";
+				var kind:GmlFileKind = Normal;
 				switch (one) {
 					case "script": _main = name;
 					case "shader": { };
-					default: full += '.$one.gmx';
+					default: {
+						full += '.$one.gmx';
+						switch (one) {
+							case "object": kind = GmlFileKind.GmxObjectEvents;
+							case "timeline": kind = GmlFileKind.GmxTimelineMoments;
+						}
+					};
 				}
 				GmlAPI.gmlLookupText += name + "\n";
-				GmlSeeker.run(full, _main);
+				GmlSeeker.run(full, _main, kind);
 				var item = TreeView.makeItem(name, path, full, one);
 				out.appendChild(item);
 				if (one == "shader") {
-					var kind:GmlFileKind = gmx.get("type").indexOf("HLSL") >= 0
+					kind = gmx.get("type").indexOf("HLSL") >= 0
 						? GmlFileKind.HLSL : GmlFileKind.GLSL;
 					item.setAttribute(TreeView.attrOpenAs, kind.getName());
 				}
@@ -133,13 +141,15 @@ class GmxLoader {
 						if (lm != null) {
 							project.lambdaGml = extFileFull;
 							parsers.GmlExtLambda.readDefs(extFileFull);
-						} else GmlSeeker.run(extFileFull, "");
+						} else GmlSeeker.run(extFileFull, "", ExtGML);
 					}
 					//
 					if (lm != null) {
 						for (funcs in extFile.findAll("functions"))
 						for (func in funcs.findAll("function")) {
-							lm.set(func.findText("name"), true);
+							var ls = func.findText("name");
+							ls = NativeString.replaceExt(ls, GmlExtLambda.rxlcPrefix, GmlExtLambda.lfPrefix);
+							lm.set(ls, true);
 						}
 					} else for (funcs in extFile.findAll("functions"))
 					for (func in funcs.findAll("function")) {

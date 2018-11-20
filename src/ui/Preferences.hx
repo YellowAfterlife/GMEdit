@@ -1,6 +1,7 @@
 package ui;
 import ace.AceWrap;
 import electron.FileSystem;
+import electron.FileWrap;
 import electron.Menu;
 import gml.GmlAPI;
 import gml.file.GmlFile;
@@ -22,7 +23,6 @@ using tools.HtmlTools;
 
 /**
  * User preferences are managed here!
- * Currently everything is just dumped into LocalStorage in JSON format.
  * @author YellowAfterlife
  */
 class Preferences {
@@ -64,6 +64,7 @@ class Preferences {
 			fs.appendChild(document.createBRElement());
 		}
 		out.appendChild(fs);
+		return fs;
 	}
 	private static function addDropdown(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
 		var ctr = document.createDivElement();
@@ -180,9 +181,7 @@ class Preferences {
 		out.appendChild(ctr);
 		return ctr;
 	}
-	private static function addWiki(to:Element, url:String, label:String = "wiki") {
-		var lb = to.querySelector("label");
-		lb.appendChild(document.createTextNode(" ("));
+	private static function createShellAnchor(url:String, label:String) {
 		var a = document.createAnchorElement();
 		a.href = url;
 		a.target = "_blank";
@@ -191,7 +190,12 @@ class Preferences {
 			return false;
 		};
 		a.appendChild(document.createTextNode(label));
-		lb.appendChild(a);
+		return a;
+	}
+	private static function addWiki(to:Element, url:String, label:String = "wiki") {
+		var lb = to.querySelector("label");
+		lb.appendChild(document.createTextNode(" ("));
+		lb.appendChild(createShellAnchor(url, label));
 		lb.appendChild(document.createTextNode(")"));
 	}
 	//
@@ -204,16 +208,27 @@ class Preferences {
 		if (!FileSystem.canSync) {
 			themeList.push("dark");
 			themeList.push("gms2");
-		} else for (name in FileSystem.readdirSync(Main.relPath(Theme.path))) {
-			if (name == "default") continue;
-			var full = Path.join([Main.modulePath, Theme.path, name, "config.json"]);
-			if (FileSystem.existsSync(full)) themeList.push(name);
+		} else {
+			for (dir in [
+				Main.relPath(Theme.path),
+				FileWrap.userPath + "/themes" 
+			]) for (name in FileSystem.readdirSync(dir)) {
+				if (name == "default") continue;
+				var full = Path.join([dir, name, "config.json"]);
+				if (FileSystem.existsSync(full)) themeList.push(name);
+			}
 		}
-		addRadios(out, "Theme", current.theme, themeList, function(theme) {
+		el = addRadios(out, "Theme", current.theme, themeList, function(theme) {
 			current.theme = theme;
 			Theme.current = theme;
 			save();
 		});
+		el = el.querySelector('legend');
+		el.appendChild(document.createTextNode(" ("));
+		el.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-themes", "wiki"));
+		el.appendChild(document.createTextNode("; "));
+		el.append(createShellAnchor(FileWrap.userPath + "/themes", "manage"));
+		el.appendChild(document.createTextNode(")"));
 		//
 		el = addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
 			current.argsMagic = z;
@@ -304,7 +319,27 @@ class Preferences {
 			save();
 			gml.Project.current.reload();
 		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
+		//
+		var eventOrder = [
+			"As authored",
+			"By event type",
+		];
+		addDropdown(out, "GMS2 event order", eventOrder[current.eventOrder], eventOrder, function(s:String) {
+			current.eventOrder = eventOrder.indexOf(s);
+			save();
+		});
 		#end
+		//
+		var tooltipDelay:InputElement = null;
+		var tooltipKinds = ["None", "Custom"];
+		addDropdown(out, "Code tooltips", tooltipKinds[current.tooltipKind], tooltipKinds, function(s) {
+			current.tooltipKind = tooltipKinds.indexOf(s);
+			save();
+		});
+		addIntInput(out, "Code tooltip delay (ms):", current.tooltipDelay, function(t) {
+			current.tooltipDelay = t;
+			save();
+		});
 		//
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
 			current.fileSessionTime = v; save();
@@ -321,7 +356,7 @@ class Preferences {
 			"Ask what to do",
 			"Reload unless conflicting",
 		];
-		addDropdown(out, "If the source file changes:", fileChangeActions[current.fileChangeAction], fileChangeActions, function(v) {
+		addDropdown(out, "If the source file changes", fileChangeActions[current.fileChangeAction], fileChangeActions, function(v) {
 			current.fileChangeAction = fileChangeActions.indexOf(v); save();
 		});
 		#end
@@ -404,22 +439,14 @@ class Preferences {
 		} else element.style.display = "none";
 	}
 	public static function save() {
-		var data = Json.stringify(current);
-		if (data == null) {
-			console.error("Couldn't save preferences", current);
-		} else {
-			Main.window.localStorage.setItem(path, data);
-		}
+		FileWrap.writeConfigSync("config", path, current);
 	}
 	public static function load() {
 		var pref:PrefData = null;
-		var prefData:String = null;
 		try {
-			prefData = Main.window.localStorage.getItem(path);
-			pref = Json.parse(prefData);
+			pref = FileWrap.readConfigSync("config", path);
 		} catch (e:Dynamic) {
 			console.error("Error loading preferences: ", e);
-			console.error("Source data:", prefData);
 		}
 		// default settings:
 		var def:PrefData = {
@@ -440,6 +467,9 @@ class Preferences {
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,
 			tabSize: 4,
+			eventOrder: 1,
+			tooltipDelay: 350,
+			tooltipKind: Custom,
 		};
 		// load/merge defaults:
 		var doSave = false;
@@ -474,31 +504,34 @@ class Preferences {
 			opts.remove("enableLiveAutocompletion");
 			opts.remove("theme");
 			opts.remove("enableSnippets");
-			Main.window.localStorage.setItem("aceOptions", Json.stringify(opts));
+			FileWrap.writeConfigSync("config", "aceOptions", cast opts);
 			//Main.console.log("Ace settings saved.");
 		};
 	}
 	public static function initEditor() {
 		// load Ace options:
 		try {
-			var text = Main.window.localStorage.getItem("aceOptions");
-			var opts:DynamicAccess<Dynamic> = Json.parse(text);
-			opts.set("enableSnippets", true);
-			if (text != null) Main.aceEditor.setOptions(opts);
+			var opts:DynamicAccess<Dynamic> = cast FileWrap.readConfigSync("config", "aceOptions");
+			if (opts != null) {
+				opts.set("enableSnippets", true);
+				Main.aceEditor.setOptions(opts);
+			}
 		} catch (e:Dynamic) {
 			console.error("Error loading Ace options: " + e);
 		};
+		//
+		var isMac:Bool;
+		var ep = untyped window.process;
+		if (ep == null) {
+			var np = Main.window.navigator.platform;
+			isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
+		} else isMac = ep.platform == "darwin";
+		FileWrap.isMac = isMac;
 		// flush Ace options on changes (usually only via Ctrl+,):
 		var editor = Main.aceEditor;
 		hookSetOption(editor);
 		hookSetOption(editor.renderer);
 		if (editor.getOption("fontFamily") == null) {
-			var ep = untyped window.process;
-			var isMac:Bool;
-			if (ep == null) {
-				var np = Main.window.navigator.platform;
-				isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
-			} else isMac = ep.platform == "darwin";
 			var font = isMac ? "Menlo, monospace" : "Consolas, Courier New, monospace";
 			editor.setOption("fontFamily", font);
 		}
@@ -521,7 +554,14 @@ typedef PrefData = {
 	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,
 	tabSize:Int,
+	eventOrder:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
+	tooltipKind:PrefTooltipKind,
+	tooltipDelay:Int,
+}
+@:enum abstract PrefTooltipKind(Int) from Int to Int {
+	var None = 0;
+	var Custom = 1;
 }
 @:enum abstract PrefFileChangeAction(Int) from Int to Int {
 	var Nothing = 0;

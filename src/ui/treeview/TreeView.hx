@@ -150,7 +150,7 @@ class TreeView {
 		var nav = openAs != null ? { kind: GmlFileKind.createByName(openAs) } : null;
 		GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
 	}
-	private static inline function makeItemImpl(name:String, path:String, kind:String) {
+	private static inline function makeItemImpl(name:String, path:String, kind:String):TreeViewItem {
 		var r = document.createDivElement();
 		r.className = "item";
 		var span = document.createSpanElement();
@@ -163,7 +163,7 @@ class TreeView {
 		return r;
 	}
 	//
-	public static function makeItem(name:String, rel:String, path:String, kind:String) {
+	public static function makeItem(name:String, rel:String, path:String, kind:String):TreeViewItem {
 		rel = rel.ptNoBS();
 		var r = makeItemImpl(name, path, kind);
 		r.setAttribute(attrRel, rel);
@@ -236,6 +236,4 @@ typedef TreeViewQuery = {
 extern class TreeViewDir extends DivElement {
 	public var treeItems:DivElement;
 }
-extern class TreeViewItem extends DivElement {
-	
-}
+typedef TreeViewItem = DivElement;

@@ -27,9 +27,103 @@ class AceStatusBar {
 	public static var contextRow:Int = 0;
 	public static var contextName:String = null;
 	private static var emptyToken:AceToken = { type:"", value:"" };
+	public static var canDocData:Dictionary<Bool> = {
+		var d = new Dictionary();
+		for (k in [
+			"asset.script", "function", "extfunction",
+			"glsl.function", "hlsl.function",
+			"namespace", "macro"
+		]) d.set(k, true);
+		return d;
+	};
+	public static function getDocData(ctx:AceStatusBarDocSearch):Bool {
+		var docs:Dictionary<GmlFuncDoc> = null;
+		var doc:GmlFuncDoc = null;
+		var tk = ctx.tk;
+		var iter = ctx.iter;
+		inline function flushDocs(d:Dictionary<GmlFuncDoc>):Bool {
+			docs = d;
+			ctx.docs = docs;
+			return docs != null;
+		}
+		switch (tk.type) { // canDocData mirrors cases
+			case "asset.script": return flushDocs(GmlAPI.gmlDoc);
+			case "function": return flushDocs(GmlAPI.stdDoc);
+			case "glsl.function": return flushDocs(ShaderAPI.glslDoc);
+			case "hlsl.function": return flushDocs(ShaderAPI.hlslDoc);
+			case "lambda.function": return flushDocs(ctx.lambdas.docs);
+			case "extfunction": return flushDocs(GmlAPI.extDoc);
+			case "namespace": { // `new Type`?
+				var ns = ctx.imports.namespaces[tk.value];
+				tk = iter.stepBackward();
+				if (tk != null && tk.type == "text") {
+					tk = iter.stepBackward();
+					iter.stepForward();
+					iter.stepForward();
+				} else iter.stepForward();
+				if (tk != null && tk.value == "new") {
+					doc = ns.docs["create"];
+				}
+				ctx.doc = doc;
+				ctx.tk = tk;
+				return doc != null;
+			}
+			case "macro": { // macro->function resolution
+				var m = GmlAPI.gmlMacros[tk.value];
+				if (m != null) {
+					var mx = m.expr;
+					doc = AceMacro.jsOrx(GmlAPI.gmlDoc[mx], GmlAPI.extDoc[mx], GmlAPI.stdDoc[mx]);
+					if (doc != null) {
+						ctx.doc = doc;
+						return true;
+					}
+				}
+				return false;
+			};
+			default: return false;
+		}
+	}
+	public static function procDocImport(ctx:AceStatusBarDocSearch):Int {
+		var tk = ctx.tk;
+		var doc = ctx.docs[tk.value];
+		var iter = ctx.iter;
+		var imports = ctx.imports;
+		var argStart = 0;
+		if (imports != null) {
+			var name = tk.value;
+			tk = iter.stepBackward();
+			if (tk != null && tk.value == ".") {
+				iter.stepBackward();
+				tk = iter.getCurrentToken();
+				if (tk.type == "namespace") {
+					name = tk.value + "." + name;
+					doc = AceMacro.jsOr(imports.docs[name], doc);
+				} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
+					var ns = imports.namespaces[imports.localTypes[tk.value]];
+					if (ns != null) {
+						var td = ns.docs[name];
+						if (td != null) {
+							doc = td;
+							argStart = 1;
+						}
+					}
+				} else iter.stepForward();
+			} else {
+				doc = AceMacro.jsOr(imports.docs[name], doc);
+				tk = iter.stepForward();
+			}
+		}
+		ctx.tk = tk;
+		ctx.doc = doc;
+		return argStart;
+	}
 	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda) {
 		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
+		var sctx:AceStatusBarDocSearch = {
+			iter: iter, imports: imports, lambdas: lambdas,
+			docs: null, doc: null, tk: null
+		};
 		var ctk:AceToken = iter.getCurrentToken(); // cursor token
 		var parEmpty = false;
 		var minDepth = 0; // lowest reached parenthesis depth
@@ -39,9 +133,9 @@ class AceStatusBar {
 			ctk = iter.stepForward();
 			if (ctk != null) {
 				switch (ctk.type) {
-					case "paren.rparen": depth -= 1;
+					case "paren.rparen": depth -= 1; parEmpty = true;
 					case "punctuation.operator" if (ctk.value == ";"): ctk = iter.stepBackward();
-					case  "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
+					case "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
 					case "preproc.macro": ctk = iter.stepBackward();
 					#if !lwedit
 					case "curly.paren.lparen", "curly.paren.rparen": {
@@ -74,37 +168,15 @@ class AceStatusBar {
 						minDepth = depth;
 						parOpen = tk;
 						tk = iter.stepBackward();
-						if (tk != null) switch (tk.type) {
-							case "asset.script": docs = GmlAPI.gmlDoc;
-							case "function": docs = GmlAPI.stdDoc;
-							case "glsl.function": docs = ShaderAPI.glslDoc;
-							case "hlsl.function": docs = ShaderAPI.hlslDoc;
-							case "lambda.function": docs = lambdas.docs;
-							case "extfunction": docs = GmlAPI.extDoc;
-							case "namespace": {
-								var ns = imports.namespaces[tk.value];
-								tk = iter.stepBackward();
-								if (tk != null && tk.type == "text") {
-									tk = iter.stepBackward();
-									iter.stepForward();
-									iter.stepForward();
-								} else iter.stepForward();
-								if (tk != null && tk.value == "new") {
-									doc = ns.docs["create"];
-									break;
-								}
-							}
-							case "macro": {
-								var m = GmlAPI.gmlMacros[tk.value];
-								if (m != null) {
-									var mx = m.expr;
-									doc = GmlAPI.gmlDoc[mx]; if (doc != null) break;
-									doc = GmlAPI.extDoc[mx]; if (doc != null) break;
-									doc = GmlAPI.stdDoc[mx]; if (doc != null) break;
-								}
-							};
+						if (tk != null) {
+							sctx.tk = tk;
+							if (getDocData(sctx)) {
+								tk = sctx.tk;
+								docs = sctx.docs;
+								doc = sctx.doc;
+								break;
+							} else tk = sctx.tk;
 						}
-						if (docs != null) break;
 					}
 				};
 			}
@@ -113,33 +185,11 @@ class AceStatusBar {
 		if (docs == null && doc == null) return;
 		// find the actual doc:
 		var argStart = 0;
-		if (doc == null) { // import magic fixes
-			doc = docs[tk.value];
-			if (imports != null) {
-				var name = tk.value;
-				iter.stepBackward();
-				tk = iter.getCurrentToken();
-				if (tk != null && tk.value == ".") {
-					iter.stepBackward();
-					tk = iter.getCurrentToken();
-					if (tk.type == "namespace") {
-						name = tk.value + "." + name;
-						doc = AceMacro.jsOr(imports.docs[name], doc);
-					} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
-						var ns = imports.namespaces[imports.localTypes[tk.value]];
-						if (ns != null) {
-							var td = ns.docs[name];
-							if (td != null) {
-								doc = td;
-								argStart = 1;
-							}
-						}
-					} else iter.stepForward();
-				} else {
-					doc = AceMacro.jsOr(imports.docs[name], doc);
-					iter.stepForward();
-				}
-			}
+		if (doc == null) {
+			sctx.tk = tk;
+			argStart = procDocImport(sctx); // import magic fixes
+			doc = sctx.doc;
+			tk = sctx.tk;
 		}
 		// go forward to verify that cursor token is inside that call:
 		depth = -1;
@@ -154,7 +204,7 @@ class AceStatusBar {
 			tk = iter.stepForward();
 		}
 		argCurr += argStart;
-		if ((tk == null ? ctk != emptyToken : tk != ctk) || depth < 0) return;
+		if ((tk == null ? ctk != emptyToken : tk != ctk) || depth < 0 && !parEmpty) return;
 		//
 		if (doc != null) {
 			var args = doc.args;
@@ -282,4 +332,12 @@ class AceStatusBar {
 		editor.on("changeSelection", dcUpdate);
 		editor.on("keyboardActivity", dcUpdate);
 	}
+}
+typedef AceStatusBarDocSearch = {
+	iter:AceTokenIterator,
+	docs:Dictionary<GmlFuncDoc>,
+	doc:GmlFuncDoc,
+	tk:AceToken,
+	imports:GmlImports,
+	lambdas:GmlExtLambda,
 }

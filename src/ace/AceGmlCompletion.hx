@@ -35,6 +35,7 @@ using tools.NativeString;
 	public var items:AceAutoCompleteItems;
 	public var tokenFilter:Dictionary<Bool>;
 	public var tokenFilterNot:Bool;
+	public var tokenFilterComment:Bool;
 	public var modeFilter:AceSession->Bool;
 	public var minLength:Int = 2;
 	//
@@ -52,6 +53,7 @@ using tools.NativeString;
 		items.autoSort();
 		this.items = items;
 		this.tokenFilter = Dictionary.fromKeys(filters, true);
+		this.tokenFilterComment = tokenFilter["comment"];
 		this.tokenFilterNot = not;
 		this.modeFilter = modeFilter;
 	}
@@ -143,7 +145,9 @@ using tools.NativeString;
 			}
 			return;
 		}
-		proc(tokenFilter.exists(tk.type) != tokenFilterNot);
+		var tkf:Bool = tokenFilter.exists(tk.type);
+		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
+		proc(tkf != tokenFilterNot);
 	}
 	public function getDocTooltip(item:AceAutoCompleteItem):String {
 		return item.doc;

@@ -1,0 +1,144 @@
+<head>
+	<meta charset="utf-8"/>
+	<title>GMS2->GMEdit color scheme converter</title>
+</head>
+<body>
+<style>
+body {
+	height: 100%;
+	height: 100vh;
+	margin: 0;
+	_overflow: hidden;
+}
+textarea {
+	box-sizing: border-box;
+	width: calc(50% - 12px);
+	height: calc(100% - 16px);
+	height: calc(100vh - 16px);
+	margin: 8px;
+	margin-right: 0;
+}
+</style>
+
+<textarea id="input" placeholder="Drag and drop your local_settings.json (from %APPDATA%\GameMakerStudio2\name_id) here or paste it's contents."></textarea><textarea id="output">
+
+</textarea>
+<script>(function() {
+function proc() {
+	let orig = input.value.trim();
+	if (!orig) return;
+	let json = JSON.parse(orig);
+	let css = "";
+	//
+	function map(obj, fn) {
+		for (let k of Object.keys(obj)) fn(k, obj[k]);
+	}
+	//
+	function h2d(h) {
+		return parseInt("0x" + h);
+	}
+	function abgr2css(abgr) {
+		let mt = /#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})/.exec(abgr);
+		if (!mt) return null;
+		if (mt[1] != "FF") {
+			let a = h2d(mt[1])/255;
+			return `rgba(${h2d(mt[4])},${h2d(mt[3])},${h2d(mt[2])},${a.toFixed(3)})`
+		} else return "#" + mt[4] + mt[3] + mt[2];
+	}
+	// map background colors:
+	map({
+		"Background": [""],
+		"HighlightColour": ["selected-word"],
+		"CurrentLine": ["active-line"],
+		"Selections": ["selection"]
+	}, (key, arr) => {
+		let c = json[`cloud.Text Editors.Code Editor.Colours.${key}`];
+		if (!c) return;
+		c = abgr2css(c);
+		if (!c) return;
+		//
+		let start = "";
+		for (let s of arr) {
+			if (start != "") start += ",\n";
+			start += "#main .ace-tm";
+			if (s) start += " .ace_" + s.split(".").join(".ace_");
+		}
+		//
+		css += start + ` {\n\tbackground-color: ${c};\n}\n`;
+	});
+	// map foreground colors and font styles:
+	map({
+		"Normal Text": [""],
+		"Comments": ["comment", "eventtext"],
+		"Constants": ["constant", "extmacro"],
+		"Strings": ["string"],
+		"Values": ["numeric", "momenttime"],
+		"Builtin Variables": ["variable"],
+		"Object Variables": ["field", "localfield"],
+		"Functions": ["function", "extfunction"],
+		"Script Names": ["script"],
+		"Resource Names": ["asset", "namespace", "type"],
+		"Enums": ["enum"],
+		"Enum Entries": ["enumfield"],
+		"Macros": ["macro", "macroname"],
+		"Local Variables": ["local", "sublocal"],
+		"Global Variables": ["globalvar", "globalfield"],
+		"Keyword": ["keyword", "preproc"],
+		"Braces": ["curly.paren"],
+		"Line Number Text": ["gutter"]
+	}, (k, arr) => {
+		let r = "";
+		// color:
+		let c = json[`cloud.Text Editors.Code Editor.Colours.${k}.colour`];
+		if (c) {
+			c = abgr2css(c);
+			if (c) r += `\tcolor: ${c};\n`;
+		}
+		// style:
+		let i = json[`cloud.Text Editors.Code Editor.Colours.${k}.style`];
+		if (i != null && i >= 0) {
+			r += `\tfont-style: ${i & 2 ? "italic" : "normal"};\n`;
+			r += `\tfont-weight: ${i & 1 ? "bold" : "normal"};\n`;
+		}
+		//
+		if (r) {
+			let start = "";
+			for (let s of arr) {
+				if (start != "") start += ",\n";
+				start += "#main .ace-tm";
+				if (s) start += " .ace_" + s.split(".").join(".ace_");
+			}
+			css += start + ` {\n${r}}\n`;
+		}
+	});
+	//
+	output.value = css;
+}
+input.onchange = proc();
+var next = null;
+input.onkeydown = function(_) {
+	if (next == null) next = setTimeout(function() {
+		next = null; proc();
+	}, 500);
+};
+proc();
+function donot(e) {
+	e.preventDefault();
+	return false;
+}
+document.body.addEventListener("dragover", donot);
+document.body.addEventListener("dragenter", donot);
+document.body.addEventListener("drop", function(e) {
+	e.preventDefault();
+	for (let file of e.dataTransfer.files) {
+		var reader = new FileReader();
+		reader.onloadend = function(_) {
+			input.value = reader.result;
+			proc();
+		};
+		reader.readAsText(file);
+	}
+	return false;
+});
+})()</script>
+</body>

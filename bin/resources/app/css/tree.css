@@ -16,6 +16,9 @@
 /*.treeview .items > div {
 	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAACAQMAAABWsa/UAAAAA1BMVEXz8/ML3eGLAAAACklEQVQI12MAAwAABgAB6AoqpAAAAABJRU5ErkJggg==') 0px 9px no-repeat;
 }*/
+.treeview .show-in-treeview-flash {
+	box-shadow: 0 0 4px red inset;
+}
 .treeview .dir > .header,
 .treeview .item {
 	display: block;

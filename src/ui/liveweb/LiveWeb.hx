@@ -27,9 +27,10 @@ class LiveWeb {
 			var edit:EditCode = cast file.editor;
 			var val = edit.session.getValue();
 			if (post) {
-				val = edit.postpImport(val);
-				if (val == null) return;
-				val = edit.postpNormal(val);
+				var pair = edit.postpImport(val);
+				if (pair == null) return;
+				val = pair.val;
+				val = edit.postpNormal(val, pair.sessionChanged);
 			}
 			out.push({
 				name: file.name,
@@ -52,7 +53,7 @@ class LiveWeb {
 			if (first == null) first = file;
 			GmlFile.next = file;
 			ChromeTabs.addTab(pair.name);
-			GmlSeeker.runSync(path, code, "");
+			GmlSeeker.runSync(path, code, "", Normal);
 			var edit:EditCode = cast file.editor;
 			edit.postpImport(edit.session.getValue());
 			edit.session.bgTokenizer.start(0);
@@ -154,7 +155,7 @@ class LiveWeb {
 		}
 		var file = new GmlFile(name, name, Normal, code);
 		GmlFile.openTab(file);
-		parsers.GmlSeeker.runSync(name, name, code);
+		parsers.GmlSeeker.runSync(name, name, code, Normal);
 	}
 	
 	public static function newTabDialog() {

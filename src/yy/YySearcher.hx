@@ -4,6 +4,7 @@ import electron.FileWrap;
 import gml.Project;
 import haxe.io.Path;
 import js.Error;
+import parsers.GmlExtLambda;
 import ui.GlobalSearch;
 
 /**
@@ -103,6 +104,7 @@ class YySearcher {
 				};
 				case "GMExtension": if (opt.checkExtensions) {
 					resName = rxName.replace(res.resourcePath, "$1");
+					if (opt.expandLambdas && resName == GmlExtLambda.extensionName) continue;
 					resFull = res.resourcePath;
 					filesLeft += 1;
 					pj.readJsonFile(resFull, function(err, ext:YyExtension) {
@@ -126,8 +128,8 @@ class YySearcher {
 						next();
 					});
 				};
-			}
-		}
+			} // switch (can continue)
+		} // for
 		next();
 	}
 }

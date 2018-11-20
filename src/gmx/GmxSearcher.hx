@@ -101,6 +101,7 @@ class GmxSearcher {
 		if (opt.checkExtensions) {
 			for (q in pjGmx.findAll("NewExtensions")) for (extNode in q.findAll("extension")) {
 				var extPath = extNode.text + ".extension.gmx";
+				if (opt.expandLambdas && extNode.text == parsers.GmlExtLambda.extensionName) continue;
 				filesLeft += 1;
 				pj.readGmxFile(extPath, function(extError, extGmx:SfGmx) {
 					if (extError == null) {

@@ -172,7 +172,7 @@ using tools.NativeString;
 			if (kind != null) {
 				var kc = StringTools.fastCodeAt(kind, 0);
 				if (kc >= "0".code && kc <= "9".code) {
-					kindToken = "constant.numeric";
+					kindToken = "numeric";
 				} else kindToken = getGlobalType(kind, "identifier");
 			} else kindToken = "identifier";
 			return [
@@ -280,23 +280,35 @@ using tools.NativeString;
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
 		);
 		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
+		var rRoomCC = rxRule("preproc.roomcc", ~/^(#roomcc\b)/);
 		var rMoment = rxRule(
 			["preproc.moment", "momenttime", "momentname"],
 			~/^(#moment[ \t]+)(\d+)(.*)/
 		);
 		var rSection = rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/);
+		var commentDocLineType:String = "comment.doc.line";
 		//
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rQuotes,
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
-			rxRule("comment.doc.line", ~/\/\/\/$/),
-			rxRule("comment.doc.line", ~/\/\/\//, "comment.doc.line"),
+			rxRule("comment.doc.line", ~/\/\/\/$/), // a blank doc-line
+			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
+				return "comment.doc.line.startswith_" + s;
+			}, ~/\/\/\/(\S+)(?:(?!@\[).)*$/),
+			rxRule(function(s) { // a doc-line starting with X
+				commentDocLineType = "comment.doc.line.startswith_" + s;
+				return commentDocLineType;
+			}, ~/\/\/\/(\S+)/, "comment.doc.line"),
+			rxRule(function(_) { // a regular doc-line
+				commentDocLineType = "comment.doc.line";
+				return "comment.doc.line";
+			}, ~/\/\/\//, "comment.doc.line"),
 			rxRule("comment.line", ~/\/\/$/),
 			rxRule("comment.line", ~/\/\//, "comment.line"),
 			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
 			rxRule("comment", ~/\/\*/, "comment"),
-			rDefine, rAction, rKeyEvent, rEvent, rMoment,
+			rDefine, rAction, rKeyEvent, rEvent, rMoment, rRoomCC,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rulePairs([
 				"#import\\s+", "preproc.import",
@@ -330,8 +342,8 @@ using tools.NativeString;
 			//rBase.push(rxRule("string", ~/`/, "string.tpl"));
 		}
 		rBase = rBase.concat([ //{
-			rxRule("constant.numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
-			rxRule("constant.numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
+			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
+			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxRule(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "enum"),
 			rxRule(function(goto, _, label) {
@@ -428,7 +440,7 @@ using tools.NativeString;
 				rdef("comment.line"),
 			]), //}
 			"comment.doc.line": rComment.concat([ //{
-				rxRule("comment.doc.line", ~/$/, "start"),
+				rxRule((_) -> commentDocLineType, ~/.*$/, "start"),
 				rdef("comment.doc.line"),
 			]), //}
 			"comment": rComment.concat([ //{
@@ -438,6 +450,7 @@ using tools.NativeString;
 				rwnext(rMoment, "start"),
 				rwnext(rKeyEvent, "start"),
 				rwnext(rEvent, "start"),
+				rwnext(rRoomCC, "start"),
 				rxRule("comment", ~/.*?\*\//, "start"),
 				rxRule("comment", ~/.+/)
 			]), //}

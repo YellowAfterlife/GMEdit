@@ -85,6 +85,7 @@ class GmxManip {
 				case "script": {
 					q.npath = '$plural/$name.gml';
 					pj.writeTextFileSync(q.npath, '');
+					gml.file.GmlFile.open(q.name, q.npath);
 				};
 			}
 			ngmx = new SfGmx(single, ntxt);

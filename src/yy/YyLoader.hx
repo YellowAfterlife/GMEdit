@@ -4,7 +4,9 @@ import electron.FileSystem;
 import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
+import gml.file.GmlFileKind;
 import js.RegExp;
+import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
@@ -64,7 +66,12 @@ class YyLoader {
 					name = vdir.folderName;
 					if (path == "") switch (name) {
 						case"sprites",
-							"objects", "shaders", "scripts", "extensions", "timelines": {
+							"objects",
+							"shaders",
+							"scripts",
+							"extensions",
+							"timelines",
+							"rooms": {
 							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
 						case "datafiles": name = "Included Files";
@@ -76,7 +83,17 @@ class YyLoader {
 					rel = path + name + "/";
 					var dir = TreeView.makeDir(name, rel);
 					dir.setAttribute(TreeView.attrYYID, res.Key);
-					loadrec(dir.treeItems, vdir, rel);
+					var nextOut = dir.treeItems;
+					if (path == "" && vdir.folderName == "rooms") {
+						var ccs = TreeView.makeItem("Creation codes",
+							project.name, project.path, "roomccs");
+						ccs.removeAttribute(TreeView.attrThumb);
+						ccs.setAttribute(TreeView.attrOpenAs, GmlFileKind.YyRoomCCs.getName());
+						dir.treeItems.appendChild(ccs);
+						// consume the room items:
+						nextOut = Main.document.createDivElement();
+					}
+					loadrec(nextOut, vdir, rel);
 					out.appendChild(dir);
 				}
 				else {
@@ -102,13 +119,13 @@ class YyLoader {
 						case "GMScript": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
-							GmlSeeker.run(full, name);
+							GmlSeeker.run(full, name, Normal);
 						};
 						case "GMObject": {
 							GmlAPI.gmlLookupText += name + "\n";
 							objectNames.set(res.Key, name);
 							objectGUIDs.set(name, res.Key);
-							GmlSeeker.run(full, null);
+							GmlSeeker.run(full, null, GmlFileKind.YyObjectEvents);
 						};
 						case "GMShader": {
 							GmlAPI.gmlLookupText += name + "\n";
@@ -128,6 +145,8 @@ class YyLoader {
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
 							var extEl = TreeView.makeDir(ext.name, extRel);
+							extEl.setAttribute(TreeView.attrPath, full);
+							extEl.setAttribute(TreeView.attrIdent, ext.name);
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
 							var lm = lz && ext.name.toLowerCase() == parsers.GmlExtLambda.extensionName ? project.lambdaMap : null;
 							if (lm != null) project.lambdaExt = full;
@@ -135,20 +154,25 @@ class YyLoader {
 								var fileName = file.filename;
 								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
 								var filePath = Path.join([extDir, fileName]);
-								extEl.treeItems.appendChild(TreeView.makeItem(
+								var fileItem = TreeView.makeItem(
 									fileName, extRel + fileName, filePath, "extfile"
-								));
+								);
+								extEl.treeItems.appendChild(fileItem);
 								//
 								if (isGmlFile) {
 									if (lm != null) {
 										project.lambdaGml = filePath;
 										parsers.GmlExtLambda.readDefs(filePath);
-									} else GmlSeeker.run(filePath, "");
+									} else {
+										GmlSeeker.run(filePath, "", GmlFileKind.ExtGML);
+									}
+									fileItem.setAttribute(TreeView.attrOpenAs,
+										GmlFileKind.ExtGML.getName());
 								}
 								//
 								if (lm != null) {
 									for (func in file.functions) {
-										lm.set(func.name, true);
+										lm.set(NativeString.replaceExt(func.name, GmlExtLambda.rxlcPrefix, GmlExtLambda.lfPrefix), true);
 									}
 								} else for (func in file.functions) {
 									var name = func.name;

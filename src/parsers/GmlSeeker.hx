@@ -6,6 +6,7 @@ import gml.GmlAPI;
 import gmx.*;
 import yy.*;
 import gml.*;
+import gml.file.GmlFileKind;
 import haxe.io.Path;
 import js.RegExp;
 import parsers.GmlReader;
@@ -27,11 +28,13 @@ class GmlSeeker {
 	public static function start() {
 		itemsLeft = 0;
 	}
-	public static function run(path:String, main:String) {
+	public static function run(path:String, main:String, kind:GmlFileKind) {
 		itemsLeft++;
 		path = path.ptNoBS();
-		function next(err, text) {
-			if (runSync(path, text, main)) {
+		function next(err:js.Error, text:String) {
+			if (err != null) {
+				Main.console.error("Can't index ", path, err);
+			} else if (runSync(path, text, main, kind)) {
 				runNext();
 			}
 		}
@@ -65,14 +68,18 @@ class GmlSeeker {
 		return null;
 	}
 	
-	private static function runSyncImpl(
-		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals
+	public static function runSyncImpl(
+		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals, kind:GmlFileKind
 	):Void {
 		var mainTop = main;
 		var sub = null;
 		var q = new GmlReader(src);
 		var v = GmlAPI.version;
 		var row = 0;
+		var notLam = kind != GmlFileKind.LambdaGML;
+		var canLam = notLam && Project.current.lambdaGml != null;
+		var notExt = notLam && kind != GmlFileKind.ExtGML;
+		var localKind = notLam ? "local" : "sublocal";
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
 			if (s != mainTop) GmlAPI.gmlLookupText += s + "\n";
@@ -238,7 +245,7 @@ class GmlSeeker {
 							while (q.loop) {
 								s = find(Ident | Line | Par1);
 								if (s == ")" || s == "\n" || s == null) break;
-								locals.add(s);
+								locals.add(s, localKind);
 							}
 							doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 							out.docList.push(doc);
@@ -246,12 +253,14 @@ class GmlSeeker {
 						}
 					}
 					//
-					mainComp = new AceAutoCompleteItem(main, "script",
-						q.pos > start ? main + q.substring(start, q.pos) : null);
-					out.compList.push(mainComp);
-					out.compMap.set(main, mainComp);
-					out.kindList.push(main);
-					out.kindMap.set(main, "asset.script");
+					if (notExt) {
+						mainComp = new AceAutoCompleteItem(main, "script",
+							q.pos > start ? main + q.substring(start, q.pos) : null);
+						out.compList.push(mainComp);
+						out.compMap.set(main, mainComp);
+						out.kindList.push(main);
+						out.kindMap.set(main, "asset.script");
+					}
 				};
 				case "#macro": {
 					q.skipSpaces0();
@@ -321,7 +330,7 @@ class GmlSeeker {
 					while (q.loop) {
 						name = find(Ident);
 						if (name == null) break;
-						locals.add(name);
+						locals.add(name, localKind);
 						p = q.pos;
 						flags = SetOp | Comma | Semico | Ident | ComBlock;
 						s = find(flags);
@@ -357,6 +366,10 @@ class GmlSeeker {
 											q.pos = p;
 											exit = true;
 											break;
+										} else if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
+											var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
+											if (lfLocals != null) locals.addLocals(lfLocals);
+											continue;
 										}
 									};
 								}
@@ -409,6 +422,11 @@ class GmlSeeker {
 				default: { // maybe an instance field assignment
 					// skip if it's a local/built-in/project/extension identifier:
 					if (locals.kind[s] != null) continue;
+					if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
+						var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
+						if (lfLocals != null) locals.addLocals(lfLocals);
+						continue;
+					}
 					if (GmlAPI.gmlKind[s] != null) continue;
 					if (GmlAPI.extKind[s] != null) continue;
 					if (GmlAPI.stdKind[s] != null) continue;
@@ -461,7 +479,7 @@ class GmlSeeker {
 		}
 		parChildren.push(childName);
 	}
-	static function runYyObject(orig:String, src:String) {
+	public static function runYyObject(orig:String, src:String, ?allSync:Bool) {
 		var obj:YyObject = haxe.Json.parse(src);
 		var dir = Path.directory(orig);
 		//
@@ -501,24 +519,34 @@ class GmlSeeker {
 		}
 		if (eventFiles.length == 0) return true;
 		for (file in eventFiles) (function(name, full) {
-			function procEvent(err, code) {
-				if (err == null) try {
-					var locals = new GmlLocals();
-					out.locals.set(name, locals);
-					runSyncImpl(orig, code, null, out, locals);
-				} catch (_:Dynamic) {
-					//
+			if (!allSync) {
+				function procEvent(err, code) {
+					if (err == null) try {
+						var locals = new GmlLocals();
+						out.locals.set(name, locals);
+						runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
+					} catch (_:Dynamic) {
+						//
+					}
+					if (--eventsLeft <= 0) {
+						finish(orig, out);
+						runNext();
+					}
 				}
-				if (--eventsLeft <= 0) {
-					finish(orig, out);
-					runNext();
-				}
+				FileWrap.readTextFile(full, procEvent);
+			} else try {
+				var code = FileWrap.readTextFileSync(full);
+				var locals = new GmlLocals();
+				out.locals.set(name, locals);
+				runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
+			} catch (_:Dynamic) {
+				//
 			}
-			FileWrap.readTextFile(full, procEvent);
 		})(file.name, file.full);
+		if (allSync) finish(orig, out);
 		return false;
 	}
-	static function runGmxObject(orig:String, src:String) {
+	public static function runGmxObject(orig:String, src:String) {
 		var obj = SfGmx.parse(src);
 		var out = new GmlSeekData();
 		//
@@ -548,14 +576,14 @@ class GmlSeeker {
 			for (action in event.findAll("action")) {
 				var code = GmxAction.getCode(action);
 				if (code != null) {
-					runSyncImpl(orig, code, null, out, locals);
+					runSyncImpl(orig, code, null, out, locals, GmlFileKind.GmxObjectEvents);
 				}
 			}
 		}
 		finish(orig, out);
 		return true;
 	}
-	public static function runSync(orig:String, src:String, main:String) {
+	public static function runSync(orig:String, src:String, main:String, kind:GmlFileKind) {
 		switch (Path.extension(orig)) {
 			case "yy": return runYyObject(orig, src);
 			case "gmx": return runGmxObject(orig, src);
@@ -568,7 +596,7 @@ class GmlSeeker {
 		out.main = main;
 		var locals = new GmlLocals();
 		out.locals.set("", locals);
-		runSyncImpl(orig, src, main, out, locals);
+		runSyncImpl(orig, src, main, out, locals, kind);
 		finish(orig, out);
 		return true;
 	} // runSync

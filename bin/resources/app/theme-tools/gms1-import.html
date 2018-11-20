@@ -1,0 +1,121 @@
+<head>
+	<meta charset="utf-8"/>
+	<title>GMS1->GMEdit color scheme converter</title>
+</head>
+<body>
+<style>
+body {
+	height: 100%;
+	height: 100vh;
+	margin: 0;
+	_overflow: hidden;
+}
+textarea {
+	box-sizing: border-box;
+	width: calc(50% - 12px);
+	height: calc(100% - 16px);
+	height: calc(100vh - 16px);
+	margin: 8px;
+	margin-right: 0;
+}
+</style>
+
+<textarea id="input" placeholder="Drag and drop your .col file here or paste it's contents."></textarea><textarea id="output">
+
+</textarea>
+<script>(function() {
+function proc() {
+	let xml = input.value.trim();
+	if (!xml) return;
+	let css = "";
+	//
+	function map(obj, fn) {
+		console.log(Object.keys(obj));
+		for (let k of Object.keys(obj)) fn(k, obj[k]);
+	}
+	//
+	function d2h(d) {
+		d = (d >> 16) | (d & 0xff00) | ((d & 0xff) << 16);
+		let h = d.toString(16);
+		while (h.length < 6) h = "0" + h;
+		return "#" + h;
+	}
+	function h2d(h) {
+		return parseInt("0x" + h);
+	}
+	function abgr2css(abgr) {
+		let mt = /#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})/.exec(abgr);
+		if (!mt) return null;
+		if (mt[1] != "FF") {
+			let a = h2d(mt[1])/255;
+			return `rgba(${h2d(mt[4])},${h2d(mt[3])},${h2d(mt[2])},${a.toFixed(3)})`
+		} else return "#" + mt[4] + mt[3] + mt[2];
+	}
+	//
+	let fg = null, bg = null;
+	map({
+		"0": ["", "local", "sublocal", "field", "localfield", "globalfield"],
+		"1": ["keyword", "preproc", "curly.paren"],
+		"2": ["numeric", "string", "momenttime"],
+		"3": ["comment", "eventtext"],
+		"4": ["constant", "extmacro", "enum", "enumfield"],
+		"5": ["variable", "globalvar"],
+		"6": ["function", "extfunction"],
+		"7": ["asset.script"],
+		"8": ["asset", "namespace", "type"],
+		"9": ["@"],
+		"10": ["@active-line"],
+		"11": ["@selection"],
+		"12": ["gutter"],
+		"13": ["@gutter", "@gutter-active-line"],
+		"14": ["error"],
+		// "15": ["gutter-active-line"] // won't work, Ace uses background color for active line
+		// 16 -> changed line
+	}, (k, v) => {
+		let mt = (new RegExp(`<Color${k}>(\\d+)`)).exec(xml);
+		if (!mt) return;
+		let col = d2h(parseInt(mt[1]));
+		let prop = "color";
+		let start = "";
+		for (let q of v) {
+			if (start != "") start += ",\n";
+			if (q.startsWith("@")) {
+				prop = "background-color";
+				q = q.substring(1);
+			}
+			start += "#main .ace-tm";
+			if (q) start += " .ace_" + q.split(".").join(".ace_");
+		}
+		css += start + ` {\n\t${prop}: ${col};\n}\n`;
+	});
+	//
+	output.value = css;
+}
+input.onchange = proc();
+var next = null;
+input.onkeydown = function(_) {
+	if (next == null) next = setTimeout(function() {
+		next = null; proc();
+	}, 500);
+};
+proc();
+function donot(e) {
+	e.preventDefault();
+	return false;
+}
+document.body.addEventListener("dragover", donot);
+document.body.addEventListener("dragenter", donot);
+document.body.addEventListener("drop", function(e) {
+	e.preventDefault();
+	for (let file of e.dataTransfer.files) {
+		var reader = new FileReader();
+		reader.onloadend = function(_) {
+			input.value = reader.result;
+			proc();
+		};
+		reader.readAsText(file);
+	}
+	return false;
+});
+})()</script>
+</body>

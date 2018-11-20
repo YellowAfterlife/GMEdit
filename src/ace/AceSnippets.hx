@@ -1,4 +1,6 @@
 package ace;
+import electron.FileSystem;
+import electron.FileWrap;
 import haxe.DynamicAccess;
 import tools.Dictionary;
 import ace.AceWrap;
@@ -15,11 +17,19 @@ class AceSnippets {
 		return "ace/snippets/" + mode;
 	}
 	public static function getText(mode:String) {
+		var r:String = null;
+		if (FileSystem.canSync) try {
+			return FileSystem.readTextFileSync(FileWrap.userPath + "/snippets/" + mode + ".snippets");
+		} catch (_:Dynamic) {}
 		var r = Main.window.localStorage.getItem(getPath(mode));
 		return r != null ? r : "";
 	}
 	public static function setText(mode:String, text:String):Void {
-		Main.window.localStorage.setItem(getPath(mode), text);
+		if (FileSystem.canSync) {
+			FileSystem.writeFileSync(FileWrap.userPath + "/snippets/" + mode + ".snippets", text);
+		} else {
+			Main.window.localStorage.setItem(getPath(mode), text);
+		}
 		reload(mode, text);
 	}
 	public static function reload(mode:String, ?text:String) {

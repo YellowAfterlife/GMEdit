@@ -288,11 +288,14 @@ class GmlFile {
 		if (path != null && out != null && Std.is(editor, EditCode) && current == this) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
-				GmlSeeker.runSync(path, out, data.main);
+				switch (kind) {
+					case GmlFileKind.YyObjectEvents: GmlSeeker.runYyObject(path, out, true);
+					default: GmlSeeker.runSync(path, out, data.main, kind);
+				}
 				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
 				var editCode:EditCode = cast editor;
-				if (next != data) {
+				if (GmlLocals.currentMap != next.locals) {
 					GmlLocals.currentMap = next.locals;
 					editCode.session.bgTokenizer.start(0);
 				}

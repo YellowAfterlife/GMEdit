@@ -14,6 +14,9 @@ enum GmlFileKind {
 	/** GML scripts (possibly with sub-scripts) */
 	Normal;
 	
+	/** GML file in an YY/GMX extension */
+	ExtGML;
+	
 	/** A set of unrelated GML scripts joined together */
 	Multifile;
 	
@@ -51,6 +54,11 @@ enum GmlFileKind {
 	YyShader;
 	
 	YySpriteView;
+	
+	YyExtensionAPI;
+	
+	/** Combined room creation codes */
+	YyRoomCCs;
 	//}
 	
 	/** Find/replace results */
@@ -58,4 +66,7 @@ enum GmlFileKind {
 	
 	/** Snippets editor */
 	Snippets;
+	
+	/** Only used for special-case parsing */
+	LambdaGML;
 }
