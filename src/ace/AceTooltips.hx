@@ -127,7 +127,6 @@ class AceTooltips {
 			} else hide();
 		}
 		content.addEventListener("mouseout", function(ev:Dynamic) {
-			Main.console.log(ev);
 			hide();
 			stop();
 		});

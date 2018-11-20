@@ -1,5 +1,6 @@
 package ui;
 import electron.FileSystem;
+import electron.FileWrap;
 import haxe.io.Path;
 import js.html.Element;
 import Main.document;
@@ -36,7 +37,7 @@ class Theme {
 			if (theme.stylesheets != null) for (rel in theme.stylesheets) {
 				var link = Main.document.createLinkElement();
 				link.rel = "stylesheet";
-				link.href = Path.join([path, name, rel]);
+				link.href = Path.join([dir, rel]);
 				Main.document.head.appendChild(link);
 				elements.push(link);
 			}
@@ -44,6 +45,12 @@ class Theme {
 		if (FileSystem.canSync) {
 			if (FileSystem.existsSync(fullConf)) {
 				proc(FileSystem.readJsonFileSync(fullConf));
+			} else {
+				dir = FileWrap.userPath + "/themes/" + name;
+				fullConf = dir + "/config.json";
+				if (FileSystem.existsSync(fullConf)) {
+					proc(FileSystem.readJsonFileSync(fullConf));
+				}
 			}
 		} else {
 			FileSystem.readJsonFile(fullConf, function(err, data) {
