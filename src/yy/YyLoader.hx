@@ -24,6 +24,10 @@ class YyLoader {
 		var yyProject:YyProject = project.readJsonFileSync(project.name);
 		var resources:Dictionary<YyProjectResource> = new Dictionary();
 		project.yyResources = resources;
+		var resourceGUIDs = new Dictionary<YyGUID>();
+		project.yyResourceGUIDs = resourceGUIDs;
+		//
+		project.yySpriteURLs = new Dictionary();
 		var views:Dictionary<YyView> = new Dictionary();
 		var rootView:YyView = null;
 		for (res in yyProject.resources) {
@@ -109,6 +113,7 @@ class YyLoader {
 							var next = new AceAutoCompleteItem(name, atype);
 							comp.push(next);
 							GmlAPI.gmlAssetComp.set(name, next);
+							resourceGUIDs.set(name, res.Key);
 						};
 					}
 					if (out == null) continue;

@@ -72,6 +72,10 @@ class TreeView {
 	public static var thumbStyle:StyleElement;
 	public static var thumbSheet:CSSStyleSheet;
 	public static var thumbMap:Dictionary<String> = new Dictionary();
+	public static function hasThumb(itemPath:String):Bool {
+		var item = find(true, { path: itemPath });
+		return item != null && item.hasAttribute(attrThumb);
+	}
 	public static function setThumb(itemPath:String, thumbPath:String) {
 		resetThumb(itemPath);
 		thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()

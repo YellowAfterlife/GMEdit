@@ -486,20 +486,27 @@ class GmlSeeker {
 		var parentName = Project.current.yyObjectNames[obj.parentObjectId];
 		if (parentName != null) addObjectChild(parentName, obj.name);
 		//
-		if (Preferences.current.assetThumbs) {
+		if (Preferences.current.assetThumbs && !allSync) {
 			var spriteId = obj.spriteId;
-			if (spriteId != YyGUID.zero) {
+			if (spriteId != YyGUID.zero && !TreeView.hasThumb(orig)) {
 				var pj = Project.current;
-				var res = pj.yyResources[spriteId];
-				if (res != null) {
-					var spritePath = res.Value.resourcePath;
-					pj.readJsonFile(spritePath, function(e, sprite:YySprite) {
-						var frame = sprite.frames[0];
-						if (frame == null) return;
-						var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
-						var frameURL = pj.getImageURL(framePath);
-						if (frameURL != null) TreeView.setThumb(orig, frameURL);
-					});
+				if (pj.yySpriteURLs.exists(spriteId)) {
+					var url = pj.yySpriteURLs[spriteId];
+					if (url != null) TreeView.setThumb(orig, url);
+				} else {
+					var res = pj.yyResources[spriteId];
+					if (res != null) {
+						var spritePath = res.Value.resourcePath;
+						pj.readJsonFile(spritePath, function(e, sprite:YySprite) {
+							if (e != null) return;
+							var frame = sprite.frames[0];
+							if (frame == null) return;
+							var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
+							var frameURL = pj.getImageURL(framePath);
+							pj.yySpriteURLs.set(spriteId, frameURL);
+							if (frameURL != null) TreeView.setThumb(orig, frameURL);
+						});
+					}
 				}
 			}
 		}

@@ -53,7 +53,14 @@ class Project {
 	//
 	public var yyObjectNames:Dictionary<String>;
 	public var yyObjectGUIDs:Dictionary<YyGUID>;
+	/** Project GUID -> resource */
 	public var yyResources:Dictionary<YyProjectResource>;
+	/** Resource name -> GUID */
+	public var yyResourceGUIDs:Dictionary<YyGUID>;
+	/** GUID -> URL */
+	public var yySpriteURLs:Dictionary<String>;
+	/** name -> URL */
+	public var spriteURLs:Dictionary<String> = new Dictionary();
 	/** object name -> [...child names] */
 	public var objectChildren:Dictionary<Array<String>>;
 	//
@@ -249,6 +256,7 @@ class Project {
 				} catch (_:Dynamic) { }
 			} else TreeView.saveOpen();
 			reload_1();
+			ace.AceTooltips.resetCache();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
 			if (state != null) TreeView.element.scrollTop = state.treeviewScrollTop;
 			if (GmlSeeker.itemsLeft == 0) {
@@ -322,6 +330,38 @@ class Project {
 	public function getImageURL(path:String):String {
 		var full = fullPath(path);
 		return FileSystem.existsSync(full) ? ("file:///" + full) : null;
+	}
+	public function getSpriteURL(name:String):String {
+		if (version == GmlVersion.live) return null;
+		if (spriteURLs.exists(name)) {
+			return spriteURLs[name];
+		}
+		var r:String;
+		switch (version) {
+			case v1: r = getImageURL("sprites/images/" + name + "_0.png");
+			case v2: {
+				var g:YyGUID = yyResourceGUIDs[name];
+				if (g != null) {
+					if (yySpriteURLs.exists(g)) {
+						r = yySpriteURLs[g];
+					} else try {
+						var spritePath = yyResources[g].Value.resourcePath;
+						var sprite:YySprite = readJsonFileSync(spritePath);
+						var frame = sprite.frames[0];
+						if (frame != null) {
+							var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
+							r = getImageURL(framePath);
+						} else r = null;
+						yySpriteURLs.set(g, r);
+					} catch (e:Dynamic) {
+						r = null;
+					}
+				} else r = null;
+			};
+			default: r = null;
+		}
+		spriteURLs.set(name, r);
+		return r;
 	}
 	//
 	public function mkdirSync(path:String) {

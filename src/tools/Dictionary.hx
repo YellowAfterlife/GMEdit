@@ -25,7 +25,7 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function destroy():Void { }
 	//
 	public inline function exists(k:String):Bool {
-		return get(k) != null;
+		return Reflect.hasField(this, k);
 	}
 	@:arrayAccess public inline function get(k:String):T {
 		return untyped this[k];

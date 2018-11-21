@@ -15,6 +15,7 @@ import gml.GmlImports;
 import gml.GmlLocals;
 import gml.Project;
 import parsers.GmlExtLambda;
+import tools.Dictionary;
 import ui.Preferences;
 using tools.NativeString;
 
@@ -25,10 +26,15 @@ using tools.NativeString;
 class AceTooltips {
 	static var ttip:AceTooltip;
 	static var text:String = null;
+	static var spriteThumbs:Dictionary<String> = new Dictionary();
+	public static function resetCache():Void {
+		spriteThumbs = new Dictionary();
+	}
 	static function update(session:AceSession, pos:AcePos, token:AceToken) {
 		var t = token.type;
 		var v = token.value;
 		var r:String = null;
+		var z:Bool = false;
 		//
 		var doc:GmlFuncDoc = null;
 		var iter:AceTokenIterator;
@@ -84,6 +90,23 @@ class AceTooltips {
 				var comp = GmlAPI.extCompMap[v];
 				if (comp != null) r = comp.doc;
 			};
+			case "asset.sprite": {
+				r = "sprite:" + v;
+				if (text != r) {
+					text = r;
+					var th:String;
+					if (spriteThumbs.exists(v)) {
+						th = spriteThumbs[v];
+					} else {
+						th = Project.current.getSpriteURL(v);
+						th = '<img src="' + NativeString.escapeProp(th)
+							+ '" style="max-width:64px;max-height:64px">';
+						spriteThumbs.set(v, th);
+					}
+					ttip.setHtml(th);
+				}
+				return;
+			};
 			default: //r = t;
 		}
 		if (doc != null) r = doc.getAcText();
@@ -93,7 +116,7 @@ class AceTooltips {
 		if (r == "") r = null;
 		if (text != r) {
 			text = r;
-			if (r != null) ttip.setText(r);
+			if (r != null && !z) ttip.setText(r);
 		}
 	}
 	public static function init() {
