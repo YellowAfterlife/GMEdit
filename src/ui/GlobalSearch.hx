@@ -45,6 +45,7 @@ using tools.HtmlTools;
 	public static var cbCheckShaders:InputElement;
 	public static var cbCheckExtensions:InputElement;
 	public static var cbExpandLambdas:InputElement;
+	public static var cbRegExp:InputElement;
 	public static var divSearching:DivElement;
 	public static var currentPath:String;
 	//
@@ -293,8 +294,19 @@ using tools.HtmlTools;
 		}
 	}
 	public static function getOptions():GlobalSearchOpt {
+		var find:EitherType<String, RegExp>;
+		if (!cbRegExp.checked) {
+			find = fdFind.value;
+		} else try {
+			var flags = "g";
+			if (!cbMatchCase.checked) flags += "i";
+			find = new RegExp(fdFind.value, flags);
+		} catch (x:Dynamic) {
+			window.alert("Error compiling the regular expression: " + x);
+			return null;
+		}
 		return {
-			find: fdFind.value,
+			find: find,
 			findFilter: null,
 			replaceBy: null,
 			previewReplace: false,
@@ -321,7 +333,7 @@ using tools.HtmlTools;
 	}
 	public static function findAuto(?opt:GlobalSearchOpt) {
 		if (opt == null) opt = getOptions();
-		runAuto(opt);
+		if (opt != null) runAuto(opt);
 	}
 	public static function replaceAuto(?opt:GlobalSearchOpt) {
 		if (opt == null) opt = getOptions();
@@ -330,6 +342,7 @@ using tools.HtmlTools;
 	}
 	public static function previewAuto(?opt:GlobalSearchOpt) {
 		if (opt == null) opt = getOptions();
+		if (opt == null) return;
 		opt.replaceBy = fdReplace.value;
 		opt.previewReplace = true;
 		runAuto(opt);
@@ -357,6 +370,7 @@ using tools.HtmlTools;
 		cbCheckShaders = element.querySelectorAuto('#global-search-check-shaders');
 		cbCheckExtensions = element.querySelectorAuto('#global-search-check-extensions');
 		cbExpandLambdas = element.querySelectorAuto('#global-search-expand-lambdas');
+		cbRegExp = element.querySelectorAuto('#global-search-regexp');
 		//}
 		fdFind.onkeydown = function(e:KeyboardEvent) {
 			switch (e.keyCode) {
