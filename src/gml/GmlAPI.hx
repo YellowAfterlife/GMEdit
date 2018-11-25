@@ -285,7 +285,7 @@ class GmlAPI {
 					if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
 						var name = rx.matched(1);
 						var code = rx.matched(0);
-						raw = (new EReg('^$name.+$$', "gm")).map(raw, function(r1) {
+						raw = (new EReg('^$name\\b.+$$', "gm")).map(raw, function(r1) {
 							return code;
 						});
 					});
