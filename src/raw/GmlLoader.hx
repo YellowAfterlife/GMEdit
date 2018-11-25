@@ -12,6 +12,7 @@ import ui.treeview.TreeView;
 class GmlLoader {
 	public static function run(project:Project) {
 		var pfx = Std.is(project, yy.YyZip) ? "" : project.dir;
+		var ths = [];
 		function loadrec(out:Element, dirFull:String, dirRel:String):Void {
 			var rd = [], rf = [];
 			for (pair in project.readdirSync(dirFull)) {
@@ -25,6 +26,10 @@ class GmlLoader {
 				} else {
 					var ifull = Path.join([pfx, full]);
 					rf.push(TreeView.makeItem(item, rel, ifull, "file"));
+					if (ui.Preferences.current.assetThumbs)
+					switch (Path.extension(full).toLowerCase()) {
+						case "png", "jpeg", "gif": ths.push({ path: ifull, th: full });
+					}
 				}
 			}
 			for (el in rd) out.appendChild(el);
@@ -32,5 +37,8 @@ class GmlLoader {
 		}
 		TreeView.clear();
 		loadrec(TreeView.element, "", "");
+		for (pair in ths) {
+			TreeView.setThumb(pair.path, project.fullPath(pair.th));
+		}
 	}
 }
