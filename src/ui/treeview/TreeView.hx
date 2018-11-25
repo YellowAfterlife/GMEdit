@@ -146,9 +146,11 @@ class TreeView {
 		return r;
 	}
 	//
-	static function handleItemClick(e:MouseEvent) {
-		e.preventDefault();
-		var el:Element = cast e.target;
+	public static function handleItemClick(e:MouseEvent, ?el:Element) {
+		if (e != null) {
+			e.preventDefault();
+			if (el == null) el = cast e.target;
+		} else if (el == null) return;
 		if (!el.classList.contains("item")) el = el.parentElement;
 		var openAs = el.getAttribute(attrOpenAs);
 		var nav = openAs != null ? { kind: GmlFileKind.createByName(openAs) } : null;

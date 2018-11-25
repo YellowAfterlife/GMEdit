@@ -22,6 +22,7 @@ import Main.document;
 import Main.moduleArgs;
 import tools.HtmlTools;
 import tools.NativeString;
+import ui.ChromeTabs;
 using tools.PathTools;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
@@ -195,9 +196,16 @@ class Project {
 	}
 	public function close() {
 		TreeView.saveOpen();
+		var tabPaths:Array<String> = [];
+		for (_tab in ChromeTabs.element.querySelectorAll(".chrome-tab")) try {
+			var tab:ChromeTab = cast _tab;
+			var path = tab.gmlFile.path;
+			if (path != null) tabPaths.push(path);
+		} catch (_:Dynamic) { }
 		var data:ProjectState = {
 			treeviewScrollTop: TreeView.element.scrollTop,
 			treeviewOpenNodes: TreeView.openPaths,
+			tabPaths: tabPaths,
 		};
 		window.localStorage.setItem("project:" + path, Json.stringify(data));
 		window.localStorage.setItem("@project:" + path, "" + Date.now().getTime());
@@ -258,7 +266,20 @@ class Project {
 			reload_1();
 			ace.AceTooltips.resetCache();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
-			if (state != null) TreeView.element.scrollTop = state.treeviewScrollTop;
+			if (state != null) {
+				TreeView.element.scrollTop = state.treeviewScrollTop;
+				if (first) {
+					var tabPaths = state.tabPaths;
+					if (tabPaths != null
+						&& ChromeTabs.element.querySelectorAll(".chrome-tab").length == 0
+					) for (path in tabPaths) try {
+						var el = TreeView.find(true, { path: path });
+						if (el != null) TreeView.handleItemClick(null, el);
+					} catch (x:Dynamic) {
+						Main.console.error("Error recovering " + path + ":", x);
+					}
+				}
+			}
 			if (GmlSeeker.itemsLeft == 0) {
 				nameNode.innerText = displayName;
 			} else nameNode.innerText = "Indexing...";
@@ -402,6 +423,7 @@ typedef ProjectSearcher = String->String->String->Null<String>;
 typedef ProjectState = {
 	treeviewScrollTop:Int,
 	treeviewOpenNodes:Array<String>,
+	tabPaths:Array<String>,
 }
 typedef ProjectDirInfo = {
 	fileName:String,
