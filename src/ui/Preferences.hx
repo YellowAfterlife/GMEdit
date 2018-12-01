@@ -467,6 +467,7 @@ class Preferences {
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,
 			tabSize: 4,
+			tabSpaces: true,
 			eventOrder: 1,
 			tooltipDelay: 350,
 			tooltipKind: Custom,
@@ -498,6 +499,10 @@ class Preferences {
 			obj.setOption_raw(key, val);
 			if (key == "tabSize" && val != current.tabSize) {
 				current.tabSize = Std.parseInt(val);
+				save();
+			}
+			if (key == "useSoftTabs" && val != current.tabSpaces) {
+				current.tabSpaces = val;
 				save();
 			}
 			var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
@@ -554,6 +559,7 @@ typedef PrefData = {
 	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,
 	tabSize:Int,
+	tabSpaces:Bool,
 	eventOrder:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
 	tooltipKind:PrefTooltipKind,
