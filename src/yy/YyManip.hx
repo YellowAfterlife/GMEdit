@@ -150,7 +150,7 @@ class YyManip {
 			GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
 			GmlAPI.gmlLookupText += q.name + "\n";
 			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name, Normal);
-			gml.file.GmlFile.open(q.name, q.npath);
+			gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
 		} else d.pj.reload();
 		//
 		return true;
