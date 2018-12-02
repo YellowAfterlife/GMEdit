@@ -243,8 +243,9 @@ class Project {
 		//
 		#if !lwedit
 		var path = moduleArgs["open"];
-		//if (path == null || path == "") path = window.localStorage.getItem("autoload");
-		open(path != null ? path : "");
+		if (path != null) {
+			open(path.ptNoBS());
+		} else open("");
 		#else
 		current = new YyZip("", "", []);
 		#end
