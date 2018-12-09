@@ -167,7 +167,16 @@ class TreeViewMenus {
 		items.openCustomCSS.visible = true;
 		items.showAPI.visible = Project.current.version == v2 && el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
 		TreeViewItemMenus.update(true);
-		dirMenu.popupAsync(ev);
+		if (FileSystem.canSync) {
+			var fe = el.querySelector('.header');
+			fe.classList.add("show-in-treeview-flash");
+			window.setTimeout(function() {
+				dirMenu.popupSync(ev);
+				window.setTimeout(function() {
+					fe.classList.remove("show-in-treeview-flash");
+				}, 0);
+			}, 0);
+		} else dirMenu.popupAsync(ev);
 	}
 	public static function showItemMenu(el:Element, ev:MouseEvent) {
 		var z:Bool;
@@ -185,7 +194,15 @@ class TreeViewMenus {
 		items.objectInfo.visible = kind == "object";
 		items.findReferences.enabled = ~/^\w+$/g.match(el.getAttribute(TreeView.attrIdent));
 		TreeViewItemMenus.update(false);
-		itemMenu.popupAsync(ev);
+		if (FileSystem.canSync) {
+			el.classList.add("show-in-treeview-flash");
+			window.setTimeout(function() {
+				itemMenu.popupSync(ev);
+				window.setTimeout(function() {
+					el.classList.remove("show-in-treeview-flash");
+				}, 0);
+			}, 0);
+		} else itemMenu.popupAsync(ev);
 	}
 	//
 	static function initIconMenu() {

@@ -32,6 +32,10 @@ using tools.HtmlTools;
 	private inline function popupAuto(?opt:MenuPopupOptions):Void {
 		popup(Electron != null ? Electron.remote.getCurrentWindow() : null, opt);
 	}
+	inline function popupSync(e:MouseEvent):Void {
+		MenuFallback.contextEvent = e;
+		popupAuto({});
+	}
 	inline function popupAsync(e:MouseEvent):Void {
 		MenuFallback.contextEvent = e;
 		popupAuto({ async: true });
