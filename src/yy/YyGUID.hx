@@ -12,7 +12,7 @@ abstract YyGUID(String) to String {
 			if (j == 8 || j == 12 || j == 16 || j == 20) {
 				result += "-";
 			}
-			result += "0123456789ABCDEF".charAt(Math.floor(Math.random() * 16));
+			result += "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
 		}
 		return result;
 	}
