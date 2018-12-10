@@ -43,10 +43,7 @@ class GmlSeeker {
 	private static function runNext():Void {
 		if (--itemsLeft <= 0) {
 			GmlAPI.gmlComp.autoSort();
-			if (Project.current != null) {
-				Project.nameNode.innerText = Project.current.displayName;
-				if (Project.current.hasGMLive) ui.GMLive.updateAll();
-			}
+			if (Project.current != null) Project.current.finishedIndexing();
 			Main.aceEditor.session.bgTokenizer.start(0);
 		}
 	}
@@ -334,7 +331,7 @@ class GmlSeeker {
 						p = q.pos;
 						flags = SetOp | Comma | Semico | Ident | ComBlock;
 						s = find(flags);
-						if (s.startsWith("/*")) { // name/*...*/
+						if (s != null && s.startsWith("/*")) { // name/*...*/
 							mt = localType.exec(s);
 							if (mt != null) {
 								locals.type.set(name, mt[1]);

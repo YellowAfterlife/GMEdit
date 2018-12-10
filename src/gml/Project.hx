@@ -210,6 +210,22 @@ class Project {
 		window.localStorage.setItem("project:" + path, Json.stringify(data));
 		window.localStorage.setItem("@project:" + path, "" + Date.now().getTime());
 	}
+	public var firstLoadTabPaths:Array<String> = null;
+	public function finishedIndexing() {
+		nameNode.innerText = displayName;
+		if (current.hasGMLive) ui.GMLive.updateAll();
+		// try restoring tabs:
+		var tabPaths = firstLoadTabPaths;
+		if (tabPaths != null) {
+			firstLoadTabPaths = null;
+			for (path in tabPaths) try {
+				var el = TreeView.find(true, { path: path });
+				if (el != null) TreeView.handleItemClick(null, el);
+			} catch (x:Dynamic) {
+				Main.console.error("Error recovering " + path + ":", x);
+			}
+		}
+	}
 	//
 	public static function init() {
 		//
@@ -270,15 +286,7 @@ class Project {
 			if (state != null) {
 				TreeView.element.scrollTop = state.treeviewScrollTop;
 				if (first) {
-					var tabPaths = state.tabPaths;
-					if (tabPaths != null
-						&& ChromeTabs.element.querySelectorAll(".chrome-tab").length == 0
-					) for (path in tabPaths) try {
-						var el = TreeView.find(true, { path: path });
-						if (el != null) TreeView.handleItemClick(null, el);
-					} catch (x:Dynamic) {
-						Main.console.error("Error recovering " + path + ":", x);
-					}
+					firstLoadTabPaths = state.tabPaths;
 				}
 			}
 			if (GmlSeeker.itemsLeft == 0) {
