@@ -216,8 +216,13 @@ class ChromeTabs {
 			LiveWeb.saveState();
 		});
 		//
+		if (document.hasFocus()) document.documentElement.setAttribute("hasFocus", "");
 		window.addEventListener("focus", function(_) {
+			document.documentElement.setAttribute("hasFocus", "");
 			if (GmlFile.current != null) GmlFile.current.checkChanges();
+		});
+		window.addEventListener("blur", function(_) {
+			document.documentElement.removeAttribute("hasFocus");
 		});
 		//
 		return impl;
