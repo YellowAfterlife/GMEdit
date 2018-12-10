@@ -105,6 +105,9 @@ class GmlAPI {
 	/** enum name -> enum, for highlighting */
 	public static var gmlEnums:Dictionary<GmlEnum> = new Dictionary();
 	
+	/** auto-complete items for enums themselves (for v:type) */
+	public static var gmlEnumTypeComp:AceAutoCompleteItems = [];
+	
 	/** macro name -> macro */
 	public static var gmlMacros:Dictionary<GmlMacro> = new Dictionary();
 	
@@ -151,6 +154,7 @@ class GmlAPI {
 		gmlKind = new Dictionary();
 		gmlComp.clear();
 		gmlEnums = new Dictionary();
+		gmlEnumTypeComp.clear();
 		gmlAssetIDs = new Dictionary();
 		gmlAssetComp = new Dictionary();
 		gmlGlobalFieldMap = new Dictionary();

@@ -1,7 +1,10 @@
 package ace;
 import ace.AceWrap;
 import ace.extern.*;
+import ace.extern.AceCommandManager;
 import gml.GmlAPI;
+import gml.GmlImports;
+import gml.GmlScopes;
 import gml.file.GmlFile;
 import parsers.GmlKeycode;
 import parsers.GmlEvent;
@@ -10,7 +13,8 @@ import tools.Dictionary;
 using tools.NativeString;
 
 /**
- * ...
+ * Defines what auto-completion items show up and where.
+ * This is slowly getting out of hand.
  * @author YellowAfterlife
  */
 @:keep class AceGmlCompletion implements AceAutoCompleter {
@@ -23,6 +27,8 @@ using tools.NativeString;
 	public static var localCompleter:AceGmlCompletion;
 	public static var importCompleter:AceGmlCompletion;
 	public static var namespaceCompleter:AceGmlCompletion;
+	public static var namespaceTypeCompleter:AceGmlCompletion;
+	public static var enumTypeCompleter:AceGmlCompletion;
 	public static var lambdaCompleter:AceGmlCompletion;
 	public static var localTypeCompleter:AceGmlCompletion;
 	public static var enumCompleter:AceGmlCompletion;
@@ -46,6 +52,8 @@ using tools.NativeString;
 	public static inline var dotKindEnum = 3;
 	public static inline var dotKindLocalType = 4;
 	//
+	public var colKind:AceGmlCompletionColKind = None;
+	//
 	public function new(
 		items:AceAutoCompleteItems, filters:Array<String>, not:Bool,
 		modeFilter:AceSession->Bool
@@ -57,7 +65,35 @@ using tools.NativeString;
 		this.tokenFilterNot = not;
 		this.modeFilter = modeFilter;
 	}
-	//private static var tkBlank:AceToken = 
+	
+	static function checkColon(iter:AceTokenIterator) {
+		// `var [some]:type`:
+		var token = iter.stepBackward();
+		if (token != null && token.type == "text") token = iter.stepBackward();
+		if (token == null) return false;
+		switch (token.type) {
+			case "local", "sublocal", "localfield": {};
+			default: return false;
+		}
+		// `[var] some:type`:
+		token = iter.stepBackward();
+		if (token != null && token.type == "text") token = iter.stepBackward();
+		if (token == null) return false;
+		switch (token.value) {
+			case "var", ",", "#args": {};
+			case "(": {
+				token = iter.stepBackward();
+				if (token != null && token.type == "text") token = iter.stepBackward();
+				if (token == null) return false;
+				switch (token.type) {
+					case "scriptname", "preproc.lambda": {};
+					default: return false;
+				}
+			};
+			default: return false;
+		}
+		return true;
+	}
 	// interface AceAutoCompleter
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
@@ -72,16 +108,35 @@ using tools.NativeString;
 		if (editor.completer != null) {
 			editor.completer.exactMatch = ui.Preferences.current.compExactMatch;
 		}
-		var tk = session.getTokenAtPos(pos);
-		if (dotKind != dotKindNone && tk.type == "punctuation.operator" && tk.value.contains(".")) {
+		var tk:AceToken = session.getTokenAtPos(pos);
+		if (colKind != None) {
+			if (tk.type == "punctuation.operator" && tk.value.contains(":")) do { // once
+				var iter = new AceTokenIterator(session, pos.row, pos.column);
+				if (checkColon(iter)) switch (colKind) {
+					case Namespaces: {
+						var scope = GmlScopes.get(pos.row);
+						if (scope == null) break;
+						var imp = GmlImports.currentMap[scope];
+						if (imp == null) break;
+						callback(null, imp.namespaceComp);
+					};
+					case Enums: callback(null, GmlAPI.gmlEnumTypeComp);
+					default: continue;
+				}
+				return;
+			} while (false); // once
+			proc(false);
+			return;
+		}
+		else if (dotKind != dotKindNone && tk.type == "punctuation.operator" && tk.value.contains(".")) {
 			var iter = new AceTokenIterator(session, pos.row, pos.column);
 			tk = iter.stepBackward();
 			switch (dotKind) {
 				case dotKindNamespace: {
 					if (tk.type == "namespace") {
-						var scope = gml.GmlScopes.get(pos.row);
+						var scope = GmlScopes.get(pos.row);
 						if (scope != null) {
-							var imp = gml.GmlImports.currentMap[scope];
+							var imp = GmlImports.currentMap[scope];
 							if (imp != null) {
 								var ns = imp.namespaces[tk.value];
 								if (ns != null) {
@@ -95,9 +150,9 @@ using tools.NativeString;
 				};
 				case dotKindLocalType: {
 					if (tk.type == "local") {
-						var scope = gml.GmlScopes.get(pos.row);
+						var scope = GmlScopes.get(pos.row);
 						if (scope != null) {
-							var imp = gml.GmlImports.currentMap[scope];
+							var imp = GmlImports.currentMap[scope];
 							if (imp != null) {
 								var t = imp.localTypes[tk.value];
 								if (t != null) {
@@ -125,9 +180,9 @@ using tools.NativeString;
 					if (tk.type == "enum") {
 						var name = tk.value;
 						//
-						var scope = gml.GmlScopes.get(pos.row);
+						var scope = GmlScopes.get(pos.row);
 						if (scope != null) {
-							var imp = gml.GmlImports.currentMap[scope];
+							var imp = GmlImports.currentMap[scope];
 							if (imp != null) {
 								var s = imp.longenEnum[name];
 								if (s != null) name = s;
@@ -196,6 +251,14 @@ using tools.NativeString;
 		namespaceCompleter.minLength = 0;
 		namespaceCompleter.dotKind = dotKindNamespace;
 		//
+		namespaceTypeCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		namespaceTypeCompleter.minLength = 0;
+		namespaceTypeCompleter.colKind = AceGmlCompletionColKind.Namespaces;
+		//
+		enumTypeCompleter = new AceGmlCompletion([], excl, true, gmlf);
+		enumTypeCompleter.minLength = 0;
+		enumTypeCompleter.colKind = AceGmlCompletionColKind.Enums;
+		//
 		localTypeCompleter = new AceGmlCompletion([], excl, true, gmlf);
 		localTypeCompleter.minLength = 0;
 		localTypeCompleter.dotKind = dotKindLocalType;
@@ -225,6 +288,8 @@ using tools.NativeString;
 				globalCompleter,
 				instCompleter,
 				namespaceCompleter,
+				namespaceTypeCompleter,
+				enumTypeCompleter,
 				localTypeCompleter,
 				enumCompleter,
 				glslCompleter,
@@ -233,10 +298,15 @@ using tools.NativeString;
 			],
 			enableSnippets: true,
 		});
+		inline function openAC() {
+			if (editor.completer == null) {
+				editor.completer = new AceAutocomplete();
+			}
+			editor.completer.autoInsert = false;
+			editor.completer.showPopup(editor);
+		}
 		// automatically open completion when typing things like "global.|"
-		editor.commands.on("afterExec", function(e:Dynamic) {
-			if (e.args != "." || e.command.name != "insertstring") return;
-			//if (editor.completer != null && editor.completer.activated) return;
+		function onDot(e:AfterExecArgs) {
 			var lead = editor.session.selection.lead;
 			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 			var token = iter.stepBackward();
@@ -250,15 +320,31 @@ using tools.NativeString;
 				};
 				default: token.value == "global";
 			};
-			if (open) {
-				if (editor.completer == null) {
-					editor.completer = new AceAutocomplete();
+			if (open) openAC();
+		}
+		function onColon(e:AfterExecArgs) {
+			var lead = editor.session.selection.lead;
+			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
+			if (checkColon(iter)) openAC();
+		}
+		editor.commands.on("afterExec", function(e:AfterExecArgs) {
+			if (e.command.name == "insertstring") {
+				switch (e.args) {
+					case ".": onDot(e);
+					case ":": onColon(e);
 				}
-				editor.completer.autoInsert = false;
-				editor.completer.showPopup(editor);
 			}
 		});
 	}
+}
+typedef AfterExecArgs = {
+	args:String,
+	command:AceCommand,
+}
+enum abstract AceGmlCompletionColKind(Int) {
+	var None = 0;
+	var Namespaces = 1;
+	var Enums = 2;
 }
 
 private abstract AceGmlCompletion_noItems(AceAutoCompleteItems) to AceAutoCompleteItems {

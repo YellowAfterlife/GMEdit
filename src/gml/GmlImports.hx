@@ -34,6 +34,8 @@ class GmlImports {
 	/** namespace name -> namespace data */
 	public var namespaces:Dictionary<GmlNamespace> = new Dictionary();
 	
+	public var namespaceComp:AceAutoCompleteItems = [];
+	
 	/** "some" -> { pre: "scr_some", ... } */
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	
@@ -64,6 +66,7 @@ class GmlImports {
 			if (ns == null) {
 				ns = new GmlNamespace();
 				this.kind.set(space, "namespace");
+				namespaceComp.push(new AceAutoCompleteItem(space, "namespace"));
 				namespaces.set(space, ns);
 				var enLong:String;
 				if (this.kind[space] == "enum") {

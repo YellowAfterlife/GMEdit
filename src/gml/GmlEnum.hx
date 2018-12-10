@@ -10,6 +10,7 @@ import gml.GmlAPI;
  */
 class GmlEnum extends GmlStruct {
 	//
+	public var typeComp:AceAutoCompleteItem;
 	public var names:Array<String> = [];
 	public var items:Dictionary<Bool> = new Dictionary();
 	public var compList:AceAutoCompleteItems = [];
@@ -20,6 +21,7 @@ class GmlEnum extends GmlStruct {
 	//
 	public function new(name:String, orig:String) {
 		super(name, orig);
+		typeComp = new AceAutoCompleteItem(name, "enum");
 	}
 	//
 }

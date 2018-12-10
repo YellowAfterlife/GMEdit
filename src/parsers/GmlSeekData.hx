@@ -122,11 +122,13 @@ class GmlSeekData {
 			for (comp in e.compList) GmlAPI.gmlComp.remove(comp);
 			GmlAPI.gmlKind.remove(e.name);
 			GmlAPI.gmlEnums.remove(e.name);
+			GmlAPI.gmlEnumTypeComp.remove(e.typeComp);
 		}
 		for (e in next.enumList) {
 			for (comp in e.compList) GmlAPI.gmlComp.push(comp);
 			GmlAPI.gmlEnums.set(e.name, e);
 			GmlAPI.gmlKind.set(e.name, "enum");
+			GmlAPI.gmlEnumTypeComp.push(e.typeComp);
 		}
 		
 		// macros:
