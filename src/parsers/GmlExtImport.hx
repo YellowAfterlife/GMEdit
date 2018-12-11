@@ -43,7 +43,10 @@ class GmlExtImport {
 		var short:String;
 		var check:Dictionary<String>->AceAutoCompleteItems->Void;
 		var errors = "";
-		if (path.endsWith("*")) { // #import pkg.*
+		if (path == "_") {
+			if (alias != null) imp.ensureNamespace(alias);
+		}
+		else if (path.endsWith("*")) { // #import pkg.*
 			flat = path.substring(0, path.length - 1).replaceExt(rxPeriod, "_");
 			flen = flat.length;
 			function check(

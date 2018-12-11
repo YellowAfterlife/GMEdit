@@ -47,46 +47,48 @@ class GmlImports {
 		//
 	}
 	//
+	public function ensureNamespace(space:String) {
+		var ns = namespaces[space];
+		if (ns != null) return ns;
+		ns = new GmlNamespace();
+		this.kind.set(space, "namespace");
+		namespaceComp.push(new AceAutoCompleteItem(space, "namespace"));
+		namespaces.set(space, ns);
+		var enLong:String, en:GmlEnum;
+		if (this.kind[space] == "enum") {
+			enLong = longen[space];
+			en = GmlAPI.gmlEnums[enLong];
+		} else {
+			enLong = space;
+			en = GmlAPI.gmlEnums[space];
+		}
+		if (en != null) {
+			ns.isStruct = true;
+			for (comp in en.compList) ns.comp.push(enumCompToNsComp(comp));
+			for (name in en.names) {
+				var full = enLong + "." + name;
+				ns.longen.set(name, full);
+				ns.shorten.set(full, name);
+				ns.kind.set(name, "enumfield");
+			}
+		}
+		return ns;
+	}
+	inline function enumCompToNsComp(comp:AceAutoCompleteItem):AceAutoCompleteItem {
+		return new AceAutoCompleteItem(
+			comp.name.substring(comp.name.indexOf(".") + 1),
+			comp.meta, comp.name + " = " + comp.doc
+		);
+	}
 	public function add(
 		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc, ?space:String
 	) {
 		var isGlobal = long.startsWith("global.");
 		//
-		inline function enumCompToNsComp(comp:AceAutoCompleteItem):AceAutoCompleteItem {
-			return new AceAutoCompleteItem(
-				comp.name.substring(comp.name.indexOf(".") + 1),
-				comp.meta, comp.name + " = " + comp.doc
-			);
-		}
-		//
 		var ns:GmlNamespace, en:GmlEnum;
 		var nc:AceAutoCompleteItem;
 		if (space != null) {
-			ns = namespaces[space];
-			if (ns == null) {
-				ns = new GmlNamespace();
-				this.kind.set(space, "namespace");
-				namespaceComp.push(new AceAutoCompleteItem(space, "namespace"));
-				namespaces.set(space, ns);
-				var enLong:String;
-				if (this.kind[space] == "enum") {
-					enLong = longen[space];
-					en = GmlAPI.gmlEnums[enLong];
-				} else {
-					enLong = space;
-					en = GmlAPI.gmlEnums[space];
-				}
-				if (en != null) {
-					ns.isStruct = true;
-					for (comp in en.compList) ns.comp.push(enumCompToNsComp(comp));
-					for (name in en.names) {
-						var full = enLong + "." + name;
-						ns.longen.set(name, full);
-						ns.shorten.set(full, name);
-						ns.kind.set(name, "enumfield");
-					}
-				}
-			}
+			ns = ensureNamespace(space);
 			ns.kind.set(short, kind);
 			if (!isGlobal) {
 				ns.shorten.set(long, short);
