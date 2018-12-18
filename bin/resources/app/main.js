@@ -20,7 +20,7 @@ function createWindow () {
 		backgroundColor: "#889EC5",
 		title: "GMEdit",
 		show: false,
-		icon: __dirname + '/icon.ico'
+		icon: __dirname + '/icon.png'
 	})
 	mainWindow.once('ready-to-show', () => mainWindow.show());
 
