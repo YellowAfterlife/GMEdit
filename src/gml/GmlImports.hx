@@ -102,6 +102,8 @@ class GmlImports {
 			ns = ensureNamespace(space);
 			ns.kind.set(short, kind);
 			if (!isGlobal) {
+				var c = ns.longen[short];
+				if (c != null) ns.shorten.remove(c);
 				ns.shorten.set(long, short);
 				ns.longen.set(short, long);
 			}
@@ -139,6 +141,8 @@ class GmlImports {
 					}
 					if (ns != null) for (name in en.names) {
 						var full = long + "." + name;
+						var c = ns.longen[name];
+						if (c != null) ns.shorten.remove(c);
 						ns.longen.set(name, full);
 						ns.shorten.set(full, name);
 					}
@@ -146,6 +150,9 @@ class GmlImports {
 				longenEnum.set(short, long);
 			}
 		}
+		//
+		var c = longen[short];
+		if (c != null) shorten.remove(c);
 		longen.set(short, long);
 		//
 		if (doc != null) docs.set(short, doc);
