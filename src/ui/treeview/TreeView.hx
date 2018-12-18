@@ -32,6 +32,7 @@ class TreeView {
 	public static inline var attrRel:String = "data-rel-path";
 	public static inline var attrKind:String = "data-kind";
 	public static inline var attrThumb:String = "data-thumb";
+	public static inline var attrThumbDelay:String = "data-thumb-delay";
 	public static inline var attrOpenAs:String = "data-open-as";
 	/** Resource GUID (GMS2 only) */
 	public static inline var attrYYID:String = "data-yyid";
@@ -78,11 +79,18 @@ class TreeView {
 	}
 	public static function setThumb(itemPath:String, thumbPath:String) {
 		resetThumb(itemPath);
-		thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
+		var addRule:Bool;
+		var item = find(true, { path: itemPath });
+		if (item != null) {
+			item.setAttribute(attrThumb, thumbPath);
+			if (item.scrollHeight == 0) {
+				item.setAttribute(attrThumbDelay, "");
+				addRule = false;
+			} else addRule = true;
+		} else addRule = true;
+		if (addRule) thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
 			+ '"]::before { background-image: url("' + thumbPath.escapeProp()
 			+ '"); }', thumbSheet.cssRules.length);
-		var item = find(true, { path: itemPath });
-		if (item != null) item.setAttribute(attrThumb, thumbPath);
 		thumbMap.set(itemPath, thumbPath);
 	}
 	public static function resetThumb(itemPath:String) {
@@ -94,7 +102,10 @@ class TreeView {
 			if (rules[i].cssText.indexOf(prefix) >= 0) sheet.deleteRule(i);
 		}
 		var item = find(true, { path: itemPath });
-		if (item != null) item.removeAttribute(attrThumb);
+		if (item != null) {
+			item.removeAttribute(attrThumb);
+			item.removeAttribute(attrThumbDelay);
+		}
 		thumbMap.remove(itemPath);
 	}
 	//
@@ -107,7 +118,18 @@ class TreeView {
 			TreeViewMenus.openCombined();
 		} else {
 			var cl = el.classList;
-			if (cl.contains(clOpen)) cl.remove(clOpen); else cl.add(clOpen);
+			if (!cl.contains(clOpen)) {
+				 cl.add(clOpen);
+				 for (_e in el.querySelectorAll('.item[$attrThumbDelay]')) {
+					 var item:TreeViewItem = cast _e;
+					 if (item.scrollHeight > 0) {
+						 item.removeAttribute(attrThumbDelay);
+						 thumbSheet.insertRule('.treeview .item[$attrPath="' + item.getAttribute(attrPath).escapeProp()
+							+ '"]::before { background-image: url("' + item.getAttribute(attrThumb).escapeProp()
+							+ '"); }', thumbSheet.cssRules.length);
+					 }
+				 }
+			} else cl.remove(clOpen);
 		}
 	}
 	static function handleDirCtxMenu(e:MouseEvent) {
