@@ -409,13 +409,36 @@ class GmlSeeker {
 						en.fieldLookup.set(s, { path: orig, sub: sub, row: row, col: 0, });
 						s = find(Comma | SetOp | Cub1);
 						if (s == "=") {
+							//
+							var doc = null;
 							var vp = q.pos;
+							while (vp < q.length) {
+								var c = q.get(vp++);
+								switch (c) {
+									case "\r".code, "\n".code: break;
+									case "/".code if (q.get(vp) == "/".code): {
+										var docStart = ++vp;
+										while (vp < q.length) {
+											c = q.get(vp);
+											if (c == "\r".code || c == "\n".code) break;
+											vp++;
+										}
+										doc = q.substring(docStart, vp).trimBoth();
+									};
+								}
+							}
+							//
+							vp = q.pos;
 							s = find(Comma | Cub1);
 							var val = parseConst(q.substring(vp, q.pos - 1).trimBoth());
 							if (val != null) {
 								acf.doc = ac.doc = "" + val;
 								nextVal = val + 1;
 							} else nextVal = null;
+							if (doc != null) {
+								acf.doc = acf.doc != null ? acf.doc + "\t" + doc : doc;
+								ac.doc = acf.doc;
+							}
 						} else if (nextVal != null) {
 							acf.doc = ac.doc = "" + (nextVal++);
 						}
