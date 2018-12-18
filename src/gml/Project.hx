@@ -406,6 +406,23 @@ class Project {
 			FileSystem.rmdirSync(full);
 		}
 	}
+	public function readdir(path:String, fn:Error->Array<ProjectDirInfo>->Void):Void {
+		FileSystem.readdir(path, function(e, rels) {
+			var found:Array<ProjectDirInfo>;
+			if (rels != null) {
+				var full = fullPath(path);
+				found = [];
+				for (rel in rels) {
+					var itemFull = Path.join([full, rel]);
+					found.push({
+						fileName: rel,
+						isDirectory: FileSystem.statSync(itemFull).isDirectory()
+					});
+				}
+			} else found = null;
+			fn(e, found);
+		});
+	}
 	public function readdirSync(path:String):Array<ProjectDirInfo> {
 		var full = fullPath(path);
 		var out:Array<ProjectDirInfo> = [];

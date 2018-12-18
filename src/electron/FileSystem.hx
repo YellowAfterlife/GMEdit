@@ -55,6 +55,7 @@ import haxe.extern.EitherType;
 		if (!existsSync(path)) mkdirSync(path);
 	}
 	//
+	public static function readdir(path:String, cb:Error->Array<String>->Void):Void;
 	public static function readdirSync(path:String, ?options:Dynamic):Array<String>;
 	//
 	@:native("copyFileSync") private static function copyFileSyncImpl(path:String, dest:String):Void;
