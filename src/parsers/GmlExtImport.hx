@@ -59,7 +59,7 @@ class GmlExtImport {
 				kind:Dictionary<String>, comp:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
 			) {
 				kind.forField(function(fd) {
-					if (fd.startsWith(flat)) {
+					if (fd.startsWith(flat) && fd != flat) {
 						var comps = comp.filter(function(comp) {
 							return comp.name == fd;
 						});
