@@ -24,8 +24,13 @@ using tools.NativeArray;
 class GmlExtImport {
 	private static var rxImport = new RegExp((
 		"^#import[ \t]+(?:"
-			+ "([\\w.]+\\*?)" // com.pkg[.*]
-			+ "(?:[ \t]+(?:in|as)[ \t]+(\\w+)(?:\\.(\\w+))?)?" // in name
+			+ "([\\w.]+\\*?)" // com.pkg[.*] -> $1
+			+ "(?:"
+				+ "[ \t]+(?:in|as)"
+				+ "[ \t]+(\\w+)" // alias -> $2
+				+ "(?:([:\\.])(\\w+)?)?" // .name|:name -> $3,$4
+			+ ")?"
+			+ "[ \t]*(?:[\r\n]|$)" // EOL
 		//+ "|([\\w]\\(.*\\))[ \t]+(?:in|as)[ \t]+([\\w]\\(.*\\))" // func(...) in func(...)
 	+ ")"), "");
 	private static var rxImportFile = new RegExp("^#import[ \t]+(\"[^\"]*\"|'[^']*')", "");
@@ -38,6 +43,7 @@ class GmlExtImport {
 	static function parseRules(imp:GmlImports, mt:Array<String>) {
 		var path = mt[1];
 		var alias = mt[2];
+		var nsOnly = mt[3] == ":";
 		var flat:String;
 		var flen:Int;
 		var short:String;
@@ -58,7 +64,7 @@ class GmlExtImport {
 							return comp.name == fd;
 						});
 						short = fd.substring(flen);
-						imp.add(fd, short, kind[fd], comps[0], docs[fd], alias);
+						imp.add(fd, short, kind[fd], comps[0], docs[fd], alias, nsOnly);
 					}
 				});
 			}
@@ -85,9 +91,9 @@ class GmlExtImport {
 				var p = path.lastIndexOf(".");
 				if (p < 0) return;
 				alias = flat.substring(p + 1);
-			} else if (mt[3] != null) {
+			} else if (mt[4] != null) {
 				ns = alias;
-				alias = mt[3];
+				alias = mt[4];
 			}
 			function check(
 				kind:Dictionary<String>, comp:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
@@ -97,7 +103,7 @@ class GmlExtImport {
 				var comps = comp.filter(function(comp) {
 					return comp.name == flat;
 				});
-				imp.add(flat, alias, fdk, comps[0], docs[flat], ns);
+				imp.add(flat, alias, fdk, comps[0], docs[flat], ns, nsOnly);
 				return true;
 			}
 			if(!check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc)
@@ -242,7 +248,7 @@ class GmlExtImport {
 				// ident -> type -> namespace -> method name:
 				var self = q.substring(selfPos, q.pos);
 				var selfType = imp.localTypes[self];
-				if (selfType == null) {
+				if (selfType == null) { // array_create(Enum.sizeof) -> Enum()
 					if (ident != "array_create") break;
 					var selfEnumName = self;
 					var selfEnum = GmlAPI.gmlEnums[selfEnumName];

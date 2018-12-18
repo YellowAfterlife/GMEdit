@@ -80,8 +80,19 @@ class GmlImports {
 			comp.meta, comp.name + " = " + comp.doc
 		);
 	}
+	/**
+	 * 
+	 * @param	long 	(e.g. "buffer_create")
+	 * @param	short	(e.g. "makebuf")
+	 * @param	kind 	Ace kind (e.g. "function")
+	 * @param	comp 	Ace auto-completion item
+	 * @param	doc  	Function doc (if available)
+	 * @param	space	Namespace name
+	 * @param	spaceOnly	Whether to only shorten for namespace, not globally
+	 */
 	public function add(
-		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc, ?space:String
+		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc,
+		?space:String, ?spaceOnly:Bool
 	) {
 		var isGlobal = long.startsWith("global.");
 		//
@@ -104,6 +115,7 @@ class GmlImports {
 			}
 			if (doc != null) ns.docs.set(short, doc);
 			short = space + "." + short;
+			if (spaceOnly) return;
 		} else {
 			this.kind.set(short, kind);
 		}
