@@ -223,7 +223,13 @@ class GmlSeeker {
 									doc.pre = main + "(";
 								} else doc.post += " " + s;
 							}
+							mainComp.doc = doc.getAcText();
+							check = false;
 						}
+					}
+					if (check) {
+						s = s.substring(3).trimBoth();
+						if (mainComp != null) mainComp.doc = mainComp.doc.nzcct("\n", s);
 					}
 				}
 			}

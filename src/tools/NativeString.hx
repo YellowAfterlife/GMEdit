@@ -81,6 +81,11 @@ class NativeString {
 		return s.substring(0, i) + sub + s.substring(i);
 	}
 	
+	public static function nzcct(s:String, sep:String, add:String):String {
+		if (s == null || s == "") return add;
+		return s + sep + add;
+	}
+	
 	private static var yyJson_1 = new RegExp('([ \t]+)(".*": )\\[\\]', 'g');
 	private static var yyJson_2 = new RegExp('\\n', 'g');
 	/** Stringifes a value while matching output format to that of GMS2 */
