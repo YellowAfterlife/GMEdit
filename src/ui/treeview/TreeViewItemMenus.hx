@@ -74,6 +74,7 @@ class TreeViewItemMenus {
 		var ntv:Element;
 		if (q.mkdir) {
 			ntv = TreeView.makeDir(name, nrel + "/");
+			ntv.classList.add(TreeView.clOpen);
 		} else {
 			var nfull = q.pj.fullPath(q.npath);
 			ntv = TreeView.makeItem(name, nrel, nfull, 'script');
