@@ -8,6 +8,6 @@
   },
   "author": "YellowAfterlife",
   "devDependencies": {
-    "electron": "~1.8.2-beta5"
+    "electron": "~4.0.0-beta.10"
   }
 }
