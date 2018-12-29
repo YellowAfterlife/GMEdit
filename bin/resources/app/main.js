@@ -19,10 +19,10 @@ function createWindow () {
 		frame: false,
 		backgroundColor: "#889EC5",
 		title: "GMEdit",
-		show: false,
+		//show: false,
 		icon: __dirname + '/icon.png'
 	})
-	mainWindow.once('ready-to-show', () => mainWindow.show());
+	//mainWindow.once('ready-to-show', () => mainWindow.show());
 
 	// and load the index.html of the app.
 	let index_url = url.format({
