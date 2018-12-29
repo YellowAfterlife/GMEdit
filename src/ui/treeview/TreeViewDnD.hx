@@ -42,7 +42,7 @@ class TreeViewDnD {
 	static var rxCanDrag = new RegExp(rsCanDrop + ".+", "i");
 	static function hasType(e:DragEvent, t:String):Bool {
 		var dtTypes = e.dataTransfer.types;
-		return untyped (dtTypes.indexOf)
+		return untyped (dtTypes:Dynamic).indexOf
 			? dtTypes.indexOf(t) >= 0
 			: dtTypes.contains(t);
 	}
