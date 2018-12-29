@@ -316,6 +316,7 @@ using tools.NativeString;
 			]),
 			rpush("preproc.import", "#import\\b", "import"),
 			rxRule("preproc.args", ~/#args\b/),
+			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
 		]; //}

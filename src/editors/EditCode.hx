@@ -117,6 +117,7 @@ class EditCode extends Editor {
 				src = GmlExtCoroutines.pre(src);
 				src = GmlExtLambda.pre(this, src);
 				src = GmlExtArgs.pre(src);
+				src = GmlExtHyper.pre(src);
 				file.code = src;
 			};
 			case Multifile: {
@@ -255,6 +256,8 @@ class EditCode extends Editor {
 		//
 		out = GmlExtArgs.post(out);
 		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
+		//
+		out = GmlExtHyper.post(out);
 		//
 		var canCoroutines = file.kind != ExtGML;
 		if (file.kind != ExtGML && Preferences.current.argsFormat != "") {

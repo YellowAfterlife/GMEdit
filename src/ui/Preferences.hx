@@ -272,6 +272,12 @@ class Preferences {
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23lambda-magic");
 		//
+		el = addCheckbox(out, "Use GMHyper magic", current.hyperMagic, function(z) {
+			current.hyperMagic = z;
+			save();
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GMHyper-in-GMEdit");
+		//
 		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
 		el = addDropdown(out, "Show GMLive badges", optGMLive[current.showGMLive], optGMLive, function(v) {
@@ -459,6 +465,7 @@ class Preferences {
 			allowImportUndo: false,
 			coroutineMagic: true,
 			lambdaMagic: true,
+			hyperMagic: true,
 			fileSessionTime: 7,
 			projectSessionTime: 14,
 			assetThumbs: true,
@@ -554,6 +561,7 @@ typedef PrefData = {
 	allowImportUndo:Bool,
 	coroutineMagic:Bool,
 	lambdaMagic:Bool,
+	hyperMagic:Bool,
 	assetThumbs:Bool,
 	showGMLive:PrefGMLive,
 	fileChangeAction:PrefFileChangeAction,
