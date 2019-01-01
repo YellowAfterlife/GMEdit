@@ -46,14 +46,16 @@ class RecentProjects {
 				};
 			}
 			var pj = TreeView.makeProject(name, path);
-			if (FileSystem.existsSync(path)) {
-				var th = path + ".png";
-				if (FileSystem.existsSync(th)) {
-					TreeView.setThumb(path, "file:///" + th);
+			FileSystem.access(path, FileSystemAccess.Exists, function(e) {
+				if (e == null) {
+					var th = path + ".png";
+					FileSystem.access(th, FileSystemAccess.Exists, function(e) {
+						if (e == null) TreeView.setThumb(path, "file:///" + th);
+					});
+				} else {
+					pj.setAttribute("data-missing", "true");
 				}
-			} else {
-				pj.setAttribute("data-missing", "true");
-			}
+			});
 			el.appendChild(pj);
 		}
 	}

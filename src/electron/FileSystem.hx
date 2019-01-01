@@ -43,6 +43,8 @@ import haxe.extern.EitherType;
 	//
 	public static function writeFileSync(path:String, data:Dynamic, ?options:Dynamic):Void;
 	//
+	public static function access(path:String, modes:FileSystemAccess, fn:Null<Error>->Void):Void;
+	//
 	public static function existsSync(path:String):Bool;
 	//
 	public static function renameSync(old:String, next:String):Void;
@@ -69,6 +71,12 @@ import haxe.extern.EitherType;
 	public static inline function getMTimeMs(path:String):Float {
 		return statSync(path).mtimeMs;
 	}
+}
+enum abstract FileSystemAccess(Int) from Int to Int {
+	var Exec = 1;
+	var Read = 4;
+	var Write = 2;
+	var Exists = 0;
 }
 @:keep class FileSystemBrowser {
 	static function readFile(path:String, enc:String, callback:Error->Dynamic->Void):Void {
