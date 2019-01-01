@@ -8,6 +8,7 @@ import yy.*;
 import gml.*;
 import gml.file.GmlFileKind;
 import haxe.io.Path;
+import js.Error;
 import js.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
@@ -24,24 +25,39 @@ using tools.PathTools;
  * @author YellowAfterlife
  */
 class GmlSeeker {
+	public static inline var maxAtOnce = 8;
 	public static var itemsLeft:Int = 0;
+	static var itemQueue:Array<GmlSeekerItem> = [];
 	public static function start() {
 		itemsLeft = 0;
+		itemQueue.resize(0);
+	}
+	private static function runItem(item:GmlSeekerItem) {
+		itemsLeft++;
+		FileWrap.readTextFile(item.path, function ready(err:Error, text:String) {
+			if (err != null) {
+				Main.console.error("Can't index ", item.path, err);
+			} else try {
+				if (runSync(item.path, text, item.main, item.kind)) {
+					runNext();
+				}
+			} catch (err:Dynamic) {
+				Main.console.error("Can't index ", item.path, err);
+			}
+		});
 	}
 	public static function run(path:String, main:String, kind:GmlFileKind) {
-		itemsLeft++;
-		path = path.ptNoBS();
-		function next(err:js.Error, text:String) {
-			if (err != null) {
-				Main.console.error("Can't index ", path, err);
-			} else if (runSync(path, text, main, kind)) {
-				runNext();
-			}
-		}
-		FileWrap.readTextFile(path, next);
+		var item:GmlSeekerItem = {path:path.ptNoBS(), main:main, kind:kind};
+		if (itemsLeft < maxAtOnce) {
+			runItem(item);
+		} else itemQueue.push(item);
 	}
 	private static function runNext():Void {
-		if (--itemsLeft <= 0) {
+		var left = --itemsLeft;
+		var item = itemQueue.shift();
+		if (item != null) {
+			runItem(item);
+		} else if (left <= 0) {
 			GmlAPI.gmlComp.autoSort();
 			if (Project.current != null) Project.current.finishedIndexing();
 			Main.aceEditor.session.bgTokenizer.start(0);
@@ -634,6 +650,13 @@ class GmlSeeker {
 		return true;
 	} // runSync
 }
+
+typedef GmlSeekerItem = {
+	path:String,
+	main:String,
+	kind:GmlFileKind,
+}
+
 @:build(tools.AutoEnum.build("bit"))
 @:enum abstract GmlSeekerFlags(Int) from Int to Int {
 	var Ident;
