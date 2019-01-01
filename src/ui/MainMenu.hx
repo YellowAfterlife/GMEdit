@@ -84,7 +84,12 @@ class MainMenu {
 		});
 		menu.append(exportItem);
 		menu.append(new MenuItem({ label: "Close project",
-			click: function() gml.Project.open("")
+			click: function() {
+				gml.Project.open("");
+				for (q in Main.document.querySelectorAll(".chrome-tab .chrome-tab-close")) {
+					(cast q:js.html.Element).click();
+				}
+			}
 		}));
 		if (Electron != null) {
 			menu.append(new MenuItem({ type: Sep }));
