@@ -92,6 +92,10 @@ class GmxLoader {
 		loadtop("shader");
 		loadtop("timeline");
 		loadtop("object");
+		for (rooms in gmx.findAll("rooms")) {
+			var rm = gmx.find("room");
+			if (rm != null) project.gmxFirstRoomName = rm.text;
+		}
 		for (th in ths) {
 			TreeView.setThumb(th.path, project.getSpriteURL(th.name), th.item);
 		}

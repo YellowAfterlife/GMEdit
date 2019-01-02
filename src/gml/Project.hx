@@ -6,6 +6,7 @@ import haxe.Json;
 import haxe.io.Path;
 import js.Boot;
 import js.Error;
+import js.RegExp;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -41,6 +42,7 @@ class Project {
 	public static var rxName:EReg = ~/^.+[\/\\](\w+)\.\w+$/g;
 	//
 	public var version:GmlVersion = GmlVersion.v1;
+	
 	/** full path */
 	public var path:String;
 	/** no directory */
@@ -51,8 +53,13 @@ class Project {
 	public var dir:String;
 	/** whether this project is stored in memory rather than on disk */
 	public var isVirtual:Bool;
-	//
+	
+	/** for room speed detection */
+	public var gmxFirstRoomName:String = null;
+	
+	/** Object GUID -> object name */
 	public var yyObjectNames:Dictionary<String>;
+	/** Object name -> object GUID */
 	public var yyObjectGUIDs:Dictionary<YyGUID>;
 	/** Project GUID -> resource */
 	public var yyResources:Dictionary<YyProjectResource>;
@@ -60,8 +67,10 @@ class Project {
 	public var yyResourceGUIDs:Dictionary<YyGUID>;
 	/** GUID -> URL */
 	public var yySpriteURLs:Dictionary<String>;
+	
 	/** name -> URL */
 	public var spriteURLs:Dictionary<String> = new Dictionary();
+	
 	/** object name -> [...child names] */
 	public var objectChildren:Dictionary<Array<String>>;
 	//
@@ -71,6 +80,38 @@ class Project {
 	public var lambdaMap:Dictionary<Bool> = new Dictionary();
 	public var lambdaExt:String = null;
 	public var lambdaGml:String = null;
+	
+	private var frameRate:Null<Int> = null;
+	public function getFrameRate():Int {
+		// Going to let this be synchronous as otherwise we might
+		// fetch it several times in parallel while restoring tabs.
+		var r = frameRate;
+		if (r == null) switch (version) {
+			case v1 if (gmxFirstRoomName != null): {
+				try {
+					var txt = readTextFileSync("rooms/" + gmxFirstRoomName + ".room.gmx");
+					var rx = new RegExp("<speed>(\\d+)</speed>");
+					var mt = rx.exec(txt);
+					r = mt != null ? Std.parseInt(mt[1]) : 30;
+				} catch (_:Dynamic) {
+					r = 30;
+				}
+			};
+			case v2: {
+				try {
+					var txt = readTextFileSync("options/main/inherited/options_main.inherited.yy");
+					var rx = new RegExp('"option_game_speed": (\\d+)');
+					var mt = rx.exec(txt);
+					r = mt != null ? Std.parseInt(mt[1]) : 60;
+				} catch (_:Dynamic) {
+					r = 60;
+				}
+			};
+			default: r = 30;
+		}
+		frameRate = r;
+		return r;
+	}
 	//
 	#if !lwedit
 	private function new_procSingle() {

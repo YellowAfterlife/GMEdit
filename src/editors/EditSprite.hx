@@ -161,7 +161,7 @@ class EditSprite extends Editor {
 			if (d.playbackLegacy) {
 				info.appendChild(document.createTextNode("x"));
 				fps.style.width = "2em";
-				fps.value = "60";
+				fps.value = "" + Project.current.getFrameRate();
 				fps.title = "Target framerate";
 				info.appendChild(fps);
 			} else {
