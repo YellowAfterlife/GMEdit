@@ -55,6 +55,11 @@ class SfGmx {
 		for (q in children) if (q.name == name) return q.text;
 		return null;
 	}
+	/** Finds the first element with given name and returns it's text, otherwise returns null */
+	public function findFloat(name:String):Float {
+		for (q in children) if (q.name == name) return q.textAsFloat;
+		return null;
+	}
 	/** Finds all elements with given name */
 	public function findAll(name:String):Array<SfGmx> {
 		var r = [];

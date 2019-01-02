@@ -31,6 +31,7 @@ class GmxLoader {
 		var rxName = rxAssetName;
 		TreeView.clear();
 		var tv = TreeView.element;
+		var ths = [];
 		function loadrec(gmx:SfGmx, out:Element, one:String, path:String) {
 			if (gmx.name == one) {
 				var path = gmx.text;
@@ -38,20 +39,23 @@ class GmxLoader {
 				var full = project.fullPath(path);
 				var _main:String = "";
 				var kind:GmlFileKind = Normal;
+				var index = true;
 				switch (one) {
 					case "script": _main = name;
 					case "shader": { };
 					default: {
 						full += '.$one.gmx';
 						switch (one) {
+							case "sprite": kind = GmlFileKind.GmxSpriteView; index = false;
 							case "object": kind = GmlFileKind.GmxObjectEvents;
 							case "timeline": kind = GmlFileKind.GmxTimelineMoments;
 						}
 					};
 				}
 				GmlAPI.gmlLookupText += name + "\n";
-				GmlSeeker.run(full, _main, kind);
+				if (index) GmlSeeker.run(full, _main, kind);
 				var item = TreeView.makeItem(name, path, full, one);
+				if (one == "sprite") ths.push({path:full, item:item, name:name});
 				out.appendChild(item);
 				if (one == "shader") {
 					kind = gmx.get("type").indexOf("HLSL") >= 0
@@ -83,10 +87,14 @@ class GmxLoader {
 			}
 		}
 		//
+		loadtop("sprite");
 		loadtop("script");
 		loadtop("shader");
 		loadtop("timeline");
 		loadtop("object");
+		for (th in ths) {
+			TreeView.setThumb(th.path, project.getSpriteURL(th.name), th.item);
+		}
 		//
 		function loadinc(gmx:SfGmx, out:Element, path:String) {
 			if (gmx.name == "datafile") {

@@ -530,27 +530,10 @@ class GmlSeeker {
 		//
 		if (Preferences.current.assetThumbs && !allSync) {
 			var spriteId = obj.spriteId;
-			if (spriteId != YyGUID.zero && !TreeView.hasThumb(orig)) {
-				var pj = Project.current;
-				if (pj.yySpriteURLs.exists(spriteId)) {
-					var url = pj.yySpriteURLs[spriteId];
-					if (url != null) TreeView.setThumb(orig, url);
-				} else {
-					var res = pj.yyResources[spriteId];
-					if (res != null) {
-						var spritePath = res.Value.resourcePath;
-						pj.readJsonFile(spritePath, function(e, sprite:YySprite) {
-							if (e != null) return;
-							var frame = sprite.frames[0];
-							if (frame == null) return;
-							var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
-							var frameURL = pj.getImageURL(framePath);
-							pj.yySpriteURLs.set(spriteId, frameURL);
-							if (frameURL != null) TreeView.setThumb(orig, frameURL);
-						});
-					}
-				}
-			}
+			if (spriteId != YyGUID.zero) {
+				var res = Project.current.yyResources[spriteId];
+				TreeView.setThumbSprite(orig, res != null ? res.Value.resourceName : null);
+			} else TreeView.resetThumb(orig);
 		}
 		//
 		var out = new GmlSeekData();

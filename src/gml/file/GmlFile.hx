@@ -126,7 +126,7 @@ class GmlFile {
 			case GLSL: ShaderHighlight.nextKind = GLSL; modePath = "ace/mode/shader";
 			case HLSL: ShaderHighlight.nextKind = HLSL; modePath = "ace/mode/shader";
 			case JavaScript: modePath = "ace/mode/javascript";
-			case YySpriteView: editor = new EditSprite(this);
+			case YySpriteView, GmxSpriteView: editor = new EditSprite(this);
 			default: modePath = "ace/mode/gml";
 		}
 		if (modePath != null) editor = new EditCode(this, modePath);
@@ -136,7 +136,9 @@ class GmlFile {
 	public function close():Void {
 		#if !lwedit
 		editor.stateSave();
+		editor.destroy();
 		#else
+		editor.destroy();
 		GmlSeekData.remove(path);
 		#end
 	}

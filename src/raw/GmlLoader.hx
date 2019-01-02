@@ -25,10 +25,13 @@ class GmlLoader {
 					rd.push(nd);
 				} else {
 					var ifull = Path.join([pfx, full]);
-					rf.push(TreeView.makeItem(item, rel, ifull, "file"));
+					var item = TreeView.makeItem(item, rel, ifull, "file");
+					rf.push(item);
 					if (ui.Preferences.current.assetThumbs)
 					switch (Path.extension(full).toLowerCase()) {
-						case "png", "jpeg", "gif": ths.push({ path: ifull, th: full });
+						case "png", "jpeg", "gif": {
+							ths.push({ path: ifull, th: full, item: item });
+						};
 					}
 				}
 			}
@@ -38,7 +41,7 @@ class GmlLoader {
 		TreeView.clear();
 		loadrec(TreeView.element, "", "");
 		for (pair in ths) {
-			TreeView.setThumb(pair.path, project.fullPath(pair.th));
+			TreeView.setThumb(pair.path, project.fullPath(pair.th), pair.item);
 		}
 	}
 }

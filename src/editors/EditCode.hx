@@ -188,6 +188,7 @@ class EditCode extends Editor {
 				file.code = GmxProject.getMacroCode(gmx, notes, file.kind == GmxConfigMacros);
 			};
 			//
+			case GmxSpriteView: if (data == null) data = src;
 			case YySpriteView: {
 				if (data == null) data = Json.parse(src);
 			};

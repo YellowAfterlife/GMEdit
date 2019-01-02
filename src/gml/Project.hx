@@ -357,10 +357,18 @@ class Project {
 			FileSystem.renameSync(fullPath(prev), fullPath(next));
 		}
 	}
+	/**
+	 * Gets a URL for given relative path that could be used in CSS.
+	 * This can be either a file:/// or a data URL
+	 */
 	public function getImageURL(path:String):String {
 		var full = fullPath(path);
 		return FileSystem.existsSync(full) ? ("file:///" + full) : null;
 	}
+	/**
+	 * Like getImageURL but takes a sprite name and gets you a URL for it's first frame
+	 * Generally used for thumbnails.
+	 */
 	public function getSpriteURL(name:String):String {
 		if (version == GmlVersion.live) return null;
 		if (spriteURLs.exists(name)) {
@@ -392,6 +400,55 @@ class Project {
 		}
 		spriteURLs.set(name, r);
 		return r;
+	}
+	public function getSpriteURLasync(name:String, fn:String->Void):Void {
+		if (version == GmlVersion.live) return;
+		function soon_1(fn:String->Void, s:String):Void {
+			window.setTimeout(function() fn(s));
+		}
+		inline function soon(s:String):Void {
+			spriteURLs.set(name, s);
+			soon_1(fn, s);
+		}
+		inline function now(s:String):Void {
+			spriteURLs.set(name, s); fn(s);
+		}
+		if (spriteURLs.exists(name)) {
+			soon(spriteURLs[name]);
+			return;
+		}
+		switch (version) {
+			case v1: {
+				var full = fullPath("sprites/images/" + name + "_0.png");
+				FileSystem.access(full, FileSystemAccess.Exists, function(e) {
+					full = e == null ? "file:///" + full : null;
+					now(full);
+				});
+			}
+			case v2: {
+				var g:YyGUID = yyResourceGUIDs[name];
+				if (g != null) {
+					if (yySpriteURLs.exists(g)) {
+						soon(yySpriteURLs[g]);
+					} else {
+						var spritePath = yyResources[g].Value.resourcePath;
+						readJsonFile(spritePath, function(e, sprite:YySprite) {
+							var r:String;
+							if (e == null) {
+								var frame = sprite.frames[0];
+								if (frame != null) {
+									var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
+									r = getImageURL(framePath);
+								} else r = null;
+							} else r = null;
+							yySpriteURLs.set(g, r);
+							now(r);
+						});
+					}
+				} else soon(null);
+			};
+			default: soon(null);
+		}
 	}
 	//
 	public function mkdirSync(path:String) {

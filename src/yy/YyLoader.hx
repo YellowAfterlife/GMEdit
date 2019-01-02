@@ -11,6 +11,7 @@ import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
 import tools.Dictionary;
+import tools.ExecQueue;
 import tools.NativeString;
 import ui.treeview.TreeView;
 
@@ -30,10 +31,12 @@ class YyLoader {
 		project.yySpriteURLs = new Dictionary();
 		var views:Dictionary<YyView> = new Dictionary();
 		var rootView:YyView = null;
+		var rxName = Project.rxName;
 		for (res in yyProject.resources) {
 			var key = res.Key;
 			resources.set(key, res);
 			var val = res.Value;
+			val.resourceName = rxName.replace(val.resourcePath, "$1");
 			if (val.resourceType == "GMFolder") {
 				var view:YyView = project.readJsonFileSync(val.resourcePath);
 				if (view.isDefaultView) rootView = view;
@@ -47,7 +50,6 @@ class YyLoader {
 		GmlAPI.extClear();
 		var comp = GmlAPI.gmlComp;
 		//
-		var rxName = Project.rxName;
 		var objectNames = new Dictionary<String>();
 		var objectGUIDs = new Dictionary<YyGUID>();
 		project.yyObjectNames = objectNames;
@@ -101,7 +103,7 @@ class YyLoader {
 					out.appendChild(dir);
 				}
 				else {
-					name = rxName.replace(val.resourcePath, "$1");
+					name = val.resourceName;
 					rel = path + name;
 					var full = project.fullPath(val.resourcePath);
 					switch (type) {
@@ -220,6 +222,9 @@ class YyLoader {
 					var kind = type.substring(2).toLowerCase(); // GMScript -> script
 					var item = TreeView.makeItem(name, rel, full, kind);
 					item.setAttribute(TreeView.attrYYID, res.Key);
+					switch (type) {
+						case "GMSprite": TreeView.setThumbSprite(full, name, item);
+					}
 					out.appendChild(item);
 				}
 			}

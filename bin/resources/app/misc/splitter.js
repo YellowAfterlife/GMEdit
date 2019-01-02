@@ -2,11 +2,23 @@
 	var sp = document.getElementById("splitter-td");
 	var eq = document.getElementById("tree-td") || document.getElementById("editor-td");
 	var gq = document.getElementById("main");
+	var pq = eq.parentElement;
 	var ls = window.localStorage;
 	var lsk = "splitter-width";
 	var lw = !!document.getElementById("game");
 	if (lw) lsk = "lw-" + lsk;
-	if (ls) eq.style.width = Math.max(0|(ls.getItem(lsk) || (lw ? "520" : "200")), 50) + "px";
+	function syncMain(nw) {
+		var mw = (window.innerWidth - (nw || parseFloat(eq.style.width) + 5));
+		pq.style.setProperty("--main-width", mw + "px");
+	}
+	function sync(nw) {
+		eq.style.width = nw + "px";
+		eq.style.flex = "0 0 " + nw + "px";
+		eq.parentElement.style.setProperty("--side-width", (nw + 5) + "px");
+		syncMain(nw);
+	}
+	if (ls) sync(Math.max(0|(ls.getItem(lsk) || (lw ? "520" : "200")), 50));
+	syncMain();
 	eq.style.setProperty("flex-grow", "inherit")
 	var sp_mousemove, sp_mouseup, sp_x, sp_y;
 	sp_mousemove = function(e) {
@@ -14,7 +26,7 @@
 		var ny = e.pageY, dy = ny - sp_y; sp_y = ny;
 		var nw = parseFloat(eq.style.width) + dx * (eq.parentElement.children[0] == eq ? 1 : -1);
 		if (nw < 50) nw = 50;
-		eq.style.width = nw + "px";
+		sync(nw);
 		if (window.$hxClasses) $hxClasses["ui.ChromeTabs"].impl.layoutTabs()
 	};
 	sp_mouseup = function(e) {
@@ -29,5 +41,8 @@
 		document.addEventListener("mouseup", sp_mouseup);
 		gq.classList.add("resizing");
 		e.preventDefault();
+	});
+	window.addEventListener("resize", function(e) {
+		syncMain();
 	});
 })();

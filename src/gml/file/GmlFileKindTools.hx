@@ -35,6 +35,7 @@ class GmlFileKindTools {
 					case "project": GmxProjectMacros;
 					case "config": GmxConfigMacros;
 					case "timeline": GmxTimelineMoments;
+					case "sprite": GmxSpriteView;
 					default: Extern;
 				}
 			};

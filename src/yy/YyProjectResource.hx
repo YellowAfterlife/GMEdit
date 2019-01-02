@@ -12,4 +12,6 @@ typedef YyProjectResourceValue = {
 	id:YyGUID,
 	resourcePath:String,
 	resourceType:String,
+	// non-standard:
+	?resourceName:String,
 };

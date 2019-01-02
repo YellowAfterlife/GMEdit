@@ -33,6 +33,7 @@ class TreeView {
 	public static inline var attrKind:String = "data-kind";
 	public static inline var attrThumb:String = "data-thumb";
 	public static inline var attrThumbDelay:String = "data-thumb-delay";
+	public static inline var attrThumbSprite:String = "data-thumb-sprite";
 	public static inline var attrOpenAs:String = "data-open-as";
 	/** Resource GUID (GMS2 only) */
 	public static inline var attrYYID:String = "data-yyid";
@@ -77,10 +78,21 @@ class TreeView {
 		var item = find(true, { path: itemPath });
 		return item != null && item.hasAttribute(attrThumb);
 	}
-	public static function setThumb(itemPath:String, thumbPath:String) {
-		resetThumb(itemPath);
+	static function addThumbRule(itemPath:String, thumbPath:String) {
+		thumbSheet.insertRule('.treeview .item[$attrPath="${itemPath.escapeProp()}"]::before {'
+			+ 'background-image: url("${thumbPath.escapeProp()}");'
+			+ '}', thumbSheet.cssRules.length);
+	}
+	public static function setThumb(itemPath:String, thumbPath:String, ?item:Element) {
+		if (itemPath == null) {
+			if (item != null) {
+				itemPath = item.getAttribute(attrPath);
+			} else return;
+		} else if (item == null) item = find(true, { path: itemPath });
+		resetThumb(itemPath, item);
+		if (thumbPath == null) return;
+		//
 		var addRule:Bool;
-		var item = find(true, { path: itemPath });
 		if (item != null) {
 			item.setAttribute(attrThumb, thumbPath);
 			if (item.scrollHeight == 0) {
@@ -88,12 +100,42 @@ class TreeView {
 				addRule = false;
 			} else addRule = true;
 		} else addRule = true;
-		if (addRule) thumbSheet.insertRule('.treeview .item[$attrPath="' + itemPath.escapeProp()
-			+ '"]::before { background-image: url("' + thumbPath.escapeProp()
-			+ '"); }', thumbSheet.cssRules.length);
+		//
+		if (addRule) addThumbRule(itemPath, thumbPath);
 		thumbMap.set(itemPath, thumbPath);
 	}
-	public static function resetThumb(itemPath:String) {
+	public static function setThumbSprite(itemPath:String, spriteName:String, ?item:Element) {
+		if (itemPath == null) {
+			if (item != null) {
+				itemPath = item.getAttribute(attrPath);
+			} else return;
+		} else if (item == null) item = find(true, { path: itemPath });
+		resetThumb(itemPath, item);
+		if (spriteName == null) return;
+		//
+		var addRule:Bool;
+		if (item != null) {
+			if (item.scrollHeight == 0) {
+				item.setAttribute(attrThumbSprite, spriteName);
+				item.setAttribute(attrThumbDelay, "");
+				addRule = false;
+			} else addRule = true;
+		} else addRule = true;
+		//
+		if (addRule) Project.current.getSpriteURLasync(spriteName, function(thumbPath:String) {
+			resetThumb(itemPath, item);
+			if (thumbPath == null) return;
+			addThumbRule(itemPath, thumbPath);
+			thumbMap.set(itemPath, thumbPath);
+			if (item != null) item.setAttribute(attrThumb, thumbPath);
+		});
+	}
+	public static function resetThumb(itemPath:String, ?item:Element) {
+		if (itemPath == null) {
+			if (item != null) {
+				itemPath = item.getAttribute(attrPath);
+			} else return;
+		} else if (item == null) item = find(true, { path: itemPath });
 		var prefix = '.treeview .item[$attrPath="' + itemPath.escapeProp() + '"]::before {';
 		var sheet = thumbSheet;
 		var rules = sheet.cssRules;
@@ -101,14 +143,35 @@ class TreeView {
 		while (--i >= 0) {
 			if (rules[i].cssText.indexOf(prefix) >= 0) sheet.deleteRule(i);
 		}
-		var item = find(true, { path: itemPath });
 		if (item != null) {
 			item.removeAttribute(attrThumb);
 			item.removeAttribute(attrThumbDelay);
+			item.removeAttribute(attrThumbSprite);
 		}
 		thumbMap.remove(itemPath);
 	}
 	//
+	static function loadDelayedThumbs(el:Element) {
+		for (_e in el.querySelectorAll('.item[$attrThumbDelay]')) {
+			var item:TreeViewItem = cast _e;
+			if (item.scrollHeight > 0) {
+				item.removeAttribute(attrThumbDelay);
+				if (item.hasAttribute(attrThumbSprite)) {
+					var spriteName = item.getAttribute(attrThumbSprite);
+					item.removeAttribute(attrThumbSprite);
+					Project.current.getSpriteURLasync(spriteName, function(thumbPath:String) {
+						if (thumbPath == null) return;
+						var itemPath = item.getAttribute(attrPath);
+						addThumbRule(itemPath, thumbPath);
+						thumbMap.set(itemPath, thumbPath);
+						item.setAttribute(attrThumb, thumbPath);
+					});
+				} else {
+					addThumbRule(item.getAttribute(attrPath), item.getAttribute(attrThumb));
+				}
+			}
+		}
+	}
 	static function handleDirClick(e:MouseEvent) {
 		e.preventDefault();
 		var el:Element = cast e.target;
@@ -120,15 +183,7 @@ class TreeView {
 			var cl = el.classList;
 			if (!cl.contains(clOpen)) {
 				 cl.add(clOpen);
-				 for (_e in el.querySelectorAll('.item[$attrThumbDelay]')) {
-					 var item:TreeViewItem = cast _e;
-					 if (item.scrollHeight > 0) {
-						 item.removeAttribute(attrThumbDelay);
-						 thumbSheet.insertRule('.treeview .item[$attrPath="' + item.getAttribute(attrPath).escapeProp()
-							+ '"]::before { background-image: url("' + item.getAttribute(attrThumb).escapeProp()
-							+ '"); }', thumbSheet.cssRules.length);
-					 }
-				 }
+				 loadDelayedThumbs(el);
 			} else cl.remove(clOpen);
 		}
 	}
@@ -243,7 +298,10 @@ class TreeView {
 		for (path in paths) {
 			var epath = tools.NativeString.escapeProp(path);
 			var dir = el.querySelector('.dir[$attrRel="$epath"]');
-			if (dir != null) dir.classList.add(clOpen);
+			if (dir != null) {
+				dir.classList.add(clOpen);
+				loadDelayedThumbs(dir);
+			}
 		}
 	}
 	//

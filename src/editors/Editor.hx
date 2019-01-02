@@ -20,6 +20,10 @@ class Editor {
 	public function new(file:GmlFile) {
 		this.file = file;
 	}
+	/** [x] clicked -> status checks -> stateSave -> destroy */
+	public function destroy():Void {
+		//
+	}
 	
 	/** new -> load -> ready */
 	public function ready():Void {

@@ -53,6 +53,7 @@ enum GmlFileKind {
 	/** Special type, results in opening vertex+fragment shaders as two tabs */
 	YyShader;
 	
+	GmxSpriteView;
 	YySpriteView;
 	
 	YyExtensionAPI;
