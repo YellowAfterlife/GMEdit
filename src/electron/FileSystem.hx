@@ -21,12 +21,22 @@ import haxe.extern.EitherType;
 	}
 	public static inline function readJsonFile<T:{}>(path:String, callback:Error->T->Void):Void {
 		readFile(path, "utf8", function(e:Error, d:Dynamic) {
-			callback(e, d != null ? Json.parse(d) : null);
+			if (d != null) try {
+				d = Json.parse(d);
+			} catch (x:Dynamic) {
+				d = null; e = x;
+			}
+			callback(e, d);
 		});
 	}
 	public static inline function readGmxFile(path:String, callback:Error->SfGmx->Void):Void {
 		readFile(path, "utf8", function(e:Error, d:Dynamic) {
-			callback(e, d != null ? SfGmx.parse(d) : null);
+			if (d != null) try {
+				d = SfGmx.parse(d);
+			} catch (x:Dynamic) {
+				d = null; e = x;
+			}
+			callback(e, d);
 		});
 	}
 	//
