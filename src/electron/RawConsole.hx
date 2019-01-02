@@ -8,4 +8,5 @@ import haxe.extern.Rest;
 extern class RawConsole {
 	public function log(values:Rest<Any>):Void;
 	public function error(values:Rest<Any>):Void;
+	public function warn(values:Rest<Any>):Void;
 }
