@@ -46,7 +46,6 @@ class GmlExtLambda {
 	public static var rxlfPrefix:RegExp = new RegExp("^__lf_");
 	public static var rxlcPrefix:RegExp = new RegExp("^__lc_");
 	public static var rxPrefix:RegExp = new RegExp("^__(?:lf|lc)_");
-	public static var rxlfInit:RegExp = new RegExp('(^#define $lfPrefix\r?\n)([\\s\\S]*?)($|\\s*\r?\n#define)');
 	
 	/** An ode to strange workarounds */
 	public static function prefixSwap(name:String):String {
@@ -672,15 +671,15 @@ class GmlExtLambda {
 					return s0 + scr + s1;
 				});
 				if (add) {
-					if (gml != "") gml += "\n";
 					var scrName = s;
 					if (useVars) {
 						scrName = s.replaceExt(rxlfPrefix, lcPrefix);
-						gml = gml.replaceExt(rxlfInit, function(_, s0, init, s1) {
-							return '$s0$init\n$s = asset_get_index("$scrName");$s1';
-						});
+						var p = gml.indexOf('\n#define', gml.indexOf('#define $lfPrefix') + 1);
+						if (gml.fastCodeAt(p - 1) == "\r".code) p--;
+						else if (p < 0) p = gml.length;
+						gml = gml.insert(p, '\n$s = asset_get_index("$scrName");');
 					}
-					gml += '#define $scrName\n' + scr;
+					gml += '\n#define $scrName\n' + scr;
 				}
 			}
 			FileWrap.writeTextFileSync(pj.lambdaGml, gml);
