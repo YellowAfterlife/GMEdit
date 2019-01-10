@@ -320,6 +320,11 @@ class Preferences {
 		}).title = "If enabled, show_debug_message will show up in results for `sdm`";
 		//
 		#if !lwedit
+		addCheckbox(out, "Open with single click", current.singleClickOpen, function(z) {
+			current.singleClickOpen = z;
+			save();
+			gml.Project.current.reload();
+		}).title = "Allows to open treeview items with single click";
 		addCheckbox(out, "Show asset thumbnails", current.assetThumbs, function(z) {
 			current.assetThumbs = z;
 			save();
@@ -468,6 +473,7 @@ class Preferences {
 			hyperMagic: true,
 			fileSessionTime: 7,
 			projectSessionTime: 14,
+			singleClickOpen: false,
 			assetThumbs: true,
 			showGMLive: Everywhere,
 			fileChangeAction: Ask,
@@ -563,6 +569,7 @@ typedef PrefData = {
 	lambdaMagic:Bool,
 	hyperMagic:Bool,
 	assetThumbs:Bool,
+	singleClickOpen:Bool,
 	showGMLive:PrefGMLive,
 	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,

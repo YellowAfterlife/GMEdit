@@ -253,7 +253,7 @@ class TreeView {
 		TreeViewDnD.bind(r, rel);
 		var th = thumbMap[path];
 		if (th != null) r.setAttribute(attrThumb, th);
-		r.addEventListener("dblclick", handleItemClick);
+		r.addEventListener(Preferences.current.singleClickOpen ? "click" : "dblclick", handleItemClick);
 		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;
 	}
@@ -279,7 +279,7 @@ class TreeView {
 	public static function makeProject(name:String, path:String) {
 		var r = makeItemImpl(name, path, "project");
 		r.title = path;
-		r.addEventListener("dblclick", openProject);
+		r.addEventListener(Preferences.current.singleClickOpen ? "click" : "dblclick", openProject);
 		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;
 	}
