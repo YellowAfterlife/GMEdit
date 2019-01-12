@@ -107,6 +107,9 @@
 	background-color: #222222;
 	color: #C0C0C0;
 }
+#main .ace-tm .ace_invisible {
+	color: #777;
+}
 #main .ace-tm .ace_print-margin {
 	background-color: #495057;
 }
