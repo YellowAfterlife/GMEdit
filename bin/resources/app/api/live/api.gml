@@ -1,4 +1,4 @@
-// Generated at 09.10.2018 16:34:27
+// Generated at 12.01.2019 17:41:30
 :script_execute(script:index, ...args):
 script_get_name(script:index):
 script_get_index(script_name:string):
@@ -10,6 +10,7 @@ array_slice(arr:array, start:int, length:int):
 array_copy(dest:array, dest_index:int, source:array, source_index:int, length:int)
 array_length(val):
 /// Alias for array_length
+array_equals(a:array, b:array):
 array_push(arr, val):
 array_insert(arr:array, pos:int, val)
 array_find_index(arr:array, val):
@@ -65,15 +66,18 @@ vertex_delete_buffer(vbuf):
 vertex_begin(vbuf, vfmt)
 vertex_float1(vbuf, v1:number)
 vertex_float2(vbuf, v1:number, v2:number)
-vertex_float2(vbuf, v1:number, v2:number, v3:number)
-vertex_float2(vbuf, v1:number, v2:number, v3:number, v4:number)
+vertex_float3(vbuf, v1:number, v2:number, v3:number)
+vertex_float4(vbuf, v1:number, v2:number, v3:number, v4:number)
 vertex_color(vbuf, c:int, a:number)
+vertex_colour(vbuf, c:int, a:number)
 vertex_texcoord(vbuf, tx:number, ty:number)
 vertex_position(vbuf, x:number, y:number)
 vertex_position_3d(vbuf, x:number, y:number, z:number)
 vertex_normal(vbuf, nx:number, ny:number, nz:number)
 vertex_argb(vbuf, v:int)
 vertex_end(vbuf)
+vertex_get_buffer_size(vbuf):
+vertex_get_number(vbuf):
 vertex_freeze(vbuf)
 vertex_submit(vbuf, prType:int, tex=Texture.defValue)
 vertex_format_begin():
@@ -86,11 +90,43 @@ vertex_format_add_position()
 vertex_format_add_position_3d()
 vertex_format_add_texcoord()
 vertex_format_add_custom(type:int, usage:int)
+variable_instance_exists(inst, varname:string):
+variable_instance_get(inst, varname:string, ?defvalue):
+variable_instance_set(inst, varname:string, value):
+variable_instance_get_names(inst, ?outList):
 chat_comp_add(command:string, ...args_n_help:string):
 chat_comp_remove(command:string):
 chat_comp_add_arg(command:string, arg:int, value:string, help:string=""):
 chat_comp_remove_arg(command:string, arg:int, value:string):
 chat_comp_clear_arg(command:string, arg:int):
+mouse_lock():
+mouse_unlock():
+/// Returns whether mouse is effectively locked (e.g. never rlocked on pause)
+mouse_is_locked():
+d3d_start()
+d3d_end()
+d3d_set_culling(enable:bool)
+d3d_set_hidden(enable:bool)
+d3d_set_zwriteenable(enable:bool)
+d3d_set_perspective(enable:bool)
+d3d_set_projection(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number, xup:number, yup:number, zup:number)
+d3d_set_projection_ext(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number, xup:number, yup:number, zup:number, fov:number, aspect:number, znear:number, zfar:number)
+d3d_set_projection_ortho(x:number, y:number, w:number, h:number, angle:number)
+d3d_transform_set_identity()
+d3d_transform_stack_push()
+d3d_transform_stack_pop()
+d3d_transform_set_translation(dx:number, dy:number, dz:number)
+d3d_transform_set_scaling(mx:number, my:number, mz:number)
+d3d_transform_set_rotation_axis(vx:number, vy:number, vz:number, d:number)
+d3d_transform_set_rotation_x(d:number)
+d3d_transform_set_rotation_y(d:number)
+d3d_transform_set_rotation_z(d:number)
+d3d_transform_add_translation(dx:number, dy:number, dz:number)
+d3d_transform_add_scaling(mx:number, my:number, mz:number)
+d3d_transform_add_rotation_axis(vx:number, vy:number, vz:number, d:number)
+d3d_transform_add_rotation_x(d:number)
+d3d_transform_add_rotation_y(d:number)
+d3d_transform_add_rotation_z(d:number)
 :alarm_get(:index):
 :alarm_set(:index, value:number)
 //{ Instance
@@ -445,7 +481,7 @@ sprite_get_bbox_top(ind:index):
 sprite_get_bbox_bottom(ind:index):
 //}
 //{ Object
-object_max = 573
+object_max = 574
 object_exists(ind:index):
 object_get_name(ind:index):
 object_get_sprite(ind:index):
@@ -535,10 +571,12 @@ sleep(ms:number)
 game_width:real
 game_height:real
 game_set_size(w:real, h:real)
+game_screen_get_width_nonsync():real
+game_screen_get_height_nonsync():real
 game_letterbox:bool
 fntM*
 fntBigName*
-pi = 3.141592653589793
+pi = 3.14159265358979
 //{ Instance API
 instance_create(x:number, y:number, object:object):
 :instance_destroy()
@@ -560,10 +598,6 @@ instances_matching_gt(object_or_array, varname:string, value:number):
 instances_matching_le(object_or_array, varname:string, value:number):
 /// Returns array of instances that have varname numeric and >= the set threshold
 instances_matching_ge(object_or_array, varname:string, value:number):
-/// Returns whether an instance has given variable
-variable_instance_exists(instance, varname:string):
-variable_instance_get(instance, varname:string):
-variable_instance_set(instance, varname:string, value)
 /// 
 :motion_add_raw(direction, speed);
 :motion_add(direction, speed);
@@ -778,7 +812,7 @@ mod_variable_exists(type:string, name:string, varName:string):
 mod_variable_get(type:string, name:string, varName:string):
 mod_variable_set(type:string, name:string, varName:string, value):
 mod_script_exists(type:string, name:string, scrName:string):
-::mod_script_call(type:string, name:string, scrName:string, ...args):
+:::mod_script_call(type:string, name:string, scrName:string, ...args):
 /// mod_script_call but without passing self/other.
 /// as result, self/other in called script can be very arbitrary, especially after `wait`.
 mod_script_call_nc(type:string, name:string, scrName:string, ...args):
@@ -841,6 +875,8 @@ button_pressed(player:int, button:string):
 button_released(player:int, button:string):
 mouse_x[player]*
 mouse_y[player]*
+mouse_delta_x[player]*
+mouse_delta_y[player]*
 view_xview[player]*
 view_yview[player]*
 view_object[player]:id
@@ -953,7 +989,7 @@ projectile_hit_raw(hitme:id, damage:number, hurt_snd:int)
 pickup_chance_multiplier*
 //{ Skill API
 skill_get(skill):
-skill_set(skill, value:bool):
+skill_set(skill, value:number):
 skill_get_at(index:int):
 skill_clear()
 skill_get_active(skill):
@@ -990,6 +1026,7 @@ file_sha1(path:string):
 file_delete(path:string):
 file_download(url_to_get_from:string, path:string)
 file_upload(path_to_upload:string, url_to_post_to:string, ?path_for_response:string)
+http_request(url:string, method:string, headers_map, body:string, ?path_for_response:string)
 file_load_bytes(path:string):
 file_save_bytes(path:string, bytes):
 file_save_bytes_ext(path:string, bytes, start:int, length:int):
@@ -1186,4 +1223,5 @@ crwn_luck = 10
 crwn_curses = 11
 crwn_risk = 12
 crwn_protection = 13
-mod_current = "<mod name>.<kind>.gml"
+mod_current = "debug"
+mod_current = "debug"
