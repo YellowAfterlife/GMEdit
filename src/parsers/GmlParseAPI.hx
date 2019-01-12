@@ -25,7 +25,8 @@ class GmlParseAPI {
 		?version:GmlVersion,
 		?kindPrefix:String,
 		#if lwedit
-		?lwArgc:Dictionary<Int>,
+		?lwArg0:Dictionary<Int>,
+		?lwArg1:Dictionary<Int>,
 		?lwConst:Dictionary<Bool>,
 		?lwFlags:Dictionary<Int>,
 		?lwInst:Dictionary<Bool>,
@@ -38,7 +39,8 @@ class GmlParseAPI {
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
 		#if lwedit
-		var lwArgc = data.lwArgc;
+		var lwArg0 = data.lwArg0;
+		var lwArg1 = data.lwArg1;
 		var lwInst = data.lwInst;
 		var lwConst = data.lwConst;
 		var lwFlags = data.lwFlags;
@@ -77,7 +79,7 @@ class GmlParseAPI {
 				lwInst.set(name, true);
 				if (orig != name) lwInst.set(orig, true);
 			}
-			if (lwArgc != null) {
+			if (lwArg0 != null) {
 				var argc:Int;
 				if (NativeString.contains(args, "...") || NativeString.contains(args, "?")) {
 					argc = -1;
@@ -86,8 +88,20 @@ class GmlParseAPI {
 				} else {
 					argc = NativeString.trimBoth(args).length > 0 ? 1 : 0;
 				}
-				lwArgc.set(name, argc);
-				if (orig != name) lwArgc.set(orig, argc);
+				var arg0:Int, arg1:Int;
+				if (argc == -1) {
+					arg0 = 0;
+					arg1 = 0x7fffffff;
+				} else {
+					arg0 = argc;
+					arg1 = argc;
+				}
+				lwArg0.set(name, arg0);
+				lwArg1.set(name, arg1);
+				if (orig != name) {
+					lwArg0.set(orig, arg0);
+					lwArg1.set(orig, arg1);
+				}
 			}
 			#end
 			//

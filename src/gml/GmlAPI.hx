@@ -136,8 +136,11 @@ class GmlAPI {
 	public static var gmlLookupText:String = "";
 	
 	#if lwedit
-	/** Function name -> argument count (-1 for any) */
-	public static var lwArgc:Dictionary<Int> = new Dictionary();
+	/** Function name -> min. argument count */
+	public static var lwArg0:Dictionary<Int> = new Dictionary();
+	
+	/** Function name -> max. argument count */
+	public static var lwArg1:Dictionary<Int> = new Dictionary();
 	
 	/** Whether something is a constant */
 	public static var lwConst:Dictionary<Bool> = new Dictionary();
@@ -243,7 +246,8 @@ class GmlAPI {
 				ukSpelling: ukSpelling,
 				version: version,
 				#if lwedit
-				lwArgc: lwArgc,
+				lwArg0: lwArg0,
+				lwArg1: lwArg1,
 				lwInst: lwInst,
 				lwConst: lwConst,
 				lwFlags: lwFlags,
@@ -265,7 +269,7 @@ class GmlAPI {
 					});
 					GmlParseAPI.loadStd(raw, data);
 					#if lwedit
-					if (lwArgc != null) { // give GMLive a copy of data
+					if (lwArg0 != null) { // give GMLive a copy of data
 						var cb = Reflect.field(Main.window, "lwSetAPI");
 						if (cb != null) cb(data);
 						LiveWeb.readyUp();
@@ -289,7 +293,7 @@ class GmlAPI {
 					if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
 						var name = rx.matched(1);
 						var code = rx.matched(0);
-						raw = (new EReg('^$name\\b.+$$', "gm")).map(raw, function(r1) {
+						raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
 							return code;
 						});
 					});

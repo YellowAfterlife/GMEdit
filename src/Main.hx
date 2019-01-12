@@ -112,7 +112,9 @@ class Main {
 		Preferences.initEditor();
 		MainMenu.init();
 		//
+		#if !lwedit
 		aceEditor.session = WelcomePage.init(aceEditor);
+		#end
 		KeyboardShortcuts.initEditor();
 		ScrollMode.init();
 		AceGmlCommands.init();
@@ -128,6 +130,9 @@ class Main {
 		AceCtxMenu.init();
 		AceTooltips.init();
 		AceStatusBar.statusUpdate();
+		#if lwedit
+		aceEditor.session = WelcomePage.init(aceEditor);
+		#end
 		LiveWeb.init();
 		//
 		try {

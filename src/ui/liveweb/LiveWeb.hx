@@ -1,6 +1,7 @@
 package ui.liveweb;
 import ace.AceStatusBar;
 import ace.AceWrap;
+import ace.extern.*;
 import editors.EditCode;
 import gml.file.GmlFile;
 import gml.*;
