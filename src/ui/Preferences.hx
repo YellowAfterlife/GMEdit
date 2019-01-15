@@ -532,6 +532,7 @@ class Preferences {
 			var opts:DynamicAccess<Dynamic> = cast FileWrap.readConfigSync("config", "aceOptions");
 			if (opts != null) {
 				opts.set("enableSnippets", true);
+				opts.remove("mode");
 				Main.aceEditor.setOptions(opts);
 			}
 		} catch (e:Dynamic) {

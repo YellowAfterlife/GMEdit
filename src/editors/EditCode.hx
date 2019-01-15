@@ -28,6 +28,7 @@ import haxe.Json;
  */
 class EditCode extends Editor {
 	
+	public static var currentNew:EditCode = null;
 	public static var container:Element;
 	public var session:AceSession;
 	private var modePath:String;
@@ -45,6 +46,7 @@ class EditCode extends Editor {
 		if (GmlAPI.version == GmlVersion.live) {
 			GmlSeeker.runSync(file.path, file.code, null, file.kind);
 		}
+		currentNew = this;
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(file.code, { path: modePath, version: GmlAPI.version });
 		session.setUndoManager(new AceUndoManager());
@@ -58,6 +60,7 @@ class EditCode extends Editor {
 		}
 		session.gmlFile = file;
 		session.gmlEdit = this;
+		currentNew = null;
 	}
 	
 	override public function stateLoad() {

@@ -1,9 +1,11 @@
 package ace;
 import ace.AceWrap;
 import ace.extern.*;
+import editors.EditCode;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
+import gml.file.GmlFileKind;
 import parsers.GmlExtCoroutines;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
@@ -29,6 +31,16 @@ using tools.NativeString;
 	@:native("$rules") public var rules:Dynamic;
 	public function new() {
 		var version = GmlAPI.version;
+		var editor:EditCode = EditCode.currentNew;
+		var fakeMultilineComments:Bool = false;
+		if (editor != null) {
+			switch (editor.file.kind) {
+				case GmlFileKind.SearchResults: {
+					fakeMultilineComments = true;
+				};
+				default:
+			}
+		}
 		//
 		function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
 			return { token: tk, regex: rx, push: push };
@@ -88,7 +100,7 @@ using tools.NativeString;
 				return [token(type, value)];
 			},
 		};
-		/** something.field */
+		/// something.field
 		var rIdentPair:AceLangRule = {
 			regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*|)',
 			onMatch: function(
@@ -306,8 +318,12 @@ using tools.NativeString;
 			}, ~/\/\/\//, "comment.doc.line"),
 			rxRule("comment.line", ~/\/\/$/),
 			rxRule("comment.line", ~/\/\//, "comment.line"),
-			rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
-			rxRule("comment", ~/\/\*/, "comment"),
+			fakeMultilineComments
+				? rxRule("comment.doc", ~/\/\*\*.*?(?:\*\/|$)/)
+				: rxRule("comment.doc", ~/\/\*\*/, "comment.doc"),
+			fakeMultilineComments
+				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
+				: rxRule("comment", ~/\/\*/, "comment"),
 			rDefine, rAction, rKeyEvent, rEvent, rMoment, rRoomCC,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rulePairs([
