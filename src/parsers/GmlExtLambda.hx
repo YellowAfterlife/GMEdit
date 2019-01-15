@@ -26,7 +26,6 @@ using StringTools;
  */
 class GmlExtLambda {
 	public static var defaultMap:Dictionary<GmlExtLambda> = new Dictionary();
-	public static var currentMap:Dictionary<GmlExtLambda> = defaultMap;
 	public static var seekData:GmlSeekData = new GmlSeekData();
 	public static var seekPath:String = "";
 	//

@@ -139,7 +139,7 @@ class OpenDeclaration {
 		do {
 			var scope = gml.GmlScopes.get(pos.row);
 			if (scope == null) break;
-			var imp = GmlImports.currentMap[scope];
+			var imp = GmlFile.current.codeEditor.imports[scope];
 			if (imp == null) break;
 			//
 			var iter = new AceTokenIterator(aceEditor.session, pos.row, pos.column);

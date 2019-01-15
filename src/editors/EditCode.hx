@@ -4,6 +4,7 @@ import ace.extern.*;
 import ace.*;
 import editors.Editor;
 import electron.Dialog;
+import gml.GmlLocals;
 import gml.file.*;
 import gml.GmlAPI;
 import gml.GmlVersion;
@@ -32,6 +33,10 @@ class EditCode extends Editor {
 	public static var container:Element;
 	public var session:AceSession;
 	private var modePath:String;
+	//
+	public var locals:Dictionary<GmlLocals> = GmlLocals.defaultMap;
+	public var imports:Dictionary<GmlImports> = GmlImports.defaultMap;
+	//
 	public var lambdaList:Array<String> = [];
 	public var lambdaMap:Dictionary<String> = new Dictionary();
 	public var lambdas:Dictionary<GmlExtLambda> = new Dictionary();
@@ -46,6 +51,7 @@ class EditCode extends Editor {
 		if (GmlAPI.version == GmlVersion.live) {
 			GmlSeeker.runSync(file.path, file.code, null, file.kind);
 		}
+		var _prev = currentNew;
 		currentNew = this;
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(file.code, { path: modePath, version: GmlAPI.version });
@@ -60,7 +66,14 @@ class EditCode extends Editor {
 		}
 		session.gmlFile = file;
 		session.gmlEdit = this;
-		currentNew = null;
+		//
+		currentNew = _prev;
+		//
+		var data = file.path != null ? GmlSeekData.map[file.path] : null;
+		if (data != null) {
+			locals = data.locals;
+			if (data.imports != null) imports = data.imports;
+		}
 	}
 	
 	override public function stateLoad() {
@@ -227,11 +240,9 @@ class EditCode extends Editor {
 		var sessionChanged = false;
 		if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
 			var next = GmlExtImport.pre(val, path);
-			if (GmlFile.current == file) {
-				if (data != null && data.imports != null) {
-					GmlImports.currentMap = data.imports;
-				} else GmlImports.currentMap = GmlImports.defaultMap;
-			}
+			if (data != null && data.imports != null) {
+				imports = data.imports;
+			} else imports = GmlImports.defaultMap;
 			if (next != val_preImport) {
 				var sd = AceSessionData.get(this);
 				var session = session;

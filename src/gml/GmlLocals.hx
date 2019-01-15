@@ -9,7 +9,7 @@ import tools.Dictionary;
  */
 class GmlLocals {
 	public static var defaultMap:Dictionary<GmlLocals> = new Dictionary();
-	public static var currentMap:Dictionary<GmlLocals> = defaultMap;
+	//public static var currentMap:Dictionary<GmlLocals> = defaultMap;
 	//
 	public var comp:AceAutoCompleteItems = [];
 	public var kind:Dictionary<String> = new Dictionary();

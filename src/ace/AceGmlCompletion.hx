@@ -116,7 +116,7 @@ using tools.NativeString;
 					case Namespaces: {
 						var scope = GmlScopes.get(pos.row);
 						if (scope == null) break;
-						var imp = GmlImports.currentMap[scope];
+						var imp = GmlFile.current.codeEditor.imports[scope];
 						if (imp == null) break;
 						callback(null, imp.namespaceComp);
 					};
@@ -136,7 +136,7 @@ using tools.NativeString;
 					if (tk.type == "namespace") {
 						var scope = GmlScopes.get(pos.row);
 						if (scope != null) {
-							var imp = GmlImports.currentMap[scope];
+							var imp = GmlFile.current.codeEditor.imports[scope];
 							if (imp != null) {
 								var ns = imp.namespaces[tk.value];
 								if (ns != null) {
@@ -152,7 +152,7 @@ using tools.NativeString;
 					if (tk.type == "local") {
 						var scope = GmlScopes.get(pos.row);
 						if (scope != null) {
-							var imp = GmlImports.currentMap[scope];
+							var imp = GmlFile.current.codeEditor.imports[scope];
 							if (imp != null) {
 								var t = imp.localTypes[tk.value];
 								if (t != null) {
@@ -182,7 +182,7 @@ using tools.NativeString;
 						//
 						var scope = GmlScopes.get(pos.row);
 						if (scope != null) {
-							var imp = GmlImports.currentMap[scope];
+							var imp = GmlFile.current.codeEditor.imports[scope];
 							if (imp != null) {
 								var s = imp.longenEnum[name];
 								if (s != null) name = s;
@@ -314,8 +314,8 @@ using tools.NativeString;
 			var open = switch (token.type) {
 				case "namespace", "enum": true;
 				case "local": {
-					var scope = gml.GmlScopes.get(lead.row);
-					var imp = gml.GmlImports.currentMap[scope];
+					var scope = GmlScopes.get(lead.row);
+					var imp = GmlFile.current.codeEditor.imports[scope];
 					(imp != null ? imp.localTypes[token.value] != null : false);
 				};
 				default: token.value == "global";

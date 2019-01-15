@@ -102,6 +102,7 @@ class Main {
 		editors.Editor.init();
 		aceEditor = new AceWrap(aceEl);
 		AceWrap.init();
+		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, Plain, "").editor;
 		untyped aceEditor.$blockScrolling = Infinity;
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);

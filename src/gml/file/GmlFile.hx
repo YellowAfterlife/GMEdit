@@ -33,6 +33,8 @@ using tools.HtmlTools;
  */
 class GmlFile {
 	public static var next:GmlFile = null;
+	
+	/** Currently active tab's file */
 	public static var current(default, set):GmlFile = null;
 	private static var searchId:Int = 0;
 	
@@ -78,7 +80,11 @@ class GmlFile {
 	/** Loading/saving mode of operation */
 	public var kind:GmlFileKind = Normal;
 	
+	/** The associated editor */
 	public var editor:Editor;
+	
+	/** Shortcut if this is a code editor. Otherwise null */
+	public var codeEditor:EditCode;
 	
 	/** Associated chrome tab */
 	public var tabEl:Element;
@@ -129,7 +135,10 @@ class GmlFile {
 			case YySpriteView, GmxSpriteView: editor = new EditSprite(this);
 			default: modePath = "ace/mode/gml";
 		}
-		if (modePath != null) editor = new EditCode(this, modePath);
+		if (modePath != null) {
+			codeEditor = new EditCode(this, modePath);
+			editor = codeEditor;
+		} else codeEditor = null;
 		load(data);
 		editor.ready();
 	}
@@ -144,9 +153,7 @@ class GmlFile {
 	}
 	//
 	public function getAceSession():AceSession {
-		if (Std.is(editor, EditCode)) {
-			return (cast editor:EditCode).session;
-		} else return null;
+		return codeEditor != null ? codeEditor.session : null;
 	}
 	//
 	public function navigate(nav:GmlFileNav):Bool {
@@ -287,7 +294,7 @@ class GmlFile {
 		syncTime();
 		markClean();
 		// update things if this is the active tab:
-		if (path != null && out != null && Std.is(editor, EditCode) && current == this) {
+		if (path != null && out != null && codeEditor != null) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
 				switch (kind) {
@@ -296,12 +303,10 @@ class GmlFile {
 				}
 				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
-				var editCode:EditCode = cast editor;
-				if (GmlLocals.currentMap != next.locals) {
-					GmlLocals.currentMap = next.locals;
-					editCode.session.bgTokenizer.start(0);
+				if (codeEditor.locals != next.locals) {
+					codeEditor.locals = next.locals;
+					if (current == this) codeEditor.session.bgTokenizer.start(0);
 				}
-				GmlExtLambda.currentMap = editCode.lambdas;
 			}
 		}
 	}
@@ -339,19 +344,11 @@ class GmlFile {
 	private static function set_current(file:GmlFile) {
 		current = file;
 		var data = file != null ? GmlSeekData.map[file.path] : null;
+		var editor:EditCode = data != null && Std.is(file.editor, EditCode) ? (cast file.editor) : null;
 		if (data != null) {
-			GmlLocals.currentMap = data.locals;
-			GmlImports.currentMap = data.imports;
 			GmlExtCoroutines.update(data.hasCoroutines);
 		} else {
-			GmlLocals.currentMap = GmlLocals.defaultMap;
-			GmlImports.currentMap = null;
 			GmlExtCoroutines.update(false);
-		}
-		GmlExtLambda.currentMap = Std.is(file.editor, EditCode)
-			? (cast file.editor:EditCode).lambdas : GmlExtLambda.defaultMap;
-		if (GmlImports.currentMap == null) {
-			GmlImports.currentMap = GmlImports.defaultMap;
 		}
 		return file;
 	}

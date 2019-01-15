@@ -33,13 +33,11 @@ using tools.NativeString;
 		var version = GmlAPI.version;
 		var editor:EditCode = EditCode.currentNew;
 		var fakeMultilineComments:Bool = false;
-		if (editor != null) {
-			switch (editor.file.kind) {
-				case GmlFileKind.SearchResults: {
-					fakeMultilineComments = true;
-				};
-				default:
-			}
+		switch (editor.file.kind) {
+			case GmlFileKind.SearchResults: {
+				fakeMultilineComments = true;
+			};
+			default:
 		}
 		//
 		function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
@@ -66,15 +64,15 @@ using tools.NativeString;
 		inline function getLocalType_1(name:String, scope:String):String {
 			var kind:String = null;
 			//
-			var lambdas = parsers.GmlExtLambda.currentMap[scope];
+			var lambdas = editor.lambdas[scope];
 			if (lambdas != null) kind = lambdas.kind[name];
 			//
 			if (kind == null) {
-				var locals = GmlLocals.currentMap[scope];
+				var locals = editor.locals[scope];
 				if (locals != null) kind = locals.kind[name];
 				//
 				if (kind == null) {
-					var imports = GmlImports.currentMap[scope];
+					var imports = editor.imports[scope];
 					if (imports != null) kind = imports.kind[name];
 				}
 			}
@@ -120,7 +118,7 @@ using tools.NativeString;
 					if (row != null) {
 						var scope = GmlScopes.get(row);
 						if (scope != null) {
-							var imp = GmlImports.currentMap[scope];
+							var imp = editor.imports[scope];
 							var ns:GmlNamespace;
 							if (imp != null) {
 								ns = imp.namespaces[object];

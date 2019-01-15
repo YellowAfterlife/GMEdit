@@ -41,11 +41,12 @@ class AceTooltips {
 		//
 		if (AceStatusBar.canDocData[t]) {
 			var scope = gml.GmlScopes.get(pos.row);
+			var codeEditor = gml.file.GmlFile.current.codeEditor;
 			var ctx:AceStatusBarDocSearch = {
 				iter: new AceTokenIterator(session, pos.row, pos.column),
 				tk: token, doc: null, docs: null,
-				imports: GmlImports.currentMap[scope],
-				lambdas: GmlExtLambda.currentMap[scope],
+				imports: codeEditor.imports[scope],
+				lambdas: codeEditor.lambdas[scope],
 			};
 			if (AceStatusBar.getDocData(ctx)) {
 				doc = ctx.doc;

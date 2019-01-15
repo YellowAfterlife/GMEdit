@@ -10,7 +10,6 @@ import ace.extern.*;
  */
 class GmlImports {
 	public static var defaultMap:Dictionary<GmlImports> = new Dictionary();
-	public static var currentMap:Dictionary<GmlImports> = new Dictionary();
 	//
 	public var comp:AceAutoCompleteItems = [];
 	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();

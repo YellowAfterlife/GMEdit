@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import ace.extern.*;
+import editors.EditCode;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlLocals;
@@ -300,15 +301,16 @@ class AceStatusBar {
 			contextName = null;
 		}
 		//
-		var locals = GmlLocals.currentMap[scope];
+		var codeEditor:EditCode = q.codeEditor;
+		var locals = codeEditor.locals[scope];
 		AceGmlCompletion.localCompleter.items = locals != null
 			? locals.comp : AceGmlCompletion.noItems;
 		//
-		var imports = gml.GmlImports.currentMap[scope];
+		var imports = codeEditor.imports[scope];
 		AceGmlCompletion.importCompleter.items = imports != null
 			? imports.comp : AceGmlCompletion.noItems;
 		//
-		var lambdas = GmlExtLambda.currentMap[scope];
+		var lambdas = codeEditor.lambdas[scope];
 		AceGmlCompletion.lambdaCompleter.items = lambdas != null
 			? lambdas.comp : AceGmlCompletion.noItems;
 		//
