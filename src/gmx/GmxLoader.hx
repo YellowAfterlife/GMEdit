@@ -134,11 +134,17 @@ class GmxLoader {
 				var extRel = extNode.text;
 				extRel = StringTools.replace(extRel, "\x5c", "/"); // no backslashes
 				var extPath = extRel + ".extension.gmx";
+				var extFull = project.fullPath(extPath);
 				var extGmx = project.readGmxFileSync(extPath);
 				var extName = extGmx.findText("name");
-				var extDir = TreeView.makeDir(extName, "extensions/" + extName + "/");
-				var lm = lz && extName.toLowerCase() == parsers.GmlExtLambda.extensionName ? project.lambdaMap : null;
+				//
+				var extDir = TreeView.makeDir(extName, "Extensions/" + extName + "/");
+				extDir.setAttribute(TreeView.attrPath, extFull);
+				extDir.setAttribute(TreeView.attrIdent, extName);
+				//
+				var lm = lz && extName.toLowerCase() == GmlExtLambda.extensionName ? project.lambdaMap : null;
 				if (lm != null) project.lambdaExt = extPath;
+				//
 				for (extFiles in extGmx.findAll("files"))
 				for (extFile in extFiles.findAll("file")) {
 					var extFileName = extFile.findText("filename");

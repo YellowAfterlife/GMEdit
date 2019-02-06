@@ -213,6 +213,10 @@ class EditCode extends Editor {
 				NativeArray.clear(file.extraFiles);
 				file.code = YyRooms.getCCs(file.path, data, file.extraFiles);
 			};
+			case GmxExtensionAPI: {
+				if (data == null) data = src;
+				file.code = gml.GmlExtensionAPI.get1(data);
+			};
 			case YyExtensionAPI: {
 				if (data == null) data = Json.parse(src);
 				file.code = gml.GmlExtensionAPI.get2(data);
@@ -420,9 +424,7 @@ class EditCode extends Editor {
 				writeFile = false;
 				out = null;
 			};
-			case YyExtensionAPI: {
-				return false;
-			}
+			case GmxExtensionAPI, YyExtensionAPI: return false;
 			default: return false;
 		}
 		//

@@ -165,7 +165,10 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = true;
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
-		items.showAPI.visible = Project.current.version == v2 && el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
+		items.showAPI.visible = switch (Project.current.version) {
+			case v1, v2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
+			default: false;
+		}
 		TreeViewItemMenus.update(true);
 		if (FileSystem.canSync) {
 			var fe = el.querySelector('.header');

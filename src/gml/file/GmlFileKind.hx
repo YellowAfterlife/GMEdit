@@ -56,6 +56,7 @@ enum GmlFileKind {
 	GmxSpriteView;
 	YySpriteView;
 	
+	GmxExtensionAPI;
 	YyExtensionAPI;
 	
 	/** Combined room creation codes */
