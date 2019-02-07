@@ -58,12 +58,12 @@ using tools.NativeString;
 		if (dmd) {
 			rules["md.section"] = [
 				rxPush("md-section", ~/\[/, "md.section"),
-				rxRule(["md-section", "md-href"], ~/(\])(\()/, "md.href"),
+				rxRule(["md-section", "md-href-start"], ~/(\])(\()/, "md.href"),
 				rxRule("md-section", ~/\]/, "pop"),
 				rdef("md-section"),
 			];
 			rules["md.href"] = [rEsc,
-				rxRule("md-href", ~/\)/, "pop"),
+				rxRule("md-href-end", ~/\)/, "pop"),
 				rdef("md-href"),
 			];
 			rules["md.italic"] = rcct([

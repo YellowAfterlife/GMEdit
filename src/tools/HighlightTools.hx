@@ -17,7 +17,7 @@ class HighlightTools {
 		return cast { defaultToken: tk };
 	}
 	
-	public static function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
+	public static function rpush(tk:Dynamic, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
 		return { token: tk, regex: rx, push: push };
 	}
 	

@@ -177,7 +177,9 @@
 .ace-tm .ace_md-section {
 	color: #F08;
 }
-.ace-tm .ace_md-pre {
+.ace-tm .ace_md-pre,
+.ace-tm .ace_md-pre-start,
+.ace-tm .ace_md-pre-end {
 	color: blue;
 }
 
