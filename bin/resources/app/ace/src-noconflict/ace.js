@@ -138,7 +138,13 @@ var lookup = function(parentId, moduleName) {
                 return _require(moduleName, module, callback);
             };
 
-            var returnValue = module(req, exports, mod);
+            var returnValue;
+			try {
+				returnValue = module(req, exports, mod);
+			} catch (e) {
+				console.error("Error in payload for " + moduleName + ":", e);
+				throw e;
+			}
             exports = returnValue || mod.exports;
             define.modules[moduleName] = exports;
             delete define.payloads[moduleName];
