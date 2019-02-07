@@ -95,6 +95,7 @@ class Main {
 		GmlEvent.init();
 		untyped window.ace_mode_gml_0();
 		AceGmlHighlight.init();
+		AceMdHighlight.init();
 		ShaderHighlight.init();
 		untyped window.ace_mode_gml_1();
 		var aceEl = document.querySelector("#source");

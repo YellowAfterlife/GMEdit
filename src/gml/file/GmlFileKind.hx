@@ -71,4 +71,7 @@ enum GmlFileKind {
 	
 	/** Only used for special-case parsing */
 	LambdaGML;
+	
+	Markdown;
+	DocMarkdown;
 }

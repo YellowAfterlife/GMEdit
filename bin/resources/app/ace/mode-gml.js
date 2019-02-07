@@ -495,7 +495,7 @@ exports.Mode = Mode;
 });
 //
 ace.define("ace/mode/shader",["require","exports","module",
-	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
+	"ace/lib/oop","ace/mode/text","ace/mode/shader_highlight_rules",
 	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/gmlstyle"
 ], function(require, exports, module) {
 "use strict";
@@ -553,6 +553,119 @@ oop.inherits(Mode, TextMode);
 
 exports.Mode = Mode;
 });
+//
+ace.define("ace/mode/markdown",["require","exports","module",
+	"ace/lib/oop","ace/mode/text","ace/mode/markdown_highlight_rules",
+	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/fold_mode"
+], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var TextMode = require("./text").Mode;
+var MarkdownHighlightRules = require("./markdown_highlight_rules").MarkdownHighlightRules;
+var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
+var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
+
+var BaseFoldMode = require("./folding/fold_mode").FoldMode;
+
+var FoldMode = exports.FoldMode = function(commentRegex) {
+    if (commentRegex) {
+        this.foldingStartMarker = new RegExp(
+            this.foldingStartMarker.source.replace(/\|[^|]*?$/, "|" + commentRegex.start)
+        );
+        this.foldingStopMarker = new RegExp(
+            this.foldingStopMarker.source.replace(/\|[^|]*?$/, "|" + commentRegex.end)
+        );
+    }
+};
+oop.inherits(FoldMode, BaseFoldMode);
+(function() {
+	this.foldingStartMarker = /(\{)/;
+	this.foldingStopMarker = /(\})/;
+	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
+	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
+	this.getFoldWidgetRange = function(session, foldStyle, row, forceMultiline) {
+		var line = session.getLine(row);
+		
+		var match = line.match(this.foldingStartMarker);
+		if (match) {
+			var i = match.index;
+
+			if (match[1]) return this.openingBracketBlock(session, match[1], row, i);
+				
+			var range = session.getCommentFoldRange(row, i + match[0].length, 1);
+			
+			if (range && !range.isMultiLine()) {
+				if (forceMultiline) {
+					range = this.getSectionRange(session, row);
+				} else if (foldStyle != "all")
+					range = null;
+			}
+			
+			return range;
+		}
+
+		if (foldStyle === "markbegin")
+			return;
+
+		var match = line.match(this.foldingStopMarker);
+		if (match) {
+			var i = match.index + match[0].length;
+
+			if (match[1])
+				return this.closingBracketBlock(session, match[1], row, i);
+
+			return session.getCommentFoldRange(row, i, -1);
+		}
+	};
+}).call(FoldMode.prototype);
+
+var Mode = function() {
+	this.HighlightRules = MarkdownHighlightRules;
+	
+	this.$outdent = new MatchingBraceOutdent();
+	this.$behaviour = new CstyleBehaviour();
+	this.foldingRules = new FoldMode();
+};
+oop.inherits(Mode, TextMode);
+
+(function() {
+	this.lineCommentStart = "//";
+	this.blockComment = {start: "/*", end: "*/"};
+	
+	this.getNextLineIndent = function(state, line, tab) {
+		var indent = this.$getIndent(line);
+
+		var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
+		var tokens = tokenizedLine.tokens;
+		
+		if (tokens.length && tokens[tokens.length-1].type.indexOf("comment") >= 0) {
+			return indent;
+		}
+
+		if (state == "start") {
+			var match = line.match(/^.*[\{\(\[]\s*$/);
+			if (match) {
+				indent += tab;
+			}
+		}
+
+		return indent;
+	};
+
+	this.checkOutdent = function(state, line, input) {
+		return this.$outdent.checkOutdent(line, input);
+	};
+
+	this.autoOutdent = function(state, doc, row) {
+		this.$outdent.autoOutdent(doc, row);
+	};
+
+	this.$id = "ace/mode/markdown";
+}).call(Mode.prototype);
+
+exports.Mode = Mode;
+}); // markdown
 //
 ace.define("ace/mode/gml_search",["require","exports","module",
 	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",

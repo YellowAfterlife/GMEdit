@@ -19,18 +19,21 @@ class AceMacro {
 		sys.io.File.saveContent(path, out);
 		return macro $v{out};
 	}
+	
 	public static macro function rxRule(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
 		switch (rx.expr) {
-			case EConst(CRegexp(r, o)): {
-				return macro rule($tk, $v{r}, $nx);
-				//return macro { token: $tk, regex: untyped __js__($v{'/$r/$o'}), next: $nx }
-			};
-			default: {
-				Context.error("Expected a regular expression literal", rx.pos);
-				return macro null;
-			};
+			case EConst(CRegexp(r, o)): return macro rule($tk, $v{r}, $nx);
+			default: throw Context.error("Expected a regular expression literal", rx.pos);
 		}
 	}
+	
+	public static macro function rxPush(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
+		switch (rx.expr) {
+			case EConst(CRegexp(r, o)): return macro rpush($tk, $v{r}, $nx);
+			default: throw Context.error("Expected a regular expression literal", rx.pos);
+		}
+	}
+	
 	public static var jsThis(get, never):Dynamic;
 	private static inline function get_jsThis():Dynamic {
 		#if !macro

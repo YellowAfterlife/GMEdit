@@ -1,5 +1,6 @@
 package tools;
 import ace.extern.*;
+import haxe.extern.EitherType;
 
 /**
  * ...
@@ -9,9 +10,17 @@ class HighlightTools {
 	public static function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
 		return { token: tk, regex: rx, next: next };
 	}
+	public static function rtk(type:String, value:String):AceToken {
+		return { type: type, value: value };
+	}
 	public static function rdef(tk:Dynamic):AceLangRule {
 		return cast { defaultToken: tk };
 	}
+	
+	public static function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
+		return { token: tk, regex: rx, push: push };
+	}
+	
 	public static function rulePairs(pairs_rx_tk:Array<String>, ?next:String):AceLangRule {
 		var rs = "";
 		var i = 0;

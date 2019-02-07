@@ -154,6 +154,33 @@
 	font: 10pt sans-serif;
 }
 
+/** markdown-specific */
+.ace-tm .ace_md-backslash {
+	color: red;
+}
+.ace-tm .ace_md-italic {
+	font-style:italic;
+}
+.ace-tm .ace_md-bold {
+	font-weight:bold;
+}
+.ace-tm .ace_md-tt {
+	background: #FFFBE4;
+	border: 1px solid #E6E0C4;
+	padding: 0 2px;
+	margin: -1px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.ace-tm .ace_md-href {
+	text-decoration: underline;
+}
+.ace-tm .ace_md-section {
+	color: #F08;
+}
+.ace-tm .ace_md-pre {
+	color: blue;
+}
+
 /** underline the define-line */
 #main .ace_gutter-define:not(:first-child) {
 	box-shadow: 0 1px 0px #d0d0d0 inset;

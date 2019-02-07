@@ -127,7 +127,11 @@ class EditCode extends Editor {
 		switch (file.kind) {
 			case Extern: file.code = data != null ? data : "";
 			case YyShader: file.code = "";
-			case Plain, ExtGML, GLSL, HLSL, JavaScript, Snippets, LambdaGML: file.code = src;
+			case Plain, ExtGML, Snippets, LambdaGML,
+				GLSL, HLSL, JavaScript, Markdown, DocMarkdown
+			: { // purely texty things
+				file.code = src;
+			};
 			case SearchResults: file.code = data;
 			case Normal: {
 				src = GmlExtCoroutines.pre(src);
@@ -338,7 +342,10 @@ class EditCode extends Editor {
 		var writeFile:Bool = path != null;
 		switch (file.kind) {
 			case Extern: out = val;
-			case Plain, GLSL, HLSL, JavaScript: out = val;
+			case Plain, GLSL, HLSL, JavaScript, Markdown, DocMarkdown: {
+				// kinds with no post-processing required
+				out = val;
+			};
 			case Normal, ExtGML: {
 				out = postpNormal(val, sessionChanged);
 				if (out == null) return false;

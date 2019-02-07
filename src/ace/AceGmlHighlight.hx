@@ -29,9 +29,8 @@ using tools.NativeString;
 @:expose("AceGmlHighlight")
 @:keep class AceGmlHighlight {
 	@:native("$rules") public var rules:Dynamic;
-	public function new() {
-		var version = GmlAPI.version;
-		var editor:EditCode = EditCode.currentNew;
+	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
+		if (version == null) version = GmlAPI.version;
 		var fakeMultilineComments:Bool = false;
 		switch (editor.file.kind) {
 			case GmlFileKind.SearchResults: {
@@ -40,9 +39,6 @@ using tools.NativeString;
 			default:
 		}
 		//
-		function rpush(tk:String, rx:String, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
-			return { token: tk, regex: rx, push: push };
-		}
 		function rwnext(ruleToCopy:AceLangRule, newNext:String):AceLangRule {
 			return { token: ruleToCopy.token, regex: ruleToCopy.regex, next: newNext };
 		}
@@ -55,10 +51,6 @@ using tools.NativeString;
 				parsers.GmlExtCoroutines.keywordMap[name],
 				fallback
 			);
-		}
-		//
-		inline function token(type:String, value:String):Dynamic {
-			return { type: type, value: value };
 		}
 		//
 		inline function getLocalType_1(name:String, scope:String):String {
@@ -95,7 +87,7 @@ using tools.NativeString;
 			) {
 				var type:String = getLocalType(row, value);
 				if (type == null) type = getGlobalType(value, "localfield");
-				return [token(type, value)];
+				return [rtk(type, value)];
 			},
 		};
 		/// something.field
@@ -166,11 +158,11 @@ using tools.NativeString;
 						fdType = getGlobalType(field, "field");
 					}
 				}
-				var tokens:Array<AceToken> = [token(objType, object)];
-				if (values[2] != "") tokens.push(token("text", values[2]));
-				tokens.push(token("punctuation.operator", values[3]));
-				if (values[4] != "") tokens.push(token("text", values[4]));
-				tokens.push(token(fdType, field));
+				var tokens:Array<AceToken> = [rtk(objType, object)];
+				if (values[2] != "") tokens.push(rtk("text", values[2]));
+				tokens.push(rtk("punctuation.operator", values[3]));
+				if (values[4] != "") tokens.push(rtk("text", values[4]));
+				tokens.push(rtk(fdType, field));
 				return tokens;
 			}
 		};
@@ -269,15 +261,15 @@ using tools.NativeString;
 				var values:Array<String> = jsThis.splitRegex.exec(value);
 				jsThis.next = values[9].indexOf('"') >= 0 ? "pragma.dq" : "pragma.sq";
 				return [
-					token("function", values[1]),
-					token("text", values[2]),
-					token("paren.lparen", values[3]),
-					token("text", values[4]),
-					token("string", values[5]),
-					token("text", values[6]),
-					token("punctuation.operator", values[7]),
-					token("text", values[8]),
-					token("punctuation.operator", values[9]),
+					rtk("function", values[1]),
+					rtk("text", values[2]),
+					rtk("paren.lparen", values[3]),
+					rtk("text", values[4]),
+					rtk("string", values[5]),
+					rtk("text", values[6]),
+					rtk("punctuation.operator", values[7]),
+					rtk("text", values[8]),
+					rtk("punctuation.operator", values[9]),
 				];
 			},
 			next: "pragma",
@@ -407,14 +399,7 @@ using tools.NativeString;
 			rule("comment.link", "@\\[" + "[^\\[]*" + "\\]"),
 		]; //}
 		//
-		if (rules != null) {
-			Reflect.setField(rules, "start", rBase);
-			Reflect.setField(rules, "enum", rEnum);
-			Reflect.setField(rules, "enumvalue", rEnumValue);
-			Reflect.setField(rules, "tplexpr", rTemplateExpr);
-			Reflect.setField(rules, "pragma.sq", rPragma_sq);
-			Reflect.setField(rules, "pragma.dq", rPragma_dq);
-		} else rules = {
+		var rules = {
 			"start": rBase,
 			"enum": rEnum,
 			"enumvalue": rEnumValue,
@@ -474,6 +459,10 @@ using tools.NativeString;
 				rxRule("comment.doc", ~/.+/)
 			]), //}
 		};
+		return rules;
+	}
+	public function new() {
+		rules = makeRules(EditCode.currentNew);
 		untyped this.normalizeRules();
 	}
 	//

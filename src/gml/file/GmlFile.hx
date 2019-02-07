@@ -133,6 +133,7 @@ class GmlFile {
 			case HLSL: ShaderHighlight.nextKind = HLSL; modePath = "ace/mode/shader";
 			case JavaScript: modePath = "ace/mode/javascript";
 			case YySpriteView, GmxSpriteView: editor = new EditSprite(this);
+			case Markdown, DocMarkdown: modePath = "ace/mode/markdown";
 			default: modePath = "ace/mode/gml";
 		}
 		if (modePath != null) {

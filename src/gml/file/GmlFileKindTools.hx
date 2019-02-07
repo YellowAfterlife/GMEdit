@@ -28,6 +28,8 @@ class GmlFileKindTools {
 			case "txt": kind = Plain;
 			case "js": kind = JavaScript;
 			case "shader", "vsh", "fsh": kind = GLSL;
+			case "md": kind = Markdown;
+			case "dmd": kind = DocMarkdown;
 			case "gmx": {
 				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
 				kind = switch (ext) {
