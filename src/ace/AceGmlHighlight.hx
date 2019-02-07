@@ -33,9 +33,13 @@ using tools.NativeString;
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
 		var fakeMultilineComments:Bool = false;
+		var fieldDef = "localfield";
 		switch (editor.file.kind) {
 			case GmlFileKind.SearchResults: {
 				fakeMultilineComments = true;
+			};
+			case Markdown, DocMarkdown: {
+				fieldDef = "text";
 			};
 			default:
 		}
@@ -87,7 +91,7 @@ using tools.NativeString;
 				value:String, state:String, stack:Array<String>, line:String, row:Int
 			) {
 				var type:String = getLocalType(row, value);
-				if (type == null) type = getGlobalType(value, "localfield");
+				if (type == null) type = getGlobalType(value, fieldDef);
 				return [rtk(type, value)];
 			},
 		};
@@ -152,7 +156,7 @@ using tools.NativeString;
 							objType = "enum";
 							fdType = en.items[field] ? "enumfield" : "enumerror";
 						} else {
-							objType = getGlobalType(object, "localfield");
+							objType = getGlobalType(object, fieldDef);
 							fdType = getGlobalType(field, "field");
 						}
 					} else if (fdType == null) {
@@ -187,7 +191,7 @@ using tools.NativeString;
 			];
 		}
 		function mtIdent(ident:String) {
-			return getGlobalType(ident, "localfield");
+			return getGlobalType(ident, fieldDef);
 		}
 		function mtImport(_import, _, _pkg:String, _, _in, _, _as) {
 			return ["preproc.import",

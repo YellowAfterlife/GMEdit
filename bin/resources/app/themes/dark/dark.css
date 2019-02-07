@@ -194,6 +194,33 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #main .ace-tm .ace_string {
 	color: #FCF320;
 }
+
+/** */
+.ace-tm .ace_md-escape {
+	color: #FFF037;
+}
+.ace-tm .ace_md-section,
+.ace-tm .ace_md-section-start,
+.ace-tm .ace_md-section-end {
+	color: #FF8080;
+}
+.ace-tm .ace_md-tt {
+	background: #000;
+	border-color: #5b7c9f;
+	color: white;
+	box-shadow: none;
+}
+.ace-tm .ace_md-pre-start,
+.ace-tm .ace_md-pre-end {
+	color: white;
+}
+.ace-tm .ace_md-url {
+	color: #FFB871;
+}
+.ace-tm .ace_md-href {
+	color: white;
+}
+
 #app .ace_editor.ace_autocomplete, .ace_tooltip {
 	background: #1F1F1F;
 	color: #c0c0c0;

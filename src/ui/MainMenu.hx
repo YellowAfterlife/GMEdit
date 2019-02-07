@@ -48,6 +48,7 @@ class MainMenu {
 				Dialog.showOpenDialog({
 					filters: [
 						new DialogFilter("GameMaker files", ["gmx", "yy", "yyp", "yyz", "gml"]),
+						new DialogFilter("Other supported files", ["js", "md", "dmd", "txt"]),
 						new DialogFilter("All files", ["*"]),
 					],
 				}, function(paths:Array<String>) {

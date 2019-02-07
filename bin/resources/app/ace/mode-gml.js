@@ -691,3 +691,4 @@ exports.Mode = Mode;
 function ace_mode_gml_2() {
 //
 } // function ace_mode_gml_2
+function AceHighlightImpl() {}

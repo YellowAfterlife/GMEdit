@@ -8,6 +8,7 @@ import gml.*;
 import gml.file.GmlFileKind;
 import haxe.DynamicAccess;
 import js.RegExp;
+import shaders.ShaderHighlight;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;
 import ace.AceMacro.rxPush;
@@ -24,27 +25,38 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 @:expose("AceMdHighlight")
-@:keep class AceMdHighlight {
-	@:native("$rules") public var rules:AceHighlightRuleset;
+@:keep class AceMdHighlight extends AceHighlight{
 	public function new() {
+		super();
 		var editor:EditCode = EditCode.currentNew;
 		var dmd:Bool = editor.file.kind == GmlFileKind.DocMarkdown;
 		//
-		var rEsc = rxRule("md-backslash", ~/\\/);
+		var rEsc = rxRule("md-escape", ~/\\/);
 		var rBase:Array<AceLangRule> = [];
+		var rText = rxRule("text", ~/\s+/);
 		//
 		if (dmd) {
-			rBase.push(rxPush("md-section", ~/#\[/, "md.section"));
+			rBase.push(rxPush("md-section-start", ~/#\[/, "md.section"));
 			rBase.push(rxPush("md-italic", ~/\b_\B/, "md.italic"));
 			rBase.push(rxPush("md-bold", ~/\B\*\b/, "md.bold"));
 		} else {
+			rBase.push(rulePairs([
+				"^\\s#+\\s*", "md-section-prefix",
+				".*$", "md-section",
+			]));
 			rBase.push(rxPush("md-italic", ~/\b(?:__|\*\*)\B/, "md.italic"));
 			rBase.push(rxPush("md-bold", ~/\b(?:_|\*)\B/, "md.bold"));
 		}
 		//
-		rBase.push(rxPush("md-pre-start", ~/```(?:\B|gml\b)/, "md.gml"));
-		rBase.push(rxPush("md-pre-start", ~/```(?:haxe\b|exec\b)/, "md.haxe"));
-		rBase.push(rxPush("md-pre-start", ~/```\w+\b/, "md.pre"));
+		rBase.push(rxPush("md-url-start", ~/\[/, "md.url"));
+		if (dmd) {
+			rBase.push(rxPush("md-pre-start", ~/```(?:\B|gml\b)/, "md.gml"));
+			rBase.push(rxPush(["md-expr-start", "curly.paren.lparen"], ~/(\$)(\{)/, "md.expr"));
+		} else rBase.push(rxPush("md-pre-start", ~/```gml\b/, "md.gml"));
+		rBase.push(rxPush("md-pre-start", ~/```(?:haxe\b|exec\b)/, "md.hx"));
+		rBase.push(rxPush("md-pre-start", ~/```glsl\b/, "md.glsl"));
+		rBase.push(rxPush("md-pre-start", ~/```hlsl\b/, "md.hlsl"));
+		rBase.push(rxPush("md-pre-start", ~/```/, "md.pre"));
 		rBase.push(rxPush("md-tt", ~/`/, "md.tt"));
 		//
 		function rcct(r:Array<AceLangRule>, d:AceLangRule):Array<AceLangRule> {
@@ -54,17 +66,13 @@ using tools.NativeString;
 			return r;
 		}
 		rules = {};
-		rules["start"] = rcct([], rdef("text"));
+		rules["start"] = rcct([], rText);
 		if (dmd) {
 			rules["md.section"] = [
-				rxPush("md-section", ~/\[/, "md.section"),
-				rxRule(["md-section", "md-href-start"], ~/(\])(\()/, "md.href"),
-				rxRule("md-section", ~/\]/, "pop"),
+				rxPush("md-section-start", ~/\[/, "md.section"),
+				rxRule(["md-section-end", "md-href-start"], ~/(\])(\()/, "md.href"),
+				rxRule("md-section-end", ~/\]/, "pop"),
 				rdef("md-section"),
-			];
-			rules["md.href"] = [rEsc,
-				rxRule("md-href-end", ~/\)/, "pop"),
-				rdef("md-href"),
 			];
 			rules["md.italic"] = rcct([
 				rxRule("md-italic", ~/\B_\b/, "pop")
@@ -80,18 +88,35 @@ using tools.NativeString;
 				rxRule("md-bold", ~/(?:_|\*)\b/, "pop")
 			], rdef("md-bold"));
 		}
+		//
+		rules["md.url"] = [rEsc,
+			rxRule(["md-url-end", "md-href-start"], ~/(\])(\()/, "md.href"),
+			rxRule("md-url-end", ~/\]/, "pop"),
+			rdef("md-url"),
+		];
+		rules["md.href"] = [rEsc,
+			rxRule("md-href-end", ~/\)/, "pop"),
+			rdef("md-href"),
+		];
 		rules["md.tt"] = [rEsc, rxRule("md-tt", ~/`/, "pop"), rdef("md-tt")];
 		//
-		rules["md.haxe"] = [rEsc, rxRule("md-pre-end", ~/```/, "pop"), rdef("md-pre")];
-		//
-		var gmlRules:AceHighlightRuleset = AceGmlHighlight.makeRules(editor);
-		var gmlRulesStart = gmlRules["start"];
-		gmlRules.remove("start");
-		gmlRulesStart.unshift(rxRule("md-pre-end", ~/```/, "pop"));
-		gmlRulesStart.pop(); // remove the default rule
-		gmlRulesStart.push(rdef("md-pre-gml"));
-		for (key in gmlRules.keys()) rules[key] = gmlRules[key];
-		rules["md.gml"] = gmlRulesStart;
+		function addBlock(substart:String, subset:AceHighlightRuleset) {
+			var start = subset["start"].slice(0);
+			start.unshift(rxRule("md-pre-end", ~/```/, "pop"));
+			start.pop(); // remove the default rule
+			start.push(rdef("md-pre-gml"));
+			for (key in subset.keys()) if (key != "start") rules[key] = subset[key];
+			rules[substart] = start;
+		}
+		var rHaxe = AceHxHighlight.makeRules(this);
+		addBlock("md.gml", AceGmlHighlight.makeRules(editor));
+		addBlock("md.hx", rHaxe);
+		addBlock("md.glsl", ShaderHighlight.makeRules(this, GLSL));
+		addBlock("md.hlsl", ShaderHighlight.makeRules(this, HLSL));
+		if (dmd) rules["md.expr"] = [ // inline Haxe expression
+			rxPush("curly.paren.lparen", ~/\{/, "md.expr"),
+			rxRule("curly.paren.rparen", ~/\}/, "pop"),
+		].concat(rHaxe["start"]).concat([rText]);
 		//
 		rules["md.pre"] = [rEsc, rxRule("md-pre-end", ~/```/, "pop"), rdef("md-pre")];
 		untyped this.normalizeRules();

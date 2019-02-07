@@ -1,6 +1,8 @@
 package shaders;
 import ace.AceMacro.jsOr;
 import ace.AceMacro.rxRule;
+import ace.AceMacro.rxPush;
+import tools.HighlightTools.*;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.AceGmlHighlight;
@@ -10,49 +12,55 @@ import ace.AceGmlHighlight;
  * @author YellowAfterlife
  */
 @:expose("AceShaderHighlight")
-@:keep class ShaderHighlight {
-	@:native("$rules") public var rules:Dynamic;
+@:keep class ShaderHighlight extends AceHighlight {
 	public static var nextKind:ShaderKind = ShaderKind.GLSL;
-	public function new() {
-		var kind:ShaderKind = nextKind;
-		//
-		function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
-			return { token: tk, regex: rx, next: next };
+	public static function makeRules(hl:AceHighlight, kind:ShaderKind):AceHighlightRuleset {
+		var rules:AceHighlightRuleset = {};
+		var pkg:String, identFunc:String->String;
+		switch (kind) {
+			case GLSL: {
+				identFunc = (s) -> jsOr(ShaderAPI.glslKind[s], "identifier");
+				pkg = "glsl";
+			};
+			case HLSL: {
+				identFunc = (s) -> jsOr(ShaderAPI.hlslKind[s], "identifier");
+				pkg = "hlsl";
+			};
+			default: {
+				identFunc = (s) -> "identifier";
+				pkg = "shader";
+			}
 		}
-		//
-		var identFunc:Dynamic = switch (kind) {
-			case ShaderKind.GLSL: function(s) return jsOr(ShaderAPI.glslKind[s], "identifier");
-			case ShaderKind.HLSL: function(s) return jsOr(ShaderAPI.hlslKind[s], "identifier");
-			default: function(_) return "identifier";
-		};
-		//
-		rules = {
-			"start": [
-				rxRule("comment", ~/\/\/######################_==_YOYO_SHADER_MARKER_==_######################@~/),
-				rxRule("comment.line", ~/\/\/.*/),
-				rxRule("comment", ~/\/\*/, "comment"),
-				rxRule("constant.numeric",
-					~/0[xX][0-9a-fA-F]+(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b/
-				),
-				rxRule("constant.numeric",
-					~/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b/
-				),
-				rxRule(identFunc, ~/\w+/),
-				rxRule("preproc", ~/#(\w+.+)/),
-				rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
-				rxRule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|==|!=|<=|>=|<>|<|>|!|&&|\|\|/),
-				rxRule("punctuation.operator", ~/\?|:|,|;|\./),
-				rxRule("curly.paren.lparen", ~/\{/),
-				rxRule("curly.paren.rparen", ~/\}/),
-				rxRule("paren.lparen", ~/[\[(]/),
-				rxRule("paren.rparen", ~/[\])]/),
-				rxRule("text", ~/\s+/),
-			],
-			"comment": [
-				rxRule("comment", ~/.*?\*\//, "start"),
-				cast { defaultToken: "comment" }
-			],
-		};
+		rules["start"] = [
+			rxRule("comment.line", ~/\/\/.*$/),
+			rxPush("comment", ~/\/\*/, pkg + ".comment"),
+			rxRule("numeric",
+				~/0[xX][0-9a-fA-F]+(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b/
+			),
+			rxRule("numeric",
+				~/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b/
+			),
+			rxRule(identFunc, ~/\w+/),
+			rxRule("preproc", ~/#(\w+.+)/),
+			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
+			rxRule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|==|!=|<=|>=|<>|<|>|!|&&|\|\|/),
+			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
+			rxRule("curly.paren.lparen", ~/\{/),
+			rxRule("curly.paren.rparen", ~/\}/),
+			rxRule("paren.lparen", ~/[\[(]/),
+			rxRule("paren.rparen", ~/[\])]/),
+			rxRule("text", ~/\s+/),
+		];
+		rules[pkg + ".comment"] = [
+			rxRule("comment", ~/.*?\*\//, "pop"),
+			rdef("comment")
+		];
+		return rules;
+	}
+	public function new() {
+		super();
+		rules = makeRules(this, nextKind);
+		normalizeRules();
 	}
 	public static function define(require:AceRequire, exports:AceExports, module:AceModule) {
 		var oop = require("../lib/oop");

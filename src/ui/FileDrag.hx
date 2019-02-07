@@ -30,7 +30,7 @@ class FileDrag {
 				return;
 			};
 		}
-		switch (Path.extension(path)) {
+		switch (Path.extension(path).toLowerCase()) {
 			case "gmx": {
 				switch (Path.extension(Path.withoutExtension(path))) {
 					case "project": Project.open(path);
@@ -48,6 +48,9 @@ class FileDrag {
 			case "yyp": Project.open(path);
 			case "gml": {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
+				GmlFile.open(Path.withoutExtension(name), path);
+			};
+			case "md", "dmd": {
 				GmlFile.open(Path.withoutExtension(name), path);
 			};
 			case "yyz", "zip": {
