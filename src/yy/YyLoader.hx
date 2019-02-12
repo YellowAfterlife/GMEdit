@@ -77,6 +77,7 @@ class YyLoader {
 							"scripts",
 							"extensions",
 							"timelines",
+							"notes",
 							"rooms": {
 							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
@@ -140,6 +141,12 @@ class YyLoader {
 						};
 						case "GMTimeline": {
 							GmlAPI.gmlLookupText += name + "\n";
+						};
+						case "GMNotes": {
+							rel = Path.withoutExtension(rel);
+							var nx = Path.withoutExtension(full);
+							full = nx + ".txt";
+							name = Path.withoutDirectory(nx);
 						};
 						case "GMIncludedFile": {
 							rel = Path.withoutExtension(rel);
