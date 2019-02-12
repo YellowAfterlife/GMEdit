@@ -31,14 +31,14 @@ using tools.NativeString;
 		var editor:EditCode = EditCode.currentNew;
 		var dmd:Bool = editor.file.kind == GmlFileKind.DocMarkdown;
 		//
-		var rEsc = rxRule("md-escape", ~/\\/);
+		var rEsc = rxRule("md-escape", ~/\\(?:.|$)/);
 		var rBase:Array<AceLangRule> = [];
 		var rText = rxRule("text", ~/\s+/);
 		//
 		if (dmd) {
 			rBase.push(rxPush("md-section-start", ~/#\[/, "md.section"));
 			rBase.push(rxPush("md-italic", ~/\b_\B/, "md.italic"));
-			rBase.push(rxPush("md-bold", ~/\B\*\b/, "md.bold"));
+			rBase.push(rxPush("md-bold", ~/\*/, "md.bold"));
 		} else {
 			rBase.push(rulePairs([
 				"^\\s#+\\s*", "md-section-prefix",
@@ -51,6 +51,9 @@ using tools.NativeString;
 		rBase.push(rxPush("md-url-start", ~/\[/, "md.url"));
 		if (dmd) {
 			rBase.push(rxPush("md-pre-start", ~/```(?:\B|gml\b)/, "md.gml"));
+			rBase.push(rxPush([
+				"md-pre-start", "md-url"
+			], ~/(```setmd\b\s*)(\w*)/, "md.md"));
 			rBase.push(rxPush(["md-expr-start", "curly.paren.lparen"], ~/(\$)(\{)/, "md.expr"));
 		} else rBase.push(rxPush("md-pre-start", ~/```gml\b/, "md.gml"));
 		rBase.push(rxPush("md-pre-start", ~/```(?:haxe\b|exec\b)/, "md.hx"));
@@ -71,14 +74,14 @@ using tools.NativeString;
 			rules["md.section"] = [
 				rxPush("md-section-start", ~/\[/, "md.section"),
 				rxRule(["md-section-end", "md-href-start"], ~/(\])(\()/, "md.href"),
-				rxRule("md-section-end", ~/\]/, "pop"),
+				rxRule("md-section-end", ~/(?:\]|$)/, "pop"),
 				rdef("md-section"),
 			];
 			rules["md.italic"] = rcct([
-				rxRule("md-italic", ~/\B_\b/, "pop")
+				rxRule("md-italic", ~/(?:\B_\b|$)/, "pop"),
 			], rdef("md-italic"));
 			rules["md.bold"] = rcct([rEsc,
-				rxRule("md-bold", ~/\b\*\B/, "pop")
+				rxRule("md-bold", ~/(?:\*|$)/, "pop"),
 			], rdef("md-bold"));
 		} else {
 			rules["md.italic"] = rcct([
@@ -91,14 +94,14 @@ using tools.NativeString;
 		//
 		rules["md.url"] = [rEsc,
 			rxRule(["md-url-end", "md-href-start"], ~/(\])(\()/, "md.href"),
-			rxRule("md-url-end", ~/\]/, "pop"),
+			rxRule("md-url-end", ~/(?:\]|$)/, "pop"),
 			rdef("md-url"),
 		];
 		rules["md.href"] = [rEsc,
-			rxRule("md-href-end", ~/\)/, "pop"),
+			rxRule("md-href-end", ~/(?:\)|$)/, "pop"),
 			rdef("md-href"),
 		];
-		rules["md.tt"] = [rEsc, rxRule("md-tt", ~/`/, "pop"), rdef("md-tt")];
+		rules["md.tt"] = [rEsc, rxRule("md-tt", ~/(?:`|$)/, "pop"), rdef("md-tt")];
 		//
 		function addBlock(substart:String, subset:AceHighlightRuleset) {
 			var start = subset["start"].slice(0);
@@ -117,6 +120,9 @@ using tools.NativeString;
 			rxPush("curly.paren.lparen", ~/\{/, "md.expr"),
 			rxRule("curly.paren.rparen", ~/\}/, "pop"),
 		].concat(rHaxe["start"]).concat([rText]);
+		if (dmd) rules["md.md"] = rcct([
+			rxRule("md-pre-end", ~/```/, "pop")
+		], rText);
 		//
 		rules["md.pre"] = [rEsc, rxRule("md-pre-end", ~/```/, "pop"), rdef("md-pre")];
 		untyped this.normalizeRules();

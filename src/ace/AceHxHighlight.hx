@@ -32,7 +32,7 @@ using tools.NativeString;
 				+ "|class|enum|abstract|typedef|interface|extends|implements" 
 				+ "|inline|extern|override|private|public|static"
 				+ "|function|var|new|super|this|trace"
-				+ "|if|else|for|in|while|do|switch|default|break|continue"
+				+ "|if|else|for|in|while|do|switch|case|default|break|continue"
 				+ "|return|try|throw|catch|cast|untyped",
 			"constant.boolean": "true|false",
 			"constant": "null"
@@ -41,11 +41,12 @@ using tools.NativeString;
 		var base = [
 			rxRule("comment.line.doc", ~/\/\/\/.*$/),
 			rxRule("comment.line", ~/\/\/.*$/),
-			rxRule("comment.doc", ~/\/\*\*/, "hx.comment.doc"),
+			rxPush("comment.doc", ~/\/\*\*/, "hx.comment.doc"),
+			rxPush("comment", ~/\/\*/, "hx.comment"),
 			rxRule("numeric", ~/0[xX][0-9a-fA-F]+\b/),
 			rxRule("numeric", ~/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/),
 			rule("string.regexp", "[/](?:(?:\\[(?:\\\\]|[^\\]])+\\])|(?:\\\\/|[^\\]/]))*[/]\\w*\\s*(?=[).,;]|$)"),
-			rule("string", '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'),
+			rule("string", '["](?:(?:\\\\.)|(?:[^"\\\\]))*?(?:["]|$)'),
 			rxRule(kwmapper, ~/\w+/),
 			rxPush("string", ~/'/, "hx.string"),
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
@@ -61,9 +62,14 @@ using tools.NativeString;
 		];
 		return {
 			"start": base,
-			"hx.comment": [
+			"hx.comment.doc": [
 				rule("comment.meta", '@(?:$docTags)'),
+				rxRule("comment.doc", ~/\*\//, "pop"),
+				rdef("comment.doc")
+			],
+			"hx.comment": [
 				rxRule("comment", ~/\*\//, "pop"),
+				rdef("comment")
 			],
 			"hx.string": [
 				rxPush(["string", "curly.paren.lparen"], ~/(\$)(\{)/, "hx.string.code"),
@@ -72,7 +78,7 @@ using tools.NativeString;
 					+ "u[0-9a-fA-F]{4}|" // \u1234
 					// there's also octal which doesn't work (?)
 				+ ".)"),
-				rxRule("string", ~/'/, "pop"),
+				rxRule("string", ~/(?:'|$)/, "pop"),
 				rdef("string"),
 			],
 			"hx.string.code": [
