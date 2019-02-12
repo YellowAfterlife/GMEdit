@@ -301,7 +301,8 @@ class Project {
 		#if !lwedit
 		var path = moduleArgs["open"];
 		if (path != null) {
-			open(path.ptNoBS());
+			ui.FileDrag.handle(path.ptNoBS(), null);
+			if (current == null) open(""); 
 		} else open("");
 		#else
 		current = new YyZip("", "", []);
