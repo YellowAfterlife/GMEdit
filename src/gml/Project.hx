@@ -185,7 +185,7 @@ class Project {
 		}
 	}
 	#end
-	public function new(_path:String) {
+	public function new(_path:String, _load:Bool = true) {
 		path = _path;
 		#if !lwedit
 		new_procSingle();
@@ -200,9 +200,11 @@ class Project {
 		}
 		#if !lwedit
 		if (path != null) detectVersion();
-		document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
-		TreeView.clear();
-		reload(true);
+		if (_load) {
+			document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
+			TreeView.clear();
+			reload(true);
+		}
 		#else
 		version = GmlVersion.v1;
 		GmlAPI.version = version;
@@ -301,6 +303,7 @@ class Project {
 		#if !lwedit
 		var path = moduleArgs["open"];
 		if (path != null) {
+			current = new Project("", false);
 			ui.FileDrag.handle(path.ptNoBS(), null);
 			if (current == null) open(""); 
 		} else open("");
