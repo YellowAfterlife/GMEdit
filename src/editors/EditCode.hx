@@ -59,7 +59,17 @@ class EditCode extends Editor {
 		// todo: does Mac version of GMS2 use Mac line endings? Probably not
 		session.setOption("newLineMode", "windows");
 		session.setOption("tabSize", Preferences.current.tabSize);
-		session.setOption("useSoftTabs", Preferences.current.tabSpaces);
+		if (Preferences.current.detectTab) {
+			if (NativeString.contains(file.code, "\n\t")) {
+				session.setOption("useSoftTabs", false);
+			} else if (NativeString.contains(file.code, "\n  ")) {
+				session.setOption("useSoftTabs", true);
+			} else {
+				session.setOption("useSoftTabs", Preferences.current.tabSpaces);
+			}
+		} else {
+			session.setOption("useSoftTabs", Preferences.current.tabSpaces);
+		}
 		Preferences.hookSetOption(session);
 		if (modePath == "ace/mode/javascript") {
 			session.setOption("useWorker", false);

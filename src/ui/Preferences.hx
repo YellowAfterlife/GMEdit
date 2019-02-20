@@ -318,6 +318,11 @@ class Preferences {
 			}
 			save();
 		}).title = "If enabled, show_debug_message will show up in results for `sdm`";
+		addCheckbox(out, "Auto-detect soft tabs", current.detectTab, function(z) {
+			current.detectTab = z;
+			save();
+		}).title = "If enabled, will auto-detect whether to indent with tabs or spaces"
+			+ " based on whether the file has lines starting with either.";
 		//
 		#if !lwedit
 		addCheckbox(out, "Open with single click", current.singleClickOpen, function(z) {
@@ -481,6 +486,7 @@ class Preferences {
 			recentProjectCount: 16,
 			tabSize: 4,
 			tabSpaces: true,
+			detectTab: true,
 			eventOrder: 1,
 			tooltipDelay: 350,
 			tooltipKind: Custom,
@@ -576,6 +582,7 @@ typedef PrefData = {
 	recentProjectCount:Int,
 	tabSize:Int,
 	tabSpaces:Bool,
+	detectTab:Bool,
 	eventOrder:Int,
 	backupCount:{ v1:Int, v2:Int, live:Int },
 	tooltipKind:PrefTooltipKind,
