@@ -115,7 +115,7 @@ class YyManip {
 			Key: ni,
 			Value: {
 				id: nix[1],
-				resourcePath: nPath,
+				resourcePath: StringTools.replace(nPath, "/", "\\"),
 				resourceType: nType,
 			}
 		});
