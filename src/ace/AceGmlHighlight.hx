@@ -206,10 +206,11 @@ using tools.NativeString;
 		//
 		var rPragma_call:AceLangRule = {
 			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
-				'("global"|\'global\')(\\s*)(,)(\\s*)("|\'|@"|@\')',
+				'("global"|\'global\')(\\s*)(,)(\\s*)(@?)("|\')',
 			onMatch: function(value:String, state:String, stack:Array<String>, line:String) {
 				var values:Array<String> = jsThis.splitRegex.exec(value);
-				jsThis.next = values[9].indexOf('"') >= 0 ? "gml.pragma.dq" : "gml.pragma.sq";
+				stack.push(state);
+				jsThis.nextState = values[10] == '"' ? "gml.pragma.dq" : "gml.pragma.sq";
 				return [
 					rtk("function", values[1]),
 					rtk("text", values[2]),
@@ -220,9 +221,15 @@ using tools.NativeString;
 					rtk("punctuation.operator", values[7]),
 					rtk("text", values[8]),
 					rtk("punctuation.operator", values[9]),
+					rtk("string", values[10]),
 				];
 			},
-			next: "gml.pragma",
+			next: cast function(current, stack) {
+				if (current != "start" || stack.length > 0) {
+					stack.unshift(jsThis.nextState, current);
+				}
+				return jsThis.nextState;
+			}
 		};
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
@@ -269,7 +276,7 @@ using tools.NativeString;
 				"#import\\s+", "preproc.import",
 				"\"[^\"]*\"|'[^']*'", "string.importpath"
 			]),
-			rxPush("preproc.import", ~/#import\b/, "gml.pragma"),
+			rxPush("preproc.import", ~/#import\b/, "gml.import"),
 			rxRule("preproc.args", ~/#args\b/),
 			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
@@ -332,8 +339,8 @@ using tools.NativeString;
 			rxRule("punctuation.operator", ~/,/, "gml.enum"),
 		].concat(rBase); //}
 		//
-		var rPragma_sq = [].concat(rBase);
-		var rPragma_dq = [].concat(rBase);
+		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
+		var rPragma_dq = [rule("string", '"', "pop")].concat(rBase);
 		//
 		var rComment = [ //{
 			rule("comment.link", "@\\[" + "[^\\[]*" + "\\]"),
@@ -345,7 +352,7 @@ using tools.NativeString;
 			"gml.enumvalue": rEnumValue,
 			"gml.pragma.sq": rPragma_sq,
 			"gml.pragma.dq": rPragma_dq,
-			"gml.pragma": [ //{
+			"gml.import": [ //{
 				rule("keyword", "(in|as)\\b"),
 				rule("impfield", "@\\w+"),
 				rule("text", "[ \t]*$", "pop"),
