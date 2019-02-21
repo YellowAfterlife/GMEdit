@@ -154,6 +154,20 @@ class AceGmlCommands {
 				});
 			}
 		}, "Go to line...");
+		//
+		add({
+			name: "genEnumNames",
+			exec: function(editor:AceWrap) {
+				ace.plugins.AceEnumNames.run(editor, false);
+			}
+		}, "Macro: Generate enum names");
+		add({
+			name: "genEnumLookup",
+			exec: function(editor:AceWrap) {
+				ace.plugins.AceEnumNames.run(editor, true);
+			}
+		}, "Macro: Generate enum lookup");
+		//
 		show("showSettingsMenu", "Code editor preferences");
 	}
 }

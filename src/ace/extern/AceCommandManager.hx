@@ -34,7 +34,7 @@ extern class AceCommandManager {
 	}
 }
 extern typedef AceCommandImpl = {
-	bindKey:AceCommandKey,
+	?bindKey:AceCommandKey,
 	exec:AceWrap->Void,
 	name:String,
 	?readOnly: Bool,

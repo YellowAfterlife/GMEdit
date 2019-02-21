@@ -1,0 +1,79 @@
+package ace.plugins;
+import ace.AceWrap;
+import ace.extern.AceToken;
+import ace.extern.AceTokenIterator;
+import electron.Dialog;
+using tools.NativeString;
+
+/**
+ * Generates a value->name mapper for the nearby enum
+ * @author YellowAfterlife
+ */
+class AceEnumNames {
+	public static function run(editor:AceWrap, lookup:Bool) {
+		var session = editor.session;
+		var lead = session.selection.lead;
+		var iter = new AceTokenIterator(session, lead.row, lead.column);
+		var tk:AceToken = {type:"", value:""};
+		while (tk != null) {
+			tk = iter.stepBackward();
+			if (tk == null || tk.type != "enum") continue;
+			var ename = tk.value;
+			tk = iter.stepBackward();
+			if (tk == null || tk.type != "text") continue;
+			tk = iter.stepBackward();
+			if (tk == null || tk.value != "enum") continue;
+			for (_ in 0 ... 3) tk = iter.stepForward();
+			//
+			var names = [];
+			while (tk != null) {
+				tk = iter.stepForward();
+				if (tk == null) break;
+				if (tk.type == "curly.paren.rparen") break;
+				if (tk.type != "enumfield") continue;
+				var name = tk.value;
+				//
+				tk = iter.stepForward();
+				if (tk != null && tk.type == "text") tk = iter.stepForward();
+				if (tk == null) break;
+				switch (tk.value) {
+					case ",", "=", "}": {
+						names.push(name);
+						if (tk.value != "}") {
+							tk = iter.stepForward();
+						} else tk = iter.stepBackward();
+					};
+					default:
+				}
+			}
+			//
+			if (names.length == 0) {
+				Dialog.showAlert('Could not find any fields in enum $ename');
+				break;
+			}
+			//
+			var sep = "\n";
+			var line = session.doc.getLine(lead.row);
+			var prefix = editor.getSelectedText();
+			for (i in 0 ... lead.column - prefix.length) {
+				sep += line.charAt(i) == "\t" ? "\t" : " ";
+			}
+			//
+			var insert:String = null;
+			var last:String = "";
+			for (name in names) {
+				if (insert == null) insert = ""; else insert += sep;
+				if (lookup) {
+					last = '$prefix[?"$name"] = $ename.$name;';
+				} else last = '$prefix[$ename.$name] = "$name";';
+				insert += last;
+			}
+			editor.insert(insert, true);
+			session.selection.moveTo(lead.row, lead.column - last.length + prefix.length);
+			for (_ in 1 ... names.length) editor.execCommand("addCursorAbove");
+			editor.focus();
+			return;
+		}
+		Dialog.showAlert('Could not find an enum. Did you put your cursor after one?');
+	}
+}
