@@ -159,7 +159,10 @@ class KeyboardShortcuts {
 			};
 			#if !lwedit
 			case KeyboardEvent.DOM_VK_T: {
-				if (isMod) {
+				if (isShiftMod) {
+					e.preventDefault();
+					GlobalLookup.toggle(">");
+				} else if (isMod) {
 					e.preventDefault();
 					GlobalLookup.toggle();
 				}

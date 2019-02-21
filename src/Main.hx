@@ -120,6 +120,7 @@ class Main {
 		#end
 		KeyboardShortcuts.initEditor();
 		ScrollMode.init();
+		GlobalCommands.init();
 		AceGmlCommands.init();
 		untyped window.ace_mode_gml_2();
 		//

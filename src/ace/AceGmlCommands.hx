@@ -2,7 +2,10 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.extern.AceCommandManager;
+import haxe.extern.EitherType;
 import js.RegExp;
+import tools.NativeString;
+import ui.GlobalCommands;
 
 /**
  * GMS-style keybinds, as per
@@ -15,7 +18,50 @@ class AceGmlCommands {
 		inline function wm(win:String, mac:String):AceCommandKey {
 			return { win: win, mac: mac };
 		}
-		commands.addCommand({
+		/// displays the given command in Ctrl+T>
+		function show(cmdName:String, text:String, ?kb:AceCommandKey) {
+			var cmd = Main.aceEditor.commands.commands[cmdName];
+			var key:String = null;
+			if (cmd != null) {
+				//
+				if (kb == null) kb = cmd.bindKey;
+				if (kb == null) {
+					var ckb = Main.aceEditor.commands.commandKeyBinding;
+					for (k in ckb.keys()) {
+						var ckv = ckb[k];
+						if (ckv == cmd || (cast ckv) == cmdName) { key = k; break; } 
+					}
+				}
+				if (kb == null || key != null) {
+					// OK!
+				} else if (Std.is(kb, String)) {
+					key = kb;
+				} else {
+					if (electron.FileWrap.isMac) {
+						key = (kb:AceCommandKeyPair).mac;
+					} else key = (kb:AceCommandKeyPair).win;
+				}
+				if (key != null) {
+					var p = key.indexOf("|");
+					if (p >= 0) key = key.substring(0, p);
+					key = NativeString.replaceExt(key,
+						new RegExp("(?:^|\\b)(\\w)", "g"),
+						(_, c) -> c.toUpperCase());
+				}
+			} else Main.console.warn('Command $cmdName is amiss');
+			GlobalCommands.add(text, function() {
+				Main.aceEditor.execCommand(cmdName);
+			}, key);
+		}
+		function add(cmd:AceCommand, ?showAs:String) {
+			commands.addCommand(cmd);
+			if (showAs != null) show(cmd.name, showAs);
+		}
+		function bind(key:AceCommandKey, cmd:String, ?showAs:String) {
+			commands.bindKey(key, cmd);
+			if (showAs != null) show(cmd, showAs, key);
+		}
+		add({
 			name: "startAutocomplete",
 			exec: function(editor:AceWrap) {
 				if (editor.completer != null) {
@@ -24,7 +70,7 @@ class AceGmlCommands {
 			},
 			bindKey: "Ctrl-Space|Ctrl-Shift-Space|Alt-Space"
 		});
-		commands.addCommand({
+		add({
 			name: "showKeyboardShortcuts",
 			bindKey: wm("Ctrl-Alt-h", "Command-Alt-h"),
 			exec: function(editor) {
@@ -33,25 +79,25 @@ class AceGmlCommands {
 					untyped editor.showKeyboardShortcuts();
 				});
 			}
-		});
+		}, "Show keyboard mappings");
 		#if lwedit
-		commands.addCommand({
+		add({
 			name: "lw_execute",
 			bindKey: {win: "Ctrl-Enter", mac: "Command-Enter|Ctrl-Enter"},
 			exec: function(editor) {
 				Main.document.getElementById("refresh").click();
 			}
-		});
+		}, "Run game");
 		#else
-		commands.bindKey(wm("Ctrl-Enter", "Command-Enter"), "toggleFoldWidget");
+		bind(wm("Ctrl-Enter", "Command-Enter"), "toggleFoldWidget");
 		#end
-		commands.bindKey(wm("Ctrl-M", "Command-M"), "foldall");
-		commands.bindKey(wm("Ctrl-U", "Command-U"), "unfoldall");
-		commands.bindKey(wm("Ctrl-Alt-Up", "Command-Alt-Up"), "movelinesup");
-		commands.bindKey(wm("Ctrl-Alt-Down", "Command-Alt-Down"), "movelinesdown");
-		commands.bindKey(wm("Alt-Shift-Up", "Alt-Shift-Up"), "addCursorAbove");
-		commands.bindKey(wm("Alt-Shift-Down", "Alt-Shift-Down"), "addCursorBelow");
-		commands.bindKey(wm("Ctrl-K", "Command-K"), "togglecomment");
+		bind(wm("Ctrl-M", "Command-M"), "foldall", "Fold All");
+		bind(wm("Ctrl-U", "Command-U"), "unfoldall", "Unfold All");
+		bind(wm("Ctrl-Alt-Up", "Command-Alt-Up"), "movelinesup");
+		bind(wm("Ctrl-Alt-Down", "Command-Alt-Down"), "movelinesdown");
+		bind(wm("Alt-Shift-Up", "Alt-Shift-Up"), "addCursorAbove");
+		bind(wm("Alt-Shift-Down", "Alt-Shift-Down"), "addCursorBelow");
+		bind(wm("Ctrl-K", "Command-K"), "togglecomment");
 		//
 		var findRxs = "^#define\\b|^#event\\b|^#moment\\b|^#section\\b";
 		var findRx0 = new RegExp('(?:$findRxs|#region\\b|//{|//#region)');
@@ -78,28 +124,28 @@ class AceGmlCommands {
 				break;
 			}
 		}
-		commands.addCommand({
+		add({
 			name: "gotoNextFoldRegion",
 			bindKey: wm("Ctrl-Down", "Command-Down"),
 			exec: function(editor:AceWrap) findFoldImpl(editor, true, false),
-		});
-		commands.addCommand({
+		}, "Next fold region");
+		add({
 			name: "gotoPreviousFoldRegion",
 			bindKey: wm("Ctrl-Up", "Command-Up"),
 			exec: function(editor:AceWrap) findFoldImpl(editor, false, false),
-		});
-		commands.addCommand({
+		}, "Previous fold region");
+		add({
 			name: "selectNextFoldRegion",
 			bindKey: wm("Ctrl-Shift-Down", "Command-Shift-Down"),
 			exec: function(editor:AceWrap) findFoldImpl(editor, true, true),
 		});
-		commands.addCommand({
+		add({
 			name: "selectPreviousFoldRegion",
 			bindKey: wm("Ctrl-Shift-Up", "Command-Shift-Up"),
 			exec: function(editor:AceWrap) findFoldImpl(editor, false, true),
 		});
 		commands.removeCommand("gotoline");
-		commands.addCommand({
+		add({
 			name: "gotoline",
 			bindKey: wm("Ctrl-G", "Command-G"),
 			exec: function(editor:AceWrap) {
@@ -107,6 +153,7 @@ class AceGmlCommands {
 					AceGotoLine.run(editor);
 				});
 			}
-		});
+		}, "Go to line...");
+		show("showSettingsMenu", "Code editor preferences");
 	}
 }

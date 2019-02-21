@@ -93,6 +93,15 @@
 .popout-window input[type="text"],
 .popout-window select option {
 	padding-left: 2px;
+	position: relative;
+}
+.popout-window select option[hint]:after {
+	content: attr(hint);
+	position: absolute;
+	right: 2px;
+	font-size: 85%;
+	bottom: calc(50% - 0.425em);
+	--top: calc(50% - 0.425em);
 }
 .popout-window input[type="text"],
 .popout-window select {
