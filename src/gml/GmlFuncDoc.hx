@@ -44,9 +44,7 @@ class GmlFuncDoc {
 	}
 	
 	public function getAcText() {
-		var r = pre + args.join(", ");
-		if (rest) r += "...";
-		return r + post;
+		return pre + args.join(", ") + post;
 	}
 	
 	public static function parse(s:String, ?out:GmlFuncDoc) {
@@ -83,6 +81,7 @@ class GmlFuncDoc {
 		+ "(\\d+)" // argument0
 		+ "|\\s*\\[\\s*(?:(\\d+)\\s*\\])?" // argument[0] | argument[???]
 	+ ")", "g");
+	static var fromCode_hasRet:RegExp = new RegExp("\\breturn\\b\\s*[^;]");
 	public function fromCode(gml:String, from:Int = 0, ?till:Int) {
 		var q = new GmlReader(gml);
 		var rx = fromCode_rx;
@@ -91,11 +90,14 @@ class GmlFuncDoc {
 		if (till == null) till = gml.length;
 		clear();
 		//
+		var hasRet = false;
+		var hasRetRx = fromCode_hasRet;
 		function flush(p:Int):Void {
 			var chunk = q.substring(start, p);
 			rx.lastIndex = 0;
 			var mt = rx.exec(chunk);
 			var c:CharCode;
+			if (!hasRet && hasRetRx.test(chunk)) hasRet = true;
 			while (mt != null) {
 				var argis = ace.AceMacro.jsOr(mt[1], mt[2]);
 				if (argis != null) {
@@ -141,6 +143,10 @@ class GmlFuncDoc {
 			} else q.skip();
 		}
 		flush(q.pos);
+		//
+		post = ")";
+		if (rest) post = "..." + post;
+		if (hasRet) post += "➜";
 	}
 	
 	static var autogen_argi = [for (i in 0 ... 16) new RegExp('\\bargument$i\\b')];
