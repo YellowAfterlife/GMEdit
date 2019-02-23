@@ -1,0 +1,4 @@
+{
+	"name": "gen-enum-names",
+	"scripts": ["gen-enum-names.js"]
+}

@@ -212,7 +212,8 @@ class Preferences {
 			for (dir in [
 				Main.relPath(Theme.path),
 				FileWrap.userPath + "/themes" 
-			]) for (name in FileSystem.readdirSync(dir)) {
+			]) if (FileSystem.existsSync(dir)
+			) for (name in FileSystem.readdirSync(dir)) {
 				if (name == "default") continue;
 				var full = Path.join([dir, name, "config.json"]);
 				if (FileSystem.existsSync(full)) themeList.push(name);

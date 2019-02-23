@@ -120,8 +120,8 @@ class Main {
 		#end
 		KeyboardShortcuts.initEditor();
 		ScrollMode.init();
-		GlobalCommands.init();
-		AceGmlCommands.init();
+		CommandPalette.init();
+		AceCommands.init();
 		untyped window.ace_mode_gml_2();
 		//
 		AceSessionData.init();
@@ -138,14 +138,7 @@ class Main {
 		aceEditor.session = WelcomePage.init(aceEditor);
 		#end
 		LiveWeb.init();
-		//
-		try {
-			Type.resolveClass("Main");
-			untyped __js__("window.$hxClasses = $hxClasses");
-		} catch (x:Dynamic) {
-			trace("Couldn't expose hxClasses: " + x);
-		}
-		//
+		plugins.PluginManager.init();
 		console.log("hello!");
 		return null;
 	}

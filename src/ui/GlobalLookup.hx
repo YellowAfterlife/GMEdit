@@ -36,7 +36,7 @@ class GlobalLookup {
 			var found = 0;
 			var foundMap = new Dictionary<Bool>();
 			list.selectedIndex = -1;
-			var data = isCmd ? GlobalCommands.lookupText : gml.GmlAPI.gmlLookupText;
+			var data = isCmd ? CommandPalette.lookupText : gml.GmlAPI.gmlLookupText;
 			//
 			function addOption(name:String):Void {
 				var option = list.children[found];
@@ -46,14 +46,19 @@ class GlobalLookup {
 					list.appendChild(option);
 				}
 				//
-				var hint:String;
+				var hint:String, title:String;
 				if (isCmd) {
-					var cmd = GlobalCommands.lookupMap[name];
-					hint = cmd.hint;
-				} else hint = null;
+					var cmd = CommandPalette.lookupMap[name];
+					hint = cmd.key;
+					title = cmd.title;
+				} else {
+					hint = null;
+					title = null;
+				}
 				if (hint != null) {
 					option.setAttribute("hint", hint);
 				} else option.removeAttribute("hint");
+				option.title = title;
 				//
 				option.textContent = name;
 				if (name == selection) list.selectedIndex = found;
@@ -81,7 +86,7 @@ class GlobalLookup {
 					}
 				}
 			} else {
-				for (v in GlobalCommands.lookupList) addOption(v);
+				for (v in CommandPalette.lookupList) addOption(v);
 			}
 			//
 			i = list.children.length;
@@ -118,9 +123,9 @@ class GlobalLookup {
 	}
 	static function openTerm(term:String):Bool {
 		if (NativeString.startsWith(field.value, ">")) {
-			var cmd = GlobalCommands.lookupMap[term];
+			var cmd = CommandPalette.lookupMap[term];
 			if (cmd == null) return false;
-			cmd.func();
+			cmd.exec();
 			return true;
 		} else {
 			return OpenDeclaration.openLocal(term, null);

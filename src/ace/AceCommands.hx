@@ -5,14 +5,66 @@ import ace.extern.AceCommandManager;
 import haxe.extern.EitherType;
 import js.RegExp;
 import tools.NativeString;
-import ui.GlobalCommands;
+import ui.CommandPalette;
 
 /**
  * GMS-style keybinds, as per
  * https://docs2.yoyogames.com/source/_build/1_overview/2_quick_start/8_shortcuts.html
  * @author YellowAfterlife
  */
-class AceGmlCommands {
+@:expose("AceCommands")
+@:keep class AceCommands {
+	
+	/// adds a command to the code editor(s)
+	@:doc public static function add(command:AceCommand) {
+		Main.aceEditor.commands.addCommand(command);
+	}
+	
+	static function getKeybindString(cmdName:String, ?kb:AceCommandKey):Null<String> {
+		var cmd = Main.aceEditor.commands.commands[cmdName];
+		if (cmd == null) return null;
+		var key:String = null;
+		if (kb == null) kb = cmd.bindKey;
+		if (kb == null) {
+			var ckb = Main.aceEditor.commands.commandKeyBinding;
+			for (k in ckb.keys()) {
+				var ckv = ckb[k];
+				if (ckv == cmd || (cast ckv) == cmdName) { key = k; break; } 
+			}
+		}
+		if (kb == null || key != null) {
+			// OK!
+		} else if (Std.is(kb, String)) {
+			key = kb;
+		} else {
+			if (electron.FileWrap.isMac) {
+				key = (kb:AceCommandKeyPair).mac;
+			} else key = (kb:AceCommandKeyPair).win;
+		}
+		if (key != null) {
+			var p = key.indexOf("|");
+			if (p >= 0) key = key.substring(0, p);
+			key = NativeString.replaceExt(key,
+				new RegExp("(?:^|\\b)(\\w)", "g"),
+				(_, c) -> c.toUpperCase());
+		}
+		return key;
+	}
+	
+	/// Adds a command to the command palette; cmd.
+	@:doc public static function addToPalette(cmd:CommandDef):Void {
+		var cmdName:String = cast cmd.exec;
+		if (!Std.is(cmdName, String)) throw "Expected cmd.exec to be command name";
+		if (cmd.key == null) cmd.key = getKeybindString(cmdName);
+		cmd.exec = function() Main.aceEditor.execCommand(cmdName);
+		CommandPalette.add(cmd);
+	}
+	
+	/// removes a command from the editor(s)
+	@:doc public static function remove(command:EitherType<AceCommand, String>) {
+		Main.aceEditor.commands.removeCommand(command);
+	}
+	
 	public static function init() {
 		var commands = Main.aceEditor.commands;
 		inline function wm(win:String, mac:String):AceCommandKey {
@@ -21,37 +73,13 @@ class AceGmlCommands {
 		/// displays the given command in Ctrl+T>
 		function show(cmdName:String, text:String, ?kb:AceCommandKey) {
 			var cmd = Main.aceEditor.commands.commands[cmdName];
-			var key:String = null;
-			if (cmd != null) {
-				//
-				if (kb == null) kb = cmd.bindKey;
-				if (kb == null) {
-					var ckb = Main.aceEditor.commands.commandKeyBinding;
-					for (k in ckb.keys()) {
-						var ckv = ckb[k];
-						if (ckv == cmd || (cast ckv) == cmdName) { key = k; break; } 
-					}
-				}
-				if (kb == null || key != null) {
-					// OK!
-				} else if (Std.is(kb, String)) {
-					key = kb;
-				} else {
-					if (electron.FileWrap.isMac) {
-						key = (kb:AceCommandKeyPair).mac;
-					} else key = (kb:AceCommandKeyPair).win;
-				}
-				if (key != null) {
-					var p = key.indexOf("|");
-					if (p >= 0) key = key.substring(0, p);
-					key = NativeString.replaceExt(key,
-						new RegExp("(?:^|\\b)(\\w)", "g"),
-						(_, c) -> c.toUpperCase());
-				}
-			} else Main.console.warn('Command $cmdName is amiss');
-			GlobalCommands.add(text, function() {
-				Main.aceEditor.execCommand(cmdName);
-			}, key);
+			if (cmd == null) Main.console.warn('Command $cmdName is amiss');
+			var key:String = getKeybindString(cmdName, kb);
+			CommandPalette.add({
+				name: text,
+				exec: function() Main.aceEditor.execCommand(cmdName),
+				key: key,
+			});
 		}
 		function add(cmd:AceCommand, ?showAs:String) {
 			commands.addCommand(cmd);
@@ -154,19 +182,6 @@ class AceGmlCommands {
 				});
 			}
 		}, "Go to line...");
-		//
-		add({
-			name: "genEnumNames",
-			exec: function(editor:AceWrap) {
-				ace.plugins.AceEnumNames.run(editor, false);
-			}
-		}, "Macro: Generate enum names");
-		add({
-			name: "genEnumLookup",
-			exec: function(editor:AceWrap) {
-				ace.plugins.AceEnumNames.run(editor, true);
-			}
-		}, "Macro: Generate enum lookup");
 		//
 		show("showSettingsMenu", "Code editor preferences");
 	}
