@@ -1,6 +1,8 @@
 package gml;
 import js.RegExp;
 import parsers.GmlReader;
+import tools.CharCode;
+using StringTools;
 using tools.NativeString;
 
 /**
@@ -34,8 +36,17 @@ class GmlFuncDoc {
 		this.rest = rest;
 	}
 	
+	public function clear():Void {
+		post = ")";
+		args.resize(0);
+		rest = false;
+		acc = false;
+	}
+	
 	public function getAcText() {
-		return pre + args.join(", ") + post;
+		var r = pre + args.join(", ");
+		if (rest) r += "...";
+		return r + post;
 	}
 	
 	public static function parse(s:String, ?out:GmlFuncDoc) {
@@ -66,6 +77,70 @@ class GmlFuncDoc {
 			out.rest = rest;
 			return out;
 		} else return new GmlFuncDoc(name, pre, post, args, rest);
+	}
+	
+	static var fromCode_rx:RegExp = new RegExp("\\bargument(?:"
+		+ "(\\d+)" // argument0
+		+ "|\\s*\\[\\s*(?:(\\d+)\\s*\\])?" // argument[0] | argument[???]
+	+ ")", "g");
+	public function fromCode(gml:String, from:Int = 0, ?till:Int) {
+		var q = new GmlReader(gml);
+		var rx = fromCode_rx;
+		q.pos = from;
+		var start = from;
+		if (till == null) till = gml.length;
+		clear();
+		//
+		function flush(p:Int):Void {
+			var chunk = q.substring(start, p);
+			rx.lastIndex = 0;
+			var mt = rx.exec(chunk);
+			var c:CharCode;
+			while (mt != null) {
+				var argis = ace.AceMacro.jsOr(mt[1], mt[2]);
+				if (argis != null) {
+					var argi:Int = Std.parseInt(argis);
+					var k = mt.index;
+					// see if argument is being assigned somewhere
+					var z = false;
+					while (--k >= start) {
+						c = chunk.fastCodeAt(k);
+						if (c.isSpace1()) continue;
+						z = (c == "=".code && chunk.fastCodeAt(k - 1) != "=".code);
+						break;
+					}
+					var name:String = null;
+					if (z) while (--k >= start) {
+						c = chunk.fastCodeAt(k);
+						if (c.isSpace1()) continue;
+						if (!c.isIdent1()) break;
+						var nameEnd = k + 1;
+						var nameStart = 0;
+						while (--k >= start) {
+							c = chunk.fastCodeAt(k);
+							if (c.isIdent1()) continue;
+							nameStart = k + 1;
+							break;
+						}
+						name = chunk.substring(nameStart, nameEnd);
+						break;
+					}
+					if (name == null) name = "arg" + argi;
+					args[argi] = name;
+				} else rest = true;
+				mt = rx.exec(chunk);
+			}
+		}
+		//
+		while (q.pos < till) {
+			var p = q.pos;
+			var n = q.skipCommon_inline();
+			if (n >= 0) {
+				flush(p);
+				start = q.pos;
+			} else q.skip();
+		}
+		flush(q.pos);
 	}
 	
 	static var autogen_argi = [for (i in 0 ... 16) new RegExp('\\bargument$i\\b')];

@@ -64,11 +64,14 @@ class GmlSeeker {
 		}
 	}
 	
-	private static var jsDoc_full = new RegExp("^///\\s*" // start
-		+ "(?:@desc(?:ription)?\\s+)?" // opt: "@desc "
-		+ "\\w*[ \t]*(\\(.+)");
-	private static var jsDoc_param = new RegExp("^///\\s*@(?:arg|param|argument)"
-		+ "\\s+(\\S+(?:\\s+=.+)?)");
+	private static var jsDoc_full:RegExp = new RegExp("^///\\s*" // start
+		+ "(?:@desc(?:ription)?\\s+)?" // opt: `@desc `
+		+ "\\w*[ \t]*(\\(.+)" // `func(...`
+	);
+	private static var jsDoc_param = new RegExp("^///\\s*"
+		+ "@(?:arg|param|argument)"
+		+ "\\s+(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value`
+	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
@@ -178,7 +181,21 @@ class GmlSeeker {
 			return null;
 		} // find
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
-		var s:String, name:String, start:Int, doc:GmlFuncDoc;
+		var s:String, name:String, start:Int;
+		var doc:GmlFuncDoc = null;
+		function flushDoc():Void {
+			if (doc == null && main != null) {
+				doc = out.docMap[main];
+				if (doc == null) {
+					doc = new GmlFuncDoc(main, main + "(", ")", [], false);
+					out.docList.push(doc);
+					out.docMap.set(main, doc);
+				}
+				doc.fromCode(src, start, q.pos);
+				if (mainComp != null) mainComp.doc = doc.getAcText();
+			}
+			doc = null;
+		}
 		var p:Int, flags:Int;
 		var c:CharCode, mt:RegExpMatch;
 		while (q.loop) {
@@ -251,6 +268,9 @@ class GmlSeeker {
 			}
 			else switch (s) {
 				case "#define": {
+					// we don't have to worry about #event/etc because they
+					// do not occur in files themselves
+					flushDoc();
 					main = find(Ident);
 					start = q.pos;
 					sub = main;
@@ -258,7 +278,7 @@ class GmlSeeker {
 					setLookup(main, true);
 					locals = new GmlLocals();
 					out.locals.set(main, locals);
-					if (v.hasScriptArgs()) {
+					if (v.hasScriptArgs()) { // `#define name(...args)`
 						s = find(Line | Par0);
 						if (s == "(") {
 							while (q.loop) {
@@ -503,6 +523,7 @@ class GmlSeeker {
 				};
 			} // switch (s)
 		} // while
+		flushDoc();
 		//
 		if (Project.current.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
 	}
