@@ -303,9 +303,13 @@ class Project {
 		#if !lwedit
 		var path = moduleArgs["open"];
 		if (path != null) {
-			current = new Project("", false);
+			var tmp = new Project("", false);
+			current = tmp;
 			ui.FileDrag.handle(path.ptNoBS(), null);
-			if (current == null) open(""); 
+			if (current == tmp) {
+				open("");
+				document.title = path.ptNoDir() + " - GMEdit";
+			}
 		} else open("");
 		#else
 		current = new YyZip("", "", []);
