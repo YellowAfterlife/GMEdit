@@ -1,3 +1,4 @@
+-1:1 properties
 2:0 alarm0
 2:1 alarm1
 2:2 alarm2

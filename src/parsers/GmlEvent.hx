@@ -16,6 +16,8 @@ using tools.NativeString;
  */
 class GmlEvent {
 	public static inline var typeCollision:Int = 4;
+	public static inline var typeMagic:Int = -1;
+	public static inline var kindMagicProperties:Int = 1;
 	public static inline function isKeyType(t:Int) {
 		return t == 5 || t == 9 || t == 10;
 	}
@@ -254,7 +256,7 @@ class GmlEvent {
 		comp.push(new AceAutoCompleteItem("keyboard", "event"));
 		// read event names from the file:
 		FileSystem.readTextFile(Main.relPath("api/events.gml"), function(err, data) {
-			tools.ERegTools.each(~/^(\d+):(\d+)[ \t]+(\w+)/gm, data, function(rx:EReg) {
+			tools.ERegTools.each(~/^([\d-]+):([\d-]+)[ \t]+(\w+)/gm, data, function(rx:EReg) {
 				var name = rx.matched(3);
 				comp.push(new AceAutoCompleteItem(name, "event"));
 				link(Std.parseInt(rx.matched(1)), Std.parseInt(rx.matched(2)), name);

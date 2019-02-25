@@ -30,4 +30,12 @@ class NativeArray {
 			arr.insert(i, insertWhat);
 		} else arr.unshift(insertWhat);
 	}
+	@:extern public static inline function filterSelf<T>(arr:Array<T>, fn:T->Bool):Void {
+		var i:Int = 0;
+		while (i < arr.length) {
+			if (fn(arr[i])) {
+				i++;
+			} else arr.splice(i, 1);
+		}
+	}
 }

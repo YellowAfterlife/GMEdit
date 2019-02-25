@@ -571,6 +571,13 @@ class GmlSeeker {
 			});
 		}
 		if (eventFiles.length == 0) return true;
+		{
+			var locals = new GmlLocals();
+			out.locals.set("properties", locals);
+			for (prop in YyObject.propertyList) {
+				locals.add(prop, "property.variable", "(object property)");
+			}
+		};
 		for (file in eventFiles) (function(name, full) {
 			if (!allSync) {
 				function procEvent(err, code) {

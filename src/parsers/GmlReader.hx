@@ -99,6 +99,22 @@ class GmlReader extends StringReader {
 		return n;
 	}
 	
+	public function skipNumber():Void {
+		var canDot = true;
+		var c = peek();
+		while (loop) {
+			if (c == ".".code) {
+				if (canDot) {
+					canDot = false;
+					skip();
+				} else break;
+			} else if (c.isDigit()) {
+				skip();
+			} else break;
+			c = peek();
+		}
+	}
+	
 	public inline function skipStringAuto(startquote:CharCode, version:GmlVersion):Int {
 		switch (startquote) {
 			case '"'.code: {

@@ -1,4 +1,5 @@
 package tools;
+import ace.extern.AcePos;
 import haxe.Constraints.Function;
 import haxe.extern.EitherType;
 import js.RegExp;
@@ -96,4 +97,15 @@ class NativeString {
 		return s;
 	}
 	
+	/// Translates a single position to row-column
+	public static function offsetToPos(s:String, ofs:Int):AcePos {
+		var rowStart = s.lastIndexOf("\n", ofs);
+		var col = ofs - rowStart;
+		var row = 0;
+		while (rowStart >= 0) {
+			row++;
+			rowStart = rowStart > 0 ? s.lastIndexOf("\n", rowStart - 1) : -1;
+		}
+		return new AcePos(col, row);
+	}
 }

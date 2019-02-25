@@ -15,10 +15,10 @@ class GmlLocals {
 	public var kind:Dictionary<String> = new Dictionary();
 	/** T of `var v:T` in type magic */
 	public var type:Dictionary<String> = new Dictionary();
-	public function add(name:String, lkind:String) {
+	public function add(name:String, lkind:String, ?doc:String) {
 		if (kind[name] == null) {
 			kind.set(name, lkind);
-			comp.push(new AceAutoCompleteItem(name, lkind));
+			comp.push(new AceAutoCompleteItem(name, lkind, doc));
 		}
 	}
 	public function addLocals(locals:GmlLocals) {

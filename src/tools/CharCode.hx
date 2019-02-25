@@ -28,4 +28,7 @@ abstract CharCode(Int) from Int to Int {
 			|| (this >= "0".code && this <= "9".code)
 		);
 	}
+	public inline function isDigit() {
+		return (this >= "0".code && this <= "9".code);
+	}
 }
