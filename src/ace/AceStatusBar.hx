@@ -240,6 +240,9 @@ class AceStatusBar {
 	public static inline var delayTime:Float = 100;
 	public static function statusUpdate() {
 		if (Main.window.performance.now() < ignoreUntil) return;
+		var q = GmlFile.current;
+		var codeEditor:EditCode = q.codeEditor;
+		if (codeEditor == null) return;
 		//
 		var editor = Main.aceEditor;
 		var sel = editor.selection;
@@ -260,7 +263,6 @@ class AceStatusBar {
 			}
 		}
 		//
-		var q = GmlFile.current;
 		if (q != ui.WelcomePage.file) q.changed = !session.getUndoManager().isClean();
 		//
 		var ctr = statusSpan, s:String;
@@ -301,7 +303,6 @@ class AceStatusBar {
 			contextName = null;
 		}
 		//
-		var codeEditor:EditCode = q.codeEditor;
 		var locals = codeEditor.locals[scope];
 		AceGmlCompletion.localCompleter.items = locals != null
 			? locals.comp : AceGmlCompletion.noItems;
