@@ -1,0 +1,4 @@
+{
+	"name": "image-viewer",
+	"scripts": ["image-viewer.js"]
+}
