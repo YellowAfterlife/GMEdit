@@ -3,6 +3,9 @@ import electron.FileSystem;
 import electron.FileWrap;
 import electron.Menu;
 import electron.Dialog;
+import file.kind.gml.KGmlMultifile;
+import file.kind.misc.KExtern;
+import file.kind.misc.KPlain;
 import gml.GmlObjectInfo;
 import gml.Project;
 import haxe.io.Path;
@@ -69,7 +72,7 @@ class TreeViewMenus {
 		}
 		if (items.length > 0) {
 			var name = target.querySelector('.header').innerText;
-			GmlFile.openTab(new GmlFile(name, mpath, Multifile, items));
+			GmlFile.openTab(new GmlFile(name, mpath, KGmlMultifile.inst, items));
 		}
 	}
 	//
@@ -128,8 +131,8 @@ class TreeViewMenus {
 	static function openHere() {
 		var path = target.getAttribute(TreeView.attrPath);
 		var pair = GmlFileKindTools.detect(path);
-		if (pair.kind == GmlFileKind.Extern) {
-			pair.kind = GmlFileKind.Plain;
+		if (Std.is(pair.kind, KExtern.inst)) {
+			pair.kind = KPlain.inst;
 		}
 		var file = new GmlFile(target.title, path, pair.kind, pair.data);
 		GmlFile.openTab(file);

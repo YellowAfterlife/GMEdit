@@ -1,6 +1,7 @@
 package yy;
 import ace.extern.AceAutoCompleteItem;
 import electron.Dialog;
+import file.kind.gml.KGmlScript;
 import gml.GmlAPI;
 import gml.Project;
 import haxe.ds.Map;
@@ -149,7 +150,7 @@ class YyManip {
 			GmlAPI.gmlKind.set(q.name, "script");
 			GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
 			GmlAPI.gmlLookupText += q.name + "\n";
-			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name, Normal);
+			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name, KGmlScript.inst);
 			gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
 		} else d.pj.reload();
 		//

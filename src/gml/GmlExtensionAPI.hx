@@ -3,7 +3,9 @@ import electron.FileWrap;
 import gmx.SfGmx;
 import yy.YyExtension;
 import gml.file.GmlFile;
-import gml.file.GmlFileKind;
+import file.FileKind;
+import file.kind.gmx.KGmxExtensionAPI;
+import file.kind.yy.KYyExtensionAPI;
 
 /**
  * ...
@@ -12,8 +14,8 @@ import gml.file.GmlFileKind;
 class GmlExtensionAPI {
 	public static function showFor(path:String, ident:String) {
 		var kind = switch (Project.current.version) {
-			case v1: GmlFileKind.GmxExtensionAPI;
-			case v2: GmlFileKind.YyExtensionAPI;
+			case v1: KGmxExtensionAPI.inst;
+			case v2: KYyExtensionAPI.inst;
 			default: return;
 		}
 		GmlFile.openTab(new GmlFile("api: " + ident, path, kind));

@@ -2,11 +2,14 @@ package parsers;
 import ace.extern.*;
 import electron.FileSystem;
 import electron.FileWrap;
+import file.FileKind;
+import file.kind.gml.*;
+import file.kind.gmx.*;
+import file.kind.yy.*;
 import gml.GmlAPI;
 import gmx.*;
 import yy.*;
 import gml.*;
-import gml.file.GmlFileKind;
 import haxe.io.Path;
 import js.Error;
 import js.RegExp;
@@ -46,7 +49,7 @@ class GmlSeeker {
 			}
 		});
 	}
-	public static function run(path:String, main:String, kind:GmlFileKind) {
+	public static function run(path:String, main:String, kind:FileKind) {
 		var item:GmlSeekerItem = {path:path.ptNoBS(), main:main, kind:kind};
 		if (itemsLeft < maxAtOnce) {
 			runItem(item);
@@ -85,16 +88,16 @@ class GmlSeeker {
 	}
 	
 	public static function runSyncImpl(
-		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals, kind:GmlFileKind
+		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals, kind:FileKind
 	):Void {
 		var mainTop = main;
 		var sub = null;
 		var q = new GmlReader(src);
 		var v = GmlAPI.version;
 		var row = 0;
-		var notLam = kind != GmlFileKind.LambdaGML;
+		var notLam = !Std.is(kind, KGmlLambdas);
 		var canLam = notLam && Project.current.lambdaGml != null;
-		var notExt = notLam && kind != GmlFileKind.ExtGML;
+		var notExt = notLam && !Std.is(kind, KGmlExtension);
 		var localKind = notLam ? "local" : "sublocal";
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
@@ -584,7 +587,7 @@ class GmlSeeker {
 					if (err == null) try {
 						var locals = new GmlLocals();
 						out.locals.set(name, locals);
-						runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
+						runSyncImpl(orig, code, null, out, locals, KYyEvents.inst);
 					} catch (_:Dynamic) {
 						//
 					}
@@ -598,7 +601,7 @@ class GmlSeeker {
 				var code = FileWrap.readTextFileSync(full);
 				var locals = new GmlLocals();
 				out.locals.set(name, locals);
-				runSyncImpl(orig, code, null, out, locals, GmlFileKind.YyObjectEvents);
+				runSyncImpl(orig, code, null, out, locals, KYyEvents.inst);
 			} catch (_:Dynamic) {
 				//
 			}
@@ -636,14 +639,14 @@ class GmlSeeker {
 			for (action in event.findAll("action")) {
 				var code = GmxAction.getCode(action);
 				if (code != null) {
-					runSyncImpl(orig, code, null, out, locals, GmlFileKind.GmxObjectEvents);
+					runSyncImpl(orig, code, null, out, locals, KGmxEvents.inst);
 				}
 			}
 		}
 		finish(orig, out);
 		return true;
 	}
-	public static function runSync(orig:String, src:String, main:String, kind:GmlFileKind) {
+	public static function runSync(orig:String, src:String, main:String, kind:FileKind) {
 		switch (Path.extension(orig)) {
 			case "yy": return runYyObject(orig, src);
 			case "gmx": return runGmxObject(orig, src);
@@ -665,7 +668,7 @@ class GmlSeeker {
 typedef GmlSeekerItem = {
 	path:String,
 	main:String,
-	kind:GmlFileKind,
+	kind:FileKind,
 }
 
 @:build(tools.AutoEnum.build("bit"))

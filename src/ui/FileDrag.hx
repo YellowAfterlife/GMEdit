@@ -9,6 +9,7 @@ import electron.Dialog;
 import haxe.io.Path;
 import gml.Project;
 import gml.file.GmlFile;
+import file.kind.misc.KExtern;
 
 /**
  * ...
@@ -43,7 +44,7 @@ class FileDrag {
 			};
 			case "yy": {
 				var pair = gml.file.GmlFileKindTools.detect(path);
-				if (pair.kind != Extern) GmlFile.open(name, path);
+				if (pair.kind != KExtern.inst) GmlFile.open(name, path);
 			};
 			case "yyp": Project.open(path);
 			case "gml": {

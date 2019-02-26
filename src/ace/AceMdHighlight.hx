@@ -2,10 +2,10 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import editors.EditCode;
+import file.kind.misc.KMarkdown;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
-import gml.file.GmlFileKind;
 import haxe.DynamicAccess;
 import js.RegExp;
 import shaders.ShaderHighlight;
@@ -29,7 +29,7 @@ using tools.NativeString;
 	public function new() {
 		super();
 		var editor:EditCode = EditCode.currentNew;
-		var dmd:Bool = editor.file.kind == GmlFileKind.DocMarkdown;
+		var dmd:Bool = Std.is(editor.kind, KMarkdown) && (cast editor.kind:KMarkdown).isDocMd;
 		//
 		var rEsc = rxRule("md-escape", ~/\\(?:.|$)/);
 		var rBase:Array<AceLangRule> = [];

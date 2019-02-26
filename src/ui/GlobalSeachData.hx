@@ -5,6 +5,8 @@ import js.RegExp;
 import tools.Dictionary;
 import parsers.GmlReader;
 import ui.GlobalSearch;
+import file.kind.gml.KGmlSearchResults;
+import file.kind.misc.KPlain;
 
 /**
  * ...
@@ -148,7 +150,7 @@ class GlobalSeachData {
 			}
 			file.savePost();
 			if (errors != "") {
-				var ef = new GmlFile("save errors", null, SearchResults, errors);
+				var ef = new GmlFile("save errors", null, KPlain.inst, errors);
 				GmlFile.openTab(ef);
 			}
 		}, options);

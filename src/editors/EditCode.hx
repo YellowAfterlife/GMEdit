@@ -4,6 +4,8 @@ import ace.extern.*;
 import ace.*;
 import editors.Editor;
 import electron.Dialog;
+import file.kind.KCode;
+import file.kind.misc.*;
 import gml.GmlLocals;
 import gml.file.*;
 import gml.GmlAPI;
@@ -32,6 +34,7 @@ class EditCode extends Editor {
 	public static var currentNew:EditCode = null;
 	public static var container:Element;
 	public var session:AceSession;
+	public var kind:KCode;
 	private var modePath:String;
 	//
 	public var locals:Dictionary<GmlLocals> = GmlLocals.defaultMap;
@@ -43,6 +46,7 @@ class EditCode extends Editor {
 	
 	public function new(file:GmlFile, modePath:String) {
 		super(file);
+		kind = cast(file.kind, KCode);
 		this.modePath = modePath;
 		element = container;
 	}
@@ -98,151 +102,17 @@ class EditCode extends Editor {
 		Main.aceEditor.setSession(session);
 	}
 	
-	static function canImport(file:GmlFile) {
-		switch (file.kind) {
-			case GmlFileKind.Normal,
-				GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents,
-				GmlFileKind.GmxTimelineMoments, GmlFileKind.YyTimelineMoments
-			: return file.path != null;
-			default: return false;
-		}
+	public function setLoadError(text:String) {
+		file.code = text;
+		file.path = null;
+		file.kind = KExtern.inst;
+		return text;
 	}
-	
-	static function canLambda(file:GmlFile) {
-		switch (file.kind) {
-			case GmlFileKind.Normal,
-				GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents,
-				GmlFileKind.GmxTimelineMoments, GmlFileKind.YyTimelineMoments,
-				GmlFileKind.GmxConfigMacros, GmlFileKind.GmxProjectMacros
-			: return file.path != null;
-			default: return false;
-		}
-	}
-	
 	override public function load(data:Dynamic):Void {
-		var src:String;
-		if (data != null) {
-			src = data;
-		} else switch (file.kind) {
-			case Multifile: src = "";
-			case Snippets: src = AceSnippets.getText(file.path);
-			default: src = FileWrap.readTextFileSync(file.path);
-		}
-		var gmx:SfGmx, out:String, errors:String;
-		function setError(s:String) {
-			file.code = s;
-			file.path = null;
-			file.kind = Extern;
-		}
-		switch (file.kind) {
-			case Extern: file.code = data != null ? data : "";
-			case YyShader: file.code = "";
-			case Plain, ExtGML, Snippets, LambdaGML,
-				GLSL, HLSL, JavaScript, Markdown, DocMarkdown
-			: { // purely texty things
-				file.code = src;
-			};
-			case SearchResults: file.code = data;
-			case Normal: {
-				src = GmlExtCoroutines.pre(src);
-				src = GmlExtLambda.pre(this, src);
-				src = GmlExtArgs.pre(src);
-				src = GmlExtHyper.pre(src);
-				file.code = src;
-			};
-			case Multifile: {
-				if (data != null) file.multidata = data;
-				NativeArray.clear(file.extraFiles);
-				out = ""; errors = "";
-				for (item in file.multidata) {
-					if (out != "") out += "\n\n";
-					out += "#define " + item.name + "\n";
-					var itemCode = FileWrap.readTextFileSync(item.path);
-					var itemSubs = GmlMultifile.split(itemCode, item.name);
-					if (itemSubs == null) {
-						errors += "Can't open " + item.name
-							+ " for editing: " + GmlMultifile.errorText + "\n";
-					} else switch (itemSubs.length) {
-						case 0: { };
-						case 1: {
-							var subCode = itemSubs[0].code;
-							out += NativeString.trimRight(subCode);
-						};
-						default: errors += "Can't open " + item.name
-							+ " for editing because it contains multiple scripts.\n";
-					}
-					file.extraFiles.push(new GmlFileExtra(item.path));
-				}
-				if (errors == "") {
-					// (too buggy)
-					//out = GmlExtArgs.pre(out);
-					//out = GmlExtImport.pre(out, path);
-					GmlSeeker.runSync(file.path, out, "", file.kind);
-					file.code = out;
-				} else setError(errors);
-			};
-			//
-			case GmxObjectEvents: {
-				gmx = SfGmx.parse(src);
-				out = GmxObject.getCode(gmx);
-				if (out != null) {
-					file.code = out;
-				} else setError(GmxObject.errorText);
-			};
-			case YyObjectEvents: {
-				if (data == null) data = Json.parse(src);
-				var obj:YyObject = data;
-				NativeArray.clear(file.extraFiles);
-				file.code = obj.getCode(file.path, file.extraFiles);
-			};
-			//
-			case GmxTimelineMoments: {
-				gmx = SfGmx.parse(src);
-				out = GmxTimeline.getCode(gmx);
-				if (out != null) {
-					file.code = out;
-				} else setError(GmxObject.errorText);
-			};
-			case YyTimelineMoments: {
-				if (data == null) data = Json.parse(src);
-				var tl:YyTimeline = data;
-				NativeArray.clear(file.extraFiles);
-				file.code = tl.getCode(file.path, file.extraFiles);
-			};
-			//
-			case GmxProjectMacros, GmxConfigMacros: {
-				gmx = SfGmx.parse(src);
-				var notePath = file.notePath;
-				var notes = FileWrap.existsSync(notePath)
-					? new GmlReader(FileWrap.readTextFileSync(notePath)) : null;
-				file.code = GmxProject.getMacroCode(gmx, notes, file.kind == GmxConfigMacros);
-			};
-			//
-			case GmxSpriteView: if (data == null) data = src;
-			case YySpriteView: {
-				if (data == null) data = Json.parse(src);
-			};
-			case YyRoomCCs: {
-				if (data == null) data = Json.parse(src);
-				NativeArray.clear(file.extraFiles);
-				file.code = YyRooms.getCCs(file.path, data, file.extraFiles);
-			};
-			case GmxExtensionAPI: {
-				if (data == null) data = src;
-				file.code = gml.GmlExtensionAPI.get1(data);
-			};
-			case YyExtensionAPI: {
-				if (data == null) data = Json.parse(src);
-				file.code = gml.GmlExtensionAPI.get2(data);
-			};
-		}
+		var src = kind.loadCode(this, data);
+		src = kind.preproc(this, src);
+		file.code = src;
 		file.syncTime();
-		if (file.kind != GmlFileKind.Normal && canLambda(file)) {
-			file.code = GmlExtLambda.pre(this, file.code);
-		}
-		if (canImport(file)) {
-			file.code = GmlExtImport.pre(file.code, file.path);
-		}
 	}
 	
 	public function postpImport(val:String):{val:String,sessionChanged:Bool} {
@@ -281,172 +151,20 @@ class EditCode extends Editor {
 		return {val:val,sessionChanged:sessionChanged};
 	}
 	
-	public function postpNormal(out:String, sessionChanged:Bool):String {
-		inline function error(s:String) {
-			Main.window.alert(s);
-			return null;
-		}
-		//
-		out = GmlExtArgs.post(out);
-		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
-		//
-		out = GmlExtHyper.post(out);
-		//
-		var canCoroutines = file.kind != ExtGML;
-		if (file.kind != ExtGML && Preferences.current.argsFormat != "") {
-			if (!sessionChanged && GmlExtArgsDoc.proc(file)) {
-				sessionChanged = true;
-				out = session.getValue();
-				// hm, yeah, I guess we have to do it all again now?
-				// think of something better later
-				if (canImport(file)) {
-					var pair = postpImport(out);
-					if (pair == null) return null;
-					out = pair.val;
-				}
-				if (canLambda(file)) {
-					out = GmlExtLambda.post(this, out);
-					if (out == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
-				}
-				out = postpNormal(out, true);
-				if (out == null) return null;
-				canCoroutines = false;
-				Main.window.setTimeout(function() {
-					file.markClean();
-				});
-			}
-		}
-		//
-		if (canCoroutines) {
-			out = GmlExtCoroutines.post(out);
-			if (out == null) return error(GmlExtCoroutines.errorText);
-		}
-		//
-		return out;
+	public function setSaveError(text:String):Void {
+		Dialog.showError(text);
 	}
-	
 	override public function save():Bool {
-		var val = session.getValue();
-		var path = file.path;
-		file.code = val;
-		inline function error(s:String) {
-			Main.window.alert(s);
-			return false;
-		}
-		GmlFileBackup.save(file, val);
+		var code = session.getValue();
+		GmlFileBackup.save(file, code);
 		//
-		var sessionChanged = false;
-		if (canImport(file)) {
-			var pair = postpImport(val);
-			if (pair == null) return false;
-			val = pair.val;
-			if (pair.sessionChanged) sessionChanged = true;
-		}
+		code = kind.postproc(this, code);
+		if (code == null) return false;
 		//
-		if (canLambda(file)) {
-			val = GmlExtLambda.post(this, val);
-			if (val == null) return error("Can't process #lambda:\n" + GmlExtLambda.errorText);
-		}
+		var ok = kind.saveCode(this, code);
+		if (!ok) return false;
 		//
-		var out:String, src:String, gmx:SfGmx;
-		var writeFile:Bool = path != null;
-		switch (file.kind) {
-			case Extern: out = val;
-			case Plain, GLSL, HLSL, JavaScript, Markdown, DocMarkdown: {
-				// kinds with no post-processing required
-				out = val;
-			};
-			case Normal, ExtGML: {
-				out = postpNormal(val, sessionChanged);
-				if (out == null) return false;
-			};
-			case Multifile: {
-				out = val;
-				/*out = GmlExtArgs.post(out);
-				if (out == null) {
-					return error("Can't process macro:\n" + GmlExtArgs.errorText);
-				}*/
-				//
-				writeFile = false;
-				var next = GmlMultifile.split(out, "<detached code>");
-				var map0 = new Dictionary<String>();
-				for (item in file.multidata) map0.set(item.name, item.path);
-				var errors = "";
-				for (item in next) {
-					var itemPath = map0[item.name];
-					if (itemPath != null) {
-						var itemCode = item.code;
-						FileWrap.writeTextFileSync(itemPath, itemCode);
-					} else errors += "Can't save script " + item.name
-						+ " because it is not among the edited group.\n";
-				}
-				if (errors != "") error(errors);
-			};
-			case SearchResults: {
-				if (file.searchData == null) return false;
-				if (!file.searchData.save(file)) return false;
-				file.markClean();
-				writeFile = false;
-				out = null;
-			};
-			case GmxObjectEvents: {
-				gmx = FileWrap.readGmxFileSync(path);
-				if (!GmxObject.setCode(gmx, val)) {
-					return error("Can't update GMX:\n" + GmxObject.errorText);
-				}
-				out = gmx.toGmxString();
-			};
-			case YyObjectEvents: {
-				var obj:YyObject = FileWrap.readJsonFileSync(path);
-				if (!obj.setCode(path, val)) {
-					return error("Can't update YY:\n" + YyObject.errorText);
-				}
-				out = NativeString.yyJson(obj);
-			};
-			case GmxTimelineMoments: {
-				gmx = FileWrap.readGmxFileSync(path);
-				if (!GmxTimeline.setCode(gmx, val)) {
-					return error("Can't update GMX:\n" + GmxTimeline.errorText);
-				}
-				out = gmx.toGmxString();
-			};
-			case YyTimelineMoments: {
-				var tl:YyTimeline = FileWrap.readJsonFileSync(path);
-				if (!tl.setCode(path, val)) {
-					return error("Can't update YY:\n" + YyTimeline.errorText);
-				}
-				out = NativeString.yyJson(tl);
-			};
-			case GmxProjectMacros, GmxConfigMacros: {
-				gmx = FileWrap.readGmxFileSync(path);
-				var notes = new StringBuilder();
-				GmxProject.setMacroCode(gmx, val, notes, file.kind == GmxConfigMacros);
-				var notePath = file.notePath;
-				if (notes.length > 0) {
-					FileWrap.writeTextFileSync(notePath, notes.toString());
-				} else if (FileWrap.existsSync(notePath)) {
-					FileWrap.unlinkSync(notePath);
-				}
-				out = gmx.toGmxString();
-			};
-			case Snippets: {
-				AceSnippets.setText(path, val);
-				writeFile = false;
-				out = null;
-			};
-			case YyRoomCCs: {
-				if (!YyRooms.setCCs(path, val, file.extraFiles)) {
-					return error("Can't update CCs:\n" + YyRooms.errorText);
-				}
-				writeFile = false;
-				out = null;
-			};
-			case GmxExtensionAPI, YyExtensionAPI: return false;
-			default: return false;
-		}
-		//
-		if (writeFile) FileWrap.writeTextFileSync(path, out);
-		file.savePost(out);
+		file.savePost(code);
 		return true;
 	}
 	override public function checkChanges():Void {
@@ -455,48 +173,23 @@ class EditCode extends Editor {
 		#end
 		var act = Preferences.current.fileChangeAction;
 		if (act == Nothing) return;
-		var path = file.path;
-		if (file.kind == Snippets) return;
-		if (file.kind != Multifile) {
-			if (path == null || !haxe.io.Path.isAbsolute(path)) return;
-			if (!FileSystem.existsSync(path)) {
-				switch (Dialog.showMessageBox({
-					title: "File missing: " + file.name,
-					message: "The source file is no longer found on disk. "
-						+ "What would you like to do?",
-					buttons: [
-						"Keep editing",
-						"Close the file"
-					], cancelId: 0,
-				})) {
-					case 1: file.tabEl.querySelector(".chrome-tab-close").click();
-					default: file.path = null;
-				}
-				return;
+		var status = kind.checkForChanges(this);
+		if (status < 0) {
+			switch (Dialog.showMessageBox({
+				title: "File missing: " + file.name,
+				message: "The source file is no longer found on disk. "
+					+ "What would you like to do?",
+				buttons: [
+					"Keep editing",
+					"Close the file"
+				], cancelId: 0,
+			})) {
+				case 1: file.tabEl.querySelector(".chrome-tab-close").click();
+				default: file.path = null;
 			}
+			return;
 		}
-		var changed = false;
-		if (file.kind != GmlFileKind.Multifile) try {
-			var time1 = FileSystem.statSync(path).mtimeMs;
-			if (time1 > file.time) {
-				file.time = time1;
-				changed = true;
-			}
-		} catch (e:Dynamic) {
-			trace("Error checking " + path + ": ", e);
-		}
-		for (pair in file.extraFiles) try {
-			var ppath = pair.path;
-			if (!haxe.io.Path.isAbsolute(ppath) || !FileSystem.existsSync(ppath)) continue;
-			var time1 = FileSystem.statSync(ppath).mtimeMs;
-			if (time1 > pair.time) {
-				pair.time = time1;
-				changed = true;
-			}
-		} catch (e:Dynamic) {
-			trace("Error checking " + pair.path + ": ", e);
-		}
-		if (changed) try {
+		if (status > 0) try {
 			var prev = file.code;
 			file.load();
 			//
@@ -546,13 +239,13 @@ class EditCode extends Editor {
 					case 1: { };
 					case 2: {
 						var name1 = file.name + " <copy>";
-						GmlFile.next = new GmlFile(name1, null, SearchResults, file.code);
+						GmlFile.next = new GmlFile(name1, null, file.kind, file.code);
 						ui.ChromeTabs.addTab(name1);
 					};
 				}
 			}
 		} catch (e:Dynamic) {
-			trace("Error applying changes: ", e);
+			Main.console.error("Error applying changes: ", e);
 		}
 	}
 }

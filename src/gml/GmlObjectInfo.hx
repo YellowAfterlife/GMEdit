@@ -1,5 +1,6 @@
 package gml;
 import electron.FileWrap;
+import file.kind.gml.KGmlScript;
 import haxe.io.Path;
 import tools.Dictionary;
 import tools.StringBuilder;
@@ -83,7 +84,7 @@ class GmlObjectInfo {
 		} else return;
 		GmlFile.openTab(new GmlFile(
 			"info: " + ident,
-			null, gml.file.GmlFileKind.Normal, info.print()
+			null, KGmlScript.inst, info.print()
 		));
 	}
 }

@@ -4,13 +4,13 @@ import ace.extern.*;
 import ace.AceMacro.jsRx;
 import editors.EditCode;
 import electron.FileWrap;
+import file.kind.gml.KGmlLambdas;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.GmlLocals;
 import gml.GmlVersion;
 import gml.Project;
 import gml.file.GmlFile;
-import gml.file.GmlFileKind;
 import gmx.SfGmx;
 import js.RegExp;
 import tools.Dictionary;
@@ -662,7 +662,7 @@ class GmlExtLambda {
 				var scr = data.map1[s];
 				var locals = new GmlLocals();
 				seekData.locals.set(s, locals);
-				GmlSeeker.runSyncImpl(seekPath, scr, s, seekData, locals, GmlFileKind.LambdaGML);
+				GmlSeeker.runSyncImpl(seekPath, scr, s, seekData, locals, KGmlLambdas.inst);
 				readDefs_1(scr); // maybe change map1 to have code+docs pairs later
 				var add = true;
 				gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
@@ -732,7 +732,7 @@ class GmlExtLambda {
 		try {
 			var code = FileWrap.readTextFileSync(path);
 			useVars = code.indexOf("//!usevars") >= 0;
-			GmlSeeker.runSync(path, code, "", GmlFileKind.LambdaGML);
+			GmlSeeker.runSync(path, code, "", KGmlLambdas.inst);
 			seekPath = path;
 			seekData = GmlSeekData.map[path];
 			if (useVars) {

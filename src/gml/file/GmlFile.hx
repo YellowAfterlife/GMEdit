@@ -7,6 +7,9 @@ import electron.Dialog;
 import electron.FileSystem;
 import parsers.*;
 import electron.FileWrap;
+import file.FileKind;
+import file.kind.gml.KGmlSearchResults;
+import file.kind.yy.KYyEvents;
 import js.RegExp;
 import js.html.Element;
 import ace.AceWrap;
@@ -55,7 +58,7 @@ class GmlFile {
 	public inline function syncTime() {
 		#if !lwedit
 		if (path != null && FileSystem.canSync) {
-			if (kind != Multifile) try {
+			if (kind.checkSelfForChanges) try {
 				time = FileSystem.statSync(path).mtimeMs;
 			} catch (_:Dynamic) { }
 			for (pair in extraFiles) try {
@@ -78,7 +81,7 @@ class GmlFile {
 	public var code:String;
 	
 	/** Loading/saving mode of operation */
-	public var kind:GmlFileKind = Normal;
+	public var kind:FileKind;
 	
 	/** The associated editor */
 	public var editor:Editor;
@@ -114,18 +117,14 @@ class GmlFile {
 	public var searchData:GlobalSeachData;
 	
 	//
-	public function new(name:String, path:String, kind:GmlFileKind, ?data:Dynamic) {
+	public function new(name:String, path:String, kind:FileKind, ?data:Dynamic) {
 		this.name = name;
 		this.path = path;
 		this.kind = kind;
 		//
-		if (path != null) {
-			context = path;
-		} else if (kind == SearchResults) {
-			context = name + "#" + (searchId++);
-		} else context = name;
-		// determine how we're supposed to show this:
-		var modePath = null;
+		context = kind.getTabContext(this, data);
+		kind.init(this, data);
+		/*var modePath = null;
 		switch (kind) {
 			case SearchResults: modePath = "ace/mode/gml_search";
 			case Extern, Plain, Snippets: modePath = "ace/mode/text";
@@ -139,7 +138,7 @@ class GmlFile {
 		if (modePath != null) {
 			codeEditor = new EditCode(this, modePath);
 			editor = codeEditor;
-		} else codeEditor = null;
+		} else codeEditor = null;*/
 		load(data);
 		editor.ready();
 	}
@@ -233,41 +232,7 @@ class GmlFile {
 		var kd = GmlFileKindTools.detect(path);
 		var kind = (nav != null && nav.kind != null) ? nav.kind : kd.kind;
 		var data = kd.data;
-		//
-		switch (kind) {
-			case Extern: {
-				FileWrap.openExternal(path);
-				return null;
-			};
-			case YyShader: {
-				var shKind:GmlFileKind = switch (data.type) {
-					case 2, 4: HLSL;
-					default: GLSL;
-				};
-				var nav1:GmlFileNav = { kind: shKind };
-				if (nav != null) {
-					nav1.pos = nav.pos;
-					nav1.ctx = nav.ctx;
-				}
-				var pathNx = Path.withoutExtension(path);
-				if (nav != null) switch (nav.def) {
-					case "vertex": return open(name + ".vsh", pathNx + ".vsh", nav1);
-					case "fragment": return open(name + ".fsh", pathNx + ".fsh", nav1);
-				}
-				open(name + ".vsh", pathNx + ".vsh", nav1);
-				open(name + ".fsh", pathNx + ".fsh", nav1);
-				return null;
-			};
-			default: {
-				var file = new GmlFile(name, path, kind, data);
-				openTab(file);
-				Main.window.setTimeout(function() {
-					Main.aceEditor.focus();
-					if (nav != null) file.navigate(nav);
-				});
-				return file;
-			};
-		}
+		return kind.create(name, path, data, nav);
 	}
 	public static function openTab(file:GmlFile) {
 		file.editor.stateLoad();
@@ -295,12 +260,13 @@ class GmlFile {
 		syncTime();
 		markClean();
 		// update things if this is the active tab:
-		if (path != null && out != null && codeEditor != null) {
+		if (path != null && out != null && codeEditor != null && codeEditor.kind.indexOnSave) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
-				switch (kind) {
-					case GmlFileKind.YyObjectEvents: GmlSeeker.runYyObject(path, out, true);
-					default: GmlSeeker.runSync(path, out, data.main, kind);
+				if (Std.is(kind, KYyEvents)) {
+					GmlSeeker.runYyObject(path, out, true);
+				} else {
+					GmlSeeker.runSync(path, out, data.main, kind);
 				}
 				if (GmlAPI.version == GmlVersion.live) liveApply();
 				var next = GmlSeekData.map[path];
@@ -338,7 +304,7 @@ class GmlFile {
 	public function focus() {
 		checkChanges();
 		var version = GmlAPI.version;
-		GmlExternAPI.gmlResetOnDefine = version.resetOnDefine() && kind != SearchResults;
+		GmlExternAPI.gmlResetOnDefine = version.resetOnDefine() && !Std.is(kind, KGmlSearchResults.inst);
 		if (version == GmlVersion.live) liveApply();
 	}
 	//
@@ -364,5 +330,5 @@ typedef GmlFileNav = {
 	/** if set, looks for ctx after pos rather than ctx offset by pos */
 	?ctxAfter:Bool,
 	/** file kind override */
-	?kind:GmlFileKind,
+	?kind:FileKind,
 }

@@ -3,6 +3,8 @@ import ace.AceWrap;
 import ace.extern.*;
 import electron.FileSystem;
 import gml.file.GmlFile;
+import file.kind.misc.KPlain;
+import file.kind.gml.KGmlScript;
 
 /**
  * ...
@@ -13,12 +15,12 @@ class WelcomePage {
 	public static function init(e:AceEditor) {
 		var session:AceSession;
 		#if lwedit
-			file = new GmlFile("WelcomePage", null, Normal, "");
+			file = new GmlFile("WelcomePage", null, KGmlScript.inst, "");
 			GmlFile.current = file;
 			session = (cast file.editor:editors.EditCode).session;
 			session.setValue(lwText);
 		#else
-			file = new GmlFile("WelcomePage", null, Plain, "");
+			file = new GmlFile("WelcomePage", null, KPlain.inst, "");
 			GmlFile.current = file;
 			session = (cast file.editor:editors.EditCode).session;
 			FileSystem.readTextFile(Main.relPath("misc/welcome.txt"), function(err, text) {

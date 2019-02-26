@@ -2,6 +2,8 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.extern.AceCommandManager;
+import file.kind.misc.KGLSL;
+import file.kind.misc.KHLSL;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlScopes;
@@ -268,10 +270,10 @@ using tools.NativeString;
 		enumCompleter.dotKind = dotKindEnum;
 		//
 		glslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
-			return q.modeId == "ace/mode/shader" && GmlFile.current.kind == GLSL;
+			return q.modeId == "ace/mode/shader" && Std.is(GmlFile.current.kind, KGLSL);
 		});
 		hlslCompleter = new AceGmlCompletion(ShaderAPI.glslComp, excl, true, function(q) {
-			return q.modeId == "ace/mode/shader" && GmlFile.current.kind == HLSL;
+			return q.modeId == "ace/mode/shader" && Std.is(GmlFile.current.kind, KHLSL);
 		});
 		//
 		var snippetCompleter:AceGmlCompletion = AceSnippets.init();

@@ -3,6 +3,7 @@ import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
 import electron.Menu;
+import file.kind.misc.KSnippets;
 import gml.GmlAPI;
 import gml.file.GmlFile;
 import haxe.DynamicAccess;
@@ -383,7 +384,7 @@ class Preferences {
 		var optSnippets_select:SelectElement = null;
 		el = addDropdown(out, "Edit snippets", "", optSnippets_1, function(name) {
 			var mode = optSnippets_0[optSnippets_1.indexOf(name)];
-			GmlFile.openTab(new GmlFile(mode + ".snippets", mode, Snippets));
+			GmlFile.openTab(new GmlFile(mode + ".snippets", mode, KSnippets.inst));
 			optSnippets_select.value = "";
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-snippets");

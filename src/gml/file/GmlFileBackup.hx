@@ -1,6 +1,8 @@
 package gml.file;
 import electron.FileSystem;
 import electron.Menu;
+import file.FileKind;
+import file.kind.gml.KGmlScript;
 import haxe.io.Path;
 import ui.Preferences;
 using tools.NativeString;
@@ -78,8 +80,8 @@ class GmlFileBackup {
 			Main.console.log("Error making backup: ", e);
 		}
 	}
-	static function load(name:String, path:String, kind:GmlFileKind) {
-		if (GmlFileKindTools.isGML(kind)) kind = Normal;
+	static function load(name:String, path:String, kind:FileKind) {
+		if (GmlFileKindTools.isGML(kind)) kind = KGmlScript.inst;
 		var file = new GmlFile(name, path, kind);
 		file.path = null; // prevent from being able to "save" a backup
 		GmlFile.openTab(file);

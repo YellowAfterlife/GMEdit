@@ -2,10 +2,12 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import editors.EditCode;
+import file.kind.gml.KGmlSearchResults;
+import file.kind.misc.KMarkdown;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
-import gml.file.GmlFileKind;
+import file.FileKind;
 import parsers.GmlExtCoroutines;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
@@ -34,15 +36,8 @@ using tools.NativeString;
 		if (version == null) version = GmlAPI.version;
 		var fakeMultilineComments:Bool = false;
 		var fieldDef = "localfield";
-		switch (editor.file.kind) {
-			case GmlFileKind.SearchResults: {
-				fakeMultilineComments = true;
-			};
-			case Markdown, DocMarkdown: {
-				fieldDef = "text";
-			};
-			default:
-		}
+		if (Std.is(editor.kind, KGmlSearchResults)) fakeMultilineComments = true;
+		if (Std.is(editor.kind, KMarkdown)) fieldDef = "text";
 		//
 		function rwnext(ruleToCopy:AceLangRule, newNext:String):AceLangRule {
 			return { token: ruleToCopy.token, regex: ruleToCopy.regex, next: newNext };

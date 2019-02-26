@@ -19,6 +19,7 @@ import tools.NativeString;
 import ui.GlobalSeachData;
 import haxe.extern.EitherType;
 import haxe.Constraints.Function;
+import file.kind.gml.*;
 using tools.HtmlTools;
 
 /**
@@ -256,7 +257,7 @@ using tools.HtmlTools;
 			if (opt.errors != null) {
 				results = "/* Errors:\n" + opt.errors + "\n*/\n" + results;
 			}
-			var file = new GmlFile(name, null, SearchResults, results);
+			var file = new GmlFile(name, null, KGmlSearchResults.inst, results);
 			if (!isRepl) file.searchData = saveData;
 			GmlFile.openTab(file);
 			window.setTimeout(function() {

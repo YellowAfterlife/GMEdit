@@ -11,6 +11,7 @@ import js.html.SelectElement;
 import js.html.TextAreaElement;
 import tools.Base64;
 import tools.Dictionary;
+import file.kind.gml.KGmlScript;
 using tools.HtmlTools;
 import Main.document;
 import Main.window;
@@ -24,14 +25,14 @@ class LiveWeb {
 	public static function getPairs(?post:Bool):Array<LiveWebTab> {
 		var out = [];
 		function proc(file:GmlFile) {
-			if (file.kind != gml.file.GmlFileKind.Normal) return;
+			if (!Std.is(file.kind, KGmlScript)) return;
 			var edit:EditCode = cast file.editor;
 			var val = edit.session.getValue();
 			if (post) {
 				var pair = edit.postpImport(val);
 				if (pair == null) return;
 				val = pair.val;
-				val = edit.postpNormal(val, pair.sessionChanged);
+				val = (cast file.kind:KGmlScript).postproc_1(edit, val, pair.sessionChanged);
 			}
 			out.push({
 				name: file.name,
@@ -50,11 +51,11 @@ class LiveWeb {
 		for (pair in pairs) {
 			var path = pair.name;
 			var code = pair.code;
-			var file = new GmlFile(path, path, Normal, code);
+			var file = new GmlFile(path, path, KGmlScript.inst, code);
 			if (first == null) first = file;
 			GmlFile.next = file;
 			ChromeTabs.addTab(pair.name);
-			GmlSeeker.runSync(path, code, "", Normal);
+			GmlSeeker.runSync(path, code, "", KGmlScript.inst);
 			var edit:EditCode = cast file.editor;
 			edit.postpImport(edit.session.getValue());
 			edit.session.bgTokenizer.start(0);
@@ -154,9 +155,9 @@ class LiveWeb {
 				return;
 			}
 		}
-		var file = new GmlFile(name, name, Normal, code);
+		var file = new GmlFile(name, name, KGmlScript.inst, code);
 		GmlFile.openTab(file);
-		parsers.GmlSeeker.runSync(name, name, code, Normal);
+		parsers.GmlSeeker.runSync(name, name, code, KGmlScript.inst);
 	}
 	
 	public static function newTabDialog() {

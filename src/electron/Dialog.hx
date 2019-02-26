@@ -18,6 +18,9 @@ import Main.document;
 	public static inline function showAlert(s:String):Void {
 		Main.window.alert(s);
 	}
+	public static inline function showError(s:String):Void {
+		Main.window.alert(s);
+	}
 	
 	public static function showOpenDialog(
 		options:DialogOpenOptions, ?async:Array<String>->Void

@@ -4,7 +4,6 @@ import editors.Editor;
 import electron.FileWrap;
 import gml.Project;
 import gml.file.GmlFile;
-import gml.file.GmlFileKind;
 import gmx.SfGmx;
 import haxe.io.Path;
 import js.html.DivElement;
@@ -12,6 +11,8 @@ import js.html.ImageElement;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import tools.NativeString;
+import file.kind.yy.KYySprite;
+import file.kind.gmx.KGmxSprite;
 using tools.HtmlTools;
 import yy.YySprite;
 import Main.document;
@@ -131,7 +132,7 @@ class EditSprite extends Editor {
 		return setCurrentFrameElement(currentFrame);
 	}
 	override public function load(data:Dynamic):Void {
-		var v2 = (file.kind == GmlFileKind.YySpriteView);
+		var v2 = Std.is(file.kind, KYySprite);
 		var d:EditSpriteData = v2 ? getData2(data) : getData1(data);
 		element.clearInner();
 		//

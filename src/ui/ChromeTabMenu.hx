@@ -1,11 +1,12 @@
 package ui;
 import electron.Menu;
 import gml.file.GmlFileBackup;
-import gml.file.GmlFileKind;
 import js.html.Element;
 import js.html.MouseEvent;
 import ui.ChromeTabs;
 import ui.treeview.TreeView;
+import file.kind.gmx.*;
+import file.kind.yy.*;
 using tools.HtmlTools;
 
 /**
@@ -31,10 +32,7 @@ class ChromeTabMenu {
 		showInDirectoryItem.enabled = hasFile;
 		openExternally.enabled = hasFile;
 		showInTreeItem.enabled = ~/^\w+$/g.match(file.name) && gml.GmlAPI.gmlKind.exists(file.name);
-		showObjectInfo.visible = hasFile && switch (file.kind) {
-			case GmlFileKind.GmxObjectEvents, GmlFileKind.YyObjectEvents: true;
-			default: false;
-		};
+		showObjectInfo.visible = hasFile && (Std.is(file.kind, KGmxEvents) || Std.is(file.kind, KYyEvents));
 		var bk = GmlFileBackup.updateMenu(file);
 		if (bk != null) {
 			backupsItem.enabled = bk;

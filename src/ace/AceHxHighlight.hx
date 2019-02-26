@@ -5,7 +5,6 @@ import editors.EditCode;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
-import gml.file.GmlFileKind;
 import haxe.DynamicAccess;
 import js.RegExp;
 import tools.Dictionary;

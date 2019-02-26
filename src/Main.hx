@@ -6,6 +6,7 @@ import electron.*;
 import electron.Dialog;
 import gml.*;
 import shaders.*;
+import file.kind.misc.KPlain;
 import haxe.io.Path;
 import js.Lib;
 import tools.*;
@@ -90,6 +91,7 @@ class Main {
 		modulePath = untyped window.__dirname;
 		if (modulePath == null) modulePath = ".";
 		Preferences.init();
+		file.FileKind.initStatic();
 		GmlAPI.init();
 		ShaderAPI.init();
 		GmlEvent.init();
@@ -104,7 +106,7 @@ class Main {
 		editors.Editor.init();
 		aceEditor = new AceWrap(aceEl);
 		AceWrap.init();
-		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, Plain, "").editor;
+		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, KPlain.inst, "").editor;
 		untyped aceEditor.$blockScrolling = Infinity;
 		AceStatusBar.init(aceEditor, acePar);
 		AceGmlCompletion.init(aceEditor);

@@ -1,5 +1,9 @@
 package gmx;
 import gml.*;
+import file.FileKind;
+import file.kind.gml.*;
+import file.kind.gmx.*;
+import file.kind.misc.*;
 import gml.file.*;
 import ui.*;
 import js.html.Element;
@@ -38,7 +42,7 @@ class GmxLoader {
 				var name = rxName.replace(path, "$1");
 				var full = project.fullPath(path);
 				var _main:String = "";
-				var kind:GmlFileKind = Normal;
+				var kind:FileKind = KGmlScript.inst;
 				var index = true;
 				switch (one) {
 					case "script": _main = name;
@@ -46,9 +50,9 @@ class GmxLoader {
 					default: {
 						full += '.$one.gmx';
 						switch (one) {
-							case "sprite": kind = GmlFileKind.GmxSpriteView; index = false;
-							case "object": kind = GmlFileKind.GmxObjectEvents;
-							case "timeline": kind = GmlFileKind.GmxTimelineMoments;
+							case "sprite": kind = KGmxSprite.inst; index = false;
+							case "object": kind = KGmxEvents.inst;
+							case "timeline": kind = KGmxMoments.inst;
 						}
 					};
 				}
@@ -58,9 +62,7 @@ class GmxLoader {
 				if (one == "sprite") ths.push({path:full, item:item, name:name});
 				out.appendChild(item);
 				if (one == "shader") {
-					kind = gmx.get("type").indexOf("HLSL") >= 0
-						? GmlFileKind.HLSL : GmlFileKind.GLSL;
-					item.setAttribute(TreeView.attrOpenAs, kind.getName());
+					item.yyOpenAs = gmx.get("type").indexOf("HLSL") >= 0 ? KHLSL.inst : KGLSL.inst;
 				}
 			} else {
 				var name = gmx.get("name");
@@ -159,7 +161,7 @@ class GmxLoader {
 						if (lm != null) {
 							project.lambdaGml = extFileFull;
 							parsers.GmlExtLambda.readDefs(extFileFull);
-						} else GmlSeeker.run(extFileFull, "", ExtGML);
+						} else GmlSeeker.run(extFileFull, "", KGmlExtension.inst);
 					}
 					//
 					if (lm != null) {

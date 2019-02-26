@@ -2,6 +2,7 @@ package ui.treeview;
 import electron.Dialog;
 import electron.FileSystem;
 import electron.Menu;
+import file.FileKind;
 import gml.file.*;
 import gml.Project;
 import js.RegExp;
@@ -34,7 +35,6 @@ class TreeView {
 	public static inline var attrThumb:String = "data-thumb";
 	public static inline var attrThumbDelay:String = "data-thumb-delay";
 	public static inline var attrThumbSprite:String = "data-thumb-sprite";
-	public static inline var attrOpenAs:String = "data-open-as";
 	/** Resource GUID (GMS2 only) */
 	public static inline var attrYYID:String = "data-yyid";
 	//
@@ -228,13 +228,12 @@ class TreeView {
 			e.preventDefault();
 			if (el == null) el = cast e.target;
 		} else if (el == null) return;
-		if (!el.classList.contains("item")) el = el.parentElement;
-		var openAs = el.getAttribute(attrOpenAs);
-		var nav = openAs != null ? { kind: GmlFileKind.createByName(openAs) } : null;
+		var openAs = (cast el:TreeViewItem).yyOpenAs;
+		var nav = openAs != null ? { kind: openAs } : null;
 		GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
 	}
 	private static inline function makeItemImpl(name:String, path:String, kind:String):TreeViewItem {
-		var r = document.createDivElement();
+		var r:TreeViewItem = cast document.createDivElement();
 		r.className = "item";
 		var span = document.createSpanElement();
 		span.appendChild(document.createTextNode(name));
@@ -322,4 +321,6 @@ typedef TreeViewQuery = {
 extern class TreeViewDir extends DivElement {
 	public var treeItems:DivElement;
 }
-typedef TreeViewItem = DivElement;
+extern class TreeViewItem extends DivElement {
+	public var yyOpenAs:FileKind;
+}

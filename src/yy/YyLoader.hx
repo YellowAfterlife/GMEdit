@@ -4,7 +4,6 @@ import electron.FileSystem;
 import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
-import gml.file.GmlFileKind;
 import js.RegExp;
 import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
@@ -14,6 +13,9 @@ import tools.Dictionary;
 import tools.ExecQueue;
 import tools.NativeString;
 import ui.treeview.TreeView;
+import file.kind.gml.*;
+import file.kind.yy.*;
+import file.kind.misc.*;
 
 /**
  * ...
@@ -95,7 +97,7 @@ class YyLoader {
 						var ccs = TreeView.makeItem("Creation codes",
 							project.name, project.path, "roomccs");
 						ccs.removeAttribute(TreeView.attrThumb);
-						ccs.setAttribute(TreeView.attrOpenAs, GmlFileKind.YyRoomCCs.getName());
+						ccs.yyOpenAs = file.kind.yy.KYyRoomCCs.inst;
 						dir.treeItems.appendChild(ccs);
 						// consume the room items:
 						nextOut = Main.document.createDivElement();
@@ -127,13 +129,13 @@ class YyLoader {
 						case "GMScript": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
-							GmlSeeker.run(full, name, Normal);
+							GmlSeeker.run(full, name, KGmlScript.inst);
 						};
 						case "GMObject": {
 							GmlAPI.gmlLookupText += name + "\n";
 							objectNames.set(res.Key, name);
 							objectGUIDs.set(name, res.Key);
-							GmlSeeker.run(full, null, GmlFileKind.YyObjectEvents);
+							GmlSeeker.run(full, null, KYyEvents.inst);
 						};
 						case "GMShader": {
 							GmlAPI.gmlLookupText += name + "\n";
@@ -178,10 +180,9 @@ class YyLoader {
 										project.lambdaGml = filePath;
 										parsers.GmlExtLambda.readDefs(filePath);
 									} else {
-										GmlSeeker.run(filePath, "", GmlFileKind.ExtGML);
+										GmlSeeker.run(filePath, "", KGmlExtension.inst);
 									}
-									fileItem.setAttribute(TreeView.attrOpenAs,
-										GmlFileKind.ExtGML.getName());
+									fileItem.yyOpenAs = KGmlExtension.inst;
 								}
 								//
 								if (lm != null) {

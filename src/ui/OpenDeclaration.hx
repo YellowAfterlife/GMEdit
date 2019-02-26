@@ -4,6 +4,9 @@ import ace.extern.*;
 import js.RegExp;
 import gml.file.*;
 import gml.file.GmlFile;
+import file.kind.gml.KGmlScript;
+import file.kind.gmx.*;
+import file.kind.yy.*;
 import electron.FileWrap;
 import electron.Shell;
 import haxe.io.Path;
@@ -99,7 +102,7 @@ class OpenDeclaration {
 			if (!FileWrap.existsSync(full)) data = "";
 		}
 		if (data == null) data = FileWrap.readTextFileSync(full);
-		var file = new GmlFile(rel, full, Normal, data);
+		var file = new GmlFile(rel, full, KGmlScript.inst, data);
 		GmlFile.openTab(file);
 		return true;
 	}
@@ -128,11 +131,11 @@ class OpenDeclaration {
 			if (def == "") return false;
 			var file = GmlFile.current;
 			var path = file.path;
-			switch (file.kind) {
-				case GmxObjectEvents: return gmx.GmxObject.openEventInherited(path, def) != null;
-				case YyObjectEvents: return yy.YyObject.openEventInherited(path, def) != null;
-				default: return false;
-			}
+			if (Std.is(file.kind, KGmxEvents)) {
+				return gmx.GmxObject.openEventInherited(path, def) != null;
+			} else if (Std.is(file.kind, KYyEvents)) {
+				return yy.YyObject.openEventInherited(path, def) != null;
+			} else return false;
 			return true;
 		}
 		// handle namespace.term | localTyped.term:

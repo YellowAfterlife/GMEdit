@@ -1,77 +1,27 @@
 package gml.file;
+import file.FileKind;
+import file.FileKindDetect;
+import file.kind.*;
+import file.kind.misc.KExtern;
 import haxe.io.Path;
 import yy.*;
 import electron.*;
-import gml.file.GmlFileKind.*;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 class GmlFileKindTools {
-	public static function isGML(kind:GmlFileKind) {
-		switch (kind) {
-			case Normal,
-				GmxObjectEvents, YyObjectEvents,
-				GmxProjectMacros, GmxConfigMacros,
-				GmxTimelineMoments, YyTimelineMoments
-			: return true;
-			default: return false;
-		}
+	public static function isGML(kind:FileKind) {
+		return Std.is(kind, KGml);
 	}
-	public static function detect(path:String):{kind:GmlFileKind, data:Null<Dynamic>} {
+	public static function detect(path:String):FileKindDetect {
 		var ext = Path.extension(path).toLowerCase();
-		var data:Dynamic = null;
-		var kind:GmlFileKind;
-		switch (ext) {
-			case "gml": kind = Normal;
-			case "txt": kind = Plain;
-			case "js": kind = JavaScript;
-			case "shader", "vsh", "fsh": kind = GLSL;
-			case "md": kind = Markdown;
-			case "dmd": kind = DocMarkdown;
-			case "gmx": {
-				ext = Path.extension(Path.withoutExtension(path)).toLowerCase();
-				kind = switch (ext) {
-					case "object": GmxObjectEvents;
-					case "project": GmxProjectMacros;
-					case "config": GmxConfigMacros;
-					case "timeline": GmxTimelineMoments;
-					case "sprite": GmxSpriteView;
-					default: Extern;
-				}
-			};
-			case "yy": {
-				var json:YyBase;
-				if (Path.isAbsolute(path)) {
-					json = FileSystem.readJsonFileSync(path);
-				} else json = Project.current.readJsonFileSync(path);
-				switch (json.modelName) {
-					case "GMObject": {
-						data = json;
-						kind = YyObjectEvents;
-					};
-					case "GMShader": {
-						data = json;
-						kind = YyShader;
-					};
-					case "GMTimeline": {
-						data = json;
-						kind = YyTimelineMoments;
-					};
-					case "GMScript": {
-						path = Path.withoutExtension(path) + ".gml";
-						kind = Normal;
-					};
-					case "GMSprite": {
-						data = json;
-						kind = YySpriteView;
-					};
-					default: kind = Extern;
-				};
-			};
-			default: kind = Extern;
+		var kinds = FileKind.map[ext];
+		if (kinds != null) for (kind in kinds) {
+			var out = kind.detect(path, null);
+			if (out != null) return out;
 		}
-		return { kind: kind, data: data };
+		return { kind: KExtern.inst, data: null };
 	}
 }
