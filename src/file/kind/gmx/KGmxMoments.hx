@@ -20,6 +20,8 @@ class KGmxMoments extends KGml {
 		return editor.setLoadError(GmxTimeline.errorText);
 	}
 	override public function postproc(editor:EditCode, code:String):String {
+		code = super.postproc(editor, code);
+		if (code == null) return null;
 		var root = FileWrap.readGmxFileSync(editor.file.path);
 		if (!GmxTimeline.setCode(root, code)) {
 			editor.setSaveError("Can't update GMX:\n" + GmxTimeline.errorText);

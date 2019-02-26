@@ -22,6 +22,8 @@ class KYyRoomCCs extends KGml {
 		return YyRooms.getCCs(file.path, data, file.extraFiles);
 	}
 	override public function saveCode(editor:EditCode, code:String):Bool {
+		code = super.postproc(editor, code);
+		if (code == null) return null;
 		if (!YyRooms.setCCs(editor.file.path, code, editor.file.extraFiles)) {
 			editor.setSaveError("Can't update CCs:\n" + YyRooms.errorText);
 			return false;

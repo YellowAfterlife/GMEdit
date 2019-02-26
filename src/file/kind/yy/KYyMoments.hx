@@ -22,6 +22,7 @@ class KYyMoments extends KGml {
 	}
 	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
+		if (code == null) return null;
 		var tl:YyTimeline = FileWrap.readJsonFileSync(editor.file.path);
 		if (!tl.setCode(editor.file.path, code)) {
 			editor.setSaveError("Can't update YY:\n" + YyTimeline.errorText);

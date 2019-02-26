@@ -26,6 +26,8 @@ class KGmxMacros extends KGml {
 		return GmxProject.getMacroCode(root, noteReader, isConfig);
 	}
 	override public function postproc(editor:EditCode, code:String):String {
+		code = super.postproc(editor, code);
+		if (code == null) return null;
 		var root = FileWrap.readGmxFileSync(editor.file.path);
 		var notes = new StringBuilder();
 		GmxProject.setMacroCode(root, code, notes, isConfig);

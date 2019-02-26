@@ -22,6 +22,7 @@ class KYyEvents extends KGml {
 	}
 	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
+		if (code == null) return null;
 		var obj:YyObject = FileWrap.readJsonFileSync(editor.file.path);
 		if (!obj.setCode(editor.file.path, code)) {
 			editor.setSaveError("Can't update YY:\n" + YyObject.errorText);

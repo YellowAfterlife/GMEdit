@@ -29,6 +29,7 @@ class KGml extends KCode {
 	public function new() {
 		super();
 		modePath = "ace/mode/gml";
+		indexOnSave = true;
 	}
 	
 	override public function preproc(editor:EditCode, code:String):String {

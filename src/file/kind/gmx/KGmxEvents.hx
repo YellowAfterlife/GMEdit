@@ -18,6 +18,8 @@ class KGmxEvents extends KGml {
 		} else return out;
 	}
 	override public function postproc(editor:EditCode, code:String):String {
+		code = super.postproc(editor, code);
+		if (code == null) return null;
 		var root = FileWrap.readGmxFileSync(editor.file.path);
 		if (!GmxObject.setCode(root, code)) {
 			editor.setSaveError("Can't update GMX:\n" + GmxObject.errorText);

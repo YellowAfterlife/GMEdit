@@ -55,6 +55,8 @@ class KGmlMultifile extends KGml {
 		} else return editor.setLoadError(errors);
 	}
 	override public function saveCode(editor:EditCode, code:String):Bool {
+		code = super.postproc(editor, code);
+		if (code == null) return null;
 		var file = editor.file;
 		var next = GmlMultifile.split(code, "<detached code>");
 		var map0 = new Dictionary<String>();
