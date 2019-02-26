@@ -165,7 +165,7 @@ class GmlFile {
 		var row = 0, col = 0;
 		var i:Int, s:String;
 		if (nav.def != null) {
-			var rxDef = new RegExp("^(#define|#event|#moment)[ \t]" + NativeString.escapeRx(nav.def));
+			var rxDef = new RegExp("^(#define|#event|#moment)[ \t]" + NativeString.escapeRx(nav.def) + "\\b");
 			i = 0;
 			while (i < len) {
 				s = session.getLine(i);
