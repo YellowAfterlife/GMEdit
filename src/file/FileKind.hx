@@ -132,7 +132,7 @@ import tools.Dictionary;
 		KYy.register("GMSprite", KYySprite.inst);
 		//
 		register("md", new KMarkdown(false));
-		register("dmd", new KMarkdown(false));
+		register("dmd", new KMarkdown(true));
 		register("js", KJavaScript.inst);
 	}
 }

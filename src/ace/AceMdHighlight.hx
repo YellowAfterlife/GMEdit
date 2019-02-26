@@ -85,7 +85,7 @@ using tools.NativeString;
 			], rdef("md-bold"));
 		} else {
 			rules["md.italic"] = rcct([
-				rxRule("md-italic", ~/?:__|\*\*)\b/, "pop")
+				rxRule("md-italic", ~/(?:__|\*\*)\b/, "pop")
 			], rdef("md-italic"));
 			rules["md.bold"] = rcct([rEsc,
 				rxRule("md-bold", ~/(?:_|\*)\b/, "pop")
