@@ -19,6 +19,7 @@ class Panner {
 	private var mouseDown:Bool = false;
 	public function new(el:DivElement, img:ImageElement) {
 		ctr = el;
+		ctr.classList.add("panner");
 		image = img;
 		pan = { x: 0, y: 0, z: 0 };
 		el.addEventListener("mousedown", onmousedown);
@@ -95,5 +96,25 @@ class Panner {
 		zoomTo(mx, my, d);
 	}
 	//
-	
+	public function recenter():Void {
+		var cw = ctr.offsetWidth;
+		var ch = ctr.offsetHeight;
+		if (cw <= 0 || ch <= 0) return;
+		var qw:Float = image.width;
+		var qh:Float = image.height;
+		if (qw <= 0 || qh <= 0) return;
+		var z = 0;
+		while (qw < cw && qh < ch) {
+			if (qw * 2 < cw && qh * 2 < ch) {
+				qw *= 2; qh *= 2; z += 1;
+			} else break;
+		}
+		while (qw > cw || qh > ch) {
+			qw /= 2; qh /= 2; z -= 1;
+		}
+		pan.z = z;
+		pan.x = -Std.int((cw - qw) / 2);
+		pan.y = -Std.int((ch - qh) / 2);
+		forceUpdate();
+	}
 }

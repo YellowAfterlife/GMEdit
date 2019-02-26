@@ -60,25 +60,7 @@ class EditSprite extends Editor {
 	}
 	function checkRecenter() {
 		if (!recenter) return;
-		var cw = panner.ctr.offsetWidth;
-		var ch = panner.ctr.offsetHeight;
-		if (cw <= 0 || ch <= 0) return;
-		var qw:Float = image.width;
-		var qh:Float = image.height;
-		if (qw <= 0 || qh <= 0) return;
-		var z = 0;
-		while (qw < cw && qh < ch) {
-			if (qw * 2 < cw && qh * 2 < ch) {
-				qw *= 2; qh *= 2; z += 1;
-			} else break;
-		}
-		while (qw > cw || qh > ch) {
-			qw /= 2; qh /= 2; z -= 1;
-		}
-		panner.pan.z = z;
-		panner.pan.x = -Std.int((cw - qw) / 2);
-		panner.pan.y = -Std.int((ch - qh) / 2);
-		panner.forceUpdate();
+		panner.recenter();
 		recenter = false;
 	}
 	override public function focusGain(prev:Editor):Void {
@@ -273,7 +255,6 @@ class EditSprite extends Editor {
 		element.appendChild(ctr);
 		//
 		var pan = document.createDivElement();
-		pan.classList.add("panner");
 		pan.style.flex = "1";
 		var img = document.createImageElement();
 		image = img;
