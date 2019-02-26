@@ -94,6 +94,11 @@ class PluginManager {
 		} catch (x:Dynamic) {
 			Main.console.error("Couldn't expose hxClasses:", x);
 		}
+		try {
+			PluginAPI.extend = untyped __js__("$extend");
+		} catch (x:Dynamic) {
+			Main.console.error("Couldn't expose $extend:", x);
+		}
 		//
 		var list:Array<String>;
 		if (FileSystem.canSync) {
