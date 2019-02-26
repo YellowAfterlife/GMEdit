@@ -139,6 +139,8 @@ import ace.AceMacro.jsRx;
 					case "physics_kinematic": this.physicsKinematic = bool(val);
 					case "physics_shape": this.physicsShape = int(val);
 					case "physics_shape_data": {
+						var mt = setProperties_str.exec(val);
+						if (mt != null) val = mt[1];
 						var pts = val.split(";");
 						var orig = this.physicsShapePoints;
 						var next = [];
