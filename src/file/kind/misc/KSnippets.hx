@@ -1,6 +1,7 @@
 package file.kind.misc;
 import ace.AceSnippets;
 import editors.EditCode;
+import editors.Editor;
 
 /**
  * ...
@@ -19,7 +20,7 @@ class KSnippets extends KCode {
 		AceSnippets.setText(editor.file.path, code);
 		return true;
 	}
-	override public function checkForChanges(editor:EditCode):Int {
+	override public function checkForChanges(editor:Editor):Int {
 		return 0;
 	}
 }

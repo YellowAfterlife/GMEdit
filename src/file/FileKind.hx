@@ -1,5 +1,6 @@
 package file;
 import editors.EditCode;
+import editors.Editor;
 import electron.FileSystem;
 import file.kind.*;
 import file.kind.gml.*;
@@ -75,7 +76,7 @@ import tools.Dictionary;
 	 * 
 	 * @return	0 (no change) / 1 (changes) / -1 (file deleted)
 	 */
-	public function checkForChanges(editor:EditCode):Int {
+	public function checkForChanges(editor:Editor):Int {
 		var file = editor.file;
 		var path = file.path;
 		//
