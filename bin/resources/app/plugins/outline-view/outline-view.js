@@ -9,12 +9,6 @@
 	treeview.classList.add("treeview");
 	popout.appendChild(treeview);
 	//
-	var treedir = $gmedit["ui.treeview.TreeView"].makeDir("Outline view");
-	treedir.classList.add("open");
-	var caption = treedir.treeHeader.querySelector("span");
-	var currCtr = treedir.treeItems;
-	treeview.appendChild(treedir);
-	//
 	var currEl = null;
 	var currOnly = false;
 	//
@@ -24,7 +18,17 @@
 	//
 	var makeItem = $gmedit["ui.treeview.TreeView"].makeItem;
 	var navPool = [];
-	function makeNav(label, title, nav) {
+	function activate(file) {
+		var tabs = document.querySelectorAll(".chrome-tab");
+		for (var i = 0; i < tabs.length; i++) {
+			if (tabs[i].gmlFile == file) {
+				tabs[i].click();
+				return tabs[i];
+			}
+		}
+		return null;
+	}
+	function makeNav(file, label, title, nav) {
 		var r = navPool.pop();
 		if (r) {
 			r.querySelector("span").textContent = label;
@@ -34,20 +38,23 @@
 			r.classList.toggle("ctx");
 		}
 		r.onclick = function(_) {
-			currFile().navigate(nav);
+			if (currFile() != file) {
+				if (activate(file)) {
+					setTimeout(function() {
+						file.navigate(nav);
+					});
+				}
+			} else file.navigate(nav);
 			return false;
 		};
 		return r;
 	}
 	//
-	var outlineViewID = 0;
-	var cache = {};	
-	//
 	var rxDef = /^(?:#event|#define|#moment|#section|#roomcc)\b\s*(\w+(?::\w+)?)(.*)$/;
-	var rxMark = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/
-	function reindex(file, pair) {
-		if (!pair) pair = cache[file.outlineViewID];
-		var el = pair.el;
+	var rxMark = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
+	function reindex(file) {
+		var ov = file.outlineView;
+		var el = ov.treeItems;
 		var cs = el.children;
 		for (var i = 0; i < cs.length; i++) navPool.push(cs[i]);
 		el.innerHTML = "";
@@ -60,31 +67,63 @@
 			var mt = rxDef.exec(doc.getLine(i));
 			if (mt) {
 				def = mt[1];
-				el.appendChild(makeNav(def, mt[0], {def:def}));
+				var txt = def;
+				if (def != "properties") {
+					var tail = mt[2].trim();
+					if (tail) txt += " ➜ " + tail;
+				}
+				el.appendChild(makeNav(file, txt, txt, {def:def}));
 				continue;
 			} else if (mt = rxMark.exec(doc.getLine(i))) {
-				el.appendChild(makeNav(mt[2], mt[0], {def:def,ctx:mt[1],ctxAfter:true}));
+				el.appendChild(makeNav(file, mt[2], mt[0], {def:def,ctx:mt[1],ctxAfter:true}));
 			}
+		}
+		var th = ov.treeHeader;
+		if ((el.children.length == 0) != th.classList.contains("item")) {
+			ov.classList.toggle("dir");
+			th.classList.toggle("item");
 		}
 	}
 	//
-	function changeTo(file) {
-		var id = file.outlineViewID;
-		if (id == null) {
-			id = ++outlineViewID;
-			file.outlineViewID = id;
-			var pair = {
-				el: document.createElement("div"),
-			};
-			cache[id] = pair;
-			reindex(file, pair);
+	function createFor(file) {
+		var dir = $gmedit["ui.treeview.TreeView"].makeDir(file.name);
+		dir.classList.add("open");
+		dir.treeHeader.addEventListener("click", function(_) {
+			if (dir.classList.contains("dir")) {
+				dir.classList.toggle("open");
+			} else activate(file);
+		});
+		file.outlineView = dir;
+		reindex(file);
+	}
+	function syncAll(tabEls) {
+		if (tabEls == null) tabEls = $gmedit["ui.ChromeTabs"].impl.tabEls;
+		treeview.innerHTML = "";
+		for (var i = 0; i < tabEls.length; i++) {
+			var tabEl = tabEls[i];
+			var file = tabEl.gmlFile;
+			if (!file) continue;
+			if (!file.outlineView) createFor(file);
+			treeview.appendChild(file.outlineView);
 		}
-		var nextEl = cache[id].el;
-		if (currEl != nextEl) {
-			caption.textContent = file.name;
-			if (currEl) currEl.parentElement.removeChild(currEl);
-			currCtr.appendChild(nextEl);
-			currEl = nextEl;
+	}
+	function changeTo(file) {
+		if (!file.outlineView) {
+			createFor(file);
+			if (!currOnly) syncAll();
+		}
+		if (currOnly) {
+			var nextEl = file.outlineView;
+			if (currEl != nextEl) {
+				if (currEl) currEl.parentElement.removeChild(currEl);
+				treeview.appendChild(nextEl);
+				currEl = nextEl;
+			}
+		} else {
+			var ov = file.outlineView;
+			if (ov.scrollIntoViewIfNeeded) {
+				ov.scrollIntoViewIfNeeded();
+			} else ov.scrollIntoView();
 		}
 	}
 	//
@@ -96,7 +135,11 @@
 		} else {
 			document.body.insertBefore(popout, document.querySelector("#preferences-window"));
 		}
-		if (!hidden) changeTo(currFile());
+		if (!hidden) {
+			if (currOnly) {
+				changeTo(currFile());
+			} else syncAll();
+		}
 	}
 	function init() {
 		AceCommands.add({
@@ -106,7 +149,7 @@
 			}
 		});
 		AceCommands.addToPalette({
-			name: "Macro: toggle outline view",
+			name: "Toggle outline view",
 			exec: "toggleOutlineView",
 			title: ""
 		});
@@ -123,6 +166,10 @@
 		GMEdit.on("fileSave", function(e) {
 			if (hidden) return;
 			reindex(e.file);
+		});
+		GMEdit.on("tabsReordered", function(e) {
+			if (hidden) return;
+			syncAll(e.target.tabEls);
 		});
 		//
 		//toggle();
