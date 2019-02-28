@@ -240,6 +240,7 @@
                 tabEl.style.transform = ''
 
                 this.setupDraggabilly()
+                GMEdit._emit("tabsReordered", {target:this})
               })
             })
           })

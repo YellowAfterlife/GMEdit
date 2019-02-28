@@ -1,5 +1,6 @@
 package plugins;
 import gml.file.GmlFile;
+import ui.ChromeTabs.ChromeTabsImpl;
 
 /**
  * Calls to these compile to
@@ -10,6 +11,7 @@ import gml.file.GmlFile;
  */
 @:build(plugins.PluginEventsMacros.build())
 extern class PluginEvents {
+	static function tabsReordered(e:{target:ChromeTabsImpl}):Void;
 	//
 	static function fileOpen(e:{file:GmlFile}):Void;
 	static function activeFileChange(e:{file:GmlFile}):Void;
