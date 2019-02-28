@@ -1,0 +1,21 @@
+#outline-view {
+	right: 20px;
+	top: 40px;
+	bottom: 44px;
+	width: 224px;
+	padding: 0;
+	overflow-y: auto;
+}
+#outline-view .treeview {
+	min-height: 100%;
+	box-sizing: border-box;
+}
+#outline-view .item, #outline-view .items {
+	margin-top: 0;
+}
+#outline-view .caption {
+	font-size: 13px;
+}
+#outline-view .item.ctx:before {
+	opacity: 0.5;
+}

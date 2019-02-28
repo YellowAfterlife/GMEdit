@@ -1,0 +1,5 @@
+{
+	"name": "outline-view",
+	"scripts": ["outline-view.js"],
+	"stylesheets": ["outline-view.css"]
+}
