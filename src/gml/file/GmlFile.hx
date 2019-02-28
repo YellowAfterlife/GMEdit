@@ -20,6 +20,7 @@ import haxe.io.Path;
 import parsers.GmlReader;
 import parsers.GmlSeekData;
 import parsers.GmlSeeker;
+import plugins.PluginEvents;
 import shaders.ShaderHighlight;
 import shaders.ShaderKind;
 import tools.Dictionary;
@@ -276,6 +277,7 @@ class GmlFile {
 				}
 			}
 		}
+		PluginEvents.fileSave({file:this, code:out});
 	}
 	public function save() {
 		return editor.save();

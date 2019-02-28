@@ -10,7 +10,10 @@ typedef PluginConfig = {
 	name:String,
 	
 	/// relative paths to .js files
-	scripts:Array<String>,
+	?scripts:Array<String>,
+	
+	/// relative paths to .css files
+	?stylesheets:Array<String>,
 	
 	/// plugins that should be loaded before this one can be loaded
 	?dependencies:Array<String>,

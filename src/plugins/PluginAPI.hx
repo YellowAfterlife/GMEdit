@@ -27,4 +27,11 @@ class PluginAPI {
 		if (state == null) throw "There's no plugin named " + pluginName;
 		state.data = data;
 	}
+	
+	@:native("_emit") public static dynamic function emit<E:{}>(eventName:String, ?e:E):Dynamic {
+		throw "Failed to hook EventEmitter for PluginAPI";
+	}
+	@:native("_signal") public static dynamic function signal<E>(eventName:String, e:E):Void {
+		throw "Failed to hook EventEmitter for PluginAPI";
+	}
 }

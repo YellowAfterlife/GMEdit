@@ -12,6 +12,8 @@ import Main.document;
 import js.html.MouseEvent;
 import parsers.GmlSeekData;
 import parsers.GmlSeeker;
+import plugins.PluginAPI;
+import plugins.PluginEvents;
 import ui.liveweb.LiveWeb;
 using tools.NativeString;
 using tools.HtmlTools;
@@ -29,7 +31,7 @@ class ChromeTabs {
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
 	}
-	public static function sync(gmlFile:GmlFile) {
+	public static function sync(gmlFile:GmlFile, ?isNew:Bool) {
 		var prev = GmlFile.current;
 		if (prev != WelcomePage.file) {
 			pathHistory.unshift(prev.context);
@@ -51,6 +53,8 @@ class ChromeTabs {
 		prev.editor.focusLost(gmlFile.editor);
 		gmlFile.focus();
 		gmlFile.editor.focusGain(prev.editor);
+		if (isNew) PluginEvents.fileOpen({file:gmlFile});
+		PluginEvents.activeFileChange({file:gmlFile});
 	}
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
@@ -78,7 +82,8 @@ class ChromeTabs {
 		element.addEventListener("activeTabChange", function(e:CustomEvent) {
 			var tabEl:ChromeTab = e.detail.tabEl;
 			var gmlFile = tabEl.gmlFile;
-			if (gmlFile == null) { // bind newly made gmlFile
+			var makeFile = (gmlFile == null);
+			if (makeFile) { // bind newly made gmlFile
 				gmlFile = GmlFile.next;
 				if (gmlFile == null) return;
 				GmlFile.next = null;
@@ -105,7 +110,7 @@ class ChromeTabs {
 				GmlSeekData.add(gmlFile.path);
 				#end
 			}
-			sync(gmlFile);
+			sync(gmlFile, makeFile);
 			if (Std.is(gmlFile.editor, editors.EditCode)) {
 				window.setTimeout(function() {
 					Main.aceEditor.focus();
@@ -164,7 +169,10 @@ class ChromeTabs {
 			//
 			var closedTab:ChromeTab = e.detail.tabEl;
 			var closedFile = closedTab.gmlFile;
-			if (closedFile != null) closedFile.close();
+			if (closedFile != null) {
+				closedFile.close();
+				PluginEvents.fileClose({ file: closedFile });
+			}
 			//
 			if (impl.tabEls.length == 0) {
 				sync(WelcomePage.file);

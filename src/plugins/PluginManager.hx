@@ -1,4 +1,5 @@
 package plugins;
+import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
 import js.Error;
@@ -45,30 +46,52 @@ class PluginManager {
 				state.finish(new Error("Plugin's config.json has no name"));
 				return;
 			} else registerMap.set(conf.name, state);
-			if (conf.scripts == null) {
-				state.finish(new Error("Plugin's config.json has no scripts"));
-				return;
-			}
 			//
-			function loadScripts():Void {
-				var queue = conf.scripts.slice(0);
-				function loadNextScript():Void {
-					var rel = queue.shift();
-					var script = Main.document.createScriptElement();
-					script.setAttribute("plugin", conf.name);
-					script.onload = function(_) {
-						if (queue.length > 0) {
-							loadNextScript();
-						} else state.finish();
-					};
-					script.onerror = function(e:ErrorEvent) {
-						state.finish(e.error);
-					};
-					script.src = '$dir/$name/$rel';
-					Main.document.head.appendChild(script);
+			function loadResources():Void {
+				var queue:Array<{kind:Int,rel:String}> = [];
+				if (conf.stylesheets != null) for (rel in conf.stylesheets) {
+					queue.push({kind:1, rel:rel});
+				}
+				if (conf.scripts != null) for (rel in conf.scripts) {
+					queue.push({kind:0, rel:rel});
+				}
+				function loadNextResource():Void {
+					var pair = queue.shift();
+					var rel = pair.rel;
+					switch (pair.kind) {
+						case 0: {
+							var script = Main.document.createScriptElement();
+							script.setAttribute("plugin", conf.name);
+							script.onload = function(_) {
+								if (queue.length > 0) {
+									loadNextResource();
+								} else state.finish();
+							};
+							script.onerror = function(e:ErrorEvent) {
+								state.finish(e.error);
+							};
+							script.src = '$dir/$name/$rel';
+							Main.document.head.appendChild(script);
+						};
+						case 1: {
+							var style = Main.document.createLinkElement();
+							style.setAttribute("plugin", conf.name);
+							style.onload = function(_) {
+								if (queue.length > 0) {
+									loadNextResource();
+								} else state.finish();
+							};
+							style.onerror = function(e:ErrorEvent) {
+								state.finish(e.error);
+							}
+							style.rel = "stylesheet";
+							style.href = '$dir/$name/$rel';
+							Main.document.head.appendChild(style);
+						};
+					}
 				}
 				if (queue.length > 0) {
-					loadNextScript();
+					loadNextResource();
 				} else state.finish();
 			}
 			//
@@ -79,10 +102,10 @@ class PluginManager {
 					if (e != null) {
 						state.finish(e);
 					} else if (!state.ready) {
-						if (--depc <= 0) loadScripts();
+						if (--depc <= 0) loadResources();
 					}
 				});
-			} else loadScripts();
+			} else loadResources();
 		});
 	}
 	
@@ -98,6 +121,13 @@ class PluginManager {
 			PluginAPI.extend = untyped __js__("$extend");
 		} catch (x:Dynamic) {
 			Main.console.error("Couldn't expose $extend:", x);
+		}
+		try {
+			var EventEmitter = AceWrap.require("ace/lib/event_emitter").EventEmitter;
+			var OOP = AceWrap.require("ace/lib/oop");
+			OOP.implement(PluginAPI, EventEmitter);
+		} catch (x:Dynamic) {
+			Main.console.error("Couldn't add event emitting:", x);
 		}
 		//
 		var list:Array<String>;
