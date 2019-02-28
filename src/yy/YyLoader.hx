@@ -90,11 +90,11 @@ class YyLoader {
 						};
 					}
 					rel = path + name + "/";
-					var dir = TreeView.makeDir(name, rel);
+					var dir = TreeView.makeAssetDir(name, rel);
 					dir.setAttribute(TreeView.attrYYID, res.Key);
 					var nextOut = dir.treeItems;
 					if (path == "" && vdir.folderName == "rooms") {
-						var ccs = TreeView.makeItem("Creation codes",
+						var ccs = TreeView.makeAssetItem("Creation codes",
 							project.name, project.path, "roomccs");
 						ccs.removeAttribute(TreeView.attrThumb);
 						ccs.yyOpenAs = file.kind.yy.KYyRoomCCs.inst;
@@ -160,7 +160,7 @@ class YyLoader {
 							var ext:YyExtension = FileWrap.readJsonFileSync(full);
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
-							var extEl = TreeView.makeDir(ext.name, extRel);
+							var extEl = TreeView.makeAssetDir(ext.name, extRel);
 							extEl.setAttribute(TreeView.attrPath, full);
 							extEl.setAttribute(TreeView.attrIdent, ext.name);
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
@@ -170,7 +170,7 @@ class YyLoader {
 								var fileName = file.filename;
 								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
 								var filePath = Path.join([extDir, fileName]);
-								var fileItem = TreeView.makeItem(
+								var fileItem = TreeView.makeAssetItem(
 									fileName, extRel + fileName, filePath, "extfile"
 								);
 								extEl.treeItems.appendChild(fileItem);
@@ -228,7 +228,7 @@ class YyLoader {
 						default: continue;
 					}
 					var kind = type.substring(2).toLowerCase(); // GMScript -> script
-					var item = TreeView.makeItem(name, rel, full, kind);
+					var item = TreeView.makeAssetItem(name, rel, full, kind);
 					item.setAttribute(TreeView.attrYYID, res.Key);
 					switch (type) {
 						case "GMSprite": TreeView.setThumbSprite(full, name, item);

@@ -58,7 +58,7 @@ class GmxLoader {
 				}
 				GmlAPI.gmlLookupText += name + "\n";
 				if (index) GmlSeeker.run(full, _main, kind);
-				var item = TreeView.makeItem(name, path, full, one);
+				var item = TreeView.makeAssetItem(name, path, full, one);
 				if (one == "sprite") ths.push({path:full, item:item, name:name});
 				out.appendChild(item);
 				if (one == "shader") {
@@ -68,7 +68,7 @@ class GmxLoader {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
 				var next = path + name + "/";
-				var r = TreeView.makeDir(name, next);
+				var r = TreeView.makeAssetDir(name, next);
 				var c = r.treeItems;
 				for (q in gmx.children) loadrec(q, c, one, next);
 				out.appendChild(r);
@@ -80,7 +80,7 @@ class GmxLoader {
 			var pfx = NativeString.capitalize(plural) + "/";
 			for (p in gmx.findAll(plural)) {
 				if (dir == null) {
-					dir = TreeView.makeDir(NativeString.capitalize(plural), pfx);
+					dir = TreeView.makeAssetDir(NativeString.capitalize(plural), pfx);
 					tv.appendChild(dir);
 				}
 				for (q in p.children) {
@@ -107,19 +107,19 @@ class GmxLoader {
 				var name = gmx.findText("name");
 				var rel = Path.join(["datafiles", name]);
 				var full = project.fullPath(Path.join([path, name]));
-				var item = TreeView.makeItem(name, rel, full, "datafile") ;
+				var item = TreeView.makeAssetItem(name, rel, full, "datafile") ;
 				out.appendChild(item);
 			} else {
 				var name = gmx.get("name");
 				var next = path + name + "/";
-				var r = TreeView.makeDir(name, next);
+				var r = TreeView.makeAssetDir(name, next);
 				var c = r.treeItems;
 				for (q in gmx.children) loadinc(q, c, next);
 				out.appendChild(r);
 			}
 		}
 		for (datafiles in gmx.findAll("datafiles")) {
-			var parent = TreeView.makeDir("Included files", "Included files/");
+			var parent = TreeView.makeAssetDir("Included files", "Included files/");
 			for (c in datafiles.children) loadinc(c, parent.treeItems, "datafiles/");
 			if (parent.treeItems.children.length > 0) tv.appendChild(parent);
 		}
@@ -131,7 +131,7 @@ class GmxLoader {
 		for (extParent in gmx.findAll("NewExtensions")) {
 			var extNodes = extParent.findAll("extension");
 			if (extNodes.length == 0) continue;
-			var extParentDir = TreeView.makeDir("Extensions", "Extensions/");
+			var extParentDir = TreeView.makeAssetDir("Extensions", "Extensions/");
 			for (extNode in extNodes) {
 				var extRel = extNode.text;
 				extRel = StringTools.replace(extRel, "\x5c", "/"); // no backslashes
@@ -140,7 +140,7 @@ class GmxLoader {
 				var extGmx = project.readGmxFileSync(extPath);
 				var extName = extGmx.findText("name");
 				//
-				var extDir = TreeView.makeDir(extName, "Extensions/" + extName + "/");
+				var extDir = TreeView.makeAssetDir(extName, "Extensions/" + extName + "/");
 				extDir.setAttribute(TreeView.attrPath, extFull);
 				extDir.setAttribute(TreeView.attrIdent, extName);
 				//
@@ -153,7 +153,7 @@ class GmxLoader {
 					var isGmlFile = Path.extension(extFileName).toLowerCase() == "gml";
 					var extFilePath = Path.join([extNode.text, extFileName]);
 					var extFileFull = project.fullPath(extFilePath);
-					extDir.treeItems.appendChild(TreeView.makeItem(
+					extDir.treeItems.appendChild(TreeView.makeAssetItem(
 						extFileName, extFilePath, extFileFull, "extfile"
 					));
 					//
@@ -208,15 +208,15 @@ class GmxLoader {
 			tv.appendChild(extParentDir);
 		}
 		//
-		var mcrDir = TreeView.makeDir("Macros", "macros/");
+		var mcrDir = TreeView.makeAssetDir("Macros", "macros/");
 		var mcrItems = mcrDir.querySelector(".items");
-		mcrItems.appendChild(TreeView.makeItem(allConfigs, "Configs/default", project.fullPath(project.name), "config"));
+		mcrItems.appendChild(TreeView.makeAssetItem(allConfigs, "Configs/default", project.fullPath(project.name), "config"));
 		for (configs in gmx.findAll("Configs")) {
 			for (config in configs.findAll("Config")) {
 				var configPath = config.text;
 				var configName = rxName.replace(configPath, "$1");
 				var configFull = configPath + ".config.gmx";
-				mcrItems.appendChild(TreeView.makeItem(configName, configPath, configFull, "config"));
+				mcrItems.appendChild(TreeView.makeAssetItem(configName, configPath, configFull, "config"));
 			}
 		}
 		tv.appendChild(mcrDir);

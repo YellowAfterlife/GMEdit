@@ -13,6 +13,7 @@ import js.html.DivElement;
 import js.html.Event;
 import js.html.MouseEvent;
 import Main.*;
+import js.html.SpanElement;
 import js.html.StyleElement;
 import tools.Dictionary;
 using tools.HtmlTools;
@@ -197,32 +198,47 @@ class TreeView {
 		TreeViewMenus.showItemMenu(cast e.target, e);
 	}
 	//
-	public static function makeDir(name:String, rel:String):TreeViewDir {
-		rel = rel.ptNoBS();
+	public static function makeDir(name:String):TreeViewDir {
 		var r:TreeViewDir = cast document.createDivElement();
 		r.className = "dir";
 		//
 		var header = document.createDivElement();
 		header.className = "header";
-		header.addEventListener("click", handleDirClick);
-		header.addEventListener("contextmenu", handleDirCtxMenu);
 		header.title = name;
+		r.treeHeader = header;
 		r.appendChild(header);
-		TreeViewDnD.bind(header, rel);
 		//
 		var span = document.createSpanElement();
 		span.appendChild(document.createTextNode(name));
 		header.appendChild(span);
 		//
-		r.setAttribute(attrLabel, name);
-		r.setAttribute(attrRel, rel);
 		var c = document.createDivElement();
 		c.className = "items";
 		r.treeItems = c;
 		r.appendChild(c);
 		return r;
 	}
+	public static function makeAssetDir(name:String, rel:String):TreeViewDir {
+		rel = rel.ptNoBS();
+		var r:TreeViewDir = makeDir(name);
+		var header = r.treeHeader;
+		header.addEventListener("click", handleDirClick);
+		header.addEventListener("contextmenu", handleDirCtxMenu);
+		TreeViewDnD.bind(header, rel);
+		r.setAttribute(attrLabel, name);
+		r.setAttribute(attrRel, rel);
+		return r;
+	}
 	//
+	public static function makeItem(name:String):TreeViewItem {
+		var r:TreeViewItem = cast document.createDivElement();
+		r.className = "item";
+		var span = document.createSpanElement();
+		span.appendChild(document.createTextNode(name));
+		r.appendChild(span);
+		r.title = name;
+		return r;
+	}
 	public static function handleItemClick(e:MouseEvent, ?el:Element) {
 		if (e != null) {
 			e.preventDefault();
@@ -232,22 +248,17 @@ class TreeView {
 		var nav = openAs != null ? { kind: openAs } : null;
 		GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
 	}
-	private static inline function makeItemImpl(name:String, path:String, kind:String):TreeViewItem {
-		var r:TreeViewItem = cast document.createDivElement();
-		r.className = "item";
-		var span = document.createSpanElement();
-		span.appendChild(document.createTextNode(name));
-		r.appendChild(span);
-		r.title = name;
+	public static inline function makeItemShared(name:String, path:String, kind:String):TreeViewItem {
+		var r = makeItem(name);
 		r.setAttribute(attrPath, path.ptNoBS());
 		r.setAttribute(attrIdent, name);
 		if (kind != null) r.setAttribute(attrKind, kind);
 		return r;
 	}
 	//
-	public static function makeItem(name:String, rel:String, path:String, kind:String):TreeViewItem {
+	public static function makeAssetItem(name:String, rel:String, path:String, kind:String):TreeViewItem {
 		rel = rel.ptNoBS();
-		var r = makeItemImpl(name, path, kind);
+		var r = makeItemShared(name, path, kind);
 		r.setAttribute(attrRel, rel);
 		TreeViewDnD.bind(r, rel);
 		var th = thumbMap[path];
@@ -276,7 +287,7 @@ class TreeView {
 		}
 	}
 	public static function makeProject(name:String, path:String) {
-		var r = makeItemImpl(name, path, "project");
+		var r = makeItemShared(name, path, "project");
 		r.title = path;
 		r.addEventListener(Preferences.current.singleClickOpen ? "click" : "dblclick", openProject);
 		r.addEventListener("contextmenu", handleItemCtxMenu);
@@ -319,6 +330,7 @@ typedef TreeViewQuery = {
 	?ident:String,
 };
 extern class TreeViewDir extends DivElement {
+	public var treeHeader:DivElement;
 	public var treeItems:DivElement;
 }
 extern class TreeViewItem extends DivElement {

@@ -20,12 +20,12 @@ class GmlLoader {
 				var full = Path.join([dirFull, item]);
 				var rel = Path.join([dirRel, item]);
 				if (pair.isDirectory) {
-					var nd = TreeView.makeDir(item, rel);
+					var nd = TreeView.makeAssetDir(item, rel);
 					loadrec(nd.treeItems, full, rel);
 					rd.push(nd);
 				} else {
 					var ifull = Path.join([pfx, full]);
-					var item = TreeView.makeItem(item, rel, ifull, "file");
+					var item = TreeView.makeAssetItem(item, rel, ifull, "file");
 					rf.push(item);
 					if (ui.Preferences.current.assetThumbs)
 					switch (Path.extension(full).toLowerCase()) {
