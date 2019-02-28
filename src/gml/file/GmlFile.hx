@@ -185,9 +185,10 @@ class GmlFile {
 			var rxEof = new RegExp("^(#define|#event|#moment)");
 			i = row;
 			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;
+			var start = found ? i : -1;
 			while (i < len) {
 				s = session.getLine(i);
-				if (rxEof.test(s)) break;
+				if (i != start && rxEof.test(s)) break;
 				var vals = rxCtx.exec(s);
 				if (vals != null) {
 					row = i;
