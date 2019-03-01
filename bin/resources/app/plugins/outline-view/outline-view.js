@@ -10,14 +10,12 @@
 	popout.appendChild(treeview);
 	//
 	var currEl = null;
-	var currOnly = false;
+	var currOnly = false; // original idea (only show the current file in popout)
 	//
 	function currFile() {
 		return $gmedit["gml.file.GmlFile"].current;
 	}
-	//
-	var makeItem = $gmedit["ui.treeview.TreeView"].makeItem;
-	var navPool = [];
+	// maybe this should be a "built-in" function instead
 	function activate(file) {
 		var tabs = document.querySelectorAll(".chrome-tab");
 		for (var i = 0; i < tabs.length; i++) {
@@ -28,38 +26,47 @@
 		}
 		return null;
 	}
+	//
+	var makeItem = $gmedit["ui.treeview.TreeView"].makeItem;
+	var navPool = [];
 	function makeNav(file, label, title, nav) {
 		var r = navPool.pop();
 		if (r) {
 			r.querySelector("span").textContent = label;
 		} else r = makeItem(label);
 		r.title = title;
+		// items navigating to inside of events get a "ctx" class for indication
 		if (!!nav.ctx != r.classList.contains("ctx")) {
 			r.classList.toggle("ctx");
 		}
 		r.onclick = function(_) {
+			function finish() {
+				file.navigate(nav);
+				aceEditor.scrollToLine(aceEditor.selection.lead.row);
+				aceEditor.focus();
+			}
 			if (currFile() != file) {
 				if (activate(file)) {
-					setTimeout(function() {
-						file.navigate(nav);
-					});
+					setTimeout(finish);
 				}
-			} else file.navigate(nav);
+			} else finish();
 			return false;
 		};
 		return r;
 	}
-	//
+	// items (definitions)
 	var rxDef = /^(?:#event|#define|#moment|#section|#roomcc)\b\s*(\w+(?::\w+)?)(.*)$/;
-	var rxMark = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
+	// subitems (regions/landmarks)
+	var rxMark = /^\s*((?:#region|\/\/#region|\/\/#mark)\b\s*(.*))$/;
 	function reindex(file) {
 		var ov = file.outlineView;
 		var el = ov.treeItems;
+		if (!file.codeEditor) return;
+		// pool up the existing items:
 		var cs = el.children;
 		for (var i = 0; i < cs.length; i++) navPool.push(cs[i]);
 		el.innerHTML = "";
-		if (!file.codeEditor) return;
-		//
+		// now we add items for events/regions
 		var doc = file.codeEditor.session.doc;
 		var n = doc.getLength();
 		var def = null;
@@ -70,14 +77,25 @@
 				var txt = def;
 				if (def != "properties") {
 					var tail = mt[2].trim();
-					if (tail) txt += " ➜ " + tail;
+					if (tail) txt += " ➜ " + tail; // narrow space, arrow, narrow space
 				}
-				el.appendChild(makeNav(file, txt, txt, {def:def}));
+				el.appendChild(makeNav(file, txt, txt, {
+					def: def,
+					showAtTop: true
+				}));
 				continue;
-			} else if (mt = rxMark.exec(doc.getLine(i))) {
-				el.appendChild(makeNav(file, mt[2], mt[0], {def:def,ctx:mt[1],ctxAfter:true}));
+			}
+			else if (mt = rxMark.exec(doc.getLine(i))) {
+				el.appendChild(makeNav(file, mt[2], mt[0], {
+					def: def,
+					ctx: mt[1],
+					ctxAfter: true,
+					showAtTop: true
+				}));
 			}
 		}
+		// in what is no less than a bit of a hack, for items with no children
+		// we shall simply untag .dir from container, and tag the header with .item
 		var th = ov.treeHeader;
 		if ((el.children.length == 0) != th.classList.contains("item")) {
 			ov.classList.toggle("dir");
@@ -89,6 +107,7 @@
 		var dir = $gmedit["ui.treeview.TreeView"].makeDir(file.name);
 		dir.classList.add("open");
 		dir.treeHeader.addEventListener("click", function(_) {
+			// mirroring above, clicking a childless item should open it instead
 			if (dir.classList.contains("dir")) {
 				dir.classList.toggle("open");
 			} else activate(file);
@@ -96,6 +115,7 @@
 		file.outlineView = dir;
 		reindex(file);
 	}
+	// updates the panel to contain treeviews of active tabs and in correct order
 	function syncAll(tabEls) {
 		if (tabEls == null) tabEls = $gmedit["ui.ChromeTabs"].impl.tabEls;
 		treeview.innerHTML = "";
@@ -127,13 +147,34 @@
 		}
 	}
 	//
+	function onFileChange(e) {
+		changeTo(e.file);
+	}
+	function onFileClose(e) {
+		syncAll();
+	}
+	function onFileSave(e) {
+		reindex(e.file);
+	}
+	function onTabsReorder(e) {
+		syncAll(e.target.tabEls);
+	}
+	//
 	var hidden = true;
 	function toggle() {
 		hidden = !hidden;
 		if (hidden) {
 			popout.parentElement.removeChild(popout);
+			GMEdit.off("activeFileChange", onFileChange);
+			GMEdit.off("fileClose", onFileClose);
+			GMEdit.off("fileSave", onFileSave);
+			GMEdit.off("tabsReorder", onTabsReorder);
 		} else {
 			document.body.insertBefore(popout, document.querySelector("#preferences-window"));
+			GMEdit.on("activeFileChange", onFileChange);
+			GMEdit.on("fileClose", onFileClose);
+			GMEdit.on("fileSave", onFileSave);
+			GMEdit.on("tabsReorder", onTabsReorder);
 		}
 		if (!hidden) {
 			if (currOnly) {
@@ -144,6 +185,7 @@
 	function init() {
 		AceCommands.add({
 			name: "toggleOutlineView",
+			//bindKey: "Ctrl-Shift-O",
 			exec: function(editor) {
 				toggle();
 			}
@@ -153,25 +195,6 @@
 			exec: "toggleOutlineView",
 			title: ""
 		});
-		//
-		GMEdit.on("activeFileChange", function(e) {
-			if (hidden) return;
-			changeTo(e.file);
-		});
-		GMEdit.on("fileClose", function(e) {
-			if (hidden) return;
-			var id = e.file.outlineViewID;
-			if (id != null) delete cache[id];
-		});
-		GMEdit.on("fileSave", function(e) {
-			if (hidden) return;
-			reindex(e.file);
-		});
-		GMEdit.on("tabsReordered", function(e) {
-			if (hidden) return;
-			syncAll(e.target.tabEls);
-		});
-		//
 		//toggle();
 	}
 	GMEdit.register("outline-view", {
