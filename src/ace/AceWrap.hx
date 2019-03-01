@@ -1,6 +1,7 @@
 package ace;
 import ace.extern.*;
 import gml.file.GmlFile;
+import haxe.Constraints.Function;
 import js.html.Element;
 import js.html.SpanElement;
 import haxe.extern.EitherType;
@@ -102,6 +103,7 @@ extern class AceEditor {
 	public inline function gotoPos(pos:AcePos):Void {
 		gotoLine(pos.row + 1, pos.column);
 	}
+	public function scrollToLine(line:Int, ?center:Bool, ?animate:Bool, ?callback:Function):Void;
 	public function getCursorPosition():AcePos;
 	public function getSelectionRange():{ start:AcePos, end:AcePos };
 	public function getSelectedText():String;

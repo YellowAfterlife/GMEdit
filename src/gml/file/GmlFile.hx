@@ -212,6 +212,7 @@ class GmlFile {
 			}
 		}
 		if (found) {
+			if (nav.showAtTop) Main.aceEditor.scrollToLine(row);
 			Main.aceEditor.gotoLine0(row, col);
 		}
 		return found;
@@ -334,4 +335,5 @@ typedef GmlFileNav = {
 	?ctxAfter:Bool,
 	/** file kind override */
 	?kind:FileKind,
+	?showAtTop:Bool,
 }
