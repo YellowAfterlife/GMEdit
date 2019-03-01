@@ -197,8 +197,8 @@ class AceStatusBar {
 		var argCurr = 0;
 		while (tk != null) {
 			switch (tk.type) {
-				case "paren.lparen": depth += tk.value.length;
-				case "paren.rparen": depth -= tk.value.length;
+				case "paren.lparen", "square.paren.lparen": depth += tk.value.length;
+				case "paren.rparen", "square.paren.rparen": depth -= tk.value.length;
 				case "punctuation.operator" if (tk.value == "," && depth == 0): argCurr += 1;
 			}
 			if (tk == ctk) break;
