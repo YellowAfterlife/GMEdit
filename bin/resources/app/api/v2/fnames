@@ -704,6 +704,15 @@ bbox_right*@
 bbox_top*@
 bbox_bottom*@
 
+bboxmode_automatic#
+bboxmode_fullimage#
+bboxmode_manual#
+
+bboxkind_precise#
+bboxkind_rectangular#
+bboxkind_ellipse#
+bboxkind_diamond#
+
 // Layer-related built-in variables
 layer@
 
@@ -799,11 +808,14 @@ screen_save_part(fname,x,y,w,h)
 // section 5.5
 
 draw_set_font(font)
+draw_get_font()
 draw_set_halign(halign)
+draw_get_halign()
 fa_left#
 fa_center#
 fa_right#
 draw_set_valign(valign)
+draw_get_valign()
 fa_top#
 fa_middle#
 fa_bottom#
@@ -923,6 +935,8 @@ surface_get_height(id)
 surface_get_texture(id)
 surface_set_target(id)
 surface_set_target_ext(index,id)
+surface_get_target()
+surface_get_target_ext(index)
 surface_reset_target()
 surface_depth_disable(disable)
 surface_get_depth_disable()
@@ -1076,6 +1090,7 @@ audio_pause_all()
 audio_is_playing(soundid)
 audio_is_paused(soundid)
 audio_exists(soundid)
+audio_system_is_available()
 
 //audio revision-getters
 //audio_sound_set_track_position(soundid,time)
@@ -1229,7 +1244,7 @@ texturegroup_get_sprites(groupname)
 texturegroup_get_fonts(groupname)
 texturegroup_get_tilesets(groupname)
 
-texture_debug_messages(enable)
+texture_debug_messages(debug_level)
 
 spritespeed_framespersecond#
 spritespeed_framespergameframe#
@@ -1872,8 +1887,7 @@ display_set_sleep_margin(milliseconds)
 display_get_sleep_margin()
 
 of_challenge_win#
-of_challen
-ge_lose#
+of_challenge_lose#
 of_challenge_tie#
 
 leaderboard_type_number#
@@ -2156,6 +2170,12 @@ gamepad_axis_value(device, axisIndex)
 gamepad_set_vibration(device, leftMotorSpeed, rightMotorSpeed)
 gamepad_set_colour(index,colour)£
 gamepad_set_color(index,color)$
+gamepad_hat_count(axis)
+gamepad_hat_value(device, axisIndex)
+gamepad_remove_mapping(device)
+gamepad_test_mapping(device, mapping_string)
+gamepad_get_mapping(device)
+gamepad_get_guid(device)
 
 // Check to see if a pause event has come from an OS activity this frame
 os_is_paused()
@@ -2167,6 +2187,8 @@ http_get(url)
 http_get_file(url, dest)
 http_post_string(url, string)
 http_request(url, method, header_map, body)
+http_get_request_crossorigin()
+http_set_request_crossorigin(crossorigin_type)
 json_encode(ds_map)
 json_decode(string)
 zip_unzip(file, destPath)
@@ -2586,7 +2608,6 @@ buffer_grow#
 buffer_wrap#
 buffer_fast#
 buffer_vbuffer#
-buffer_network#
 buffer_u8#
 buffer_s8#
 buffer_u16#
