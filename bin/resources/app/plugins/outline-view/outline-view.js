@@ -1,16 +1,18 @@
 (function() {
 	//
-	var popout = document.createElement("div");
-	popout.id = "outline-view";
-	popout.classList.add("popout-window");
-	popout.style.resize = "horizontal";
+	var popout = false; // show a popout instead of a sidebar
+	var currOnly = false; // original idea (only show the current file)
+	//
+	var outer = document.createElement("div");
+	outer.id = "outline-view";
+	if (popout) outer.classList.add("outer-window");
+	outer.style.resize = "horizontal";
 	//
 	var treeview = document.createElement("div")
 	treeview.classList.add("treeview");
-	popout.appendChild(treeview);
+	outer.appendChild(treeview);
 	//
 	var currEl = null;
-	var currOnly = false; // original idea (only show the current file in popout)
 	//
 	function currFile() {
 		return $gmedit["gml.file.GmlFile"].current;
@@ -163,18 +165,27 @@
 	var hidden = true;
 	function toggle() {
 		hidden = !hidden;
-		if (hidden) {
-			popout.parentElement.removeChild(popout);
-			GMEdit.off("activeFileChange", onFileChange);
-			GMEdit.off("fileClose", onFileClose);
-			GMEdit.off("fileSave", onFileSave);
-			GMEdit.off("tabsReorder", onTabsReorder);
-		} else {
-			document.body.insertBefore(popout, document.querySelector("#preferences-window"));
+		if (!hidden) {
+			if (popout) {
+				document.body.insertBefore(outer, document.querySelector("#preferences-window"));
+			} else {
+				GMEdit.sidebar.add("Outline View", outer);
+				GMEdit.sidebar.set("Outline View");
+			}
 			GMEdit.on("activeFileChange", onFileChange);
 			GMEdit.on("fileClose", onFileClose);
 			GMEdit.on("fileSave", onFileSave);
 			GMEdit.on("tabsReorder", onTabsReorder);
+		} else {
+			if (popout) {
+				outer.parentElement.removeChild(outer);
+			} else {
+				GMEdit.sidebar.remove("Outline View", outer);
+			}
+			GMEdit.off("activeFileChange", onFileChange);
+			GMEdit.off("fileClose", onFileClose);
+			GMEdit.off("fileSave", onFileSave);
+			GMEdit.off("tabsReorder", onTabsReorder);
 		}
 		if (!hidden) {
 			if (currOnly) {
