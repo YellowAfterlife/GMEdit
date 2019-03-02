@@ -22,7 +22,7 @@ body {
 	box-sizing: border-box;
 	position: relative;
 }
-#splitter-td {
+#splitter-td, .splitter-td {
 	border-right: 1px solid;
 	border-left: 1px solid;
 	border-color: #BCBBBC;
@@ -34,6 +34,13 @@ body {
 #main #editor-td {
 	flex-grow: 1;
 	padding: 0px;
+}
+#main #editor-td .bottom {
+	display: flex;
+}
+#main #editor-td .bottom > .tabview {
+	flex-grow: 1;
+	position: relative;
 }
 .resinfo {
 	padding: 0.5em;
@@ -212,6 +219,7 @@ body {
 	height: 36px;
 	padding-top: 4px;
 	-webkit-user-select: none;
+	z-index: 7;
 }
 #app:not(.app-browser) .chrome-tabs::before {
 	content: "";
@@ -341,4 +349,21 @@ body {
 	height: calc(100vh - 36px);
 	height: var(--main-height);
 	height: var(--main-height-vh);
+}
+#misc-td {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+#misc-select {
+	width: 100%;
+	border: 0;
+	line-height: 1.5;
+	height: 1.5em;
+	box-shadow: 0 -1px 0 rgba(0,0,0,0.1) inset;
+}
+#misc-panel {
+	position: relative;
+	flex-grow: 1;
+	display: flex;
 }

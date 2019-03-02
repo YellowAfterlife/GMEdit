@@ -1,5 +1,6 @@
 package plugins;
 import haxe.DynamicAccess;
+import ui.Sidebar;
 
 /**
  * Exposes a globally visible GMEdit object that you can use for some random bits
@@ -34,4 +35,6 @@ class PluginAPI {
 	@:native("_signal") public static dynamic function signal<E>(eventName:String, e:E):Void {
 		throw "Failed to hook EventEmitter for PluginAPI";
 	}
+	
+	public static var sidebar:Class<Sidebar> = Sidebar;
 }

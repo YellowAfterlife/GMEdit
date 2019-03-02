@@ -115,6 +115,7 @@ class Main {
 		GlobalSearch.init();
 		GlobalLookup.init();
 		Preferences.initEditor();
+		Sidebar.init();
 		MainMenu.init();
 		//
 		#if !lwedit

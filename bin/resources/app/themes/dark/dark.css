@@ -1,6 +1,9 @@
-#splitter-td {
+#splitter-td, .splitter-td {
 	border-color: #161719;
 	background: #495057;
+}
+#misc-splitter-td {
+	background: #505050;
 }
 #main #editor-td {
 	background-color: #222222;
@@ -289,4 +292,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 ::-webkit-scrollbar-track {
 	background-color:#000;
+}
+#misc-select {
+	background: #111;
+	color: #ccc;
 }
