@@ -123,7 +123,7 @@ class ChromeTabs {
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
 			#if (lwedit)
-			if (gmlFile.kind == Normal) {
+			if (Std.is(gmlFile.kind, file.kind.gml.KGmlScript)) {
 				if (gmlFile.getAceSession().getValue().length > 0) {
 					if (!window.confirm(
 						"Are you sure you want to discard this tab? Contents will be lost"

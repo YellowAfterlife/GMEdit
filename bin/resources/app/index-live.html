@@ -29,29 +29,46 @@
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
 		<div class="bottom gml">
-			<div id="ace_container">
-				<textarea id="source"></textarea>
-				<div class="ace_status-bar" style="display:none">
-					<span class="ace_status-hint">
-						<span class="status" style="display:none">?</span>
-						<span class="recording" style="display:none">REC</span>
-						<span class="select" style="display:none">(:)</span>
-						<span class="row-label">Ln:</span>
-						<span class="row">1</span>
-						<span class="col-label">Col:</span>
-						<span class="col">1</span>
-						<span class="ranges" style="display:none"></span>
-						<span class="context-pre" style="display:none"></span>
-						<span class="context" style="display:none"><span class="context-txt"></span></span>
-					</span>
-					<span id="ace_status-hint" title=""></span>
+			<div class="tabview">
+				<div id="ace_container">
+					<textarea id="source"></textarea>
+					<div class="ace_status-bar" style="display:none">
+						<span class="ace_status-hint">
+							<span class="status" style="display:none">?</span>
+							<span class="recording" style="display:none">REC</span>
+							<span class="select" style="display:none">(:)</span>
+							<span class="row-label">Ln:</span>
+							<span class="row">1</span>
+							<span class="col-label">Col:</span>
+							<span class="col">1</span>
+							<span class="ranges" style="display:none"></span>
+							<span class="context-pre" style="display:none"></span>
+							<span class="context" style="display:none"><span class="context-txt"></span></span>
+						</span>
+						<span id="ace_status-hint" title=""></span>
+					</div>
 				</div>
+			</div>
+			<div width="5" id="misc-splitter-td" class="splitter-td"
+				splitter-element="#misc-td"
+				splitter-lskey="splitter-width-misc"
+				splitter-width-var="--misc-width"
+				splitter-default-width="150"
+				style="display:none"
+			></div>
+			<div id="misc-td" style="display:none">
+				<select id="misc-select">
+				</select>
+				<div id="misc-panel"></div>
 			</div>
 		</div>
 	</div>
-	<div width="5" id="splitter-td">
-		
-	</div>
+	<div width="5" id="splitter-td" class="splitter-td"
+		splitter-element="#game-td"
+		splitter-lskey="splitter-width-live"
+		splitter-width-var="--side-width"
+		splitter-default-width="400"
+	></div>
 	<div id="game-td" style="flex-grow: 1">
 		<div class="chrome-tabs has-lw-buttons">
 			<input type="button" id="refresh" value="Run" title="Runs the game. You can also press F5 or Ctrl+Enter for ease." />

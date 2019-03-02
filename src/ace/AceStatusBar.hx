@@ -241,6 +241,7 @@ class AceStatusBar {
 	public static function statusUpdate() {
 		if (Main.window.performance.now() < ignoreUntil) return;
 		var q = GmlFile.current;
+		if (q == null) return;
 		var codeEditor:EditCode = q.codeEditor;
 		if (codeEditor == null) return;
 		//
