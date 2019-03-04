@@ -128,21 +128,16 @@ import ui.CommandPalette;
 		bind(wm("Ctrl-K", "Command-K"), "togglecomment");
 		//
 		var findRxs = "^#define\\b|^#event\\b|^#moment\\b|^#section\\b";
-		var findRx0 = new RegExp('(?:$findRxs|#region\\b|//{|//#region)');
+		var findRx0 = new RegExp('(?:$findRxs|#region\\b|//{|//#region\\b|//#mark\\b)');
 		//var findRx1 = new RegExp('(?:$findRxs)');
 		function findFoldImpl(editor:AceWrap, fwd:Bool, select:Bool):Void {
 			var session = editor.session;
-			var foldWidgets = session.foldWidgets;
 			var row = editor.selection.lead.row;
 			var steps = fwd ? (session.getLength() - 1 - row) : row;
 			var delta = fwd ? 1 : -1;
 			var rx = findRx0;
 			while (--steps >= 0) {
 				row += delta;
-				if (foldWidgets[row] == null) {
-					foldWidgets[row] = session.getFoldWidget(row);
-				}
-				if (foldWidgets[row] != "start") continue;
 				if (session.getFoldAt(row, 0) != null) continue;
 				if (!rx.test(session.getLine(row))) continue;
 				var col = session.getLine(row).length;
