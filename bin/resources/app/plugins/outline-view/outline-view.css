@@ -1,14 +1,29 @@
 #outline-view {
+	overflow-y: auto;
+}
+#outline-view.popout-window {
 	right: 20px;
 	top: 40px;
 	bottom: 44px;
 	width: 224px;
 	padding: 0;
-	overflow-y: auto;
 }
 #outline-view .treeview {
 	min-height: 100%;
 	box-sizing: border-box;
+}
+#outline-view .treeview:empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 0.25em;
+}
+#outline-view .treeview:empty:after {
+	content: "Hello! Outline view will show here once you have any tabs open. Feel free to toggle it any time via Ctrl+Shift+T ➜ 'Toggle outline view'!";
+}
+#outline-view .treeview:empty:not(:hover):after {
+	opacity: 0.5;
 }
 #outline-view .item, #outline-view .items, #outline-view .treeview > div {
 	margin-top: 0;
@@ -16,9 +31,73 @@
 #outline-view .treeview > div:not(.dir) > .header {
 	border-left: 0;
 }
+
+#outline-view .outline-current-file > .header span {
+	text-decoration: underline;
+}
+#outline-view .outline-current-file .outline-current-def span {
+	text-decoration: underline;
+}
+
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file {
+	/*background: rgba(0,0,0,0.07);*/
+}
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file .item {
+	border-left-color: #fcb;
+}
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file .outline-current-def {
+	border-left-color: #721;
+}
+
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file {
+	/*background: rgba(255,255,255,0.07);*/
+}
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file .item {
+	border-left-color: #899097; /* a990d7 */
+}
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file .outline-current-def {
+	border-left-color: white;
+}
 #outline-view .caption {
 	font-size: 13px;
 }
+
+#main:not(.chrome-tabs-dark-theme) #outline-view .item:before {
+	filter: invert(100%);
+}
+#outline-view .item:before {
+	background: url(icons.png) -2px -2px no-repeat;
+}
 #outline-view .item.ctx:before {
-	opacity: 0.5;
+	background-position: -22px -2px;
+}
+#outline-view .item[outline-event="create"]:before {
+	background-position: -42px -2px;
+}
+#outline-view .item[outline-event="destroy"]:before {
+	background-position: -62px -2px;
+}
+#outline-view .item[outline-event="cleanup"]:before {
+	background-position: -82px -2px;
+}
+#outline-view .item[outline-event^="alarm"]:before {
+	background-position: -2px -22px;
+}
+#outline-view .item[outline-event="step"]:before {
+	background-position: -22px -22px;
+}
+#outline-view .item[outline-event="step_begin"]:before {
+	background-position: -42px -22px;
+}
+#outline-view .item[outline-event="step_end"]:before {
+	background-position: -62px -22px;
+}
+#outline-view .item[outline-event^="collision"]:before {
+	background-position: -2px -62px;
+}
+#outline-view .item[outline-event^="async"]:before {
+	background-position: -22px -62px;
+}
+#outline-view .item[outline-event^="draw"]:before {
+	background-position: -2px -42px;
 }
