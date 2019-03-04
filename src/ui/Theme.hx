@@ -4,6 +4,7 @@ import electron.FileWrap;
 import haxe.io.Path;
 import js.html.Element;
 import Main.document;
+using tools.HtmlTools;
 
 /**
  * ...
@@ -21,8 +22,9 @@ class Theme {
 	}
 	private static function setDarkTabs(z:Bool) {
 		var c = "chrome-tabs-dark-theme";
-		for (node in document.querySelectorAll(".chrome-tabs")) {
-			var el:Element = cast node;
+		var els = [for (q in document.querySelectorEls(".chrome-tabs")) q];
+		els.push(document.querySelectorAuto("#main"));
+		for (el in els) {
 			var cl = el.classList;
 			if (z) cl.add(c); else cl.remove(c);
 		}
