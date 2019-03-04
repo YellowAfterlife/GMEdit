@@ -4,7 +4,7 @@ package tools;
  * ...
  * @author YellowAfterlife
  */
-class NativeArray {
+@:keep class NativeArray {
 	public static inline function clear<T>(arr:Array<T>):Void {
 		untyped arr.length = 0;
 	}

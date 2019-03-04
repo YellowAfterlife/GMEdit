@@ -9,7 +9,7 @@ import js.Syntax;
  * ...
  * @author YellowAfterlife
  */
-class NativeString {
+@:keep class NativeString {
 	public static inline function splitReg(s:String, d:RegExp):Array<String> {
 		return s.split(cast d);
 	}
