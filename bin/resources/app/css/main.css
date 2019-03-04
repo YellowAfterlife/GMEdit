@@ -367,3 +367,6 @@ body {
 	flex-grow: 1;
 	display: flex;
 }
+#misc-panel > div {
+	flex-grow: 1;
+}
