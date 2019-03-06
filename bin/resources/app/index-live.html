@@ -14,6 +14,17 @@
 	<link id="project-style" rel="stylesheet" />
 	<style id="project-style-inline"></style>
 	<style id="tree-thumbs"></style>
+	<script type="text/javascript">
+	if (document.location.host == "yal.cc") {
+		if (location.protocol == "http:") {
+			document.location.protocol = "https:";
+		} else {
+			window._gaq = window._gaq||[];
+			_gaq.push(['_setAccount','UA-36439133-1']);_gaq.push(['_trackPageview']);
+			document.write('<'+'script type="text/javascript" async="true" src="https://www.google-analytics.com/ga.js"></'+'script>');
+		}
+	}
+	</script>
 </head><body id="app">
 <div id="main">
 	<div id="editor-td" style="width: 520px">
@@ -174,13 +185,13 @@
 	</div>
 </div>
 <!-- -->
-<script type="text/javascript" src="./formatter.js"></script>
-<script type="text/javascript" src="./misc/splitter.js?v=18-06-16-1"></script>
-<script type="text/javascript" src="./ace/src-noconflict/ace.js" charset="utf-8"></script>
+<script type="text/javascript" src="./formatter.js?v=19-03-06"></script>
+<script type="text/javascript" src="./misc/splitter.js?v=19-03-06"></script>
+<script type="text/javascript" src="./ace/src-noconflict/ace.js?v=19-03-06" charset="utf-8"></script>
 <script type="text/javascript" src="./ace/src-noconflict/ext-language_tools.js"></script>
-<script type="text/javascript" src="./ace/mode-gml.js"></script>
+<script type="text/javascript" src="./ace/mode-gml.js?v=19-03-06"></script>
 <script type="text/javascript" src="./lw/lzstring.js"></script>
-<script type="text/javascript" src="./lw/gmlive-web.js?v=18-06-16-1"></script>
-<script type="text/javascript" src="./lw/app.js?v=18-06-16-1"></script>
+<script type="text/javascript" src="./lw/gmlive-web.js?v=19-03-06"></script>
+<script type="text/javascript" src="./lw/app.js?v=19-03-06"></script>
 <script type="text/javascript" src="./misc/gmcr.js" async></script>
 </body>
