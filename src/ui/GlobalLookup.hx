@@ -58,7 +58,7 @@ class GlobalLookup {
 				if (hint != null) {
 					option.setAttribute("hint", hint);
 				} else option.removeAttribute("hint");
-				option.title = title;
+				option.title = title != null ? title : "";
 				//
 				option.textContent = name;
 				if (name == selection) list.selectedIndex = found;
