@@ -62,10 +62,10 @@
 	font-size: 13px;
 }
 
-#main:not(.chrome-tabs-dark-theme) #outline-view .item:before {
+#main:not(.chrome-tabs-dark-theme) #outline-view .items .item:before {
 	filter: invert(100%);
 }
-#outline-view .item:before {
+#outline-view .items .item:before {
 	background: url(icons.png) -2px -2px no-repeat;
 }
 #outline-view .item.ctx:before {
