@@ -111,6 +111,10 @@ import tools.Dictionary;
 		return changed ? 1 : 0;
 	}
 	
+	public function navigate(editor:Editor, nav:GmlFileNav):Bool {
+		return false;
+	}
+	
 	public static function initStatic():Void {
 		register("gml", KGmlScript.inst);
 		register("txt", KPlain.inst);

@@ -125,21 +125,6 @@ class GmlFile {
 		//
 		context = kind.getTabContext(this, data);
 		kind.init(this, data);
-		/*var modePath = null;
-		switch (kind) {
-			case SearchResults: modePath = "ace/mode/gml_search";
-			case Extern, Plain, Snippets: modePath = "ace/mode/text";
-			case GLSL: ShaderHighlight.nextKind = GLSL; modePath = "ace/mode/shader";
-			case HLSL: ShaderHighlight.nextKind = HLSL; modePath = "ace/mode/shader";
-			case JavaScript: modePath = "ace/mode/javascript";
-			case YySpriteView, GmxSpriteView: editor = new EditSprite(this);
-			case Markdown, DocMarkdown: modePath = "ace/mode/markdown";
-			default: modePath = "ace/mode/gml";
-		}
-		if (modePath != null) {
-			codeEditor = new EditCode(this, modePath);
-			editor = codeEditor;
-		} else codeEditor = null;*/
 		load(data);
 		editor.ready();
 	}
@@ -158,64 +143,7 @@ class GmlFile {
 	}
 	//
 	public function navigate(nav:GmlFileNav):Bool {
-		var session:AceSession = getAceSession();
-		if (session == null) return false;
-		var len = session.getLength();
-		//
-		var found = false;
-		var row = 0, col = 0;
-		var i:Int, s:String;
-		if (nav.def != null) {
-			var rxDef = new RegExp("^(#define|#event|#moment)[ \t]" + NativeString.escapeRx(nav.def) + "\\b");
-			i = 0;
-			while (i < len) {
-				s = session.getLine(i);
-				if (rxDef.test(s)) {
-					row = i;
-					col = s.length;
-					found = true;
-					break;
-				} else i += 1;
-			}
-		}
-		//
-		var ctx = nav.ctx;
-		if (ctx != null) {
-			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
-			var rxEof = new RegExp("^(#define|#event|#moment)");
-			i = row;
-			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;
-			var start = found ? i : -1;
-			while (i < len) {
-				s = session.getLine(i);
-				if (i != start && rxEof.test(s)) break;
-				var vals = rxCtx.exec(s);
-				if (vals != null) {
-					row = i;
-					col = vals.index;
-					found = true;
-					break;
-				} else i += 1;
-			}
-		}
-		//
-		var pos = nav.pos;
-		if (pos != null) {
-			if (ctx == null && nav.def != null) {
-				col = 0;
-				row += 1;
-			}
-			if (!found || !nav.ctxAfter) {
-				row += pos.row;
-				col += pos.column;
-				found = true;
-			}
-		}
-		if (found) {
-			if (nav.showAtTop) Main.aceEditor.scrollToLine(row);
-			Main.aceEditor.gotoLine0(row, col);
-		}
-		return found;
+		return kind.navigate(editor, nav);
 	}
 	public static function open(name:String, path:String, ?nav:GmlFileNav):GmlFile {
 		path = Path.normalize(path);

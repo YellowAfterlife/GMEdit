@@ -1,9 +1,13 @@
 package file.kind;
+import gml.file.GmlFile.GmlFileNav;
 import editors.EditCode;
+import editors.Editor;
 import electron.Dialog;
+import js.RegExp;
 import parsers.GmlExtHyper;
 import parsers.GmlExtImport;
 import parsers.GmlExtLambda;
+import tools.NativeString;
 
 /**
  * A parent for any kinds containing GML code.
@@ -58,5 +62,76 @@ class KGml extends KCode {
 			}
 		}
 		return code;
+	}
+	
+	override public function navigate(editor:Editor, nav:GmlFileNav):Bool {
+		var session = (cast editor:EditCode).session;
+		var len = session.getLength();
+		//
+		var found = false;
+		var row = 0, col = 0;
+		var i:Int, s:String;
+		if (nav.def != null) {
+			var rxDef = new RegExp("^(#define|#event|#moment)[ \t]" + NativeString.escapeRx(nav.def) + "\\b");
+			i = 0;
+			while (i < len) {
+				s = session.getLine(i);
+				if (rxDef.test(s)) {
+					row = i;
+					col = s.length;
+					found = true;
+					break;
+				} else i += 1;
+			}
+		}
+		//
+		var ctx = nav.ctx;
+		if (ctx != null) {
+			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
+			var rxEof = new RegExp("^(#define|#event|#moment)");
+			i = row;
+			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;
+			var start = found ? i : -1;
+			while (i < len) {
+				s = session.getLine(i);
+				if (i != start && rxEof.test(s)) break;
+				var vals = rxCtx.exec(s);
+				if (vals != null) {
+					row = i;
+					col = vals.index;
+					found = true;
+					break;
+				} else i += 1;
+			}
+		}
+		//
+		var pos = nav.pos;
+		if (pos != null) {
+			if (ctx == null && nav.def != null) {
+				col = 0;
+				row += 1;
+			}
+			if (!found || !nav.ctxAfter) {
+				row += pos.row;
+				col += pos.column;
+				found = true;
+			}
+		}
+		if (found) {
+			if (nav.showAtTop) {
+				Main.aceEditor.scrollToLine(row);
+				// so, scrollToLine doesn't update state immediately, and gotoLine tries to
+				// scroll it with center==true instead, so we have to do this little dance
+				// where we temporarily strip out scrollToLine and then put it back in.
+				var f = Main.aceEditor.scrollToLine;
+				var z = untyped Main.aceEditor.hasOwnProperty("scrollToLine");
+				untyped Main.aceEditor.scrollToLine = function() {};
+				Main.aceEditor.gotoLine0(row, col);
+				if (z) {
+					untyped Main.aceEditor.scrollToLine = f;
+				} else untyped __js__("delete {0}.scrollToLine", Main.aceEditor);
+			} else Main.aceEditor.gotoLine0(row, col);
+		}
+		return found;
 	}
 }
