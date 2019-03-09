@@ -30,8 +30,7 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 @:expose("AceGmlHighlight")
-@:keep class AceGmlHighlight {
-	@:native("$rules") public var rules:Dynamic;
+@:keep class AceGmlHighlight extends AceHighlight {
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
 		var fakeMultilineComments:Bool = false;
@@ -407,6 +406,7 @@ using tools.NativeString;
 		return rules;
 	}
 	public function new() {
+		super();
 		rules = makeRules(EditCode.currentNew);
 		untyped this.normalizeRules();
 	}
