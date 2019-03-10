@@ -5,10 +5,18 @@
 #source {
 	overflow-y: scroll;
 }
+.ace_container {
+	display: flex;
+	flex-direction: column;
+	height: var(--main-height);
+	height: var(--main-height-vh);
+}
+.ace_container > .ace_editor {
+	flex-grow: 1;
+}
 #source, #output, #main .ace_editor {
 	font-family: Consolas, Ubuntu Mono, monospace;
 	width: 100%;
-	height: calc(100vh - 60px);
 }
 #editor-td .bottom {
 	position: relative;
@@ -21,8 +29,6 @@
 	padding: 0 5px;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	position: absolute;
-	left: 0; right: 0;
 	word-break: break-all;
 	word-wrap: break-word;
 	white-space: nowrap;
@@ -32,7 +38,7 @@
 	text-align: right;
 	min-width: 24px;
 }
-#main #ace_status-hint, #main .ace_status-bar .context-pre {
+#main .ace_status-comp, #main .ace_status-bar .context-pre {
 	/*margin-left: 5px;*/
 	border-left: 1px solid #bbb;
 	padding-left: 5px;
@@ -48,11 +54,11 @@
 #main .ace_status-bar .context-txt {
 	float: right;
 }
-#main #ace_status-hint.active {
+#main .ace_status-comp.active {
 	color: rgb(250, 50, 50);
 	cursor: pointer;
 }
-#main #ace_status-hint .argument.current {
+#main .ace_status-comp .argument.current {
 	color: rgb(250, 50, 50);
 }
 

@@ -339,8 +339,6 @@ body {
 	/*border: 1px solid #aaa;*/
 }
 #game, #game-fallback, .ace_editor {
-	width: 100%;
-	height: 100vh;
 	margin: 0;
 	resize: none;
 }
