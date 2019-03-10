@@ -21,12 +21,46 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 class AceStatusBar {
-	static var lang:Dynamic;
-	public static var statusBar:DivElement;
-	public static var statusSpan:SpanElement;
-	public static var statusHint:SpanElement;
-	public static var contextRow:Int = 0;
-	public static var contextName:String = null;
+	public var editor:AceWrap;
+	public var statusBar:DivElement;
+	public var statusSpan:SpanElement;
+	public var statusHint:SpanElement;
+	public var contextRow:Int = 0;
+	public var contextName:String = null;
+	public var ignoreUntil:Float = Main.window.performance.now();
+	public function new() {
+		statusBar = document.createDivElement();
+		statusBar.className = "ace_status-bar";
+		statusSpan = document.createSpanElement();
+		statusSpan.className = "ace_status-hint";
+		statusSpan.innerHTML = '
+			<span class="status" style="display:none">?</span>
+			<span class="recording" style="display:none">REC</span>
+			<span class="select" style="display:none">(:)</span>
+			<span class="row-label">Ln:</span>
+			<span class="row">1</span>
+			<span class="col-label">Col:</span>
+			<span class="col">1</span>
+			<span class="ranges" style="display:none"></span>
+			<span class="context-pre" style="display:none"></span>
+			<span class="context" style="display:none"><span class="context-txt"></span></span>
+		';
+		statusBar.appendChild(statusSpan);
+		//
+		statusHint = document.createSpanElement();
+		statusHint.className = "ace_status-comp";
+		statusBar.appendChild(statusHint);
+	}
+	public function bind(editor:AceWrap) {
+		this.editor = editor;
+		editor.statusBar = this;
+		var lang = AceWrap.require("ace/lib/lang");
+		var dcUpdate = lang.delayedCall(update).schedule.bind(null, 100);
+		editor.on("changeStatus", dcUpdate);
+		editor.on("changeSelection", dcUpdate);
+		editor.on("keyboardActivity", dcUpdate);
+		editor.container.parentElement.appendChild(statusBar);
+	}
 	private static var emptyToken:AceToken = { type:"", value:"" };
 	public static var canDocData:Dictionary<Bool> = {
 		var d = new Dictionary();
@@ -118,7 +152,7 @@ class AceStatusBar {
 		ctx.doc = doc;
 		return argStart;
 	}
-	static function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda) {
+	private function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda) {
 		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
 		var sctx:AceStatusBarDocSearch = {
@@ -229,23 +263,18 @@ class AceStatusBar {
 		} else statusHint.title = "";
 		statusHint.onclick = null;
 	}
-	public static function setStatusHint(s:String) {
+	public function setText(s:String) {
 		statusHint.innerHTML = "";
 		statusHint.appendChild(document.createTextNode(s));
 		statusHint.title = s;
 		statusHint.onclick = null;
 		statusHint.classList.remove("active");
 	}
-	public static var ignoreUntil:Float;
-	public static inline var delayTime:Float = 100;
-	public static function statusUpdate() {
+	public function update() {
 		if (Main.window.performance.now() < ignoreUntil) return;
-		var q = GmlFile.current;
-		if (q == null) return;
-		var codeEditor:EditCode = q.codeEditor;
-		if (codeEditor == null) return;
+		var file = editor.session.gmlFile;
+		var codeEditor:EditCode = file != null ? file.codeEditor : null;
 		//
-		var editor = Main.aceEditor;
 		var sel = editor.selection;
 		var pos = sel.lead;
 		//
@@ -263,8 +292,8 @@ class AceStatusBar {
 				break;
 			}
 		}
-		//
-		if (q != ui.WelcomePage.file) q.changed = !session.getUndoManager().isClean();
+		// move this elsewhere maybe
+		if (file != ui.WelcomePage.file) file.changed = !session.getUndoManager().isClean();
 		//
 		var ctr = statusSpan, s:String;
 		function set(q:String, v:String) {
@@ -304,37 +333,19 @@ class AceStatusBar {
 			contextName = null;
 		}
 		//
-		var locals = codeEditor.locals[scope];
-		AceGmlCompletion.localCompleter.items = locals != null
-			? locals.comp : AceGmlCompletion.noItems;
-		//
-		var imports = codeEditor.imports[scope];
+		var imports = codeEditor != null ? codeEditor.imports[scope] : null;
 		AceGmlCompletion.importCompleter.items = imports != null
 			? imports.comp : AceGmlCompletion.noItems;
 		//
-		var lambdas = codeEditor.lambdas[scope];
+		var lambdas = codeEditor != null ? codeEditor.lambdas[scope] : null;
 		AceGmlCompletion.lambdaCompleter.items = lambdas != null
 			? lambdas.comp : AceGmlCompletion.noItems;
 		//
 		updateComp(editor, pos.row, pos.column, imports, lambdas);
 	}
-	public static function init(editor:AceWrap, ectr:Element) {
-		lang = AceWrap.require("ace/lib/lang");
-		//
-		statusBar = cast document.querySelector(".ace_status-bar");
-		statusBar.style.display = "";
-		statusSpan = cast statusBar.querySelector(".ace_status-hint");
-		statusHint = cast statusBar.querySelector("#ace_status-hint");
-		statusBar.querySelector('.context').addEventListener("click", function(e:MouseEvent) {
-			Main.aceEditor.gotoLine0(contextRow, 0);
-		});
-		editor.statusHint = statusHint;
-		//
-		ignoreUntil = Main.window.performance.now();
-		var dcUpdate = lang.delayedCall(statusUpdate).schedule.bind(null, delayTime);
-		editor.on("changeStatus", dcUpdate);
-		editor.on("changeSelection", dcUpdate);
-		editor.on("keyboardActivity", dcUpdate);
+	public static function init(editor:AceWrap) {
+		var bar = new AceStatusBar();
+		bar.bind(editor);
 	}
 }
 typedef AceStatusBarDocSearch = {

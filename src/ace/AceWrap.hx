@@ -90,6 +90,8 @@ extern class AceEditor {
 	// non-std:
 	public var statusHint:SpanElement;
 	public var errorMarker:AceMarker;
+	public var statusBar:AceStatusBar;
+	public var gmeditComp:AceGmlCompletion;
 	//
 	public function getValue():String;
 	public function setValue(s:String):Void;

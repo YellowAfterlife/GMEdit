@@ -91,7 +91,7 @@ class AceGotoLine {
 				} else {
 					row -= 1;
 					if (GmlExternAPI.gmlResetOnDefine) {
-						var ctr = AceStatusBar.contextRow;
+						var ctr = q.editor.statusBar.contextRow;
 						if (ctr >= 0) row += ctr + 1;
 					}
 					editor.gotoLine0(row, 0);

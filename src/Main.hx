@@ -102,13 +102,12 @@ class Main {
 		ShaderHighlight.init();
 		untyped window.ace_mode_gml_1();
 		var aceEl = document.querySelector("#source");
-		var acePar = aceEl.parentElement;
 		editors.Editor.init();
 		aceEditor = new AceWrap(aceEl);
 		AceWrap.init();
 		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, KPlain.inst, "").editor;
 		untyped aceEditor.$blockScrolling = Infinity;
-		AceStatusBar.init(aceEditor, acePar);
+		AceStatusBar.init(aceEditor);
 		AceGmlCompletion.init(aceEditor);
 		KeyboardShortcuts.initGlobal();
 		ColorPicker.init();
@@ -136,7 +135,7 @@ class Main {
 		Project.init();
 		AceCtxMenu.init();
 		AceTooltips.init();
-		AceStatusBar.statusUpdate();
+		aceEditor.statusBar.update();
 		#if lwedit
 		aceEditor.session = WelcomePage.init(aceEditor);
 		#end
