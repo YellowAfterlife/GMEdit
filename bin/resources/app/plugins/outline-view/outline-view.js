@@ -25,9 +25,9 @@
 			function update(file, pos) {
 				var def = pos.def, row = pos.row;
 				var ctx = null, ctxRow = null;
-				var session = file.codeEditor.session;
+				var doc = file.codeEditor.session.doc;
 				for (; row >= 0; row--) {
-					var rowText = session.getLine(row), mt;
+					var rowText = doc.getLine(row), mt;
 					if (mt = rxDef.exec(rowText)) { def = mt[2]; break; }
 					if (!ctx && (mt = rxCtx.exec(rowText))) {
 						ctx = mt[1];
@@ -65,6 +65,46 @@
 			return {
 				update: update,
 				reindex: reindex
+			}
+		})(),
+		"ace/mode/markdown": (function() {
+			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.+\))?)/;
+			function update_dmd(file, pos) {
+				var row = pos.row;
+				var doc = file.codeEditor.session.doc;
+				for (; row >= 0; row--) {
+					var mt = rxDmd.exec(doc.getLine(row));
+					if (mt) {
+						pos.ctx = mt[2];
+						return;
+					}
+				}
+				pos.ctx = null;
+			}
+			function reindex_dmd(file, ctx) {
+				var doc = file.codeEditor.session.doc;
+				var n = doc.getLength();
+				var stack = [], eos;
+				for (var row = 0; row < n; row++) {
+					var line = doc.getLine(row);
+					var mt = rxDmd.exec(line);
+					if (mt) {
+						ctx.push(mt[3], mt[2], {ctx:mt[2],ctxAfter:true});
+						if (eos) stack.push(eos);
+						eos = mt[1] + "}";
+					} else if (eos && line.startsWith(eos)) {
+						eos = stack.pop();
+						ctx.pop();
+					}
+				}
+			}
+			return {
+				update: function(file, pos) {
+					if (file.kind.isDocMd) update_dmd(file, pos);
+				},
+				reindex: function(file, ctx) {
+					if (file.kind.isDocMd) reindex_dmd(file, ctx);
+				}
 			}
 		})(),
 	};
@@ -183,8 +223,8 @@
 			var q = closed[i];
 			var def = q.getAttribute("outline-def");
 			var ctx = q.getAttribute("outline-ctx");
-			var query = '.outline-item[outline-def="'+escapeProp()+'"]'
-			if (ctx) query += ' .outline-item[outline-ctx="'+escapeProp(ctx) + '"]';
+			var query = def ? '.outline-item[outline-def="'+escapeProp(def)+'"]' : "";
+			if (ctx) query += (query != "" ? " " : "") + '.outline-item[outline-ctx="'+escapeProp(ctx) + '"]';
 			reclose.push(query);
 		}
 		// pool up the existing items (should we bother, really?):
