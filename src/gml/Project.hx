@@ -305,11 +305,13 @@ class Project {
 		if (path != null) {
 			var tmp = new Project("", false);
 			current = tmp;
-			ui.FileDrag.handle(path.ptNoBS(), null);
-			if (current == tmp) {
-				open("");
-				document.title = path.ptNoDir() + " - GMEdit";
-			}
+			window.setTimeout(function() {
+				ui.FileDrag.handle(path.ptNoBS(), null);
+				if (current == tmp) {
+					open("");
+					document.title = path.ptNoDir() + " - GMEdit";
+				}
+			});
 		} else open("");
 		#else
 		current = new YyZip("", "", []);
