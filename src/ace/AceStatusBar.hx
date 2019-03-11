@@ -293,7 +293,7 @@ class AceStatusBar {
 			}
 		}
 		// move this elsewhere maybe
-		if (file != ui.WelcomePage.file) file.changed = !session.getUndoManager().isClean();
+		if (file != null && file != ui.WelcomePage.file) file.changed = !session.getUndoManager().isClean();
 		//
 		var ctr = statusSpan, s:String;
 		function set(q:String, v:String) {
@@ -334,18 +334,14 @@ class AceStatusBar {
 		}
 		//
 		var imports = codeEditor != null ? codeEditor.imports[scope] : null;
-		AceGmlCompletion.importCompleter.items = imports != null
-			? imports.comp : AceGmlCompletion.noItems;
+		editor.gmlCompleters.importCompleter.items = imports != null
+			? imports.comp : AceWrapCompleter.noItems;
 		//
 		var lambdas = codeEditor != null ? codeEditor.lambdas[scope] : null;
-		AceGmlCompletion.lambdaCompleter.items = lambdas != null
-			? lambdas.comp : AceGmlCompletion.noItems;
+		editor.gmlCompleters.lambdaCompleter.items = lambdas != null
+			? lambdas.comp : AceWrapCompleter.noItems;
 		//
 		updateComp(editor, pos.row, pos.column, imports, lambdas);
-	}
-	public static function init(editor:AceWrap) {
-		var bar = new AceStatusBar();
-		bar.bind(editor);
 	}
 }
 typedef AceStatusBarDocSearch = {

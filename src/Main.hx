@@ -103,12 +103,11 @@ class Main {
 		untyped window.ace_mode_gml_1();
 		var aceEl = document.querySelector("#source");
 		editors.Editor.init();
-		aceEditor = new AceWrap(aceEl);
+		AceSnippets.init();
 		AceWrap.init();
+		aceEditor = new AceWrap(aceEl);
+		(window:Dynamic).aceEditor = aceEditor;
 		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, KPlain.inst, "").editor;
-		untyped aceEditor.$blockScrolling = Infinity;
-		AceStatusBar.init(aceEditor);
-		AceGmlCompletion.init(aceEditor);
 		KeyboardShortcuts.initGlobal();
 		ColorPicker.init();
 		GlobalSearch.init();
@@ -133,8 +132,6 @@ class Main {
 		FileDrag.init();
 		ChromeTabs.init();
 		Project.init();
-		AceCtxMenu.init();
-		AceTooltips.init();
 		aceEditor.statusBar.update();
 		#if lwedit
 		aceEditor.session = WelcomePage.init(aceEditor);

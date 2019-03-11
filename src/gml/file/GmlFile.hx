@@ -1,5 +1,4 @@
 package gml.file;
-import ace.AceGmlCompletion;
 import ace.AceSessionData;
 import ace.extern.*;
 import editors.*;
@@ -216,15 +215,16 @@ class GmlFile {
 	public function liveApply() {
 		var data = GmlSeekData.map[path];
 		if (data != null) {
-			AceGmlCompletion.gmlCompleter.items = data.compList;
+			var comp = Main.aceEditor.gmlCompleters;
+			comp.gmlCompleter.items = data.compList;
 			GmlAPI.gmlComp = data.compList;
 			GmlAPI.gmlKind = data.kindMap;
 			GmlAPI.gmlEnums = data.enumMap;
 			GmlAPI.gmlDoc = data.docMap;
-			AceGmlCompletion.globalCompleter.items = data.globalFieldComp;
+			comp.globalCompleter.items = data.globalFieldComp;
 			GmlAPI.gmlGlobalFieldComp = data.globalFieldComp;
 			GmlAPI.gmlGlobalFieldMap = data.globalFieldMap;
-			AceGmlCompletion.instCompleter.items = data.instFieldComp;
+			comp.instCompleter.items = data.instFieldComp;
 			GmlAPI.gmlInstFieldComp = data.instFieldComp;
 			GmlAPI.gmlInstFieldMap = data.instFieldMap;
 		}

@@ -7,6 +7,7 @@ import electron.Dialog;
 import file.kind.KCode;
 import file.kind.misc.*;
 import gml.GmlLocals;
+import gml.GmlScopes;
 import gml.file.*;
 import gml.GmlAPI;
 import gml.GmlVersion;
@@ -59,6 +60,9 @@ class EditCode extends Editor {
 		currentNew = this;
 		// todo: this does not seem to cache per-version, but not a performance hit either?
 		session = new AceSession(file.code, { path: modePath, version: GmlAPI.version });
+		session.gmlScopes = new GmlScopes(session);
+		session.gmlFile = file;
+		session.gmlEditor = this;
 		session.setUndoManager(new AceUndoManager());
 		// todo: does Mac version of GMS2 use Mac line endings? Probably not
 		session.setOption("newLineMode", "windows");
@@ -78,8 +82,6 @@ class EditCode extends Editor {
 		if (modePath == "ace/mode/javascript") {
 			session.setOption("useWorker", false);
 		}
-		session.gmlFile = file;
-		session.gmlEdit = this;
 		//
 		currentNew = _prev;
 		//

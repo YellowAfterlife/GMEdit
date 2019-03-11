@@ -14,12 +14,18 @@ import ace.extern.*;
  */
 @:forward @:forwardStatics
 abstract AceWrap(AceEditor) from AceEditor to AceEditor {
-	public function new(el:EitherType<String, Element>) {
+	public function new(el:EitherType<String, Element>, ?o:AceWrapOptions) {
 		this = AceEditor.edit(el);
 		untyped {
+			this.$blockScrolling = Infinity;
 			this.getFontFamily = function() return this.getOption("fontFamily");
 			this.setFontFamily = function(v) this.setOption("fontFamily", v);
 		};
+		if (o == null) o = {};
+		if (o.statusBar != false) new AceStatusBar().bind(this);
+		if (o.completers != false) new AceWrapCommonCompleters().bind(this);
+		if (o.contextMenu != false) new AceCtxMenu().bind(this);
+		if (o.tooltips != false) AceTooltips.bind(this);
 	}
 	//
 	public static inline function loadModule(path:String, fn:Dynamic->Void):Void {
@@ -57,41 +63,29 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 	}
 	public static function init() {
 		var window:Dynamic = Main.window;
-		window.AceEditSession = AceWrap.require("ace/edit_session").EditSession;
-		window.AceUndoManager = AceWrap.require("ace/undomanager").UndoManager;
-		window.AceTokenIterator = AceWrap.require("ace/token_iterator").TokenIterator;
-		window.AceAutocomplete = AceWrap.require("ace/autocomplete").Autocomplete;
-		window.AceRange = AceWrap.require("ace/range").Range;
-		window.AceTooltip = AceWrap.require("ace/tooltip").Tooltip;
-		window.aceEditor = Main.aceEditor;
+		AceEditor.editWrap = function(q) return new AceWrap(q);
+		window.AceEditSession = AceEditor.require("ace/edit_session").EditSession;
+		window.AceUndoManager = AceEditor.require("ace/undomanager").UndoManager;
+		window.AceTokenIterator = AceEditor.require("ace/token_iterator").TokenIterator;
+		window.AceAutocomplete = AceEditor.require("ace/autocomplete").Autocomplete;
+		window.AceRange = AceEditor.require("ace/range").Range;
+		window.AceTooltip = AceEditor.require("ace/tooltip").Tooltip;
 	}
-	/*public function setHintError(msg:String, pos:GmlPos) {
-		var Range = untyped ace.require("ace/range").Range;
-		var row = pos.row - 1;
-		var col = pos.col - 1;
-		var range = SfTools.raw("new {0}({1}, {2}, {3}, {4})", Range, row, col, row, col + 1);
-		//
-		var hint = this.statusHint;
-		hint.classList.add("active");
-		hint.textContent = msg;
-		hint.onclick = function(_) {
-			this.gotoLine(row + 1, col);
-		};
-		//
-		var session = this.getSession();
-		this.errorMarker = session.addMarker(range, "ace_error-line", "fullLine");
-		session.setAnnotations([{
-			row: row, column: col, type: "error", text: msg
-		}]);
-	}*/
 }
+typedef AceWrapOptions = {
+	?statusBar:Bool,
+	?completers:Bool,
+	?contextMenu:Bool,
+	?tooltips:Bool,
+};
 @:native("ace")
 extern class AceEditor {
 	// non-std:
 	public var statusHint:SpanElement;
 	public var errorMarker:AceMarker;
 	public var statusBar:AceStatusBar;
-	public var gmeditComp:AceGmlCompletion;
+	public var gmlCompleters:AceWrapCommonCompleters;
+	public static dynamic function editWrap(el:EitherType<String, Element>):AceWrap;
 	//
 	public function getValue():String;
 	public function setValue(s:String):Void;

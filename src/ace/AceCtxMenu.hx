@@ -15,10 +15,13 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class AceCtxMenu {
-	public static function init() {
-		var menu = new Menu();
-		//
-		var editor:AceWrap = Main.aceEditor;
+	public var menu:Menu;
+	public var editor:AceWrap;
+	public function new() {
+		menu = new Menu();
+	}
+	public function bind(editor:AceWrap) {
+		this.editor = editor;
 		var pos:AcePos;
 		var tk:AceToken;
 		inline function cb():Clipboard {
@@ -81,7 +84,7 @@ class AceCtxMenu {
 			label: "Open definition",
 			accelerator: "F1",
 			click: function() {
-				OpenDeclaration.proc(pos, tk);
+				OpenDeclaration.proc(editor.session, pos, tk);
 			}
 		});
 		var findRefs = menu.appendOpt({
@@ -131,8 +134,7 @@ class AceCtxMenu {
 		//
 		menu.appendSep();
 		menu.append(cmdItem("selectall", "Select all"));
-		Main.aceEditor.container.addEventListener("contextmenu", function(ev) {
-			editor = Main.aceEditor;
+		editor.container.addEventListener("contextmenu", function(ev) {
 			pos = editor.getCursorPosition();
 			tk = editor.session.getTokenAtPos(pos);
 			var um = editor.session.getUndoManager();

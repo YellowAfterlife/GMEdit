@@ -13,6 +13,7 @@ class AceSnippets {
 	static var langTools:AceLanguageTools;
 	static var manager:AceSnippetManager;
 	static var map:Dictionary<AceSnippetFile> = new Dictionary();
+	public static var completer:AceAutoCompleter;
 	static inline function getPath(mode:String):String {
 		return "ace/snippets/" + mode;
 	}
@@ -60,7 +61,7 @@ class AceSnippets {
 				file.scope = mode;
 			});
 		}
-		return langTools.snippetCompleter;
+		completer = langTools.snippetCompleter;
 	}
 }
 extern class AceLanguageTools {

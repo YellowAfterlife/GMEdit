@@ -17,12 +17,12 @@ class WelcomePage {
 		#if lwedit
 			file = new GmlFile("WelcomePage", null, KGmlScript.inst, "");
 			GmlFile.current = file;
-			session = (cast file.editor:editors.EditCode).session;
+			session = file.codeEditor.session;
 			session.setValue(lwText);
 		#else
 			file = new GmlFile("WelcomePage", null, KPlain.inst, "");
 			GmlFile.current = file;
-			session = (cast file.editor:editors.EditCode).session;
+			session = file.codeEditor.session;
 			FileSystem.readTextFile(Main.relPath("misc/welcome.txt"), function(err, text) {
 				text = tools.NativeString.replaceExt(text, "%%VERSION%%", ace.AceMacro.timestamp());
 				session.setValue(text);

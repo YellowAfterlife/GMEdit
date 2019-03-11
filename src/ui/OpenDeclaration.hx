@@ -106,7 +106,7 @@ class OpenDeclaration {
 		GmlFile.openTab(file);
 		return true;
 	}
-	public static function proc(pos:AcePos, token:AceToken) {
+	public static function proc(session:AceSession, pos:AcePos, token:AceToken) {
 		if (token == null) return false;
 		var term = token.value;
 		// opening #import "<path>":
@@ -127,7 +127,7 @@ class OpenDeclaration {
 		}
 		// parent event navigation overrides early:
 		if (term == "event_inherited" || term == "action_inherited") {
-			var def = gml.GmlScopes.get(pos.row);
+			var def = session.gmlScopes.get(pos.row);
 			if (def == "") return false;
 			var file = GmlFile.current;
 			var path = file.path;
@@ -140,12 +140,12 @@ class OpenDeclaration {
 		}
 		// handle namespace.term | localTyped.term:
 		do {
-			var scope = gml.GmlScopes.get(pos.row);
+			var scope = session.gmlScopes.get(pos.row);
 			if (scope == null) break;
 			var imp = GmlFile.current.codeEditor.imports[scope];
 			if (imp == null) break;
 			//
-			var iter = new AceTokenIterator(aceEditor.session, pos.row, pos.column);
+			var iter = new AceTokenIterator(session, pos.row, pos.column);
 			var tk = iter.stepBackward();
 			var next:String, ns:GmlNamespace;
 			if (tk != null && tk.value == ".") {

@@ -55,6 +55,7 @@ package ace.extern;
 	public var selection:AceSelection;
 	// non-standard:
 	public var gmlFile:gml.file.GmlFile;
-	public var gmlEdit:editors.EditCode;
+	public var gmlScopes:gml.GmlScopes;
+	public var gmlEditor:editors.EditCode;
 	public var gmlErrorMarker:AceMarker;
 }

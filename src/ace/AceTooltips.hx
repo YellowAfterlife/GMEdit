@@ -1,5 +1,4 @@
 package ace;
-import Main.aceEditor;
 import ace.extern.AcePos;
 import ace.extern.AceSession;
 import ace.extern.AceToken;
@@ -40,7 +39,7 @@ class AceTooltips {
 		var iter:AceTokenIterator;
 		//
 		if (AceStatusBar.canDocData[t]) {
-			var scope = gml.GmlScopes.get(pos.row);
+			var scope = session.gmlScopes.get(pos.row);
 			var codeEditor = gml.file.GmlFile.current.codeEditor;
 			var ctx:AceStatusBarDocSearch = {
 				iter: new AceTokenIterator(session, pos.row, pos.column),
@@ -120,12 +119,12 @@ class AceTooltips {
 			if (r != null && !z) ttip.setText(r);
 		}
 	}
-	public static function init() {
+	public static function bind(editor:AceWrap) {
 		var token:AceToken = null;
-		ttip = new AceTooltip(aceEditor.container);
+		ttip = new AceTooltip(editor.container);
 		var visible = false;
 		var timeout:Int = null;
-		var content = aceEditor.container.querySelector(".ace_content");
+		var content = editor.container.querySelector(".ace_content");
 		inline function show():Void {
 			if (!visible) { visible = true; ttip.show(); }
 		}
@@ -136,13 +135,13 @@ class AceTooltips {
 			if (timeout != null) { Main.window.clearTimeout(timeout); timeout = null; }
 		}
 		function sync(pos:AcePos, x:Float, y:Float) {
-			var line = aceEditor.session.getLine(pos.row);
+			var line = editor.session.getLine(pos.row);
 			var eol = line == null || pos.column >= line.length;
-			var tk = eol ? null : aceEditor.session.getTokenAtPos(pos);
+			var tk = eol ? null : editor.session.getTokenAtPos(pos);
 			if (tk != null) {
 				if (tk != token) {
 					token = tk;
-					update(aceEditor.session, pos, tk);
+					update(editor.session, pos, tk);
 				}
 				if (text != null) {
 					ttip.setPosition(x, y + 16);
@@ -154,10 +153,10 @@ class AceTooltips {
 			hide();
 			stop();
 		});
-		aceEditor.on("mousedown", function(_) {
+		editor.on("mousedown", function(_) {
 			hide();
 		});
-		aceEditor.on("mousemove", function(ev:Dynamic) {
+		editor.on("mousemove", function(ev:Dynamic) {
 			var pc = Preferences.current;
 			if (pc.tooltipKind == None) return;
 			var t = pc.tooltipDelay;

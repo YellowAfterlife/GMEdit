@@ -143,10 +143,11 @@ class KeyboardShortcuts {
 				#end
 			};
 			case KeyboardEvent.DOM_VK_F12, KeyboardEvent.DOM_VK_F1: {
+				// todo: move to commands
 				var pos = aceEditor.getCursorPosition();
 				var tk = aceEditor.session.getTokenAtPos(pos);
 				if (flags == 0) {
-					OpenDeclaration.proc(pos, tk);
+					OpenDeclaration.proc(aceEditor.session, pos, tk);
 				} else if (isShift) {
 					if (tk != null) GlobalSearch.findReferences(tk.value);
 				}
@@ -194,7 +195,7 @@ class KeyboardShortcuts {
 		var session = aceEditor.session;
 		var line = session.getLine(pos.row);
 		if (line != null && pos.column < line.length
-			&& OpenDeclaration.proc(pos, aceEditor.session.getTokenAtPos(pos))
+			&& OpenDeclaration.proc(session, pos, aceEditor.session.getTokenAtPos(pos))
 		) {
 			if (session.selection.isEmpty()) {
 				session.selection.moveTo(pos.row, pos.column);

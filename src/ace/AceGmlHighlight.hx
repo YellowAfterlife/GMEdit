@@ -72,7 +72,7 @@ using tools.NativeString;
 		}
 		inline function getLocalType(row:Int, name:String):String {
 			if (row != null) {
-				var scope = GmlScopes.get(row);
+				var scope = editor.session.gmlScopes.get(row);
 				if (scope != null) {
 					return getLocalType_1(name, scope);
 				} else return null;
@@ -107,7 +107,7 @@ using tools.NativeString;
 					fdType = null;
 					var en:GmlEnum;
 					if (row != null) {
-						var scope = GmlScopes.get(row);
+						var scope = editor.session.gmlScopes.get(row);
 						if (scope != null) {
 							var imp = editor.imports[scope];
 							var ns:GmlNamespace;

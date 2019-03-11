@@ -1,5 +1,6 @@
 package gml;
 import ace.AceWrap;
+import ace.extern.AceSession;
 import tools.Dictionary;
 using tools.NativeArray;
 
@@ -10,21 +11,22 @@ using tools.NativeArray;
 @:expose("GmlScopes")
 class GmlScopes {
 	
-	public static var enabled:Bool = true;
+	/// cached script definition per-line ("" if none there)
+	public var defs:Array<String> = [];
 	
-	/** cached script definition per-line ("" if none there) */
-	public static var defs:Array<String> = [];
+	/// scope belongings per line
+	public var scopes:Array<String> = [];
 	
-	/** scope belongings per line */
-	public static var scopes:Array<String> = [];
+	/// Synced number of lines
+	public var length:Int = 0;
 	
-	/** */
-	public static var kinds:Dictionary<Dictionary<String>> = new Dictionary();
+	public var session:AceSession;
 	
-	/** Synced number of lines */
-	public static var length:Int = 0;
+	public function new(session:AceSession) {
+		this.session = session;
+	}
 	
-	public static function get(row:Int):String {
+	public function get(row:Int):String {
 		var session = Main.aceEditor.session;
 		var len = session.getLength();
 		if (len != length) {
@@ -62,7 +64,7 @@ class GmlScopes {
 		return scope;
 	}
 	
-	public static function clear() {
+	public function clear() {
 		defs.clear();
 		scopes.clear();
 		length = 0;
