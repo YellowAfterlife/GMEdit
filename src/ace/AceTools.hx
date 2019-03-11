@@ -41,7 +41,8 @@ import ui.Preferences;
 	}
 	
 	public static function cloneSession(session:AceSession):AceSession {
-		var copy = createSession(session.doc, session.modeId);
+		var mode:Dynamic = session.modeRaw;
+		var copy = createSession(session.doc, mode);
 		copy.setOption("useSoftTabs", session.getOption("useSoftTabs"));
 		bindSession(copy, session.gmlEditor);
 		return copy;

@@ -33,6 +33,7 @@ import haxe.extern.EitherType;
 	private inline function get_modeId():String {
 		return AceMacro.jsOr(modeIdRaw, getOption("mode"));
 	}
+	@:native("$mode") public var modeRaw(default, never):Dynamic;
 	//
 	public function setAnnotations(arr:Array<AceAnnotation>):Void;
 	public function clearAnnotations():Void;
