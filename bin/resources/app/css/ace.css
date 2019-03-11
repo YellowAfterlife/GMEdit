@@ -2,8 +2,9 @@
 	/*font-size: 9pt;*/
 	line-height: 1.35;
 }
-#source {
-	overflow-y: scroll;
+textarea#source {
+	border: 0;
+	flex-grow: 1;
 }
 .ace_container {
 	flex-grow: 1;
