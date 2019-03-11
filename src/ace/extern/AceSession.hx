@@ -1,11 +1,12 @@
 package ace.extern;
+import haxe.extern.EitherType;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 @:native("AceEditSession") extern class AceSession {
-	public function new(text:String, mode:Dynamic);
+	public function new(context:EitherType<String, AceDocument>, mode:Dynamic);
 	//
 	/** Returns the total number of lines */
 	public function getLength():Int;

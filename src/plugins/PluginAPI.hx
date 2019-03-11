@@ -1,6 +1,7 @@
 package plugins;
 import haxe.DynamicAccess;
 import ui.Sidebar;
+import ace.AceTools;
 
 /**
  * Exposes a globally visible GMEdit object that you can use for some random bits
@@ -37,4 +38,6 @@ class PluginAPI {
 	}
 	
 	public static var sidebar:Class<Sidebar> = Sidebar;
+	
+	public static var aceTools:Class<AceTools> = AceTools;
 }
