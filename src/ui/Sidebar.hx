@@ -23,7 +23,7 @@ using tools.HtmlTools;
 		if (sizer.style.display != v) {
 			sizer.style.display = v;
 			outer.style.display = v;
-			untyped Main.window.syncSplitterSizes();
+			Splitter.syncMain();
 		}
 		select.style.display = n <= 1 ? "none" : "";
 	}
@@ -91,3 +91,4 @@ private class SidebarItem {
 		HtmlTools.setInnerText(opt, name);
 	}
 }
+

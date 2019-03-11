@@ -37,9 +37,11 @@ body {
 }
 #main #editor-td .bottom {
 	display: flex;
+	position: relative;
 }
 #main #editor-td .bottom > .tabview {
 	flex-grow: 1;
+	display: flex;
 	position: relative;
 }
 .resinfo {
@@ -330,9 +332,6 @@ body {
 	margin-bottom: 1px;
 	overflow: hidden;
 }
-.bottom {
-	height: calc(100vh - 36px);
-}
 /* */
 #source, #output, .ace_editor, .ace_status-bar {
 	box-sizing: border-box;
@@ -342,7 +341,7 @@ body {
 	margin: 0;
 	resize: none;
 }
-#game {
+#game, .bottom {
 	height: calc(100% - 36px);
 	height: calc(100vh - 36px);
 	height: var(--main-height);

@@ -6,10 +6,9 @@
 	overflow-y: scroll;
 }
 .ace_container {
+	flex-grow: 1;
 	display: flex;
 	flex-direction: column;
-	height: var(--main-height);
-	height: var(--main-height-vh);
 }
 .ace_container > .ace_editor {
 	flex-grow: 1;
@@ -17,9 +16,6 @@
 #source, #output, #main .ace_editor {
 	font-family: Consolas, Ubuntu Mono, monospace;
 	width: 100%;
-}
-#editor-td .bottom {
-	position: relative;
 }
 #main .ace_status-bar {
 	width: 100%;
