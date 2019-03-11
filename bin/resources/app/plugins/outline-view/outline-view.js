@@ -180,6 +180,7 @@
 	}
 	//
 	function update(file) {
+		if (!file.codeEditor) return;
 		var session = file.codeEditor.session;
 		var conf = modeMap[session.$modeId];
 		if (!conf) return;
