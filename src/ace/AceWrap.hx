@@ -26,6 +26,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		if (o.completers != false) new AceWrapCommonCompleters().bind(this);
 		if (o.contextMenu != false) new AceCtxMenu().bind(this);
 		if (o.tooltips != false) AceTooltips.bind(this);
+		if (o.preferences != false) ui.Preferences.bindEditor(this);
 	}
 	//
 	public static inline function loadModule(path:String, fn:Dynamic->Void):Void {
@@ -77,6 +78,7 @@ typedef AceWrapOptions = {
 	?completers:Bool,
 	?contextMenu:Bool,
 	?tooltips:Bool,
+	?preferences:Bool,
 };
 @:native("ace")
 extern class AceEditor {

@@ -511,6 +511,13 @@ class Preferences {
 		GmlAPI.ukSpelling = pref.ukSpelling;
 	}
 	public static function init() {
+		var isMac:Bool;
+		var ep = untyped window.process;
+		if (ep == null) {
+			var np = Main.window.navigator.platform;
+			isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
+		} else isMac = ep.platform == "darwin";
+		FileWrap.isMac = isMac;
 		load();
 	}
 	public static function hookSetOption(obj:Dynamic):Void {
@@ -534,32 +541,23 @@ class Preferences {
 			//Main.console.log("Ace settings saved.");
 		};
 	}
-	public static function initEditor() {
+	public static function bindEditor(editor:AceWrap) {
 		// load Ace options:
 		try {
 			var opts:DynamicAccess<Dynamic> = cast FileWrap.readConfigSync("config", "aceOptions");
 			if (opts != null) {
 				opts.set("enableSnippets", true);
 				opts.remove("mode");
-				Main.aceEditor.setOptions(opts);
+				editor.setOptions(opts);
 			}
 		} catch (e:Dynamic) {
 			console.error("Error loading Ace options: " + e);
 		};
-		//
-		var isMac:Bool;
-		var ep = untyped window.process;
-		if (ep == null) {
-			var np = Main.window.navigator.platform;
-			isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
-		} else isMac = ep.platform == "darwin";
-		FileWrap.isMac = isMac;
 		// flush Ace options on changes (usually only via Ctrl+,):
-		var editor = Main.aceEditor;
 		hookSetOption(editor);
 		hookSetOption(editor.renderer);
 		if (editor.getOption("fontFamily") == null) {
-			var font = isMac ? "Menlo, monospace" : "Consolas, Courier New, monospace";
+			var font = FileWrap.isMac ? "Menlo, monospace" : "Consolas, Courier New, monospace";
 			editor.setOption("fontFamily", font);
 		}
 	}

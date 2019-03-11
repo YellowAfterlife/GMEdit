@@ -25,8 +25,8 @@ function Splitter(sizer) {
 	this.isMisc = sizer.id != "splitter-td";
 	this.parentEl = target.parentElement;
 	this.lsKey = sizer.getAttribute("splitter-lskey");
+	target.style.setProperty("flex-grow", "inherit");
 	if (ls) this.setWidth(Math.max(0|(ls.getItem(this.lsKey) || sizer.getAttribute("splitter-default-width")), this.minWidth));
-	target.style.setProperty("flex-grow", "inherit")
 	var sp_mousemove, sp_mouseup, sp_x, sp_y;
 	sp_mousemove = function(e) {
 		var nx = e.pageX, dx = nx - sp_x; sp_x = nx;

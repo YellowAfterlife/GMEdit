@@ -112,7 +112,6 @@ class Main {
 		ColorPicker.init();
 		GlobalSearch.init();
 		GlobalLookup.init();
-		Preferences.initEditor();
 		Sidebar.init();
 		MainMenu.init();
 		//
