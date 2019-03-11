@@ -16,12 +16,15 @@ using tools.NativeString;
  */
 class AceCtxMenu {
 	public var menu:Menu;
+	public var editMenu:Menu;
+	public var searchMenu:Menu;
 	public var editor:AceWrap;
 	public function new() {
 		menu = new Menu();
 	}
 	public function bind(editor:AceWrap) {
 		this.editor = editor;
+		editor.contextMenu = this;
 		var pos:AcePos;
 		var tk:AceToken;
 		inline function cb():Clipboard {
@@ -45,16 +48,18 @@ class AceCtxMenu {
 			commandAccels.set(cmd.name, k);
 		}
 		function cmdItem(cmd:String, label:String):MenuItem {
-			return new MenuItem({
+			var item = new MenuItem({
 				accelerator: commandAccels[cmd],
 				label: label,
 				click: function() {
 					editor.execCommand(cmd);
 				}
 			});
+			(item:Dynamic).aceCommand = cmd;
+			return item;
 		}
 		//
-		var edit:Menu = new Menu();
+		var edit:Menu = editMenu = new Menu();
 		edit.append(cmdItem("duplicateSelection", "Duplicate selection"));
 		menu.appendOpt({
 			type: Sub,
@@ -62,7 +67,7 @@ class AceCtxMenu {
 			submenu: edit,
 		});
 		//
-		var search:Menu = new Menu();
+		var search:Menu = searchMenu = new Menu();
 		search.append(cmdItem("find", "Quick find"));
 		search.append(cmdItem("replace", "Find and replace..."));
 		search.appendOpt({
@@ -134,6 +139,7 @@ class AceCtxMenu {
 		//
 		menu.appendSep();
 		menu.append(cmdItem("selectall", "Select all"));
+		//
 		editor.container.addEventListener("contextmenu", function(ev) {
 			pos = editor.getCursorPosition();
 			tk = editor.session.getTokenAtPos(pos);

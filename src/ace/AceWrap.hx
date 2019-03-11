@@ -87,6 +87,8 @@ extern class AceEditor {
 	public var errorMarker:AceMarker;
 	public var statusBar:AceStatusBar;
 	public var gmlCompleters:AceWrapCommonCompleters;
+	public var contextMenu:AceCtxMenu;
+	//
 	public static dynamic function editWrap(el:EitherType<String, Element>):AceWrap;
 	//
 	public function getValue():String;
