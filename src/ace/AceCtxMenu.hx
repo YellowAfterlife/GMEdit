@@ -3,6 +3,7 @@ import ace.extern.AcePos;
 import ace.extern.AceToken;
 import electron.Clipboard;
 import electron.Electron;
+import electron.FileWrap;
 import electron.Menu;
 import js.Promise;
 import tools.Dictionary;
@@ -149,5 +150,16 @@ class AceCtxMenu {
 			menu.popupAsync(ev);
 			return false;
 		});
+	}
+	public static function initMac(editor:AceWrap) {
+		// Mac wants a menu, or you shall not be able to use Cmd+C/Cmd+V
+		// So we'll bind the one attached to main code editor, whatever
+		if (Electron == null || !FileWrap.isMac) return;
+		var menu = new Menu();
+		menu.appendOpt({
+			label: "Edit",
+			submenu: editor.contextMenu.menu,
+		});
+		Menu.setApplicationMenu(menu);
 	}
 }

@@ -101,12 +101,12 @@ class Main {
 		AceHxHighlight.init();
 		ShaderHighlight.init();
 		untyped window.ace_mode_gml_1();
-		var aceEl = document.querySelector("#source");
 		editors.Editor.init();
 		AceSnippets.init();
 		AceWrap.init();
-		aceEditor = new AceWrap(aceEl);
+		aceEditor = new AceWrap(document.querySelector("#source"));
 		(window:Dynamic).aceEditor = aceEditor;
+		AceCtxMenu.initMac(aceEditor);
 		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, KPlain.inst, "").editor;
 		KeyboardShortcuts.initGlobal();
 		ColorPicker.init();

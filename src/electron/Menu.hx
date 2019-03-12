@@ -40,6 +40,8 @@ using tools.HtmlTools;
 		MenuFallback.contextEvent = e;
 		popupAuto({ async: true });
 	}
+	//
+	static function setApplicationMenu(menu:Menu):Void;
 }
 @:keep class MenuFallback {
 	public static var contextEvent:MouseEvent = null;
