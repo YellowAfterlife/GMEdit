@@ -44,6 +44,9 @@ body {
 	display: flex;
 	position: relative;
 }
+#main #editor-td .bottom > .tabview > div {
+	flex-grow: 1;
+}
 .resinfo {
 	padding: 0.5em;
 	box-sizing: border-box;
