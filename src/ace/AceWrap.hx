@@ -71,6 +71,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceAutocomplete = AceEditor.require("ace/autocomplete").Autocomplete;
 		window.AceRange = AceEditor.require("ace/range").Range;
 		window.AceTooltip = AceEditor.require("ace/tooltip").Tooltip;
+		window.AceOOP = AceEditor.require("ace/lib/oop");
 	}
 }
 typedef AceWrapOptions = {

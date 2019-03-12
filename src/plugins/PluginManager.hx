@@ -124,8 +124,7 @@ class PluginManager {
 		}
 		try {
 			var EventEmitter = AceWrap.require("ace/lib/event_emitter").EventEmitter;
-			var OOP = AceWrap.require("ace/lib/oop");
-			OOP.implement(PluginAPI, EventEmitter);
+			ace.extern.AceOOP.implement(PluginAPI, EventEmitter);
 		} catch (x:Dynamic) {
 			Main.console.error("Couldn't add event emitting:", x);
 		}
@@ -144,8 +143,9 @@ class PluginManager {
 					pluginDir.set(name, dir);
 				}
 			}
-		} else list = [ // base package
-			"plugins/enum-names"
+		} else list = [ // base package for web version
+			"plugins/enum-names",
+			"plugins/show-aside"
 		];
 		//
 		for (name in list) load(name);
