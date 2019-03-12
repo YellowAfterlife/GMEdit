@@ -173,16 +173,8 @@ class TreeViewMenus {
 			default: false;
 		}
 		TreeViewItemMenus.update(true);
-		if (FileSystem.canSync) {
-			var fe = el.querySelector('.header');
-			fe.classList.add("show-in-treeview-flash");
-			window.setTimeout(function() {
-				dirMenu.popupSync(ev);
-				window.setTimeout(function() {
-					fe.classList.remove("show-in-treeview-flash");
-				}, 0);
-			}, 0);
-		} else dirMenu.popupAsync(ev);
+		TreeView.signal("dirMenu", { element: el, event: ev });
+		dirMenu.popupAsync(ev);
 	}
 	public static function showItemMenu(el:Element, ev:MouseEvent) {
 		var z:Bool;
@@ -200,15 +192,8 @@ class TreeViewMenus {
 		items.objectInfo.visible = kind == "object";
 		items.findReferences.enabled = ~/^\w+$/g.match(el.getAttribute(TreeView.attrIdent));
 		TreeViewItemMenus.update(false);
-		if (FileSystem.canSync) {
-			el.classList.add("show-in-treeview-flash");
-			window.setTimeout(function() {
-				itemMenu.popupSync(ev);
-				window.setTimeout(function() {
-					el.classList.remove("show-in-treeview-flash");
-				}, 0);
-			}, 0);
-		} else itemMenu.popupAsync(ev);
+		TreeView.signal("itemMenu", { element: el, event: ev });
+		itemMenu.popupAsync(ev);
 	}
 	//
 	static function initIconMenu() {

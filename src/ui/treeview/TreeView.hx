@@ -326,6 +326,15 @@ class TreeView {
 		if (element == null) element = document.createDivElement();
 		thumbStyle = document.querySelectorAuto("#tree-thumbs");
 		thumbSheet = cast thumbStyle.sheet;
+		var EventEmitter = ace.AceWrap.require("ace/lib/event_emitter").EventEmitter;
+		ace.extern.AceOOP.implement(TreeView, EventEmitter);
+	}
+	// EventEmitter:
+	@:native("_emit") public static dynamic function emit<E:{}>(eventName:String, ?e:E):Dynamic {
+		throw "EventEmitter is not hooked for TreeView!";
+	}
+	@:native("_signal") public static dynamic function signal<E>(eventName:String, e:E):Void {
+		throw "EventEmitter is not hooked for TreeView!";
 	}
 }
 typedef TreeViewQuery = {
