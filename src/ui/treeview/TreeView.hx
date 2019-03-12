@@ -151,26 +151,32 @@ class TreeView {
 		}
 		thumbMap.remove(itemPath);
 	}
-	//
-	static function loadDelayedThumbs(el:Element) {
+	
+	/// Loads the thumbnail for item if it's available but not loaded yet
+	static function ensureThumb(item:Element) {
+		if (!item.hasAttribute(attrThumbDelay)) return;
+		item.removeAttribute(attrThumbDelay);
+		if (item.hasAttribute(attrThumbSprite)) {
+			var spriteName = item.getAttribute(attrThumbSprite);
+			item.removeAttribute(attrThumbSprite);
+			Project.current.getSpriteURLasync(spriteName, function(thumbPath:String) {
+				if (thumbPath == null) return;
+				var itemPath = item.getAttribute(attrPath);
+				addThumbRule(itemPath, thumbPath);
+				thumbMap.set(itemPath, thumbPath);
+				item.setAttribute(attrThumb, thumbPath);
+			});
+		} else {
+			addThumbRule(item.getAttribute(attrPath), item.getAttribute(attrThumb));
+		}
+		
+	}
+	
+	/// Loads not-yet-loaded thumbnails for all visible item-children of a directory-element.
+	static function ensureThumbs(el:Element) {
 		for (_e in el.querySelectorAll('.item[$attrThumbDelay]')) {
 			var item:TreeViewItem = cast _e;
-			if (item.scrollHeight > 0) {
-				item.removeAttribute(attrThumbDelay);
-				if (item.hasAttribute(attrThumbSprite)) {
-					var spriteName = item.getAttribute(attrThumbSprite);
-					item.removeAttribute(attrThumbSprite);
-					Project.current.getSpriteURLasync(spriteName, function(thumbPath:String) {
-						if (thumbPath == null) return;
-						var itemPath = item.getAttribute(attrPath);
-						addThumbRule(itemPath, thumbPath);
-						thumbMap.set(itemPath, thumbPath);
-						item.setAttribute(attrThumb, thumbPath);
-					});
-				} else {
-					addThumbRule(item.getAttribute(attrPath), item.getAttribute(attrThumb));
-				}
-			}
+			if (item.scrollHeight > 0) ensureThumb(item);
 		}
 	}
 	static function handleDirClick(e:MouseEvent) {
@@ -183,8 +189,8 @@ class TreeView {
 		} else {
 			var cl = el.classList;
 			if (!cl.contains(clOpen)) {
-				 cl.add(clOpen);
-				 loadDelayedThumbs(el);
+				cl.add(clOpen);
+				ensureThumbs(el);
 			} else cl.remove(clOpen);
 		}
 	}
@@ -310,7 +316,7 @@ class TreeView {
 			var dir = el.querySelector('.dir[$attrRel="$epath"]');
 			if (dir != null) {
 				dir.classList.add(clOpen);
-				loadDelayedThumbs(dir);
+				ensureThumbs(dir);
 			}
 		}
 	}

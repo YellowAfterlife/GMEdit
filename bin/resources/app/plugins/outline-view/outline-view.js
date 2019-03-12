@@ -288,6 +288,8 @@
 	//
 	function createFor(file) {
 		var dir = makeNav(file, file.name, file.path, null);
+		var item = TreeView.find(true, {path: file.path });
+		if (item) TreeView.ensureThumb(item);
 		file.outlineView = dir;
 		reindex(file);
 	}
