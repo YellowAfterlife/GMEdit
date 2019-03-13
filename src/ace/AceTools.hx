@@ -8,7 +8,8 @@ import js.html.Element;
 import ui.Preferences;
 
 /**
- * ...
+ * GMEdit-specific helpers for Ace.
+ * Can also be called by plugins via GMEdit.aceTools.*
  * @author YellowAfterlife
  */
 @:keep class AceTools {
@@ -22,7 +23,7 @@ import ui.Preferences;
 	}
 	
 	/**
-	 * Creates a new Ace editor session and does GMEdit-specific setup for it.
+	 * Creates a new editor session and does GMEdit-specific setup for it.
 	 */
 	public static function createSession(context:EitherType<String, AceDocument>, mode:Dynamic):AceSession {
 		var session = new AceSession(context, mode);
@@ -35,11 +36,17 @@ import ui.Preferences;
 		return session;
 	}
 	
+	/**
+	 * Links an editor session to a codeEditor
+	 */
 	public static function bindSession(session:AceSession, editor:EditCode):Void {
 		session.gmlEditor = editor;
 		session.gmlFile = editor.file;
 	}
 	
+	/**
+	 * Creates a copy of an editor session that is linked to the same codeEditor/file/document
+	 */
 	public static function cloneSession(session:AceSession):AceSession {
 		var mode:Dynamic = session.modeRaw;
 		var copy = createSession(session.doc, mode);

@@ -7,7 +7,8 @@ import tools.Dictionary;
 using tools.HtmlTools;
 
 /**
- * The secondary sidebar for plugins
+ * The secondary sidebar for plugins.
+ * If there's more than one panel shown, a dropdown appears.
  * @author YellowAfterlife
  */
 @:keep class Sidebar {

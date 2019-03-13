@@ -171,7 +171,7 @@ class ChromeTabs {
 			var closedFile = closedTab.gmlFile;
 			if (closedFile != null) {
 				closedFile.close();
-				PluginEvents.fileClose({ file: closedFile });
+				PluginEvents.fileClose({ file: closedFile, tab: closedTab });
 			}
 			//
 			if (impl.tabEls.length == 0) {
