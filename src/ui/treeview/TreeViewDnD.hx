@@ -37,26 +37,37 @@ class TreeViewDnD {
 	}
 	//
 	static inline var dropType = "text/gmedit-rel-path";
+	static inline var dropPrefix = "text/gmedit-rel-prefix";
 	static inline var rsCanDrop = "^scripts[\\\\/]";
 	static var rxCanDropTo = new RegExp(rsCanDrop, "i");
 	static var rxCanDrag = new RegExp(rsCanDrop + ".+", "i");
+	static var rxCanDrag2 = new RegExp("^[^\\\\/]+[\\\\/].", "");
+	static var prefixOf_rx = new RegExp("^([^\\\\/]+)[\\\\/]", "");
+	static function prefixOf(rel:String):String {
+		var mt = prefixOf_rx.exec(rel);
+		return mt != null ? mt[1] : "";
+	}
 	static function hasType(e:DragEvent, t:String):Bool {
-		var dtTypes = e.dataTransfer.types;
-		return untyped (dtTypes:Dynamic).indexOf
+		var dtTypes:Dynamic = e.dataTransfer.types;
+		return dtTypes.indexOf
 			? dtTypes.indexOf(t) >= 0
 			: dtTypes.contains(t);
 	}
 	public static function bind(el:Element, rel:String) {
 		var dir = el.classList.contains("header");
+		var prefix = prefixOf(rel).toLowerCase();
 		var ownType = dropType + "=" + rel.toLowerCase();
+		var ownPrefix = dropPrefix + "=" + prefix;
+		var v2 = Project.current.version == v2;
 		if (rxCanDropTo.test(rel)) {
 			function updateAuto(e:DragEvent) {
-				//ace.AceStatusBar.setStatusHint('' + dtTypes);
 				var y = e.offsetY;
 				var h = el.scrollHeight;
-				//ace.AceStatusBar.setStatusHint('$y $h');
 				var th = dir ? 0.25 : 0.35;
-				if (y < h * th) {
+				Main.console.log(ownPrefix, e.dataTransfer.types.slice(0));
+				if (!hasType(e, ownPrefix)) {
+					update(null, 0);
+				} else if (y < h * th) {
 					update(el, -1);
 				} else if (y > h * (1 - th)) {
 					update(el, 1);
@@ -137,6 +148,8 @@ class TreeViewDnD {
 			el.addEventListener("dragstart", (e:DragEvent) -> {
 				e.dataTransfer.setData(dropType, rel);
 				e.dataTransfer.setData(ownType, "");
+				e.dataTransfer.setData(dropPrefix, prefix);
+				e.dataTransfer.setData(ownPrefix, "");
 			});
 		}
 	}
