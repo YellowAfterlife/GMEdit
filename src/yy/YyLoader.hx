@@ -41,6 +41,7 @@ class YyLoader {
 			val.resourceName = rxName.replace(val.resourcePath, "$1");
 			if (val.resourceType == "GMFolder") {
 				var view:YyView = project.readJsonFileSync(val.resourcePath);
+				val.resourceName = view.folderName;
 				if (view.isDefaultView) rootView = view;
 				views.set(key, view);
 			}
