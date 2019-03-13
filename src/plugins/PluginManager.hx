@@ -145,7 +145,8 @@ class PluginManager {
 			}
 		} else list = [ // base package for web version
 			"plugins/enum-names",
-			"plugins/show-aside"
+			"plugins/show-aside",
+			"plugins/outline-view",
 		];
 		//
 		for (name in list) load(name);

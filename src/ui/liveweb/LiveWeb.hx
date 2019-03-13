@@ -191,8 +191,9 @@ class LiveWeb {
 			}
 		});
 		Reflect.setField(window, "aceHintText", function(msg:String) {
-			AceStatusBar.setStatusHint(msg);
-			AceStatusBar.ignoreUntil = window.performance.now() + AceStatusBar.delayTime + 50;
+			var statusBar = Main.aceEditor.statusBar;
+			statusBar.setText(msg);
+			statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
 			for (tab in ChromeTabs.impl.tabEls) {
 				var es = tab.gmlFile.getAceSession();
 				if (es == null) continue;
@@ -203,7 +204,7 @@ class LiveWeb {
 			var col = pos.column;
 			var row = pos.row;
 			//
-			var hint = AceStatusBar.statusHint;
+			var hint = Main.aceEditor.statusBar.statusHint;
 			hint.setInnerText(msg);
 			hint.classList.add("active");
 			hint.onclick = function(_) {
@@ -218,7 +219,8 @@ class LiveWeb {
 					});
 				} else Main.aceEditor.gotoLine0(row, col);
 			};
-			AceStatusBar.ignoreUntil = window.performance.now() + AceStatusBar.delayTime + 50;
+			var statusBar = Main.aceEditor.statusBar;
+			statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
 			//
 			for (tab in ChromeTabs.impl.tabEls) {
 				if (tab.gmlFile.path != path) continue;

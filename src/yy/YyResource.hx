@@ -4,6 +4,6 @@ package yy;
  * ...
  * @author YellowAfterlife
  */
-typedef YyResource = {>YyBase
+typedef YyResource = {>YyBase,
 	name:String,
 };

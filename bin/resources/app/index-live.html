@@ -25,7 +25,7 @@
 		}
 	}
 	</script>
-</head><body id="app">
+</head><body id="app" class="liveweb">
 <div id="main">
 	<div id="editor-td" style="width: 520px">
 		<div class="chrome-tabs" id="tabs" style="padding-right: 32px">
@@ -41,23 +41,8 @@
 		</div>
 		<div class="bottom gml">
 			<div class="tabview">
-				<div id="ace_container">
+				<div id="ace_container" class="ace_container">
 					<textarea id="source"></textarea>
-					<div class="ace_status-bar" style="display:none">
-						<span class="ace_status-hint">
-							<span class="status" style="display:none">?</span>
-							<span class="recording" style="display:none">REC</span>
-							<span class="select" style="display:none">(:)</span>
-							<span class="row-label">Ln:</span>
-							<span class="row">1</span>
-							<span class="col-label">Col:</span>
-							<span class="col">1</span>
-							<span class="ranges" style="display:none"></span>
-							<span class="context-pre" style="display:none"></span>
-							<span class="context" style="display:none"><span class="context-txt"></span></span>
-						</span>
-						<span id="ace_status-hint" title=""></span>
-					</div>
 				</div>
 			</div>
 			<div width="5" id="misc-splitter-td" class="splitter-td"
@@ -79,6 +64,7 @@
 		splitter-lskey="splitter-width-live"
 		splitter-width-var="--side-width"
 		splitter-default-width="400"
+		splitter-update-tabs="yeah"
 	></div>
 	<div id="game-td" style="flex-grow: 1">
 		<div class="chrome-tabs has-lw-buttons">

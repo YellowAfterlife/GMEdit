@@ -344,6 +344,9 @@ body {
 	margin: 0;
 	resize: none;
 }
+#game {
+	width: 100%;
+}
 #game, .bottom {
 	height: calc(100% - 36px);
 	height: calc(100vh - 36px);

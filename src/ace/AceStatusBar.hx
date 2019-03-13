@@ -28,6 +28,7 @@ class AceStatusBar {
 	public var contextRow:Int = 0;
 	public var contextName:String = null;
 	public var ignoreUntil:Float = Main.window.performance.now();
+	public var delayTime(default, null):Int;
 	public function new() {
 		statusBar = document.createDivElement();
 		statusBar.className = "ace_status-bar";
@@ -55,7 +56,7 @@ class AceStatusBar {
 		this.editor = editor;
 		editor.statusBar = this;
 		var lang = AceWrap.require("ace/lib/lang");
-		var dcUpdate = lang.delayedCall(update).schedule.bind(null, 100);
+		var dcUpdate = lang.delayedCall(update).schedule.bind(null, delayTime);
 		editor.on("changeStatus", dcUpdate);
 		editor.on("changeSelection", dcUpdate);
 		editor.on("keyboardActivity", dcUpdate);

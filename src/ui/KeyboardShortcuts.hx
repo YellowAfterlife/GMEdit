@@ -55,6 +55,7 @@ class KeyboardShortcuts {
 	public static function keydown(e:KeyboardEvent) {
 		var flags = getEventFlags(e);
 		var keyCode = e.keyCode;
+		var isAlt = (flags == ALT);
 		var isMod = (flags == CTRL || flags == META);
 		var isShift = flags == SHIFT;
 		var isShiftMod = (flags == SHIFT + CTRL || flags == SHIFT + META);
@@ -159,6 +160,12 @@ class KeyboardShortcuts {
 				#end
 			};
 			case KeyboardEvent.DOM_VK_T: {
+				#if lwedit
+				if (isAlt) {
+					e.preventDefault();
+					GlobalLookup.toggle(">");
+				} else
+				#end
 				if (isShiftMod) {
 					e.preventDefault();
 					GlobalLookup.toggle(">");
