@@ -22,6 +22,9 @@
 #outline-view .treeview:empty:after {
 	content: "Hello! Outline view will show here once you have any tabs open. Feel free to toggle it any time via Ctrl+Shift+T ➜ 'Toggle outline view'!";
 }
+#app.liveweb #outline-view .treeview:empty:after {
+	content: "Hello! Outline view will show here once you have any tabs open. Feel free to toggle it any time via Alt+T ➜ 'Toggle outline view'!";
+}
 #outline-view .treeview:empty:not(:hover):after {
 	opacity: 0.5;
 }

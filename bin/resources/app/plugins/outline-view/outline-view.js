@@ -192,6 +192,7 @@
 		conf.update(file, pos);
 		//
 		var currDir = treeview.querySelector(".outline-current-file");
+		if (!currDir) return;
 		var currItem = currDir.querySelector(".outline-current-item");
 		// if cursor is after a mark/subregion, try to highlight that,
 		// or, if it's not on the sidebar yet, the nearest subregion (upwards from there)
