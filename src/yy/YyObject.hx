@@ -373,16 +373,17 @@ import ace.AceMacro.jsRx;
 	}
 }
 typedef YyObjectImpl = {
-	>YyBase,
+	>YyResource,
 	?path:String,
 	spriteId:YyGUID,
 	maskSpriteId:YyGUID,
-	name:String,
 	eventList:Array<YyObjectEvent>,
 	parentObjectId:YyGUID,
 	solid:Bool,
 	visible:Bool,
 	persistent:Bool,
+	properties:Array<Dynamic>,
+	overriddenProperties:Array<Dynamic>,
 	physicsObject:Bool,
 	
 	physicsDensity:Float,

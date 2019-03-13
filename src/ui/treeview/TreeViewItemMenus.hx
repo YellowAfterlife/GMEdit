@@ -48,11 +48,12 @@ class TreeViewItemMenus {
 	}
 	static function updateCreateMenu(dir:Bool) {
 		updatePrefix(target);
-		switch (Project.current.version) {
+		var v = Project.current.version;
+		switch (v) {
 			case v1 | v2: {
 				var supported = switch (prefix) {
 					case "scripts/": true;
-					default: false;
+					default: v == v2;
 				};
 				for (q in items.manipOuter) {
 					q.visible = true;

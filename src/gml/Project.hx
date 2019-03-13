@@ -524,6 +524,8 @@ import ui.treeview.TreeView;
 					var itemFull = Path.join([full, rel]);
 					found.push({
 						fileName: rel,
+						relPath: path + "/" + rel,
+						fullPath: itemFull,
 						isDirectory: FileSystem.statSync(itemFull).isDirectory()
 					});
 				}
@@ -538,6 +540,8 @@ import ui.treeview.TreeView;
 			var itemFull = Path.join([full, rel]);
 			out.push({
 				fileName: rel,
+				relPath: path + "/" + rel,
+				fullPath: itemFull,
 				isDirectory: FileSystem.statSync(itemFull).isDirectory()
 			});
 		}
@@ -561,5 +565,7 @@ typedef ProjectState = {
 }
 typedef ProjectDirInfo = {
 	fileName:String,
+	relPath:String,
+	fullPath:String,
 	isDirectory:Bool,
 }

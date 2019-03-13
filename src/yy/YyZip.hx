@@ -278,6 +278,8 @@ class YyZip extends Project {
 					var cut = Path.withoutDirectory(filePath);
 					if (cut != "") out.push({
 						fileName: cut,
+						relPath: path + "/" + cut,
+						fullPath: filePath,
 						isDirectory: false
 					});
 				} else {
@@ -290,6 +292,8 @@ class YyZip extends Project {
 							foundDirs.set(dir, true);
 							out.push({
 								fileName: dir,
+								relPath: path + "/" + dir,
+								fullPath: path + "/" + dir,
 								isDirectory: true
 							});
 						}

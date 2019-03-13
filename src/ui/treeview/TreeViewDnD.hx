@@ -59,7 +59,7 @@ class TreeViewDnD {
 		var ownType = dropType + "=" + rel.toLowerCase();
 		var ownPrefix = dropPrefix + "=" + prefix;
 		var v2 = Project.current.version == v2;
-		if (rxCanDropTo.test(rel)) {
+		if (v2 || rxCanDropTo.test(rel)) {
 			function updateAuto(e:DragEvent) {
 				var y = e.offsetY;
 				var h = el.scrollHeight;

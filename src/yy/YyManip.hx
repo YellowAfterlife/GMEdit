@@ -1,7 +1,9 @@
 package yy;
 import ace.extern.AceAutoCompleteItem;
 import electron.Dialog;
+import file.FileKind;
 import file.kind.gml.KGmlScript;
+import file.kind.yy.*;
 import gml.GmlAPI;
 import gml.Project;
 import haxe.ds.Map;
@@ -12,6 +14,7 @@ import tools.NativeString;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
 import yy.YyProjectResource;
+import yy.*;
 using tools.HtmlTools;
 
 /**
@@ -106,8 +109,75 @@ class YyManip {
 				pj.writeTextFileSync(nBase + ".gml", "");
 				nJson = nyScr;
 			};
+			case "object": {
+				var nyObj:YyObject = {
+					id: ni,
+					modelName: "GMObject",
+					mvc: "1.0",
+					name: q.name,
+					eventList: [],
+					maskSpriteId: YyGUID.zero,
+					overriddenProperties: null,
+					parentObjectId: YyGUID.zero,
+					persistent: false,
+					physicsAngularDamping: 0.1,
+					physicsDensity: 0.5,
+					physicsFriction: 0.2,
+					physicsGroup: 0,
+					physicsKinematic: false,
+					physicsLinearDamping: 0.1,
+					physicsObject: false,
+					physicsRestitution: 0.1,
+					physicsSensor: false,
+					physicsShape: 1,
+					physicsShapePoints: null,
+					physicsStartAwake: true,
+					properties: [],
+					solid: false,
+					spriteId: YyGUID.zero,
+					visible: true
+				};
+				nJson = nyObj;
+			};
+			case "shader": {
+				var nyShd:YyShader = {
+					id: ni,
+					modelName: "GMShader",
+					mvc: "1.0",
+					name: q.name,
+					type: 1,
+				};
+				pj.writeTextFileSync(nBase + ".vsh", [
+					'attribute vec3 in_Position;                  // (x,y,z)',
+					'//attribute vec3 in_Normal;                  // (x,y,z)     unused in this shader.',
+					'attribute vec4 in_Colour;                    // (r,g,b,a)',
+					'attribute vec2 in_TextureCoord;              // (u,v)',
+					'',
+					'varying vec2 v_vTexcoord;',
+					'varying vec4 v_vColour;',
+					'',
+					'void main()',
+					'{',
+					'    vec4 object_space_pos = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);',
+					'    gl_Position = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * object_space_pos;',
+					'    ',
+					'    v_vColour = in_Colour;',
+					'    v_vTexcoord = in_TextureCoord;',
+					'}',
+				].join("\r\n"));
+				pj.writeTextFileSync(nBase + ".fsh", [
+					'varying vec2 v_vTexcoord;',
+					'varying vec4 v_vColour;',
+					'',
+					'void main()',
+					'{',
+					'    gl_FragColor = v_vColour * texture2D( gm_BaseTexture, v_vTexcoord );',
+					'}',
+				].join("\r\n"));
+				nJson = nyShd;
+			};
 			default: {
-				Dialog.showAlert("Can't create type " + q.single + "!");
+				Dialog.showAlert("No idea how to create type=`" + q.single + "`, sorry");
 				return false;
 			}
 		};
@@ -139,20 +209,30 @@ class YyManip {
 		}
 		pj.writeTextFileSync(d.vp, NativeString.yyJson(d.vy));
 		//
-		pj.writeTextFileSync(nPath, NativeString.yyJson(nJson));
+		var nJsonStr = NativeString.yyJson(nJson);
+		pj.writeTextFileSync(nPath, nJsonStr);
 		pj.writeTextFileSync(pj.name, NativeString.yyJson(py));
 		var ntv:Element = TreeViewItemMenus.createImplTV(q);
 		ntv.setAttribute(TreeView.attrYYID, ni);
 		if (q.mkdir) {
 			//
-		} else if (kind == "script") {
-			GmlAPI.gmlComp.push(new AceAutoCompleteItem(q.name, "script"));
-			GmlAPI.gmlKind.set(q.name, "script");
-			GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
-			GmlAPI.gmlLookupText += q.name + "\n";
-			parsers.GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name, KGmlScript.inst);
-			gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
-		} else d.pj.reload();
+		} else switch (kind) {
+			case "script", "object", "shader": {
+				GmlAPI.gmlComp.push(new AceAutoCompleteItem(q.name, kind));
+				GmlAPI.gmlKind.set(q.name, kind);
+				GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
+				GmlAPI.gmlLookupText += q.name + "\n";
+				var fk:FileKind = switch (kind) {
+					case "object": file.kind.yy.KYyEvents.inst;
+					case "shader": null;
+					default: KGmlScript.inst;
+				}
+				var src = kind == "script" ? "" : nJsonStr;
+				if (fk != null) parsers.GmlSeeker.runSync(pj.fullPath(q.npath), src, q.name, fk);
+				gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
+			};
+			default: d.pj.reload();
+		}
 		//
 		return true;
 	}
@@ -166,8 +246,18 @@ class YyManip {
 			default: q.plural + '\\$name\\$name.yy';
 		};
 		var res = d.py.resources;
-		//
-		function rmrec(id:YyGUID) {
+		// remove a directory and all items (we don't need to worry about perms)
+		function removeDirRec(path:String) {
+			for (pair in pj.readdirSync(path)) {
+				if (pair.isDirectory) {
+					removeDirRec(pair.relPath);
+				} else {
+					pj.unlinkSync(pair.relPath);
+				}
+			}
+			pj.rmdirSync(path);
+		}
+		function removeItemRec(id:YyGUID) {
 			// remove item, find file+path:
 			var path = null, type = null;
 			for (i in 0 ... res.length) {
@@ -179,29 +269,29 @@ class YyManip {
 					break;
 				}
 			}
-			if (path == null) return;
+			if (path == null) return true;
 			// clean up the files:
 			switch (type) {
 				case "GMFolder": {
 					try {
 						var vi:YyView = pj.readJsonFileSync(path);
-						for (idc in vi.children) rmrec(idc);
+						for (idc in vi.children) removeItemRec(idc);
 						pj.unlinkSync(path);
-					} catch (_:Dynamic) {
-						Main.console.log(_);
+					} catch (x:Dynamic) {
+						Main.console.log(x);
 					}
 				};
-				case "GMScript": {
-					pj.unlinkSync(path);
-					pj.unlinkSync(Path.withoutExtension(path) + '.gml');
-					pj.rmdirSync(Path.directory(path));
+				case "GMScript", "GMObject", "GMSprite", "GMShader": {
+					removeDirRec(Path.directory(path));
 				};
 				default: {
-					Dialog.showAlert('No idea what to clean up for type=$type, sorry');
+					Dialog.showAlert('No idea how to remove type `$type`, sorry');
+					return false;
 				};
 			}
+			return true;
 		}
-		rmrec(d.ri);
+		removeItemRec(d.ri);
 		pj.writeTextFileSync(pj.name, NativeString.yyJson(d.py));
 		//
 		if (d.vy.children.remove(d.ri)) {
@@ -229,21 +319,33 @@ class YyManip {
 				vj.folderName = q.name;
 				pj.writeJsonFileSync(pair.resourcePath, vj);
 			};
-			case "GMScript": {
+			case "GMScript", "GMObject", "GMShader", "GMSprite": {
 				var path = pair.resourcePath;
 				var dir = Path.directory(path);
 				var ndir = Path.join([Path.directory(dir), q.name]);
 				var rel = Path.withoutDirectory(path);
 				pj.renameSync(dir, ndir);
-				var path1 = Path.join([ndir, rel]);
-				var npath1 = Path.join([ndir, q.name + ".yy"]);
-				pair.resourcePath = npath1;
-				pj.renameSync(path1, npath1);
-				var scr:YyScript = pj.readJsonFileSync(npath1);
-				scr.name = q.name;
-				pj.writeJsonFileSync(npath1, scr);
-				var path2 = Path.withoutExtension(path1) + ".gml";
-				pj.renameSync(path2, Path.join([ndir, q.name + ".gml"]));
+				//
+				var curr_yy = Path.join([ndir, rel]);
+				var next_yy = Path.join([ndir, q.name + ".yy"]);
+				pair.resourcePath = next_yy;
+				pj.renameSync(curr_yy, next_yy);
+				var next_res:YyResource = pj.readJsonFileSync(next_yy);
+				next_res.name = q.name;
+				pj.writeJsonFileSync(next_yy, next_res);
+				//
+				var samename:Array<String> = switch (pair.resourceType) {
+					case "GMScript": ["gml"];
+					case "GMShader": ["fsh", "vsh"];
+					default: null;
+				}
+				if (samename != null)
+				for (ext in samename) {
+					var sfx = "." + ext;
+					var curr_gml = Path.withoutExtension(curr_yy) + sfx;
+					var next_gml = Path.join([ndir, q.name + sfx]);
+					pj.renameSync(curr_gml, next_gml);
+				}
 			};
 			default: {
 				Dialog.showAlert('No idea how to rename type=${pair.resourceType}, sorry');

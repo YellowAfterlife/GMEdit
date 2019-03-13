@@ -9,8 +9,7 @@ abstract YySprite(YySpriteImpl) from YySpriteImpl to YySpriteImpl {
 	//
 }
 typedef YySpriteImpl = {
-	>YyBase,
-	name:String,
+	>YyResource,
 	xorig:Float,
 	yorig:Float,
 	width:Float,
