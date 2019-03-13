@@ -143,7 +143,7 @@ class TreeViewDnD {
 				}
 			});
 		}
-		if (rxCanDrag.test(rel)) {
+		if ((v2?rxCanDrag2:rxCanDrag).test(rel)) {
 			el.setAttribute("draggable", "true");
 			el.addEventListener("dragstart", (e:DragEvent) -> {
 				e.dataTransfer.setData(dropType, rel);
