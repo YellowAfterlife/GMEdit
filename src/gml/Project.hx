@@ -33,7 +33,7 @@ import ui.treeview.TreeView;
  * ...
  * @author YellowAfterlife
  */
-class Project {
+@:keep class Project {
 	//
 	public static var current(default, null):Project = null;
 	//
