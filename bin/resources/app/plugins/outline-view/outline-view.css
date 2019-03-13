@@ -28,6 +28,9 @@
 #outline-view .item, #outline-view .items, #outline-view .treeview > div {
 	margin-top: 0;
 }
+#outline-view .items {
+	border-left: 0;
+}
 #outline-view .treeview > div:not(.dir) > .header {
 	border-left: 0;
 }
