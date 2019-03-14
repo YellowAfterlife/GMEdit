@@ -533,12 +533,14 @@ class Preferences {
 				current.tabSpaces = val;
 				save();
 			}
-			var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
-			opts.remove("enableLiveAutocompletion");
-			opts.remove("theme");
-			opts.remove("enableSnippets");
-			FileWrap.writeConfigSync("config", "aceOptions", cast opts);
-			//Main.console.log("Ace settings saved.");
+			if (Main.aceEditor != null) {
+				var opts:DynamicAccess<Dynamic> = Main.aceEditor.getOptions();
+				opts.remove("enableLiveAutocompletion");
+				opts.remove("theme");
+				opts.remove("enableSnippets");
+				FileWrap.writeConfigSync("config", "aceOptions", cast opts);
+				//Main.console.log("Ace settings saved.");
+			}
 		};
 	}
 	public static function bindEditor(editor:AceWrap) {
