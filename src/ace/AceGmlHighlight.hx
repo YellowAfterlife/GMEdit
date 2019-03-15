@@ -33,9 +33,9 @@ using tools.NativeString;
 @:keep class AceGmlHighlight extends AceHighlight {
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
-		var fakeMultilineComments:Bool = false;
+		var fakeMultiline:Bool = false;
 		var fieldDef = "localfield";
-		if (Std.is(editor.kind, KGmlSearchResults)) fakeMultilineComments = true;
+		if (Std.is(editor.kind, KGmlSearchResults)) fakeMultiline = true;
 		if (Std.is(editor.kind, KMarkdown)) fieldDef = "text";
 		//
 		function rwnext(ruleToCopy:AceLangRule, newNext:String):AceLangRule {
@@ -258,10 +258,10 @@ using tools.NativeString;
 			}, ~/\/\/\//, "gml.comment.doc.line"),
 			rxRule("comment.line", ~/\/\/$/),
 			rxPush("comment.line", ~/\/\//, "gml.comment.line"),
-			fakeMultilineComments
+			fakeMultiline
 				? rxRule("comment.doc", ~/\/\*\*.*?(?:\*\/|$)/)
 				: rxPush("comment.doc", ~/\/\*\*/, "gml.comment.doc"),
-			fakeMultilineComments
+			fakeMultiline
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
 			rDefine, rAction, rKeyEvent, rEvent, rMoment, rRoomCC,
@@ -335,6 +335,27 @@ using tools.NativeString;
 		//
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
 		var rPragma_dq = [rule("string", '"', "pop")].concat(rBase);
+		var rString_sq = [ // GMS1 single-quoted strings
+			rxRule("string", ~/.*?[']/, "pop"),
+			rxRule("string", ~/.+/),
+		];
+		var rString_dq = [ // GMS1 double-quoted strings
+			rxRule("string", ~/.*?["]/, "pop"),
+			rxRule("string", ~/.+/),
+		];
+		var rString_tpl = [
+			rxPush(["string", "curly.paren.lparen"], ~/(\$)(\{)/, "gml.tpl"),
+			rxRule("string", ~/[`]/, "pop"),
+			rdef("string"),
+		];
+		if (fakeMultiline) {
+			var eol = rule("string", ".*?$", "pop");
+			rPragma_sq.unshift(eol);
+			rPragma_dq.unshift(eol);
+			rString_sq.insert(1, eol);
+			rString_dq.insert(1, eol);
+			rString_tpl.insert(1, eol);
+		}
 		//
 		var rComment = [ //{
 			rule("comment.link", "@\\[" + "[^\\[]*" + "\\]"),
@@ -362,19 +383,9 @@ using tools.NativeString;
 				rule("string", '"|$', "pop"),
 				rdef("string"),
 			], //}
-			"gml.string.sq": [ //{ GMS1 single-quoted strings
-				rxRule("string", ~/.*?[']/, "pop"),
-				rxRule("string", ~/.+/),
-			], //}
-			"gml.string.dq": [ //{ GMS1 double-quoted strings
-				rxRule("string", ~/.*?["]/, "pop"),
-				rxRule("string", ~/.+/),
-			], //}
-			"gml.string.tpl": [ //{ GMLive strings with templates
-				rxPush(["string", "curly.paren.lparen"], ~/(\$)(\{)/, "gml.tpl"),
-				rxRule("string", ~/[`]/, "pop"),
-				rdef("string"),
-			], //}
+			"gml.string.sq": rString_sq,
+			"gml.string.dq": rString_dq,
+			"gml.string.tpl": rString_tpl,
 			"gml.tpl": [ // values inside template strings
 				rxPush("curly.paren.lparen", ~/\{/, "gml.tpl"),
 				rxRule("curly.paren.rparen", ~/\}/, "pop")
