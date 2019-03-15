@@ -278,162 +278,89 @@ oop.inherits(FoldMode, BaseFoldMode);
 } // function ace_mode_gml_0
 function ace_mode_gml_1() {
 // a nasty override for Gutter.update to reset line counter on #define:
-var dom = ace.require("ace/lib/dom"); 
 var rxDefine = /^(?:#define|#event|#action|#section|#moment|#roomcc)\b/;
+var rxLine1 = /^#moment\s+\d+[|\s]\s*.+$|^#event\s+\w+(?:\:\w*)?[|\s]\s*.+$|#section[|\s]\s*.+/;
 var rxSection = /^#section\b/;
-ace.require("ace/layer/gutter").Gutter.prototype.update = function(config) {
+var Gutter = ace.require("ace/layer/gutter").Gutter;
+
+/**
+ * When starting to update gutter, we want to figure out how the starting line number
+ * (which will be either 0 or -event number)
+ */
+var Gutter_update = Gutter.prototype.update;
+if (!Gutter_update) throw "Gutter:update is amiss";
+Gutter.prototype.update = function(config) {
 	var session = this.session;
-	var firstRow = config.firstRow;
-	var lastRow = Math.min(config.lastRow + config.gutterOffset,  // needed to compensate for hor scollbar
-		session.getLength() - 1);
-	var fold = session.getNextFoldLine(firstRow);
-	var foldStart = fold ? fold.start.row : Infinity;
-	var foldWidgets = this.$showFoldWidgets && session.foldWidgets;
-	var breakpoints = session.$breakpoints;
-	var decorations = session.$decorations;
-	var firstLineNumber = session.$firstLineNumber;
-	var lastLineNumber = 0;
-	
-	//
-	var resetOnDefine = window.gmlResetOnDefine;
-	var checkRow = firstRow;
-	var checkToken;
-	if (resetOnDefine) while (--checkRow >= 0) {
-		//checkToken = session.getTokenAt(checkRow, 0);
-		//console.log(checkToken);
-		if (rxDefine.test(session.getLine(checkRow))) {
-			firstLineNumber = -checkRow;
-			break;
+	this.gmlResetOnDefine = session.$modeId == "ace/mode/gml" && window.gmlResetOnDefine;
+	if (this.gmlResetOnDefine) {
+		var checkRow = config.firstRow;
+		session.$firstLineNumber = 0;
+		while (--checkRow >= 0) {
+			if (rxDefine.test(session.getLine(checkRow))) {
+				session.$firstLineNumber = -checkRow;
+				break;
+			}
 		}
 	}
-	
-	var gutterRenderer = session.gutterRenderer || this.$renderer;
+	return Gutter_update.call(this, config);
+}
 
-	var cell = null;
-	var index = -1;
-	var row = firstRow;
-	while (true) {
-		if (row > foldStart) {
-			row = fold.end.row + 1;
-			fold = session.getNextFoldLine(row, fold);
-			foldStart = fold ? fold.start.row : Infinity;
-		}
-		if (row > lastRow) {
-			while (this.$cells.length > index + 1) {
-				cell = this.$cells.pop();
-				this.element.removeChild(cell.element);
-			}
-			break;
-		}
-
-		cell = this.$cells[++index];
-		if (!cell) {
-			cell = {element: null, textNode: null, foldWidget: null};
-			cell.element = dom.createElement("div");
-			cell.textNode = document.createTextNode('');
-			cell.element.appendChild(cell.textNode);
-			this.element.appendChild(cell.element);
-			this.$cells[index] = cell;
-		}
-
-		var className = "ace_gutter-cell ";
-		if (breakpoints[row])
-			className += breakpoints[row];
-		if (decorations[row])
-			className += decorations[row];
-		if (this.$annotations[row])
-			className += this.$annotations[row].className;
-		var rowText = session.getLine(row);
-		var reset = resetOnDefine && rxDefine.test(rowText);
-		if (reset) {
-			firstLineNumber = -row;
-			if (/^#moment\s+\d+[|\s]\s*.+$|^#event\s+\w+(?:\:\w*)?[|\s]\s*.+$|#section[|\s]\s*.+/g.test(rowText)) firstLineNumber += 1;
-			className += "ace_gutter-define ";
-		} else if (rxSection.test(rowText)) {
-			className += "ace_gutter-define ";
-		}
-		
-		if (cell.element.className != className)
-			cell.element.className = className;
-
-		var height = session.getRowLength(row) * config.lineHeight + "px";
-		if (height != cell.element.style.height)
-			cell.element.style.height = height;
-
-		if (foldWidgets) {
-			var c = foldWidgets[row];
-			if (c == null)
-				c = foldWidgets[row] = session.getFoldWidget(row);
-		}
-
-		if (c) {
-			if (!cell.foldWidget) {
-				cell.foldWidget = dom.createElement("span");
-				cell.element.appendChild(cell.foldWidget);
-			}
-			var className = "ace_fold-widget ace_" + c;
-			if (c == "start" && row == foldStart && row < fold.end.row)
-				className += " ace_closed";
-			else
-				className += " ace_open";
-			if (cell.foldWidget.className != className)
-				cell.foldWidget.className = className;
-
-			var height = config.lineHeight + "px";
-			if (cell.foldWidget.style.height != height)
-				cell.foldWidget.style.height = height;
-		} else {
-			if (cell.foldWidget) {
-				cell.element.removeChild(cell.foldWidget);
-				cell.foldWidget = null;
+/**
+ * This is pretty much the same as above except firstRow is an argument
+ */
+var Gutter_$renderLines = Gutter.prototype.$renderLines;
+if (!Gutter_$renderLines) throw "Gutter:$renderLines is amiss";
+Gutter.prototype.$renderLines = function(config, firstRow, lastRow) {
+	var session = this.session;
+	this.gmlResetOnDefine = session.$modeId == "ace/mode/gml" && window.gmlResetOnDefine;
+	if (this.gmlResetOnDefine) {
+		var checkRow = firstRow;
+		session.$firstLineNumber = 0;
+		while (--checkRow >= 0) {
+			if (rxDefine.test(session.getLine(checkRow))) {
+				session.$firstLineNumber = -checkRow;
+				break;
 			}
 		}
-		
-		var text;
-		if (reset) {
-			text = "#";
-		} else if (gutterRenderer) {
-			text = gutterRenderer.getText(session, row);
-		} else text = row + firstLineNumber;
-		lastLineNumber = text;
-		if (text != cell.textNode.data)
-			cell.textNode.data = text;
-		//
-		if (!reset) {
-			var argsMt = /#args\s+/.exec(rowText);
-			if (argsMt != null) {
-				var argsText = rowText.substring(argsMt.index + 5).trimLeft();
-				argsMt = argsText.match(
-					/(?:,|^)\s*(?:\?\w+|\w+\s*=)/g);
-				if (argsMt != null) {
-					firstLineNumber += argsMt.length;
-					if (!/[^?]\w+\s*(?:,|$)/.test(argsText)) firstLineNumber -= 1;
-				}
-			}
-		}
-		//
-		row++;
 	}
+	return Gutter_$renderLines.call(this, config, firstRow, lastRow);
+}
 
-	this.element.style.height = config.minHeight + "px";
-
-	if (this.$fixedWidth || session.$useWrapMode)
-		lastLineNumber = session.getLength() + firstLineNumber;
-
-	/*var gutterWidth = gutterRenderer 
-		? gutterRenderer.getWidth(session, lastLineNumber, config)
-		: lastLineNumber.toString().length * config.characterWidth;*/
-	gutterWidth = 4 * config.characterWidth;
-	
-	var padding = this.$padding || this.$computePadding();
-	gutterWidth += padding.left + padding.right;
-	if (gutterWidth !== this.gutterWidth && !isNaN(gutterWidth)) {
-		this.gutterWidth = gutterWidth;
-		this.element.style.width = Math.ceil(this.gutterWidth) + "px";
-		this._emit("changeGutterWidth", gutterWidth);
+/**
+ * With few minor changes to ace.js, $renderCell will call $gmlCellClass
+ * if gmlResetOnDefine == true, and this is where we reset line number
+ * and set the magic variable to replace 0/etc. for it by a "#"
+ */
+Gutter.prototype.gmlCellClass = function(row, className) {
+	var session = this.session;
+	var rowText = session.getLine(row);
+	var reset = rxDefine.test(rowText);
+	if (reset) {
+		this.$gmlCellText = "#";
+		session.$firstLineNumber = -row;
+		if (rxLine1.test(rowText)) session.$firstLineNumber += 1;
+		className += "ace_gutter-define ";
+	} else if (rxSection.test(rowText)) {
+		className += "ace_gutter-define ";
 	}
-};
-//
+	return className;
+}
+
+/**
+ * So, for fixed-width mode gutter width is determined from
+ * (lineCount - session.$firstLineNumber).toString().length, but we've
+ * been messing with that to implement line number resetting on #define,
+ * so we need to change that back to zero
+ * (ideally, we'd find the longest line number, but that's more work)
+ */
+var Gutter_$updateGutterWidth = Gutter.prototype.$updateGutterWidth;
+Gutter.prototype.$updateGutterWidth = function(config) {
+	if (this.gmlResetOnDefine) this.session.$firstLineNumber = 0;
+	return Gutter_$updateGutterWidth.call(this, config);
+}
+
+
+
 ace.define("ace/mode/gml",["require","exports","module",
 	"ace/lib/oop","ace/mode/text","ace/mode/gml_highlight_rules",
 	"ace/mode/matching_brace_outdent","ace/mode/behaviour/cstyle","ace/mode/folding/gmlstyle"

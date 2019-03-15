@@ -6067,7 +6067,7 @@ var Tokenizer = function(rules) {
         
         return new RegExp(src, (flag||"").replace("g", ""));
     };
-    this.getLineTokens = function(line, startState) {
+    this.getLineTokens = function(line, startState, row) { // GMEdit: +`, row`
         if (startState && typeof startState != "string") {
             var stack = startState.slice(0);
             startState = stack[0];
@@ -6118,7 +6118,7 @@ var Tokenizer = function(rules) {
                 rule = state[mapping[i]];
 
                 if (rule.onMatch)
-                    type = rule.onMatch(value, currentState, stack, line);
+                    type = rule.onMatch(value, currentState, stack, line, row); // GMEdit+ +`, row`
                 else
                     type = rule.token;
 
@@ -15603,6 +15603,10 @@ var Gutter = function(parentEl) {
             className += decorations[row];
         if (this.$annotations[row])
             className += this.$annotations[row].className;
+        if (this.gmlResetOnDefine) { // GMEdit
+            className = this.gmlCellClass(row, className);
+            firstLineNumber = session.$firstLineNumber;
+        }
         if (element.className != className)
             element.className = className;
 
@@ -15633,6 +15637,10 @@ var Gutter = function(parentEl) {
         var text = (gutterRenderer
             ? gutterRenderer.getText(session, row)
             : row + firstLineNumber).toString();
+        if (this.$gmlCellText) { // GMEdit
+            text = this.$gmlCellText;
+            this.$gmlCellText = null;
+        }
             
         if (text !== textNode.data) {
             textNode.data = text;
@@ -16794,7 +16802,10 @@ var ScrollBar = function(parent) {
     this.skipEvent = false;
 
     event.addListener(this.element, "scroll", this.onScroll.bind(this));
-    event.addListener(this.element, "mousedown", event.preventDefault);
+    event.addListener(this.element, "mousedown", function(e) {
+        // GMEdit: don't prevent middle-click for scroll
+        if (e.button != 1) e.preventDefault();
+    });
 };
 
 (function() {

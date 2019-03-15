@@ -1062,6 +1062,12 @@ var AcePopup = function(parentNode) {
             });
         }
         
+        // GMEdit: completion-meta is here instead
+        var metaType = "completion-meta";
+        if (data.meta && /^\w+$/.test(data.meta)) {
+            metaType += "." + data.meta;
+        }
+        tokens.push({type: metaType, value: data.meta||""});
         var lower = caption.toLowerCase();
         var filterText = (popup.filterText || "").toLowerCase();
         var lastIndex = 0;
@@ -1078,10 +1084,7 @@ var AcePopup = function(parentNode) {
             }
         }
         addToken(caption.slice(lastIndex, caption.length), "");
-        
-        if (data.meta)
-            tokens.push({type: "completion-meta", value: data.meta});
-
+        // GMEdit: completion-meta is in front instead
         return tokens;
     };
     bgTokenizer.$updateOnChange = noop;
@@ -1702,10 +1705,10 @@ var FilteredList = function(array, filterText) {
 
         this.filterText = str;
         matches = this.filterCompletions(matches, this.filterText);
-        matches = matches.sort(function(a, b) {
+        /*matches = matches.sort(function(a, b) {
             return b.exactMatch - a.exactMatch || b.$score - a.$score 
                 || (a.caption || a.value) < (b.caption || b.value);
-        });
+        });*/ // GMEdit: no sorting
         var prev = null;
         matches = matches.filter(function(item){
             var caption = item.snippet || item.caption || item.value;
