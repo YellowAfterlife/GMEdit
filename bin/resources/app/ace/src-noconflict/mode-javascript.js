@@ -114,41 +114,41 @@ var JavaScriptHighlightRules = function(options) {
             }, {
                 token : [
                     "storage.type", "punctuation.operator", "support.function",
-                    "punctuation.operator", "entity.funcname", "text","keyword.operator"
+                    "punctuation.operator", "entity.name.function", "text","keyword.operator"
                 ],
                 regex : "(" + identifierRe + ")(\\.)(prototype)(\\.)(" + identifierRe +")(\\s*)(=)",
                 next: "function_arguments"
             }, {
                 token : [
-                    "storage.type", "punctuation.operator", "entity.funcname", "text",
+                    "storage.type", "punctuation.operator", "entity.name.function", "text",
                     "keyword.operator", "text", "storage.type", "text", "paren.lparen"
                 ],
                 regex : "(" + identifierRe + ")(\\.)(" + identifierRe +")(\\s*)(=)(\\s*)(function)(\\s*)(\\()",
                 next: "function_arguments"
             }, {
                 token : [
-                    "entity.funcname", "text", "keyword.operator", "text", "storage.type",
+                    "entity.name.function", "text", "keyword.operator", "text", "storage.type",
                     "text", "paren.lparen"
                 ],
                 regex : "(" + identifierRe +")(\\s*)(=)(\\s*)(function)(\\s*)(\\()",
                 next: "function_arguments"
             }, {
                 token : [
-                    "storage.type", "punctuation.operator", "entity.funcname", "text",
+                    "storage.type", "punctuation.operator", "entity.name.function", "text",
                     "keyword.operator", "text",
-                    "storage.type", "text", "entity.funcname", "text", "paren.lparen"
+                    "storage.type", "text", "entity.name.function", "text", "paren.lparen"
                 ],
                 regex : "(" + identifierRe + ")(\\.)(" + identifierRe +")(\\s*)(=)(\\s*)(function)(\\s+)(\\w+)(\\s*)(\\()",
                 next: "function_arguments"
             }, {
                 token : [
-                    "storage.type", "text", "entity.funcname", "text", "paren.lparen"
+                    "storage.type", "text", "entity.name.function", "text", "paren.lparen"
                 ],
                 regex : "(function)(\\s+)(" + identifierRe + ")(\\s*)(\\()",
                 next: "function_arguments"
             }, {
                 token : [
-                    "entity.funcname", "text", "punctuation.operator",
+                    "entity.name.function", "text", "punctuation.operator",
                     "text", "storage.type", "text", "paren.lparen"
                 ],
                 regex : "(" + identifierRe + ")(\\s*)(:)(\\s*)(function)(\\s*)(\\()",
@@ -181,7 +181,8 @@ var JavaScriptHighlightRules = function(options) {
                 next  : "property"
             }, {
                 token : "storage.type",
-                regex : /=>/
+                regex : /=>/,
+                next  : "start"
             }, {
                 token : "keyword.operator",
                 regex : /--|\+\+|\.{3}|===|==|=|!=|!==|<+=?|>+=?|!|&&|\|\||\?:|[!$%&*+\-~\/^]=?/,
@@ -207,9 +208,9 @@ var JavaScriptHighlightRules = function(options) {
                 regex : "\\s+"
             }, {
                 token : [
-                    "storage.type", "punctuation.operator", "entity.funcname", "text",
+                    "storage.type", "punctuation.operator", "entity.name.function", "text",
                     "keyword.operator", "text",
-                    "storage.type", "text", "entity.funcname", "text", "paren.lparen"
+                    "storage.type", "text", "entity.name.function", "text", "paren.lparen"
                 ],
                 regex : "(" + identifierRe + ")(\\.)(" + identifierRe +")(\\s*)(=)(\\s*)(function)(?:(\\s+)(\\w+))?(\\s*)(\\()",
                 next: "function_arguments"
@@ -786,4 +787,11 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});
+});                (function() {
+                    ace.require(["ace/mode/javascript"], function(m) {
+                        if (typeof module == "object" && typeof exports == "object" && module) {
+                            module.exports = m;
+                        }
+                    });
+                })();
+            
