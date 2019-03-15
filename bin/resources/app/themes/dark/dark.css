@@ -131,70 +131,70 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	border-color: #DEDEDE;
 }
 /* */
-#main .ace-tm .ace_comment,
-#main .ace-tm .ace_eventtext {
+#app .ace-tm .ace_comment,
+#app .ace-tm .ace_eventtext {
 	color: #5B995B;
 }
-#main .ace-tm .ace_comment.ace_link {
+#app .ace-tm .ace_comment.ace_link {
 	color: white;
 }
-#main .ace-tm .ace_regionname,
-#main .ace-tm .ace_sectionname,
-#main .ace-tm .ace_momentname,
-#main .ace-tm .ace_scriptname,
-#main .ace-tm .ace_eventkeyname,
-#main .ace-tm .ace_eventname {
+#app .ace-tm .ace_regionname,
+#app .ace-tm .ace_sectionname,
+#app .ace-tm .ace_momentname,
+#app .ace-tm .ace_scriptname,
+#app .ace-tm .ace_eventkeyname,
+#app .ace-tm .ace_eventname {
 	color: #77BB5B;
 }
-#main .ace-tm .ace_localfield {
+#app .ace-tm .ace_localfield {
 	color: #B2B1FF;
 }
-#main .ace-tm .ace_field {
+#app .ace-tm .ace_field {
 	color: #CC9FFF;
 }
-#main .ace-tm .ace_asset,
-#main .ace-tm .ace_macro,
-#main .ace-tm .ace_macroname,
-#main .ace-tm .ace_enum,
-#main .ace-tm .ace_enumfield,
-#main .ace-tm .ace_namespace,
-#main .ace-tm .ace_constant {
+#app .ace-tm .ace_asset,
+#app .ace-tm .ace_macro,
+#app .ace-tm .ace_macroname,
+#app .ace-tm .ace_enum,
+#app .ace-tm .ace_enumfield,
+#app .ace-tm .ace_namespace,
+#app .ace-tm .ace_constant {
 	color: #FF8080;
 }
-#main .ace-tm .ace_globalvar,
-#main .ace-tm .ace_globalfield {
+#app .ace-tm .ace_globalvar,
+#app .ace-tm .ace_globalfield {
 	color: #FF7EFF;
 }
-#main .ace-tm .ace_variable {
+#app .ace-tm .ace_variable {
 	color: #58E55A;
 }
-#main .ace-tm .ace_local,
-#main .ace-tm .ace_flowlabel {
+#app .ace-tm .ace_local,
+#app .ace-tm .ace_flowlabel {
 	color: #FFF899;
 }
-#main .ace-tm .ace_sublocal {
+#app .ace-tm .ace_sublocal {
 	color: #FF99F8;
 }
-#main .ace-tm .ace_keyword,
-#main .ace-tm .ace_type,
-#main .ace-tm .ace_curly.ace_paren,
-#main .ace-tm .ace_function,
-#main .ace-tm .ace_extfunction,
-#main .ace-tm .ace_extmacro,
-#main .ace-tm .ace_script,
-#main .ace-tm .ace_quasi.ace_paren {
+#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_function,
+#app .ace-tm .ace_extfunction,
+#app .ace-tm .ace_extmacro,
+#app .ace-tm .ace_script,
+#app .ace-tm .ace_quasi.ace_paren {
 	color: #FFB871;
 }
-#main .ace-tm .ace_preproc {
+#app .ace-tm .ace_preproc {
 	/*color: rgb(0, 120, 170);*/
 	/*color: #7A81A9;*/
 	color: #A7B;
 }
-#main .ace-tm .ace_numeric,
-#main .ace-tm .ace_momenttime {
+#app .ace-tm .ace_numeric,
+#app .ace-tm .ace_momenttime {
 	color: #FF8080;
 }
-#main .ace-tm .ace_string {
+#app .ace-tm .ace_string {
 	color: #FCF320;
 }
 
@@ -229,6 +229,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #app .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
 	background: #495057;
+}
+.ace_editor.ace_autocomplete .ace_completion-highlight {
+	color: #69f;
 }
 #main .ace_search {
 	background: #505050;

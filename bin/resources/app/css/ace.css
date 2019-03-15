@@ -73,9 +73,9 @@ textarea#source {
 	transition: box-shadow 0.3s ease-in-out;
 }
 
-#main .ace_line {
+/*#main .ace_line {
 	position: relative;
-}
+}*/
 #main .ace_active-line {
 	background: rgba(255, 253, 205, 0.5);
 }
@@ -95,61 +95,61 @@ textarea#source {
 #main .ace-tm .ace_sectionname {
 	color: #008080;
 }*/
-#main .ace-tm .ace_regionname,
-#main .ace-tm .ace_sectionname,
-#main .ace-tm .ace_momentname,
-#main .ace-tm .ace_scriptname,
-#main .ace-tm .ace_eventname,
-#main .ace-tm .ace_eventkeyname {
+#app .ace-tm .ace_regionname,
+#app .ace-tm .ace_sectionname,
+#app .ace-tm .ace_momentname,
+#app .ace-tm .ace_scriptname,
+#app .ace-tm .ace_eventname,
+#app .ace-tm .ace_eventkeyname {
 	color: #308;
 }
-#main .ace-tm .ace_function,
-#main .ace-tm .ace_variable,
-#main .ace-tm .ace_constant,
-#main .ace-tm .ace_macro,
-#main .ace-tm .ace_globalvar,
-#main .ace-tm .ace_extfunction,
-#main .ace-tm .ace_extmacro,
-#main .ace-tm .ace_macroname,
-#main .ace-tm .ace_enum,
-#main .ace-tm .ace_enumfield,
-#main .ace-tm .ace_actionname,
-#main .ace-tm .ace_namespace {
+#app .ace-tm .ace_function,
+#app .ace-tm .ace_variable,
+#app .ace-tm .ace_constant,
+#app .ace-tm .ace_macro,
+#app .ace-tm .ace_globalvar,
+#app .ace-tm .ace_extfunction,
+#app .ace-tm .ace_extmacro,
+#app .ace-tm .ace_macroname,
+#app .ace-tm .ace_enum,
+#app .ace-tm .ace_enumfield,
+#app .ace-tm .ace_actionname,
+#app .ace-tm .ace_namespace {
 	color: #990000;
 }
-#main .ace-tm .ace_local,
-#main .ace-tm .ace_flowlabel {
+#app .ace-tm .ace_local,
+#app .ace-tm .ace_flowlabel {
 	color: #748;
 }
-#main .ace-tm .ace_sublocal {
+#app .ace-tm .ace_sublocal {
 	color: #764;
 }
-/*#main .ace-tm .ace_enumerror {
+/*#app .ace-tm .ace_enumerror {
 	color: red;
 }*/
-#main .ace-tm .ace_asset {
+#app .ace-tm .ace_asset {
 	color: rgb(0, 128, 160);
 }
-#main .ace-tm .ace_script {
+#app .ace-tm .ace_script {
 	color: #990099;
 }
-#main .ace-tm .ace_keyword,
-#main .ace-tm .ace_type,
-#main .ace-tm .ace_curly.ace_paren,
-#main .ace-tm .ace_quasi.ace_paren {
+#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_quasi.ace_paren {
 	color: #00379B;
 	font-weight: bold;
 }
-#main .ace-tm .ace_preproc {
+#app .ace-tm .ace_preproc {
 	/*color: rgb(0, 120, 170);*/
 	/*color: #7A81A9;*/
 	color: #768;
 }
-#main .ace-tm .ace_numeric,
-#main .ace-tm .ace_momenttime {
+#app .ace-tm .ace_numeric,
+#app .ace-tm .ace_momenttime {
 	color: #00f;
 }
-#main .ace-tm .ace_string {
+#app .ace-tm .ace_string {
 	color: #00f;
 }
 #main .ace_error-line {
@@ -213,4 +213,35 @@ textarea#source {
 
 .ace_search_field:first-child:last-child {
 	border-radius: 3px;
+}
+
+/** autocomplete tweaks */
+.ace_editor.ace_autocomplete {
+	font-family: sans-serif;
+}
+.ace_editor.ace_autocomplete .ace_text-layer {
+	margin-left: 0!important;
+}
+.ace_editor.ace_autocomplete .ace_completion-meta {
+	opacity: 1;
+	margin: 0;
+	display: inline-block;
+	width: 68px;
+	vertical-align: bottom;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
+	position: relative;
+	padding-left: 4px;
+	margin-right: 4px;
+}
+.ace_editor.ace_autocomplete .ace_completion-meta::before {
+	opacity: 0.1;
+	background: currentColor;
+	display: inline-block;
+	content: "";
+	position: absolute;
+	top: 0; bottom: 0; left: 0; right: 0;
 }
