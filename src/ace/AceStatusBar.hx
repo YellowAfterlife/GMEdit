@@ -334,6 +334,10 @@ class AceStatusBar {
 			contextName = null;
 		}
 		//
+		var locals = codeEditor != null ? codeEditor.locals[scope] : null;
+		editor.gmlCompleters.localCompleter.items = locals != null
+			? locals.comp : AceWrapCompleter.noItems;
+		//
 		var imports = codeEditor != null ? codeEditor.imports[scope] : null;
 		editor.gmlCompleters.importCompleter.items = imports != null
 			? imports.comp : AceWrapCompleter.noItems;
