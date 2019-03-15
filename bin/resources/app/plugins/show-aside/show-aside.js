@@ -31,7 +31,6 @@
 		gmlFile = file;
 		//
 		session = GMEdit.aceTools.cloneSession(file.codeEditor.session);
-		console.log(session)
 		editor.setSession(session);
 	}
 	function onFileSave(e) {
