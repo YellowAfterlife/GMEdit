@@ -555,6 +555,7 @@ class Preferences {
 		} catch (e:Dynamic) {
 			console.error("Error loading Ace options: " + e);
 		};
+		editor.setOption("fixedWidthGutter", true);
 		// flush Ace options on changes (usually only via Ctrl+,):
 		hookSetOption(editor);
 		hookSetOption(editor.renderer);

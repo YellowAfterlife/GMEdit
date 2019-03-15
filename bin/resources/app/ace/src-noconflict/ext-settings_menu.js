@@ -527,9 +527,6 @@ var optionGroups = {
         "Relative Line Numbers": {
             path: "relativeLineNumbers"
         },
-        "Fixed Gutter Width": {
-            path: "fixedWidthGutter"
-        },
         "Show Print Margin": [{
             path: "showPrintMargin"
         }, {
