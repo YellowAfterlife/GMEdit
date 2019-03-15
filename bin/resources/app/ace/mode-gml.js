@@ -294,7 +294,7 @@ Gutter.prototype.update = function(config) {
 	this.gmlResetOnDefine = session.$modeId == "ace/mode/gml" && window.gmlResetOnDefine;
 	if (this.gmlResetOnDefine) {
 		var checkRow = config.firstRow;
-		session.$firstLineNumber = 0;
+		session.$firstLineNumber = 1;
 		while (--checkRow >= 0) {
 			if (rxDefine.test(session.getLine(checkRow))) {
 				session.$firstLineNumber = -checkRow;
@@ -355,7 +355,7 @@ Gutter.prototype.gmlCellClass = function(row, className) {
  */
 var Gutter_$updateGutterWidth = Gutter.prototype.$updateGutterWidth;
 Gutter.prototype.$updateGutterWidth = function(config) {
-	if (this.gmlResetOnDefine) this.session.$firstLineNumber = 0;
+	if (this.gmlResetOnDefine) this.session.$firstLineNumber = 1;
 	return Gutter_$updateGutterWidth.call(this, config);
 }
 
