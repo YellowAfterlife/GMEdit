@@ -425,16 +425,6 @@ var modes = modelist.modes.map(function(x){
 
 var optionGroups = {
     Main: {
-        Mode: {
-            path: "mode",
-            type: "select",
-            items: modes
-        },
-        Theme: {
-            path: "theme",
-            type: "select",
-            items: themes
-        },
         "Keybinding": {
             type: "buttonBar",
             path: "keyboardHandler",
