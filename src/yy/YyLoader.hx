@@ -9,6 +9,8 @@ import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
+import plugins.PluginEvents;
+import plugins.PluginManager;
 import tools.Dictionary;
 import tools.ExecQueue;
 import tools.NativeString;
@@ -243,6 +245,9 @@ class YyLoader {
 		loadrec(TreeView.element, rootView, "");
 		TreeView.restoreOpen();
 		//
+		if (PluginManager.ready == true && project.version != 0) {
+			PluginEvents.projectOpen({project:project});
+		}
 		return null;
 	}
 }
