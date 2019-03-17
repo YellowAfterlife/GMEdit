@@ -15,6 +15,7 @@ import Main.window;
  * @author YellowAfterlife
  */
 class MainMenu {
+	static var menu:Menu;
 	static var exportItem:MenuItem;
 	static function addProjectItems(menu:Menu) {
 		#if !lwedit
@@ -131,7 +132,7 @@ class MainMenu {
 		#end
 	}
 	public static function init() {
-		var menu = new Menu();
+		menu = new Menu();
 		#if (!lwedit)
 		addProjectItems(menu);
 		#else
