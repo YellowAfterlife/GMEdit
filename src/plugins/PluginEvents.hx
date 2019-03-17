@@ -1,5 +1,6 @@
 package plugins;
 import gml.file.GmlFile;
+import gml.Project;
 import ui.ChromeTabs;
 import ui.ChromeTabs.ChromeTabsImpl;
 
@@ -22,6 +23,16 @@ extern class PluginEvents {
 	 * Dispatches when a new file is opened and ready to go.
 	 */
 	static function fileOpen(e:{file:GmlFile}):Void;
+
+	/**
+	 * Dispatches when a new project is opened and ready to go.
+	 */
+	static function projectOpen(e:{project:Project}):Void;
+
+	/**
+	 * Dispatches when the project is closed or a new project is opened
+	 */
+	static function projectClose(e:{project:Project}):Void;
 	
 	/**
 	 * Dispatches when active file (read: tab) changes

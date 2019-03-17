@@ -15,6 +15,8 @@ import parsers.GmlSeeker;
 import raw.GmlLoader;
 import tools.Dictionary;
 import gml.GmlAPI;
+import plugins.PluginEvents;
+import plugins.PluginManager;
 import ace.AceWrap;
 import gmx.*;
 import yy.*;
@@ -236,8 +238,15 @@ import ui.treeview.TreeView;
 		if (current != null) current.close();
 		current = new Project(path);
 		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
+		if (PluginManager.ready == true && current.version != 0) {
+			PluginEvents.projectOpen({project:null});
+		}
+		
 	}
 	public function close() {
+		if (current.version != 0) {
+			PluginEvents.projectClose({project:current});
+		}
 		TreeView.saveOpen();
 		var tabPaths:Array<String> = [];
 		for (_tab in ChromeTabs.element.querySelectorAll(".chrome-tab")) try {
