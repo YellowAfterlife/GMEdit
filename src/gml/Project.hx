@@ -238,6 +238,10 @@ import ui.treeview.TreeView;
 		if (current != null) current.close();
 		current = new Project(path);
 		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
+		if (PluginManager.ready == true && current.version != 0) {
+			PluginEvents.projectOpen({project:null});
+		}
+		
 	}
 	public function close() {
 		if (current.version != 0) {

@@ -10,8 +10,6 @@ import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
 import ace.extern.*;
-import plugins.PluginEvents;
-import plugins.PluginManager;
 import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import tools.Dictionary;
@@ -263,8 +261,5 @@ class GmxLoader {
 		//
 		GmlAPI.gmlKind = tm;
 		//}
-		if (PluginManager.ready == true && project.version != 0) {
-			PluginEvents.projectOpen({project:project});
-		}
 	}
 }
