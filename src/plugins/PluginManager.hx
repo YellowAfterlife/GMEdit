@@ -109,6 +109,8 @@ class PluginManager {
 		});
 	}
 	
+	// Set to true whenever manager is initalised
+	public static var ready:Bool = false;
 	public static function init() {
 		try {
 			Type.resolveClass("Main");
@@ -150,6 +152,7 @@ class PluginManager {
 		];
 		//
 		for (name in list) load(name);
+		ready = true;
 	}
 }
 typedef PluginCallback = (error:Null<Error>)->Void;
