@@ -435,6 +435,11 @@ var optionGroups = {
                 { caption : "Sublime", value : "ace/keyboard/sublime" }
             ]
         },
+		"Font Famliy": {
+            path: "fontFamily",
+            type: "text",
+            defaultValue: "monospace"
+        },
         "Font Size": {
             path: "fontSize",
             type: "number",
@@ -651,6 +656,19 @@ var OptionPanel = function(editor, element) {
                     } 
                 }, item.desc || item.caption || item.name];
             })];
+        } else if (option.type == "text") {
+            control = ["input", {type: "text", value: value || option.defaultValue, style:"width:6em", oninput: function() {
+                self.setOption(option, this.value);
+            }}];
+            if (option.defaults) {
+                control = [control, option.defaults.map(function(item) {
+                    return ["button", {onclick: function() {
+                        var input = this.parentNode.firstChild;
+                        input.value = item.value;
+                        input.oninput();
+                    }}, item.caption];
+                })];
+            }
         } else if (option.type == "number") {
             control = ["input", {type: "number", value: value || option.defaultValue, style:"width:3em", oninput: function() {
                 self.setOption(option, parseInt(this.value));
