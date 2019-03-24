@@ -139,5 +139,6 @@ import tools.Dictionary;
 		register("md", new KMarkdown(false));
 		register("dmd", new KMarkdown(true));
 		register("js", KJavaScript.inst);
+		register("json", KJavaScript.inst);
 	}
 }
