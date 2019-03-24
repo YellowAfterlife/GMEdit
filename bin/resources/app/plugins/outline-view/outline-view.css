@@ -31,7 +31,7 @@
 #outline-view .item, #outline-view .items, #outline-view .treeview > div {
 	margin-top: 0;
 }
-#outline-view .items {
+#outline-view .treeview > .outline-item > .items {
 	border-left: 0;
 }
 #outline-view .treeview > div:not(.dir) > .header {
