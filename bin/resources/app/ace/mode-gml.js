@@ -315,7 +315,7 @@ Gutter.prototype.$renderLines = function(config, firstRow, lastRow) {
 	this.gmlResetOnDefine = session.$modeId == "ace/mode/gml" && window.gmlResetOnDefine;
 	if (this.gmlResetOnDefine) {
 		var checkRow = firstRow;
-		session.$firstLineNumber = 0;
+		session.$firstLineNumber = 1;
 		while (--checkRow >= 0) {
 			if (rxDefine.test(session.getLine(checkRow))) {
 				session.$firstLineNumber = -checkRow;
