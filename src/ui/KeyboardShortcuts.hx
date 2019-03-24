@@ -143,16 +143,6 @@ class KeyboardShortcuts {
 				ui.liveweb.LiveWeb.saveState();
 				#end
 			};
-			case KeyboardEvent.DOM_VK_F12, KeyboardEvent.DOM_VK_F1: {
-				// todo: move to commands
-				var pos = aceEditor.getCursorPosition();
-				var tk = aceEditor.session.getTokenAtPos(pos);
-				if (flags == 0) {
-					OpenDeclaration.proc(aceEditor.session, pos, tk);
-				} else if (isShift) {
-					if (tk != null) GlobalSearch.findReferences(tk.value);
-				}
-			};
 			case KeyboardEvent.DOM_VK_F: {
 				if (isMod) e.preventDefault();
 				#if !lwedit
@@ -195,31 +185,6 @@ class KeyboardShortcuts {
 		}
 	}
 	//
-	public static function mousedown(ev:Dynamic) {
-		var dom:MouseEvent = ev.domEvent;
-		if (dom.button != 1) return;
-		var pos:AcePos = ev.getDocumentPosition();
-		var session = aceEditor.session;
-		var line = session.getLine(pos.row);
-		if (line != null && pos.column < line.length
-			&& OpenDeclaration.proc(session, pos, aceEditor.session.getTokenAtPos(pos))
-		) {
-			if (session.selection.isEmpty()) {
-				session.selection.moveTo(pos.row, pos.column);
-			}
-			dom.preventDefault();
-		}
-	}
-	public static function mousewheel(ev:Dynamic) {
-		var dom:WheelEvent = ev.domEvent;
-		var flags = getEventFlags(dom);
-		if (flags != CTRL && flags != META) return;
-		var delta = dom.deltaY;
-		if (delta == 0) return;
-		delta = delta < 0 ? 1 : -1;
-		var obj = aceEditor;
-		obj.setOption("fontSize", obj.getOption("fontSize") + delta);
-	}
 	static function initSystemButtons(closeButton:Element) {
 		if (closeButton == null) return;
 		inline function getCurrentWindow():Dynamic {
@@ -246,14 +211,39 @@ class KeyboardShortcuts {
 		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
 		initSystemButtons(document.querySelector(".system-button.close"));
 	}
-	public static function initEditor() {
-		aceEditor.on("mousedown", KeyboardShortcuts.mousedown);
-		aceEditor.on("mousewheel", KeyboardShortcuts.mousewheel);
-		untyped aceEditor.debugShowToken = function() {
-			aceEditor.on("mousemove", function(ev:Dynamic) {
+	public static function initEditor(editor:AceWrap) {
+		editor.on("mousedown", function(ev:Dynamic) {
+			var dom:MouseEvent = ev.domEvent;
+			if (dom.button != 1) return;
+			var pos:AcePos = ev.getDocumentPosition();
+			var session = editor.session;
+			var line = session.getLine(pos.row);
+			if (line != null && pos.column < line.length
+				&& OpenDeclaration.proc(session, pos, session.getTokenAtPos(pos))
+			) {
+				if (session.selection.isEmpty()) {
+					session.selection.moveTo(pos.row, pos.column);
+				}
+				dom.preventDefault();
+			}
+		});
+		editor.on("mousewheel", function(ev:Dynamic) {
+			var dom:WheelEvent = ev.domEvent;
+			var flags = getEventFlags(dom);
+			if (flags != CTRL && flags != META) return;
+			var delta = dom.deltaY;
+			if (delta == 0) return;
+			delta = delta < 0 ? 1 : -1;
+			editor.setOption("fontSize", editor.getOption("fontSize") + delta);
+		});
+		(editor:Dynamic).debugShowToken = function() {
+			editor.on("mousemove", function(ev:Dynamic) {
 				var pos:AcePos = ev.getDocumentPosition();
-				var tk = aceEditor.session.getTokenAtPos(pos);
-				if (tk != null) ace.AceStatusBar.setStatusHint(tk.type);
+				var tk = editor.session.getTokenAtPos(pos);
+				if (tk == null) return;
+				var sb = editor.statusBar;
+				if (sb == null) return;
+				sb.setText(tk.type);
 			});
 		};
 	}

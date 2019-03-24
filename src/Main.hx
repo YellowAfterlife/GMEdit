@@ -104,7 +104,8 @@ class Main {
 		editors.Editor.init();
 		AceSnippets.init();
 		AceWrap.init();
-		aceEditor = new AceWrap(document.querySelector("#source"));
+		CommandPalette.init();
+		aceEditor = new AceWrap(document.querySelector("#source"),{isPrimary:true});
 		(window:Dynamic).aceEditor = aceEditor;
 		AceCtxMenu.initMac(aceEditor);
 		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, KPlain.inst, "").editor;
@@ -118,10 +119,7 @@ class Main {
 		#if !lwedit
 		aceEditor.session = WelcomePage.init(aceEditor);
 		#end
-		KeyboardShortcuts.initEditor();
 		ScrollMode.init();
-		CommandPalette.init();
-		AceCommands.init();
 		untyped window.ace_mode_gml_2();
 		//
 		AceSessionData.init();

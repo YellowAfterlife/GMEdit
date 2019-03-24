@@ -20,13 +20,13 @@ import ui.CommandPalette;
 		Main.aceEditor.commands.addCommand(command);
 	}
 	
-	static function getKeybindString(cmdName:String, ?kb:AceCommandKey):Null<String> {
-		var cmd = Main.aceEditor.commands.commands[cmdName];
+	static function getKeybindString(editor:AceWrap, cmdName:String, ?kb:AceCommandKey):Null<String> {
+		var cmd = editor.commands.commands[cmdName];
 		if (cmd == null) return null;
 		var key:String = null;
 		if (kb == null) kb = cmd.bindKey;
 		if (kb == null) {
-			var ckb = Main.aceEditor.commands.commandKeyBinding;
+			var ckb = editor.commands.commandKeyBinding;
 			for (k in ckb.keys()) {
 				var ckv = ckb[k];
 				if (ckv == cmd || (cast ckv) == cmdName) { key = k; break; } 
@@ -54,9 +54,10 @@ import ui.CommandPalette;
 	/// Adds a command to the command palette; cmd.
 	@:doc public static function addToPalette(cmd:CommandDef):Void {
 		var cmdName:String = cast cmd.exec;
+		var editor = Main.aceEditor;
 		if (!Std.is(cmdName, String)) throw "Expected cmd.exec to be command name";
-		if (cmd.key == null) cmd.key = getKeybindString(cmdName);
-		cmd.exec = function() Main.aceEditor.execCommand(cmdName);
+		if (cmd.key == null) cmd.key = getKeybindString(editor, cmdName);
+		cmd.exec = function() editor.execCommand(cmdName);
 		CommandPalette.add(cmd);
 	}
 	
@@ -65,19 +66,20 @@ import ui.CommandPalette;
 		Main.aceEditor.commands.removeCommand(command);
 	}
 	
-	public static function init() {
-		var commands = Main.aceEditor.commands;
+	public static function init(editor:AceWrap, isPrimary:Bool) {
+		var commands = editor.commands;
 		inline function wm(win:String, mac:String):AceCommandKey {
 			return { win: win, mac: mac };
 		}
 		/// displays the given command in Ctrl+T>
 		function show(cmdName:String, text:String, ?kb:AceCommandKey) {
-			var cmd = Main.aceEditor.commands.commands[cmdName];
+			if (!isPrimary) return;
+			var cmd = editor.commands.commands[cmdName];
 			if (cmd == null) Main.console.warn('Command $cmdName is amiss');
-			var key:String = getKeybindString(cmdName, kb);
+			var key:String = getKeybindString(editor, cmdName, kb);
 			CommandPalette.add({
 				name: text,
-				exec: function() Main.aceEditor.execCommand(cmdName),
+				exec: function() editor.execCommand(cmdName),
 				key: key,
 			});
 		}
@@ -89,6 +91,24 @@ import ui.CommandPalette;
 			commands.bindKey(key, cmd);
 			if (showAs != null) show(cmd, showAs, key);
 		}
+		add({
+			name: "openDeclaration",
+			bindKey: "F1|F12",
+			exec: function(editor:AceWrap) {
+				var pos = editor.getCursorPosition();
+				var tk = editor.session.getTokenAtPos(pos);
+				ui.OpenDeclaration.proc(editor.session, pos, tk);
+			}
+		});
+		add({
+			name: "findReferences",
+			bindKey: "Shift-F1|Shift-F12",
+			exec: function(editor:AceWrap) {
+				var pos = editor.getCursorPosition();
+				var tk = editor.session.getTokenAtPos(pos);
+				if (tk != null) ui.GlobalSearch.findReferences(tk.value);
+			}
+		});
 		add({
 			name: "startAutocomplete",
 			exec: function(editor:AceWrap) {
