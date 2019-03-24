@@ -238,10 +238,6 @@ import ui.treeview.TreeView;
 		if (current != null) current.close();
 		current = new Project(path);
 		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
-		if (PluginManager.ready == true && current.version != 0) {
-			PluginEvents.projectOpen({project:null});
-		}
-		
 	}
 	public function close() {
 		if (current.version != 0) {
@@ -352,6 +348,9 @@ import ui.treeview.TreeView;
 			if (GmlSeeker.itemsLeft == 0) {
 				nameNode.innerText = displayName;
 			} else nameNode.innerText = "Indexing...";
+			if (PluginManager.ready == true && this.version != 0) {
+				PluginEvents.projectOpen({project:this});
+			}
 			ui.ProjectStyle.reload();
 		}, 1);
 	}
