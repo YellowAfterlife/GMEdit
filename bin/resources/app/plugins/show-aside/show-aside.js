@@ -9,6 +9,11 @@
 	var sizer, splitter, container, editor, session, mainCont;
 	//
 	var gmlFile = null;
+	function forceUpdate() {
+		var e = new CustomEvent("resize");
+		e.initEvent("resize");
+		window.dispatchEvent(e);
+	}
 	function hide() {
 		if (gmlFile == null) return;
 		GMEdit.off("fileClose", onFileClose);
@@ -16,6 +21,7 @@
 		mainCont.removeChild(sizer);
 		mainCont.removeChild(container);
 		gmlFile = null;
+		forceUpdate();
 	}
 	function show(file) {
 		if (!file.codeEditor) return;
@@ -27,6 +33,7 @@
 				mainCont.appendChild(sizer);
 				mainCont.appendChild(container);
 			} else prepare();
+			forceUpdate();
 		}
 		gmlFile = file;
 		//
