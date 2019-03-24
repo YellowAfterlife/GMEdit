@@ -54,7 +54,8 @@ Splitter.syncMain = syncMain;
 Splitter.splitters = splitters;
 Splitter.prototype = {
 	getWidth: function() {
-		return (parseFloat(this.target.style.width) || this.target.offsetWidth) + this.sizer.offsetWidth;
+		var targetWidth = this.target.offsetWidth;
+		return (targetWidth > 0 ? (parseFloat(this.target.style.width) || targetWidth) : 0) + this.sizer.offsetWidth;
 	},
 	setWidth: function(nw) {
 		this.target.style.width = nw + "px";
