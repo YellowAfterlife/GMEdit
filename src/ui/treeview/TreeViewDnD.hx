@@ -64,7 +64,6 @@ class TreeViewDnD {
 				var y = e.offsetY;
 				var h = el.scrollHeight;
 				var th = dir ? 0.25 : 0.35;
-				Main.console.log(ownPrefix, e.dataTransfer.types.slice(0));
 				if (!hasType(e, ownPrefix)) {
 					update(null, 0);
 				} else if (y < h * th) {
