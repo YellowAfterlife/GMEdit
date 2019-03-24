@@ -127,6 +127,7 @@ class KeyboardShortcuts {
 			};
 			case KeyboardEvent.DOM_VK_S: {
 				if (isMod) {
+					// for code editors, this is handled in AceCommands
 					e.preventDefault();
 					var q = GmlFile.current;
 					if (q != null) {

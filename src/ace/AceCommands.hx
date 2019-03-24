@@ -110,6 +110,16 @@ import ui.CommandPalette;
 			}
 		});
 		add({
+			name: "saveFile",
+			bindKey: wm("Ctrl-S", "Command-S"),
+			exec: function(editor:AceWrap) {
+				var file = editor.session.gmlFile;
+				if (file == null) return;
+				file.save();
+				editor.session.getUndoManager().markClean();
+			}
+		});
+		add({
 			name: "startAutocomplete",
 			exec: function(editor:AceWrap) {
 				if (editor.completer != null) {
