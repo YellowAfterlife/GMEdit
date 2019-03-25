@@ -31,7 +31,10 @@ function createWindow () {
 		slashes: true
 	})
 	let args = process.argv
-	if (args.length > 1) index_url += "?open=" + encodeURIComponent(args[1])
+	let openArg = 1
+	// https://apple.stackexchange.com/questions/207895/app-gets-in-commandline-parameter-psn-0-nnnnnn-why
+	if (process.platform === 'darwin' && openArg < args.length && args[openArg].startsWith("-psn")) openArg += 1
+	if (openArg < args.length) index_url += "?open=" + encodeURIComponent(args[openArg])
 	mainWindow.loadURL(index_url)
 
 	// Open the DevTools.

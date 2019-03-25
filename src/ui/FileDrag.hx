@@ -3,6 +3,7 @@ import Main.document;
 import electron.FileSystem;
 import gml.GmlAPI;
 import gml.GmlVersion;
+import gml.file.GmlFileKindTools;
 import js.html.Event;
 import js.html.DragEvent;
 import electron.Dialog;
@@ -42,16 +43,9 @@ class FileDrag {
 					};
 				}
 			};
-			case "yy": {
-				var pair = gml.file.GmlFileKindTools.detect(path);
-				if (pair.kind != KExtern.inst) GmlFile.open(name, path);
-			};
 			case "yyp": Project.open(path);
 			case "gml": {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
-				GmlFile.open(Path.withoutExtension(name), path);
-			};
-			case "md", "dmd": {
 				GmlFile.open(Path.withoutExtension(name), path);
 			};
 			case "yyz", "zip": {
@@ -64,13 +58,16 @@ class FileDrag {
 					};
 					reader.readAsArrayBuffer(file);
 				} else {
-					var data = electron.FileSystem.readFileSync(path);
+					var data = FileSystem.readFileSync(path);
 					var bytes = haxe.io.Bytes.ofData(data);
 					yy.YyZip.open(name, bytes);
 				}
 			};
 			default: {
-				if (path.substr(0, 4) != "-psn") decline();
+				var pair = GmlFileKindTools.detect(path);
+				if (pair.kind != KExtern.inst) {
+					GmlFile.open(Path.withoutExtension(name), path);
+				} else decline();
 			};
 		}
 	}
