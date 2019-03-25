@@ -69,7 +69,9 @@ class FileDrag {
 					yy.YyZip.open(name, bytes);
 				}
 			};
-			default: decline();
+			default: {
+				if (path.substr(0, 4) != "-psn") decline();
+			};
 		}
 	}
 	public static function init() {
