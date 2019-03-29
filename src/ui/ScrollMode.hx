@@ -11,12 +11,16 @@ import js.html.MouseEvent;
  * @author YellowAfterlife
  */
 class ScrollMode {
-	private static var scrollbar:Element;
-	private static var container:Element;
-	private static var scrollbarWidth:String;
-	private static var scrollbarWidthInt:Int;
-	private static var scrollWait:Bool = false;
-	public static function mousedown(e:MouseEvent) {
+	public var editor:AceWrap;
+	public function new() {
+		
+	}
+	public var scrollbar:Element;
+	public var container:Element;
+	public var scrollbarWidth:String;
+	public var scrollbarWidthInt:Int;
+	public var scrollWait:Bool = false;
+	public function mousedown(e:MouseEvent) {
 		// if a non-middle-button is clicked outside the scrollbar area,
 		if (e.button != 1 && e.layerX < scrollbar.offsetWidth - scrollbarWidthInt) {
 			// revert scrollbar to normal size and not touch it till it's released,
@@ -33,11 +37,11 @@ class ScrollMode {
 			window.addEventListener("mouseup", fn);
 		}
 	}
-	public static function mousemove(e:MouseEvent) {
+	public function mousemove(e:MouseEvent) {
 		if (scrollWait) return;
-		var sb:Element = aceEditor.renderer.scrollBar.element;
-		var pos:AcePos = aceEditor.renderer.screenToTextCoordinates(e.clientX, e.clientY);
-		var line = aceEditor.session.getLine(pos.row);
+		var sb:Element = editor.renderer.scrollBar.element;
+		var pos:AcePos = editor.renderer.screenToTextCoordinates(e.clientX, e.clientY);
+		var line = editor.session.getLine(pos.row);
 		var eol = line == null || pos.column >= line.length;
 		if (eol) {
 			// if we're past end of line, stretch the scrollbar container so that it can
@@ -51,12 +55,13 @@ class ScrollMode {
 			sb.style.cursor = "";
 		}
 	}
-	public static function init() {
+	public function bind(editor:AceWrap) {
 		try {
 			new MouseEvent("mousedown");
 		} catch (_:Dynamic) return;
-		container = aceEditor.container;
-		scrollbar = aceEditor.renderer.scrollBar.element;
+		this.editor = editor;
+		container = editor.container;
+		scrollbar = editor.renderer.scrollBar.element;
 		scrollbarWidth = scrollbar.style.width;
 		scrollbarWidthInt = untyped parseInt(scrollbarWidth);
 		scrollbar.addEventListener("mousedown", mousedown);

@@ -7,6 +7,7 @@ import js.html.SpanElement;
 import haxe.extern.EitherType;
 import tools.Dictionary;
 import ace.extern.*;
+import ui.ScrollMode;
 
 /**
  * A big, ugly pile of random handwritten externs for Ace components.
@@ -29,6 +30,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		if (o.inputHelpers != false) ui.KeyboardShortcuts.initEditor(this);
 		if (o.tooltips != false) AceTooltips.bind(this);
 		if (o.preferences != false) ui.Preferences.bindEditor(this);
+		if (o.scrollMode != false) new ScrollMode().bind(this);
 	}
 	//
 	public static inline function loadModule(path:String, fn:Dynamic->Void):Void {
@@ -85,6 +87,7 @@ typedef AceWrapOptions = {
 	?inputHelpers:Bool,
 	?tooltips:Bool,
 	?preferences:Bool,
+	?scrollMode:Bool,
 };
 @:native("ace")
 extern class AceEditor {

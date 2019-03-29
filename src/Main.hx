@@ -119,7 +119,6 @@ class Main {
 		#if !lwedit
 		aceEditor.session = WelcomePage.init(aceEditor);
 		#end
-		ScrollMode.init();
 		untyped window.ace_mode_gml_2();
 		//
 		AceSessionData.init();
