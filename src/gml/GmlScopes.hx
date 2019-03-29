@@ -27,7 +27,6 @@ class GmlScopes {
 	}
 	
 	public function get(row:Int):String {
-		var session = Main.aceEditor.session;
 		var len = session.getLength();
 		if (len != length) {
 			length = len;
