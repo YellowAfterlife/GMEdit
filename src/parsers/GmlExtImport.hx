@@ -40,7 +40,7 @@ class GmlExtImport {
 	private static var rxHasType = new RegExp("(?:\\w/\\*:|var.+?\\w:|#args.+?\\w:)", "");
 	public static var errorText:String;
 	//
-	static function parseRules(imp:GmlImports, mt:Array<String>) {
+	static function parseRules(imp:GmlImports, mt:Array<String>, out:GmlExtImportRules) {
 		var path = mt[1];
 		var alias = mt[2];
 		var nsOnly = mt[3] == ":";
@@ -49,8 +49,18 @@ class GmlExtImport {
 		var short:String;
 		var check:Dictionary<String>->AceAutoCompleteItems->Void;
 		var errors = "";
+		inline function add(long:String, short:String, kind:String, comp:AceAutoCompleteItem,
+			doc:GmlFuncDoc, ?space:String, ?spaceOnly:Bool
+		):Void {
+			if (out != null) out.push(Import(
+			        long, short, kind, comp, doc, space, spaceOnly));
+			imp.add(long, short, kind, comp, doc, space, spaceOnly);
+		}
 		if (path == "_") {
-			if (alias != null) imp.ensureNamespace(alias);
+			if (alias != null) {
+				imp.ensureNamespace(alias);
+				if (out != null) out.push(EnsureNS(alias));
+			}
 		}
 		else if (path.endsWith("*")) { // #import pkg.*
 			flat = path.substring(0, path.length - 1).replaceExt(rxPeriod, "_");
@@ -64,7 +74,7 @@ class GmlExtImport {
 							return comp.name == fd;
 						});
 						short = fd.substring(flen);
-						imp.add(fd, short, kind[fd], comps[0], docs[fd], alias, nsOnly);
+						add(fd, short, kind[fd], comps[0], docs[fd], alias, nsOnly);
 					}
 				});
 			}
@@ -81,8 +91,8 @@ class GmlExtImport {
 				ns = alias;
 				alias = mt[3];
 			}
-			var comp = new ace.extern.AceAutoCompleteItem(path, "global");
-			imp.add(path, alias, "globalfield", comp, null, ns);
+			var comp = new AceAutoCompleteItem(path, "global");
+			add(path, alias, "globalfield", comp, null, ns);
 		}
 		else { // #import ident
 			flat = path.replaceExt(rxPeriod, "_");
@@ -103,7 +113,7 @@ class GmlExtImport {
 				var comps = comp.filter(function(comp) {
 					return comp.name == flat;
 				});
-				imp.add(flat, alias, fdk, comps[0], docs[flat], ns, nsOnly);
+				add(flat, alias, fdk, comps[0], docs[flat], ns, nsOnly);
 				return true;
 			}
 			if(!check(GmlAPI.stdKind, GmlAPI.stdComp, GmlAPI.stdDoc)
@@ -115,20 +125,35 @@ class GmlExtImport {
 		}
 	}
 	static function parseFile(
-		imp:GmlImports, rel:String, found:Dictionary<Bool>, cache:Dictionary<String>
+		imp:GmlImports, rel:String, found:Dictionary<Bool>, cache:GmlExtImportRuleCache
 	) {
 		var fp = Path.withoutExtension(rel.toLowerCase());
-		if (found[fp]) return true;
-		var code = cache[rel];
-		if (code == null) {
-			var full = Path.join([Project.current.dir, "#import", rel]);
-			if (!FileWrap.existsSync(full)) {
-				full += ".gml";
-				if (!FileWrap.existsSync(full)) return false;
+		if (found[fp]) return true; // (we've seen this one already)
+		//
+		var rules:GmlExtImportRules;
+		if (cache != null) {
+			rules = cache[rel];
+			if (rules != null) {
+				for (rule in rules) switch (rule) {
+					case EnsureNS(s): imp.ensureNamespace(s);
+					case Import(long, short, kind, comp, doc, space, spaceOnly): {
+						imp.add(long, short, kind, comp, doc, space, spaceOnly);
+					};
+				}
+				return true;
+			} else {
+				rules = [];
+				cache.set(rel, rules);
 			}
-			code = FileWrap.readTextFileSync(full);
-			cache.set(rel, code);
+		} else rules = null;
+		Main.console.log("parse", rel);
+		//
+		var full = Path.join([Project.current.dir, "#import", rel]);
+		if (!FileWrap.existsSync(full)) {
+			full += ".gml";
+			if (!FileWrap.existsSync(full)) return false;
 		}
+		var code = FileWrap.readTextFileSync(full);
 		found.set(fp, true);
 		var q = new GmlReader(code);
 		var version = GmlAPI.version;
@@ -144,7 +169,7 @@ class GmlExtImport {
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
-							parseLine(imp, txt, found, cache);
+							parseLine(imp, txt, found, cache, rules);
 						}
 					};
 					case "*".code: q.skip(); q.skipComment();
@@ -159,12 +184,17 @@ class GmlExtImport {
 		//
 		return true;
 	}
+	
+	/**
+	 * Takes an "#import ..." string and parses it, adding rules
+	 */
 	static function parseLine(
-		imp:GmlImports, txt:String, found:Dictionary<Bool>, cache:Dictionary<String>
+		imp:GmlImports, txt:String, found:Dictionary<Bool>,
+		cache:GmlExtImportRuleCache, rules:GmlExtImportRules
 	) {
 		var mt = rxImport.exec(txt);
 		if (mt != null) {
-			parseRules(imp, mt);
+			parseRules(imp, mt, rules);
 			return true;
 		}
 		mt = rxImportFile.exec(txt);
@@ -292,7 +322,9 @@ class GmlExtImport {
 		}
 		return next;
 	}
+	static var pre_needsCache:RegExp = new RegExp("\n#(?:define|event|moment)\\b");
 	public static function pre(code:String, path:String) {
+		Main.console.log("pre");
 		var seekData = GmlSeekData.map[path];
 		inline function cancel() {
 			if (seekData != null) seekData.imports = null;
@@ -306,7 +338,8 @@ class GmlExtImport {
 			&& !globalExists
 		) return cancel();
 		var seekLocals = seekData != null ? seekData.locals : null;
-		var cache = new Dictionary<String>();
+		var needsCache = pre_needsCache.test(code);
+		var cache:GmlExtImportRuleCache = needsCache ? new Dictionary() : null;
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
 		var out = "";
@@ -332,7 +365,7 @@ class GmlExtImport {
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
-							if (parseLine(imp, txt, files, cache)) {
+							if (parseLine(imp, txt, files, cache, null)) {
 								flush(p);
 								out += txt;
 								start = q.pos;
@@ -638,3 +671,10 @@ class GmlExtImport {
 		return out;
 	}
 }
+private enum GmlExtImportRule {
+	EnsureNS(name:String);
+	Import(long:String, short:String, kind:String, comp:AceAutoCompleteItem,
+		doc:GmlFuncDoc, ?space:String, ?spaceOnly:Bool);
+}
+private typedef GmlExtImportRules = Array<GmlExtImportRule>;
+private typedef GmlExtImportRuleCache = Dictionary<GmlExtImportRules>;
