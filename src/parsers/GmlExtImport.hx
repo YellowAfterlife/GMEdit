@@ -49,12 +49,16 @@ class GmlExtImport {
 		var short:String;
 		var check:Dictionary<String>->AceAutoCompleteItems->Void;
 		var errors = "";
+		//
+		var add_cache:GmlImportsCache;
 		inline function add(long:String, short:String, kind:String, comp:AceAutoCompleteItem,
 			doc:GmlFuncDoc, ?space:String, ?spaceOnly:Bool
 		):Void {
-			if (out != null) out.push(Import(
-			        long, short, kind, comp, doc, space, spaceOnly));
-			imp.add(long, short, kind, comp, doc, space, spaceOnly);
+			if (out != null) {
+				add_cache = {};
+				out.push(Import(long, short, kind, comp, doc, space, spaceOnly, add_cache));
+			} else add_cache = null;
+			imp.add(long, short, kind, comp, doc, space, spaceOnly, add_cache);
 		}
 		if (path == "_") {
 			if (alias != null) {
@@ -136,8 +140,8 @@ class GmlExtImport {
 			if (rules != null) {
 				for (rule in rules) switch (rule) {
 					case EnsureNS(s): imp.ensureNamespace(s);
-					case Import(long, short, kind, comp, doc, space, spaceOnly): {
-						imp.add(long, short, kind, comp, doc, space, spaceOnly);
+					case Import(long, short, kind, comp, doc, space, spaceOnly, cache): {
+						imp.add(long, short, kind, comp, doc, space, spaceOnly, cache);
 					};
 				}
 				return true;
@@ -674,7 +678,7 @@ class GmlExtImport {
 private enum GmlExtImportRule {
 	EnsureNS(name:String);
 	Import(long:String, short:String, kind:String, comp:AceAutoCompleteItem,
-		doc:GmlFuncDoc, ?space:String, ?spaceOnly:Bool);
+		doc:GmlFuncDoc, space:String, spaceOnly:Bool, cache:GmlImportsCache);
 }
 private typedef GmlExtImportRules = Array<GmlExtImportRule>;
 private typedef GmlExtImportRuleCache = Dictionary<GmlExtImportRules>;

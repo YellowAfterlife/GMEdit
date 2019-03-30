@@ -73,9 +73,15 @@ class GmlImports {
 		}
 		return ns;
 	}
-	inline function enumCompToNsComp(comp:AceAutoCompleteItem):AceAutoCompleteItem {
+	function enumCompToNsComp(comp:AceAutoCompleteItem):AceAutoCompleteItem {
 		return new AceAutoCompleteItem(
 			comp.name.substring(comp.name.indexOf(".") + 1),
+			comp.meta, comp.name + " = " + comp.doc
+		);
+	}
+	function enumCompToFullComp(comp:AceAutoCompleteItem, short:String):AceAutoCompleteItem {
+		return new AceAutoCompleteItem(
+			short + comp.name.substring(comp.name.indexOf(".")),
 			comp.meta, comp.name + " = " + comp.doc
 		);
 	}
@@ -91,12 +97,17 @@ class GmlImports {
 	 */
 	public function add(
 		long:String, short:String, kind:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc,
-		?space:String, ?spaceOnly:Bool
+		space:String, spaceOnly:Bool, cache:GmlImportsCache
 	) {
 		var isGlobal = long.startsWith("global.");
 		//
 		var ns:GmlNamespace, en:GmlEnum;
 		var nc:AceAutoCompleteItem;
+		inline function makeAliasComp():Void {
+			nc = comp.makeAlias(short);
+			if (nc.doc == null) nc.doc = long;
+		}
+		//
 		if (space != null) {
 			ns = ensureNamespace(space);
 			ns.kind.set(short, kind);
@@ -107,10 +118,17 @@ class GmlImports {
 				ns.longen.set(short, long);
 			}
 			if (comp != null) {
+				// remove existing completion item if replacing
 				nc = ns.compMap[short];
 				if (nc != null) ns.comp.remove(nc);
-				nc = comp.makeAlias(short);
-				if (nc.doc == null) nc.doc = long;
+				// add the new one:
+				if (cache != null) {
+					nc = cache.nsComp;
+					if (nc == null) {
+						makeAliasComp();
+						cache.nsComp = nc;
+					}
+				} else makeAliasComp();
 				ns.compMap.set(short, nc);
 				ns.comp.push(nc);
 			}
@@ -121,7 +139,7 @@ class GmlImports {
 			this.kind.set(short, kind);
 		}
 		//
-		if (isGlobal) {
+		if (isGlobal) { // #import global.long in short
 			hasGlobal = true;
 			shortenGlobal.set(long.substring(7), short);
 		} else {
@@ -131,11 +149,23 @@ class GmlImports {
 				if (en != null) {
 					ns = namespaces[short];
 					if (ns != null) ns.isStruct = true;
-					for (comp in en.compList) {
-						this.comp.push(new AceAutoCompleteItem(
-							short + comp.name.substring(comp.name.indexOf(".")),
-							comp.meta, comp.name + " = " + comp.doc
-						));
+					if (cache != null) {
+						var comps = cache.enumComps;
+						var nsComps = cache.enumNsComps;
+						if (comps == null) {
+							comps = [];
+							if (ns != null) nsComps = [];
+							for (comp in en.compList) {
+								comps.push(enumCompToFullComp(comp, short));
+								if (ns != null) nsComps.push(enumCompToNsComp(comp));
+							}
+							cache.enumComps = comps;
+							if (ns != null) cache.enumNsComps = nsComps;
+						}
+						for (comp in comps) this.comp.push(comp);
+						for (comp in nsComps) ns.comp.push(comp);
+					} else for (comp in en.compList) {
+						this.comp.push(enumCompToFullComp(comp, short));
 						if (ns != null) ns.comp.push(enumCompToNsComp(comp));
 					}
 					if (ns != null) for (name in en.names) {
@@ -157,15 +187,28 @@ class GmlImports {
 		if (doc != null) docs.set(short, doc);
 		//
 		if (comp != null) {
+			// same - remove existing comp of same name (if any)
 			nc = compMap[short];
 			if (nc != null) this.comp.remove(nc);
-			nc = comp.makeAlias(short);
-			if (nc.doc == null) nc.doc = long;
+			//
+			if (cache != null) {
+				nc = cache.comp;
+				if (nc == null) {
+					makeAliasComp();
+					cache.comp = nc;
+				}
+			} else makeAliasComp();
 			this.compMap.set(short, nc);
 			this.comp.push(nc);
 		}
 	}
 	//
+}
+typedef GmlImportsCache = {
+	?comp:AceAutoCompleteItem,
+	?nsComp:AceAutoCompleteItem,
+	?enumComps:AceAutoCompleteItems,
+	?enumNsComps:AceAutoCompleteItems,
 }
 class GmlNamespace {
 	public var kind:Dictionary<String> = new Dictionary();
