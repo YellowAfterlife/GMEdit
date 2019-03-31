@@ -72,8 +72,9 @@ class GmlSeeker {
 		+ "\\w*[ \t]*(\\(.+)" // `func(...`
 	);
 	private static var jsDoc_param = new RegExp("^///\\s*"
-		+ "@(?:arg|param|argument)"
-		+ "\\s+(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value`
+		+ "@(?:arg|param|argument)\\s+"
+		+ "(?:\\{.*?\\}\\s*)?" // {type}?
+		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value`
 	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
