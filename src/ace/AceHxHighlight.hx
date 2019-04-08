@@ -77,7 +77,7 @@ using tools.NativeString;
 					+ "u[0-9a-fA-F]{4}|" // \u1234
 					// there's also octal which doesn't work (?)
 				+ ".)"),
-				rxRule("string", ~/(?:'|$)/, "pop"),
+				rxRule("string", ~/'/, "pop"),
 				rdef("string"),
 			],
 			"hx.string.code": [
