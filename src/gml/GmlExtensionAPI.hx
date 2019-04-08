@@ -55,7 +55,7 @@ class GmlExtensionAPI {
 					fn.findText("name"),
 					fn.findText("help"),
 					fn.findInt("argCount"),
-					fn.findText("kind") == "11")
+					fn.findText("help") == "")
 				);
 			}
 			for (mc in file.find("constants").findAll("constant")) {
