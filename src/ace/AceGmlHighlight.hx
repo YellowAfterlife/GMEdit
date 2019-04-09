@@ -320,7 +320,7 @@ using tools.NativeString;
 		]); //}
 		//
 		var rEnum = [ //{
-			rxRule(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "gml.enumvalue"),
+			rxPush(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "gml.enumvalue"),
 			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
 			// todo: need to make an actual push/pop system
 			rxRule("comment", ~/\/\/.*$/),
@@ -330,7 +330,15 @@ using tools.NativeString;
 			rxRule("curly.paren.rparen", ~/\}/, "pop"),
 		].concat(rBase); //}
 		var rEnumValue = [ //{
-			rxRule("punctuation.operator", ~/,/, "gml.enum"),
+			rxRule("punctuation.operator", ~/,/, "pop"),
+			rxRule("curly.paren.rparen", ~/\}/, function(currentState, stack:Array<String>) {
+				// double-pop because we must both exit gml.enum.value and gml.enum
+				stack.shift();
+				stack.shift();
+				if (stack.length > 0) {
+					return stack.shift();
+				} else return "start";
+			}),
 		].concat(rBase); //}
 		//
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);

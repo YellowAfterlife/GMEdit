@@ -7,7 +7,11 @@ import haxe.extern.EitherType;
  * @author YellowAfterlife
  */
 class HighlightTools {
-	public static function rule(tk:Dynamic, rx:String, ?next:String):AceLangRule {
+	public static function rule(
+		tk:Dynamic,
+		rx:String,
+		?next:EitherType<String, HighlightNext>
+	):AceLangRule {
 		return { token: tk, regex: rx, next: next };
 	}
 	public static function rtk(type:String, value:String):AceToken {
@@ -33,3 +37,4 @@ class HighlightTools {
 		return { token: tokens, regex: rs, next: next };
 	}
 }
+typedef HighlightNext = (currentState:String, stack:Array<String>)->String;
