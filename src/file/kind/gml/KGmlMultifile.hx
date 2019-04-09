@@ -3,6 +3,7 @@ import editors.EditCode;
 import electron.Dialog;
 import electron.FileWrap;
 import gml.file.GmlFileExtra;
+import parsers.GmlExtArgs;
 import parsers.GmlMultifile;
 import parsers.GmlSeeker;
 import tools.Dictionary;
@@ -17,9 +18,7 @@ class KGmlMultifile extends KGml {
 	public static var inst:KGmlMultifile = new KGmlMultifile();
 	public function new() {
 		super();
-		canImport = false;
-		canLambda = false;
-		checkSelfForChanges = false;
+		checkSelfForChanges = false; // (because our path is null)
 	}
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		var file = editor.file;
@@ -47,16 +46,25 @@ class KGmlMultifile extends KGml {
 			file.extraFiles.push(new GmlFileExtra(item.path));
 		}
 		if (errors == "") {
-			// (too buggy)
-			//out = GmlExtArgs.pre(out);
-			//out = GmlExtImport.pre(out, path);
 			GmlSeeker.runSync(file.path, out, "", file.kind);
 			return out;
 		} else return editor.setLoadError(errors);
 	}
-	override public function saveCode(editor:EditCode, code:String):Bool {
+	override public function preproc(editor:EditCode, code:String):String {
+		code = super.preproc(editor, code);
+		code = GmlExtArgs.pre(code);
+		return code;
+	}
+	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
-		if (code == null) return null;
+		code = GmlExtArgs.post(code);
+		if (code == null) {
+			Dialog.showError("Can't process #args:\n" + GmlExtArgs.errorText);
+			return null;
+		}
+		return code;
+	}
+	override public function saveCode(editor:EditCode, code:String):Bool {
 		var file = editor.file;
 		var next = GmlMultifile.split(code, "<detached code>");
 		var map0 = new Dictionary<String>();
@@ -67,6 +75,7 @@ class KGmlMultifile extends KGml {
 			if (itemPath != null) {
 				var itemCode = item.code;
 				FileWrap.writeTextFileSync(itemPath, itemCode);
+				GmlSeeker.runSync(itemPath, itemCode, item.name, KGmlScript.inst);
 			} else errors += "Can't save script " + item.name
 				+ " because it is not among the edited group.\n";
 		}
