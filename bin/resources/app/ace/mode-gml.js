@@ -114,13 +114,13 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 	
-	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#moment\b|#section\b|#region\b|#roomcc\b/;
+	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#moment\b|#section\b|#region\b|#target\b/;
 	this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
 	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
 	this.startRegionRe = /^\s*(\/\*|\/\/)#region\b/;
 	this.startBlockRe = /^\s*#region\b/;
-	this.startScriptRe = /^(?:#define|#event|#section|#moment|#roomcc)\b/;
+	this.startScriptRe = /^(?:#define|#event|#section|#moment|#target)\b/;
 	this._getFoldWidgetBase = this.getFoldWidget;
 	this.getFoldWidget = function(session, foldStyle, row) {
 		var line = session.getLine(row);
@@ -257,9 +257,10 @@ oop.inherits(FoldMode, BaseFoldMode);
 		var maxRow = session.getLength();
 		var startCol = line.length;
 		var startRow = row;
+		// sections collapse until the next section, but the rest collapses until the next block
 		var re = /^#section\b/.test(line)
-			? /^(?:#define|#event|#section|#moment|#roomcc)\b/
-			: /^(?:#define|#event|#moment|#roomcc)\b/;
+			? /^(?:#define|#event|#section|#moment|#target)\b/
+			: /^(?:#define|#event|#moment|#target)\b/;
 		var last = line;
 		while (++row < maxRow) {
 			line = session.getLine(row);
@@ -278,7 +279,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 } // function ace_mode_gml_0
 function ace_mode_gml_1() {
 // a nasty override for Gutter.update to reset line counter on #define:
-var rxDefine = /^(?:#define|#event|#action|#section|#moment|#roomcc)\b/;
+var rxDefine = /^(?:#define|#event|#action|#section|#moment|#target)\b/;
 var rxLine1 = /^#moment\s+\d+[|\s]\s*.+$|^#event\s+\w+(?:\:\w*)?[|\s]\s*.+$|#section[|\s]\s*.+/;
 var rxSection = /^#section\b/;
 var Gutter = ace.require("ace/layer/gutter").Gutter;

@@ -326,7 +326,7 @@ class GmlExtImport {
 		}
 		return next;
 	}
-	static var pre_needsCache:RegExp = new RegExp("\n#(?:define|event|moment)\\b");
+	static var pre_needsCache:RegExp = new RegExp("\n#(?:define|event|moment|target)\\b");
 	public static function pre(code:String, path:String) {
 		var seekData = GmlSeekData.map[path];
 		inline function cancel() {

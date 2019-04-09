@@ -3,6 +3,7 @@ import ace.extern.*;
 import electron.FileSystem;
 import electron.FileWrap;
 import file.FileKind;
+import file.kind.*;
 import file.kind.gml.*;
 import file.kind.gmx.*;
 import file.kind.yy.*;
@@ -98,7 +99,7 @@ class GmlSeeker {
 		var row = 0;
 		var notLam = !Std.is(kind, KGmlLambdas);
 		var canLam = notLam && Project.current.lambdaGml != null;
-		var notExt = notLam && !Std.is(kind, KGmlExtension);
+		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var localKind = notLam ? "local" : "sublocal";
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
@@ -157,7 +158,7 @@ class GmlSeeker {
 						if (q.pos > start + 1) {
 							s = q.substring(start, q.pos);
 							switch (s) {
-								case "#define": if (flags.has(Define)) {
+								case "#define","#target": if (flags.has(Define)) {
 									if (start == 0) return s;
 									c = q.get(start - 1);
 									if (c == "\r".code || c == "\n".code) {
@@ -271,7 +272,8 @@ class GmlSeeker {
 				}
 			}
 			else switch (s) {
-				case "#define": {
+				case "#define", "#target": {
+					var isDefine = (s == "#define");
 					// we don't have to worry about #event/etc because they
 					// do not occur in files themselves
 					flushDoc();
@@ -282,7 +284,7 @@ class GmlSeeker {
 					setLookup(main, true);
 					locals = new GmlLocals();
 					out.locals.set(main, locals);
-					if (v.hasScriptArgs()) { // `#define name(...args)`
+					if (isDefine && v.hasScriptArgs()) { // `#define name(...args)`
 						s = find(Line | Par0);
 						if (s == "(") {
 							while (q.loop) {
@@ -296,7 +298,7 @@ class GmlSeeker {
 						}
 					}
 					//
-					if (notExt) {
+					if (isDefine && canDefineComp) {
 						mainComp = new AceAutoCompleteItem(main, "script",
 							q.pos > start ? main + q.substring(start, q.pos) : null);
 						out.compList.push(mainComp);

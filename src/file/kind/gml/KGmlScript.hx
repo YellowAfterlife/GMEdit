@@ -13,6 +13,7 @@ class KGmlScript extends KGml {
 	public var isScript:Bool = true;
 	public function new() {
 		super();
+		canDefineComp = true;
 	}
 	override public function preproc(editor:EditCode, code:String):String {
 		code = GmlExtCoroutines.pre(code);

@@ -10,5 +10,6 @@ class KGmlExtension extends KGmlScript {
 	public function new() {
 		super();
 		isScript = false;
+		canDefineComp = false;
 	}
 }

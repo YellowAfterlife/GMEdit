@@ -196,14 +196,14 @@ class GmlReader extends StringReader {
 		skipIdent1();
 		var preproc = substring(p - 1, pos);
 		switch (preproc) {
-			case "#define", "#event", "#moment": {
+			case "#define", "#event", "#moment", "#target": {
 				skipSpaces0();
 				p = pos;
 				inline function next():String {
 					return substring(p, pos);
 				}
 				switch (preproc) {
-					case "#define": {
+					case "#define", "#target": {
 						skipIdent1();
 						return next();
 					};

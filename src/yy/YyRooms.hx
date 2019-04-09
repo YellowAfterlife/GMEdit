@@ -31,7 +31,7 @@ class YyRooms {
 				var roomCCfull = roomFull.ptDir().ptJoin(roomCCrel);
 				var roomName = roomFull.ptNoDir().ptNoExt();
 				if (out != "") out += "\n\n";
-				out += "#roomcc " + roomName
+				out += "#target " + roomName
 					+ "\n" + FileWrap.readTextFileSync(roomCCfull);
 				extraFiles.push(new GmlFileExtra(roomCCfull));
 			} catch (_:Dynamic) {
@@ -76,7 +76,7 @@ class YyRooms {
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v2);
 				case "#".code if ((p == 0 || q.get(p - 1) == "\n".code)
-					&& q.substr(p + 1, 6) == "roomcc"
+					&& q.substr(p + 1, 6) == "target"
 					&& q.get(p + 7).isSpace0()
 				): {
 					q.pos += 6;

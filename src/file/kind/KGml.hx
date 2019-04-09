@@ -24,6 +24,9 @@ class KGml extends KCode {
 	/// Whether #hyper magic is supported for this kind
 	public var canHyper:Bool = true;
 	
+	/// Whether #define will add scripts to auto-completion
+	public var canDefineComp:Bool = false;
+	
 	/**
 	 * Whether editor session had been modified during the current save operation.
 	 * We need this because trying to modify it multiple times can be destructive.

@@ -95,7 +95,7 @@ class YyLoader {
 					dir.setAttribute(TreeView.attrYYID, res.Key);
 					var nextOut = dir.treeItems;
 					if (path == "" && vdir.folderName == "rooms") {
-						var ccs = TreeView.makeAssetItem("Creation codes",
+						var ccs = TreeView.makeAssetItem("roomCreationCodes",
 							project.name, project.path, "roomccs");
 						ccs.removeAttribute(TreeView.attrThumb);
 						ccs.yyOpenAs = file.kind.yy.KYyRoomCCs.inst;

@@ -227,13 +227,13 @@ using tools.NativeString;
 		};
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
+		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
 		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
 		var rKeyEvent = rxRule(
 			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
 		);
 		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
-		var rRoomCC = rxRule("preproc.roomcc", ~/^(#roomcc\b)/);
 		var rMoment = rxRule(
 			["preproc.moment", "momenttime", "momentname"],
 			~/^(#moment[ \t]+)(\d+)(.*)/
@@ -264,7 +264,7 @@ using tools.NativeString;
 			fakeMultiline
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
-			rDefine, rAction, rKeyEvent, rEvent, rMoment, rRoomCC,
+			rDefine, rAction, rKeyEvent, rEvent, rMoment, rTarget,
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rulePairs([
 				"#import\\s+", "preproc.import",
@@ -413,7 +413,7 @@ using tools.NativeString;
 				rwnext(rMoment, "pop"),
 				rwnext(rKeyEvent, "pop"),
 				rwnext(rEvent, "pop"),
-				rwnext(rRoomCC, "pop"),
+				rwnext(rTarget, "pop"),
 				rxRule("comment", ~/.*?\*\//, "pop"),
 				rxRule("comment", ~/.+/)
 			]), //}

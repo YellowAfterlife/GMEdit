@@ -369,7 +369,7 @@ class GmlExtLambda {
 						start = q.pos;
 					}
 					else if (p == 0 || q.get(p - 1) == "\n".code) switch (hash) {
-						case "#define", "#event", "#moment": {
+						case "#define", "#event", "#moment", "#target": {
 							q.skipSpaces0();
 							var p1 = q.pos;
 							var ct:String;
@@ -389,7 +389,7 @@ class GmlExtLambda {
 									ct_proc();
 									prefix = fileName + "_" + ct.replace(":", "_");
 								};
-								case "#moment": {
+								case "#moment", "#target": {
 									q.skipIdent1();
 									ct_proc();
 									prefix = fileName + "_" + ct;
