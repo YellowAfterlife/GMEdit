@@ -1,4 +1,5 @@
 package ui;
+import js.html.CustomEvent;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.OptionElement;
@@ -25,6 +26,10 @@ using tools.HtmlTools;
 			sizer.style.display = v;
 			outer.style.display = v;
 			Splitter.syncMain();
+			// force Ace to note changes:
+			var e = new CustomEvent("resize");
+			e.initEvent("resize");
+			Main.window.dispatchEvent(e);
 		}
 		select.style.display = n <= 1 ? "none" : "";
 	}
