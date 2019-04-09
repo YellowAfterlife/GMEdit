@@ -150,7 +150,7 @@ class GmlExtImport {
 				cache.set(rel, rules);
 			}
 		} else rules = null;
-		Main.console.log("parse", rel);
+		//Main.console.log("parse", rel);
 		//
 		var full = Path.join([Project.current.dir, "#import", rel]);
 		if (!FileWrap.existsSync(full)) {
@@ -328,7 +328,6 @@ class GmlExtImport {
 	}
 	static var pre_needsCache:RegExp = new RegExp("\n#(?:define|event|moment)\\b");
 	public static function pre(code:String, path:String) {
-		Main.console.log("pre");
 		var seekData = GmlSeekData.map[path];
 		inline function cancel() {
 			if (seekData != null) seekData.imports = null;
