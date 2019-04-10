@@ -108,6 +108,49 @@ class GmlFuncDoc {
 					while (--k >= start) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
+						if (c == "?".code) { // perhaps `name = argument_count > 1 ? argument[1]`?
+							z = false;
+							// `name = argument_count > 1[ ]? argument[1]`
+							while (--k >= start) {
+								c = chunk.fastCodeAt(k);
+								if (!c.isSpace1()) break;
+							}
+							// `name = argument_count > [1] ? argument[1]`
+							c = chunk.fastCodeAt(k);
+							if (!c.isDigit()) break;
+							while (--k >= start) {
+								c = chunk.fastCodeAt(k);
+								if (!c.isDigit()) break;
+							}
+							// `name = argument_count >[ ]1 ? argument[1]`
+							while (k >= start) {
+								c = chunk.fastCodeAt(k);
+								if (c.isSpace1()) k--; else break;
+							}
+							// `name = argument_count [>] 1 ? argument[1]`
+							if (chunk.fastCodeAt(k) == "=".code) k--;
+							if (chunk.fastCodeAt(k) == ">".code) k--; else break;
+							// `name = argument_count[ ]> 1 ? argument[1]`
+							while (k >= start) {
+								c = chunk.fastCodeAt(k);
+								if (c.isSpace1()) k--; else break;
+							}
+							// `name = [argument_count] > 1 ? argument[1]`
+							var acEnd = k + 1;
+							if (chunk.fastCodeAt(k) != "t".code) break;
+							while (--k >= start) {
+								c = chunk.fastCodeAt(k);
+								if (!c.isIdent1()) break;
+							}
+							if (acEnd - k != 15 || chunk.substring(k + 1, acEnd) != "argument_count") break;
+							// `name =[ ]argument_count > 1 ? argument[1]`
+							while (k >= start) {
+								c = chunk.fastCodeAt(k);
+								if (c.isSpace1()) k--; else break;
+							}
+							//
+							c = chunk.fastCodeAt(k);
+						}
 						z = (c == "=".code && chunk.fastCodeAt(k - 1) != "=".code);
 						break;
 					}
