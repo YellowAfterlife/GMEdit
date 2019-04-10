@@ -104,12 +104,13 @@ class GmlFuncDoc {
 					var argi:Int = Std.parseInt(argis);
 					var k = mt.index;
 					// see if argument is being assigned somewhere
-					var z = false;
+					var hasSet = false;
+					var isOpt = false;
 					while (--k >= start) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
 						if (c == "?".code) { // perhaps `name = argument_count > 1 ? argument[1]`?
-							z = false;
+							hasSet = false;
 							// `name = argument_count > 1[ ]? argument[1]`
 							while (--k >= start) {
 								c = chunk.fastCodeAt(k);
@@ -150,12 +151,13 @@ class GmlFuncDoc {
 							}
 							//
 							c = chunk.fastCodeAt(k);
+							isOpt = true;
 						}
-						z = (c == "=".code && chunk.fastCodeAt(k - 1) != "=".code);
+						hasSet = (c == "=".code && chunk.fastCodeAt(k - 1) != "=".code);
 						break;
 					}
 					var name:String = null;
-					if (z) while (--k >= start) {
+					if (hasSet) while (--k >= start) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
 						if (!c.isIdent1()) break;
@@ -171,6 +173,7 @@ class GmlFuncDoc {
 						break;
 					}
 					if (name == null) name = "arg" + argi;
+					if (isOpt) name = "?" + name;
 					args[argi] = name;
 				} else rest = true;
 				mt = rx.exec(chunk);
