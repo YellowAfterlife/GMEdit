@@ -68,6 +68,7 @@ class KGmlScript extends KGml {
 	}
 	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
+		if (code == null) return code;
 		return postproc_1(editor, code, saveSessionChanged);
 	}
 }
