@@ -74,20 +74,9 @@ class YyLoader {
 					}
 					name = vdir.folderName;
 					if (path == "") switch (name) {
-						case"sprites",
-							"objects",
-							"shaders",
-							"scripts",
-							"extensions",
-							"timelines",
-							"notes",
-							"rooms": {
-							name = name.charAt(0).toUpperCase() + name.substring(1);
-						};
 						case "datafiles": name = "Included Files";
 						default: {
-							loadrec(null, vdir, null);
-							continue;
+							name = name.charAt(0).toUpperCase() + name.substring(1);
 						};
 					}
 					rel = path + name + "/";
@@ -101,7 +90,7 @@ class YyLoader {
 						ccs.yyOpenAs = file.kind.yy.KYyRoomCCs.inst;
 						dir.treeItems.appendChild(ccs);
 						// consume the room items:
-						nextOut = Main.document.createDivElement();
+						//nextOut = Main.document.createDivElement();
 					}
 					loadrec(nextOut, vdir, rel);
 					out.appendChild(dir);
@@ -110,23 +99,20 @@ class YyLoader {
 					name = val.resourceName;
 					rel = path + name;
 					var full = project.fullPath(val.resourcePath);
+					resourceGUIDs.set(name, res.Key);
 					switch (type) {
 						case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 						"GMScript", "GMShader", "GMFont", "GMTimeline",
-						"GMObject", "GMRoom", "GMIncludedFile": {
+						"GMObject", "GMRoom": {
 							var atype = type.substring(2).toLowerCase();
 							GmlAPI.gmlKind.set(name, "asset." + atype);
 							var next = new AceAutoCompleteItem(name, atype);
 							comp.push(next);
 							GmlAPI.gmlAssetComp.set(name, next);
-							resourceGUIDs.set(name, res.Key);
 						};
 					}
 					if (out == null) continue;
 					switch (type) {
-						case "GMSprite": {
-							
-						};
 						case "GMScript": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
@@ -226,7 +212,9 @@ class YyLoader {
 							out.appendChild(extEl);
 							continue;
 						};
-						default: continue;
+						default: {
+							// nothing particular
+						};
 					}
 					var kind = type.substring(2).toLowerCase(); // GMScript -> script
 					var item = TreeView.makeAssetItem(name, rel, full, kind);
