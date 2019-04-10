@@ -69,12 +69,12 @@ class GmlExtLambda {
 	static var rxLambdaArgsSp = new RegExp("^([ \t]*)([\\s\\S]*)([ \t]*)$");
 	static var rxLambdaPre = new RegExp("^"
 		+ "(?:///.*\r?\n)?"
-		+ "(//!#lambda" // -> has meta?
-			+ "([ \t]*)(\\$|\\w+)" // -> namePre, name
-			+ "([ \t]*)(?:\\(([ \t]*)\\$([ \t]*)\\))?" // -> argsPre, args0, args1
+		+ "(//!#lambda" // -> 1: has meta?
+			+ "([ \t]*)(\\$|\\w+)" // -> 2: namePre, 3: name
+			+ "([ \t]*)(?:\\(([ \t]*)\\$([ \t]*)\\))?" // -> 4: argsPre, 5: args0, 6: args1
 		+ ".*\r?\n)"
-		+ "(?:#args\\b[ \t]*(.+)\r?\n)?" // -> argsData
-	+ "([ \t]*\\{[\\s\\S]*)$");
+		+ "(?:#args\\b[ \t]*(.+)\r?\n)?" // -> 7: argsData
+	+ "([\\s\\S]*)$");
 	static var rxLambdaDef = new RegExp("^/\\*!#lamdef (\\w+)\\*/");
 	//
 	public static function preImpl(code:String, data:GmlExtLambdaPre) {
@@ -106,6 +106,7 @@ class GmlExtLambda {
 			// form the magic code:
 			flush(p);
 			var laName = mt[3];
+			if (mt[5] != null && mt[7] == null) mt[7] = "";
 			var laArgs = (mt[7] != null ? "(" + mt[5] + mt[7] + mt[6] + ")" : "");
 			if (laName != "$") {
 				scope.remap.set(s, laName);
@@ -224,7 +225,7 @@ class GmlExtLambda {
 		//
 		function proc():String {
 			var p0 = q.pos;
-			q.skipSpaces0();
+			q.skipSpaces1();
 			var p:Int;
 			var laName = null;
 			var laNamePre = "";
@@ -233,14 +234,17 @@ class GmlExtLambda {
 				p = q.pos;
 				q.skipIdent1();
 				laNamePre = q.substring(p0, p);
+				if (laNamePre.contains("\n")) {
+					return error("You can't have a linebreak between #lambda and name");
+				}
 				laName = q.substring(p, q.pos);
 				p0 = q.pos;
-				q.skipSpaces0();
+				q.skipSpaces1();
 			}
 			//
 			var laArgs = null;
 			var laArgsPre = "";
-			if (q.peek() == "(".code) {
+			if (q.peek() == "(".code) { // parse (args)
 				p = q.pos + 1;
 				var depth = 0;
 				while (q.loop) {
@@ -263,11 +267,20 @@ class GmlExtLambda {
 					laArgs = q.substring(p, q.pos);
 					q.skip();
 					p0 = q.pos;
-					q.skipSpaces0();
+					q.skipSpaces1();
 				} else return error("Expected a closing `)`");
 			}
 			//
-			if (q.peek() == "{".code) {
+			if (q.peek() != "{".code) {
+				var opts = ["{code}"];
+				if (laName != null) opts.push("name");
+				if (laArgs != null) opts.push("(args)");
+				if (opts.length > 1) {
+					var optl = opts.pop();
+					return error('Expected a ${opts.join(", ")} or $optl.');
+				} else return error('Expected a ${opts[0]}.');
+			}
+			else { // ok, we now parse the code block
 				p = q.pos + 1;
 				var depth = 0;
 				while (q.loop) {
@@ -291,8 +304,10 @@ class GmlExtLambda {
 				var laArgsMt, laArgsDoc;
 				if (laArgs != null) {
 					laArgsMt = rxLambdaArgsSp.exec(laArgs);
-					laCode = '#args $laArgs\n' + laCode;
-					laCode = GmlExtArgs.post(laCode);
+					if (laArgsMt[2] != "") {
+						laCode = '#args $laArgs\n' + laCode;
+						laCode = GmlExtArgs.post(laCode);
+					}
 					laArgsDoc = laArgs;
 					if (laCode == null) return error("Arguments error:\n" + GmlExtArgs.errorText);
 				} else {
@@ -334,14 +349,6 @@ class GmlExtLambda {
 				list1.push(laFull);
 				map1.set(laFull, laCode);
 				return laFull;
-			} else {
-				var opts = ["{code}"];
-				if (laName != null) opts.push("name");
-				if (laArgs != null) opts.push("(args)");
-				if (opts.length > 1) {
-					var optl = opts.pop();
-					return error('Expected a ${opts.join(", ")} or $optl.');
-				} else return error('Expected a ${opts[0]}.');
 			}
 		}
 		//
