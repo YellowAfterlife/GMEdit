@@ -20,6 +20,7 @@ textarea#source {
 }
 #main .ace_status-bar {
 	width: 100%;
+	max-width: var(--main-width);
 	line-height: 24px;
 	height: 24px;
 	border-top: 1px solid #CCCCCC;
