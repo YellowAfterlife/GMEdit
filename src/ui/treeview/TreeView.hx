@@ -153,7 +153,7 @@ class TreeView {
 	}
 	
 	/// Loads the thumbnail for item if it's available but not loaded yet
-	static function ensureThumb(item:Element) {
+	public static function ensureThumb(item:Element) {
 		if (!item.hasAttribute(attrThumbDelay)) return;
 		item.removeAttribute(attrThumbDelay);
 		if (item.hasAttribute(attrThumbSprite)) {
@@ -173,7 +173,7 @@ class TreeView {
 	}
 	
 	/// Loads not-yet-loaded thumbnails for all visible item-children of a directory-element.
-	static function ensureThumbs(el:Element) {
+	public static function ensureThumbs(el:Element) {
 		for (_e in el.querySelectorAll('.item[$attrThumbDelay]')) {
 			var item:TreeViewItem = cast _e;
 			if (item.scrollHeight > 0) ensureThumb(item);

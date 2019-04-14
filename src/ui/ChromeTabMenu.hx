@@ -116,11 +116,15 @@ class ChromeTabMenu {
 				}
 				flashInt = Main.window.setInterval(flashFunc, 300);
 				//
-				var par = item;
+				var par = item, check = false;
 				do {
-					if (par.classList.contains("dir")) par.classList.add("open");
+					if (par.classList.contains(TreeView.clDir) && !par.classList.contains(TreeView.clOpen)) {
+						par.classList.add(TreeView.clOpen);
+						check = true;
+					}
 					par = par.parentElement;
-				} while (par != null);
+				} while (par != null && !par.classList.contains("treeview"));
+				if (check && par != null) TreeView.ensureThumbs(par);
 				untyped item.scrollIntoViewIfNeeded();
 			}
 		}));
