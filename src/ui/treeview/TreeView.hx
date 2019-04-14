@@ -297,7 +297,7 @@ class TreeView {
 	public static function makeProject(name:String, path:String) {
 		var r = makeItemShared(name, path, "project");
 		r.title = path;
-		r.addEventListener(Preferences.current.singleClickOpen ? "click" : "dblclick", openProject);
+		r.addEventListener(Preferences.current.singleClickOpen ? "click" : "dblclick", handleProjectClick);
 		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;
 	}
