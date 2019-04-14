@@ -84,7 +84,11 @@ class OpenDeclaration {
 		var ename = tools.NativeString.escapeProp(name);
 		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$ename"]');
 		if (el != null) {
-			GmlFile.open(el.title, el.getAttribute(TreeView.attrPath), nav);
+			if (gml.Project.current.path == "") {
+				TreeView.openProject(el);
+			} else {
+				GmlFile.open(el.title, el.getAttribute(TreeView.attrPath), nav);
+			}
 			return true;
 		}
 		//

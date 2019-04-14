@@ -38,6 +38,7 @@ class RecentProjects {
 	public static function show() {
 		TreeView.clear();
 		var el = TreeView.element;
+		var lookup = "";
 		if (electron.Electron != null) for (path in get()) {
 			var name = Path.withoutDirectory(path);
 			switch (name.toLowerCase()) {
@@ -45,6 +46,7 @@ class RecentProjects {
 					name = Path.withoutDirectory(Path.directory(path));
 				};
 			}
+			lookup += name + "\n";
 			var pj = TreeView.makeProject(name, path);
 			FileSystem.access(path, FileSystemAccess.Exists, function(e) {
 				if (e == null) {
@@ -58,5 +60,6 @@ class RecentProjects {
 			});
 			el.appendChild(pj);
 		}
+		gml.GmlAPI.gmlLookupText = lookup;
 	}
 }

@@ -274,9 +274,7 @@ class TreeView {
 		return r;
 	}
 	//
-	private static function openProject(e:MouseEvent) {
-		e.preventDefault();
-		var el:Element = cast e.target;
+	public static function openProject(el:Element) {
 		if (!el.classList.contains("item")) el = el.parentElement;
 		var path = el.getAttribute(attrPath);
 		if (FileSystem.existsSync(path)) {
@@ -291,6 +289,10 @@ class TreeView {
 				el.parentElement.removeChild(el);
 			}
 		}
+	}
+	private static function handleProjectClick(e:MouseEvent) {
+		e.preventDefault();
+		openProject(cast e.target);
 	}
 	public static function makeProject(name:String, path:String) {
 		var r = makeItemShared(name, path, "project");
