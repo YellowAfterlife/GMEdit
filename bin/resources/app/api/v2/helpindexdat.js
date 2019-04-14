@@ -1094,6 +1094,7 @@ var HelpIndex = [
 ["Debug Mode", "source/_build/1_overview/2_quick_start/7_debugging.html"], 
 ["Debug Textures", "source/_build/2_interface/2_extras/debugging.html"], 
 ["debug_event", "source/_build/3_scripting/4_gml_reference/debugging/debug_event.html"], 
+["debug_get_callstack", "source/_build/3_scripting/4_gml_reference/debugging/debug_get_callstack.html"], 
 ["debug_mode", "source/_build/3_scripting/4_gml_reference/debugging/debug_mode.html"], 
 ["Debugger", "source/_build/2_interface/2_extras/debugging.html"], 
 ["Debugging", [
