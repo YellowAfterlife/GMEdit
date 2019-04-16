@@ -259,6 +259,9 @@ using tools.NativeString;
 			rxRule("comment.line", ~/\/\/$/),
 			rxPush("comment.line", ~/\/\//, "gml.comment.line"),
 			fakeMultiline
+				? rxRule(["comment", "comment.preproc", "comment"], ~/(\/\*\s*)(#gml)(.*?(?:\*\/|$))/)
+				: rxPush(["comment", "comment.preproc"], ~/(\/\*\s*)(#gml)/, "gml.comment.gml"),
+			fakeMultiline
 				? rxRule("comment.doc", ~/\/\*\*.*?(?:\*\/|$)/)
 				: rxPush("comment.doc", ~/\/\*\*/, "gml.comment.doc"),
 			fakeMultiline
@@ -340,6 +343,15 @@ using tools.NativeString;
 				} else return "start";
 			}),
 		].concat(rBase); //}
+		var rCommentPop:Array<AceLangRule> = [
+			rwnext(rDefine, "pop"),
+			rwnext(rAction, "pop"),
+			rwnext(rSection, "pop"),
+			rwnext(rMoment, "pop"),
+			rwnext(rKeyEvent, "pop"),
+			rwnext(rEvent, "pop"),
+			rwnext(rTarget, "pop"),
+		];
 		//
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
 		var rPragma_dq = [rule("string", '"', "pop")].concat(rBase);
@@ -406,21 +418,17 @@ using tools.NativeString;
 				rxRule((_) -> commentDocLineType, ~/.*$/, "pop"),
 				rdef("comment.doc.line"),
 			]), //}
-			"gml.comment": rComment.concat([ //{
-				rwnext(rDefine, "pop"),
-				rwnext(rAction, "pop"),
-				rwnext(rSection, "pop"),
-				rwnext(rMoment, "pop"),
-				rwnext(rKeyEvent, "pop"),
-				rwnext(rEvent, "pop"),
-				rwnext(rTarget, "pop"),
+			"gml.comment": rComment.concat(rCommentPop).concat([ //{
 				rxRule("comment", ~/.*?\*\//, "pop"),
 				rxRule("comment", ~/.+/)
 			]), //}
-			"gml.comment.doc": rComment.concat([ //{
+			"gml.comment.doc": rComment.concat(rCommentPop).concat([
 				rxRule("comment.doc", ~/.*?\*\//, "pop"),
 				rxRule("comment.doc", ~/.+/)
-			]), //}
+			]),
+			"gml.comment.gml": rCommentPop.concat([
+				rxRule("comment", ~/.*?\*\//, "pop"),
+			]).concat(rBase),
 		};
 		return rules;
 	}
