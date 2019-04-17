@@ -259,8 +259,8 @@ using tools.NativeString;
 			rxRule("comment.line", ~/\/\/$/),
 			rxPush("comment.line", ~/\/\//, "gml.comment.line"),
 			fakeMultiline
-				? rxRule(["comment", "comment.preproc", "comment"], ~/(\/\*\s*)(#gml)(.*?(?:\*\/|$))/)
-				: rxPush(["comment", "comment.preproc"], ~/(\/\*\s*)(#gml)/, "gml.comment.gml"),
+				? rxRule(["comment", "comment.preproc", "comment"], ~/(\/\*(?:\/\/)?\s*)(#gml)(.*?(?:\*\/|$))/)
+				: rxPush(["comment", "comment.preproc"],            ~/(\/\*(?:\/\/)?\s*)(#gml)/, "gml.comment.gml"),
 			fakeMultiline
 				? rxRule("comment.doc", ~/\/\*\*.*?(?:\*\/|$)/)
 				: rxPush("comment.doc", ~/\/\*\*/, "gml.comment.doc"),
