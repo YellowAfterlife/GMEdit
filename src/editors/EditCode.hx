@@ -123,7 +123,8 @@ class EditCode extends Editor {
 		// if there are imports, check if we should be updating the code
 		var data = path != null ? GmlSeekData.map[path] : null;
 		var sessionChanged = false;
-		if (data != null && data.imports != null || GmlExtImport.post_numImports > 0) {
+		var hadImports = data != null && data.imports != null;
+		if (hadImports || GmlExtImport.post_numImports > 0) {
 			var next = GmlExtImport.pre(val, path);
 			if (data != null && data.imports != null) {
 				imports = data.imports;
@@ -143,6 +144,15 @@ class EditCode extends Editor {
 					undoManager.markClean();
 					file.changed = false;
 				});
+			} else if (!hadImports) {
+				// if we didn't have imports before, data.imports would
+				// be null and thus our imports were left untransformed.
+				// But now they are OK so we can do it again and right.
+				val = GmlExtImport.post(val_preImport, path);
+				if (val == null) {
+					Main.window.alert(GmlExtImport.errorText);
+					return null;
+				}
 			}
 		}
 		return {val:val,sessionChanged:sessionChanged};
