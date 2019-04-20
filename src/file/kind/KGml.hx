@@ -75,7 +75,7 @@ class KGml extends KCode {
 		var row = 0, col = 0;
 		var i:Int, s:String;
 		if (nav.def != null) {
-			var rxDef = new RegExp("^(#define|#event|#moment)[ \t]" + NativeString.escapeRx(nav.def) + "\\b");
+			var rxDef = new RegExp("^(#define|#event|#moment|#target)[ \t]" + NativeString.escapeRx(nav.def) + "\\b");
 			i = 0;
 			while (i < len) {
 				s = session.getLine(i);
@@ -91,7 +91,7 @@ class KGml extends KCode {
 		var ctx = nav.ctx;
 		if (ctx != null) {
 			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
-			var rxEof = new RegExp("^(#define|#event|#moment)");
+			var rxEof = new RegExp("^(#define|#event|#moment|#target)");
 			i = row;
 			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;
 			var start = found ? i : -1;
