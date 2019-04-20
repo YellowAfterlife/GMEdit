@@ -31,8 +31,8 @@ class GmlSeekData {
 	public var globalFieldComp:AceAutoCompleteItems = [];
 	
 	// instance variables assigned in this file
-	public var instFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
-	public var instFieldList:Array<GmlGlobalField> = [];
+	public var instFieldMap:Dictionary<GmlField> = new Dictionary();
+	public var instFieldList:Array<GmlField> = [];
 	public var instFieldComp:AceAutoCompleteItems = [];
 	
 	// macros declared in this file

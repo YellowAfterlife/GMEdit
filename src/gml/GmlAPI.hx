@@ -124,7 +124,7 @@ class GmlAPI {
 	public static var gmlGlobalFieldComp:AceAutoCompleteItems = [];
 	
 	/** instance variables */
-	public static var gmlInstFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	public static var gmlInstFieldMap:Dictionary<GmlField> = new Dictionary();
 	
 	/** instance variable auto-completion */
 	public static var gmlInstFieldComp:AceAutoCompleteItems = [];

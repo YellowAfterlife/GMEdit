@@ -362,7 +362,7 @@ class GmlSeeker {
 						if (s != null && out.globalFieldMap[s] == null) {
 							var gfd = GmlAPI.gmlGlobalFieldMap[s];
 							if (gfd == null) {
-								gfd = new GmlGlobalField(s, "global");
+								gfd = new GmlGlobalField(s);
 								GmlAPI.gmlGlobalFieldMap.set(s, gfd);
 							}
 							out.globalFieldList.push(gfd);
@@ -519,7 +519,7 @@ class GmlSeeker {
 					if (out.instFieldMap[s] == null) {
 						var fd = GmlAPI.gmlInstFieldMap[s];
 						if (fd == null) {
-							fd = new GmlGlobalField(s, "variable");
+							fd = new GmlField(s, "variable");
 							GmlAPI.gmlInstFieldMap.set(s, fd);
 						}
 						out.instFieldList.push(fd);
