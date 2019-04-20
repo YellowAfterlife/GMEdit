@@ -313,13 +313,19 @@ class Preferences {
 			GmlAPI.init();
 			save();
 		}).title = "Displays UK versions of function/variable names (e.g. draw_set_colour) in auto-completion when available.";
-		addCheckbox(out, "Smart match completion", !current.compExactMatch, function(z) {
-			current.compExactMatch = !z;
-			if (Main.aceEditor.completer != null) {
-				Main.aceEditor.completer.exactMatch = !z;
-			}
+		//
+		var compMatchModes = [
+			"Start of string (GMS1 style)",
+			"Containing (GMS2 style)",
+			"Smart (`icl` -> `io_clear`)",
+			"Per-section (`icl` -> `instance_create_layer`)",
+		];
+		el = addDropdown(out, "Auto-completion mode", compMatchModes[current.compMatchMode], compMatchModes, function(s) {
+			current.compMatchMode = compMatchModes.indexOf(s);
 			save();
-		}).title = "If enabled, show_debug_message will show up in results for `sdm`";
+		});
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Preferences#auto-completion-mode");
+		//
 		addCheckbox(out, "Auto-detect soft tabs", current.detectTab, function(z) {
 			current.detectTab = z;
 			save();
@@ -466,11 +472,15 @@ class Preferences {
 		} catch (e:Dynamic) {
 			console.error("Error loading preferences: ", e);
 		}
+		// migrations:
+		if (pref.compMatchMode == null && pref.compExactMatch != null) {
+			pref.compMatchMode = pref.compExactMatch ? PrefMatchMode.StartsWith : PrefMatchMode.AceSmart;
+		}
 		// default settings:
 		var def:PrefData = {
 			theme: "dark",
 			ukSpelling: false,
-			compExactMatch: true,
+			compMatchMode: PrefMatchMode.StartsWith,
 			argsMagic: true,
 			argsFormat: "@param",
 			importMagic: true,
@@ -504,6 +514,7 @@ class Preferences {
 				doSave = true;
 			}
 		});
+		//
 		current = pref;
 		if (doSave) save();
 		//
@@ -568,7 +579,8 @@ class Preferences {
 typedef PrefData = {
 	theme:String,
 	ukSpelling:Bool,
-	compExactMatch:Bool,
+	?compExactMatch:Bool, // deprecated
+	compMatchMode:PrefMatchMode,
 	fileSessionTime:Float,
 	projectSessionTime:Float,
 	argsMagic:Bool,
@@ -590,6 +602,16 @@ typedef PrefData = {
 	backupCount:{ v1:Int, v2:Int, live:Int },
 	tooltipKind:PrefTooltipKind,
 	tooltipDelay:Int,
+}
+enum abstract PrefMatchMode(Int) from Int to Int {
+	/// GMS1 style
+	var StartsWith = 0;
+	/// GMS2 style, "debug" for "show_[debug]_message"
+	var Includes = 1;
+	/// "icl" for "[i]o_[cl]ear"
+	var AceSmart = 2;
+	/// "icl" for "[i]nstance_[c]reate_[l]ayer"
+	var SectionStart = 3;
 }
 @:enum abstract PrefTooltipKind(Int) from Int to Int {
 	var None = 0;

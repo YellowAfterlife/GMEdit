@@ -26,7 +26,7 @@ using tools.NativeString;
 	public var tokenFilterNot:Bool;
 	public var tokenFilterComment:Bool;
 	public var modeFilter:AceSession->Bool;
-	public var minLength:Int = 2;
+	public var minLength:Int = AceWrapCompleterMinLength.Default;
 	public var dotKind:AceWrapCompleterDotKind = DKNone;
 	public var colKind:AceWrapCompletionColKind = CKNone;
 	
@@ -77,7 +77,13 @@ using tools.NativeString;
 		inline function proc(show:Bool) {
 			callback(null, show ? items : noItems);
 		}
-		if (prefix.length < minLength || !modeFilter(session)) {
+		var ml = minLength;
+		switch (ml) {
+			case AceWrapCompleterMinLength.Default: {
+				ml = ui.Preferences.current.compMatchMode == SectionStart ? 1 : 2;
+			};
+		}
+		if (prefix.length < ml || !modeFilter(session)) {
 			proc(false);
 			return;
 		}
@@ -184,6 +190,10 @@ using tools.NativeString;
 	public function getDocTooltip(item:AceAutoCompleteItem):String {
 		return item.doc;
 	}
+}
+abstract AceWrapCompleterMinLength(Int) from Int to Int {
+	/// 2 normally, 1 in section match mode
+	public static inline var Default = -4;
 }
 enum abstract AceWrapCompleterDotKind(Int) {
 	var DKNone = 0;

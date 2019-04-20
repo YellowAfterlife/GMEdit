@@ -7,7 +7,10 @@ import ace.extern.*;
  * @author YellowAfterlife
  */
 class GmlGlobalField extends GmlField {
+	/// "global.name" as opposed to "name" in comp
+	public var fullComp:AceAutoCompleteItem;
 	public function new(name:String) {
 		super(name, "global");
+		this.fullComp = new AceAutoCompleteItem("global."+name, "global");
 	}
 }

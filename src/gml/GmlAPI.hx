@@ -123,6 +123,12 @@ class GmlAPI {
 	/** global field AC items */
 	public static var gmlGlobalFieldComp:AceAutoCompleteItems = [];
 	
+	/** ditto but has "global." prefix */
+	public static var gmlGlobalFullMap:Dictionary<GmlGlobalField> = new Dictionary();
+	
+	/** ditto but has "global." prefix */
+	public static var gmlGlobalFullComp:AceAutoCompleteItems = [];
+	
 	/** instance variables */
 	public static var gmlInstFieldMap:Dictionary<GmlField> = new Dictionary();
 	
@@ -162,6 +168,8 @@ class GmlAPI {
 		gmlAssetComp = new Dictionary();
 		gmlGlobalFieldMap = new Dictionary();
 		gmlGlobalFieldComp.clear();
+		gmlGlobalFullMap = new Dictionary();
+		gmlGlobalFullComp.clear();
 		gmlInstFieldMap = new Dictionary();
 		gmlInstFieldComp.clear();
 		gmlLookup = new Dictionary();

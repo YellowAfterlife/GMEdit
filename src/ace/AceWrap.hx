@@ -74,6 +74,8 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceTokenIterator = AceEditor.require("ace/token_iterator").TokenIterator;
 		var ns_autocomplete = AceEditor.require("ace/autocomplete");
 		window.AceAutocomplete = ns_autocomplete.Autocomplete;
+		window.AceFilteredList = ns_autocomplete.FilteredList;
+		AceFilteredList.init(window.AceFilteredList.prototype);
 		window.AceRange = AceEditor.require("ace/range").Range;
 		window.AceTooltip = AceEditor.require("ace/tooltip").Tooltip;
 		window.AceOOP = AceEditor.require("ace/lib/oop");

@@ -29,6 +29,9 @@ class GmlSeekData {
 	public var globalFieldList:Array<GmlGlobalField> = [];
 	public var globalFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
 	public var globalFieldComp:AceAutoCompleteItems = [];
+	// ditto but with "global." prefix
+	public var globalFullMap:Dictionary<GmlGlobalField> = new Dictionary();
+	public var globalFullComp:AceAutoCompleteItems = [];
 	
 	// instance variables assigned in this file
 	public var instFieldMap:Dictionary<GmlField> = new Dictionary();
@@ -143,6 +146,8 @@ class GmlSeekData {
 			if (--g.refs <= 0) {
 				GmlAPI.gmlGlobalFieldMap.remove(g.name);
 				GmlAPI.gmlGlobalFieldComp.remove(g.comp);
+				GmlAPI.gmlGlobalFullMap.remove(g.name);
+				GmlAPI.gmlGlobalFullComp.remove(g.fullComp);
 			}
 		}
 		for (g in next.globalFieldList) {
@@ -150,6 +155,8 @@ class GmlSeekData {
 			if (++g.refs == 1) {
 				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
 				GmlAPI.gmlGlobalFieldComp.push(g.comp);
+				GmlAPI.gmlGlobalFullMap.set(g.name, g);
+				GmlAPI.gmlGlobalFullComp.push(g.fullComp);
 			}
 		}
 		

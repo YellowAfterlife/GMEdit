@@ -29,6 +29,7 @@ class AceWrapCommonCompleters {
 	public var localTypeCompleter:AceWrapCompleter;
 	public var enumCompleter:AceWrapCompleter;
 	public var globalCompleter:AceWrapCompleter;
+	public var globalFullCompleter:AceWrapCompleter;
 	public var instCompleter:AceWrapCompleter;
 	public var keynameCompleter:AceWrapCompleter;
 	public var glslCompleter:AceWrapCompleter;
@@ -66,6 +67,10 @@ class AceWrapCommonCompleters {
 		importCompleter = new AceWrapCompleter([], excl, true, gmlf);
 		localCompleter = new AceWrapCompleter([], excl, true, gmlf);
 		lambdaCompleter = new AceWrapCompleter([], excl, true, gmlf);
+		//
+		globalFullCompleter = new AceWrapCompleter(GmlAPI.gmlGlobalFullComp, excl, true, function(q) {
+			return gmlModes[q.modeId] && ui.Preferences.current.compMatchMode == SectionStart;
+		});
 		//
 		globalCompleter = new AceWrapCompleter(GmlAPI.gmlGlobalFieldComp, ["globalfield"], false, gmlf);
 		globalCompleter.minLength = 0;
@@ -114,6 +119,7 @@ class AceWrapCommonCompleters {
 				gmlCompleter,
 				eventCompleter,
 				keynameCompleter,
+				globalFullCompleter,
 				globalCompleter,
 				instCompleter,
 				namespaceCompleter,
