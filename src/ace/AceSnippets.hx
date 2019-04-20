@@ -4,6 +4,7 @@ import electron.FileWrap;
 import haxe.DynamicAccess;
 import tools.Dictionary;
 import ace.AceWrap;
+import ace.extern.AceAutoCompleter;
 
 /**
  * ...

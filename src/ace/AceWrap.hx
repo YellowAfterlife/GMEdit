@@ -72,7 +72,8 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceEditSession = AceEditor.require("ace/edit_session").EditSession;
 		window.AceUndoManager = AceEditor.require("ace/undomanager").UndoManager;
 		window.AceTokenIterator = AceEditor.require("ace/token_iterator").TokenIterator;
-		window.AceAutocomplete = AceEditor.require("ace/autocomplete").Autocomplete;
+		var ns_autocomplete = AceEditor.require("ace/autocomplete");
+		window.AceAutocomplete = ns_autocomplete.Autocomplete;
 		window.AceRange = AceEditor.require("ace/range").Range;
 		window.AceTooltip = AceEditor.require("ace/tooltip").Tooltip;
 		window.AceOOP = AceEditor.require("ace/lib/oop");
@@ -148,19 +149,4 @@ extern typedef AceRequire = String->Dynamic;
 extern typedef AceExports = Dynamic;
 extern typedef AceModule = Dynamic;
 extern typedef AceImpl = AceRequire->AceExports->AceModule->Void;
-//
-@:native("AceAutocomplete") extern class AceAutocomplete {
-	function new();
-	var exactMatch:Bool;
-	var autoInsert:Bool;
-	var activated:Bool;
-	function showPopup(editor:AceWrap):Void;
-}
-typedef AceAutoCompleteCb = Dynamic->AceAutoCompleteItems->Void;
-interface AceAutoCompleter {
-	function getCompletions(
-		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
-	):Void;
-	function getDocTooltip(item:AceAutoCompleteItem):String;
-}
 //
