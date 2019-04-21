@@ -1,6 +1,7 @@
 package plugins;
 import gml.file.GmlFile;
 import gml.Project;
+import js.html.Element;
 import ui.ChromeTabs;
 import ui.ChromeTabs.ChromeTabsImpl;
 
@@ -62,5 +63,12 @@ extern class PluginEvents {
 	 * Dispatches after a file is saved.
 	 * `code` will contain a copy of file's new contents, if appropriate
 	 */
-	static function fileSave(e:{file:GmlFile,?code:String}):Void;
+	static function fileSave(e:{file:GmlFile, ?code:String}):Void;
+	
+	/**
+	 * Called after constructing the preferences menu.
+	 * You can use this to insert your plugin-specific DOM elements into it.
+	 * ui.Preferences offers a large set of helpers for all kinds of helpers.
+	 */
+	static function preferencesBuilt(e:{target:Element}):Void;
 }

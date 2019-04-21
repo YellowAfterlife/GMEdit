@@ -72,6 +72,24 @@
 	width: 100%;
 	white-space: nowrap;
 }
+#preferences-editor {
+	position: inherit;
+	padding: 0.5em;
+	padding-bottom: 1em;
+	border: 0;
+	box-shadow: none;
+	z-index: inherit;
+}
+#preferences-editor > fieldset + fieldset {
+	margin-top: 1em;
+}
+#preferences-editor fieldset {
+	padding: 0.5em;
+	padding-top: 0em;
+}
+#preferences-editor div[title] label {
+	cursor: help;
+}
 /* */
 .popout-window .plaintext {
 	white-space: pre-wrap;

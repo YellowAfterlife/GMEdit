@@ -31,6 +31,9 @@ class ChromeTabs {
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
 	}
+	public static inline function getTabs():ChromeTabList {
+		return cast element.querySelectorAll(".chrome-tab");
+	}
 	public static function sync(gmlFile:GmlFile, ?isNew:Bool) {
 		var prev = GmlFile.current;
 		if (prev != WelcomePage.file) {
@@ -247,4 +250,8 @@ class ChromeTabs {
 }
 extern class ChromeTab extends Element {
 	public var gmlFile:GmlFile;
+}
+extern class ChromeTabList implements ArrayAccess<ChromeTab> {
+	public var length(default, never):Int;
+	public function item(index:Int):ChromeTab
 }
