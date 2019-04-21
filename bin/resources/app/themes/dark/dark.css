@@ -78,6 +78,9 @@
 #main .ace_status-bar {
 	color: #a0a5a9;
 }
+#main .ace_status-comp {
+	border-color: #495057;
+}
 #main #ace_status-hint, #main .ace_status-bar .context-pre {
 	border-color: #495057;
 }
