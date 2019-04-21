@@ -249,16 +249,24 @@ class AceStatusBar {
 			out.className = "hint";
 			out.appendChild(document.createTextNode(doc.pre));
 			//
+			var currArg:SpanElement = null;
 			for (i in 0 ... argc) {
 				if (i > 0) out.appendChild(document.createTextNode(", "));
-				var span = document.createElement("span");
+				var span = document.createSpanElement();
 				span.classList.add("argument");
-				if (i == argCurr || i == argc - 1 && argCurr >= i) span.classList.add("current");
+				if (i == argCurr || i == argc - 1 && argCurr >= i) {
+					span.classList.add("current");
+					currArg = span;
+				}
 				span.appendChild(document.createTextNode(args[i]));
 				out.appendChild(span);
 			}
 			out.appendChild(document.createTextNode(doc.post));
 			statusHint.appendChild(out);
+			if (currArg != null) {
+				statusHint.scrollLeft = Std.int(currArg.offsetLeft + currArg.offsetWidth / 2 - statusHint.offsetWidth / 2);
+				//currArg.scrollIntoView();
+			}
 			statusHint.title = out.innerText;
 			statusHint.classList.remove("active");
 		} else statusHint.title = "";

@@ -25,19 +25,26 @@ textarea#source {
 	height: 24px;
 	border-top: 1px solid #CCCCCC;
 	padding: 0 5px;
-	overflow: hidden;
-	text-overflow: ellipsis;
 	word-break: break-all;
 	word-wrap: break-word;
 	white-space: nowrap;
+	display: flex;
 }
-#main .ace_status-bar .row, #main .ace_status-bar .col {
+#main .ace_status-bar .ace_status-hint {
+	padding-right: 5px;
+}
+#main .ace_status-bar .row,
+#main .ace_status-bar .col {
 	display: inline-block;
 	text-align: right;
 	min-width: 24px;
 }
-#main .ace_status-comp, #main .ace_status-bar .context-pre {
-	/*margin-left: 5px;*/
+#main .ace_status-comp {
+	overflow: hidden;
+	position: relative;
+}
+#main .ace_status-comp,
+#main .ace_status-bar .context-pre {
 	border-left: 1px solid #bbb;
 	padding-left: 5px;
 }
