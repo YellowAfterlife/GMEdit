@@ -161,6 +161,9 @@ class GmlFile {
 		// determine what to do with the file:
 		var kd = GmlFileKindTools.detect(path);
 		var kind = (nav != null && nav.kind != null) ? nav.kind : kd.kind;
+		if (nav != null && nav.noExtern && Std.is(kind, file.kind.misc.KExtern)) {
+			kind = file.kind.misc.KPlain.inst;
+		}
 		var data = kd.data;
 		return kind.create(name, path, data, nav);
 	}
@@ -267,4 +270,6 @@ typedef GmlFileNav = {
 	/** file kind override */
 	?kind:FileKind,
 	?showAtTop:Bool,
+	/// Opens Extern files as Plain instead
+	?noExtern:Bool,
 }

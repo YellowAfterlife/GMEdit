@@ -130,12 +130,7 @@ class TreeViewMenus {
 	//
 	static function openHere() {
 		var path = target.getAttribute(TreeView.attrPath);
-		var pair = GmlFileKindTools.detect(path);
-		if (Std.is(pair.kind, KExtern)) {
-			pair.kind = KPlain.inst;
-		}
-		var file = new GmlFile(target.title, path, pair.kind, pair.data);
-		GmlFile.openTab(file);
+		GmlFile.open(target.title, path, {noExtern:true});
 	}
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);

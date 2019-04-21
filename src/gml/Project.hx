@@ -268,7 +268,7 @@ import ui.treeview.TreeView;
 			firstLoadTabPaths = null;
 			for (path in tabPaths) try {
 				var el = TreeView.find(true, { path: path });
-				if (el != null) TreeView.handleItemClick(null, el);
+				if (el != null) TreeView.handleItemClick(null, el, {noExtern:true});
 			} catch (x:Dynamic) {
 				Main.console.error("Error recovering " + path + ":", x);
 			}

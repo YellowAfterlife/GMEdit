@@ -41,12 +41,14 @@ class GmlSeeker {
 		FileWrap.readTextFile(item.path, function ready(err:Error, text:String) {
 			if (err != null) {
 				Main.console.error("Can't index ", item.path, err);
+				runNext();
 			} else try {
 				if (runSync(item.path, text, item.main, item.kind)) {
 					runNext();
 				}
 			} catch (err:Dynamic) {
 				Main.console.error("Can't index ", item.path, err);
+				runNext();
 			}
 		});
 	}

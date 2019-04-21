@@ -4,6 +4,7 @@ import electron.FileSystem;
 import electron.Menu;
 import file.FileKind;
 import gml.file.*;
+import gml.file.GmlFile;
 import gml.Project;
 import js.RegExp;
 import js.html.CSSStyleSheet;
@@ -245,13 +246,17 @@ class TreeView {
 		r.title = name;
 		return r;
 	}
-	public static function handleItemClick(e:MouseEvent, ?el:Element) {
+	public static function handleItemClick(e:MouseEvent, ?el:Element, ?nav:GmlFileNav) {
 		if (e != null) {
 			e.preventDefault();
 			if (el == null) el = cast e.target;
 		} else if (el == null) return;
 		var openAs = (cast el:TreeViewItem).yyOpenAs;
-		var nav = openAs != null ? { kind: openAs } : null;
+		if (openAs != null) {
+			if (nav == null) {
+				nav = { kind: openAs };
+			} else nav.kind = openAs;
+		}
 		GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
 	}
 	public static inline function makeItemShared(name:String, path:String, kind:String):TreeViewItem {
