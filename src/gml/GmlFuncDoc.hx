@@ -106,25 +106,25 @@ class GmlFuncDoc {
 					// see if argument is being assigned somewhere
 					var hasSet = false;
 					var isOpt = false;
-					while (--k >= start) {
+					while (--k >= 0) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
 						if (c == "?".code) { // perhaps `name = argument_count > 1 ? argument[1]`?
 							hasSet = false;
 							// `name = argument_count > 1[ ]? argument[1]`
-							while (--k >= start) {
+							while (--k >= 0) {
 								c = chunk.fastCodeAt(k);
 								if (!c.isSpace1()) break;
 							}
 							// `name = argument_count > [1] ? argument[1]`
 							c = chunk.fastCodeAt(k);
 							if (!c.isDigit()) break;
-							while (--k >= start) {
+							while (--k >= 0) {
 								c = chunk.fastCodeAt(k);
 								if (!c.isDigit()) break;
 							}
 							// `name = argument_count >[ ]1 ? argument[1]`
-							while (k >= start) {
+							while (k >= 0) {
 								c = chunk.fastCodeAt(k);
 								if (c.isSpace1()) k--; else break;
 							}
@@ -132,20 +132,20 @@ class GmlFuncDoc {
 							if (chunk.fastCodeAt(k) == "=".code) k--;
 							if (chunk.fastCodeAt(k) == ">".code) k--; else break;
 							// `name = argument_count[ ]> 1 ? argument[1]`
-							while (k >= start) {
+							while (k >= 0) {
 								c = chunk.fastCodeAt(k);
 								if (c.isSpace1()) k--; else break;
 							}
 							// `name = [argument_count] > 1 ? argument[1]`
 							var acEnd = k + 1;
 							if (chunk.fastCodeAt(k) != "t".code) break;
-							while (--k >= start) {
+							while (--k >= 0) {
 								c = chunk.fastCodeAt(k);
 								if (!c.isIdent1()) break;
 							}
 							if (acEnd - k != 15 || chunk.substring(k + 1, acEnd) != "argument_count") break;
 							// `name =[ ]argument_count > 1 ? argument[1]`
-							while (k >= start) {
+							while (k >= 0) {
 								c = chunk.fastCodeAt(k);
 								if (c.isSpace1()) k--; else break;
 							}
@@ -157,13 +157,13 @@ class GmlFuncDoc {
 						break;
 					}
 					var name:String = null;
-					if (hasSet) while (--k >= start) {
+					if (hasSet) while (--k >= 0) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
 						if (!c.isIdent1()) break;
 						var nameEnd = k + 1;
 						var nameStart = 0;
-						while (--k >= start) {
+						while (--k >= 0) {
 							c = chunk.fastCodeAt(k);
 							if (c.isIdent1()) continue;
 							nameStart = k + 1;
