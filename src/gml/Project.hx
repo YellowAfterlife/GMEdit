@@ -245,33 +245,48 @@ import ui.treeview.TreeView;
 		}
 		TreeView.saveOpen();
 		var tabPaths:Array<String> = [];
+		var activeTab:Null<Int> = null;
 		for (_tab in ChromeTabs.element.querySelectorAll(".chrome-tab")) try {
 			var tab:ChromeTab = cast _tab;
 			var path = tab.gmlFile.path;
-			if (path != null) tabPaths.push(path);
+			if (path != null) {
+				if (tab.classList.contains("chrome-tab-current")) activeTab = tabPaths.length;
+				tabPaths.push(path);
+			}
 		} catch (_:Dynamic) { }
 		var data:ProjectState = {
 			treeviewScrollTop: TreeView.element.scrollTop,
 			treeviewOpenNodes: TreeView.openPaths,
 			tabPaths: tabPaths,
+			activeTab: activeTab,
 		};
+		PluginEvents.projectStateSave({project:this, state:data});
 		window.localStorage.setItem("project:" + path, Json.stringify(data));
 		window.localStorage.setItem("@project:" + path, "" + Date.now().getTime());
 	}
-	public var firstLoadTabPaths:Array<String> = null;
+	public var firstLoadState:ProjectState = null;
 	public function finishedIndexing() {
 		nameNode.innerText = displayName;
 		if (current.hasGMLive) ui.GMLive.updateAll();
 		// try restoring tabs:
-		var tabPaths = firstLoadTabPaths;
-		if (tabPaths != null) {
-			firstLoadTabPaths = null;
-			for (path in tabPaths) try {
-				var el = TreeView.find(true, { path: path });
-				if (el != null) TreeView.handleItemClick(null, el, {noExtern:true});
-			} catch (x:Dynamic) {
-				Main.console.error("Error recovering " + path + ":", x);
+		var state = firstLoadState;
+		if (state != null) {
+			firstLoadState = null;
+			var tabPaths = state.tabPaths;
+			if (tabPaths != null) {
+				var activeFile = null;
+				for (i in 0 ... tabPaths.length) try {
+					var el = TreeView.find(true, { path: tabPaths[i] });
+					if (el != null) {
+						var file = TreeView.handleItemClick(null, el, {noExtern:true});
+						if (i == state.activeTab) activeFile = file;
+					}
+				} catch (x:Dynamic) {
+					Main.console.error("Error recovering " + path + ":", x);
+				}
+				if (activeFile != null) activeFile.tabEl.click();
 			}
+			PluginEvents.projectStateRestore({project:this, state:state});
 		}
 	}
 	//
@@ -341,9 +356,7 @@ import ui.treeview.TreeView;
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
 			if (state != null) {
 				TreeView.element.scrollTop = state.treeviewScrollTop;
-				if (first) {
-					firstLoadTabPaths = state.tabPaths;
-				}
+				if (first) firstLoadState = state;
 			}
 			if (GmlSeeker.itemsLeft == 0) {
 				nameNode.innerText = displayName;
@@ -570,6 +583,7 @@ typedef ProjectState = {
 	treeviewScrollTop:Int,
 	treeviewOpenNodes:Array<String>,
 	tabPaths:Array<String>,
+	?activeTab:Int,
 }
 typedef ProjectDirInfo = {
 	fileName:String,

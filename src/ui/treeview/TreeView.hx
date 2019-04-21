@@ -246,18 +246,18 @@ class TreeView {
 		r.title = name;
 		return r;
 	}
-	public static function handleItemClick(e:MouseEvent, ?el:Element, ?nav:GmlFileNav) {
+	public static function handleItemClick(e:MouseEvent, ?el:Element, ?nav:GmlFileNav):GmlFile {
 		if (e != null) {
 			e.preventDefault();
 			if (el == null) el = cast e.target;
-		} else if (el == null) return;
+		} else if (el == null) return null;
 		var openAs = (cast el:TreeViewItem).yyOpenAs;
 		if (openAs != null) {
 			if (nav == null) {
 				nav = { kind: openAs };
 			} else nav.kind = openAs;
 		}
-		GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
+		return GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
 	}
 	public static inline function makeItemShared(name:String, path:String, kind:String):TreeViewItem {
 		var r = makeItem(name);

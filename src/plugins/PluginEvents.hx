@@ -35,6 +35,19 @@ extern class PluginEvents {
 	static function projectClose(e:{project:Project}):Void;
 	
 	/**
+	 * Dispatches when saving the project state (treeview, open tabs).
+	 * You can save your plugin-specific per-project state here.
+	 */
+	static function projectStateSave(e:{project:Project, state:ProjectState}):Void;
+	
+	/**
+	 * Dispatches when restoring the project state.
+	 * This happens when the project is fully loaded and tabs were re-opened.
+	 * You can load your previously-saved plugin-specific per-project state here.
+	 */
+	static function projectStateRestore(e:{project:Project, state:ProjectState}):Void;
+	
+	/**
 	 * Dispatches when active file (read: tab) changes
 	 */
 	static function activeFileChange(e:{file:GmlFile}):Void;
