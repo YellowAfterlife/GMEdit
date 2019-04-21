@@ -42,6 +42,7 @@ using tools.HtmlTools;
 	public static var cbCheckScripts:InputElement;
 	public static var cbCheckHeaders:InputElement;
 	public static var cbCheckTimelines:InputElement;
+	public static var cbCheckRooms:InputElement;
 	public static var cbCheckMacros:InputElement;
 	public static var cbCheckShaders:InputElement;
 	public static var cbCheckExtensions:InputElement;
@@ -276,6 +277,7 @@ using tools.HtmlTools;
 			checkScripts: true,
 			checkTimelines: true,
 			checkObjects: true,
+			checkRooms: true,
 			checkMacros: true,
 			checkShaders: false,
 			checkExtensions: true,
@@ -320,6 +322,7 @@ using tools.HtmlTools;
 			checkHeaders: cbCheckHeaders.checked,
 			checkComments: cbCheckComments.checked,
 			checkTimelines: cbCheckTimelines.checked,
+			checkRooms: cbCheckRooms.checked,
 			checkMacros: cbCheckMacros.checked,
 			checkShaders: cbCheckShaders.checked,
 			checkExtensions: cbCheckExtensions.checked,
@@ -367,9 +370,11 @@ using tools.HtmlTools;
 		cbCheckHeaders = element.querySelectorAuto('#global-search-check-headers');
 		cbCheckComments = element.querySelectorAuto('#global-search-check-comments');
 		cbCheckTimelines = element.querySelectorAuto('#global-search-check-timelines');
+		cbCheckRooms = element.querySelectorAuto('#global-search-check-rooms');
 		cbCheckMacros = element.querySelectorAuto('#global-search-check-macros');
 		cbCheckShaders = element.querySelectorAuto('#global-search-check-shaders');
 		cbCheckExtensions = element.querySelectorAuto('#global-search-check-extensions');
+		cbCheckExtensions = element.querySelectorAuto('#global-search-check-rooms');
 		cbExpandLambdas = element.querySelectorAuto('#global-search-expand-lambdas');
 		cbRegExp = element.querySelectorAuto('#global-search-regexp');
 		//}
@@ -409,6 +414,7 @@ typedef GlobalSearchOpt = {
 	checkComments:Bool,
 	checkTimelines:Bool,
 	checkMacros:Bool,
+	checkRooms:Bool,
 	checkShaders:Bool,
 	checkExtensions:Bool,
 	expandLambdas:Bool,

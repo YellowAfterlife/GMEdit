@@ -128,6 +128,20 @@ class YySearcher {
 						next();
 					});
 				};
+				case "GMRoom": if (opt.checkRooms) {
+					resName = "roomCreationCodes(" + rxName.replace(res.resourcePath, "$1") + ")";
+					resFull = Path.directory(res.resourcePath) + "\\RoomCreationCode.gml";
+					filesLeft += 1;
+					pj.readTextFile(resFull, function(error, code) {
+						if (error == null) {
+							var gml1 = fn(resName, resFull, code);
+							if (gml1 != null && gml1 != code) {
+								FileWrap.writeTextFileSync(resFull, gml1);
+							}
+						}
+						next();
+					});
+				};
 			} // switch (can continue)
 		} // for
 		next();
