@@ -253,5 +253,5 @@ extern class ChromeTab extends Element {
 }
 extern class ChromeTabList implements ArrayAccess<ChromeTab> {
 	public var length(default, never):Int;
-	public function item(index:Int):ChromeTab
+	public function item(index:Int):ChromeTab;
 }
