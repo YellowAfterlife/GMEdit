@@ -55,6 +55,8 @@ import ui.treeview.TreeView;
 	public var dir:String;
 	/** whether this project is stored in memory rather than on disk */
 	public var isVirtual:Bool;
+	/** current configuration name */
+	public var config:String = "default";
 	
 	/** for room speed detection */
 	public var gmxFirstRoomName:String = null;

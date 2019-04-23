@@ -119,6 +119,7 @@ textarea#source {
 #app .ace-tm .ace_extfunction,
 #app .ace-tm .ace_extmacro,
 #app .ace-tm .ace_macroname,
+#app .ace-tm .ace_configname,
 #app .ace-tm .ace_enum,
 #app .ace-tm .ace_enumfield,
 #app .ace-tm .ace_actionname,

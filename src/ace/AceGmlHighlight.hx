@@ -268,6 +268,7 @@ using tools.NativeString;
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
 			rDefine, rAction, rKeyEvent, rEvent, rMoment, rTarget,
+			rxRule(["preproc.macro", "configname", "punctuation.operator", "macroname"], ~/(#macro[ \t]+)(\w+)(:)(\w+)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
 			rulePairs([
 				"#import\\s+", "preproc.import",

@@ -330,13 +330,24 @@ class GmlSeeker {
 					} else cfg = null;
 					// value:
 					p = q.pos;
-					q.skipLine();
+					do {
+						q.skipLine();
+						if (q.peek( -1) == "\\".code) {
+							q.skipLineEnd();
+						} else break;
+					} while (q.loop);
 					s = q.substring(p, q.pos);
-					// only add default-config macros for now:
-					if (cfg == null) {
-						var m = new GmlMacro(name, orig, s);
-						out.kindList.push(name);
-						out.kindMap.set(name, "macro");
+					// we don't currently support configuration nesting
+					if (cfg == null || cfg == Project.current.config) {
+						var m = new GmlMacro(name, orig, s, cfg);
+						var old = out.macroMap[name];
+						if (old != null) {
+							out.compList.remove(out.compMap[name]);
+							out.macroList.remove(old);
+						} else {
+							out.kindList.push(name);
+							out.kindMap.set(name, "macro");
+						}
 						out.compList.push(m.comp);
 						out.compMap.set(name, m.comp);
 						out.macroList.push(m);

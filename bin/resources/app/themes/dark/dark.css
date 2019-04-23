@@ -159,6 +159,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #app .ace-tm .ace_asset,
 #app .ace-tm .ace_macro,
+#app .ace-tm .ace_configname,
 #app .ace-tm .ace_macroname,
 #app .ace-tm .ace_enum,
 #app .ace-tm .ace_enumfield,
