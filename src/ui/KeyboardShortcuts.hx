@@ -244,7 +244,7 @@ class KeyboardShortcuts {
 				if (tk == null) return;
 				var sb = editor.statusBar;
 				if (sb == null) return;
-				sb.setText(tk.type);
+				sb.setText(haxe.Json.stringify(tk));
 			});
 		};
 	}
