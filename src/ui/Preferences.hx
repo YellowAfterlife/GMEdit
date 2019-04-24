@@ -257,8 +257,10 @@ class Preferences {
 			console.error("Error loading preferences: ", e);
 		}
 		// migrations:
-		if (pref.compMatchMode == null && pref.compExactMatch != null) {
-			pref.compMatchMode = pref.compExactMatch ? PrefMatchMode.StartsWith : PrefMatchMode.AceSmart;
+		if (pref != null) {
+			if (pref.compMatchMode == null && pref.compExactMatch != null) {
+				pref.compMatchMode = pref.compExactMatch ? PrefMatchMode.StartsWith : PrefMatchMode.AceSmart;
+			}
 		}
 		// default settings:
 		var def:PrefData = {
