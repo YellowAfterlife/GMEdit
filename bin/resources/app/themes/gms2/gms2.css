@@ -82,19 +82,7 @@
 	background-image: url(tree.png);
 }
 
-#preferences-window {
-	right: 0;
-	top: 32px;
-	bottom: 0;
-	border: none;
-	padding: 0 1em;
-	padding-top: 40px;
-	width: 248px;
-	user-select: none;
-	cursor: default;
-}
-
-#preferences-window:after {
+/*#preferences-window:after {
 	content: 'Preferences';
 	position: absolute;
 	top: 0;
@@ -106,14 +94,11 @@
 	justify-content: center;
 	align-items: center;
 	color: #0B9B80;
-}
-
-#preferences-window > div > div:nth-child(5) {
-	margin-bottom: 1em;
-}
+}*/
 
 #preferences-window fieldset {
 	margin-bottom: 1em;
+	/*display: flex;*/
 }
 
 #preferences-window > div > div.select {
@@ -151,7 +136,7 @@
 }
 
 #preferences-window label {
-	display: flex;
+	/*display: flex;*/
 	align-items: center;
 }
 
@@ -162,5 +147,5 @@
 }
 
 .popout-window fieldset br {
-	display: none;
+	/*display: none;*/
 }
