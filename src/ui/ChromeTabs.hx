@@ -31,7 +31,7 @@ class ChromeTabs {
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
 	}
-	public static inline function getTabs():ChromeTabList {
+	@:keep public static inline function getTabs():ChromeTabList {
 		return cast element.querySelectorAll(".chrome-tab");
 	}
 	public static function sync(gmlFile:GmlFile, ?isNew:Bool) {
