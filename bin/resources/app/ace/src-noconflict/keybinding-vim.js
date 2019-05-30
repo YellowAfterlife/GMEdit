@@ -5448,7 +5448,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
           cm.curOp.cursorActivity = false;
       }, true);
     }
-    if (isHandled && !vim.visualMode && !vim.insert)
+    if (!isHandled && !vim.visualMode && !vim.insert)
       handleExternalSelection(cm, vim);
     return isHandled;
   }
