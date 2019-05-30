@@ -374,7 +374,7 @@ using tools.HtmlTools;
 		cbCheckMacros = element.querySelectorAuto('#global-search-check-macros');
 		cbCheckShaders = element.querySelectorAuto('#global-search-check-shaders');
 		cbCheckExtensions = element.querySelectorAuto('#global-search-check-extensions');
-		cbCheckExtensions = element.querySelectorAuto('#global-search-check-rooms');
+		cbCheckRooms = element.querySelectorAuto('#global-search-check-rooms');
 		cbExpandLambdas = element.querySelectorAuto('#global-search-expand-lambdas');
 		cbRegExp = element.querySelectorAuto('#global-search-regexp');
 		//}
