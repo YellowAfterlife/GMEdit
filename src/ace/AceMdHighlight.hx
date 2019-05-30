@@ -50,7 +50,13 @@ using tools.NativeString;
 		//
 		rBase.push(rxPush("md-url-start", ~/\[/, "md.url"));
 		if (dmd) {
-			rBase.push(rxPush("md-pre-start", ~/```(?:\B|gml\b)/, "md.gml"));
+			rBase.push(rxPush(function(_) {
+				if (GmlAPI.version == GmlVersion.none) {
+					GmlAPI.version = GmlVersion.v2;
+					GmlAPI.init();
+				}
+				return "md-pre-start";
+			}, ~/```(?:\B|gml\b)/, "md.gml"));
 			rBase.push(rxPush([
 				"md-pre-start", "md-url"
 			], ~/(```\w*md\b\s*)(\w*)/, "md.md"));

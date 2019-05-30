@@ -36,7 +36,7 @@ using tools.NativeString;
 		var fakeMultiline:Bool = false;
 		var fieldDef = "localfield";
 		if (Std.is(editor.kind, KGmlSearchResults)) fakeMultiline = true;
-		if (Std.is(editor.kind, KMarkdown)) fieldDef = "text";
+		if (Std.is(editor.kind, KMarkdown)) fieldDef = "md-pre-gml";
 		//
 		function rwnext(ruleToCopy:AceLangRule, newNext:String):AceLangRule {
 			return { token: ruleToCopy.token, regex: ruleToCopy.regex, next: newNext };
