@@ -64,7 +64,9 @@ import ace.AceMacro.jsRx;
 			addPrim("physics_kinematic", this.physicsKinematic);
 			addPrim("physics_shape", this.physicsShape);
 			var pts = [];
-			for (pt in this.physicsShapePoints) pts.push(pt.x + ',' + pt.y);
+			if (this.physicsShapePoints != null) {
+				for (pt in this.physicsShapePoints) pts.push(pt.x + ',' + pt.y);
+			}
 			addPrim("physics_shape_data", '"' + pts.join(";") + '"');
 		}
 		//
