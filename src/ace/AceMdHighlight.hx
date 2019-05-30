@@ -53,7 +53,7 @@ using tools.NativeString;
 			rBase.push(rxPush("md-pre-start", ~/```(?:\B|gml\b)/, "md.gml"));
 			rBase.push(rxPush([
 				"md-pre-start", "md-url"
-			], ~/(```setmd\b\s*)(\w*)/, "md.md"));
+			], ~/(```\w*md\b\s*)(\w*)/, "md.md"));
 			rBase.push(rxPush(["md-expr-start", "curly.paren.lparen"], ~/(\$)(\{)/, "md.expr"));
 		} else rBase.push(rxPush("md-pre-start", ~/```gml\b/, "md.gml"));
 		rBase.push(rxPush("md-pre-start", ~/```(?:haxe\b|exec\b)/, "md.hx"));
