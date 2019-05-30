@@ -109,19 +109,19 @@ using tools.NativeString;
 		];
 		rules["md.tt"] = [rEsc, rxRule("md-tt", ~/(?:`|$)/, "pop"), rdef("md-tt")];
 		//
-		function addBlock(substart:String, subset:AceHighlightRuleset) {
+		function addBlock(substart:String, def:String, subset:AceHighlightRuleset) {
 			var start = subset["start"].slice(0);
 			start.unshift(rxRule("md-pre-end", ~/```/, "pop"));
 			start.pop(); // remove the default rule
-			start.push(rdef("md-pre-gml"));
+			start.push(rdef(def));
 			for (key in subset.keys()) if (key != "start") rules[key] = subset[key];
 			rules[substart] = start;
 		}
 		var rHaxe = AceHxHighlight.makeRules(this);
-		addBlock("md.gml", AceGmlHighlight.makeRules(editor));
-		addBlock("md.hx", rHaxe);
-		addBlock("md.glsl", ShaderHighlight.makeRules(this, GLSL));
-		addBlock("md.hlsl", ShaderHighlight.makeRules(this, HLSL));
+		addBlock("md.gml", "md-pre-gml", AceGmlHighlight.makeRules(editor));
+		addBlock("md.hx", "md-pre-hx", rHaxe);
+		addBlock("md.glsl", "md-pre-glsl", ShaderHighlight.makeRules(this, GLSL));
+		addBlock("md.hlsl", "md-pre-hlsl", ShaderHighlight.makeRules(this, HLSL));
 		if (dmd) rules["md.expr"] = [ // inline Haxe expression
 			rxPush("curly.paren.lparen", ~/\{/, "md.expr"),
 			rxRule("curly.paren.rparen", ~/\}/, "pop"),
