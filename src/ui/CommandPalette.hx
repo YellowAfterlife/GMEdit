@@ -1,6 +1,7 @@
 package ui;
 import js.html.OptionElement;
 import tools.NativeString;
+import ui.project.ProjectProperties;
 
 /**
  * ...
@@ -23,6 +24,10 @@ class CommandPalette {
 		add({
 			name: "Preferences",
 			exec: function() Preferences.open()
+		});
+		add({
+			name: "Project properties",
+			exec: function() ProjectProperties.open()
 		});
 	}
 }

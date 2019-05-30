@@ -222,7 +222,7 @@ class Preferences {
 		lb.appendChild(createShellAnchor(url, label));
 		lb.appendChild(document.createTextNode(")"));
 	}
-	private static function createValidIdFromString(str:String) {
+	public static function createValidIdFromString(str:String) {
 		//Lower case everything
 		str = str.toLowerCase();
 		//Make alphanumeric (removes all other characters)

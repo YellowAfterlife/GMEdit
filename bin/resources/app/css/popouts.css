@@ -72,7 +72,7 @@
 	width: 100%;
 	white-space: nowrap;
 }
-#preferences-editor {
+#preferences-editor, .project-properties {
 	position: inherit;
 	padding: 0.5em;
 	padding-bottom: 1em;
@@ -80,14 +80,17 @@
 	box-shadow: none;
 	z-index: inherit;
 }
-#preferences-editor > fieldset + fieldset {
+#preferences-editor > fieldset + fieldset,
+.project-properties > fieldset + fieldset {
 	margin-top: 1em;
 }
-#preferences-editor fieldset {
+#preferences-editor fieldset,
+.project-properties > fieldset {
 	padding: 0.5em;
 	padding-top: 0em;
 }
-#preferences-editor div[title] label {
+#preferences-editor div[title] label,
+.project-properties div[title] label {
 	cursor: help;
 }
 /* */

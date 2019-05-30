@@ -29,6 +29,8 @@ import ui.ChromeTabs;
 using tools.PathTools;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
+import ui.project.ProjectProperties;
+import ui.project.ProjectData;
 import ui.treeview.TreeView;
 
 /**
@@ -79,6 +81,9 @@ import ui.treeview.TreeView;
 	public var objectChildren:Dictionary<Array<String>>;
 	//
 	public var hasGMLive:Bool = false;
+	
+	public var properties:ProjectData;
+	public var propertiesElement:DivElement = null;
 	
 	/** whether X is a lambda script */
 	public var lambdaMap:Dictionary<Bool> = new Dictionary();
@@ -347,6 +352,7 @@ import ui.treeview.TreeView;
 			GmlAPI.version = version;
 			var state:ProjectState = null;
 			if (first) {
+				properties = ProjectProperties.load(this);
 				GmlSeekData.map = new Dictionary();
 				try {
 					var stateText = window.localStorage.getItem("project:" + path);

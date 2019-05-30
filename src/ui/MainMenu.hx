@@ -7,6 +7,7 @@ import gml.Project;
 import haxe.io.Path;
 import tools.NativeString;
 import ui.liveweb.*;
+import ui.project.ProjectProperties;
 import yy.YyZip;
 import Main.window;
 
@@ -150,6 +151,9 @@ class MainMenu {
 					electron.Shell.openExternal(url);
 				} else window.open(url, "_blank");
 			}
+		}));
+		menu.append(new MenuItem({ label: "Project properties",
+			click: function() ProjectProperties.open()
 		}));
 		menu.append(new MenuItem({ label: "Preferences",
 			click: function() Preferences.open()

@@ -71,4 +71,11 @@ extern class PluginEvents {
 	 * ui.Preferences offers a large set of helpers for all kinds of helpers.
 	 */
 	static function preferencesBuilt(e:{target:Element}):Void;
+	
+	/**
+	 * Called after constructing the preferences menu.
+	 * You can use this to insert your plugin-specific DOM elements into it.
+	 * ui.Preferences is similarly used here.
+	 */
+	static function projectPropertiesBuilt(e:{project:Project,target:Element}):Void;
 }

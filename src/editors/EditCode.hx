@@ -12,6 +12,7 @@ import gml.file.*;
 import gml.GmlAPI;
 import gml.GmlVersion;
 import gml.GmlImports;
+import gml.Project;
 import electron.FileWrap;
 import electron.FileSystem;
 import parsers.*;
@@ -62,7 +63,9 @@ class EditCode extends Editor {
 		session = AceTools.createSession(file.code, { path: modePath, version: GmlAPI.version });
 		AceTools.bindSession(session, this);
 		//
-		if (Preferences.current.detectTab) {
+		if (Project.current != null && Project.current.properties.indentWithTabs != null) {
+			session.setOption("useSoftTabs", !Project.current.properties.indentWithTabs);
+		} else if (Preferences.current.detectTab) {
 			if (NativeString.contains(file.code, "\n\t")) {
 				session.setOption("useSoftTabs", false);
 			} else if (NativeString.contains(file.code, "\n  ")) {
@@ -72,6 +75,9 @@ class EditCode extends Editor {
 			}
 		} else {
 			session.setOption("useSoftTabs", Preferences.current.tabSpaces);
+		}
+		if (Project.current != null && Project.current.properties.indentSize != null) {
+			session.setOption("tabSize", Std.int(Project.current.properties.indentSize));
 		}
 		Preferences.hookSetOption(session);
 		if (modePath == "ace/mode/javascript") {
