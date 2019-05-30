@@ -90,12 +90,23 @@ class GmlExtArgs {
 				args += " " + s;
 				q.skipSpaces0();
 				// type?
-				if (q.peek() == "/".code && q.peek(1) == "*".code) {
+				if (q.peek() == "/".code && q.peek(1) == "*".code) { // `var a/*:t*/`
 					var typePos = q.pos;
 					q.skip(2);
 					q.skipComment();
 					var type = GmlExtImport.rxLocalType.exec(q.substring(typePos, q.pos));
 					if (type != null) args += ":" + type[1];
+					q.skipSpaces0();
+				} else if (q.peek() == ":".code) { // `var a:t`
+					var typePos = q.pos;
+					q.skip();
+					q.skipSpaces0();
+					c = q.peek(); if (!c.isIdent0()) return null;
+					q.skipIdent1();
+					if (q.peek() == "<".code) { // `var a:T<...>`
+						while (q.loop) if (q.read() == ">".code) break;
+					}
+					args += q.substring(typePos, q.pos);
 					q.skipSpaces0();
 				}
 				// match `=`:
