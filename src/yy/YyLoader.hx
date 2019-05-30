@@ -36,9 +36,15 @@ class YyLoader {
 		var rxName = Project.rxName;
 		for (res in yyProject.resources) {
 			var key = res.Key;
-			resources.set(key, res);
 			var val = res.Value;
 			val.resourceName = rxName.replace(val.resourcePath, "$1");
+			if (resources.exists(key)) {
+				Main.console.error('Resource ID collision for $key!'
+					+ '\nFirst path: ' + resources[key].Value.resourcePath
+					+ '\nSecond path: ' + val.resourcePath
+					+ '\nGMS2 will deny to load your project unless you fix this.');
+			}
+			resources.set(key, res);
 			if (val.resourceType == "GMFolder") {
 				var view:YyView = project.readJsonFileSync(val.resourcePath);
 				val.resourceName = view.folderName;
