@@ -52,7 +52,7 @@ class FileDrag {
 				if (file != null) {
 					var reader = new js.html.FileReader();
 					reader.onloadend = function(_) {
-						var abuf:js.html.ArrayBuffer = reader.result;
+						var abuf:js.lib.ArrayBuffer = reader.result;
 						var bytes = haxe.io.Bytes.ofData(abuf);
 						yy.YyZip.open(name, bytes);
 					};

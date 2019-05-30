@@ -5,7 +5,7 @@ import js.html.FormElement;
 import js.html.InputElement;
 import js.html.File;
 import js.html.KeyboardEvent;
-import js.html.Uint8Array;
+import js.lib.Uint8Array;
 import Main.document;
 
 /**

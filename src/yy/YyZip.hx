@@ -162,7 +162,7 @@ class YyZip extends Project {
 			//
 			var reader = new js.html.FileReader();
 			reader.onloadend = function(_) {
-				var abuf:js.html.ArrayBuffer = reader.result;
+				var abuf:js.lib.ArrayBuffer = reader.result;
 				var bytes = haxe.io.Bytes.ofData(abuf);
 				var zipFile = new YyZipFile(rel);
 				zipFile.setBytes(bytes);
