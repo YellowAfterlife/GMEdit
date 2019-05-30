@@ -2,9 +2,11 @@ package plugins;
 import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
+import haxe.DynamicAccess;
 import js.Error;
 import js.html.ErrorEvent;
 import plugins.PluginAPI;
+import tools.Dictionary;
 
 /**
  * ...
@@ -12,11 +14,11 @@ import plugins.PluginAPI;
  */
 class PluginManager {
 	/// name -> state
-	public static var pluginMap:Map<String, PluginState> = new Map();
+	public static var pluginMap:Dictionary<PluginState> = new Dictionary();
 	/// name -> containing directory
-	private static var pluginDir:Map<String, String> = new Map();
+	private static var pluginDir:Dictionary<String> = new Dictionary();
 	/// name from config.json -> state
-	public static var registerMap:Map<String, PluginState> = new Map();
+	public static var registerMap:Dictionary<PluginState> = new Dictionary();
 	
 	public static function load(name:String, ?cb:PluginCallback) {
 		var state = pluginMap[name];
@@ -122,6 +124,15 @@ class PluginManager {
 		try {
 			PluginAPI.extend = untyped __js__("$extend");
 		} catch (x:Dynamic) {
+			// this will not work for ES6 classes
+			/*PluginAPI.extend = function(from:Dynamic, fields:Dynamic) {
+				var proto = js.Object.create(from);
+				js.Syntax.code("for (var fd in {1}) {0}[fd] = {1}[fd];", proto, fields);
+				if (js.Syntax.strictEq(fields.toString, js.Object.prototype.toString)) {
+					proto.toString = fields.toString;
+				}
+				return proto;
+			}*/
 			Main.console.error("Couldn't expose $extend:", x);
 		}
 		try {
