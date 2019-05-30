@@ -321,7 +321,7 @@ using tools.NativeString;
 			rxRule("square.paren.rparen", ~/\]/),
 			rxRule("paren.lparen", ~/\(/),
 			rxRule("paren.rparen", ~/\)/),
-			rxRule("text", ~/\s+/),
+			rdef("text"),
 		]); //}
 		//
 		var rEnum = [ //{
@@ -334,6 +334,7 @@ using tools.NativeString;
 			rxRule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "pop"),
 			rxRule("curly.paren.rparen", ~/\}/, "pop"),
 		].concat(rBase); //}
+		if (fakeMultiline) rEnum.unshift(rxRule("text", ~/$/, "pop"));
 		var rEnumValue = [ //{
 			rxRule("punctuation.operator", ~/,/, "pop"),
 			rxRule("curly.paren.rparen", ~/\}/, function(currentState, stack:Array<String>) {
