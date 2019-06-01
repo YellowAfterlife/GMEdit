@@ -43,7 +43,11 @@ class AceMacro {
 		#end
 	}
 	public static inline function jsOr<T>(a:T, b:T):T {
+		#if !macro
+		return js.Syntax.code("({0} || {1})", a, b);
+		#else
 		return untyped (a || b);
+		#end
 	}
 	/** (a, b, c) -> (a || b) || c */
 	public static macro function jsOrx<T>(exprs:Array<ExprOf<T>>):ExprOf<T> {

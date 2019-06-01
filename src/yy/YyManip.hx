@@ -22,8 +22,9 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class YyManip {
-	static function resolve(q:TreeViewItemBase, ?py:YyProject) {
+	static function resolve(q:TreeViewItemBase) {
 		var pj = Project.current;
+		var py = q.py;
 		if (py == null) py = pj.readJsonFileSync(pj.name);
 		var vp = "views/" + q.tvDir.getAttribute(TreeView.attrYYID) + ".yy";
 		var vy:YyView = pj.readJsonFileSync(vp);
@@ -82,6 +83,7 @@ class YyManip {
 		}
 		//
 		var nJson:Dynamic;
+		q.outGUID = ni;
 		if (q.mkdir) {
 			var nView:YyView = {
 				id: ni,
@@ -211,7 +213,9 @@ class YyManip {
 		//
 		var nJsonStr = NativeString.yyJson(nJson);
 		pj.writeTextFileSync(nPath, nJsonStr);
-		pj.writeTextFileSync(pj.name, NativeString.yyJson(py));
+		if (d.py == null) {
+			pj.writeTextFileSync(pj.name, NativeString.yyJson(py));
+		}
 		var ntv:Element = TreeViewItemMenus.createImplTV(q);
 		ntv.setAttribute(TreeView.attrYYID, ni);
 		if (q.mkdir) {
@@ -229,7 +233,9 @@ class YyManip {
 				}
 				var src = kind == "script" ? "" : nJsonStr;
 				if (fk != null) parsers.GmlSeeker.runSync(pj.fullPath(q.npath), src, q.name, fk);
-				gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
+				if (q.openFile != false) {
+					gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
+				}
 			};
 			default: d.pj.reload();
 		}
@@ -248,6 +254,7 @@ class YyManip {
 		var res = d.py.resources;
 		// remove a directory and all items (we don't need to worry about perms)
 		function removeDirRec(path:String) {
+			if (!pj.existsSync(path)) return;
 			for (pair in pj.readdirSync(path)) {
 				if (pair.isDirectory) {
 					removeDirRec(pair.relPath);
@@ -276,7 +283,9 @@ class YyManip {
 					try {
 						var vi:YyView = pj.readJsonFileSync(path);
 						for (idc in vi.children) removeItemRec(idc);
-						pj.unlinkSync(path);
+						try {
+							pj.unlinkSync(path);
+						} catch (_:Dynamic) {}
 					} catch (x:Dynamic) {
 						Main.console.log(x);
 					}

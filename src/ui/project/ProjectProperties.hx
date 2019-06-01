@@ -9,6 +9,7 @@ import js.html.InputElement;
 import tools.Dictionary;
 import tools.NativeObject;
 import electron.FileWrap;
+import ace.AceMacro.jsOr;
 using tools.HtmlTools;
 
 /**
@@ -60,7 +61,7 @@ class ProjectProperties {
 		inline function findInput(e:Element):InputElement {
 			return e.querySelectorAuto("input", InputElement);
 		}
-		//
+		//{
 		fs = Preferences.addGroup(out, "Code editor (these take effect for newly opened editors)");
 		el = Preferences.addInput(fs, "Indentation size override",
 			(d.indentSize != null ? "" + d.indentSize : ""),
@@ -77,7 +78,24 @@ class ProjectProperties {
 			d.indentWithTabs = v == indentModes[0] ? null : v == indentModes[1];
 			autosave();
 		});
-		//
+		//}
+		//{
+		fs = Preferences.addGroup(out, "Syntax extensions");
+		var lambdaModes = [
+			"Default (extension)",
+			"Compatible (extension macros)",
+			"Scripts (GMS2 only)",
+		];
+		el = Preferences.addRadios(fs, "#lambda mode",
+			lambdaModes[jsOr(d.lambdaMode, Default)], lambdaModes,
+		function(s) {
+			d.lambdaMode = lambdaModes.indexOf(s);
+			autosave();
+		});
+		if (project.version != v2) {
+			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
+		}
+		//}
 		plugins.PluginEvents.projectPropertiesBuilt({
 			project: project,
 			target: el,
@@ -88,7 +106,7 @@ class ProjectProperties {
 		var pj = Project.current;
 		for (tab in ChromeTabs.getTabs()) {
 			if (tab.gmlFile.kind != kind) continue;
-			if ((cast tab.gmlFile.editor:KProjectPropertiesEditor).project == pj) continue;
+			if ((cast tab.gmlFile.editor:KProjectPropertiesEditor).project != pj) continue;
 			tab.click();
 			return;
 		}

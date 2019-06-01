@@ -231,6 +231,12 @@ typedef TreeViewItemBase = {
 	tvRef:Element,
 	chain:Array<String>, last:String,
 	?pj:Project,
+	/** if set, project JSON should be modified instead of reading-flushing */
+	?py:yy.YyProject,
+	/** */
+	?outGUID:yy.YyGUID,
+	/** */
+	?openFile:Bool
 };
 typedef TreeViewItemCreate = {
 	>TreeViewItemBase,

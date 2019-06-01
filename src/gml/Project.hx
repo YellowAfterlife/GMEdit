@@ -14,6 +14,7 @@ import parsers.GmlSeekData;
 import parsers.GmlSeeker;
 import raw.GmlLoader;
 import tools.Dictionary;
+import tools.Aliases;
 import gml.GmlAPI;
 import plugins.PluginEvents;
 import plugins.PluginManager;
@@ -87,8 +88,10 @@ import ui.treeview.TreeView;
 	
 	/** whether X is a lambda script */
 	public var lambdaMap:Dictionary<Bool> = new Dictionary();
-	public var lambdaExt:String = null;
-	public var lambdaGml:String = null;
+	public var lambdaExt:RelPath = null;
+	public var lambdaGml:RelPath = null;
+	/** lambdas view if in scripts mode */
+	public var lambdaView:RelPath = null;
 	
 	private var frameRate:Null<Int> = null;
 	public function getFrameRate():Int {

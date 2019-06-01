@@ -86,6 +86,14 @@ class YyLoader {
 						};
 					}
 					rel = path + name + "/";
+					if (name == "#gmedit-lambda") {
+						project.lambdaView = res.Value.resourcePath;
+						for (id in vdir.children) {
+							var res1 = resources[id];
+							if (res1 == null) continue;
+							project.lambdaMap.set(res1.Value.resourceName, true);
+						}
+					}
 					var dir = TreeView.makeAssetDir(name, rel);
 					dir.setAttribute(TreeView.attrYYID, res.Key);
 					var nextOut = dir.treeItems;

@@ -38,8 +38,6 @@ class GmlExtLambda {
 	}
 	//
 	
-	// todo: ticket #
-	public static var useVars:Bool = false;
 	public static inline var lfPrefix = "__lf_";
 	public static inline var lcPrefix = "__lc_";
 	public static var rxlfPrefix:RegExp = new RegExp("^__lf_");
@@ -63,6 +61,7 @@ class GmlExtLambda {
 	
 	public static var errorText:String;
 	public static function rxExtScript(name:String):RegExp {
+		var useVars = Project.current.properties.lambdaMode == Macros;
 		if (useVars) name = name.replaceExt(rxlfPrefix, lcPrefix);
 		return new RegExp('((?:^|\n)#define $name\r?\n)([\\s\\S]*?)($|\r?\n#define)');
 	}
@@ -95,11 +94,23 @@ class GmlExtLambda {
 		//
 		function proc(s:String, def:String, p:Int) {
 			// fetch lambda script:
-			if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
-			var mt = rxExtScript(s).exec(data.gml);
-			if (mt == null) return false;
+			var impl:String, mt;
+			if (data.useScripts) {
+				var path = "scripts/" + s + "/" + s + ".gml";
+				if (!data.project.existsSync(path)) return false;
+				try {
+					impl = data.project.readTextFileSync(path);
+				} catch (x:Dynamic) {
+					Main.console.error("Failed to fetch lambda from " + path, x);
+					return false;
+				}
+			} else {
+				if (data.gml == null) data.gml = FileWrap.readTextFileSync(project.lambdaGml);
+				mt = rxExtScript(s).exec(data.gml);
+				if (mt == null) return false;
+				impl = mt[2];
+			}
 			// convert #args (if used) and match extras:
-			var impl = mt[2];
 			impl = GmlExtArgs.pre(impl);
 			mt = rxLambdaPre.exec(impl);
 			if (mt == null) return false;
@@ -186,6 +197,7 @@ class GmlExtLambda {
 			map: new Dictionary(),
 			scopes: scopes,
 			scope: scope,
+			useScripts: pj.properties.lambdaMode == Scripts,
 			gml: null,
 		};
 	}
@@ -443,6 +455,7 @@ class GmlExtLambda {
 		var fns:SfGmx = file.find("functions");
 		var mcs:SfGmx = file.find("constants");
 		var extz = false;
+		var useVars = Project.current.properties.lambdaMode == Macros;
 		for (s in d.list0) if (!d.map1.exists(s)) {
 			extz = true;
 			if (useVars) {
@@ -506,6 +519,8 @@ class GmlExtLambda {
 		var order = file.order;
 		var extz = false;
 		var i:Int;
+		var useVars = Project.current.properties.lambdaMode == Macros;
+		// remove now-unused lambdas:
 		for (s in d.list0) if (!d.map1.exists(s)) {
 			extz = true;
 			//
@@ -543,6 +558,7 @@ class GmlExtLambda {
 				returnType: 2,
 			};
 		}
+		// add now-used lambdas:
 		for (s in d.list1) if (!d.map0.exists(s)) {
 			var skip = false;
 			if (useVars) {
@@ -571,6 +587,7 @@ class GmlExtLambda {
 			order.push(fn.id);
 			fns.push(fn);
 		}
+		// generate initializer if we don't have one yet:
 		if (file.init == "") {
 			file.init = lfPrefix;
 			var fn = makeFn(lfPrefix);
@@ -580,6 +597,90 @@ class GmlExtLambda {
 			d.checkInit = true;
 		}
 		if (extz) FileWrap.writeJsonFileSync(pj.lambdaExt, ext);
+	}
+	static function postGMS2_scripts(d:GmlExtLambdaPost) {
+		var pj = d.project;
+		var py:yy.YyProject = d.project.readJsonFileSync(pj.name);
+		var ry = py.resources;
+		var saveProject = false;
+		//
+		if (pj.lambdaView == null) {
+			var tv = ui.treeview.TreeView.find(false, {rel:"Scripts/"});
+			ui.treeview.TreeViewItemMenus.updatePrefix(tv);
+			var td = ui.treeview.TreeViewItemMenus.getItemData(tv);
+			var md:ui.treeview.TreeViewItemMenus.TreeViewItemCreate = {
+				prefix: td.prefix,
+				plural: td.plural,
+				single: td.single,
+				last: td.last,
+				tvDir: cast tv,
+				tvRef: tv,
+				chain: ["Scripts"],
+				order: 0,
+				mkdir: true,
+				name: "#gmedit-lambda",
+				py: py,
+			};
+			yy.YyManip.add(md);
+			pj.lambdaView = "views\\" + md.outGUID + ".yy";
+			saveProject = true;
+		}
+		//
+		var ltv = ui.treeview.TreeView.find(false, {rel:"Scripts/#gmedit-lambda/"});
+		ui.treeview.TreeViewItemMenus.updatePrefix(ltv);
+		var saveView = false;
+		var lview:yy.YyView = null;
+		// removal:
+		for (s in d.list0) if (!d.map1.exists(s)) {
+			var path = 'scripts\\$s\\$s.yy';
+			for (i in 0 ... ry.length) {
+				var r = ry[i];
+				if (r.Value.resourcePath != path) continue;
+				pj.yyResourceGUIDs.remove(s);
+				pj.yyResources.remove(r.Value.id);
+				if (lview == null) lview = pj.readJsonFileSync(pj.lambdaView);
+				if (lview.children.remove(r.Value.id)) saveView = true;
+				ry.splice(i, 1);
+				saveProject = true;
+				break;
+			}
+			pj.unlinkSync(path);
+			pj.unlinkSync('scripts\\$s\\$s.gml');
+			pj.rmdirSync('scripts\\$s');
+			var stv = ui.treeview.TreeView.find(true, {rel:"Scripts/#gmedit-lambda/"+s});
+			if (stv != null) stv.parentElement.removeChild(stv);
+			pj.lambdaMap.remove(s);
+		}
+		if (saveView) pj.writeJsonFileSync(pj.lambdaView, lview);
+		// adding:
+		for (s in d.list1) if (!d.map0.exists(s)) {
+			var path = 'scripts\\$s\\$s.yy';
+			var td = ui.treeview.TreeViewItemMenus.getItemData(ltv);
+			var md:ui.treeview.TreeViewItemMenus.TreeViewItemCreate = {
+				prefix: td.prefix,
+				plural: td.plural,
+				single: td.single,
+				last: td.last,
+				tvDir: cast ltv,
+				tvRef: ltv,
+				chain: ["Scripts", "#gmedit-lambda"],
+				order: 0,
+				mkdir: false,
+				name: s,
+				py: py,
+				openFile: false,
+			};
+			yy.YyManip.add(md);
+			pj.lambdaMap.set(s, true);
+			saveProject = true;
+		}
+		// modify:
+		for (s in d.list1) {
+			var v = d.map1[s];
+			pj.writeTextFileSync('scripts\\$s\\$s.gml', v);
+		}
+		//
+		if (saveProject) pj.writeJsonFileSync(pj.name, py);
 	}
 	
 	/**
@@ -610,6 +711,12 @@ class GmlExtLambda {
 				return null;
 			};
 		}
+		//
+		if (pj.properties.lambdaMode == Scripts) {
+			postGMS2_scripts(data);
+			return out;
+		}
+		//
 		if (pj.lambdaExt == null || pj.lambdaGml == null) {
 			errorText = 'Please add an extension called `$extensionName` to the project,'
 				+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
@@ -664,6 +771,7 @@ class GmlExtLambda {
 				GmlAPI.extDoc.remove(s);
 				seekData.locals.remove(s);
 			}
+			var useVars = Project.current.properties.lambdaMode == Macros;
 			for (s in setList) {
 				pj.lambdaMap.set(s, true);
 				var scr = data.map1[s];
@@ -738,11 +846,13 @@ class GmlExtLambda {
 	public static function readDefs(path:String) {
 		try {
 			var code = FileWrap.readTextFileSync(path);
-			useVars = code.indexOf("//!usevars") >= 0;
+			if (code.indexOf("//!usevars") >= 0
+				&& Project.current.properties.lambdaMode == Default
+			) Project.current.properties.lambdaMode = Macros;
 			GmlSeeker.runSync(path, code, "", KGmlLambdas.inst);
 			seekPath = path;
 			seekData = GmlSeekData.map[path];
-			if (useVars) {
+			if (Project.current.properties.lambdaMode == Macros) {
 				var locals = seekData.locals;
 				for (fd in locals.keys()) {
 					if (fd.startsWith(lcPrefix)) {
@@ -769,6 +879,7 @@ typedef GmlExtLambdaPre = {
 	gml:String,
 	scopes:Dictionary<GmlExtLambda>,
 	scope:GmlExtLambda,
+	useScripts:Bool,
 }
 typedef GmlExtLambdaPost = {
 	name:String,
