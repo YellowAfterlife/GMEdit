@@ -118,7 +118,7 @@ class AceTooltips {
 							var row = iter.getCurrentTokenRow();
 							r = "Closes line " + (row + 1) + ": ";
 							var rowText = session.getLine(row);
-							while (row > 0 && rowText.trimBoth() == "{") rowText = session.getLine(--row);
+							while (row > 0 && rowText.trimBoth().length <= 1) rowText = session.getLine(--row);
 							r += rowText;
 							break;
 						};
@@ -137,7 +137,7 @@ class AceTooltips {
 							var row = iter.getCurrentTokenRow();
 							r = "Spans until line " + (row + 1);
 							var rowText = session.getLine(row);
-							while (rowText != null && rowText.trimBoth() == "}") rowText = session.getLine(++row);
+							while (rowText != null && rowText.trimBoth().length <= 1) rowText = session.getLine(++row);
 							if (rowText != null) r += ": " + rowText;
 							break;
 						};
