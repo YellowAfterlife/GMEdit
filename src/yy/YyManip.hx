@@ -223,7 +223,7 @@ class YyManip {
 		} else switch (kind) {
 			case "script", "object", "shader": {
 				GmlAPI.gmlComp.push(new AceAutoCompleteItem(q.name, kind));
-				GmlAPI.gmlKind.set(q.name, kind);
+				GmlAPI.gmlKind.set(q.name, "asset." + kind);
 				GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
 				GmlAPI.gmlLookupText += q.name + "\n";
 				var fk:FileKind = switch (kind) {
