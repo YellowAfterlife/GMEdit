@@ -138,7 +138,7 @@ using tools.NativeString;
 										en = GmlAPI.gmlEnums[lt];
 										if (en != null) {
 											fdType = en.items[field] ? "enumfield" : "enumerror";
-										} else fdType = "identifier";
+										} else fdType = getGlobalType(field, "field");
 									}
 								}
 							}
