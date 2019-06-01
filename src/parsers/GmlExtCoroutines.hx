@@ -5,6 +5,7 @@ import js.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
 import ace.extern.*;
+using StringTools;
 
 /**
  * Handles conversion from/to #gmcr magic.
@@ -32,10 +33,10 @@ class GmlExtCoroutines {
 			if (pos1 < 0) pos1 = gml.length;
 			//
 			pos0 += prefix.length;
-			if (gml.charCodeAt(pos0) == "\r".code) pos0 += 1;
-			if (gml.charCodeAt(pos0) == "\n".code) pos0 += 1;
-			if (gml.charCodeAt(pos1 - 1) == "\n".code) pos1 -= 1;
-			if (gml.charCodeAt(pos1 - 1) == "\r".code) pos1 -= 1;
+			if (gml.fastCodeAt(pos0) == "\r".code) pos0 += 1;
+			if (gml.fastCodeAt(pos0) == "\n".code) pos0 += 1;
+			if (gml.fastCodeAt(pos1 - 1) == "\n".code) pos1 -= 1;
+			if (gml.fastCodeAt(pos1 - 1) == "\r".code) pos1 -= 1;
 			//
 			gml.substring(pos0, pos1);
 		};

@@ -46,10 +46,10 @@ class GmlExtLambda {
 	
 	/** An ode to strange workarounds */
 	public static function prefixSwap(name:String):String {
-		if(name.charCodeAt(0) == "_".code
-		&& name.charCodeAt(1) == "_".code
-		&& name.charCodeAt(2) == "l".code) {
-			switch (name.charCodeAt(3)) {
+		if(name.fastCodeAt(0) == "_".code
+		&& name.fastCodeAt(1) == "_".code
+		&& name.fastCodeAt(2) == "l".code) {
+			switch (name.fastCodeAt(3)) {
 				case "f".code: return "__lc" + name.substring(4);
 				case "c".code: return "__lf" + name.substring(4);
 				default: return name;

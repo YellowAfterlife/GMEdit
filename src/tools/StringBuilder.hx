@@ -1,5 +1,6 @@
 package tools;
 import haxe.extern.Rest;
+using StringTools;
 
 /**
  * ...
@@ -52,7 +53,7 @@ class StringBuilder extends StringBuf {
 			var start = 0;
 			i = 0; n = fmt.length;
 			while (i < n) {
-				if (fmt.charCodeAt(i) == "%".code) {
+				if (fmt.fastCodeAt(i) == "%".code) {
 					if (i > start) data.push(fmt.substring(start, i));
 					data.push(fmt.substr(i, 2));
 					i += 2; start = i;
@@ -67,7 +68,7 @@ class StringBuilder extends StringBuf {
 		var argi = 0;
 		while (++i < n) {
 			var arg:String = data[i];
-			if (arg.charCodeAt(0) == "%".code) {
+			if (arg.fastCodeAt(0) == "%".code) {
 				var fn = formatMap[arg];
 				if (fn != null) {
 					argi += 1; fn(this, args[argi], argi);
