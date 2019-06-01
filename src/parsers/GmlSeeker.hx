@@ -589,14 +589,17 @@ class GmlSeeker {
 				full: full,
 			});
 		}
-		if (eventFiles.length == 0) return true;
-		{
+		{ // hack: use locals for properties-specific variables
 			var locals = new GmlLocals();
 			out.locals.set("properties", locals);
 			for (prop in YyObject.propertyList) {
 				locals.add(prop, "property.variable", "(object property)");
 			}
 		};
+		if (eventFiles.length == 0) {
+			finish(orig, out);
+			return true;
+		}
 		for (file in eventFiles) (function(name, full) {
 			if (!allSync) {
 				function procEvent(err, code) {
