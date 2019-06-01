@@ -129,7 +129,7 @@ using tools.NativeString;
 							}
 							if (objType == null) {
 								objType = getLocalType_1(object, scope);
-								if (objType == "local" && imp != null) {
+								if ((objType == "local" || objType == "sublocal") && imp != null) {
 									var lt = imp.localTypes[object];
 									ns = imp.namespaces[lt];
 									if (ns != null) {
