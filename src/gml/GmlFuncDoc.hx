@@ -160,6 +160,26 @@ class GmlFuncDoc {
 					if (hasSet) while (--k >= 0) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
+						var suffix:String = null;
+						if (c == "/".code && chunk.fastCodeAt(k - 1) == "*".code) {
+							k -= 1;
+							var suffixEnd = k;
+							while (--k >= 0) {
+								c = chunk.fastCodeAt(k);
+								if (c == "*".code && chunk.fastCodeAt(k - 1) == "/".code) {
+									if (chunk.fastCodeAt(k + 1) == ":".code) {
+										suffix = chunk.substring(k + 1, suffixEnd);
+									}
+									k -= 2;
+									while (k >= 0) {
+										c = chunk.fastCodeAt(k);
+										if (c.isSpace1()) k--; else break;
+									}
+									c = chunk.fastCodeAt(k);
+									break;
+								}
+							}
+						}
 						if (!c.isIdent1()) break;
 						var nameEnd = k + 1;
 						var nameStart = 0;
@@ -170,6 +190,7 @@ class GmlFuncDoc {
 							break;
 						}
 						name = chunk.substring(nameStart, nameEnd);
+						if (suffix != null) name += suffix;
 						break;
 					}
 					if (name == null) name = "arg" + argi;
@@ -181,8 +202,10 @@ class GmlFuncDoc {
 		}
 		//
 		while (q.pos < till) {
-			var p = q.pos;
-			var n = q.skipCommon_inline();
+			var p = q.pos, n;
+			if (q.peek() == "/".code && q.peek(1) == "*".code && q.peek(2) == ":".code) {
+				q.pos += 2; q.skipComment(); n = -1;
+			} else n = q.skipCommon_inline();
 			if (n >= 0) {
 				flush(p);
 				start = q.pos;
