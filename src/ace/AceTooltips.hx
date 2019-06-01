@@ -107,6 +107,44 @@ class AceTooltips {
 				}
 				return;
 			};
+			case "curly.paren.rparen": {
+				var iter = new AceTokenIterator(session, pos.row, pos.column);
+				var depth = 1;
+				var tk = iter.stepBackward();
+				while (tk != null) {
+					switch (tk.type) {
+						case "curly.paren.rparen": depth++;
+						case "curly.paren.lparen": if (--depth <= 0) {
+							var row = iter.getCurrentTokenRow();
+							r = "Closes line " + (row + 1) + ": ";
+							var rowText = session.getLine(row);
+							while (row > 0 && rowText.trimBoth() == "{") rowText = session.getLine(--row);
+							r += rowText;
+							break;
+						};
+					}
+					tk = iter.stepBackward();
+				}
+			};
+			case "curly.paren.lparen": {
+				var iter = new AceTokenIterator(session, pos.row, pos.column);
+				var depth = 1;
+				var tk = iter.stepForward();
+				while (tk != null) {
+					switch (tk.type) {
+						case "curly.paren.lparen": depth++;
+						case "curly.paren.rparen": if (--depth <= 0) {
+							var row = iter.getCurrentTokenRow();
+							r = "Spans until line " + (row + 1);
+							var rowText = session.getLine(row);
+							while (rowText != null && rowText.trimBoth() == "}") rowText = session.getLine(++row);
+							if (rowText != null) r += ": " + rowText;
+							break;
+						};
+					}
+					tk = iter.stepForward();
+				}
+			};
 			default: //r = t;
 		}
 		if (doc != null) r = doc.getAcText();
