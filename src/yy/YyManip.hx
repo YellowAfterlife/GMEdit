@@ -213,7 +213,7 @@ class YyManip {
 		//
 		var nJsonStr = NativeString.yyJson(nJson);
 		pj.writeTextFileSync(nPath, nJsonStr);
-		if (d.py == null) {
+		if (q.py == null) {
 			pj.writeTextFileSync(pj.name, NativeString.yyJson(py));
 		}
 		var ntv:Element = TreeViewItemMenus.createImplTV(q);
