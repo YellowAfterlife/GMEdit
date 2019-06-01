@@ -846,9 +846,11 @@ class GmlExtLambda {
 	public static function readDefs(path:String) {
 		try {
 			var code = FileWrap.readTextFileSync(path);
-			if (code.indexOf("//!usevars") >= 0
-				&& Project.current.properties.lambdaMode == Default
-			) Project.current.properties.lambdaMode = Macros;
+			var props = Project.current.properties;
+			if (code.indexOf("//!usevars") >= 0) switch (props.lambdaMode) {
+				case null, Default: props.lambdaMode = Macros;
+				default:
+			}
 			GmlSeeker.runSync(path, code, "", KGmlLambdas.inst);
 			seekPath = path;
 			seekData = GmlSeekData.map[path];
