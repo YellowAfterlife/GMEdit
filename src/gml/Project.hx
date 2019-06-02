@@ -83,7 +83,7 @@ import ui.treeview.TreeView;
 	//
 	public var hasGMLive:Bool = false;
 	
-	public var properties:ProjectData;
+	public var properties:ProjectData = cast {};
 	public var propertiesElement:DivElement = null;
 	
 	/** whether X is a lambda script */
