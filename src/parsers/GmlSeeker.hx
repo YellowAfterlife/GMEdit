@@ -595,6 +595,12 @@ class GmlSeeker {
 			for (prop in YyObject.propertyList) {
 				locals.add(prop, "property.variable", "(object property)");
 			}
+			for (prop in YyObject.typeList) {
+				locals.add(prop, "property.namespace", "(object variable type)");
+			}
+			for (pair in YyObject.assetTypes) {
+				locals.add(pair.name, "property.namespace", "(asset type)");
+			}
 		};
 		if (eventFiles.length == 0) {
 			finish(orig, out);

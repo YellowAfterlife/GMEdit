@@ -1,6 +1,7 @@
 package yy;
 import electron.FileWrap;
 import gml.GmlObjectInfo;
+import haxe.Json;
 import haxe.extern.EitherType;
 import js.RegExp;
 import parsers.GmlEvent;
@@ -30,6 +31,15 @@ import ace.AceMacro.jsRx;
 		"physics_linear_damping", "physics_angular_damping",
 		"physics_sensor", "physics_start_awake", "physics_kinematic",
 		"physics_shape", "physics_shape_data",
+	];
+	public static var typeList:Array<String> = [
+		"unknown",
+		"real", "int", "string", "bool",
+		"expr", "asset", "option", "options",
+		"color",
+	];
+	public static var assetTypes:Array<{flag:Int, name:String}> = [
+		{flag:2, name:"sprite"},
 	];
 	public function getProperties():String {
 		var out = GmlObjectProperties.header;
@@ -70,56 +80,102 @@ import ace.AceMacro.jsRx;
 			addPrim("physics_shape_data", '"' + pts.join(";") + '"');
 		}
 		//
+		if (this.properties != null) for (prop in this.properties) {
+			out += '\n' + prop.varName + ':';
+			switch (prop.varType) {
+				case 0, 1: {
+					out += prop.varType == 1 ? "int" : "real";
+					if (prop.rangeEnabled) {
+						out += '<' + prop.rangeMin + ', ' + prop.rangeMax + '>';
+					}
+					out += ' = ' + prop.value + ';';
+				};
+				case 2: out += 'string = ' + Json.stringify(prop.value) + ';';
+				case 3: out += 'bool = ' + (prop.value == 'True' ? true : false) + ';';
+				case 4: {
+					// todo: maybe depth-match... sometime
+					out += 'expr = ' + Json.stringify(prop.value) + ';';
+				};
+				case 5: {
+					out += 'asset<';
+					var flags = prop.resourceFilter;
+					var count = 0;
+					//
+					for (pair in assetTypes) {
+						if (flags & pair.flag != 0) {
+							flags &= ~pair.flag;
+							if (count++ > 0) out += ', ';
+							out += pair.name;
+							// write `pair.` here
+						}
+					}
+					//
+					if (flags != 0 || count == 0) {
+						if (count++ > 0) out += ', ';
+						out += flags;
+					}
+					out += '> = ' + prop.value + ';';
+				};
+				default: out += "unknown = @'" + Json.stringify(prop) + "';";
+			}
+		}
+		//
 		return out;
 	}
 	private static var setProperties_str:RegExp = jsRx(~/^@?["'](.*?)["']$/);
 	public function setProperties(code:String):ErrorText {
-		return GmlObjectProperties.parse(code, v2, function(key:String, val:String):ErrorText {
-			function id(v:String, t:String):YyGUID {
-				if (v == "noone") return YyGUID.zero;
-				var ind = Std.parseInt(v);
-				if (ind != null) {
-					if (ind < 0) {
-						return YyGUID.zero;
-					} else throw "Can't assign numeric IDs aside of -1";
-				}
-				var mt = setProperties_str.exec(v);
+		return GmlObjectProperties.parse(code, v2, function(key:String, val:GmlObjectPropertiesValue):ErrorText {
+			function id(v:GmlObjectPropertiesValue, t:String):YyGUID {
 				var id:YyGUID, res:YyProjectResource;
-				if (mt != null) {
-					if (YyGUID.test.test(mt[1])) {
-						id = cast mt[1];
+				switch (v) {
+					case Ident("noone"): return YyGUID.zero;
+					case Number(f): {
+						if (f < 0) {
+							return YyGUID.zero;
+						} else throw "Can't assign numeric IDs aside of -1";
+					};
+					case CString(s): {
+						if (YyGUID.test.test(s)) {
+							id = cast s;
+							res = Project.current.yyResources[id];
+							if (res != null && res.Value.resourceType != t) {
+								throw 'Wrong resource type - expected $t, got ' + res.Value.resourceType;
+							}
+							return id;
+						} else throw "Expected a GUID";
+					};
+					case Ident(v): {
+						id = Project.current.yyResourceGUIDs[v];
+						if (id == null) throw 'Could not find $v in the project';
 						res = Project.current.yyResources[id];
 						if (res != null && res.Value.resourceType != t) {
 							throw 'Wrong resource type - expected $t, got ' + res.Value.resourceType;
 						}
 						return id;
-					} else throw "Expected a GUID";
-				} else {
-					id = Project.current.yyResourceGUIDs[v];
-					if (id == null) throw 'Could not find $v in the project';
-					res = Project.current.yyResources[id];
-					if (res != null && res.Value.resourceType != t) {
-						throw 'Wrong resource type - expected $t, got ' + res.Value.resourceType;
-					}
-					return id;
+					};
 				}
 			}
-			function bool(v:String):Bool {
+			function bool(v:GmlObjectPropertiesValue):Bool {
 				switch (v) {
-					case "1", "true": return true;
-					case "0", "false": return false;
+					case Number(1), Ident("true"): return true;
+					case Number(0), Ident("false"): return false;
 					default: throw 'Expected a bool, got $v';
 				}
 			}
-			function int(v:String):Int {
-				var i = Std.parseInt(v);
-				if (i != null) return i;
-				throw 'Expected an int, got $v';
+			function int(v:GmlObjectPropertiesValue):Int {
+				switch (v) {
+					case Number(f): {
+						if (f % 1 != 0) throw 'May not contain fractions, but got $v';
+						return Std.int(f);
+					};
+					default: throw 'Expected an int, got $v';
+				}
 			}
-			function real(v:String):Float {
-				var f = Std.parseFloat(v);
-				if (Math.isNaN(f)) throw 'Expected a number, got $v';
-				return f;
+			function real(v:GmlObjectPropertiesValue):Float {
+				switch (v) {
+					case Number(f): return f;
+					default: throw 'Expected a number, got $v';
+				}
 			}
 			try {
 				switch (key) {
@@ -129,8 +185,8 @@ import ace.AceMacro.jsRx;
 					case "visible": this.visible = bool(val);
 					case "solid": this.solid = bool(val);
 					case "persistent": this.persistent = bool(val);
+					//
 					case "uses_physics": this.physicsObject = bool(val);
-					
 					case "physics_density": this.physicsDensity = real(val);
 					case "physics_restitution": this.physicsRestitution = real(val);
 					case "physics_collision_group": this.physicsGroup = int(val);
@@ -141,9 +197,11 @@ import ace.AceMacro.jsRx;
 					case "physics_kinematic": this.physicsKinematic = bool(val);
 					case "physics_shape": this.physicsShape = int(val);
 					case "physics_shape_data": {
-						var mt = setProperties_str.exec(val);
-						if (mt != null) val = mt[1];
-						var pts = val.split(";");
+						var sv:String = switch (val) {
+							case CString(s): s;
+							default: throw "Expected a data string";
+						}
+						var pts = sv.split(";");
 						var orig = this.physicsShapePoints;
 						var next = [];
 						var proto = orig[0];
@@ -151,8 +209,12 @@ import ace.AceMacro.jsRx;
 							var ptText = pts[i];
 							var ptPair = ptText.split(",");
 							if (ptPair.length != 2) throw 'Expected two coordinates for point $i';
-							var ptX = real(ptPair[0]);
-							var ptY = real(ptPair[1]);
+							//
+							var ptX = Std.parseFloat(ptPair[0]);
+							if (Math.isNaN(ptX)) throw 'X coordinate for point $i is not a valid number (${ptPair[0]}).';
+							var ptY = Std.parseFloat(ptPair[1]);
+							if (Math.isNaN(ptY)) throw 'Y coordinate for point $i is not a valid number (${ptPair[1]}).';
+							//
 							var pt = orig[i];
 							if (pt == null) {
 								if (proto != null) {
@@ -175,6 +237,9 @@ import ace.AceMacro.jsRx;
 						}
 						this.physicsShapePoints = next;
 					};
+					//
+					
+					//
 					default: throw '$key is not a known property';
 				}
 				return null;
@@ -384,7 +449,7 @@ typedef YyObjectImpl = {
 	solid:Bool,
 	visible:Bool,
 	persistent:Bool,
-	properties:Array<Dynamic>,
+	properties:Array<YyObjectProperty>,
 	overriddenProperties:Array<Dynamic>,
 	physicsObject:Bool,
 	
@@ -413,4 +478,18 @@ typedef YyObjectEvent = {
 	collisionObjectId:YyGUID,
 	m_owner:YyGUID,
 	IsDnD:Bool,
-}
+};
+typedef YyObjectProperty = YyBase & {
+	?listItems:Array<String>,
+	multiselect:Bool,
+	rangeEnabled:Bool,
+	rangeMax:Float,
+	rangeMin:Float,
+	resourceFilter:Int,
+	/**
+	 * multi-select: `"A", "B"`
+	 */
+	value:String,
+	varName:String,
+	varType:Int,
+};
