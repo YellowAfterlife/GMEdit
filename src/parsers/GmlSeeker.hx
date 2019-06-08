@@ -592,13 +592,13 @@ class GmlSeeker {
 		{ // hack: use locals for properties-specific variables
 			var locals = new GmlLocals();
 			out.locals.set("properties", locals);
-			for (prop in YyObject.propertyList) {
+			for (prop in YyObjectProperties.propertyList) {
 				locals.add(prop, "property.variable", "(object property)");
 			}
-			for (prop in YyObject.typeList) {
+			for (prop in YyObjectProperties.typeList) {
 				locals.add(prop, "property.namespace", "(object variable type)");
 			}
-			for (pair in YyObject.assetTypes) {
+			for (pair in YyObjectProperties.assetTypes) {
 				locals.add(pair.name, "property.namespace", "(asset type)");
 			}
 		};

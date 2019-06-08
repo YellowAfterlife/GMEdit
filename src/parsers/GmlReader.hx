@@ -249,14 +249,17 @@ class GmlReader extends StringReader {
 	 * this"var a=¦1+f(1,2)," -> this"var a=1+f(1,2)¦,"
 	 * It's not _very_ smart
 	 */
-	public function skipVarExpr(v:GmlVersion, ?ret:Bool):Int {
+	public function skipVarExpr(v:GmlVersion, sep:CharCode):Int {
 		var start = pos;
 		var depth = 0;
 		var n:Int = 0;
 		while (pos < length) {
 			var p = pos;
 			var c:CharCode = read();
-			switch (c) {
+			if (c == sep && depth == 0) {
+				pos = p;
+				break;
+			} else switch (c) {
 				case " ".code, "\t".code, "\r".code:
 				case "\n".code: n += 1;
 				case "/".code: switch (peek()) {
@@ -266,7 +269,6 @@ class GmlReader extends StringReader {
 				};
 				case "(".code, "[".code, "{".code: depth += 1;
 				case ")".code, "]".code, "}".code: depth -= 1;
-				case ",".code: if (depth == 0) { pos = p; break; }
 				case ";".code: pos = p; break;
 				case '"'.code, "'".code, "@".code, "`".code: skipStringAuto(c, v);
 				case "#".code: if (p == 0 || get(p - 1) == "\n".code) {
@@ -379,7 +381,7 @@ class GmlReader extends StringReader {
 			if (peek() == "=".code) {
 				skip(); skipSpaces1();
 				d.expr0 = pos;
-				skipVarExpr(v, true);
+				skipVarExpr(v, ",".code);
 			} else d.expr0 = pos;
 			d.expr1 = pos;
 			skipNops(till);

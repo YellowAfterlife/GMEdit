@@ -5,7 +5,7 @@ import tools.Aliases;
 import tools.NativeString;
 
 /**
- * ...
+ * To consider, this is a lot of trouble for a one-off use case.
  * @author YellowAfterlife
  */
 class GmlObjectProperties {
@@ -15,6 +15,7 @@ class GmlObjectProperties {
 	public static function parse(code:String, v:GmlVersion, fn:GmlObjectPropertiesFn, ?vfn:GmlObjectPropertiesVarFn):ErrorText {
 		var q = new GmlReader(code);
 		inline function error(p:Int, s:String):ErrorText {
+			//js.Syntax.code("debugger");
 			return NativeString.offsetToPos(code, p).toString() + " " + s;
 		}
 		var state:GmlObjectPropertiesState = WantName;
@@ -22,13 +23,68 @@ class GmlObjectProperties {
 		var params:Array<GmlObjectPropertiesValue> = null;
 		var err:ErrorText, val:GmlObjectPropertiesValue, s:String;
 		//
-		inline function call(v:GmlObjectPropertiesValue) {
+		function call(v:GmlObjectPropertiesValue) {
 			if (type != null) {
-				err = vfn(key, type, params, v);
+				var guid = null;
+				while (q.loop) {
+					switch (q.peek()) {
+						case " ".code, "\t".code, ";".code: {
+							q.skip(); continue;
+						};
+					}; break;
+				}
+				if (q.peek() == "/".code && q.peek(1) == "/".code) {
+					q.pos += 2;
+					var start = q.pos;
+					q.skipLine();
+					var raw = NativeString.trimBoth(q.substring(start, q.pos));
+					if (yy.YyGUID.test.test(raw)) {
+						guid = cast raw;
+					}
+				}
+				err = vfn(key, type, guid, params, v);
 			} else err = fn(key, v);
 		}
 		while (q.loop) {
 			var c = q.peek(), start:Int;
+			/// changes val
+			function readString():ErrorText {
+				var c = q.peek();
+				start = q.pos++;
+				var s = null;
+				val = null;
+				switch (c) {
+					case '"'.code: {
+						if (v.hasStringEscapeCharacters()) {
+							q.skipString2();
+							s = code.substring(start, q.pos);
+							try {
+								s = haxe.Json.parse(s);
+							} catch (x:Dynamic) {
+								return error(start, "Invalid string, " + x);
+							}
+						} else q.skipString1('"'.code);
+					};
+					case "'".code: {
+						if (v.hasSingleQuoteStrings()) {
+							q.skipString1("'".code);
+						} else return error(start, "Unexpected '");
+					};
+					case "@".code: {
+						if (v.hasLiteralStrings()) {
+							start++;
+							c = q.read();
+							if (c == '"'.code || c == "'".code) {
+								q.skipString1(c);
+							} else return error(start, "Unexpected " + String.fromCharCode(c));
+						} else return error(start, "Unexpected @");
+					};
+				}
+				if (s == null) s = code.substring(start + 1, q.pos - 1);
+				val = CString(s);
+				return null;
+			}
+			//
 			switch (c) {
 				case " ".code, "\t".code, "\r".code, "\n".code, ";".code: {
 					q.skip();
@@ -39,37 +95,8 @@ class GmlObjectProperties {
 					default: return error(q.pos, "Unexpected /");
 				};
 				case '"'.code, "'".code, "`".code, "@".code: {
-					start = q.pos++;
-					s = null;
-					switch (c) {
-						case '"'.code: {
-							if (v.hasStringEscapeCharacters()) {
-								q.skipString2();
-								s = code.substring(start, q.pos);
-								try {
-									s = haxe.Json.parse(s);
-								} catch (x:Dynamic) {
-									return error(start, "Invalid string, " + x);
-								}
-							} else q.skipString1('"'.code);
-						};
-						case "'".code: {
-							if (v.hasSingleQuoteStrings()) {
-								q.skipString1("'".code);
-							} else return error(start, "Unexpected '");
-						};
-						case "@".code: {
-							if (v.hasLiteralStrings()) {
-								start++;
-								c = q.read();
-								if (c == '"'.code || c == "'".code) {
-									q.skipString1(c);
-								} else return error(start, "Unexpected " + String.fromCharCode(c));
-							} else return error(start, "Unexpected @");
-						};
-					}
-					if (s == null) s = code.substring(start + 1, q.pos - 1);
-					val = CString(s);
+					s = readString();
+					if (s != null) return s;
 					switch (state) {
 						case WantValue: {
 							call(val);
@@ -79,15 +106,97 @@ class GmlObjectProperties {
 						};
 						case WantParams: {
 							params.push(val);
+							state = WantParamsComma;
 						};
 						default: return error(start, "Unexpected string");
 					}
 				};
+				case "#".code if (q.peek(1) == '"'.code): {
+					q.skip();
+					s = readString();
+					if (s != null) return s;
+					switch (val) {
+						case CString(s): val = EString(s);
+						default:
+					}
+					switch (state) {
+						case WantValue: {
+							call(val);
+							if (err != null) return error(start, err);
+							state = WantName;
+							key = null;
+						};
+						case WantParams: {
+							params.push(val);
+							state = WantParamsComma;
+						};
+						default: return error(start, "Unexpected code string");
+					}
+				};
+				case "[".code: {
+					if (state != WantValue) return error(q.pos, "Unexpected [");
+					start = q.pos++;
+					state = WantParams;
+					var vals:Array<GmlObjectPropertiesValue> = [];
+					while (q.loop) {
+						c = q.peek();
+						switch (c) {
+							case "]".code: {
+								if (state != WantParamsComma) return error(q.pos, "Unexpected ]");
+								q.skip();
+								state = WantValue;
+								break;
+							};
+							case ",".code: {
+								if (state != WantParamsComma) return error(q.pos, "Unexpected ,");
+								q.skip();
+								state = WantParams;
+							};
+							case " ".code, "\t".code, "\r".code, "\n".code: q.skip();
+							case '"'.code, "'".code, "`".code, "@".code: {
+								s = readString();
+								if (s != null) return s;
+								vals.push(val);
+								state = WantParamsComma;
+							};
+							default: return error(q.pos, "Unexpected " + String.fromCharCode(c));
+						}
+					}
+					if (state != WantValue) return error(start, "Unclosed [");
+					//
+					val = Values(vals);
+					call(val);
+					if (err != null) return error(start, err);
+					state = WantName;
+					key = null;
+				};
+				case "(".code: {
+					var start = ++q.pos;
+					q.skipVarExpr(q.version, ')'.code);
+					if (q.eof) return error(start, 'Unclosed ()');
+					var val = EString(q.substring(start, q.pos++));
+					switch (state) {
+						case WantValue: {
+							call(val);
+							if (err != null) return error(start, err);
+							state = WantName;
+							key = null;
+						};
+						case WantParams: {
+							params.push(val);
+							state = WantParamsComma;
+						};
+						default: return error(start, "Unexpected code literal");
+					}
+				};
 				case "=".code: {
-					if (state == WantSet || state == WantSetOrType) {
-						state = WantValue;
-						q.skip();
-					} else return error(q.pos, "Unexpected =");
+					switch (state) {
+						case WantSet, WantSetOrType, WantParamsOrSet: {
+							state = WantValue;
+							q.skip();
+						};
+						default: return error(q.pos, "Unexpected =");
+					}
 				};
 				case ":".code: {
 					if (state == WantSetOrType && vfn != null) {
@@ -103,7 +212,7 @@ class GmlObjectProperties {
 					} else return error(q.pos, "Unexpected <");
 				};
 				case ">".code: {
-					if (state == WantParams) {
+					if (state == WantParamsComma) {
 						state = WantSet;
 						q.skip();
 					} else return error(q.pos, "Unexpected >");
@@ -115,7 +224,7 @@ class GmlObjectProperties {
 					} else return error(q.pos, "Unexpected ,");
 				};
 				default: {
-					if ((c.isDigit() || c == ".".code || c == "-".code) && (state == WantValue && state == WantParams)) {
+					if ((c.isDigit() || c == ".".code || c == "-".code) && (state == WantValue || state == WantParams)) {
 						start = q.pos;
 						q.skip();
 						q.skipNumber();
@@ -125,14 +234,17 @@ class GmlObjectProperties {
 						val = Number(f);
 						if (state == WantParams) {
 							params.push(val);
+							state = WantParamsComma;
 						} else {
 							call(val);
 							if (err != null) return error(start, err);
+							state = WantName;
+							key = null;
 						}
-						state = WantName;
-						key = null;
 					}
-					else if (c.isIdent0() && (state == WantValue || state == WantName)) {
+					else if (c.isIdent0() && (state == WantValue || state == WantName
+						|| state == WantType || state == WantParams
+					)) {
 						start = q.pos++;
 						while (q.loop) {
 							c = q.peek();
@@ -153,11 +265,15 @@ class GmlObjectProperties {
 								type = s;
 								state = WantParamsOrSet;
 							};
+							case WantParams: {
+								params.push(Ident(s));
+								state = WantParamsComma;
+							};
 							default: {
 								key = s;
 								type = null;
 								params = null;
-								state = WantSet;
+								state = WantSetOrType;
 							};
 						}
 					}
@@ -171,17 +287,19 @@ class GmlObjectProperties {
 enum GmlObjectPropertiesValue {
 	Number(f:Float);
 	CString(s:String);
+	EString(s:String); // #"code"
 	Ident(s:String);
+	Values(a:Array<GmlObjectPropertiesValue>); // array literal
 }
 typedef GmlObjectPropertiesFn = (key:String, val:GmlObjectPropertiesValue)->ErrorText;
-typedef GmlObjectPropertiesVarFn = (name:String, type:String, params:Array<GmlObjectPropertiesValue>, val:GmlObjectPropertiesValue)->ErrorText;
+typedef GmlObjectPropertiesVarFn = (name:String, type:String, guid:yy.YyGUID, params:Array<GmlObjectPropertiesValue>, val:GmlObjectPropertiesValue)->ErrorText;
 private enum abstract GmlObjectPropertiesState(Int) {
 	var WantName = 1;
-	var WantSet;
-	var WantSetOrType;
-	var WantValue;
-	var WantType;
-	var WantParamsOrSet;
-	var WantParams;
-	var WantParamsComma;
+	var WantSet = 2;
+	var WantSetOrType = 3;
+	var WantValue = 4;
+	var WantType = 5;
+	var WantParamsOrSet = 6;
+	var WantParams = 7;
+	var WantParamsComma = 8;
 }
