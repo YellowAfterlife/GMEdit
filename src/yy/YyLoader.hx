@@ -65,6 +65,10 @@ class YyLoader {
 		project.yyObjectGUIDs = objectGUIDs;
 		project.lambdaMap = new Dictionary();
 		var scriptLambdas = project.properties.lambdaMode == Scripts;
+		if (scriptLambdas) {
+			GmlExtLambda.seekData = new parsers.GmlSeekData();
+			GmlExtLambda.seekPath = project.fullPath("#lambdas");
+		}
 		var lz = ui.Preferences.current.lambdaMagic;
 		function loadrec(out:Element, view:YyView, path:String) {
 			for (el in view.children) {
