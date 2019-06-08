@@ -89,9 +89,13 @@ import ui.treeview.TreeView;
 	/** whether X is a lambda script */
 	public var lambdaMap:Dictionary<Bool> = new Dictionary();
 	public var lambdaExt:RelPath = null;
+	/** path to .gml file with lambdas */
 	public var lambdaGml:RelPath = null;
 	/** lambdas view if in scripts mode */
 	public var lambdaView:RelPath = null;
+	public inline function canLambda():Bool {
+		return ui.Preferences.current.lambdaMagic && (lambdaGml != null || properties.lambdaMode == Scripts);
+	}
 	
 	private var frameRate:Null<Int> = null;
 	public function getFrameRate():Int {

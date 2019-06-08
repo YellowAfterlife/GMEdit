@@ -203,9 +203,9 @@ class GmlExtLambda {
 	}
 	public static function pre(edit:EditCode, code:String):String {
 		var pj = Project.current;
-		if (!Preferences.current.lambdaMagic) return code;
-		if (pj.lambdaGml == null) return code;
-		if (edit.file.path == pj.lambdaGml) return code;
+		if (!pj.canLambda()) return code;
+		// don't expand lambdas inside the lambdas extension file
+		if (edit.file.path != null && edit.file.path == pj.lambdaGml) return code;
 		var d = preInit(pj);
 		var out = preImpl(code, d);
 		edit.lambdaList = d.list;
@@ -649,7 +649,6 @@ class GmlExtLambda {
 			pj.rmdirSync('scripts\\$s');
 			var stv = ui.treeview.TreeView.find(true, {rel:"Scripts/#gmedit-lambda/"+s});
 			if (stv != null) stv.parentElement.removeChild(stv);
-			pj.lambdaMap.remove(s);
 		}
 		if (saveView) pj.writeJsonFileSync(pj.lambdaView, lview);
 		// adding:
@@ -671,7 +670,6 @@ class GmlExtLambda {
 				openFile: false,
 			};
 			yy.YyManip.add(md);
-			pj.lambdaMap.set(s, true);
 			saveProject = true;
 		}
 		// modify:
@@ -697,13 +695,16 @@ class GmlExtLambda {
 			hasLambda = hasHashLambda(code);
 			data.hasLambda = hasLambda;
 		}
+		
 		// had no lambdas before and clearly has no lambdas?:
 		if (!hasLambda && data.list0.length == 0) return code;
 		var out = hasLambda ? post_1(data.name, code, data.name, data) : code;
 		if (out == null) return null; // syntax error
 		var pj = data.project;
+		
 		// had no lambdas and still has no actual lambdas?:
 		if (data.list0.length == 0 && data.list1.length == 0) return out;
+		
 		switch (pj.version) { // verify that we can at all
 			case v1, v2: {}; // OK!
 			default: {
@@ -711,19 +712,8 @@ class GmlExtLambda {
 				return null;
 			};
 		}
-		//
-		if (pj.properties.lambdaMode == Scripts) {
-			postGMS2_scripts(data);
-			return out;
-		}
-		//
-		if (pj.lambdaExt == null || pj.lambdaGml == null) {
-			errorText = 'Please add an extension called `$extensionName` to the project,'
-				+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
-			if (pj.version == GmlVersion.v1) errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
-			return null;
-		}
-		//
+		
+		// figure out what changed:
 		var remList = [];
 		var setList = [];
 		for (s in data.list0) {
@@ -738,11 +728,45 @@ class GmlExtLambda {
 			setList.push(s);
 		}
 		var changed = remList.length > 0 || setList.length > 0;
+		
+		// pre-pass: project/data stuff
+		var isScripts = pj.properties.lambdaMode == Scripts;
+		for (s in remList) {
+			pj.lambdaMap.remove(s);
+			if (isScripts) {
+				GmlAPI.gmlDoc.remove(s);
+			} else GmlAPI.extDoc.remove(s);
+			seekData.locals.remove(s);
+		}
+		for (s in setList) {
+			pj.lambdaMap.set(s, true);
+			var scr = data.map1[s];
+			var locals = new GmlLocals();
+			seekData.locals.set(s, locals);
+			GmlSeeker.runSyncImpl(isScripts ? pj.fullPath('scripts/$s/$s.gml') : seekPath, scr, s, seekData, locals, KGmlLambdas.inst);
+			readDefs_1(scr); // maybe change map1 to have code+docs pairs later
+		}
+		
+		// if we're using scripts, we're out of here early
+		if (isScripts) {
+			postGMS2_scripts(data);
+			return out;
+		}
+		
+		//
+		if (pj.lambdaExt == null || pj.lambdaGml == null) {
+			errorText = 'Please add an extension called `$extensionName` to the project,'
+				+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
+			if (pj.version == GmlVersion.v1) errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
+			return null;
+		}
+		
 		//
 		var gml:String = null;
 		inline function prepare():Void {
 			if (gml == null) gml = FileWrap.readTextFileSync(pj.lambdaGml);
 		}
+		
 		// apply extension changes if lambdas were added/removed:
 		if (changed) switch (pj.version) {
 			case v1: postGMS1(data);
@@ -752,6 +776,7 @@ class GmlExtLambda {
 				return null;
 			};
 		}
+		
 		// ensure that the extension has an init function:
 		if (data.checkInit) {
 			prepare();
@@ -761,24 +786,17 @@ class GmlExtLambda {
 					+ (gml != "" ? "\n" + gml : "");
 			}
 		}
-		// apply changes to the GML file:
+		
+		// apply changes to the extension GML file:
 		if (changed) {
 			prepare();
 			for (s in remList) {
 				gml = gml.replaceExt(rxExtScript(s), "$3");
 				gml = gml.replaceExt(new RegExp('\n$s = .+'), "");
-				pj.lambdaMap.remove(s);
-				GmlAPI.extDoc.remove(s);
-				seekData.locals.remove(s);
 			}
 			var useVars = Project.current.properties.lambdaMode == Macros;
 			for (s in setList) {
-				pj.lambdaMap.set(s, true);
 				var scr = data.map1[s];
-				var locals = new GmlLocals();
-				seekData.locals.set(s, locals);
-				GmlSeeker.runSyncImpl(seekPath, scr, s, seekData, locals, KGmlLambdas.inst);
-				readDefs_1(scr); // maybe change map1 to have code+docs pairs later
 				var add = true;
 				gml = gml.replaceExt(rxExtScript(s), function(_, s0, c, s1) {
 					add = false;

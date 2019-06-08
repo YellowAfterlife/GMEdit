@@ -64,6 +64,7 @@ class YyLoader {
 		project.yyObjectNames = objectNames;
 		project.yyObjectGUIDs = objectGUIDs;
 		project.lambdaMap = new Dictionary();
+		var scriptLambdas = project.properties.lambdaMode == Scripts;
 		var lz = ui.Preferences.current.lambdaMagic;
 		function loadrec(out:Element, view:YyView, path:String) {
 			for (el in view.children) {
@@ -130,7 +131,10 @@ class YyLoader {
 						case "GMScript": {
 							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
-							GmlSeeker.run(full, name, KGmlScript.inst);
+							// we'll index lambda scripts on demand
+							if (!scriptLambdas || !NativeString.startsWith(name, GmlExtLambda.lfPrefix)) {
+								GmlSeeker.run(full, name, KGmlScript.inst);
+							}
 						};
 						case "GMObject": {
 							GmlAPI.gmlLookupText += name + "\n";

@@ -99,8 +99,9 @@ class GmlSeeker {
 		var q = new GmlReader(src);
 		var v = GmlAPI.version;
 		var row = 0;
+		var project = Project.current;
 		var notLam = !Std.is(kind, KGmlLambdas);
-		var canLam = notLam && Project.current.lambdaGml != null;
+		var canLam = notLam && project.canLambda();
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var localKind = notLam ? "local" : "sublocal";
 		inline function setLookup(s:String, eol:Bool = false):Void {
@@ -202,6 +203,31 @@ class GmlSeeker {
 				if (mainComp != null) mainComp.doc = doc.getAcText();
 			}
 			doc = null;
+		}
+		function procLambdaIdent(s:String, locals:GmlLocals):Void {
+			var seekData = GmlExtLambda.seekData;
+			var lfLocals = seekData.locals[s];
+			if (lfLocals == null && project.properties.lambdaMode == Scripts) {
+				//
+				var rel = 'scripts/$s/$s.gml';
+				var full = project.fullPath(rel);
+				var lgml = try {
+					project.readTextFileSync(rel);
+				} catch (_:Dynamic) null;
+				if (lgml == null) {
+					Main.console.warn("Lambda missing: " + s);
+					lgml = "";
+				}
+				//
+				runSync(full, lgml, "", KGmlLambdas.inst);
+				var d = GmlSeekData.map[full];
+				if (d == null) {
+					Main.console.warn("We just asked to index a lambda script and it's not there..?");
+					lfLocals = new GmlLocals();
+				} else lfLocals = d.locals[""];
+				seekData.locals.set(s, lfLocals);
+			}
+			if (lfLocals != null) locals.addLocals(lfLocals);
 		}
 		var p:Int, flags:Int;
 		var c:CharCode, mt:RegExpMatch;
@@ -338,7 +364,7 @@ class GmlSeeker {
 					} while (q.loop);
 					s = q.substring(p, q.pos);
 					// we don't currently support configuration nesting
-					if (cfg == null || cfg == Project.current.config) {
+					if (cfg == null || cfg == project.config) {
 						var m = new GmlMacro(name, orig, s, cfg);
 						var old = out.macroMap[name];
 						if (old != null) {
@@ -425,8 +451,7 @@ class GmlSeeker {
 											exit = true;
 											break;
 										} else if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
-											var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
-											if (lfLocals != null) locals.addLocals(lfLocals);
+											procLambdaIdent(s, locals);
 											continue;
 										}
 									};
@@ -504,8 +529,7 @@ class GmlSeeker {
 					// skip if it's a local/built-in/project/extension identifier:
 					if (locals.kind[s] != null) continue;
 					if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
-						var lfLocals:GmlLocals = GmlExtLambda.seekData.locals[s];
-						if (lfLocals != null) locals.addLocals(lfLocals);
+						procLambdaIdent(s, locals);
 						continue;
 					}
 					if (GmlAPI.gmlKind[s] != null) continue;
@@ -544,7 +568,7 @@ class GmlSeeker {
 		} // while
 		flushDoc();
 		//
-		if (Project.current.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
+		if (project.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
 	}
 	
 	static inline function finish(orig:String, out:GmlSeekData):Void {
@@ -565,13 +589,14 @@ class GmlSeeker {
 		var obj:YyObject = haxe.Json.parse(src);
 		var dir = Path.directory(orig);
 		//
-		var parentName = Project.current.yyObjectNames[obj.parentObjectId];
+		var project = Project.current;
+		var parentName = project.yyObjectNames[obj.parentObjectId];
 		if (parentName != null) addObjectChild(parentName, obj.name);
 		//
 		if (Preferences.current.assetThumbs && !allSync) {
 			var spriteId = obj.spriteId;
 			if (spriteId != YyGUID.zero) {
-				var res = Project.current.yyResources[spriteId];
+				var res = project.yyResources[spriteId];
 				TreeView.setThumbSprite(orig, res != null ? res.Value.resourceName : null);
 			} else TreeView.resetThumb(orig);
 		}
