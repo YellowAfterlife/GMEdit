@@ -14,6 +14,7 @@ import gml.file.GmlFile;
 import gmx.SfGmx;
 import js.RegExp;
 import tools.Dictionary;
+import tools.Aliases;
 import ui.Preferences;
 import yy.YyExtension;
 import yy.YyGUID;
@@ -214,12 +215,13 @@ class GmlExtLambda {
 		return out;
 	}
 	//
-	static function post_1(fileName:String, code:String, prefix:String, data:GmlExtLambdaPost) {
+	static function post_1(fileName:String, code:String, prefix:String, data:GmlExtLambdaPost, parent:GmlName = "") {
 		var project = data.project;
 		var version = data.version;
 		var list0 = data.list0;
 		var map0 = data.map0;
 		var list1 = data.list1;
+		var parent1 = data.parent1;
 		var map1 = data.map1;
 		var scope = data.scope;
 		//
@@ -355,11 +357,12 @@ class GmlExtLambda {
 					scope.docs.set(laName, GmlFuncDoc.parse(laName + '(${laArgs!=null?laArgs:""})'));
 				}
 				//
-				laCode = post_1(fileName, laCode, laFull.substring(lfPrefix.length), data);
+				laCode = post_1(fileName, laCode, laFull.substring(lfPrefix.length), data, laFull);
 				if (laCode == null) return null;
 				//
 				list1.push(laFull);
 				map1.set(laFull, laCode);
+				parent1.set(laFull, parent);
 				return laFull;
 			}
 		}
@@ -714,14 +717,31 @@ class GmlExtLambda {
 		}
 		
 		// figure out what changed:
+		var isScripts = pj.properties.lambdaMode == Scripts;
 		var remList = [];
 		var setList = [];
+		var indexList = [];
+		var indexForce = isScripts ? new Dictionary<Bool>() : null;
 		for (s in data.list0) {
 			var s1 = data.map1[s];
 			if (s1 == null) {
 				remList.push(s);
-			} else if (s1 != data.map0[s]) {
-				setList.push(s);
+			} else {
+				var changed = s1 != data.map0[s];
+				if (changed) setList.push(s);
+				if (isScripts) {
+					if (changed || indexForce[s]) indexList.push(s);
+					if (changed) {
+						var p = data.parent1[s];
+						var depth = 0;
+						while (p != "" && ++depth <= 128) {
+							indexForce.set(p, true);
+							p = data.parent1[p];
+						}
+					}
+				} else {
+					if (changed) indexList.push(s);
+				}
 			}
 		}
 		for (s in data.list1) if (!data.map0.exists(s)) {
@@ -730,7 +750,6 @@ class GmlExtLambda {
 		var changed = remList.length > 0 || setList.length > 0;
 		
 		// pre-pass: project/data stuff
-		var isScripts = pj.properties.lambdaMode == Scripts;
 		for (s in remList) {
 			pj.lambdaMap.remove(s);
 			if (isScripts) {
@@ -738,13 +757,14 @@ class GmlExtLambda {
 			} else GmlAPI.extDoc.remove(s);
 			seekData.locals.remove(s);
 		}
-		for (s in setList) {
+		for (s in indexList) {
 			pj.lambdaMap.set(s, true);
-			var scr = data.map1[s];
+			var lgml = data.map1[s];
 			var locals = new GmlLocals();
 			seekData.locals.set(s, locals);
-			GmlSeeker.runSyncImpl(isScripts ? pj.fullPath('scripts/$s/$s.gml') : seekPath, scr, s, seekData, locals, KGmlLambdas.inst);
-			readDefs_1(scr); // maybe change map1 to have code+docs pairs later
+			GmlSeeker.runSyncImpl(isScripts ? pj.fullPath('scripts/$s/$s.gml') : seekPath,
+				lgml, s, seekData, locals, KGmlLambdas.inst);
+			readDefs_1(lgml); // maybe change map1 to have code+docs pairs later
 		}
 		
 		// if we're using scripts, we're out of here early
@@ -832,6 +852,7 @@ class GmlExtLambda {
 			map0: lambdaMap,
 			list1: [],
 			map1: new Dictionary(),
+			parent1: new Dictionary(),
 			scopes: scopes,
 			scope: scope,
 			checkInit: false,
@@ -905,10 +926,16 @@ typedef GmlExtLambdaPost = {
 	name:String,
 	project:Project,
 	version:GmlVersion,
-	list0:Array<String>,
-	map0:Dictionary<String>,
-	list1:Array<String>,
-	map1:Dictionary<String>,
+	/** old list of lambda names */
+	list0:Array<GmlName>,
+	map0:Dictionary<GmlCode>,
+	
+	/** new list of lambda names */
+	list1:Array<GmlName>,
+	map1:Dictionary<GmlCode>,
+	
+	/** which lambda does any lambda belong in ("" if top-level) */
+	parent1:Dictionary<GmlName>,
 	checkInit:Bool,
 	scopes:Dictionary<GmlExtLambda>,
 	scope:GmlExtLambda,

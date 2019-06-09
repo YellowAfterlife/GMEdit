@@ -17,6 +17,7 @@ import js.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.Dictionary;
+import tools.Aliases;
 import ui.Preferences;
 import ui.treeview.TreeView;
 import yy.YyObject;
@@ -52,7 +53,7 @@ class GmlSeeker {
 			}
 		});
 	}
-	public static function run(path:String, main:String, kind:FileKind) {
+	public static function run(path:FullPath, main:GmlName, kind:FileKind) {
 		var item:GmlSeekerItem = {path:path.ptNoBS(), main:main, kind:kind};
 		if (itemsLeft < maxAtOnce) {
 			runItem(item);
@@ -92,7 +93,7 @@ class GmlSeeker {
 	}
 	
 	public static function runSyncImpl(
-		orig:String, src:String, main:String, out:GmlSeekData, locals:GmlLocals, kind:FileKind
+		orig:FullPath, src:GmlCode, main:String, out:GmlSeekData, locals:GmlLocals, kind:FileKind
 	):Void {
 		var mainTop = main;
 		var sub = null;
@@ -104,6 +105,12 @@ class GmlSeeker {
 		var canLam = notLam && project.canLambda();
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var localKind = notLam ? "local" : "sublocal";
+		if (project.properties.lambdaMode == Scripts) {
+			if (orig.contains("/" + GmlExtLambda.lfPrefix)) {
+				canLam = true;
+				localKind = "sublocal";
+			}
+		}
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
 			if (s != mainTop) GmlAPI.gmlLookupText += s + "\n";
@@ -204,7 +211,7 @@ class GmlSeeker {
 			}
 			doc = null;
 		}
-		function procLambdaIdent(s:String, locals:GmlLocals):Void {
+		function procLambdaIdent(s:GmlName, locals:GmlLocals):Void {
 			var seekData = GmlExtLambda.seekData;
 			var lfLocals = seekData.locals[s];
 			if (lfLocals == null && project.properties.lambdaMode == Scripts) {
