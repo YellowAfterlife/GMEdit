@@ -729,30 +729,34 @@ class GmlExtLambda {
 		var setList = [];
 		var indexList = [];
 		var indexForce = isScripts ? new Dictionary<Bool>() : null;
+		for (s in data.list0) if (!data.map1.exists(s)) {
+			remList.push(s);
+		}
 		for (s in data.list0) {
 			var s1 = data.map1[s];
 			if (s1 == null) {
 				remList.push(s);
 			} else {
-				var changed = s1 != data.map0[s];
-				if (changed) setList.push(s);
-				if (isScripts) {
-					if (changed || indexForce[s]) indexList.push(s);
-					if (changed) {
-						var p = data.parent1[s];
-						var depth = 0;
-						while (p != "" && ++depth <= 128) {
-							indexForce.set(p, true);
-							p = data.parent1[p];
-						}
-					}
-				} else {
-					if (changed) indexList.push(s);
-				}
+				
 			}
 		}
-		for (s in data.list1) if (!data.map0.exists(s)) {
-			setList.push(s);
+		for (s in data.list1) {
+			var code = data.map1[s];
+			var changed = code != data.map0[s];
+			if (changed) setList.push(s);
+			if (isScripts) {
+				if (changed || indexForce[s]) indexList.push(s);
+				if (changed) {
+					var p = data.parent1[s];
+					var depth = 0;
+					while (p != "" && ++depth <= 128) {
+						indexForce.set(p, true);
+						p = data.parent1[p];
+					}
+				}
+			} else {
+				if (changed) indexList.push(s);
+			}
 		}
 		var changed = remList.length > 0 || setList.length > 0;
 		
@@ -764,8 +768,8 @@ class GmlExtLambda {
 			} else GmlAPI.extDoc.remove(s);
 			seekData.locals.remove(s);
 		}
+		for (s in setList) pj.lambdaMap.set(s, true);
 		for (s in indexList) {
-			pj.lambdaMap.set(s, true);
 			var lgml = data.map1[s];
 			var locals = new GmlLocals();
 			seekData.locals.set(s, locals);
