@@ -498,7 +498,7 @@ class YyObjectProperties {
 			}
 		}
 		var error = GmlObjectProperties.parse(code, v2, varProc, propProc);
-		o.properties = props;
+		o.properties = props.length > 0 ? props : null;
 		return error;
 	}
 }

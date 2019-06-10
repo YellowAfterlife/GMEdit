@@ -16,6 +16,7 @@ using tools.NativeString;
  */
 class GmlEvent {
 	public static inline var typeCollision:Int = 4;
+	/** GMEdit-specific, not a real event */
 	public static inline var typeMagic:Int = -1;
 	public static inline var kindMagicProperties:Int = 1;
 	public static inline function isKeyType(t:Int) {

@@ -30,6 +30,8 @@ package tools;
 			arr.insert(i, insertWhat);
 		} else arr.unshift(insertWhat);
 	}
+	
+	/** Purges all array items for which fn(item) returned false */
 	@:extern public static inline function filterSelf<T>(arr:Array<T>, fn:T->Bool):Void {
 		var i:Int = 0;
 		while (i < arr.length) {

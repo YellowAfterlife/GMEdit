@@ -22,13 +22,10 @@ import ace.AceMacro.jsRx;
  */
 @:forward abstract YyObject(YyObjectImpl) from YyObjectImpl to YyObjectImpl {
 	public static var errorText:String;
-	public function getProperties():String {
-		return YyObjectProperties.get(this);
-	}
 	
 	public function getCode(objPath:String, ?extras:Array<GmlFileExtra>):String {
 		var dir = Path.directory(objPath);
-		var out = getProperties();
+		var out = YyObjectProperties.get(this);
 		var errors = "";
 		// GMS2 doesn't sort events so not doing anything means
 		// that the events will maintain order as authored.
@@ -64,15 +61,19 @@ import ace.AceMacro.jsRx;
 		}
 		return out;
 	}
+	
 	public function setCode(objPath:String, gmlCode:String) {
 		var dir = Path.directory(objPath);
+		var sorted = ui.Preferences.current.eventOrder == 1;
+		
 		//
 		var eventData:GmlEventList = GmlEvent.parse(gmlCode, gml.GmlVersion.v2);
 		if (eventData == null) {
 			errorText = GmlEvent.parseError;
 			return false;
 		}
-		//
+		
+		// process and purge properties pseudo-event:
 		var errors = "";
 		NativeArray.filterSelf(eventData, function(item) {
 			var idat:GmlEventData = item.data;
@@ -82,6 +83,7 @@ import ace.AceMacro.jsRx;
 			if (err != null) errors += err;
 			return false;
 		});
+		
 		// resolve object GUIDs, leave if that doesn't work out:
 		for (item in eventData) {
 			var idat = item.data;
@@ -96,6 +98,7 @@ import ace.AceMacro.jsRx;
 			errorText = errors;
 			return false;
 		}
+		
 		// fill out oldList/oldMap so that we can tell what existed before:
 		var oldList = this.eventList;
 		var oldMap = new Dictionary<YyObjectEvent>();
@@ -105,33 +108,50 @@ import ace.AceMacro.jsRx;
 			oldNames.push(oldName);
 			oldMap.set(oldName, ev);
 		}
-		//
+		
+		// form a new event list:
 		var newList:Array<{ event:YyObjectEvent, code:String }> = [];
-		var newMap = new Dictionary<YyObjectEvent>();
+		var newMap = new Dictionary<Bool>();
+		var newNames:Array<String> = [];
 		for (item in eventData) {
 			var idat = item.data;
-			// try to reuse existing events where possible:
-			var newName = YyEvent.toString(idat.type, idat.numb, idat.obj);
-			var ev = oldMap[newName];
+			var name = YyEvent.toString(idat.type, idat.numb, idat.obj);
+			newNames.push(name);
+			newMap.set(name, true);
+			var ev = oldMap[name];
+			// if we're sorting events, we want the existing ones in original
+			// order and then the new ones, so we'll add them in first pass
+			if (sorted && ev != null) {
+				newList.push({ event: ev, code: item.code.join("\r\n") });
+			}
+		}
+		
+		for (i in 0 ... eventData.length) {
+			var name = newNames[i];
+			if (sorted && oldMap.exists(name)) continue; // see above
+			var item = eventData[i];
+			var idat = item.data;
+			var ev = sorted ? null : oldMap[name];
 			if (ev == null) ev = {
 				id: new YyGUID(),
 				modelName: "GMEvent",
 				mvc: "1.0",
 				IsDnD: false,
+				collisionObjectId: idat.obj,
 				eventtype: idat.type,
 				enumb: idat.numb != null ? idat.numb : 0,
-				collisionObjectId: idat.obj,
 				m_owner: this.id,
 			};
-			newMap.set(newName, ev);
 			newList.push({ event: ev, code: item.code.join("\r\n") });
 		}
+		
 		// remove event files that are no longer used:
 		for (i in 0 ... oldList.length) if (!newMap.exists(oldNames[i])) {
 			var ev = oldList[i];
 			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
 			if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 		}
+		
 		// write used event files:
 		this.eventList = [];
 		for (item in newList) {
@@ -140,6 +160,7 @@ import ace.AceMacro.jsRx;
 			FileWrap.writeTextFileSync(full, item.code);
 			this.eventList.push(ev);
 		}
+		
 		//
 		return true;
 	}
