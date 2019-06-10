@@ -38,53 +38,53 @@ class YyManip {
 			ri: ri,
 		}
 	}
-	public static function add(q:TreeViewItemCreate) {
-		var d = resolve(q);
+	public static function add(args:TreeViewItemCreate) {
+		var d = resolve(args);
 		if (d == null) return false;
 		var pj:Project = d.pj;
 		var py:YyProject = d.py;
-		var kind = q.single;
+		var kind = args.single;
 		//
 		var nix = YyGUID.createNum(2, d.py);
 		var ni = nix[0];
 		//
 		var nType = switch (kind) {
-			default: "GM" + NativeString.capitalize(q.single);
+			default: "GM" + NativeString.capitalize(args.single);
 		};
 		//
 		var nBase:String, nPath:String, nDir:String;
-		if (q.mkdir) {
+		if (args.mkdir) {
 			nBase = "views\\" + ni;
 			nPath = nBase + ".yy";
 			nDir = "views";
 		} else {
 			//
 			var nTop = switch (kind) {
-				default: q.plural;
+				default: args.plural;
 			};
 			pj.mkdirSync(nTop);
 			//
 			nDir = switch (kind) {
-				default: nTop + "\\" + q.name;
+				default: nTop + "\\" + args.name;
 			}
 			pj.mkdirSync(nDir);
 			//
 			nBase = switch (kind) {
-				default: nDir + "\\" + q.name;
+				default: nDir + "\\" + args.name;
 			};
 			nPath = switch (kind) {
 				default: nBase + ".yy";
 			};
 			//
-			q.npath = switch (kind) {
+			args.npath = switch (kind) {
 				case "script": nBase + ".gml";
 				default: nPath;
 			};
 		}
 		//
 		var nJson:Dynamic;
-		q.outGUID = ni;
-		if (q.mkdir) {
+		args.outGUID = ni;
+		if (args.mkdir) {
 			var nView:YyView = {
 				id: ni,
 				modelName: "GMFolder",
@@ -92,7 +92,7 @@ class YyManip {
 				name: ni,
 				children: [],
 				filterType: nType,
-				folderName: q.name,
+				folderName: args.name,
 				isDefaultView: false,
 				localisedFolderName: "",
 			};
@@ -104,7 +104,7 @@ class YyManip {
 					id: ni,
 					modelName: "GMScript",
 					mvc: "1.0",
-					name: q.name,
+					name: args.name,
 					IsCompatibility: false,
 					IsDnD: false,
 				};
@@ -116,7 +116,7 @@ class YyManip {
 					id: ni,
 					modelName: "GMObject",
 					mvc: "1.0",
-					name: q.name,
+					name: args.name,
 					eventList: [],
 					maskSpriteId: YyGUID.zero,
 					overriddenProperties: null,
@@ -146,7 +146,7 @@ class YyManip {
 					id: ni,
 					modelName: "GMShader",
 					mvc: "1.0",
-					name: q.name,
+					name: args.name,
 					type: 1,
 				};
 				pj.writeTextFileSync(nBase + ".vsh", [
@@ -179,21 +179,28 @@ class YyManip {
 				nJson = nyShd;
 			};
 			default: {
-				Dialog.showAlert("No idea how to create type=`" + q.single + "`, sorry");
+				Dialog.showAlert("No idea how to create type=`" + args.single + "`, sorry");
 				return false;
 			}
 		};
 		//
-		py.resources.push({
+		var res:YyProjectResource = {
 			Key: ni,
 			Value: {
 				id: nix[1],
 				resourcePath: StringTools.replace(nPath, "/", "\\"),
 				resourceType: nType,
 			}
-		});
+		};
+		if (args.pyBefore != null) {
+			var i = py.resources.indexOf(args.pyBefore);
+			if (i < 0) i = 0;
+			py.resources.insert(i, res);
+		} else {
+			py.resources.push(res);
+		}
 		//
-		var ord = q.order;
+		var ord = args.order;
 		switch (ord) {
 			case 1, -1: {
 				var i = d.vy.children.indexOf(d.ri);
@@ -213,28 +220,28 @@ class YyManip {
 		//
 		var nJsonStr = NativeString.yyJson(nJson);
 		pj.writeTextFileSync(nPath, nJsonStr);
-		if (q.py == null) {
+		if (args.py == null) {
 			pj.writeTextFileSync(pj.name, NativeString.yyJson(py));
 		}
-		var ntv:Element = TreeViewItemMenus.createImplTV(q);
+		var ntv:Element = TreeViewItemMenus.createImplTV(args);
 		ntv.setAttribute(TreeView.attrYYID, ni);
-		if (q.mkdir) {
+		if (args.mkdir) {
 			//
 		} else switch (kind) {
 			case "script", "object", "shader": {
-				GmlAPI.gmlComp.push(new AceAutoCompleteItem(q.name, kind));
-				GmlAPI.gmlKind.set(q.name, "asset." + kind);
-				GmlAPI.gmlLookup.set(q.name, { path: q.npath, row: 0 });
-				GmlAPI.gmlLookupText += q.name + "\n";
+				GmlAPI.gmlComp.push(new AceAutoCompleteItem(args.name, kind));
+				GmlAPI.gmlKind.set(args.name, "asset." + kind);
+				GmlAPI.gmlLookup.set(args.name, { path: args.npath, row: 0 });
+				GmlAPI.gmlLookupText += args.name + "\n";
 				var fk:FileKind = switch (kind) {
 					case "object": file.kind.yy.KYyEvents.inst;
 					case "shader": null;
 					default: KGmlScript.inst;
 				}
 				var src = kind == "script" ? "" : nJsonStr;
-				if (fk != null) parsers.GmlSeeker.runSync(pj.fullPath(q.npath), src, q.name, fk);
-				if (q.openFile != false) {
-					gml.file.GmlFile.open(q.name, pj.fullPath(q.npath));
+				if (fk != null) parsers.GmlSeeker.runSync(pj.fullPath(args.npath), src, args.name, fk);
+				if (args.openFile != false) {
+					gml.file.GmlFile.open(args.name, pj.fullPath(args.npath));
 				}
 			};
 			default: d.pj.reload();

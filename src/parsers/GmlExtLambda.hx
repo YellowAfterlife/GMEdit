@@ -628,6 +628,12 @@ class GmlExtLambda {
 			pj.lambdaView = "views\\" + md.outGUID + ".yy";
 			saveProject = true;
 		}
+		var pyBefore:yy.YyProjectResource = null;
+		for (r in py.resources) {
+			if (r.Value.resourcePath != pj.lambdaView) continue;
+			pyBefore = r;
+			break;
+		}
 		//
 		var ltv = ui.treeview.TreeView.find(false, {rel:"Scripts/#gmedit-lambda/"});
 		ui.treeview.TreeViewItemMenus.updatePrefix(ltv);
@@ -670,6 +676,7 @@ class GmlExtLambda {
 				mkdir: false,
 				name: s,
 				py: py,
+				pyBefore: pyBefore,
 				openFile: false,
 			};
 			yy.YyManip.add(md);

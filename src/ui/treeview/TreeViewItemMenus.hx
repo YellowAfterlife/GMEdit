@@ -233,9 +233,11 @@ typedef TreeViewItemBase = {
 	?pj:Project,
 	/** if set, project JSON should be modified instead of reading-flushing */
 	?py:yy.YyProject,
-	/** */
+	/** if set, new resource is inserted before this one */
+	?pyBefore:yy.YyProjectResource,
+	/** filled out during call */
 	?outGUID:yy.YyGUID,
-	/** */
+	/** whether to open the freshly made thing (defaults to true) */
 	?openFile:Bool
 };
 typedef TreeViewItemCreate = {
