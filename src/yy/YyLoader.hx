@@ -32,6 +32,7 @@ class YyLoader {
 		//
 		project.yySpriteURLs = new Dictionary();
 		var views:Dictionary<YyView> = new Dictionary();
+		var roomViews:Dictionary<YyView> = new Dictionary();
 		var rootView:YyView = null;
 		var rxName = Project.rxName;
 		for (res in yyProject.resources) {
@@ -50,6 +51,12 @@ class YyLoader {
 				val.resourceName = view.folderName;
 				if (view.isDefaultView) rootView = view;
 				views.set(key, view);
+				if (NativeString.endsWith(val.resourcePath, "-room.yy")) {
+					var path = val.resourcePath;
+					var slash = path.lastIndexOf("\\");
+					if (slash < 0) slash = path.indexOf("/");
+					roomViews.set(path.substring(slash + 1, path.length - 8), view);
+				}
 			}
 		}
 		if (rootView == null) return "Couldn't find a top-level view in project.";
@@ -77,18 +84,10 @@ class YyLoader {
 				var val = res.Value;
 				var name:String, rel:String;
 				var type = val.resourceType;
-				if (type == "GMFolder") {
-					var vdir:YyView = views[res.Key];
+				function loadrec_dir(vdir:YyView, name:String) {
 					if (out == null) {
 						loadrec(out, vdir, null);
-						continue;
-					}
-					name = vdir.folderName;
-					if (path == "") switch (name) {
-						case "datafiles": name = "Included Files";
-						default: {
-							name = name.charAt(0).toUpperCase() + name.substring(1);
-						};
+						return;
 					}
 					rel = path + name + "/";
 					if (name == "#gmedit-lambda") {
@@ -113,6 +112,17 @@ class YyLoader {
 					}
 					loadrec(nextOut, vdir, rel);
 					out.appendChild(dir);
+				}
+				if (type == "GMFolder") {
+					var vdir = views[res.Key];
+					name = vdir.folderName;
+					if (path == "") switch (name) {
+						case "datafiles": name = "Included Files";
+						default: {
+							name = name.charAt(0).toUpperCase() + name.substring(1);
+						};
+					}
+					loadrec_dir(vdir, name);
 				}
 				else {
 					name = val.resourceName;
@@ -245,6 +255,12 @@ class YyLoader {
 						case "GMSprite": TreeView.setThumbSprite(full, name, item);
 					}
 					out.appendChild(item);
+					if (type == "GMRoom") { // child rooms?
+						var vdir:YyView = roomViews[res.Key];
+						if (vdir != null) {
+							loadrec_dir(vdir, name);
+						}
+					}
 				}
 			}
 		}
