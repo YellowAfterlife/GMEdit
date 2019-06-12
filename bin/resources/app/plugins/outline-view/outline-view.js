@@ -268,7 +268,7 @@
 			},
 			pop: function() {
 				finishDir(curr);
-				return (curr = stack.pop());
+				return (curr = stack.pop() || ov);
 			},
 			mark: function(label, title, nav) {
 				var q = makeNav(file, label, title, nav);
