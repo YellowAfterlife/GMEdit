@@ -52,7 +52,12 @@ import ace.AceMacro.jsRx;
 			var name = YyEvent.toString(type, numb, oid);
 			var full = Path.join([dir, rel]);
 			if (extras != null) extras.push(new GmlFileExtra(full));
-			var code = FileWrap.readTextFileSync(full);
+			var code = try {
+				FileWrap.readTextFileSync(full);
+			} catch (x:Dynamic) {
+				Main.console.warn("Missing event file: " + full);
+				"";
+			}
 			if (out != "") out += "\n\n";
 			var pair = parsers.GmlHeader.parse(code, v2);
 			out += "#event " + name;
