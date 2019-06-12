@@ -115,22 +115,31 @@ import ace.AceMacro.jsRx;
 		}
 		
 		// form a new event list:
-		var newList:Array<{ event:YyObjectEvent, code:String }> = [];
-		var newMap = new Dictionary<Bool>();
+		var newList:Array<{ event:YyObjectEvent, code:GmlCode }> = [];
+		var newMap = new Dictionary<Array<GmlCode>>();
 		var newNames:Array<String> = [];
 		for (item in eventData) {
 			var idat = item.data;
 			var name = YyEvent.toString(idat.type, idat.numb, idat.obj);
 			newNames.push(name);
-			newMap.set(name, true);
-			var ev = oldMap[name];
-			// if we're sorting events, we want the existing ones in original
-			// order and then the new ones, so we'll add them in first pass
-			if (sorted && ev != null) {
-				newList.push({ event: ev, code: item.code.join("\r\n") });
+			newMap.set(name, item.code);
+		}
+		
+		//
+		for (i in 0 ... oldList.length) {
+			if (newMap.exists(oldNames[i])) {
+				// if we're sorting events, we want the existing ones in original
+				// order and then the new ones, so we'll add them in first pass
+				if (sorted) newList.push({ event: oldList[i], code: newMap[oldNames[i]].join("\r\n") });
+			} else {
+				// remove event files that are no longer used
+				var ev = oldList[i];
+				var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
+				if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 			}
 		}
 		
+		// form newly introduced events:
 		for (i in 0 ... eventData.length) {
 			var name = newNames[i];
 			if (sorted && oldMap.exists(name)) continue; // see above
@@ -148,13 +157,6 @@ import ace.AceMacro.jsRx;
 				m_owner: this.id,
 			};
 			newList.push({ event: ev, code: item.code.join("\r\n") });
-		}
-		
-		// remove event files that are no longer used:
-		for (i in 0 ... oldList.length) if (!newMap.exists(oldNames[i])) {
-			var ev = oldList[i];
-			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
-			if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 		}
 		
 		// write used event files:
