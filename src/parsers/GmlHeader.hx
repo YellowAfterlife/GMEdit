@@ -11,7 +11,7 @@ import js.RegExp;
  */
 class GmlHeader {
 	private static var rx1 = new RegExp("^///(.*)(?:\r?\n|$)");
-	private static var rx2 = new RegExp("^///[ \t]*@(description|desc)?( .*)(?:\r?\n|$)");
+	private static var rx2 = new RegExp("^/// @(description|desc)?( .*)(?:\r?\n|$)");
 	public static function parse(code:String, version:GmlVersion):GmlHeaderData {
 		var mt:RegExpMatch, name:String = null;
 		if (version.hasJSDoc()) {
