@@ -43,6 +43,10 @@ import haxe.extern.EitherType;
 			ensure(path + "/config");
 			ensure(path + "/themes");
 			ensure(path + "/plugins");
+			ensure(path + "/api");
+			ensure(path + "/api/v1");
+			ensure(path + "/api/v2");
+			ensure(path + "/api/live");
 		} else {
 			blank("Electron_API");
 			set("Electron_FS", FileSystem.FileSystemBrowser);

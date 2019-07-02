@@ -10,6 +10,7 @@ import ace.extern.*;
 import tools.NativeString;
 import ui.Preferences;
 import ui.liveweb.LiveWeb;
+import electron.FileWrap;
 using tools.ERegTools;
 using StringTools;
 
@@ -275,6 +276,20 @@ class GmlAPI {
 						var name = rx.matched(1);
 						raw = new EReg('^$name\\b', "gm").replace(raw, ":" + name);
 					});
+					#if !lwedit
+					if (FileSystem.canSync) {
+						var xdir = FileWrap.userPath + "/api/" + version.getName();
+						if (FileSystem.existsSync(xdir))
+						for (xrel in FileSystem.readdirSync(xdir)) {
+							var xfull = xdir + "/" + xrel;
+							try {
+								raw += "\n" + FileSystem.readTextFileSync(xfull);
+							} catch (x:Dynamic) {
+								Main.console.error("Error loading API from " + xfull, x);
+							}
+						}
+					}
+					#end
 					GmlParseAPI.loadStd(raw, data);
 					#if lwedit
 					if (lwArg0 != null) { // give GMLive a copy of data
