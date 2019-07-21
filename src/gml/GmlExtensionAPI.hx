@@ -30,6 +30,16 @@ class GmlExtensionAPI {
 				r += "v" + i;
 			} else r += "...";
 			r += ")";
+		} else {
+			var p = r.indexOf(")");
+			if (p >= 0 && ++p < r.length) {
+				var rest = StringTools.ltrim(r.substring(p));
+				if (rest.charAt(0) == ":" && StringTools.isSpace(rest, 1)) {
+					// `func() : desc` -> `func() // desc`
+					rest = rest.substring(2);
+				}
+				r = r.substring(0, p) + " // " + rest;
+			}
 		}
 		if (hidden) r += " // hidden";
 		return r;
