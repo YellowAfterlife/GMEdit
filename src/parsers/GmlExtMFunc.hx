@@ -29,11 +29,13 @@ class GmlExtMFunc {
 	public var args:Array<String>;
 	public var order:Array<GmlExtMFuncOrder>;
 	public var comp:AceAutoCompleteItem;
+	public var hasRest:Bool;
 	public function new(name:String, json:GmlExtMFuncData) {
 		this.name = name;
 		args = json.args;
 		order = json.order;
 		comp = new AceAutoCompleteItem(name, "mfunc", name + "(" + args.join(",") + ")");
+		hasRest = args.length > 0 && args[args.length - 1].trimBoth() == "...";
 	}
 	
 	static function __magicMap_init() {
@@ -348,12 +350,26 @@ class GmlExtMFunc {
 					case "(".code, "[".code: depth++;
 					case ")".code, "]".code: if (--depth <= 0) {
 						flushArg(p);
-						if (mf.args.length == 0 && args.length == 1 && args[0].trimRight() == "") {
+						var mfl = mf.args.length;
+						if (mfl == 0 && args.length == 1 && args[0].trimRight() == "") {
 							args.pop();
 						}
-						if (args.length != mf.args.length) return error(
-							'Argument count mismatch for $name - expected '+
-							mf.args.length + ', got ' + args.length);
+						if (mf.hasRest) {
+							if (args.length < mfl) return error(
+								'$name requires at least ${mf.args.length} arguments'
+								+ ', ${args.length} provided.');
+							if (args.length > mf.args.length) {
+								var i = mfl - 1;
+								var rest = args[i];
+								while (++i < args.length) rest += "," + args[i];
+								args.splice(mfl, args.length - mfl);
+								args[mfl - 1] = rest;
+							}
+						} else {
+							if (args.length != mfl) return error(
+								'$name requires ${mf.args.length} arguments'
+								+ ', ${args.length} provided.');
+						}
 						var pre = name + "_mf";
 						var out = pre + "0";
 						var order = mf.order;
@@ -432,13 +448,15 @@ class GmlExtMFunc {
 					var name = q.substring(nameStart, q.pos);
 					if (name == "") return error("No name provided");
 					q.skipSpaces0();
-					//
+					
+					// read the signature:
 					if (q.read() != "(".code) return error("Expected a `(` after " + name);
 					var argFulls:Array<String> = [];
 					var argMap:Dictionary<Int> = new Dictionary();
 					var argsOK = false;
+					var seenRest = false;
 					q.skipSpaces0();
-					if (q.peek() == ")".code) {
+					if (q.peek() == ")".code) { // it's just #mfunc name()
 						q.skip();
 						argsOK = true;
 					}
@@ -446,11 +464,17 @@ class GmlExtMFunc {
 						var argStart = q.pos;
 						q.skipSpaces0();
 						var argNameStart = q.pos;
-						q.skipIdent();
+						if (seenRest) return error('Can\'t have arguments after `...`'
+							+ ' argument in $name');
+						if (q.peek() == ".".code && q.peek(1) == ".".code && q.peek(2) == ".".code) {
+							q.skip(3); // it's a ...
+							seenRest = true;
+						} else q.skipIdent();
 						var argName = q.substring(argNameStart, q.pos);
 						if (argName == "") return error("Expected an argument name for argument["
 							+ argFulls.length + '] in $name');
 						q.skipSpaces0();
+						//
 						var argFull = q.substring(argStart, q.pos);
 						if (argMap.exists(argName)) {
 							return error('Argument redefinition for `$argName` in `$name`');
@@ -466,6 +490,7 @@ class GmlExtMFunc {
 						}
 					}
 					if (!argsOK) return error('Expected a `(` after $name\'s arguments');
+					
 					// the time has come to read the macro value
 					var argStart = q.pos;
 					var mfArgs = "";
@@ -512,6 +537,15 @@ class GmlExtMFunc {
 									case "\\".code: {}; // escaped
 									default: q.pos--; break; // -> val¦\r\n
 								}
+							};
+							case ".".code if (q.peek() == ".".code && q.peek(1) == ".".code): {
+								q.skip(2);
+								argFlush();
+								var i = argMap["..."];
+								if (i != null) {
+									order.push(GmlExtMFuncOrder.Plain(i));
+								} else return error("Using a `...` argument that is not defined.");
+								argStart = q.pos;
 							};
 							case _ if (c.isIdent0()): {
 								q.skipIdent1();
