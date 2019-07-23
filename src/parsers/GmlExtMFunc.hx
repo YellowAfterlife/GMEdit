@@ -3,6 +3,7 @@ import haxe.Json;
 import haxe.ds.Vector;
 import tools.Aliases;
 import tools.Dictionary;
+import editors.EditCode;
 using tools.NativeString;
 import ui.Preferences;
 import gml.GmlAPI;
@@ -26,7 +27,7 @@ import ace.extern.AceAutoCompleteItem;
 class GmlExtMFunc {
 	public var name:String;
 	public var args:Array<String>;
-	public var order:Array<Int>;
+	public var order:Array<GmlExtMFuncOrder>;
 	public var comp:AceAutoCompleteItem;
 	public function new(name:String, json:GmlExtMFuncData) {
 		this.name = name;
@@ -35,8 +36,27 @@ class GmlExtMFunc {
 		comp = new AceAutoCompleteItem(name, "mfunc", name + "(" + args.join(",") + ")");
 	}
 	
+	static function __magicMap_init() {
+		var m = new Dictionary<EditCode->GmlReader->GmlCode>();
+		m["__FILE__"] = (e:EditCode, _) -> Json.stringify(e.file.name);
+		m["__HERE__"] = (e:EditCode, _) -> e.file.name;
+		m["__DATE__"] = (e:EditCode, _) -> Json.stringify(DateTools.format(Date.now(), "%F"));
+		m["__TIME__"] = (e:EditCode, _) -> Json.stringify(DateTools.format(Date.now(), "%T"));
+		m["__LINE__"] = function(e:EditCode, q:GmlReader) {
+			var n = 0;
+			var i = q.pos;
+			while (i >= 0) {
+				n++;
+				i = q.source.lastIndexOf("\n", i - 1);
+			}
+			return "" + n;
+		};
+		return m;
+	}
+	static var magicMap:Dictionary<EditCode->GmlReader->GmlCode> = __magicMap_init();
+	
 	public static var errorText:String = null;
-	public static function pre(code:GmlCode):GmlCode {
+	public static function pre(editor:EditCode, code:GmlCode):GmlCode {
 		if (!Preferences.current.mfuncMagic) return code;
 		var q = new GmlReader(code);
 		var v = q.version;
@@ -48,6 +68,7 @@ class GmlExtMFunc {
 				&& q.peek( -1) == "0".code;
 		}
 		function proc(mf:GmlExtMFunc, pre:String):String {
+			if (mf.order.length == 0) return mf.name + "()";
 			var orig_pos = q.pos;
 			var c = q.peek();
 			var beforeParOpen = "";
@@ -62,6 +83,9 @@ class GmlExtMFunc {
 					beforeParOpen = q.substring(orig_pos + 2, q.pos);
 					q.pos += 2;
 				}
+			}
+			inline function error(s:String) {
+				Main.console.error('[mfunc] for ${mf.name}: ' + s);
 			}
 			var start = q.pos;
 			var ind = 1;
@@ -78,8 +102,10 @@ class GmlExtMFunc {
 						case "*".code: q.skip(); q.skipComment();
 					}
 					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
-					case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-						var ctx = q.readContextName(null);
+					case "#".code: {
+						if (p == 0 || q.get(p - 1) == "\n".code) {
+							var ctx = q.readContextName(null);
+						};
 					};
 					case _ if (c.isIdent0()): {
 						q.skipIdent1();
@@ -96,20 +122,58 @@ class GmlExtMFunc {
 							c = q.get(p - 1);
 							if (c.isSpace0()) p--;
 							//
-							var arg = out + q.substring(start, p);
-							out = "";
-							var ai = order[ind - 1];
-							//Main.console.log(orig_pos, ai, ind, '`$arg`');
-							var oldArg = args[ai];
-							if (oldArg != null) {
-								if (oldArg != arg) {
-									Main.console.error('mfunc violation: argument[$ai]'
-										+ ' is already set to `$oldArg` but new value is `$arg`');
-									break;
-								}
-							} else args[ai] = arg;
+							var arg = out + q.substring(start, p); out = "";
+							//
+							var ai:Int, s:String;
+							var ord = order[ind - 1];
+							if (ord.isPlain()) {
+								ai = ord.asPlain();
+							} else switch (ord.kind) {
+								case Plain: ai = ord.arg;
+								case Magic: ai = -1;
+								case Quoted: {
+									ai = ord.arg;
+									arg = try Json.parse(arg) catch (x:Dynamic) {
+										error('argument[$ai] `$arg` is invalid JSON.');
+										break;
+									};
+								};
+								case Pre, Post: {
+									ai = ord.arg;
+									s = ord.asArray()[2];
+									if (ord.kind == Pre) {
+										if (arg.startsWith(s)) {
+											arg = arg.substring(s.length);
+										} else {
+											error('argument[$ai] `$arg` is supposed '
+												+ 'to start with `$s` but does not.');
+											break;
+										}
+									} else {
+										if (arg.endsWith(s)) {
+											arg = arg.substring(0, arg.length - s.length);
+										} else {
+											error('argument[$ai] `$arg` is supposed '
+												+ 'to end with `$s` but does not.');
+											break;
+										}
+									}
+								};
+							}
+							if (ai >= 0) {
+								var oldArg = args[ai];
+								if (oldArg != null) {
+									if (oldArg != arg) {
+										Main.console.error('mfunc violation: argument[$ai]'
+											+ ' is already set to `$oldArg` but new value is `$arg`');
+										break;
+									}
+								} else args[ai] = arg;
+							}
 							//
 							if (++ind > order.length) {
+								ai = args.length;
+								while (--ai >= 0) if (args[ai] == null) args[ai] = "undefined";
 								return mf.name + beforeParOpen + "(" + args.join(",") + ")";
 							} else {
 								c = q.peek();
@@ -146,10 +210,10 @@ class GmlExtMFunc {
 							var line = q.substring(p + 10, q.pos);
 							var nameEnd = line.indexOf(" ");
 							var name = line.substring(0, nameEnd);
-							var json:{args:Array<String>, order:Array<Int>}
+							var json:GmlExtMFuncData
 								= Json.parse(line.substring(nameEnd + 1));
 							var args:Array<String> = json.args;
-							var order:Array<Int> = json.order;
+							var order = json.order;
 							var ok = false;
 							//
 							var mf = "#mfunc " + name + "(" + args.join(",") + ")";
@@ -174,7 +238,27 @@ class GmlExtMFunc {
 									cval = cval.substring(0, cval.length - 2);
 								}
 								mf += cval;
-								if (i < n) mf += args[order[i]].trimBoth();
+								if (i < n) {
+									var ord = order[i];
+									var ai:Int;
+									if (ord == null) {
+										ai = -1;
+									} else if (ord.isPlain()) {
+										ai = ord.asPlain();
+									} else switch (ord.kind) {
+										case Plain: ai = ord.arg;
+										case Quoted: ai = ord.arg; mf += "@@";
+										case Pre: mf += ord.asArray()[2] + "##"; ai = ord.arg;
+										case Post: {
+											ai = -1;
+											mf += args[ord.arg].trimBoth() + "##" + ord.asArray()[2];
+										};
+										case Magic: mf += "@@" + ord.asArray()[1]; ai = -1;
+									}
+									if (ai >= 0) {
+										mf += args[ai].trimBoth();
+									}
+								}
 								i++;
 							}
 							//
@@ -188,9 +272,28 @@ class GmlExtMFunc {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
-				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-					var ctx = q.readContextName(null);
-				};
+				case "#".code: {
+					if (q.peek() == "m".code &&
+						q.peek(1) == "a".code &&
+						q.peek(2) == "c".code &&
+						q.peek(3) == "r".code &&
+						q.peek(4) == "o".code &&
+						q.peek(5).isSpace1_ni()
+					) {
+						q.skip(5);
+						q.skipSpaces1();
+						q.skipIdent();
+						q.skipSpaces1();
+						if (q.peek() == ":".code) {
+							q.skip();
+							q.skipSpaces1();
+							q.skipIdent();
+						}
+					}
+					else if (p == 0 || q.get(p - 1) == "\n".code) {
+						var ctx = q.readContextName(null);
+					};
+				}
 				case _ if (c.isIdent0()): {
 					q.skipIdent1();
 					if (is_mf0()) {
@@ -211,7 +314,7 @@ class GmlExtMFunc {
 	}
 	
 	
-	public static function post(code:GmlCode):GmlCode {
+	public static function post(editor:EditCode, code:GmlCode):GmlCode {
 		if (!Preferences.current.mfuncMagic) return code;
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
@@ -222,6 +325,7 @@ class GmlExtMFunc {
 		var nextMap = new Dictionary<GmlExtMFunc>();
 		//
 		function proc(mf:GmlExtMFunc):String {
+			var orig_pos = q.pos;
 			var name = mf.name;
 			//
 			var start = q.pos;
@@ -244,8 +348,12 @@ class GmlExtMFunc {
 					case "(".code, "[".code: depth++;
 					case ")".code, "]".code: if (--depth <= 0) {
 						flushArg(p);
-						if (args.length != mf.args.length) return error('Argument count mismatch for '
-							+ name + ' - expected ' + mf.args.length + ', got ' + args.length);
+						if (mf.args.length == 0 && args.length == 1 && args[0].trimRight() == "") {
+							args.pop();
+						}
+						if (args.length != mf.args.length) return error(
+							'Argument count mismatch for $name - expected '+
+							mf.args.length + ', got ' + args.length);
 						var pre = name + "_mf";
 						var out = pre + "0";
 						var order = mf.order;
@@ -253,7 +361,22 @@ class GmlExtMFunc {
 						if (nosep) out += "/*" + spacesBeforeParOpen + "*/";
 						for (i in 0 ... order.length) {
 							if (nosep) nosep = false; else out += " ";
-							out += args[order[i]] + " " + pre + (i + 1);
+							var ord = order[i];
+							if (ord.isPlain()) {
+								out += args[ord.asPlain()];
+							} else switch (ord.kind) {
+								case Plain: {};
+								case Quoted: out += Json.stringify(args[ord.arg]);
+								case Magic: {
+									var _q_pos = q.pos;
+									q.pos = orig_pos;
+									out += magicMap[ord.asArray()[1]](editor, q);
+									q.pos = _q_pos;
+								};
+								case Pre: out += ord.asArray()[2] + args[ord.arg];
+								case Post: out += args[ord.arg] + ord.asArray()[2];
+							}
+							out += " " + pre + (i + 1);
 						}
 						// auto-fix `some(...)exit` -> `...some_mfXexit`
 						c = q.peek(); if (c.isIdent1()) out += " ";
@@ -289,6 +412,9 @@ class GmlExtMFunc {
 		while (q.loop) {
 			var p = q.pos;
 			var c = q.read();
+			inline function checkConcat():Bool {
+				return q.peek() == "#".code && q.peek(1) == "#".code && q.peek(2).isIdent0_ni();
+			}
 			switch (c) {
 				case "/".code: switch (q.peek()) {
 					case "/".code: q.skipLine();
@@ -296,96 +422,154 @@ class GmlExtMFunc {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
-				case "#".code: {
-					if (q.substr(p + 1, 5) == "mfunc" && !q.get(p + 6).isIdent1()) {
-						flush(p);
-						q.skip(6);
-						q.skipSpaces0();
-						var nameStart = q.pos;
-						q.skipIdent();
-						//
-						var name = q.substring(nameStart, q.pos);
-						if (name == "") return error("No name provided");
-						q.skipSpaces0();
-						//
-						if (q.read() != "(".code) return error("Expected a `(` after " + name);
-						var argFulls:Array<String> = [];
-						var argMap:Dictionary<Int> = new Dictionary();
-						var argsOK = false;
-						while (q.loop) {
-							var argStart = q.pos;
-							q.skipSpaces0();
-							var argNameStart = q.pos;
-							q.skipIdent();
-							var argName = q.substring(argNameStart, q.pos);
-							if (argName == "") return error("Expected an argument name for argument["
-								+ argFulls.length + '] in $name');
-							q.skipSpaces0();
-							var argFull = q.substring(argStart, q.pos);
-							if (argMap.exists(argName)) {
-								return error('Argument redefinition for `$argName` in `$name`');
-							} else argMap.set(argName, argFulls.length);
-							argFulls.push(argFull);
-							//
-							switch (q.read()) {
-								case ",".code: {}; // OK!
-								case ")".code: argsOK = true; break;
-								default: return error('Unexpected character `'
-									 + String.fromCharCode(q.peek( -1))
-									 + '` in arguments for $name');
-							}
-						}
-						if (!argsOK) return error('Expected a `(` after $name\'s arguments');
-						// the time has come to read the macro value
+				case "#".code if (q.substr(p + 1, 5) == "mfunc" && !q.get(p + 6).isIdent1()): {
+					flush(p);
+					q.skip(6);
+					q.skipSpaces0();
+					var nameStart = q.pos;
+					q.skipIdent();
+					//
+					var name = q.substring(nameStart, q.pos);
+					if (name == "") return error("No name provided");
+					q.skipSpaces0();
+					//
+					if (q.read() != "(".code) return error("Expected a `(` after " + name);
+					var argFulls:Array<String> = [];
+					var argMap:Dictionary<Int> = new Dictionary();
+					var argsOK = false;
+					q.skipSpaces0();
+					if (q.peek() == ")".code) {
+						q.skip();
+						argsOK = true;
+					}
+					else while (q.loop) {
 						var argStart = q.pos;
-						var mfArgs = "";
-						var order:Array<Int> = [];
-						inline function argFlush():Void {
-							var arg = q.substring(argStart, p);
-							if (NativeString.trimRight(arg) == "") arg += "//";
-							mfArgs += '\n#macro ${name}_mf' + order.length + ' $arg';
+						q.skipSpaces0();
+						var argNameStart = q.pos;
+						q.skipIdent();
+						var argName = q.substring(argNameStart, q.pos);
+						if (argName == "") return error("Expected an argument name for argument["
+							+ argFulls.length + '] in $name');
+						q.skipSpaces0();
+						var argFull = q.substring(argStart, q.pos);
+						if (argMap.exists(argName)) {
+							return error('Argument redefinition for `$argName` in `$name`');
+						} else argMap.set(argName, argFulls.length);
+						argFulls.push(argFull);
+						//
+						switch (q.read()) {
+							case ",".code: {}; // OK!
+							case ")".code: argsOK = true; break;
+							default: return error('Unexpected character `'
+								 + String.fromCharCode(q.peek( -1))
+								 + '` in arguments for $name');
 						}
-						while (q.loop) {
-							p = q.pos;
-							c = q.read();
-							switch (c) {
-								case "/".code: switch (q.peek()) {
-									case "/".code, "*".code: return error(
-										'Comments are not supported in macro-functions, for $name');
-									default:
-								};
-								case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
-								case "\r".code, "\n".code: {
-									switch (q.get(p - 1)) {
-										case "\r".code: {}; // it's \r\n
-										case "\\".code: {}; // escaped
-										default: q.pos--; break; // -> val¦\r\n
-									}
-								};
-								default: {
-									if (c.isIdent0()) {
+					}
+					if (!argsOK) return error('Expected a `(` after $name\'s arguments');
+					// the time has come to read the macro value
+					var argStart = q.pos;
+					var mfArgs = "";
+					var order:Array<GmlExtMFuncOrder> = [];
+					inline function argFlush(i:Int = 0):Void {
+						var arg = q.substring(argStart, p);
+						if (NativeString.trimRight(arg) == "") arg += "//";
+						mfArgs += '\n#macro ${name}_mf' + (i + order.length) + ' $arg';
+					}
+					while (q.loop) {
+						p = q.pos;
+						c = q.read();
+						var s1:String, s2:String;
+						switch (c) {
+							case "/".code: switch (q.peek()) {
+								case "/".code, "*".code: return error(
+									'Comments are not supported in macro-functions, for $name');
+								default:
+							};
+							case "@".code if (q.peek() == "@".code && q.peek(1).isIdent0_ni()): {
+								argFlush();
+								q.skip();
+								p = q.pos;
+								q.skipIdent1();
+								s1 = q.substring(p, q.pos);
+								if (checkConcat()) return error(
+									'Can\'t concat to a literal (@@$s1## in $name)'
+								);
+								var i = argMap[s1];
+								if (i != null) {
+									order.push(GmlExtMFuncOrder.Quoted(i));
+								}
+								else if (magicMap.exists(s1)) {
+									order.push(GmlExtMFuncOrder.Magic(s1));
+								}
+								else return error('Unknown variable/global for literal ' +
+									'($s1 in $name)');
+								argStart = q.pos;
+							};
+							case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+							case "\r".code, "\n".code: {
+								switch (q.get(p - 1)) {
+									case "\r".code: {}; // it's \r\n
+									case "\\".code: {}; // escaped
+									default: q.pos--; break; // -> val¦\r\n
+								}
+							};
+							case _ if (c.isIdent0()): {
+								q.skipIdent1();
+								s1 = q.substring(p, q.pos);
+								var i = argMap[s1];
+								if (i != null) {
+									argFlush();
+									if (checkConcat()) { // var##post
+										q.skip(2);
+										p = q.pos;
 										q.skipIdent1();
-										var i = argMap[q.substring(p, q.pos)];
-										if (i != null) {
-											argFlush();
-											order.push(i);
-											argStart = q.pos;
-										}
+										s2 = q.substring(p, q.pos);
+										if (argMap.exists(s2)) return error('Argument concatenation'+
+											' ($s1##$s2, in $name) is not supported.'
+										);
+										if (checkConcat()) return error(
+											'Cannot concat more than two identifiers'+
+											' ($s1##$s2##, in #name)'
+										);
+										order.push(GmlExtMFuncOrder.Post(i, s2));
+									} else {
+										order.push(GmlExtMFuncOrder.Plain(i));
 									}
-								};
+									argStart = q.pos;
+								}
+								else if (checkConcat()) { // pre##var
+									argFlush();
+									q.skip(2);
+									p = q.pos;
+									q.skipIdent1();
+									s2 = q.substring(p, q.pos);
+									i = argMap[s2];
+									if (i == null) return error('One of the concat arguments'+
+										' should be a variable ($s1##$s2, in $name).'
+									);
+									if (checkConcat()) return error(
+										'Cannot concat more than two identifiers'+
+										' ($s1##$s2##, in #name)'
+									);
+									order.push(GmlExtMFuncOrder.Pre(i, s1));
+									argStart = q.pos;
+								}
 							}
 						}
-						argFlush();
-						//
-						var json:GmlExtMFuncData = {
-							args: argFulls,
-							order: order,
-						};
-						var mf = new GmlExtMFunc(name, json);
-						nextMap.set(name, mf);
-						out += '//!#mfunc $name ' + Json.stringify(json) + mfArgs;
-						start = q.pos;
-					} else if (p == 0 || q.get(p - 1) == "\n".code) {
+					}
+					argFlush();
+					//
+					var json:GmlExtMFuncData = {
+						args: argFulls,
+						order: order,
+					};
+					var mf = new GmlExtMFunc(name, json);
+					nextMap.set(name, mf);
+					out += '//!#mfunc $name ' + Json.stringify(json) + mfArgs;
+					start = q.pos;
+				};
+				case "#".code: {
+					if (p == 0 || q.get(p - 1) == "\n".code) {
 						var ctx = q.readContextName(null);
 					}
 				}; // "#"
@@ -417,5 +601,60 @@ typedef GmlExtMFuncData = {
 	var args:Array<String>;
 	
 	/** [1,0,1] for `#mfunc some(a,b) [b,a,b]`*/
-	var order:Array<Int>;
+	var order:Array<GmlExtMFuncOrder>;
+}
+abstract GmlExtMFuncOrder(Dynamic) {
+	//
+	public inline function isPlain():Bool return Std.is(this, Float);
+	public inline function asPlain():Int return this;
+	//
+	public var kind(get, never):GmlExtMFuncOrderKind;
+	private inline function get_kind():GmlExtMFuncOrderKind {
+		return this[0];
+	}
+	public inline function asArray():Array<Dynamic> return this;
+	//
+	public inline function hasArg():Bool {
+		return isPlain() || kind != GmlExtMFuncOrderKind.Magic;
+	}
+	//
+	public var arg(get, never):Int;
+	private inline function get_arg():Int {
+		return this[1];
+	}
+	//
+	public static inline function Plain(arg:Int):GmlExtMFuncOrder {
+		return cast arg;
+	}
+	public static inline function Quoted(arg:Int):GmlExtMFuncOrder {
+		return cast ([GmlExtMFuncOrderKind.Quoted, arg]:Array<Dynamic>);
+	}
+	public static inline function Magic(name:String):GmlExtMFuncOrder {
+		return cast ([GmlExtMFuncOrderKind.Magic, name]:Array<Dynamic>);
+	}
+	public static inline function Pre(arg:Int, pre:String):GmlExtMFuncOrder {
+		return cast ([GmlExtMFuncOrderKind.Pre, arg, pre]:Array<Dynamic>);
+	}
+	public static inline function Post(arg:Int, post:String):GmlExtMFuncOrder {
+		return cast ([GmlExtMFuncOrderKind.Post, arg, post]:Array<Dynamic>);
+	}
+	//
+}
+
+/** NB: don't change the indexes or existing code will freak out */
+enum abstract GmlExtMFuncOrderKind(Int) {
+	/** (arg_index) */
+	var Plain = 0;
+	
+	/** (arg_index) */
+	var Quoted = 1;
+	
+	/** (name) */
+	var Magic = 2;
+	
+	/** (arg_index, pre) */
+	var Pre = 3;
+	
+	/** (arg_index, post) */
+	var Post = 4;
 }

@@ -33,6 +33,9 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function set(k:String, v:T):Void {
 		untyped this[k] = v;
 	}
+	@:arrayAccess public inline function setret(k:String, v:T):T {
+		return untyped this[k] = v;
+	}
 	public inline function remove(k:String):Void {
 		untyped __js__("delete {0}[{1}]", this, k);
 	}
