@@ -49,7 +49,20 @@ class GmlExtMFunc {
 		}
 		function proc(mf:GmlExtMFunc, pre:String):String {
 			var orig_pos = q.pos;
-			var c = q.peek(); if (c.isSpace0()) q.skip();
+			var c = q.peek();
+			var beforeParOpen = "";
+			if (c.isSpace0()) {
+				q.skip();
+			} else if (c == "/".code && q.peek(1) == "*".code) {
+				q.pos = q.source.indexOf("*/", q.pos);
+				if (q.pos < 0) {
+					q.pos = orig_pos;
+					return pre + "0";
+				} else {
+					beforeParOpen = q.substring(orig_pos + 2, q.pos);
+					q.pos += 2;
+				}
+			}
 			var start = q.pos;
 			var ind = 1;
 			var next:String = pre + ind;
@@ -97,7 +110,7 @@ class GmlExtMFunc {
 							} else args[ai] = arg;
 							//
 							if (++ind > order.length) {
-								return mf.name + "(" + args.join(",") + ")";
+								return mf.name + beforeParOpen + "(" + args.join(",") + ")";
 							} else {
 								c = q.peek();
 								if (c.isSpace0()) q.skip();
@@ -209,10 +222,14 @@ class GmlExtMFunc {
 		var nextMap = new Dictionary<GmlExtMFunc>();
 		//
 		function proc(mf:GmlExtMFunc):String {
-			q.skipSpaces0();
 			var name = mf.name;
-			if (q.read() != "(".code) return error("Expected a `(` after " + name);
+			//
 			var start = q.pos;
+			q.skipSpaces0();
+			var spacesBeforeParOpen = q.substring(start, q.pos);
+			//
+			if (q.read() != "(".code) return error("Expected a `(` after " + name);
+			start = q.pos;
 			var depth = 1;
 			var args:Array<String> = [];
 			var out = "";
@@ -232,8 +249,11 @@ class GmlExtMFunc {
 						var pre = name + "_mf";
 						var out = pre + "0";
 						var order = mf.order;
+						var nosep = spacesBeforeParOpen != "";
+						if (nosep) out += "/*" + spacesBeforeParOpen + "*/";
 						for (i in 0 ... order.length) {
-							out += " " + args[order[i]] + " " + pre + (i + 1);
+							if (nosep) nosep = false; else out += " ";
+							out += args[order[i]] + " " + pre + (i + 1);
 						}
 						// auto-fix `some(...)exit` -> `...some_mfXexit`
 						c = q.peek(); if (c.isIdent1()) out += " ";

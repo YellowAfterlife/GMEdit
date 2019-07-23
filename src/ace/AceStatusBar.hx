@@ -83,7 +83,7 @@ class AceStatusBar {
 			return docs != null;
 		}
 		switch (tk.type) { // canDocData mirrors cases
-			case "asset.script": return flushDocs(GmlAPI.gmlDoc);
+			case "asset.script", "macro.function": return flushDocs(GmlAPI.gmlDoc);
 			case "function": return flushDocs(GmlAPI.stdDoc);
 			case "glsl.function": return flushDocs(ShaderAPI.glslDoc);
 			case "hlsl.function": return flushDocs(ShaderAPI.hlslDoc);

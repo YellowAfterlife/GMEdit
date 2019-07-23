@@ -270,12 +270,14 @@ using tools.NativeString;
 			rDefine, rAction, rKeyEvent, rEvent, rMoment, rTarget,
 			rxRule(["preproc.macro", "configname", "punctuation.operator", "macroname"], ~/(#macro[ \t]+)(\w+)(:)(\w+)/),
 			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
+			rxRule("preproc.macro", ~/#macro\b/),
 			rulePairs([
 				"#import\\s+", "preproc.import",
 				"\"[^\"]*\"|'[^']*'", "string.importpath"
 			]),
 			rxPush("preproc.import", ~/#import\b/, "gml.import"),
 			rxRule("preproc.args", ~/#args\b/),
+			rxRule(["preproc.mfunc", "text", "macroname"], ~/(#mfunc)(\s+)(\w+)/),
 			rxRule("preproc.mfunc", ~/#mfunc\b/),
 			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),

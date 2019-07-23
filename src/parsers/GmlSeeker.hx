@@ -163,6 +163,9 @@ class GmlSeeker {
 									out.compMap.set(name, mf.comp);
 									out.kindList.push(name);
 									out.kindMap.set(name, "macro.function");
+									var mfd = new GmlFuncDoc(name, name + "(", ")", mf.args, false);
+									out.docList.push(mfd);
+									out.docMap.set(name, mfd);
 								} while (false);
 							}
 							else if (flags.has(Doc) && q.get(start + 2) == "/".code) {
