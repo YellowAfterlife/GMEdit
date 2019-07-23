@@ -42,6 +42,10 @@ class GmlSeekData {
 	public var macroList:Array<GmlMacro> = [];
 	public var macroMap:Dictionary<GmlMacro> = new Dictionary();
 	
+	// macro functions in this file
+	public var mfuncList:Array<GmlExtMFunc> = [];
+	public var mfuncMap:Dictionary<GmlExtMFunc> = new Dictionary();
+	
 	/** scope name -> local variables */
 	public var locals:Dictionary<GmlLocals> = new Dictionary();
 	
@@ -139,6 +143,12 @@ class GmlSeekData {
 			if (!next.macroMap.exists(m.name)) GmlAPI.gmlMacros.remove(m.name);
 		}
 		for (m in next.macroList) GmlAPI.gmlMacros.set(m.name, m);
+		
+		// mfuncs:
+		for (m in prev.mfuncList) {
+			if (!next.mfuncMap.exists(m.name)) GmlAPI.gmlMFuncs.remove(m.name);
+		}
+		for (m in next.mfuncList) GmlAPI.gmlMFuncs.set(m.name, m);
 		
 		// global fields (delta)
 		for (g in prev.globalFieldList) {

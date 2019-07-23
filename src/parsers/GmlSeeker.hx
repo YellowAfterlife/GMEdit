@@ -144,7 +144,28 @@ class GmlSeeker {
 						case "/".code: {
 							q.skip();
 							q.skipLine();
-							if (flags.has(Doc) && q.get(start + 2) == "/".code) {
+							if (q.get(start + 2) == "!".code && q.get(start + 3) == "#".code) {
+								if (q.substring(start + 4, start + 9) == "mfunc") do {
+									//  01234567890
+									// `//!#mfunc name
+									var c = q.get(start + 9);
+									if (!c.isSpace0()) break;
+									var line = q.substring(start + 10, q.pos);
+									var sp = line.indexOf(" ");
+									var name = line.substring(0, sp);
+									var json = try {
+										haxe.Json.parse(line.substring(sp + 1));
+									} catch (_:Dynamic) break;
+									var mf = new GmlExtMFunc(name, json);
+									out.mfuncList.push(mf);
+									out.mfuncMap.set(name, mf);
+									out.compList.push(mf.comp);
+									out.compMap.set(name, mf.comp);
+									out.kindList.push(name);
+									out.kindMap.set(name, "macro.function");
+								} while (false);
+							}
+							else if (flags.has(Doc) && q.get(start + 2) == "/".code) {
 								return q.substring(start, q.pos);
 							}
 						};

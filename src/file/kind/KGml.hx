@@ -7,6 +7,7 @@ import js.RegExp;
 import parsers.GmlExtHyper;
 import parsers.GmlExtImport;
 import parsers.GmlExtLambda;
+import parsers.GmlExtMFunc;
 import tools.NativeString;
 
 /**
@@ -23,6 +24,9 @@ class KGml extends KCode {
 	
 	/// Whether #hyper magic is supported for this kind
 	public var canHyper:Bool = true;
+	
+	/// Whether #mfunc magic is supported for this kind
+	public var canMFunc:Bool = true;
 	
 	/// Whether #define will add scripts to auto-completion
 	public var canDefineComp:Bool = false;
@@ -41,6 +45,7 @@ class KGml extends KCode {
 	
 	override public function preproc(editor:EditCode, code:String):String {
 		var onDisk = editor.file.path != null;
+		if (canMFunc) code = GmlExtMFunc.pre(code);
 		if (onDisk && canLambda) code = GmlExtLambda.pre(editor, code);
 		if (onDisk && canImport) code = GmlExtImport.pre(code, editor.file.path);
 		if (canHyper) code = GmlExtHyper.pre(code);
@@ -61,6 +66,13 @@ class KGml extends KCode {
 			code = GmlExtLambda.post(editor, code);
 			if (code == null) {
 				Dialog.showError("Can't process #lambda:\n" + GmlExtLambda.errorText);
+				return null;
+			}
+		}
+		if (canMFunc) {
+			code = GmlExtMFunc.post(code);
+			if (code == null) {
+				Dialog.showError("Can't process #mfunc:\n" + GmlExtMFunc.errorText);
 				return null;
 			}
 		}

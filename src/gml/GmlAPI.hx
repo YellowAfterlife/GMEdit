@@ -4,6 +4,7 @@ import gml.GmlEnum;
 import haxe.io.Path;
 import js.RegExp;
 import parsers.GmlParseAPI;
+import parsers.GmlExtMFunc;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
@@ -112,6 +113,9 @@ class GmlAPI {
 	/** macro name -> macro */
 	public static var gmlMacros:Dictionary<GmlMacro> = new Dictionary();
 	
+	/** mfunc name -> mfunc */
+	public static var gmlMFuncs:Dictionary<GmlExtMFunc> = new Dictionary();
+	
 	/** asset type -> asset name -> id*/
 	public static var gmlAssetIDs:Dictionary<Dictionary<Int>> = new Dictionary();
 	
@@ -165,6 +169,8 @@ class GmlAPI {
 		gmlComp.clear();
 		gmlEnums = new Dictionary();
 		gmlEnumTypeComp.clear();
+		gmlMacros = new Dictionary();
+		gmlMFuncs = new Dictionary();
 		gmlAssetIDs = new Dictionary();
 		gmlAssetComp = new Dictionary();
 		gmlGlobalFieldMap = new Dictionary();

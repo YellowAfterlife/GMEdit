@@ -274,6 +274,7 @@ class Preferences {
 			coroutineMagic: true,
 			lambdaMagic: true,
 			hyperMagic: true,
+			mfuncMagic: true,
 			fileSessionTime: 7,
 			projectSessionTime: 14,
 			singleClickOpen: false,

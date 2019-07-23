@@ -45,6 +45,13 @@ class PrefMagic {
 		}).title = "Allows undoing name changes made after changing #import rules."
 			+ "\nMakes it easier to break code, so be careful.";
 		//
+		el = addCheckbox(out, "Use `#mfunc` magic", current.mfuncMagic, function(z) {
+			current.mfuncMagic = z;
+			save();
+		});
+		el.title = "Allows C-style macros with arguments";
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23mfunc-magic");
+		//
 		el = addCheckbox(out, "Use coroutine magic", current.coroutineMagic, function(z) {
 			current.coroutineMagic = z;
 			save();

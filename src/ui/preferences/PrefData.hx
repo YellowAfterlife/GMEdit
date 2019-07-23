@@ -18,6 +18,7 @@ typedef PrefData = {
 	coroutineMagic:Bool,
 	lambdaMagic:Bool,
 	hyperMagic:Bool,
+	mfuncMagic:Bool,
 	assetThumbs:Bool,
 	singleClickOpen:Bool,
 	showGMLive:PrefGMLive,

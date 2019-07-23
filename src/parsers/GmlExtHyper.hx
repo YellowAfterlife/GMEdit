@@ -8,7 +8,7 @@ import gml.GmlAPI;
  */
 class GmlExtHyper {
 	public static function pre(code:String):String {
-		if (!Preferences.current.argsMagic) return code;
+		if (!Preferences.current.hyperMagic) return code;
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
 		var out = "";
@@ -45,7 +45,7 @@ class GmlExtHyper {
 		return out;
 	}
 	public static function post(code:String):String {
-		if (!Preferences.current.argsMagic) return code;
+		if (!Preferences.current.hyperMagic) return code;
 		var version = GmlAPI.version;
 		var q = new GmlReader(code);
 		var out = "";

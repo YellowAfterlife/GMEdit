@@ -173,6 +173,14 @@ class GmlReader extends StringReader {
 		}
 	}
 	
+	public inline function skipIdent() {
+		if (peek().isIdent0()) while (loop) {
+			if (peek().isIdent1()) {
+				skip();
+			} else break;
+		}
+	}
+	
 	public inline function skipIdent1() {
 		while (loop) {
 			if (peek().isIdent1()) {

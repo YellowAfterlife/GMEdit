@@ -123,7 +123,7 @@ class EditCode extends Editor {
 		var path = file.path;
 		val = GmlExtImport.post(val, path);
 		if (val == null) {
-			Main.window.alert(GmlExtImport.errorText);
+			Dialog.showError(GmlExtImport.errorText);
 			return null;
 		}
 		// if there are imports, check if we should be updating the code
