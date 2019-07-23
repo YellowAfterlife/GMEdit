@@ -241,8 +241,8 @@ class GmlExtMFunc {
 				var p = q.pos;
 				var c = q.read();
 				switch (c) {
-					case "(".code: depth++;
-					case ")".code: if (--depth <= 0) {
+					case "(".code, "[".code: depth++;
+					case ")".code, "]".code: if (--depth <= 0) {
 						flushArg(p);
 						if (args.length != mf.args.length) return error('Argument count mismatch for '
 							+ name + ' - expected ' + mf.args.length + ', got ' + args.length);
@@ -297,7 +297,7 @@ class GmlExtMFunc {
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
 				case "#".code: {
-					if (q.substr(p + 1, 5) == "mfunc" && !q.peek(p + 6).isIdent1()) {
+					if (q.substr(p + 1, 5) == "mfunc" && !q.get(p + 6).isIdent1()) {
 						flush(p);
 						q.skip(6);
 						q.skipSpaces0();
@@ -388,7 +388,7 @@ class GmlExtMFunc {
 					} else if (p == 0 || q.get(p - 1) == "\n".code) {
 						var ctx = q.readContextName(null);
 					}
-				};
+				}; // "#"
 				case _ if (c.isIdent0()): {
 					q.skipIdent1();
 					var name = q.substring(p, q.pos);
