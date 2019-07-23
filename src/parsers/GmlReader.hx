@@ -12,11 +12,11 @@ using tools.NativeString;
  */
 class GmlReader extends StringReader {
 	public var version:GmlVersion;
-	public inline function new(gmlCode:String, ?version:GmlVersion) {
+	public function new(gmlCode:String, ?version:GmlVersion) {
 		super(gmlCode);
 		this.version = version != null ? version : gml.Project.current.version;
 	}
-	public inline function skipWhile(fn:CharCode-> Bool) {
+	public function skipWhile(fn:CharCode-> Bool) {
 		while (loop) {
 			if (fn(peek())) {
 				skip();
@@ -25,7 +25,7 @@ class GmlReader extends StringReader {
 	}
 	
 	/** Skips to the end of the current line */
-	public inline function skipLine() {
+	public function skipLine() {
 		while (loop) {
 			switch (peek()) {
 				case "\n".code, "\r".code: // ->
@@ -35,7 +35,7 @@ class GmlReader extends StringReader {
 	}
 	
 	/** Skips a single `\n` / `\r\n`, if any */
-	public inline function skipLineEnd() {
+	public function skipLineEnd() {
 		if (loop) switch (peek()) {
 			case "\r".code: {
 				skip();
@@ -55,7 +55,7 @@ class GmlReader extends StringReader {
 	}
 	
 	/** Skips past the end of a comment-block */
-	public inline function skipComment() {
+	public function skipComment() {
 		var n = 0;
 		while (loop) {
 			var c = read();
@@ -70,7 +70,7 @@ class GmlReader extends StringReader {
 		return n;
 	}
 	
-	public inline function skipString1(qc:Int):Int {
+	public function skipString1(qc:Int):Int {
 		var c = peek(), n = 0;
 		while (c != qc && loop) {
 			skip(); c = peek();
@@ -80,7 +80,7 @@ class GmlReader extends StringReader {
 		return n;
 	}
 	
-	public inline function skipString2():Int {
+	public function skipString2():Int {
 		var n = 0;
 		var c = peek();
 		while (c != '"'.code && loop) {
@@ -115,7 +115,7 @@ class GmlReader extends StringReader {
 		}
 	}
 	
-	public inline function skipStringAuto(startquote:CharCode, version:GmlVersion):Int {
+	public function skipStringAuto(startquote:CharCode, version:GmlVersion):Int {
 		switch (startquote) {
 			case '"'.code: {
 				if (version.hasStringEscapeCharacters()) {
@@ -145,7 +145,7 @@ class GmlReader extends StringReader {
 	}
 	
 	/** Skips spaces/tabs */
-	public inline function skipSpaces0() {
+	public function skipSpaces0() {
 		while (loop) {
 			switch (peek()) {
 				case " ".code, "\t".code: {
@@ -156,7 +156,7 @@ class GmlReader extends StringReader {
 	}
 	
 	/** Skips spaces, tabs, `\r`, `\n` */
-	public inline function skipSpaces1() {
+	public function skipSpaces1() {
 		while (loop) {
 			switch (peek()) {
 				case " ".code, "\t".code, "\r".code, "\n".code: {
@@ -173,7 +173,7 @@ class GmlReader extends StringReader {
 		}
 	}
 	
-	public inline function skipIdent() {
+	public function skipIdent() {
 		if (peek().isIdent0()) while (loop) {
 			if (peek().isIdent1()) {
 				skip();
@@ -181,7 +181,7 @@ class GmlReader extends StringReader {
 		}
 	}
 	
-	public inline function skipIdent1() {
+	public function skipIdent1() {
 		while (loop) {
 			if (peek().isIdent1()) {
 				skip();
@@ -189,7 +189,7 @@ class GmlReader extends StringReader {
 		}
 	}
 	
-	public inline function skipEventName() {
+	public function skipEventName() {
 		while (loop) {
 			var c = peek();
 			if (c.isIdent1() || c == ":".code) {
@@ -199,7 +199,7 @@ class GmlReader extends StringReader {
 	}
 	
 	/** ("obj_some") this"#¦event step" -> "obj_some(step)" this"#event step¦" */
-	public inline function readContextName(name:String) {
+	public function readContextName(name:String) {
 		var p = pos;
 		skipIdent1();
 		var preproc = substring(p - 1, pos);
@@ -301,7 +301,7 @@ class GmlReader extends StringReader {
 	 * this"var a:Map¦<Int>" -> this"var a:Map<Int>¦"
 	 * this"var a:Map¦<=" -> this"var a:Map¦<="
 	 */
-	public inline function skipTypeParams(?till:Int) {
+	public function skipTypeParams(?till:Int) {
 		if (till == null) till = length;
 		var p2 = pos;
 		var depth = 1;
@@ -322,7 +322,7 @@ class GmlReader extends StringReader {
 		} else return true;
 	}
 	
-	public inline function skipCommon_inline():Int {
+	public function skipCommon_inline():Int {
 		switch (peek()) {
 			case "/".code: switch (peek(1)) {
 				case "/".code: pos += 2; skipLine(); return 0;
