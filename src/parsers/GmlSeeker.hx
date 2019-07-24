@@ -413,8 +413,11 @@ class GmlSeeker {
 							out.kindList.push(name);
 							out.kindMap.set(name, "macro");
 						}
-						out.compList.push(m.comp);
-						out.compMap.set(name, m.comp);
+						var i = name.indexOf("_mf");
+						if (!out.mfuncMap.exists(name.substring(0, i))) {
+							out.compList.push(m.comp);
+							out.compMap.set(name, m.comp);
+						}
 						out.macroList.push(m);
 						out.macroMap.set(name, m);
 						setLookup(name, true);

@@ -34,7 +34,7 @@ class GmlExtMFunc {
 		this.name = name;
 		args = json.args;
 		order = json.order;
-		comp = new AceAutoCompleteItem(name, "mfunc", name + "(" + args.join(",") + ")");
+		comp = new AceAutoCompleteItem(name, "macro", name + "(" + args.join(",") + ")");
 		hasRest = args.length > 0 && args[args.length - 1].trimBoth() == "...";
 	}
 	
@@ -65,6 +65,10 @@ class GmlExtMFunc {
 		}
 		add("LINE", (e:EditCode, q) -> "" + getLine(q));
 		add("LINE_STR", (e:EditCode, q) -> '"' + getLine(q) + '"');
+		//
+		map["argument"] = (e, q) -> "argument";
+		map["argument_count"] = (e, q) -> "argument_count";
+		//
 		rx += "))";
 		magicRegex = rx;
 		return map;
@@ -139,7 +143,7 @@ class GmlExtMFunc {
 							//
 							var arg = out + q.substring(start, p); out = "";
 							//
-							var ai:Int, s:String;
+							var ai:Int, s:String, s2:String, pad:String, trim:String;
 							var ord = order[ind - 1];
 							if (ord.isPlain()) {
 								ai = ord.asPlain();
@@ -153,20 +157,28 @@ class GmlExtMFunc {
 										break;
 									};
 								};
-								case Pre, Post: {
+								case Pre, Post, PrePost: {
 									ai = ord.arg;
+									// Pre, PrePost
 									s = ord.asArray()[2];
-									if (ord.kind == Pre) {
-										if (arg.startsWith(s)) {
-											arg = arg.substring(s.length);
+									if (ord.kind != Post) {
+										trim = arg.trimLeft();
+										pad = arg.substring(0, arg.length - trim.length);
+										if (trim.startsWith(s)) {
+											arg = pad + trim.substring(s.length);
 										} else {
 											error('argument[$ai] `$arg` is supposed '
 												+ 'to start with `$s` but does not.');
 											break;
 										}
-									} else {
-										if (arg.endsWith(s)) {
-											arg = arg.substring(0, arg.length - s.length);
+									}
+									// Post, PrePost
+									if (ord.kind == PrePost) s = ord.asArray()[3];
+									if (ord.kind != Pre) {
+										trim = arg.trimRight();
+										pad = arg.substring(trim.length);
+										if (trim.endsWith(s)) {
+											arg = trim.substring(0, trim.length - s.length) + pad;
 										} else {
 											error('argument[$ai] `$arg` is supposed '
 												+ 'to end with `$s` but does not.');
@@ -179,7 +191,7 @@ class GmlExtMFunc {
 								var oldArg = args[ai];
 								if (oldArg != null) {
 									if (oldArg != arg) {
-										Main.console.error('mfunc violation: argument[$ai]'
+										error('argument[$ai]'
 											+ ' is already set to `$oldArg` but new value is `$arg`');
 										break;
 									}
@@ -267,6 +279,11 @@ class GmlExtMFunc {
 										case Post: {
 											ai = -1;
 											mf += args[ord.arg].trimBoth() + "##" + ord.asArray()[2];
+										};
+										case PrePost: {
+											ai = -1;
+											mf += ord.asArray()[2] + "##" +
+												args[ord.arg].trimBoth() + "##" + ord.asArray()[3];
 										};
 										case Magic: mf += "@@" + ord.asArray()[1]; ai = -1;
 									}
@@ -402,8 +419,10 @@ class GmlExtMFunc {
 									out += magicMap[ord.asArray()[1]](editor, q);
 									q.pos = _q_pos;
 								};
-								case Pre: out += ord.asArray()[2] + args[ord.arg];
-								case Post: out += args[ord.arg] + ord.asArray()[2];
+								case Pre: out += args[ord.arg].insertAtPadLeft(ord.pstr(0));
+								case Post: out += args[ord.arg].insertAtPadRight(ord.pstr(0));
+								case PrePost: out += args[ord.arg].insertAtPadBoth(
+									ord.pstr(0), ord.pstr(1));
 							}
 							out += " " + pre + (i + 1);
 						}
@@ -516,7 +535,7 @@ class GmlExtMFunc {
 					while (q.loop) {
 						p = q.pos;
 						c = q.read();
-						var s1:String, s2:String;
+						var s1:String, s2:String, s3:String;
 						switch (c) {
 							case "/".code: switch (q.peek()) {
 								case "/".code, "*".code: return error(
@@ -594,11 +613,21 @@ class GmlExtMFunc {
 									if (i == null) return error('One of the concat arguments'+
 										' should be a variable ($s1##$s2, in $name).'
 									);
-									if (checkConcat()) return error(
-										'Cannot concat more than two identifiers'+
-										' ($s1##$s2##, in #name)'
-									);
-									order.push(GmlExtMFuncOrder.Pre(i, s1));
+									if (checkConcat()) { // pre##var##post
+										q.skip(2);
+										p = q.pos;
+										q.skipIdent1();
+										s3 = q.substring(p, q.pos);
+										if (argMap.exists(s3)) return error(
+											'Can only concat prefix+var+suffix'+
+											' ($s1##$s2##$s3, in $name)'
+										);
+										if (checkConcat()) return error(
+											'Cannot concat more than two identifiers'+
+											' ($s1##$s2##, in $name)'
+										);
+										order.push(GmlExtMFuncOrder.PrePost(i, s1, s3));
+									} else order.push(GmlExtMFuncOrder.Pre(i, s1));
 									argStart = q.pos;
 								}
 							}
@@ -671,6 +700,10 @@ abstract GmlExtMFuncOrder(Dynamic) {
 		return this[1];
 	}
 	//
+	public inline function pstr(i:Int):String {
+		return this[2 + i];
+	}
+	//
 	public static inline function Plain(arg:Int):GmlExtMFuncOrder {
 		return cast arg;
 	}
@@ -685,6 +718,9 @@ abstract GmlExtMFuncOrder(Dynamic) {
 	}
 	public static inline function Post(arg:Int, post:String):GmlExtMFuncOrder {
 		return cast ([GmlExtMFuncOrderKind.Post, arg, post]:Array<Dynamic>);
+	}
+	public static inline function PrePost(arg:Int, pre:String, post:String):GmlExtMFuncOrder {
+		return cast ([GmlExtMFuncOrderKind.PrePost, arg, pre, post]:Array<Dynamic>);
 	}
 	//
 }
@@ -705,4 +741,7 @@ enum abstract GmlExtMFuncOrderKind(Int) {
 	
 	/** (arg_index, post) */
 	var Post = 4;
+	
+	/** (arg_index, pre, post) */
+	var PrePost = 5;
 }
