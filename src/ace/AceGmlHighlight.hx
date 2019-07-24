@@ -437,6 +437,7 @@ using tools.NativeArray;
 		var rMFunc_decl = [
 			rxRule("identifier", ~/(?:[a-zA-Z_]\w*|\.\.\.)/),
 			rxRule("punctuation.operator", ~/,/),
+			rxRule("text", ~/$/, "pop"),
 			rxRule("paren.rparen", ~/\)/, "gml.mfunc"),
 		];
 		// EOL exits the mfunc state unless it's escaped
