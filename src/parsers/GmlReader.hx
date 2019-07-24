@@ -11,6 +11,17 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class GmlReader extends StringReader {
+	//
+	public var loop(get, never):Bool;
+	private function get_loop():Bool {
+		return (pos < length);
+	}
+	//
+	public var eof(get, never):Bool;
+	private function get_eof():Bool {
+		return (pos >= length);
+	}
+	//
 	public var version:GmlVersion;
 	public function new(gmlCode:String, ?version:GmlVersion) {
 		super(gmlCode);

@@ -70,7 +70,7 @@ package gml;
 	}
 	
 	public static function verify(gml:String, v:Int):Bool {
-		var q = new tools.StringReader(gml);
+		var q = new parsers.GmlReader(gml);
 		while (q.loop) {
 			var c = q.read();
 			switch (c) {

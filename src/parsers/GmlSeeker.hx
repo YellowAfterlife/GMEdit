@@ -97,7 +97,7 @@ class GmlSeeker {
 	):Void {
 		var mainTop = main;
 		var sub = null;
-		var q = new GmlReader(src);
+		var q = new GmlReaderExt(src);
 		var v = GmlAPI.version;
 		var row = 0;
 		var project = Project.current;
@@ -212,7 +212,15 @@ class GmlSeeker {
 									q.skip();
 								} else break;
 							}
-							if (flags.has(Ident)) return q.substring(start, q.pos);
+							var id = q.substring(start, q.pos);
+							var m = ace.AceMacro.jsOrx(out.macroMap[id], GmlAPI.gmlMacros[id]);
+							if (m != null) {
+								if (q.depth < 16) {
+									q.pushSource(m.expr);
+									return find(flags);
+								} else return null;
+							}
+							if (flags.has(Ident)) return id;
 						}
 					};
 				}

@@ -11,16 +11,6 @@ class StringReader {
 	public var pos:Int;
 	public var length(default, null):Int;
 	//
-	public var loop(get, never):Bool;
-	private inline function get_loop():Bool {
-		return (pos < length);
-	}
-	//
-	public var eof(get, never):Bool;
-	private inline function get_eof():Bool {
-		return (pos >= length);
-	}
-	//
 	public inline function tell():Int {
 		return pos;
 	}
