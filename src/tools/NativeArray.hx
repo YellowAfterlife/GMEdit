@@ -30,6 +30,13 @@ package tools;
 			arr.insert(i, insertWhat);
 		} else arr.unshift(insertWhat);
 	}
+	public static function replaceOne<T>(arr:Array<T>, replaceWhat:T, withWhat:T):Bool {
+		var i = arr.indexOf(replaceWhat);
+		if (i >= 0) {
+			arr[i] = withWhat;
+			return true;
+		} else return false;
+	}
 	
 	/** Purges all array items for which fn(item) returned false */
 	@:extern public static inline function filterSelf<T>(arr:Array<T>, fn:T->Bool):Void {

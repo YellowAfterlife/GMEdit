@@ -38,24 +38,37 @@ class GmlExtMFunc {
 		hasRest = args.length > 0 && args[args.length - 1].trimBoth() == "...";
 	}
 	
+	public static var magicRegex:String = "";
+	static var magicMap:Dictionary<GmlExtMFuncMagic> = __magicMap_init();
 	static function __magicMap_init() {
-		var m = new Dictionary<EditCode->GmlReader->GmlCode>();
-		m["__FILE__"] = (e:EditCode, _) -> Json.stringify(e.file.name);
-		m["__HERE__"] = (e:EditCode, _) -> e.file.name;
-		m["__DATE__"] = (e:EditCode, _) -> Json.stringify(DateTools.format(Date.now(), "%F"));
-		m["__TIME__"] = (e:EditCode, _) -> Json.stringify(DateTools.format(Date.now(), "%T"));
-		m["__LINE__"] = function(e:EditCode, q:GmlReader) {
+		var map = new Dictionary<GmlExtMFuncMagic>();
+		var rx:String = "(@@)(__(?:";
+		var rxSep = false;
+		function add(name:String, fn:GmlExtMFuncMagic):Void {
+			if (rxSep) rx += "|"; else rxSep = true;
+			var full = '__${name}__';
+			rx += name + "__";
+			map.set("__" + name + "__", fn);
+		}
+		add("FILE", (e:EditCode, _) -> Json.stringify(e.file.name));
+		add("HERE", (e:EditCode, _) -> e.file.name);
+		add("DATE", (e:EditCode, _) -> Json.stringify(DateTools.format(Date.now(), "%F")));
+		add("TIME", (e:EditCode, _) -> Json.stringify(DateTools.format(Date.now(), "%T")));
+		function getLine(q:GmlReader):Int {
 			var n = 0;
 			var i = q.pos;
 			while (i >= 0) {
 				n++;
 				i = q.source.lastIndexOf("\n", i - 1);
 			}
-			return "" + n;
-		};
-		return m;
+			return n;
+		}
+		add("LINE", (e:EditCode, q) -> "" + getLine(q));
+		add("LINE_STR", (e:EditCode, q) -> '"' + getLine(q) + '"');
+		rx += "))";
+		magicRegex = rx;
+		return map;
 	}
-	static var magicMap:Dictionary<EditCode->GmlReader->GmlCode> = __magicMap_init();
 	
 	public static var errorText:String = null;
 	public static function pre(editor:EditCode, code:GmlCode):GmlCode {
@@ -630,6 +643,7 @@ class GmlExtMFunc {
 		} else return out;
 	}
 }
+typedef GmlExtMFuncMagic = (editor:EditCode, reader:GmlReader)->GmlCode;
 typedef GmlExtMFuncData = {
 	/** ["one", " two"] (incl. spacing around) */
 	var args:Array<String>;

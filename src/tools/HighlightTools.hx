@@ -36,5 +36,16 @@ class HighlightTools {
 		}
 		return { token: tokens, regex: rs, next: next };
 	}
+	public static function rpushPairs(pairs_rx_tk:Array<String>, push:EitherType<String, Array<AceLangRule>>):AceLangRule {
+		var rs = "";
+		var i = 0;
+		var tokens = [];
+		while (i < pairs_rx_tk.length) {
+			rs += "(" + pairs_rx_tk[i] + ")";
+			tokens.push(pairs_rx_tk[i + 1]);
+			i += 2;
+		}
+		return { token: tokens, regex: rs, push: push };
+	}
 }
 typedef HighlightNext = (currentState:String, stack:Array<String>)->String;

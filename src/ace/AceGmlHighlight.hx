@@ -22,6 +22,7 @@ import ace.raw.*;
 import haxe.extern.EitherType;
 import tools.HighlightTools.*;
 using tools.NativeString;
+using tools.NativeArray;
 
 /**
  * Syntax highlighting rules for GML.
@@ -52,15 +53,17 @@ using tools.NativeString;
 			);
 		}
 		//
-		inline function getLocalType_1(name:String, scope:String):String {
+		inline function getLocalType_1(name:String, scope:String, canLocal:Bool):String {
 			var kind:String = null;
 			//
 			var lambdas = editor.lambdas[scope];
 			if (lambdas != null) kind = lambdas.kind[name];
 			//
 			if (kind == null) {
-				var locals = editor.locals[scope];
-				if (locals != null) kind = locals.kind[name];
+				if (canLocal) {
+					var locals = editor.locals[scope];
+					if (locals != null) kind = locals.kind[name];
+				}
 				//
 				if (kind == null) {
 					var imports = editor.imports[scope];
@@ -70,29 +73,38 @@ using tools.NativeString;
 			//
 			return kind;
 		}
-		inline function getLocalType(row:Int, name:String):String {
+		inline function getLocalType(row:Int, name:String, canLocal:Bool):String {
 			if (row != null) {
 				var scope = editor.session.gmlScopes.get(row);
 				if (scope != null) {
-					return getLocalType_1(name, scope);
+					return getLocalType_1(name, scope, canLocal);
 				} else return null;
 			} else return null;
 		}
-		//
-		var rIdentLocal:AceLangRule = {
-			regex: '[a-zA-Z_][a-zA-Z0-9_]*\\b',
-			onMatch: function(
-				value:String, state:String, stack:Array<String>, line:String, row:Int
-			) {
-				var type:String = getLocalType(row, value);
-				if (type == null) type = getGlobalType(value, fieldDef);
-				return [rtk(type, value)];
-			},
-		};
-		/// something.field
-		var rIdentPair:AceLangRule = {
-			regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*|)',
-			onMatch: function(
+		inline function getFieldDef(mf:Bool):String {
+			return mf ? "identifier" : fieldDef;
+		}
+		//{
+		function genIdent(mf:Bool):AceLangRule {
+			var def = getFieldDef(mf);
+			return {
+				regex: '[a-zA-Z_][a-zA-Z0-9_]*\\b',
+				onMatch: function(
+					value:String, state:String, stack:Array<String>, line:String, row:Int
+				) {
+					var type:String = getLocalType(row, value, !mf);
+					if (type == null) type = getGlobalType(value, def);
+					return [rtk(type, value)];
+				},
+			};
+		}
+		var rIdentLocal:AceLangRule = genIdent(false);
+		var rIdentLocalMF:AceLangRule = genIdent(true);
+		//}
+		//{ something.field
+		function genIdentPairFunc(mf:Bool) {
+			var def = getFieldDef(mf);
+			return function(
 				value:String, state:String, stack:Array<String>, line:String, row:Int
 			) {
 				var values:Array<String> = jsThis.splitRegex.exec(value);
@@ -128,7 +140,7 @@ using tools.NativeString;
 								}
 							}
 							if (objType == null) {
-								objType = getLocalType_1(object, scope);
+								objType = getLocalType_1(object, scope, !mf);
 								if ((objType == "local" || objType == "sublocal") && imp != null) {
 									var lt = imp.localTypes[object];
 									ns = imp.namespaces[lt];
@@ -150,7 +162,7 @@ using tools.NativeString;
 							objType = "enum";
 							fdType = en.items[field] ? "enumfield" : "enumerror";
 						} else {
-							objType = getGlobalType(object, fieldDef);
+							objType = getGlobalType(object, def);
 							fdType = getGlobalType(field, "field");
 						}
 					} else if (fdType == null) {
@@ -163,8 +175,17 @@ using tools.NativeString;
 				if (values[4] != "") tokens.push(rtk("text", values[4]));
 				tokens.push(rtk(fdType, field));
 				return tokens;
-			}
-		};
+			};
+		}
+		function genIdentPair(mf:Bool):AceLangRule {
+			return {
+				regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*|)',
+				onMatch: genIdentPairFunc(mf)
+			};
+		}
+		var rIdentPair = genIdentPair(false);
+		var rIdentPairMF = genIdentPair(true);
+		//}
 		function mtField(_, field:String) {
 			return ["punctuation.operator", "text", getGlobalType(field, "field")];
 		}
@@ -267,18 +288,42 @@ using tools.NativeString;
 			fakeMultiline
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
+			//
 			rDefine, rAction, rKeyEvent, rEvent, rMoment, rTarget,
-			rxRule(["preproc.macro", "configname", "punctuation.operator", "macroname"], ~/(#macro[ \t]+)(\w+)(:)(\w+)/),
-			rxRule(["preproc.macro", "macroname"], ~/(#macro[ \t]+)(\w+)/),
+			//
+			rpushPairs([
+				"#macro", "preproc.macro",
+				"\\s+", "text",
+				"\\w+", "configname",
+				"\\s*", "text",
+				":", "punctuation.operator",
+				"\\s*", "text",
+				"\\w+", "macroname",
+			], "gml.mfunc"),
+			rpushPairs([
+				"#macro", "preproc.macro",
+				"\\s+", "text",
+				"\\w+", "macroname",
+			], "gml.mfunc"),
 			rxRule("preproc.macro", ~/#macro\b/),
+			//
+			rpushPairs([
+				"#mfunc", "preproc.mfunc",
+				"\\s+", "text",
+				"\\w+", "macroname",
+				"\\s*", "text",
+				"\\(", "paren.lparen",
+			], "gml.mfunc.decl"),
+			rxRule(["preproc.mfunc", "text", "macroname"], ~/(#mfunc)(\s+)(\w+)/),
+			rxRule("preproc.mfunc", ~/#mfunc\b/),
+			//
 			rulePairs([
 				"#import\\s+", "preproc.import",
 				"\"[^\"]*\"|'[^']*'", "string.importpath"
 			]),
 			rxPush("preproc.import", ~/#import\b/, "gml.import"),
 			rxRule("preproc.args", ~/#args\b/),
-			rxRule(["preproc.mfunc", "text", "macroname"], ~/(#mfunc)(\s+)(\w+)/),
-			rxRule("preproc.mfunc", ~/#mfunc\b/),
+			//
 			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
@@ -316,7 +361,7 @@ using tools.NativeString;
 			rxRule(mtIdent, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
 			rxRule("operator", ~/==/),
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
-			rxRule("operator", ~/!|%|&|\*|\-\-|\-|\+\+|\+|~|!=|<=|>=|<>|<|>|!|&&|\|\|/),
+			rxRule("operator", ~/!|%|&|@|\*|\-\-|\-|\+\+|\+|~|!=|<=|>=|<>|<|>|!|&&|\|\|/),
 			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
 			rxRule("curly.paren.lparen", ~/\{/),
 			rxRule("curly.paren.rparen", ~/\}/),
@@ -349,6 +394,7 @@ using tools.NativeString;
 				} else return "start";
 			}),
 		].concat(rBase); //}
+		//{ comments
 		var rCommentPop:Array<AceLangRule> = [
 			rwnext(rDefine, "pop"),
 			rwnext(rAction, "pop"),
@@ -358,7 +404,11 @@ using tools.NativeString;
 			rwnext(rEvent, "pop"),
 			rwnext(rTarget, "pop"),
 		];
-		//
+		var rComment = [
+			rule("comment.link", "@\\[" + "[^\\[]*" + "\\]"),
+		];
+		//}
+		//{ string-based
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
 		var rPragma_dq = [rule("string", '"', "pop")].concat(rBase);
 		var rString_sq = [ // GMS1 single-quoted strings
@@ -382,10 +432,34 @@ using tools.NativeString;
 			rString_dq.insert(1, eol);
 			rString_tpl.insert(1, eol);
 		}
+		//}
+		//{ #mfunc
+		var rMFunc_decl = [
+			rxRule("identifier", ~/(?:[a-zA-Z_]\w*|\.\.\.)/),
+			rxRule("punctuation.operator", ~/,/),
+			rxRule("paren.rparen", ~/\)/, "gml.mfunc"),
+		];
+		// EOL exits the mfunc state unless it's escaped
+		function rMFuncEOL_pop(current, stack:Array<String>) {
+			stack.shift();
+			return jsOrx(stack.shift(), "start");
+		}
+		var rMFuncEOL:AceLangRule = null;
+		rMFuncEOL = {
+			regex: "$",
+			onMatch: function(value:String, currentState:String, stack:Array<String>, line:String) {
+				rMFuncEOL.next = line.endsWith("\\") ? null : rMFuncEOL_pop;
+				return "text";
+			}
+		};
 		//
-		var rComment = [ //{
-			rule("comment.link", "@\\[" + "[^\\[]*" + "\\]"),
-		]; //}
+		var rMFunc = [
+			rMFuncEOL,
+			rule(["operator", "constant"], parsers.GmlExtMFunc.magicRegex),
+		].concat(rBase);
+		rMFunc.replaceOne(rIdentLocal, rIdentLocalMF);
+		rMFunc.replaceOne(rIdentPair, rIdentPairMF);
+		//}
 		//
 		var rules = {
 			"start": rBase,
@@ -416,6 +490,8 @@ using tools.NativeString;
 				rxPush("curly.paren.lparen", ~/\{/, "gml.tpl"),
 				rxRule("curly.paren.rparen", ~/\}/, "pop")
 			].concat(rBase),
+			"gml.mfunc.decl": rMFunc_decl,
+			"gml.mfunc": rMFunc,
 			"gml.comment.line": rComment.concat([ //{
 				rxRule("comment.line", ~/$/, "pop"),
 				rdef("comment.line"),
