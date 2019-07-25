@@ -60,4 +60,5 @@ import haxe.extern.EitherType;
 	public var gmlScopes:gml.GmlScopes;
 	public var gmlEditor:editors.EditCode;
 	public var gmlErrorMarker:AceMarker;
+	public var gmlErrorMarkers:Array<AceMarker>;
 }

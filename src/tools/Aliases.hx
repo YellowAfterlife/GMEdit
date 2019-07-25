@@ -5,7 +5,7 @@ package tools;
  * @author YellowAfterlife
  */
 class Aliases { }
-
+typedef FoundError = Bool;
 typedef ErrorText = String;
 typedef FullPath = String;
 typedef RelPath = String;
