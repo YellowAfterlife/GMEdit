@@ -13,8 +13,9 @@ import haxe.macro.Type;
 class AutoEnum {
 	public static macro function build(?kindName:String):Array<Field> {
 		var pos = Context.currentPos();
-		var autoKind:AutoEnumKind = switch (kindName.toLowerCase()) {
-			case null, "int": AInt(false);
+		var autoKind:AutoEnumKind = switch (kindName != null ? kindName.toLowerCase() : null) {
+			case null: ANone;
+			case "int": AInt(false);
 			case "bit": AInt(true);
 			case "lq", "lower": AString(false);
 			case "uq", "upper": AString(true);
@@ -51,6 +52,7 @@ class AutoEnum {
 				};
 				case FVar(t, null): { // `var some;`
 					switch (autoKind) {
+						case ANone: {};
 						case AInt(_): {
 							value = Std.string(nextIndex);
 							if (isBit) nextIndex <<= 1; else nextIndex += 1;
@@ -128,6 +130,7 @@ class AutoEnum {
 	} // build
 }
 private enum AutoEnumKind {
+	ANone;
 	AInt(bit:Bool);
 	AString(upper:Bool);
 }
