@@ -73,7 +73,7 @@ textarea#source {
 	border-right: 1px solid #ccc;
 }
 #main .ace_gutter-active-line {
-	background: #EFEAE8;
+	background-color: #EFEAE8;
 }
 
 .ace_scroller {
