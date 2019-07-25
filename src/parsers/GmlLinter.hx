@@ -15,6 +15,10 @@ class GmlLinter {
 	//
 	public var errorText:String = null;
 	public var errorRow:Int = -1;
+	function setError(text:String):Void {
+		errorText = text;
+		errorRow = row;
+	}
 	//
 	var reader:GmlReaderExt;
 	var version:GmlVersion;
@@ -112,10 +116,18 @@ class GmlLinter {
 		start();
 		return __next_retv(KEOF, "");
 	}
+	inline function nextOr(nk:GmlLinterKind):GmlLinterKind {
+		return nk != null ? nk : next();
+	}
 	//}
-	
-	public function readStat():FoundError {
-		
+	function readError(s:String):FoundError {
+		inline setError(s);
+		return true;
+	}
+	public function readStat(?nk:GmlLinterKind):FoundError {
+		switch (nextOr(nk)) {
+			default: return readError("Expected a statement, got " + nk.getName());
+		}
 		return false;
 	}
 	
@@ -151,7 +163,7 @@ class GmlLinter {
 @:build(tools.AutoEnum.build())
 enum abstract GmlLinterKind(Int) {
 	public function getName():String {
-		return "<unknown>";
+		return 'unknown[$this]';
 	}
 	var KEOF;
 	var KString;
