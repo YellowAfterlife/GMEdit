@@ -27,15 +27,21 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function exists(k:String):Bool {
 		return Reflect.hasField(this, k);
 	}
+	//
 	@:arrayAccess public inline function get(k:String):T {
 		return untyped this[k];
 	}
+	public function defget(k:String, def:T):T {
+		return exists(k) ? get(k) : def;
+	}
+	//
 	public inline function set(k:String, v:T):Void {
 		untyped this[k] = v;
 	}
 	@:arrayAccess public inline function setret(k:String, v:T):T {
 		return untyped this[k] = v;
 	}
+	//
 	public inline function remove(k:String):Void {
 		untyped __js__("delete {0}[{1}]", this, k);
 	}
