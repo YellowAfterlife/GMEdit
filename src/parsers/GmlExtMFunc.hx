@@ -68,6 +68,8 @@ class GmlExtMFunc {
 		//
 		map["argument"] = (e, q) -> "argument";
 		map["argument_count"] = (e, q) -> "argument_count";
+		function makeArgFun(i:Int) return (e, q) -> "argument" + i;
+		for (i in 0 ... 16) map["argument"+i] = makeArgFun(i);
 		//
 		rx += "))";
 		magicRegex = rx;
