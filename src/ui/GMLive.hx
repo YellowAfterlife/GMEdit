@@ -1,5 +1,5 @@
 package ui;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlReader;
 import parsers.GmlSeeker;
 import ui.treeview.TreeView;

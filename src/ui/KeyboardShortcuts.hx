@@ -8,7 +8,7 @@ import gml.GmlAPI;
 import gml.file.GmlFile;
 import gml.Project;
 import haxe.io.Path;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import js.html.Element;

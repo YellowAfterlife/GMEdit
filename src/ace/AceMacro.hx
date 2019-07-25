@@ -64,7 +64,7 @@ class AceMacro {
 			case EConst(CRegexp(s, o)): {
 				s = ~/\//g.replace(s, "\\/");
 				var s = '/$s/$o';
-				return macro (cast js.Syntax.code($v{s}):js.RegExp);
+				return macro (cast js.Syntax.code($v{s}):js.lib.RegExp);
 			};
 			default: throw Context.error("Expected a regexp literal", e.pos);
 		}

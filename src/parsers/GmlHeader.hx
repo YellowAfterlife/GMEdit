@@ -1,6 +1,6 @@
 package parsers;
 import gml.GmlVersion;
-import js.RegExp;
+import js.lib.RegExp;
 
 /**
  * Extracts a header label from code.

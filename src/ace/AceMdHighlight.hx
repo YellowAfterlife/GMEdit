@@ -7,7 +7,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
 import haxe.DynamicAccess;
-import js.RegExp;
+import js.lib.RegExp;
 import shaders.ShaderHighlight;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;

@@ -2,7 +2,7 @@ package gml;
 import electron.FileSystem;
 import gml.GmlEnum;
 import haxe.io.Path;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlParseAPI;
 import parsers.GmlExtMFunc;
 import tools.Dictionary;
@@ -50,7 +50,7 @@ class GmlAPI {
 		).split("|"), true
 	);
 	//
-	public static var scopeResetRx = new js.RegExp('^(?:#define|#event|#moment|#target)[ \t]+([\\w:]+)', '');
+	public static var scopeResetRx = new js.lib.RegExp('^(?:#define|#event|#moment|#target)[ \t]+([\\w:]+)', '');
 	//
 	public static var helpLookup:Dictionary<String> = null;
 	public static var helpURL:String = null;

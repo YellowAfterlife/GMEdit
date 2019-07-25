@@ -1,6 +1,6 @@
 package electron;
 import gmx.SfGmx;
-import js.Error;
+import js.lib.Error;
 import haxe.extern.EitherType;
 
 /**

@@ -1,5 +1,5 @@
 package parsers;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.Dictionary;

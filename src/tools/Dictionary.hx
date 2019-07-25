@@ -8,7 +8,7 @@ package tools;
 @:forward(keys)
 abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function new() {
-		this = js.Object.create(null);
+		this = js.lib.Object.create(null);
 	}
 	public static function fromKeys<T>(keys:Array<String>, val:T):Dictionary<T> {
 		var out = new Dictionary();

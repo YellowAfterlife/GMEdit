@@ -2,7 +2,7 @@ package ui;
 import electron.FileSystem;
 import gml.Project;
 import haxe.io.Path;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.LinkElement;
 import js.html.StyleElement;
 import ui.treeview.TreeView;

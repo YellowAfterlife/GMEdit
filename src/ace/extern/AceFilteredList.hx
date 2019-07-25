@@ -21,7 +21,7 @@ using StringTools;
 }
 private class AceFilteredListImpl {
 	public static function init(flProto:Dynamic):Void {
-		var orig:js.Function = flProto.filterCompletions;
+		var orig:js.lib.Function = flProto.filterCompletions;
 		flProto.filterCompletions = function(items:AceAutoCompleteItems, needle:String):AceAutoCompleteItems {
 			var mode = ui.Preferences.current.compMatchMode;
 			var _this:AceAutocomplete = AceMacro.jsThis;

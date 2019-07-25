@@ -3,7 +3,7 @@ import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
 import haxe.DynamicAccess;
-import js.Error;
+import js.lib.Error;
 import js.html.ErrorEvent;
 import plugins.PluginAPI;
 import tools.Dictionary;

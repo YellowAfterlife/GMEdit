@@ -4,7 +4,7 @@ import electron.FileSystem;
 import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;

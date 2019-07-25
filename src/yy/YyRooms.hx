@@ -4,7 +4,7 @@ import electron.FileSystem;
 import electron.FileWrap;
 import gml.file.GmlFileExtra;
 import haxe.Json;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.Dictionary;
 import tools.NativeString;

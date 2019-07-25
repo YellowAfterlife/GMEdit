@@ -3,7 +3,7 @@ import gml.file.GmlFile.GmlFileNav;
 import editors.EditCode;
 import editors.Editor;
 import electron.Dialog;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlExtHyper;
 import parsers.GmlExtImport;
 import parsers.GmlExtLambda;

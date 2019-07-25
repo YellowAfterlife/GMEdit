@@ -9,7 +9,7 @@ import gml.GmlImports;
 import gml.GmlLocals;
 import gml.Project;
 import haxe.io.Path;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
 import parsers.GmlReader.SkipVarsData;

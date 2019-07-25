@@ -3,7 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 import gml.Project;
 import gml.file.GmlFile;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.NativeArray;
 using StringTools;
 

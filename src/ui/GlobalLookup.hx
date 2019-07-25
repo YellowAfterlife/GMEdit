@@ -1,5 +1,5 @@
 package ui;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Element;
 import js.html.InputElement;
 import js.html.KeyboardEvent;

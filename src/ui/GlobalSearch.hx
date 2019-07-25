@@ -6,7 +6,7 @@ import Main.aceEditor;
 import Main.window;
 import gml.*;
 import gml.file.GmlFile;
-import js.RegExp;
+import js.lib.RegExp;
 import js.Syntax;
 import js.html.DivElement;
 import js.html.Element;

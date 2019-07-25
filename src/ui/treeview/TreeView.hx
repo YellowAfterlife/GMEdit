@@ -6,7 +6,7 @@ import file.FileKind;
 import gml.file.*;
 import gml.file.GmlFile;
 import gml.Project;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.CSSStyleSheet;
 import js.html.DragEvent;
 import js.html.Element;

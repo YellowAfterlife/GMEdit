@@ -1,7 +1,7 @@
 package ui;
 import ace.AceWrap;
 import ace.extern.*;
-import js.RegExp;
+import js.lib.RegExp;
 import gml.file.*;
 import gml.file.GmlFile;
 import file.kind.gml.KGmlScript;

@@ -1,5 +1,5 @@
 package gmx;
-import js.RegExp;
+import js.lib.RegExp;
 using tools.NativeString;
 
 /**

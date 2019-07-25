@@ -2,7 +2,7 @@ package ui.treeview;
 import electron.Dialog;
 import gml.Project;
 import electron.Menu;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Element;
 import ui.treeview.TreeViewMenus.items;
 import ui.treeview.TreeViewMenus.add;

@@ -1,5 +1,5 @@
 package ui;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Event;
 import js.html.InputElement;
 import Main.aceEditor;

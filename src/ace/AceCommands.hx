@@ -3,7 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 import ace.extern.AceCommandManager;
 import haxe.extern.EitherType;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.NativeString;
 import ui.CommandPalette;
 

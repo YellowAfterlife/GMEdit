@@ -3,7 +3,7 @@ import electron.FileWrap;
 import gml.GmlObjectInfo;
 import haxe.Json;
 import haxe.extern.EitherType;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlEvent;
 import gml.file.GmlFile;
 import gml.file.GmlFileExtra;

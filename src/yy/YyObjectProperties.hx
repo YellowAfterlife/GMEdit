@@ -1,5 +1,5 @@
 package yy;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlObjectProperties;
 import yy.YyObject;
 import gml.Project;

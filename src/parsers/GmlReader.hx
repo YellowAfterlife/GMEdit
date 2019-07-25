@@ -351,7 +351,7 @@ class GmlReader extends StringReader {
 		return skipCommon_inline();
 	}
 	
-	private static var rxVarType = new js.RegExp("^" + GmlExtImport.rsLocalType + "$");
+	private static var rxVarType = new js.lib.RegExp("^" + GmlExtImport.rsLocalType + "$");
 	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool):Int {
 		var n = 0;
 		var d:SkipVarsData = {

@@ -12,7 +12,7 @@ import gml.GmlVersion;
 import gml.Project;
 import gml.file.GmlFile;
 import gmx.SfGmx;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.Dictionary;
 import tools.Aliases;
 import ui.Preferences;

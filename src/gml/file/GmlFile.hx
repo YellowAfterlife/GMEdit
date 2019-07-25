@@ -9,7 +9,7 @@ import electron.FileWrap;
 import file.FileKind;
 import file.kind.gml.KGmlSearchResults;
 import file.kind.yy.KYyEvents;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Element;
 import ace.AceWrap;
 import gml.GmlAPI;

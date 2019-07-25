@@ -1,7 +1,7 @@
 package file.kind.misc;
 import editors.EditCode;
 import gml.file.GmlFile.GmlFileNav;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.NativeString;
 
 import editors.Editor;

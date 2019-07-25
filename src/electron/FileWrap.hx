@@ -3,7 +3,7 @@ import gml.Project;
 import gmx.SfGmx;
 import haxe.Json;
 import haxe.io.Path;
-import js.Error;
+import js.lib.Error;
 import tools.NativeString;
 import tools.PathTools;
 

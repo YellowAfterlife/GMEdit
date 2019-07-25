@@ -1,5 +1,5 @@
 package gml;
-import js.RegExp;
+import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
 using StringTools;

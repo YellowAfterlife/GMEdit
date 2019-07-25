@@ -16,7 +16,7 @@ import gml.Project;
 import electron.FileWrap;
 import electron.FileSystem;
 import parsers.*;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Element;
 import ui.Preferences;
 import gmx.*;

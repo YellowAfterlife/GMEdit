@@ -1,7 +1,7 @@
 package tools;
 import gml.GmlVersion;
 import haxe.io.Path;
-import js.RegExp;
+import js.lib.RegExp;
 import haxe.extern.Rest;
 using tools.PathTools;
 

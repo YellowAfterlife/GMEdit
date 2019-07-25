@@ -8,7 +8,7 @@ import gml.GmlAPI;
 import gml.Project;
 import haxe.ds.Map;
 import haxe.io.Path;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Element;
 import tools.NativeString;
 import ui.treeview.TreeView;

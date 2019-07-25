@@ -1,5 +1,5 @@
 package electron;
-import js.Error;
+import js.lib.Error;
 
 /**
  * ...

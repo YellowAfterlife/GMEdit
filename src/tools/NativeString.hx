@@ -2,7 +2,7 @@ package tools;
 import ace.extern.AcePos;
 import haxe.Constraints.Function;
 import haxe.extern.EitherType;
-import js.RegExp;
+import js.lib.RegExp;
 import js.Syntax;
 
 /**

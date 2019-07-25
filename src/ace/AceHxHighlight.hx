@@ -6,7 +6,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
 import haxe.DynamicAccess;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;
 import ace.AceMacro.rxPush;

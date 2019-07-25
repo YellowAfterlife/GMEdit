@@ -1,7 +1,7 @@
 package parsers;
 import ace.AceWrap;
 import gml.GmlAPI;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
 import ace.extern.*;

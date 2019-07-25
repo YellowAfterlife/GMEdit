@@ -1,6 +1,6 @@
 package ui.treeview;
 import gml.Project;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.DragEvent;
 import js.html.Element;
 import tools.NativeString;

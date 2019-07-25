@@ -10,7 +10,7 @@ class NativeObject {
 	}
 	public static inline function forField(q:Dynamic, fn:String->Void):Void {
 		var fd:String = null;
-		var has:js.Function = untyped js.Object.prototype.hasOwnProperty;
+		var has:js.lib.Function = untyped js.lib.Object.prototype.hasOwnProperty;
 		untyped __js__("for ({0} in {1}) {", fd, q);
 		if (has.call(q, fd)) fn(fd);
 		untyped __js__("}");

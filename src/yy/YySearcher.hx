@@ -3,7 +3,7 @@ import electron.FileSystem;
 import electron.FileWrap;
 import gml.Project;
 import haxe.io.Path;
-import js.Error;
+import js.lib.Error;
 import parsers.GmlExtLambda;
 import ui.GlobalSearch;
 

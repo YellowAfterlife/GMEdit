@@ -11,7 +11,7 @@ import file.FileKind;
 import parsers.GmlExtCoroutines;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
-import js.RegExp;
+import js.lib.RegExp;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;
 import ace.AceMacro.rxPush;

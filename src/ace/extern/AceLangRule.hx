@@ -1,6 +1,6 @@
 package ace.extern;
 import haxe.extern.EitherType;
-import js.RegExp;
+import js.lib.RegExp;
 
 /**
  * ...

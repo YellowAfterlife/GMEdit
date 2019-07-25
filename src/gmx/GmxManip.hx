@@ -1,7 +1,7 @@
 package gmx;
 import electron.Dialog;
 import gml.Project;
-import js.RegExp;
+import js.lib.RegExp;
 import js.html.Element;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
