@@ -52,11 +52,12 @@ class AutoEnum {
 				};
 				case FVar(t, null): { // `var some;`
 					switch (autoKind) {
-						case ANone: {};
-						case AInt(_): {
+						case AInt(_), ANone: {
 							value = Std.string(nextIndex);
 							if (isBit) nextIndex <<= 1; else nextIndex += 1;
-							field.kind = FVar(t, { expr: EConst(CInt(value)), pos: field.pos });
+							if (autoKind != ANone) {
+								field.kind = FVar(t, { expr: EConst(CInt(value)), pos: field.pos });
+							}
 						};
 						case AString(z): {
 							value = field.name;
