@@ -88,6 +88,7 @@ class GmlLinter {
 		var q = new Dictionary<GmlLinterKind>();
 		q["var"] = KVar;
 		q["globalvar"] = KGlobalVar;
+		q["enum"] = KEnum;
 		//
 		q["undefined"] = KUndefined;
 		//
@@ -180,7 +181,16 @@ class GmlLinter {
 						q.skipIdent1();
 						nv = q.substring(p, q.pos);
 						switch (nv) {
-							case "mfunc": return retv(KMFunc, "#mfunc");
+							case "mfunc", "macro": {
+								start();
+								while (q.loopLocal) {
+									q.skipLine();
+									if (q.peek( -1) != "\\".code) break;
+									q.skipLineEnd();
+									q.markLine();
+								}
+								return ret(nv == "macro" ? KMacro : KMFunc);
+							};
 							case "args": {
 								q.skipLine();
 								return retv(KArgs, "#args");
@@ -197,7 +207,6 @@ class GmlLinter {
 									//q.name = q.readContextName(this.name);
 									q.skipLine();
 								} else {
-									trace("Illegal scope change");
 									q.pos = p; return retv(KHash, "#");
 								}
 							};
@@ -307,7 +316,14 @@ class GmlLinter {
 					if (c.isIdent0()) {
 						q.skipIdent1();
 						nv = q.substring(p, q.pos);
-						return retv(keywords.defget(nv, KIdent), nv);
+						var mcr = gml.GmlAPI.gmlMacros[nv];
+						if (mcr != null) {
+							if (q.depth > 128) {
+								setError("Macro stack overflow");
+								return KEOF;
+							}
+							q.pushSource(mcr.expr, mcr.name);
+						} else return retv(keywords.defget(nv, KIdent), nv);
 					}
 					else if (c.isDigit()) {
 						start();
@@ -462,6 +478,7 @@ class GmlLinter {
 				rc(readExpr());
 			};
 			case KSqbOpen: rc(readArgs(true));
+			case KLambda: rc(readLambda());
 			default: {
 				if (nk.isUnOp()) {
 					rc(readExpr());
@@ -609,6 +626,44 @@ class GmlLinter {
 		}
 		return readSeqStartError("Unclosed switch-block");
 	}
+	function readEnum():FoundError {
+		rc(readCheckSkip(KIdent, "an enum name"));
+		rc(readCheckSkip(KCubOpen, "an opening `{` for enum"));
+		var seenComma = true;
+		while (reader.loop) {
+			switch (next()) {
+				case KCubClose: return false;
+				case KIdent: {
+					if (!seenComma) return readExpect("a `,` or `}` in enum");
+					var nk = peek();
+					if (skipIf(nk == KSet)) {
+						rc(readExpr());
+						nk = peek();
+					}
+					seenComma = skipIf(nk == KComma);
+				};
+				default: {
+					return readExpect("an enum field or `}`");
+				}
+			}
+		}
+		return readSeqStartError("Unclosed {}");
+	}
+	function readLambda():FoundError {
+		skipIf(peek() == KIdent);
+		if (skipIf(peek() == KParOpen)) {
+			var depth = 1;
+			while (reader.loop) {
+				switch (next()) {
+					case KParOpen: depth++;
+					case KParClose: if (--depth <= 0) break;
+					default:
+				}
+			}
+		}
+		rc(readStat());
+		return false;
+	}
 	
 	/**
 	 * 
@@ -617,17 +672,11 @@ class GmlLinter {
 		var q = reader;
 		nk = nextOr(nk);
 		var mainKind = nk;
-		var z:Bool, i:Int;
+		var z:Bool, z2:Bool, i:Int;
 		switch (nk) {
-			case KMFunc: {
-				while (q.loop) {
-					q.skipLine();
-					if (q.peek(-1) != "\\".code) break;
-					q.skipLineEnd();
-					q.row++;
-				}
-			};
+			case KMFunc, KMacro: {};
 			case KArgs: {};
+			case KEnum: rc(readEnum());
 			case KVar, KGlobalVar: {
 				//z = nk == KArgs;
 				seqStart.setTo(reader);
@@ -711,16 +760,14 @@ class GmlLinter {
 				} else canBreak = z;
 			};
 			//
-			case KLamDef: {
-				
-			};
+			case KLamDef: rc(readLambda());
 			default: {
 				rc(readExpr(xfAsStat|flags, nk));
 			};
 		}
 		if (skipIf(peek() == KSemico)) {
 			// OK!
-		} else if (mainKind.needSemico() && (flags & xfNoSemico) == 0) {
+		} else if (mainKind.needSemico() && (flags & xfNoSemico) == 0 && q.peek(-1) != ";".code) {
 			addWarning("Expected a semicolon after a statement (" + mainKind.getName() + ")");
 		}
 		return false;
@@ -731,13 +778,19 @@ class GmlLinter {
 		var q = reader = new GmlReaderExt(source.trimRight());
 		this.name = q.name = name;
 		errorText = null;
+		var ohno = false;
 		while (q.loop) {
 			var nk = next();
 			if (nk == KEOF) break;
-			if (readStat(0, nk)) return true;
+			if (readStat(0, nk)) { ohno = true; break; }
 		}
-		return false;
+		//
+		reader.clear();
+		seqStart.clear();
+		__peekReader.clear();
+		return ohno;
 	}
+	
 	
 	public static function runFor(editor:EditCode):FoundError {
 		var q = new GmlLinter();
