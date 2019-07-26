@@ -21,6 +21,13 @@ class GmlReader extends StringReader {
 	private function get_eof():Bool {
 		return (pos >= length);
 	}
+	
+	/** inlined; for layered parser, will not go over boundaries */
+	public var loopLocal(get, never):Bool;
+	private inline function get_loopLocal():Bool {
+		return pos < length;
+	}
+	
 	//
 	public var version:GmlVersion;
 	public function new(gmlCode:String, ?version:GmlVersion) {
@@ -28,7 +35,7 @@ class GmlReader extends StringReader {
 		this.version = version != null ? version : gml.Project.current.version;
 	}
 	public function skipWhile(fn:CharCode-> Bool) {
-		while (loop) {
+		while (loopLocal) {
 			if (fn(peek())) {
 				skip();
 			} else break;
@@ -37,7 +44,7 @@ class GmlReader extends StringReader {
 	
 	/** Skips to the end of the current line */
 	public function skipLine() {
-		while (loop) {
+		while (loopLocal) {
 			switch (peek()) {
 				case "\n".code, "\r".code: // ->
 				default: skip(); continue;
@@ -47,7 +54,7 @@ class GmlReader extends StringReader {
 	
 	/** Skips a single `\n` / `\r\n`, if any */
 	public function skipLineEnd() {
-		if (loop) switch (peek()) {
+		if (loopLocal) switch (peek()) {
 			case "\r".code: {
 				skip();
 				if (peek() == "\n".code) skip();
@@ -56,10 +63,11 @@ class GmlReader extends StringReader {
 		}
 	}
 	
-	private static function skipComment_1(s:String, p:Int) {
+	/** Unclosed multiline comments are legal in GML so we need to handle that */
+	private static function skipComment_1(s:String, p:Int):Bool {
 		if (s.fastSub(p, 5) == "event") return true;
 		switch (s.fastSub(p, 6)) {
-			case "moment", "action": return true;
+			case "moment", "action", "target": return true;
 		}
 		if (s.fastSub(p, 7) == "section") return true;
 		return false;
@@ -68,7 +76,7 @@ class GmlReader extends StringReader {
 	/** Skips past the end of a comment-block */
 	public function skipComment() {
 		var n = 0;
-		while (loop) {
+		while (loopLocal) {
 			var c = read();
 			if (c == "\n".code) {
 				n += 1;
@@ -83,18 +91,18 @@ class GmlReader extends StringReader {
 	
 	public function skipString1(qc:Int):Int {
 		var c = peek(), n = 0;
-		while (c != qc && loop) {
+		while (c != qc && loopLocal) {
 			skip(); c = peek();
 			if (c == "\n".code) n++;
 		}
-		if (loop) skip();
+		if (loopLocal) skip();
 		return n;
 	}
 	
 	public function skipString2():Int {
 		var n = 0;
 		var c = peek();
-		while (c != '"'.code && loop) {
+		while (c != '"'.code && loopLocal) {
 			if (c == "\\".code) {
 				skip(); c = peek();
 				switch (c) {
@@ -106,14 +114,13 @@ class GmlReader extends StringReader {
 			} else skip();
 			c = peek();
 		}
-		if (loop) skip();
+		if (loopLocal) skip();
 		return n;
 	}
 	
-	public function skipNumber():Void {
-		var canDot = true;
+	public function skipNumber(canDot:Bool = true):Void {
 		var c = peek();
-		while (loop) {
+		while (loopLocal) {
 			if (c == ".".code) {
 				if (canDot) {
 					canDot = false;
@@ -185,7 +192,7 @@ class GmlReader extends StringReader {
 	}
 	
 	public function skipIdent() {
-		if (peek().isIdent0()) while (loop) {
+		if (peek().isIdent0()) while (loopLocal) {
 			if (peek().isIdent1()) {
 				skip();
 			} else break;
@@ -193,7 +200,7 @@ class GmlReader extends StringReader {
 	}
 	
 	public function skipIdent1() {
-		while (loop) {
+		while (loopLocal) {
 			if (peek().isIdent1()) {
 				skip();
 			} else break;
@@ -201,7 +208,7 @@ class GmlReader extends StringReader {
 	}
 	
 	public function skipEventName() {
-		while (loop) {
+		while (loopLocal) {
 			var c = peek();
 			if (c.isIdent1() || c == ":".code) {
 				skip();
