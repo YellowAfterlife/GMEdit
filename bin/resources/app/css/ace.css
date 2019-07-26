@@ -161,6 +161,10 @@ textarea#source {
 #app .ace-tm .ace_string {
 	color: #00f;
 }
+#main .ace_warning-line {
+	position: absolute;
+	background-color: rgba(255, 200, 79, 0.15);
+}
 #main .ace_error-line {
 	position: absolute;
 	background-color: rgba(233, 115, 111, 0.35);

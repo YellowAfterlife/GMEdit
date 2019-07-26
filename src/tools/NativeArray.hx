@@ -15,6 +15,18 @@ package tools;
 	public static inline function resize<T>(arr:Array<T>, newSize:Int):Void {
 		untyped arr.length = newSize;
 	}
+	
+	/** ([0,1], [2,3,4]) ~> ([2,3,4], [2,3,4]) (shallow copy) */
+	public static function setTo<T>(arr:Array<T>, to:Array<T>):Void {
+		var n = to.length;
+		resize(arr, n);
+		var i = 0;
+		while (i < n) {
+			arr[i] = to[i];
+			i++;
+		}
+	}
+	
 	public static inline function forEach<T>(arr:Array<T>, fn:T->Void):Void {
 		untyped arr.forEach(fn);
 	}

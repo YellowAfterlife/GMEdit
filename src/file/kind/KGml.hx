@@ -54,7 +54,7 @@ class KGml extends KCode {
 	
 	override public function postproc(editor:EditCode, code:String):String {
 		if (gml.file.GmlFile.current == editor.file) {
-			Main.window.setTimeout(() -> parsers.GmlLinter.runFor(editor));
+			Main.window.setTimeout(() -> parsers.linter.GmlLinter.runFor(editor));
 		}
 		saveSessionChanged = false;
 		var onDisk = editor.file.path != null;
