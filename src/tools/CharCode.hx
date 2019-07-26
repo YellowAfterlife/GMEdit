@@ -5,6 +5,10 @@ package tools;
  * @author YellowAfterlife
  */
 abstract CharCode(Int) from Int to Int {
+	
+	public var code(get, never):Int;
+	private inline function get_code():Int return this;
+	
 	/** Returns whether this is a space or a tab character */
 	public inline function isSpace0() {
 		return (this == " ".code || this == "\t".code);
