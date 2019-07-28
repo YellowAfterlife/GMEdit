@@ -19,6 +19,8 @@ class GmlReaderExt extends GmlReader {
 	
 	public var name:String = "";
 	
+	public var showOnStack:Bool = true;
+	
 	/** Increments row, sets row offset to current position */
 	public function markLine():Void {
 		row++;
@@ -27,24 +29,26 @@ class GmlReaderExt extends GmlReader {
 	
 	/** Forms a stacktrace tail */
 	public function getStack():String {
-		var n = oldPos.length - 1;
+		var n = oldPos.length;
+		var i = n + 1;
 		var r = "";
-		for (i in -1 ... n + 1) {
+		while (--i >= 0) {
 			var _pos:Int, _rowStart:Int;
-			if (i < 0) {
+			if (i == n) {
 				_pos = pos;
 				_rowStart = rowStart;
 			} else {
+				if (!oldShowOnStack[i]) continue;
 				_pos = oldPos[i];
 				_rowStart = oldRowStart[i];
 			}
 			var _col = _pos - _rowStart;
-			r += "\nfrom "
-				+ (i < 0 ? name : oldName[i])
-				+ " [Ln " + ((i < 0 ? row : oldRow[i]) + 1)
+			var _name = (i == n ? name : oldName[i]);
+			r += (_name != null ? "\nfrom " + _name : "\nfrom")
+				+ "[Ln " + ((i == n ? row : oldRow[i]) + 1)
 				+ ", col " + (_col + 1) + "]";
-			if (i < n) {
-				var _source = i < 0 ? source : oldSource[i];
+			if (i > 0) {
+				var _source = i == n ? source : oldSource[i];
 				var _rowEnd = _source.indexOf("\n", _rowStart);
 				if (_rowEnd >= 0) {
 					if (_source.fastCodeAt(_rowEnd - 1) == "\r".code) _rowEnd--;
@@ -56,9 +60,8 @@ class GmlReaderExt extends GmlReader {
 	}
 	
 	public function getTopPos():AcePos {
-		var i = oldPos.length - 1;
-		if (i >= 0) {
-			return new AcePos(oldPos[i] - oldRowStart[i], oldRow[i]);
+		if (oldPos.length > 0) {
+			return new AcePos(oldPos[0] - oldRowStart[0], oldRow[0]);
 		} else return new AcePos(pos - rowStart, row);
 	}
 	
@@ -72,6 +75,7 @@ class GmlReaderExt extends GmlReader {
 	var oldRow:Array<Int> = [];
 	var oldRowStart:Array<Int> = [];
 	var oldName:Array<String> = [];
+	var oldShowOnStack:Array<Bool> = [];
 	
 	public var depth(get, never):Int;
 	private inline function get_depth():Int {
@@ -87,6 +91,7 @@ class GmlReaderExt extends GmlReader {
 			row = oldRow.pop();
 			rowStart = oldRowStart.pop();
 			name = oldName.pop();
+			showOnStack = oldShowOnStack.pop();
 			if (pos < length) return true;
 		}
 		return false;
@@ -102,6 +107,7 @@ class GmlReaderExt extends GmlReader {
 		oldRow.push(row);
 		oldRowStart.push(rowStart);
 		oldName.push(name);
+		oldShowOnStack.push(showOnStack);
 		//
 		source = code;
 		pos = 0;
@@ -109,6 +115,7 @@ class GmlReaderExt extends GmlReader {
 		rowStart = 0;
 		name = _name;
 		length = code.length;
+		showOnStack = true;
 	}
 	public function pushSourceExt(code:String, pos:Int, till:Int, row:Int, rowStart:Int, ?name:String) {
 		pushSource(code, name);
@@ -126,16 +133,16 @@ class GmlReaderExt extends GmlReader {
 		row = q.row; oldRow.setTo(q.oldRow);
 		rowStart = q.rowStart; oldRowStart.setTo(q.oldRowStart);
 		name = q.name; oldName.setTo(q.oldName);
+		showOnStack = q.showOnStack; oldShowOnStack.setTo(q.oldShowOnStack);
 	}
 	public function clear():Void {
-		source = "";
-		pos = 0;
-		length = 0;
-		oldSource.clear();
-		oldLength.clear();
-		oldPos.clear();
-		oldRow.clear();
-		oldRowStart.clear();
+		source = ""; oldSource.clear();
+		name = null; oldName.clear();
+		pos = 0; oldPos.clear();
+		length = 0; oldLength.clear();
+		row = 0; oldRow.clear();
+		rowStart = 0; oldRowStart.clear();
+		showOnStack = true; oldShowOnStack.clear();
 	}
 	// These are too similar to GmlReader implementations, hm
 	@:access(GmlReader.skipComment_1)

@@ -92,7 +92,9 @@ class GmlLinterMFunc {
 		var i = order.length;
 		var mfPre = mfName + "_mf";
 		while (--i >= 0) {
-			q.pushSource(mfPre + (i + 1));
+			var mfPre_i = mfPre + (i + 1);
+			q.pushSource(mfPre_i, mfPre_i);
+			q.showOnStack = false;
 			var ord = order[i];
 			var ai:Int;
 			if (ord.isPlain()) {
@@ -130,8 +132,10 @@ class GmlLinterMFunc {
 						'Concat in $mfName in $mcArgContext');
 				};
 			}
+			q.showOnStack = false;
 		}
-		q.pushSource(mfPre + "0");
+		q.pushSource(mfPre + "0", mfPre + "0");
+		q.showOnStack = false;
 		
 		//
 		if (flags & GmlLinter.xfAsStat != 0) {
