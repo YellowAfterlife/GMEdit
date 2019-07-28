@@ -6,6 +6,7 @@ import parsers.linter.GmlLinterKind;
 import gml.GmlVersion;
 import ace.extern.*;
 import tools.macros.GmlLinterMacros.*;
+import gml.GmlAPI;
 using tools.NativeArray;
 using tools.NativeString;
 
@@ -28,8 +29,15 @@ class GmlLinter {
 		warnings.push(new GmlLinterWarning(text + reader.getStack(), reader.getTopPos()));
 	}
 	//
+	
+	/** top-level context name */
 	var name:String;
+	
 	var reader:GmlReaderExt;
+	
+	var editor:EditCode;
+	
+	var context:String = "";
 	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
 	var seqStart:GmlReaderExt = new GmlReaderExt("", none);
@@ -189,7 +197,7 @@ class GmlLinter {
 									q.skipLineEnd();
 									q.markLine();
 								}
-								return ret(nv == "macro" ? KMacro : KMFunc);
+								return ret(nv == "macro" ? KMacro : KMFuncDecl);
 							};
 							case "args": {
 								q.skipLine();
@@ -204,7 +212,7 @@ class GmlLinter {
 								if (p - 2 <= 0 || q.get(p - 2) == "\n".code) {
 									//q.row = 0;
 									//q.pos = p;
-									//q.name = q.readContextName(this.name);
+									context = q.readContextName(null);
 									q.skipLine();
 								} else {
 									q.pos = p; return retv(KHash, "#");
@@ -316,14 +324,24 @@ class GmlLinter {
 					if (c.isIdent0()) {
 						q.skipIdent1();
 						nv = q.substring(p, q.pos);
-						var mcr = gml.GmlAPI.gmlMacros[nv];
-						if (mcr != null) {
-							if (q.depth > 128) {
-								setError("Macro stack overflow");
-								return KEOF;
+						do {
+							// todo: imports
+							
+							//
+							var mf = GmlAPI.gmlMFuncs[nv];
+							if (mf != null) return retv(KMFunc, nv);
+							// expand macros:
+							var mcr = GmlAPI.gmlMacros[nv];
+							if (mcr != null) {
+								if (q.depth > 128) {
+									setError("Macro stack overflow");
+									return KEOF;
+								}
+								q.pushSource(mcr.expr, mcr.name);
+								break;
 							}
-							q.pushSource(mcr.expr, mcr.name);
-						} else return retv(keywords.defget(nv, KIdent), nv);
+							return retv(keywords.defget(nv, KIdent), nv);
+						} while (false);
 					}
 					else if (c.isDigit()) {
 						start();
@@ -442,7 +460,7 @@ class GmlLinter {
 			return readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
 		} else return false;
 	}
-	//
+	
 	static inline var xfNoOps = 1;
 	static inline var xfAsStat = 2;
 	static inline var xfNoSfx = 4;
@@ -479,6 +497,7 @@ class GmlLinter {
 			};
 			case KSqbOpen: rc(readArgs(true));
 			case KLambda: rc(readLambda());
+			case KMFunc: return GmlLinterMFunc.read(this, flags);
 			default: {
 				if (nk.isUnOp()) {
 					rc(readExpr());
@@ -674,7 +693,7 @@ class GmlLinter {
 		var mainKind = nk;
 		var z:Bool, z2:Bool, i:Int;
 		switch (nk) {
-			case KMFunc, KMacro: {};
+			case KMFuncDecl, KMacro: {};
 			case KArgs: {};
 			case KEnum: rc(readEnum());
 			case KVar, KGlobalVar: {
@@ -773,10 +792,11 @@ class GmlLinter {
 		return false;
 	}
 	
-	public function run(source:GmlCode, name:String, version:GmlVersion):FoundError {
+	public function run(source:GmlCode, editor:EditCode, version:GmlVersion):FoundError {
 		this.version = version;
 		var q = reader = new GmlReaderExt(source.trimRight());
-		this.name = q.name = name;
+		this.name = q.name = editor.file.name;
+		this.editor = editor;
 		errorText = null;
 		var ohno = false;
 		while (q.loop) {
@@ -801,7 +821,7 @@ class GmlLinter {
 			session.clearAnnotations();
 		}
 		var t = Main.window.performance.now();
-		var ohno = q.run(session.getValue(), editor.file.name, gml.Project.current.version);
+		var ohno = q.run(session.getValue(), editor, gml.Project.current.version);
 		t = (Main.window.performance.now() - t);
 		//
 		if (session.gmlErrorMarkers == null) session.gmlErrorMarkers = [];

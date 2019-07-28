@@ -99,7 +99,8 @@ enum abstract GmlLinterKind(Int) {
 	var KWith;
 	
 	// syntax extensions:
-	var KMFunc;
+	var KMFuncDecl; // #mfunc
+	var KMFunc; // by-name ref, val
 	var KArgs;
 	var KLambda;
 	var KLamDef;
@@ -152,7 +153,7 @@ enum abstract GmlLinterKind(Int) {
 	static var __noSemico = new GmlLinterKindSet([
 		KCubOpen,
 		KIf, KFor, KWhile, KDo, KRepeat, KSwitch, KWith,
-		KArgs, KMFunc, KMacro, KEnum,
+		KArgs, KMFuncDecl, KMacro, KEnum,
 	]);
 	public inline function needSemico() return !__noSemico[this];
 	

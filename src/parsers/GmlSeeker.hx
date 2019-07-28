@@ -395,13 +395,16 @@ class GmlSeeker {
 					} else cfg = null;
 					// value:
 					p = q.pos;
+					s = "";
 					do {
 						q.skipLine();
 						if (q.peek( -1) == "\\".code) {
+							s += q.substring(p, q.pos - 1) + "\n";
 							q.skipLineEnd();
+							p = q.pos;
 						} else break;
 					} while (q.loop);
-					s = q.substring(p, q.pos);
+					s += q.substring(p, q.pos);
 					// we don't currently support configuration nesting
 					if (cfg == null || cfg == project.config) {
 						var m = new GmlMacro(name, orig, s, cfg);

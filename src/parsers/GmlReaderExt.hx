@@ -95,7 +95,7 @@ class GmlReaderExt extends GmlReader {
 		return !get_loop();
 	}
 	//
-	public function pushSource(code:String, ?next:String) {
+	public function pushSource(code:String, ?_name:String) {
 		oldSource.push(source);
 		oldPos.push(pos);
 		oldLength.push(length);
@@ -107,8 +107,15 @@ class GmlReaderExt extends GmlReader {
 		pos = 0;
 		row = 0;
 		rowStart = 0;
-		name = next;
+		name = _name;
 		length = code.length;
+	}
+	public function pushSourceExt(code:String, pos:Int, till:Int, row:Int, rowStart:Int, ?name:String) {
+		pushSource(code, name);
+		this.pos = pos;
+		this.length = till;
+		this.row = row;
+		this.rowStart = rowStart;
 	}
 	//
 	public function setTo(q:GmlReaderExt) {

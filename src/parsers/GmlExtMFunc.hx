@@ -39,7 +39,7 @@ class GmlExtMFunc {
 	}
 	
 	public static var magicRegex:String = "";
-	static var magicMap:Dictionary<GmlExtMFuncMagic> = __magicMap_init();
+	public static var magicMap:Dictionary<GmlExtMFuncMagic> = __magicMap_init();
 	static function __magicMap_init() {
 		var map = new Dictionary<GmlExtMFuncMagic>();
 		var rx:String = "(@@)(__(?:";
@@ -379,8 +379,8 @@ class GmlExtMFunc {
 				var p = q.pos;
 				var c = q.read();
 				switch (c) {
-					case "(".code, "[".code: depth++;
-					case ")".code, "]".code: if (--depth <= 0) {
+					case "(".code, "[".code, "{".code: depth++;
+					case ")".code, "]".code, "}".code: if (--depth <= 0) {
 						flushArg(p);
 						var mfl = mf.args.length;
 						if (mfl == 0 && args.length == 1 && args[0].trimRight() == "") {
