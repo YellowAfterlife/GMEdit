@@ -183,12 +183,7 @@ class GmlSeeker {
 					};
 					case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, v);
 					case "#".code: {
-						while (q.loop) {
-							c = q.peek();
-							if (c.isIdent1()) {
-								q.skip();
-							} else break;
-						}
+						q.skipIdent1();
 						if (q.pos > start + 1) {
 							s = q.substring(start, q.pos);
 							switch (s) {
@@ -206,12 +201,7 @@ class GmlSeeker {
 					};
 					default: {
 						if (c.isIdent0()) {
-							while (q.loop) {
-								c = q.peek();
-								if (c.isIdent1()) {
-									q.skip();
-								} else break;
-							}
+							q.skipIdent1();
 							var id = q.substring(start, q.pos);
 							var m = ace.AceMacro.jsOrx(out.macroMap[id], GmlAPI.gmlMacros[id]);
 							if (m != null) {
@@ -403,7 +393,7 @@ class GmlSeeker {
 							q.skipLineEnd();
 							p = q.pos;
 						} else break;
-					} while (q.loop);
+					} while (q.loopLocal);
 					s += q.substring(p, q.pos);
 					// we don't currently support configuration nesting
 					if (cfg == null || cfg == project.config) {
