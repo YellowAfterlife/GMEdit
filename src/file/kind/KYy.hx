@@ -47,6 +47,8 @@ class KYy extends FileKind {
 					"Show in directory",
 					"Do nothing",
 				],
+				defaultId: 3,
+				cancelId: 3,
 			});
 		} else {
 			opt = Dialog.showConfirm('$dunno Would you like to open it as JSON?') ? 0 : 3;
