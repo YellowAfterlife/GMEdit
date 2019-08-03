@@ -705,7 +705,16 @@ class GmlLinter {
 					//if (z && nk == KQMark) { skip(); nk = peek(); }
 					if (!skipIf(nk == KIdent)) break;
 					found++;
-					if (skipIf(peek() == KSet)) { // `name = val`
+					//
+					nk = peek();
+					if (nk == KColon) { // `name:type`
+						skip();
+						nk = peek();
+						rc(readCheckSkip(nk, "a type name"));
+						nk = peek();
+					}
+					if (nk == KSet) { // `name = val`
+						skip();
 						rc(readExpr());
 					}
 					if (!skipIf(peek() == KComma)) break;
