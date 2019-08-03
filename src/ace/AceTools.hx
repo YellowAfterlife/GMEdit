@@ -33,6 +33,7 @@ import ui.Preferences;
 		session.setOption("newLineMode", "windows");
 		session.setOption("tabSize", Preferences.current.tabSize);
 		session.setOption("useSoftTabs", Preferences.current.tabSpaces);
+		session.setOption("wrap", Main.aceEditor.getOption("wrap"));
 		return session;
 	}
 	
