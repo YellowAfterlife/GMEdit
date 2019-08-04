@@ -106,7 +106,12 @@
 #main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_section::after,
 #main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_event::after,
 #main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_action::after,
-#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_target::after {
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_target::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_define::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_section::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_event::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_action::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_target::after {
 	background-color: #495057;
 }
 
