@@ -222,6 +222,11 @@ class GmlLinter {
 						}
 					} else return retv(KHash, "#");
 				};
+				case "$".code: {
+					start();
+					q.skipHex();
+					return ret(KNumber);
+				};
 				case ";".code: return retv(KSemico, ";");
 				case ",".code: return retv(KComma, ",");
 				//
@@ -345,7 +350,12 @@ class GmlLinter {
 					}
 					else if (c.isDigit()) {
 						start();
-						q.skipNumber();
+						if (q.peek() == "x".code) {
+							q.skip();
+							q.skipHex();
+						} else {
+							q.skipNumber();
+						}
 						return ret(KNumber);
 					}
 					else if (c.code > 32) {

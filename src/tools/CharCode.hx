@@ -39,4 +39,10 @@ abstract CharCode(Int) from Int to Int {
 	public inline function isDigit() {
 		return (this >= "0".code && this <= "9".code);
 	}
+	public function isHex() {
+		return((this >= "0".code && this <= "9".code)
+			|| (this >= "a".code && this <= "f".code)
+			|| (this >= "A".code && this <= "F".code)
+		);
+	}
 }

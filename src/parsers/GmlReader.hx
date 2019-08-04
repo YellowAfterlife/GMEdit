@@ -34,13 +34,6 @@ class GmlReader extends StringReader {
 		super(gmlCode);
 		this.version = version != null ? version : gml.Project.current.version;
 	}
-	public function skipWhile(fn:CharCode-> Bool) {
-		while (loopLocal) {
-			if (fn(peek())) {
-				skip();
-			} else break;
-		}
-	}
 	
 	/** Skips to the end of the current line */
 	public function skipLine() {
@@ -130,6 +123,16 @@ class GmlReader extends StringReader {
 				skip();
 			} else break;
 			c = peek();
+		}
+	}
+	
+	public function skipHex():Void {
+		var c = peek();
+		while (loopLocal) {
+			if (c.isHex()) {
+				skip();
+				c = peek();
+			} else break;
 		}
 	}
 	
