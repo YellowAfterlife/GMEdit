@@ -21,7 +21,7 @@ class GmlExtensionAPI {
 		GmlFile.openTab(new GmlFile("api: " + ident, path, kind));
 	}
 	//
-	static function procFn(name:String, help:String, argc:Int, hidden:Bool):String {
+	static function procFn(name:String, exname:String, help:String, argc:Int, hidden:Bool):String {
 		var r = help;
 		if (r == "") {
 			r = name + "(";
@@ -42,6 +42,7 @@ class GmlExtensionAPI {
 			}
 		}
 		if (hidden) r += " // hidden";
+		if (exname != name) r += "\n// external: " + exname;
 		return r;
 	}
 	static function procMc(name:String, val:String, hidden:Bool):String {
@@ -63,6 +64,7 @@ class GmlExtensionAPI {
 			for (fn in file.find("functions").findAll("function")) {
 				lines.push(procFn(
 					fn.findText("name"),
+					fn.findText("externalName"),
 					fn.findText("help"),
 					fn.findInt("argCount"),
 					fn.findText("help") == "")
@@ -82,7 +84,7 @@ class GmlExtensionAPI {
 			if (out != "") out += "\n";
 			out += "#section " + file.filename;
 			var lines = [], s:String;
-			for (fn in file.functions) lines.push(procFn(fn.name, fn.help, fn.argCount, fn.hidden));
+			for (fn in file.functions) lines.push(procFn(fn.name, fn.externalName, fn.help, fn.argCount, fn.hidden));
 			for (mc in file.constants) lines.push(procMc(mc.constantName, mc.value, mc.hidden));
 			lines.sort(procSort);
 			for (line in lines) out += "\n" + line;
