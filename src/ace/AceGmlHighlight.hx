@@ -251,7 +251,7 @@ using tools.NativeArray;
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
 		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
 		var rKeyEvent = rxRule(
-			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventnote"],
+			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventtext"],
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
 		);
 		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
