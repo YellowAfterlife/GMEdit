@@ -35,6 +35,7 @@ class Theme {
 		function proc(theme:ThemeImpl) {
 			if (theme.parentTheme != null) add(theme.parentTheme);
 			if (theme.darkChromeTabs != null) setDarkTabs(theme.darkChromeTabs);
+			if (theme.windowsAccentColors) electron.WindowsAccentColors.update();
 			//
 			if (theme.stylesheets != null) for (rel in theme.stylesheets) {
 				var link = Main.document.createLinkElement();
@@ -73,4 +74,5 @@ typedef ThemeImpl = {
 	?parentTheme:String,
 	?stylesheets:Array<String>,
 	?darkChromeTabs:Bool,
+	?windowsAccentColors:Bool,
 }

@@ -30,6 +30,7 @@ Same page also houses screenshots and development log.
 * Light theme tree icons: [Silk](http://www.famfamfam.com/lab/icons/silk/) (slightly edited)
 * Dark theme tree icons: [Font Awesome](https://fontawesome.com/)
 * zlib decompression: [pako](https://github.com/nodeca/pako)
+* Windows title bar color detection: [this library](https://github.com/loilo/windows-titlebar-color)
 
 ### License
 

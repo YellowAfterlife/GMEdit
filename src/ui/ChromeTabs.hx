@@ -227,13 +227,20 @@ class ChromeTabs {
 			LiveWeb.saveState();
 		});
 		//
-		if (document.hasFocus()) document.documentElement.setAttribute("hasFocus", "");
+		if (document.hasFocus()) {
+			document.documentElement.setAttribute("hasFocus", "");
+			electron.WindowsAccentColors.updateFocus(true);
+		} else {
+			electron.WindowsAccentColors.updateFocus(false);
+		}
 		window.addEventListener("focus", function(_) {
 			document.documentElement.setAttribute("hasFocus", "");
+			electron.WindowsAccentColors.updateFocus(true);
 			if (GmlFile.current != null) GmlFile.current.checkChanges();
 		});
 		window.addEventListener("blur", function(_) {
 			document.documentElement.removeAttribute("hasFocus");
+			electron.WindowsAccentColors.updateFocus(false);
 		});
 		//
 		return impl;
