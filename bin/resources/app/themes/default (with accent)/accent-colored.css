@@ -2,6 +2,7 @@
 	z-index: 10;
 }
 .chrome-tabs,
+.chrome-tabs.chrome-tabs-dark-theme,
 #splitter-td:before {
 	background: var(--titlebar-background-color);
 	color: var(--titlebar-foreground-color);
@@ -15,6 +16,7 @@
 	display: block;
 	height: 32px;
 	box-shadow: 0 -0.05em rgba(0,0,0,0.175) inset;
+	border-left: 1px solid rgba(0, 0, 0, 0.2);
 	--border-top: 30px solid transparent;
 	box-sizing: border-box;
 }
@@ -38,7 +40,7 @@
 
 /* light foreground controls */
 html[titlebar-foreground-is-light="true"] #splitter-td:before {
-	border-left: 1px solid rgba(255,255,255,0.2);
+	border-left-color: rgba(255,255,255,0.2);
 }
 html[titlebar-foreground-is-light="true"] .system-button:hover {
 	background-color: rgba(255, 255, 255, 0.1);
@@ -57,7 +59,7 @@ html[titlebar-foreground-is-light="true"] .system-button.maximize svg rect {
 
 /* dark foreground controls */
 html[titlebar-foreground-is-light="false"] #splitter-td:before {
-	border-left: 1px solid rgba(0,0,0,0.2);
+	border-left-color: rgba(0,0,0,0.2);
 }
 html[titlebar-foreground-is-light="false"] .system-button:hover {
 	background-color: rgba(0, 0, 0, 0.1);
