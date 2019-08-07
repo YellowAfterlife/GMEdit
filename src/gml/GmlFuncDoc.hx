@@ -22,6 +22,32 @@ class GmlFuncDoc {
 	/** array of argument names */
 	public var args:Array<String>;
 	
+	var minArgsCache:Null<Int> = null;
+	
+	static var rxIsOpt:RegExp = new RegExp("^\\s*\\[");
+	public var minArgs(get, never):Int;
+	private function get_minArgs():Int {
+		if (minArgsCache != null) return minArgsCache;
+		var argi = args.length;
+		while (argi > 0) {
+			var arg = args[argi - 1];
+			if (arg.contains("?")
+				|| arg.contains("=")
+				|| rxIsOpt.test(arg)
+				|| arg.endsWith("*")
+			) {
+				argi--;
+			} else break;
+		}
+		minArgsCache = argi;
+		return minArgsCache;
+	}
+	
+	public var maxArgs(get, never):Int;
+	private function get_maxArgs():Int {
+		return rest ? 0x7fffffff : args.length;
+	}
+	
 	/** whether to show "..." in the end of argument list */
 	public var rest:Bool;
 	
@@ -41,6 +67,7 @@ class GmlFuncDoc {
 		args.resize(0);
 		rest = false;
 		acc = false;
+		minArgsCache = null;
 	}
 	
 	public function getAcText() {
@@ -68,6 +95,7 @@ class GmlFuncDoc {
 			rest = false;
 		}
 		if (out != null) {
+			out.minArgsCache = null;
 			out.name = name;
 			out.pre = pre;
 			out.post = post;

@@ -175,6 +175,7 @@ class GmxLoader {
 					for (func in funcs.findAll("function")) {
 						var name = func.findText("name");
 						GmlAPI.extKind.set(name, "extfunction");
+						GmlAPI.extArgc[name] = func.findInt("argCount");
 						var help = func.findText("help");
 						if (help != null && help != "") {
 							GmlAPI.extCompAdd(new AceAutoCompleteItem(name, "function", help));

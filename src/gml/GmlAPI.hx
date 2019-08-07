@@ -81,6 +81,8 @@ class GmlAPI {
 	public static var extDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var extKind:Dictionary<String> = new Dictionary();
 	public static var extComp:AceAutoCompleteItems = [];
+	/** declared argument counts per extension function, for linter */
+	public static var extArgc:Dictionary<Int> = new Dictionary();
 	public static var extCompMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public static function extCompAdd(comp:AceAutoCompleteItem) {
 		if (!extCompMap.exists(comp.name)) {
@@ -93,6 +95,7 @@ class GmlAPI {
 		extKind = new Dictionary();
 		extComp.clear();
 		extCompMap = new Dictionary();
+		extArgc = new Dictionary();
 	}
 	// script/object scope
 	/** script name -> doc */

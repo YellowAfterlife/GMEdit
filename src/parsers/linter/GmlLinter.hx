@@ -24,9 +24,13 @@ class GmlLinter {
 		errorPos = reader.getTopPos();
 	}
 	//
-	public var warnings:Array<GmlLinterWarning> = [];
+	public var warnings:Array<GmlLinterProblem> = [];
 	function addWarning(text:String):Void {
-		warnings.push(new GmlLinterWarning(text + reader.getStack(), reader.getTopPos()));
+		warnings.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
+	}
+	public var errors:Array<GmlLinterProblem> = [];
+	function addError(text:String):Void {
+		errors.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	//
 	
@@ -435,24 +439,32 @@ class GmlLinter {
 		}
 		return false;
 	}
-	function readArgs(sqb:Bool):FoundError {
+	
+	/**
+	 * 
+	 * @param	sqb Whether this is a [...args]
+	 * @return	number of arguments read, -1 on error
+	 */
+	function readArgs(sqb:Bool):Int {
 		var q = reader;
 		seqStart.setTo(reader);
 		var seenComma = true;
 		var closed = false;
+		var argc = 0;
 		while (q.loop) {
 			switch (peek()) {
 				case KParClose: {
-					if (sqb) return readError("Unexpected `)`");
+					if (sqb) { readError("Unexpected `)`"); return -1; }
 					skip(); closed = true; break;
 				};
 				case KSqbClose: {
-					if (!sqb) return readError("Unexpected `]`");
+					if (!sqb) { readError("Unexpected `]`"); return -1; }
 					skip(); closed = true; break;
 				};
 				case KComma: {
 					if (seenComma) {
-						return readError("Unexpected `,`");
+						readError("Unexpected `,`");
+						return -1;
 					} else {
 						seenComma = true;
 						skip();
@@ -461,14 +473,19 @@ class GmlLinter {
 				default: {
 					if (seenComma) {
 						seenComma = false;
-						rc(readExpr());
-					} else return readExpect("a comma in values list");
+						if (readExpr()) return -1;
+						argc++;
+					} else {
+						readExpect("a comma in values list");
+						return -1;
+					}
 				};
 			}
 		}
 		if (!closed) {
-			return readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
-		} else return false;
+			readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
+			return -1;
+		} else return argc;
 	}
 	
 	static inline var xfNoOps = 1;
@@ -494,6 +511,7 @@ class GmlLinter {
 		// the thing itself:
 		var statKind = nk;
 		var currKind = nk;
+		var currName = nk == KIdent ? nextVal : null;
 		switch (nk) {
 			case KNumber, KString, KUndefined, KIdent: {
 				
@@ -505,7 +523,7 @@ class GmlLinter {
 			case KInc, KDec, KNot, KBitNot: {
 				rc(readExpr());
 			};
-			case KSqbOpen: rc(readArgs(true));
+			case KSqbOpen: rc(readArgs(true) < 0);
 			case KLambda: rc(readLambda());
 			case KMFunc: return GmlLinterMFunc.read(this, flags);
 			default: {
@@ -538,7 +556,49 @@ class GmlLinter {
 					if (hasFlag(xfNoSfx)) return readError("Can't call this");
 					skip();
 					statKind = KCall;
-					rc(readArgs(false));
+					var argc = readArgs(false);
+					rc(argc < 0);
+					if (currKind == KIdent && currName != null) {
+						var doc = ace.AceMacro.jsOrx(
+							GmlAPI.gmlDoc[currName],
+							GmlAPI.extDoc[currName],
+							GmlAPI.stdDoc[currName]
+						);
+						do {
+							var minArgs:Int, maxArgs:Int;
+							if (doc != null) {
+								minArgs = doc.minArgs;
+								maxArgs = doc.maxArgs;
+							} else {
+								// perhaps it's a hidden extension function? we don't add them to extDoc
+								minArgs = GmlAPI.extArgc[currName];
+								if (minArgs == null) {
+									addWarning('`$currName` doesn\'t seem to be a valid function');
+									continue;
+								}
+								if (minArgs < 0) {
+									minArgs = 0;
+									maxArgs = 0x7fffffff;
+								} else maxArgs = minArgs;
+							}
+							//
+							if (argc < minArgs) {
+								if (maxArgs == minArgs) {
+									addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
+								} else if (maxArgs < 0x7fffffff) {
+									addError('Not enough arguments for $currName (expected $minArgs+, got $argc)');
+								} else {
+									addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
+								}
+							} else if (argc > maxArgs) {
+								if (minArgs == maxArgs) {
+									addError('Too many arguments for $currName (expected ${doc.maxArgs}, got $argc)');
+								} else {
+									addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
+								}
+							}
+						} while (false);
+					}
 				};
 				case KInc, KDec: { // x++, x--
 					if (hasFlag(xfNoOps) || hasFlag(xfNoOps)) break;
@@ -784,10 +844,10 @@ class GmlLinter {
 				}
 			};
 			case KBreak: {
-				if (!canBreak) return readError("Can't use `break` here");
+				if (!canBreak) addError("Can't use `break` here");
 			};
 			case KContinue: {
-				if (!canContinue) return readError("Can't use `continue` here");
+				if (!canContinue) addError("Can't use `continue` here");
 			};
 			case KSwitch: {
 				z = canBreak;
@@ -811,6 +871,10 @@ class GmlLinter {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @return Whether there was a syntax error, among other things
+	 */
 	public function run(source:GmlCode, editor:EditCode, version:GmlVersion):FoundError {
 		this.version = version;
 		var q = reader = new GmlReaderExt(source.trimRight());
@@ -821,7 +885,11 @@ class GmlLinter {
 		while (q.loop) {
 			var nk = next();
 			if (nk == KEOF) break;
-			if (readStat(0, nk)) { ohno = true; break; }
+			if (readStat(0, nk)) {
+				errors.push(new GmlLinterProblem(errorText, errorPos));
+				ohno = true;
+				break;
+			}
 		}
 		//
 		reader.clear();
@@ -855,16 +923,31 @@ class GmlLinter {
 				row: pos.row, column: pos.column, type: isError ? "error" : "warning", text: text
 			});
 		}
-		for (warn in q.warnings) {
-			addMarker(warn.text, warn.pos, false);
-		}
+		for (warn in q.warnings) addMarker(warn.text, warn.pos, false);
+		for (error in q.errors) addMarker(error.text, error.pos, true);
+		//
 		var msg:String;
-		if (ohno) {
-			addMarker(q.errorText, q.errorPos, true);
-			msg = q.errorPos.toString() + " " + q.errorText;
+		if (q.warnings.length == 0 && q.errors.length == 0) {
+			msg = "OK!";
 		} else {
-			msg = "OK! (lint time: " + untyped (t.toFixed(2)) + "ms)";
+			if (ohno) {
+				msg = "⛔"; // 🚔
+			} else if (q.errors.length > 0) {
+				msg = "🛑"; // 🚒
+			} else msg = "⚠";
+			if (q.errors.length > 0) {
+				msg += q.errors.length + " error";
+				if (q.errors.length != 1) msg += "s";
+			}
+			if (q.warnings.length > 0) {
+				if (q.errors.length > 0) msg += ", ";
+				msg += q.warnings.length + " warning";
+				if (q.warnings.length != 1) msg += "s";
+			}
+			msg += "!";
 		}
+		msg += " (lint time: " + untyped (t.toFixed(2)) + "ms)";
+		//
 		Main.window.setTimeout(function() {
 			var statusBar = Main.aceEditor.statusBar;
 			statusBar.ignoreUntil = Main.window.performance.now() + statusBar.delayTime + 50;
@@ -875,7 +958,7 @@ class GmlLinter {
 	}
 }
 
-class GmlLinterWarning {
+class GmlLinterProblem {
 	public var text:String;
 	public var pos:AcePos;
 	public function new(text:String, pos:AcePos) {

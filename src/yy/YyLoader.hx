@@ -212,6 +212,7 @@ class YyLoader {
 									var name = func.name;
 									var help = func.help;
 									GmlAPI.extKind.set(name, "extfunction");
+									GmlAPI.extArgc[name] = func.argCount < 0 ? func.argCount : func.args.length;
 									if (help != null && help != "" && !func.hidden) {
 										GmlAPI.extCompAdd(new AceAutoCompleteItem(
 											name, "function", help
