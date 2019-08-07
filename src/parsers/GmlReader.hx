@@ -187,6 +187,16 @@ class GmlReader extends StringReader {
 		}
 	}
 	
+	public function skipSpaces1_local() {
+		while (loopLocal) {
+			switch (peek()) {
+				case " ".code, "\t".code, "\r".code, "\n".code: {
+					skip(); continue;
+				};
+			}; break;
+		}
+	}
+	
 	public function skipSpaces1x(till:Int) {
 		while (pos < till) switch (peek()) {
 			case " ".code, "\t".code, "\r".code, "\n".code: skip();

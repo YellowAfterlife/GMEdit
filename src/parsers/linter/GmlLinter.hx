@@ -334,8 +334,15 @@ class GmlLinter {
 						q.skipIdent1();
 						nv = q.substring(p, q.pos);
 						do {
-							// todo: imports
-							
+							//
+							if (nv != "var") {
+								var imp = editor.imports[context];
+								if (imp != null) {
+									var ir = GmlLinterImports.proc(this, p, imp, nv);
+									if (ir) return KEOF;
+									if (ir != null) return __next(q);
+								}
+							}
 							//
 							var mf = GmlAPI.gmlMFuncs[nv];
 							if (mf != null) return retv(KMFunc, nv);

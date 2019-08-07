@@ -33,6 +33,9 @@ class StringReader {
 	public inline function peek(offset:Int = 0):CharCode {
 		return source.fastCodeAt(offset != 0 ? pos + offset : pos);
 	}
+	public inline function skipPeek():CharCode {
+		return source.fastCodeAt(++pos);
+	}
 	public inline function skip(num:Int = 1):Void {
 		pos += num;
 	}

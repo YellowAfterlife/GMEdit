@@ -467,9 +467,9 @@ class GmlExtImport {
 		var p1 = q.pos;
 		var one:String = dot != -1 ? q.substring(p0, dot) : null;
 		if (full == "new") {
-			q.skipSpaces1();
+			q.skipSpaces1_local();
 			var typePos = q.pos;
-			if (q.read().isIdent0()) {
+			if (q.read().isIdent0_ni()) {
 				q.skipIdent1();
 				one = q.substring(typePos, q.pos);
 				full = one + ".create";
@@ -490,7 +490,7 @@ class GmlExtImport {
 				if (en != null && en.items.exists(fd)) ind = type + '.' + fd;
 			}
 			if (ind != null) {
-				q.skipSpaces1();
+				q.skipSpaces1_local();
 				if (q.read() == "(".code) {
 					var argPos = q.pos;
 					q.skipSpaces0();
