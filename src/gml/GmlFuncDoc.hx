@@ -32,7 +32,7 @@ class GmlFuncDoc {
 		var argi = args.length;
 		while (argi > 0) {
 			var arg = args[argi - 1];
-			if (rxIsOpt.test(arg) || arg.endsWith("*")) {
+			if (arg == null || rxIsOpt.test(arg) || arg.endsWith("*")) {
 				argi--;
 			} else break;
 		}
