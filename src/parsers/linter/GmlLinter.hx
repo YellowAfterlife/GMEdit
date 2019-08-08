@@ -57,6 +57,7 @@ class GmlLinter {
 	var editor:EditCode;
 	
 	var context:String = "";
+	var isProperties:Bool = false;
 	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
 	var seqStart:GmlReaderExt = new GmlReaderExt("", none);
@@ -235,7 +236,9 @@ class GmlLinter {
 								if (p - 2 <= 0 || q.get(p - 2) == "\n".code) {
 									//q.row = 0;
 									//q.pos = p;
+									q.pos = p;
 									context = q.readContextName(null);
+									isProperties = nv == "event" && context == "properties";
 									q.skipLine();
 								} else {
 									q.pos = p; return retv(KHash, "#");
@@ -542,8 +545,26 @@ class GmlLinter {
 		var currKind = nk;
 		var currName = nk == KIdent ? nextVal : null;
 		switch (nk) {
-			case KNumber, KString, KUndefined, KIdent: {
+			case KNumber, KString, KUndefined: {
 				
+			};
+			case KIdent: {
+				if (isProperties && isStat()) {
+					if (skipIf(peek() == KColon)) { // name:type
+						readCheckSkip(KIdent, "variable type");
+						if (skipIf(peek() == KLT)) {
+							// we know that it's valid or you wouldn't make it here
+							var depth = 1;
+							while (q.loop) {
+								switch (next()) {
+									case KLT: depth++;
+									case KGT: if (--depth <= 0) break;
+									default:
+								}
+							}
+						}
+					}
+				}
 			};
 			case KParOpen: {
 				rc(readExpr());
