@@ -189,10 +189,11 @@ class GmlFile {
 	}
 	//
 	public function savePost(?out:String) {
-		if (path == null) return;
-		syncTime();
-		markClean();
-		// update things if this is the active tab:
+		if (path != null) {
+			syncTime();
+			markClean();
+		}
+		// re-index if needed:
 		if (path != null && out != null && codeEditor != null && codeEditor.kind.indexOnSave) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
@@ -209,6 +210,14 @@ class GmlFile {
 				}
 			}
 		}
+		// syntax check:
+		if (path != null && current == this
+			&& codeEditor != null && Std.is(codeEditor.kind, file.kind.KGml)
+		) {
+			var check = inline parsers.linter.GmlLinter.getOption((q)->q.onSave);
+			if (check) parsers.linter.GmlLinter.runFor(codeEditor);
+		}
+		// notify plugins:
 		PluginEvents.fileSave({file:this, code:out});
 	}
 	public function save() {

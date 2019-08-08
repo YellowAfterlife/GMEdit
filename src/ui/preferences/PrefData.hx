@@ -31,6 +31,7 @@ typedef PrefData = {
 	backupCount:{ v1:Int, v2:Int, live:Int },
 	tooltipKind:PrefTooltipKind,
 	tooltipDelay:Int,
+	linterPrefs:parsers.linter.GmlLinterPrefs,
 }
 enum abstract PrefMatchMode(Int) from Int to Int {
 	/// GMS1 style

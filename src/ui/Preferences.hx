@@ -289,6 +289,7 @@ class Preferences {
 			eventOrder: 1,
 			tooltipDelay: 350,
 			tooltipKind: Custom,
+			linterPrefs: {},
 		};
 		// load/merge defaults:
 		var doSave = false;

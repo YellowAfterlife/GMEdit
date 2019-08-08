@@ -15,6 +15,21 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class GmlLinter {
+	
+	public static function getOption(fn:GmlLinterPrefs->Bool):Bool {
+		var lp = gml.Project.current.properties.linterPrefs;
+		var r:Bool = null;
+		for (_ in 0 ... 1) {
+			if (lp != null) {
+				r = fn(lp);
+				if (r != null) break;
+			}
+			r = fn(ui.Preferences.current.linterPrefs);
+			if (r != null) break;
+			r = fn(GmlLinterPrefs.defValue);
+		}
+		return r;
+	}
 	//
 	public var errorText:String = null;
 	public var errorPos:AcePos = null;
@@ -54,8 +69,12 @@ class GmlLinter {
 	
 	var version:GmlVersion;
 	
+	var optRequireSemico:Bool;
+	var optNoSingleEqu:Bool;
+	
 	public function new() {
-		//
+		optRequireSemico = getOption((q) -> q.requireSemicolons);
+		optNoSingleEqu = getOption((q) -> q.noSingleEquals);
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -212,7 +231,7 @@ class GmlLinter {
 							case "import", "hyper", "gmcr": {
 								q.skipLine();
 							};
-							case "define", "event", "moment", "target": {
+							case "define", "event", "moment", "target", "section": {
 								if (p - 2 <= 0 || q.get(p - 2) == "\n".code) {
 									//q.row = 0;
 									//q.pos = p;
@@ -552,7 +571,9 @@ class GmlLinter {
 						rc(readExpr());
 					} else {
 						if (hasFlag(xfNoOps)) break;
-						addWarning("Using single `=` as a comparison operator");
+						if (optNoSingleEqu) {
+							addWarning("Using single `=` as a comparison operator");
+						}
 						skip();
 						rc(readOps());
 						flags |= xfNoSfx;
@@ -872,7 +893,7 @@ class GmlLinter {
 		}
 		if (skipIf(peek() == KSemico)) {
 			// OK!
-		} else if (mainKind.needSemico() && (flags & xfNoSemico) == 0 && q.peek(-1) != ";".code) {
+		} else if (optRequireSemico && mainKind.needSemico() && (flags & xfNoSemico) == 0 && q.peek(-1) != ";".code) {
 			addWarning("Expected a semicolon after a statement (" + mainKind.getName() + ")");
 		}
 		return false;
@@ -906,7 +927,7 @@ class GmlLinter {
 	}
 	
 	
-	public static function runFor(editor:EditCode):FoundError {
+	public static function runFor(editor:EditCode, ?code:GmlCode):FoundError {
 		var q = new GmlLinter();
 		var session = editor.session;
 		if (session.gmlErrorMarkers != null) {
@@ -915,7 +936,8 @@ class GmlLinter {
 			session.clearAnnotations();
 		}
 		var t = Main.window.performance.now();
-		var ohno = q.run(session.getValue(), editor, gml.Project.current.version);
+		if (code == null) code = session.getValue();
+		var ohno = q.run(code, editor, gml.Project.current.version);
 		t = (Main.window.performance.now() - t);
 		//
 		if (session.gmlErrorMarkers == null) session.gmlErrorMarkers = [];

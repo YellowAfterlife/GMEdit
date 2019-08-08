@@ -96,6 +96,8 @@ class ProjectProperties {
 			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
 		}
 		//}
+		ui.preferences.PrefLinter.build(out, project);
+		//
 		plugins.PluginEvents.projectPropertiesBuilt({
 			project: project,
 			target: el,

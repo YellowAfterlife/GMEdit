@@ -56,7 +56,20 @@ class ChromeTabs {
 		prev.editor.focusLost(gmlFile.editor);
 		gmlFile.focus();
 		gmlFile.editor.focusGain(prev.editor);
-		if (isNew) PluginEvents.fileOpen({file:gmlFile});
+		if (isNew) {
+			if (gmlFile.path != null
+				&& gmlFile.codeEditor != null
+				&& Std.is(gmlFile.codeEditor.kind, file.kind.KGml)
+			) {
+				var check = inline parsers.linter.GmlLinter.getOption((q)->q.onLoad);
+				if (check) window.setTimeout(function() {
+					if (GmlFile.current == gmlFile) {
+						parsers.linter.GmlLinter.runFor(gmlFile.codeEditor);
+					}
+				}, 0);
+			}
+			PluginEvents.fileOpen({file:gmlFile});
+		}
 		PluginEvents.activeFileChange({file:gmlFile});
 	}
 	public static function init() {

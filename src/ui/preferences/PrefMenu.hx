@@ -11,6 +11,7 @@ class PrefMenu {
 		PrefTheme.build(out);
 		PrefMagic.build(out);
 		PrefCode.build(out);
+		PrefLinter.build(out, null);
 		PrefNav.build(out);
 		PrefBackups.build(out);
 	}
