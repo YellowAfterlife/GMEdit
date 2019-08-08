@@ -231,7 +231,7 @@ class GmlLinter {
 							case "import", "hyper", "gmcr": {
 								q.skipLine();
 							};
-							case "define", "event", "moment", "target", "section": {
+							case "define", "event", "moment", "target": {
 								if (p - 2 <= 0 || q.get(p - 2) == "\n".code) {
 									//q.row = 0;
 									//q.pos = p;
@@ -240,6 +240,9 @@ class GmlLinter {
 								} else {
 									q.pos = p; return retv(KHash, "#");
 								}
+							};
+							case "region", "endregion", "section": {
+								q.skipLine();
 							};
 							default: q.pos = p; return retv(KHash, "#");
 						}
@@ -613,7 +616,7 @@ class GmlLinter {
 							if (argc < minArgs) {
 								if (maxArgs == minArgs) {
 									addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
-								} else if (maxArgs < 0x7fffffff) {
+								} else if (maxArgs >= 0x7fffffff) {
 									addError('Not enough arguments for $currName (expected $minArgs+, got $argc)');
 								} else {
 									addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
