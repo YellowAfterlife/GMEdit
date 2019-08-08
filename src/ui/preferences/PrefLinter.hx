@@ -67,5 +67,6 @@ class PrefLinter {
 		addf("Syntax check on save", opt.onSave);
 		addf("Warn about missing semicolons", opt.requireSemicolons);
 		addf("Warn about single `=` comparisons", opt.noSingleEquals);
+		addf("Warn about conditions without ()", opt.requireParentheses);
 	}
 }

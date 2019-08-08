@@ -72,10 +72,12 @@ class GmlLinter {
 	
 	var optRequireSemico:Bool;
 	var optNoSingleEqu:Bool;
+	var optRequireParentheses:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
 		optNoSingleEqu = getOption((q) -> q.noSingleEquals);
+		optRequireParentheses = getOption((q) -> q.requireParentheses);
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -339,10 +341,10 @@ class GmlLinter {
 				};
 				case "<".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KGE, "<=");
-						case "<".code: q.skip(); return retv(KShr, "<<");
-						case ">".code: q.skip(); return retv(KNE, "<<");
-						default: return retv(KGT, "<");
+						case "=".code: q.skip(); return retv(KLE, "<=");
+						case "<".code: q.skip(); return retv(KShl, "<<");
+						case ">".code: q.skip(); return retv(KNE, "<>");
+						default: return retv(KLT, "<");
 					}
 				};
 				//
@@ -524,6 +526,7 @@ class GmlLinter {
 	static inline var xfAsStat = 2;
 	static inline var xfNoSfx = 4;
 	static inline var xfNoSemico = 8;
+	var readExpr_currKind:GmlLinterKind;
 	function readExpr(flags:Int = 0, ?_nk:GmlLinterKind):FoundError {
 		var q = reader;
 		var nk:GmlLinterKind = nextOr(_nk);
@@ -721,6 +724,7 @@ class GmlLinter {
 			nextVal = "";
 			return readExpect("a statement");
 		}
+		readExpr_currKind = currKind;
 		return false;
 	}
 	
@@ -738,7 +742,6 @@ class GmlLinter {
 	}
 	
 	function readSwitch():FoundError {
-		rc(readExpr());
 		rc(readCheckSkip(KCubOpen, "an opening `{` for switch-block"));
 		seqStart.setTo(reader);
 		var hasDefault = false;
@@ -814,6 +817,11 @@ class GmlLinter {
 		nk = nextOr(nk);
 		var mainKind = nk;
 		var z:Bool, z2:Bool, i:Int;
+		inline function checkParens():Void {
+			if (optRequireParentheses && readExpr_currKind != KParOpen) {
+				addWarning("Expression is missing parentheses");
+			}
+		}
 		switch (nk) {
 			case KMFuncDecl, KMacro: {};
 			case KArgs: {};
@@ -857,6 +865,7 @@ class GmlLinter {
 			};
 			case KIf: {
 				rc(readExpr());
+				checkParens();
 				skipIf(peek() == KThen);
 				if (skipIf(peek() == KSemico)) {
 					return readError("You have a semicolon before your then-expression.");
@@ -866,12 +875,16 @@ class GmlLinter {
 			};
 			case KWhile, KRepeat, KWith: {
 				rc(readExpr());
+				checkParens();
 				rc(readLoopStat());
 			};
 			case KDo: {
 				rc(readLoopStat());
 				switch (next()) {
-					case KUntil, KWhile: rc(readExpr());
+					case KUntil, KWhile: {
+						rc(readExpr());
+						checkParens();
+					};
 					default: return readExpect("an `until` or `while` for a do-loop");
 				}
 			};
@@ -904,6 +917,8 @@ class GmlLinter {
 			case KSwitch: {
 				z = canBreak;
 				canBreak = true;
+				rc(readExpr());
+				checkParens();
 				if (readSwitch()) {
 					canBreak = z;
 					return true;
