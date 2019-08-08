@@ -2,6 +2,7 @@ package gml;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
+import tools.Aliases;
 using StringTools;
 using tools.NativeString;
 
@@ -24,18 +25,14 @@ class GmlFuncDoc {
 	
 	var minArgsCache:Null<Int> = null;
 	
-	static var rxIsOpt:RegExp = new RegExp("^\\s*\\[");
+	static var rxIsOpt:RegExp = ace.AceMacro.jsRx(~/^\s*(?:\[|\?|\.\.\.)/);
 	public var minArgs(get, never):Int;
 	private function get_minArgs():Int {
 		if (minArgsCache != null) return minArgsCache;
 		var argi = args.length;
 		while (argi > 0) {
 			var arg = args[argi - 1];
-			if (arg.contains("?")
-				|| arg.contains("=")
-				|| rxIsOpt.test(arg)
-				|| arg.endsWith("*")
-			) {
+			if (rxIsOpt.test(arg) || arg.endsWith("*")) {
 				argi--;
 			} else break;
 		}
@@ -110,6 +107,75 @@ class GmlFuncDoc {
 		+ "|\\s*\\[\\s*(?:(\\d+)\\s*\\])?" // argument[0] | argument[???]
 	+ ")", "g");
 	static var fromCode_hasRet:RegExp = new RegExp("\\breturn\\b\\s*[^;]");
+	private static function fromCode_skipArgCountCmp(chunk:GmlCode, k:Int):Int {
+		var c:CharCode;
+		// `name = argument_count > 1[ ]? argument[1]`
+		while (--k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (!c.isSpace1()) break;
+		}
+		// `name = argument_count > [1] ? argument[1]`
+		c = chunk.fastCodeAt(k);
+		if (!c.isDigit()) return -1;
+		while (--k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (!c.isDigit()) break;
+		}
+		// `name = argument_count >[ ]1 ? argument[1]`
+		while (k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (c.isSpace1()) k--; else break;
+		}
+		// `name = argument_count [>] 1 ? argument[1]`
+		if (chunk.fastCodeAt(k) == "=".code) k--;
+		if (chunk.fastCodeAt(k) == ">".code) k--; else return -1;
+		// `name = argument_count[ ]> 1 ? argument[1]`
+		while (k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (c.isSpace1()) k--; else break;
+		}
+		// `name = [argument_count] > 1 ? argument[1]`
+		var acEnd = k + 1;
+		if (chunk.fastCodeAt(k) != "t".code) return -1;
+		while (--k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (!c.isIdent1()) break;
+		}
+		if (acEnd - k != 15 || chunk.substring(k + 1, acEnd) != "argument_count") return -1;
+		// `name =[ ]argument_count > 1 ? argument[1]`
+		while (k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (c.isSpace1()) k--; else break;
+		}
+		//
+		return k;
+	}
+	private static function fromCode_skipIf(chunk:GmlCode, k:Int):Int {
+		var c:CharCode;
+		// `if (argument_count > 1)[ ]some = argument[1]`
+		while (k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (c.isSpace1()) k--; else break;
+		}
+		// `if (argument_count > 1[)] some = argument[1]`
+		if (chunk.fastCodeAt(k) != ")".code) return -1;
+		k = fromCode_skipArgCountCmp(chunk, k);
+		if (k < 0) return -1;
+		// `if [(]argument_count > 1) some = argument[1]`
+		if (chunk.fastCodeAt(k) == "(".code) k--; else return -1;
+		// `if[ ](argument_count > 1) some = argument[1]`
+		while (k >= 0) {
+			c = chunk.fastCodeAt(k);
+			if (c.isSpace1()) k--; else break;
+		}
+		// `[if] (argument_count > 1) some = argument[1]`
+		var acEnd = k + 1;
+		if (chunk.fastCodeAt(k) == "f".code) k--; else return -1;
+		if (chunk.fastCodeAt(k) == "i".code) k--; else return -1;
+		if ((chunk.fastCodeAt(k):CharCode).isIdent1_ni()) return -1;
+		//
+		return k;
+	}
 	public function fromCode(gml:String, from:Int = 0, ?till:Int) {
 		var q = new GmlReader(gml);
 		var rx = fromCode_rx;
@@ -139,47 +205,12 @@ class GmlFuncDoc {
 						if (c.isSpace1()) continue;
 						if (c == "?".code) { // perhaps `name = argument_count > 1 ? argument[1]`?
 							hasSet = false;
-							// `name = argument_count > 1[ ]? argument[1]`
-							while (--k >= 0) {
+							var k1 = fromCode_skipArgCountCmp(chunk, k);
+							if (k1 >= 0) {
+								k = k1;
 								c = chunk.fastCodeAt(k);
-								if (!c.isSpace1()) break;
+								isOpt = true;
 							}
-							// `name = argument_count > [1] ? argument[1]`
-							c = chunk.fastCodeAt(k);
-							if (!c.isDigit()) break;
-							while (--k >= 0) {
-								c = chunk.fastCodeAt(k);
-								if (!c.isDigit()) break;
-							}
-							// `name = argument_count >[ ]1 ? argument[1]`
-							while (k >= 0) {
-								c = chunk.fastCodeAt(k);
-								if (c.isSpace1()) k--; else break;
-							}
-							// `name = argument_count [>] 1 ? argument[1]`
-							if (chunk.fastCodeAt(k) == "=".code) k--;
-							if (chunk.fastCodeAt(k) == ">".code) k--; else break;
-							// `name = argument_count[ ]> 1 ? argument[1]`
-							while (k >= 0) {
-								c = chunk.fastCodeAt(k);
-								if (c.isSpace1()) k--; else break;
-							}
-							// `name = [argument_count] > 1 ? argument[1]`
-							var acEnd = k + 1;
-							if (chunk.fastCodeAt(k) != "t".code) break;
-							while (--k >= 0) {
-								c = chunk.fastCodeAt(k);
-								if (!c.isIdent1()) break;
-							}
-							if (acEnd - k != 15 || chunk.substring(k + 1, acEnd) != "argument_count") break;
-							// `name =[ ]argument_count > 1 ? argument[1]`
-							while (k >= 0) {
-								c = chunk.fastCodeAt(k);
-								if (c.isSpace1()) k--; else break;
-							}
-							//
-							c = chunk.fastCodeAt(k);
-							isOpt = true;
 						}
 						hasSet = (c == "=".code && chunk.fastCodeAt(k - 1) != "=".code);
 						break;
@@ -188,6 +219,7 @@ class GmlFuncDoc {
 					if (hasSet) while (--k >= 0) {
 						c = chunk.fastCodeAt(k);
 						if (c.isSpace1()) continue;
+						// perhaps `name/*:type*/ = val`?
 						var suffix:String = null;
 						if (c == "/".code && chunk.fastCodeAt(k - 1) == "*".code) {
 							k -= 1;
@@ -208,6 +240,7 @@ class GmlFuncDoc {
 								}
 							}
 						}
+						// make sure that it's getting assigned into somewhere
 						if (!c.isIdent1()) break;
 						var nameEnd = k + 1;
 						var nameStart = 0;
@@ -219,6 +252,8 @@ class GmlFuncDoc {
 						}
 						name = chunk.substring(nameStart, nameEnd);
 						if (suffix != null) name += suffix;
+						// perhaps it's GMS1-style `if (argument_count > 1) v = argument[1]`?
+						if (fromCode_skipIf(chunk, k) >= 0) isOpt = true;
 						break;
 					}
 					if (name == null) name = "arg" + argi;
