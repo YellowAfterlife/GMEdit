@@ -67,6 +67,11 @@ class GmlLinter {
 		errorPos = seqStart.getTopPos();
 		return true;
 	}
+	function readSeqStartWarn(text:String):FoundError {
+		if (errorPos != null) return true;
+		warnings.push(new GmlLinterProblem(text + seqStart.getStack(), seqStart.getTopPos()));
+		return true;
+	}
 	
 	var version:GmlVersion;
 	
@@ -118,7 +123,8 @@ class GmlLinter {
 		return nvk;
 	}
 	//
-	static var keywords:Dictionary<GmlLinterKind> = (function() {
+	var keywords:Dictionary<GmlLinterKind>;
+	function initKeywords() {
 		var q = new Dictionary<GmlLinterKind>();
 		q["var"] = KVar;
 		q["globalvar"] = KGlobalVar;
@@ -153,8 +159,18 @@ class GmlLinter {
 		q["case"] = KCase;
 		q["default"] = KDefault;
 		//
-		return q;
-	})();
+		q["try"] = KTry;
+		q["catch"] = KCatch;
+		q["finally"] = KFinally;
+		q["throw"] = KThrow;
+		//
+		if (version == GmlVersion.live) {
+			q["in"] = KLiveIn;
+			q["wait"] = KLiveWait;
+		}
+		//
+		keywords = q;
+	}
 	
 	//
 	var __next_isPeek = false;
@@ -231,7 +247,7 @@ class GmlLinter {
 							};
 							case "lambda": return retv(KLambda, "#lambda");
 							case "lamdef": return retv(KLamDef, "#lamdef");
-							case "import", "hyper", "gmcr": {
+							case "import", "hyper": {
 								q.skipLine();
 							};
 							case "define", "event", "moment", "target": {
@@ -244,6 +260,13 @@ class GmlLinter {
 									q.skipLine();
 								} else {
 									q.pos = p; return retv(KHash, "#");
+								}
+							};
+							case "gmcr": {
+								if (keywords["yield"] == null) {
+									keywords["yield"] = KYield;
+									keywords["label"] = KLabel;
+									keywords["goto"] = KGoto;
 								}
 							};
 							case "region", "endregion", "section": {
@@ -522,6 +545,48 @@ class GmlLinter {
 		} else return argc;
 	}
 	
+	function checkCallArgs(currName:String, argc:Int) {
+		var doc = ace.AceMacro.jsOrx(
+			GmlAPI.gmlDoc[currName],
+			GmlAPI.extDoc[currName],
+			GmlAPI.stdDoc[currName]
+		);
+		do {
+			var minArgs:Int, maxArgs:Int;
+			if (doc != null) {
+				minArgs = doc.minArgs;
+				maxArgs = doc.maxArgs;
+			} else {
+				// perhaps it's a hidden extension function? we don't add them to extDoc
+				minArgs = GmlAPI.extArgc[currName];
+				if (minArgs == null) {
+					addWarning('`$currName` doesn\'t seem to be a valid function');
+					continue;
+				}
+				if (minArgs < 0) {
+					minArgs = 0;
+					maxArgs = 0x7fffffff;
+				} else maxArgs = minArgs;
+			}
+			//
+			if (argc < minArgs) {
+				if (maxArgs == minArgs) {
+					addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
+				} else if (maxArgs >= 0x7fffffff) {
+					addError('Not enough arguments for $currName (expected $minArgs+, got $argc)');
+				} else {
+					addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
+				}
+			} else if (argc > maxArgs) {
+				if (minArgs == maxArgs) {
+					addError('Too many arguments for $currName (expected ${doc.maxArgs}, got $argc)');
+				} else {
+					addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
+				}
+			}
+		} while (false);
+	}
+	
 	static inline var xfNoOps = 1;
 	static inline var xfAsStat = 2;
 	static inline var xfNoSfx = 4;
@@ -554,7 +619,7 @@ class GmlLinter {
 			case KIdent: {
 				if (isProperties && isStat()) {
 					if (skipIf(peek() == KColon)) { // name:type
-						readCheckSkip(KIdent, "variable type");
+						rc(readCheckSkip(KIdent, "variable type"));
 						if (skipIf(peek() == KLT)) {
 							// we know that it's valid or you wouldn't make it here
 							var depth = 1;
@@ -579,6 +644,23 @@ class GmlLinter {
 			case KSqbOpen: rc(readArgs(true) < 0);
 			case KLambda: rc(readLambda());
 			case KMFunc: return GmlLinterMFunc.read(this, flags);
+			case KCubOpen: { // { fd1: v1, fd2: v2 }
+				if (skipIf(peek() == KCubClose)) {
+					// empty!
+				} else while (q.loop) {
+					switch (next()) {
+						case KIdent, KString: { };
+						default: return readExpect("a field name");
+					}
+					rc(readCheckSkip(KColon, "a `:` between key-value pair in {}"));
+					rc(readExpr());
+					switch (peek()) {
+						case KCubClose: skip(); break;
+						case KComma: skip();
+						default: return readExpect("a `,` or a `}` after a key-value pair in {}");
+					}
+				}
+			};
 			default: {
 				if (nk.isUnOp()) {
 					rc(readExpr());
@@ -614,49 +696,11 @@ class GmlLinter {
 					var argc = readArgs(false);
 					rc(argc < 0);
 					if (currKind == KIdent && currName != null) {
-						var doc = ace.AceMacro.jsOrx(
-							GmlAPI.gmlDoc[currName],
-							GmlAPI.extDoc[currName],
-							GmlAPI.stdDoc[currName]
-						);
-						do {
-							var minArgs:Int, maxArgs:Int;
-							if (doc != null) {
-								minArgs = doc.minArgs;
-								maxArgs = doc.maxArgs;
-							} else {
-								// perhaps it's a hidden extension function? we don't add them to extDoc
-								minArgs = GmlAPI.extArgc[currName];
-								if (minArgs == null) {
-									addWarning('`$currName` doesn\'t seem to be a valid function');
-									continue;
-								}
-								if (minArgs < 0) {
-									minArgs = 0;
-									maxArgs = 0x7fffffff;
-								} else maxArgs = minArgs;
-							}
-							//
-							if (argc < minArgs) {
-								if (maxArgs == minArgs) {
-									addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
-								} else if (maxArgs >= 0x7fffffff) {
-									addError('Not enough arguments for $currName (expected $minArgs+, got $argc)');
-								} else {
-									addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
-								}
-							} else if (argc > maxArgs) {
-								if (minArgs == maxArgs) {
-									addError('Too many arguments for $currName (expected ${doc.maxArgs}, got $argc)');
-								} else {
-									addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
-								}
-							}
-						} while (false);
+						checkCallArgs(currName, argc);
 					}
 				};
 				case KInc, KDec: { // x++, x--
-					if (hasFlag(xfNoOps) || hasFlag(xfNoOps)) break;
+					if (hasFlag(xfNoOps) || hasFlag(xfNoSfx)) break;
 					if (!currKind.canPostfix()) break;
 					skip();
 					statKind = currKind = nk;
@@ -691,6 +735,23 @@ class GmlLinter {
 					}
 					rc(readCheckSkip(KSqbClose, "a closing `]` in array access"));
 					currKind = KArray;
+				};
+				case KLiveIn: { // field in object
+					if (hasFlag(xfNoOps)) break;
+					skip();
+					rc(readExpr());
+					currKind = KLiveIn;
+				};
+				case KNot: {
+					if (hasFlag(xfNoOps) || version != GmlVersion.live) break;
+					seqStart.setTo(reader);
+					skip();
+					if (!skipIf(peek() == KLiveIn)) {
+						reader.setTo(seqStart);
+						break;
+					}
+					rc(readExpr());
+					currKind = KLiveIn;
 				};
 				case KQMark: { // x ? y : z
 					if (hasFlag(xfNoOps)) break;
@@ -849,7 +910,7 @@ class GmlLinter {
 					}
 					if (!skipIf(peek() == KComma)) break;
 				}
-				if (found == 0) return readSeqStartError("This `var` has no declarations.");
+				if (found == 0) readSeqStartWarn("This `var` has no declarations.");
 			};
 			case KCubOpen: {
 				z = false;
@@ -862,6 +923,11 @@ class GmlLinter {
 					rc(readStat());
 				}
 				if (!z) return readSeqStartError("Unclosed {}");
+			};
+			case KSemico: {
+				if (optRequireSemico) {
+					addWarning("Stray semicolon");
+				}
 			};
 			case KIf: {
 				rc(readExpr());
@@ -925,6 +991,28 @@ class GmlLinter {
 				} else canBreak = z;
 			};
 			//
+			case KLiveWait, KYield, KGoto, KThrow: { // keyword <value>
+				rc(readExpr());// wait <time>
+			}
+			case KLabel: { // label <name>[:]
+				switch (peek()) {
+					case KIdent, KString: {
+						skip();
+					};
+					default: return readExpect("a label name");
+				}
+				skipIf(peek() == KColon);
+			};
+			case KTry: {
+				rc(readStat());
+				rc(readCheckSkip(KCatch, "a `catch` after a `try` block"));
+				rc(readExpr());
+				rc(readStat()); // catch-block
+				if (skipIf(peek() == KFinally)) {
+					rc(readStat());
+				}
+			};
+			//
 			case KLamDef: rc(readLambda());
 			default: {
 				rc(readExpr(xfAsStat|flags, nk));
@@ -944,6 +1032,7 @@ class GmlLinter {
 	 */
 	public function run(source:GmlCode, editor:EditCode, version:GmlVersion):FoundError {
 		this.version = version;
+		initKeywords();
 		var q = reader = new GmlReaderExt(source.trimRight());
 		this.name = q.name = editor.file.name;
 		this.editor = editor;

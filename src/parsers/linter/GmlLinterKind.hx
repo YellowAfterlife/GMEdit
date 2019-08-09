@@ -88,6 +88,11 @@ enum abstract GmlLinterKind(Int) {
 	var KDefault;
 	var KCase;
 	
+	var KTry;
+	var KCatch;
+	var KFinally;
+	var KThrow;
+	
 	// loops:
 	var KFor;
 	var KDo;
@@ -105,6 +110,15 @@ enum abstract GmlLinterKind(Int) {
 	var KLambda;
 	var KLamDef;
 	var KImport;
+	
+	// #gmcr:
+	var KYield;
+	var KLabel;
+	var KGoto;
+	
+	// GMLive-exclusive:
+	var KLiveIn; // `field in object`
+	var KLiveWait; // `wait <time>`
 	
 	var KMaxKind;
 	
