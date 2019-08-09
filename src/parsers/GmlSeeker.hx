@@ -449,6 +449,12 @@ class GmlSeeker {
 					while (q.loop) {
 						name = find(Ident);
 						if (name == null) break;
+						if (name == "var") { // `var var`
+							name = find(Ident);
+						} else if (GmlAPI.kwFlow[name]) {
+							// might eat a structure but that code's broken anyway
+							break;
+						}
 						locals.add(name, localKind);
 						p = q.pos;
 						flags = SetOp | Comma | Semico | Ident | ComBlock;
