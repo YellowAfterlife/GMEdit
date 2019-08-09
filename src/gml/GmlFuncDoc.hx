@@ -36,8 +36,16 @@ class GmlFuncDoc {
 				|| rxIsOpt.test(arg)
 				|| arg.endsWith("*")
 				|| arg.contains("=")
+				|| arg.contains("optional")
 			) {
 				argi--;
+			} else if (arg.contains("]") && !arg.contains("[")) {
+				// camera_create_view(room_x, room_y, width, height, [angle, object, x_speed, y_speed, x_border, y_border])
+				var argk = argi;
+				while (--argk >= 0) {
+					if (args[argk].contains("[")) break;
+				}
+				if (argk < 0) break; else argi = argk;
 			} else break;
 		}
 		minArgsCache = argi;
