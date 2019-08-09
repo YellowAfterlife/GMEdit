@@ -513,10 +513,17 @@ class GmlExtImport {
 		var id = imp.longen[full];
 		var en = dot == -1 ? GmlAPI.gmlEnums[AceMacro.jsOr(id, full)] : null;
 		if (en != null) do {
+			var ep = q.pos;
 			q.skipSpaces1();
-			if (q.read() != "(".code) break;
+			if (q.peek() != "(".code) {
+				q.pos = ep;
+				break;
+			} else q.skip();
 			q.skipSpaces1();
-			if (q.read() != ")".code) break;
+			if (q.peek() != ")".code) {
+				q.pos = ep;
+				break;
+			} else q.skip();
 			post_procIdent_p1 = q.pos;
 			return "array_create(" + en.name + "." + en.lastItem + ")";
 		} while (false);
