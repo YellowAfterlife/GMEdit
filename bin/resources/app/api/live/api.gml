@@ -9,6 +9,7 @@ array_clone(arr:array):
 array_slice(arr:array, start:int, length:int):
 array_copy(dest:array, dest_index:int, source:array, source_index:int, length:int)
 array_length(val):
+array_length_1d(val):
 /// Alias for array_length
 array_equals(a:array, b:array):
 array_push(arr, val):
