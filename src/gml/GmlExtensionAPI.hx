@@ -6,6 +6,7 @@ import gml.file.GmlFile;
 import file.FileKind;
 import file.kind.gmx.KGmxExtensionAPI;
 import file.kind.yy.KYyExtensionAPI;
+using tools.NativeString;
 
 /**
  * ...
@@ -33,21 +34,25 @@ class GmlExtensionAPI {
 		} else {
 			var p = r.indexOf(")");
 			if (p >= 0 && ++p < r.length) {
-				var rest = StringTools.ltrim(r.substring(p));
+				var rest = r.substring(p).trimLeft();
 				if (rest.charAt(0) == ":" && StringTools.isSpace(rest, 1)) {
 					// `func() : desc` -> `func() // desc`
 					rest = rest.substring(2);
 				}
+				if (rest.startsWith("//")) {
+					// `// desc` -> `desc`
+					rest = rest.substring(2).trimLeft();
+				}
 				r = r.substring(0, p) + " // " + rest;
 			}
 		}
-		if (hidden) r += " // hidden";
+		//if (hidden) r += " // hidden";
 		if (exname != name) r += "\n// external: " + exname;
 		return r;
 	}
 	static function procMc(name:String, val:String, hidden:Bool):String {
 		var r = '$name = $val';
-		if (hidden) r += " // hidden";
+		//if (hidden) r += " // hidden";
 		return r;
 	}
 	static function procSort(a:String, b:String) {
@@ -58,36 +63,62 @@ class GmlExtensionAPI {
 		var ext = SfGmx.parse(src);
 		var out = "";
 		for (file in ext.find("files").findAll("file")) {
-			if (out != "") out += "\n";
-			out += "#section " + file.findText("filename");
-			var lines = [], s:String;
+			var linesShow = [], linesHide = [];
 			for (fn in file.find("functions").findAll("function")) {
-				lines.push(procFn(
+				var hidden = fn.findText("help") == "";
+				(hidden ? linesHide : linesShow).push(procFn(
 					fn.findText("name"),
 					fn.findText("externalName"),
 					fn.findText("help"),
 					fn.findInt("argCount"),
-					fn.findText("help") == "")
-				);
+					hidden
+				));
 			}
 			for (mc in file.find("constants").findAll("constant")) {
-				lines.push(procMc(mc.findText("name"), mc.findText("value"), mc.findInt("hidden") != 0));
+				var hidden = mc.findInt("hidden") != 0;
+				(hidden ? linesHide : linesShow).push(procMc(
+					mc.findText("name"),
+					mc.findText("value"),
+					hidden
+				));
 			}
-			lines.sort(procSort);
-			for (line in lines) out += "\n" + line;
+			//
+			linesShow.sort(procSort);
+			if (out != "") out += "\n";
+			out += "#section " + file.findText("filename");
+			for (line in linesShow) out += "\n" + line;
+			//
+			if (linesHide.length > 0) {
+				linesHide.sort(procSort);
+				out += "\n#section " + file.findText("filename") + " (hidden)";
+				for (line in linesHide) out += "\n" + line;
+			}
 		}
 		return out;
 	}
 	public static function get2(ext:YyExtension):String {
 		var out = "";
 		for (file in ext.files) {
+			var linesShow = [], linesHide = [];
+			for (fn in file.functions) {
+				(fn.hidden ? linesHide : linesShow).push(procFn(
+					fn.name, fn.externalName, fn.help, fn.argCount, fn.hidden));
+			}
+			for (mc in file.constants) {
+				(mc.hidden ? linesHide : linesShow).push(procMc(
+					mc.constantName, mc.value, mc.hidden));
+			}
+			//
+			linesShow.sort(procSort);
 			if (out != "") out += "\n";
 			out += "#section " + file.filename;
-			var lines = [], s:String;
-			for (fn in file.functions) lines.push(procFn(fn.name, fn.externalName, fn.help, fn.argCount, fn.hidden));
-			for (mc in file.constants) lines.push(procMc(mc.constantName, mc.value, mc.hidden));
-			lines.sort(procSort);
-			for (line in lines) out += "\n" + line;
+			for (line in linesShow) out += "\n" + line;
+			//
+			if (linesHide.length > 0) {
+				linesHide.sort(procSort);
+				out += "\n#section " + file.filename + " (hidden)";
+				for (line in linesHide) out += "\n" + line;
+			}
 		}
 		return out;
 	}
