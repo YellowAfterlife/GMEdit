@@ -368,6 +368,7 @@
 		sete(GMEdit, "activeFileChange", onFileChange, visible);
 		sete(GMEdit, "fileClose", onFileClose, visible);
 		sete(GMEdit, "fileSave", onFileSave, visible);
+		sete(GMEdit, "fileReload", onFileSave, visible);
 		sete(GMEdit, "tabsReorder", onTabsReorder, visible);
 		sete(aceEditor, "changeStatus", onUpdate_schedule, visible);
 		sete(aceEditor, "changeSelection", onUpdate_schedule, visible);

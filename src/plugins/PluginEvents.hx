@@ -66,6 +66,12 @@ extern class PluginEvents {
 	static function fileSave(e:{file:GmlFile, ?code:String}):Void;
 	
 	/**
+	 * Dispatches after a file tab was reloaded due to changes on disk
+	 * (automatically or with user permit)
+	 */
+	static function fileReload(e:{file:GmlFile}):Void;
+	
+	/**
 	 * Called after constructing the preferences menu.
 	 * You can use this to insert your plugin-specific DOM elements into it.
 	 * ui.Preferences offers a large set of helpers for all kinds of helpers.

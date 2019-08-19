@@ -218,6 +218,7 @@ class EditCode extends Editor {
 			} else if (!file.changed) {
 				if (act != Ask) {
 					session.setValue(file.code);
+					plugins.PluginEvents.fileReload({file:file});
 				} else dlg = 1;
 			} else dlg = 2;
 			//
@@ -248,7 +249,10 @@ class EditCode extends Editor {
 					cancelId: 1,
 				});
 				switch (bt) {
-					case 0: session.setValue(file.code);
+					case 0: {
+						session.setValue(file.code);
+						plugins.PluginEvents.fileReload({file:file});
+					};
 					case 1: { };
 					case 2: {
 						var name1 = file.name + " <copy>";
