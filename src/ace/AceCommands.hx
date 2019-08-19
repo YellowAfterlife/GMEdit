@@ -156,6 +156,8 @@ import ui.CommandPalette;
 		bind(wm("Alt-Shift-Up", "Alt-Shift-Up"), "addCursorAbove");
 		bind(wm("Alt-Shift-Down", "Alt-Shift-Down"), "addCursorBelow");
 		bind(wm("Ctrl-K", "Command-K"), "togglecomment");
+		bind(wm("Ctrl-D", "Command-D"), "duplicateSelection");
+		bind(wm("Ctrl-Shift-D", "Command-Shift-D"), "removeline");
 		//
 		var findRxs = "^#define\\b|^#event\\b|^#moment\\b|^#section\\b";
 		var findRx0 = new RegExp('(?:$findRxs|#region\\b|//{|//#region\\b|//#mark\\b)');
