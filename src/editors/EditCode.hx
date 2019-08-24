@@ -5,6 +5,7 @@ import ace.*;
 import editors.Editor;
 import electron.Dialog;
 import file.kind.KCode;
+import file.kind.KGml;
 import file.kind.misc.*;
 import gml.GmlLocals;
 import gml.GmlScopes;
@@ -212,13 +213,21 @@ class EditCode extends Editor {
 			var check_1 = NativeString.trimRight(file.code);
 			check_1 = NativeString.replaceExt(check_1, rxr, "");
 			//
+			inline function finishChange():Void {
+				session.setValue(file.code);
+				plugins.PluginEvents.fileReload({file:file});
+				if (Std.is(kind, KGml) && (cast kind:KGml).canSyntaxCheck) {
+					var check = inline parsers.linter.GmlLinter.getOption((q)->q.onSave);
+					if (check) parsers.linter.GmlLinter.runFor(this);
+				}
+			}
+			//
 			var dlg:Int = 0;
 			if (check_0 == check_1) {
 				// OK!
 			} else if (!file.changed) {
 				if (act != Ask) {
-					session.setValue(file.code);
-					plugins.PluginEvents.fileReload({file:file});
+					finishChange();
 				} else dlg = 1;
 			} else dlg = 2;
 			//
@@ -250,8 +259,7 @@ class EditCode extends Editor {
 				});
 				switch (bt) {
 					case 0: {
-						session.setValue(file.code);
-						plugins.PluginEvents.fileReload({file:file});
+						finishChange();
 					};
 					case 1: { };
 					case 2: {

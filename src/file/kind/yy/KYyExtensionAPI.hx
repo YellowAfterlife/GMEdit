@@ -13,6 +13,7 @@ class KYyExtensionAPI extends KGml {
 		canLambda = false;
 		canImport = false;
 		canHyper = false;
+		canSyntaxCheck = false;
 	}
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		if (data == null) data = haxe.Json.parse(super.loadCode(editor, data));

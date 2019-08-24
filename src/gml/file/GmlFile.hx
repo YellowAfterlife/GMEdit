@@ -213,6 +213,7 @@ class GmlFile {
 		// syntax check:
 		if (path != null && current == this
 			&& codeEditor != null && Std.is(codeEditor.kind, file.kind.KGml)
+			&& (cast codeEditor.kind:file.kind.KGml).canSyntaxCheck
 		) {
 			var check = inline parsers.linter.GmlLinter.getOption((q)->q.onSave);
 			if (check) parsers.linter.GmlLinter.runFor(codeEditor);

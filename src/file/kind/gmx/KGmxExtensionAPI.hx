@@ -13,6 +13,7 @@ class KGmxExtensionAPI extends KGml {
 		canLambda = false;
 		canImport = false;
 		canHyper = false;
+		canSyntaxCheck = false;
 	}
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		if (data == null) data = super.loadCode(editor, data);

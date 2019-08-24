@@ -31,6 +31,9 @@ class KGml extends KCode {
 	/// Whether #define will add scripts to auto-completion
 	public var canDefineComp:Bool = false;
 	
+	/** Whether it makes sense to check syntax in this file type */
+	public var canSyntaxCheck:Bool = true;
+	
 	/**
 	 * Whether editor session had been modified during the current save operation.
 	 * We need this because trying to modify it multiple times can be destructive.
