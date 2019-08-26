@@ -60,6 +60,7 @@ class ChromeTabs {
 			if (gmlFile.path != null
 				&& gmlFile.codeEditor != null
 				&& Std.is(gmlFile.codeEditor.kind, file.kind.KGml)
+				&& (cast gmlFile.codeEditor.kind:file.kind.KGml).canSyntaxCheck
 			) {
 				var check = inline parsers.linter.GmlLinter.getOption((q)->q.onLoad);
 				if (check) window.setTimeout(function() {

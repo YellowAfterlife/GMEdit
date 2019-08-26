@@ -217,7 +217,7 @@ class EditCode extends Editor {
 				session.setValue(file.code);
 				plugins.PluginEvents.fileReload({file:file});
 				if (Std.is(kind, KGml) && (cast kind:KGml).canSyntaxCheck) {
-					var check = inline parsers.linter.GmlLinter.getOption((q)->q.onSave);
+					var check = inline parsers.linter.GmlLinter.getOption((q)->q.onLoad);
 					if (check) parsers.linter.GmlLinter.runFor(this);
 				}
 			}
