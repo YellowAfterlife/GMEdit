@@ -700,7 +700,7 @@ class GmlLinter {
 					}
 				};
 				case KInc, KDec: { // x++, x--
-					if (hasFlag(xfNoOps) || hasFlag(xfNoSfx)) break;
+					if (hasFlag(xfNoSfx)) break;
 					if (!currKind.canPostfix()) break;
 					skip();
 					statKind = currKind = nk;
