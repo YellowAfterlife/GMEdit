@@ -54,6 +54,8 @@ path_action_reverse#
 true#
 false#
 pi#
+NaN#
+infinity#
 GM_build_date#
 GM_version#
 GM_runtime_version#
@@ -71,6 +73,8 @@ is_vec3(val)
 is_vec4(val)
 is_matrix(val)
 is_bool(val)
+is_nan(val)
+is_infinity(val)
 typeof(val)
 variable_global_exists(name)
 variable_global_get(name)
@@ -85,6 +89,8 @@ array_height_2d(variable)
 array_equals(var1,var2)
 array_create(size, [value])
 array_copy(dest,dest_index,src,src_index,length)
+array_get(variable,index)
+array_set(variable,index,val)
 random(x)
 random_range(x1,x2)
 irandom(x)
@@ -253,10 +259,11 @@ speed@
 friction@
 gravity@
 gravity_direction@
+in_collision_tree@
 motion_set(dir,speed)
 motion_add(dir,speed)
 place_free(x,y)
-place_empty(x,y)
+place_empty(x,y,obj*,...)
 place_meeting(x,y,obj)
 place_snapped(hsnap,vsnap)
 move_random(hsnap,vsnap)
@@ -403,7 +410,7 @@ room_goto_next()
 room_previous(numb)
 room_next(numb)
 room_restart()
-game_end()
+game_end(...)
 game_restart()
 game_load(filename)
 game_save(filename)
@@ -803,7 +810,10 @@ color_get_value(col)$
 merge_color(col1,col2,amount)$
 screen_save(fname)
 screen_save_part(fname,x,y,w,h)
-
+gif_open(width,height,...)
+gif_add_surface(gifindex,surfaceindex,delaytime,...)
+gif_save(gif, filename)
+gif_save_buffer(gif)
 
 // section 5.5
 
@@ -1091,6 +1101,7 @@ audio_is_playing(soundid)
 audio_is_paused(soundid)
 audio_exists(soundid)
 audio_system_is_available()
+audio_sound_is_playable(soundid)
 
 //audio revision-getters
 //audio_sound_set_track_position(soundid,time)
@@ -1865,6 +1876,8 @@ os_get_config()
 os_get_info()
 os_get_language()
 os_get_region()
+os_check_permission(permission)
+os_request_permission(permission)
 os_lock_orientation(flag)
 display_get_dpi_x()
 display_get_dpi_y()
@@ -2126,31 +2139,6 @@ iap_purchased#
 iap_canceled#
 iap_refunded#
 
-
-// Facebook integration functionality
-facebook_init()
-facebook_login(ds_list_of_permissions, ios_login_type)
-facebook_status()
-facebook_graph_request(graph_path,httpMethod,ds_map_params,ds_map_response)
-facebook_dialog(graph_path,ds_map_params,ds_map_response)
-facebook_logout()
-facebook_launch_offerwall(product_url)
-facebook_post_message(title,caption,message,picture_url,redirect_url,actionname,action_url)
-facebook_send_invite(title,message,picture_url,redirect_url,ds_map_response)
-facebook_user_id()
-facebook_accesstoken()
-facebook_check_permission(permission)
-facebook_request_read_permissions(ds_list_permissions)
-facebook_request_publish_permissions(ds_list_permissions)
-
-//iOS facebook login behaviour constants
-fb_login_default#
-fb_login_fallback_to_webview#
-fb_login_no_fallback_to_webview#
-fb_login_forcing_webview#
-fb_login_use_system_account#
-fb_login_forcing_safari#
-
 // Gamepad API
 gamepad_is_supported()
 gamepad_get_device_count()
@@ -2176,6 +2164,8 @@ gamepad_remove_mapping(device)
 gamepad_test_mapping(device, mapping_string)
 gamepad_get_mapping(device)
 gamepad_get_guid(device)
+gamepad_set_option(gamepad_id, option_key, option_value)
+gamepad_get_option(gamepad_id, option_key)
 
 // Check to see if a pause event has come from an OS activity this frame
 os_is_paused()
@@ -2625,10 +2615,7 @@ buffer_surface_copy#
 buffer_seek_start#
 buffer_seek_relative#
 buffer_seek_end#
-buffer_generalerror#
-buffer_outofspace#
-buffer_outofbounds#
-buffer_invalidtype#
+
 
 
 text_type&
@@ -2948,11 +2935,19 @@ skeleton_skin_get()!
 skeleton_attachment_set(slot, attachment)!
 skeleton_attachment_get(slot)!
 skeleton_attachment_create(name,sprite,ind,xo,yo,xs,ys,rot)!
+skeleton_attachment_create_colour(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!£
+skeleton_attachment_create_color(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!$
 skeleton_collision_draw_set(val)!
 skeleton_bone_data_get(bone, map)!
 skeleton_bone_data_set(bone, map)!
 skeleton_bone_state_get(bone, map)!
 skeleton_bone_state_set(bone, map)!
+skeleton_slot_colour_set(slot,col,alpha)!£
+skeleton_slot_color_set(slot,col,alpha)!$
+skeleton_slot_colour_get(slot)!£
+skeleton_slot_color_get(slot)!$
+skeleton_slot_alpha_get(slot)!
+skeleton_find_slot(x,y,list)!
 
 skeleton_get_minmax()!
 skeleton_get_num_bounds()!
@@ -2965,9 +2960,14 @@ draw_skeleton(sprite,animname,skinname,frame,x,y,xscale,yscale,rot,col,alpha)!
 draw_skeleton_time(sprite, animname,skinname, time, x,y, xscale,yscale, rot, col,alpha)!
 draw_skeleton_instance(instance, animname,skinname,frame,x,y,xscale,yscale,rot,col,alpha)!
 draw_skeleton_collision(sprite,animname,frame,x,y,xscale,yscale,rot,col)!
+draw_enable_skeleton_blendmodes(enable)!
+draw_get_enable_skeleton_blendmodes()!
 skeleton_animation_list(sprite, list)!
 skeleton_skin_list(sprite, list)!
+skeleton_bone_list(sprite, list)!
+skeleton_slot_list(sprite, list)!
 skeleton_slot_data(sprite, list)!
+skeleton_slot_data_instance(list)!
 
 // Layer functions!
 layer_get_id(layer_name)
@@ -3102,6 +3102,10 @@ tilemap_y(tilemap_element_id,y)
 
 tilemap_set(tilemap_element_id,tiledata,cell_x,cell_y)
 tilemap_set_at_pixel(tilemap_element_id,tiledata,x,y)
+
+tileset_get_texture(tilemap_element_id)
+tileset_get_uvs(tilemap_element_id)
+tileset_get_name(tilemap_element_id)
 
 tilemap_get_tileset(tilemap_element_id)
 tilemap_get_tile_width(tilemap_element_id)
@@ -3303,3 +3307,7 @@ kbv_autocapitalize_none#
 kbv_autocapitalize_words#
 kbv_autocapitalize_sentences#
 kbv_autocapitalize_characters#
+
+os_permission_denied_dont_request#
+os_permission_denied#
+os_permission_granted#
