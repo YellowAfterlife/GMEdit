@@ -579,7 +579,7 @@ class GmlLinter {
 				}
 			} else if (argc > maxArgs) {
 				if (minArgs == maxArgs) {
-					addError('Too many arguments for $currName (expected ${doc.maxArgs}, got $argc)');
+					addError('Too many arguments for $currName (expected $maxArgs, got $argc)');
 				} else {
 					addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
 				}
