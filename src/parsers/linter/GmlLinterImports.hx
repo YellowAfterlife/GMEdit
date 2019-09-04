@@ -15,6 +15,7 @@ class GmlLinterImports {
 		var q = self.reader;
 		var dotPos = -1;
 		var dotFull:String;
+		var origPos = q.pos;
 		if (q.peek() == ".".code && q.peek(1).isIdent0_ni()) {
 			dotPos = q.pos;
 			q.skip();
@@ -28,6 +29,7 @@ class GmlLinterImports {
 			q.pushSource(next);
 			return false;
 		}
+		q.pos = origPos;
 		return null;
 	}
 }
