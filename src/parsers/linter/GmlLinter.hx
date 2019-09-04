@@ -57,6 +57,7 @@ class GmlLinter {
 	var editor:EditCode;
 	
 	var context:String = "";
+	var locals:Dictionary<GmlLinterKind> = new Dictionary();
 	var isProperties:Bool = false;
 	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
@@ -256,6 +257,7 @@ class GmlLinter {
 									//q.pos = p;
 									q.pos = p;
 									context = q.readContextName(null);
+									locals = new Dictionary();
 									isProperties = nv == "event" && context == "properties";
 									q.skipLine();
 								} else {
@@ -402,6 +404,9 @@ class GmlLinter {
 								if (q.depth > 128) {
 									setError("Macro stack overflow");
 									return KEOF;
+								}
+								if (mcr.expr == "var" && mcr.name == "const") {
+									return retv(KConst, nv);
 								}
 								q.pushSource(mcr.expr, mcr.name);
 								break;
@@ -674,6 +679,9 @@ class GmlLinter {
 			switch (nk) {
 				case KSet: {
 					if (isStat()) {
+						if (currKind == KIdent && locals[currName] == KConst) {
+							addWarning('Assigning to a `const` local `$currName`');
+						}
 						skip();
 						flags &= ~xfAsStat;
 						statKind = KSet;
@@ -866,7 +874,10 @@ class GmlLinter {
 				}
 			}
 		}
+		var oldLocals = locals;
+		locals = new Dictionary();
 		rc(readStat());
+		locals = oldLocals;
 		return false;
 	}
 	
@@ -887,7 +898,7 @@ class GmlLinter {
 			case KMFuncDecl, KMacro: {};
 			case KArgs: {};
 			case KEnum: rc(readEnum());
-			case KVar, KGlobalVar: {
+			case KVar, KConst, KGlobalVar: {
 				//z = nk == KArgs;
 				seqStart.setTo(reader);
 				var found = 0;
@@ -895,6 +906,7 @@ class GmlLinter {
 					nk = peek();
 					//if (z && nk == KQMark) { skip(); nk = peek(); }
 					if (!skipIf(nk == KIdent)) break;
+					locals[nextVal] = mainKind;
 					found++;
 					//
 					nk = peek();

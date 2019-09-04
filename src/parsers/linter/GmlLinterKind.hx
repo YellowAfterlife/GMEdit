@@ -17,6 +17,7 @@ enum abstract GmlLinterKind(Int) {
 	//
 	var KVar;
 	var KGlobalVar;
+	var KConst;
 	var KMacro;
 	var KEnum;
 	
