@@ -404,7 +404,11 @@ class GmlSeeker {
 							out.macroList.remove(old);
 						} else {
 							out.kindList.push(name);
-							out.kindMap.set(name, "macro");
+							if (m.name == "const" && m.expr == "var") {
+								out.kindMap.set(name, "keyword");
+							} else {
+								out.kindMap.set(name, "macro");
+							}
 						}
 						var i = name.indexOf("_mf");
 						if (!out.mfuncMap.exists(name.substring(0, i))) {
