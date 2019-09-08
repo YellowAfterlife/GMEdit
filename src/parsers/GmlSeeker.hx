@@ -280,6 +280,7 @@ class GmlSeeker {
 							}
 							if (doc.acc) {
 								doc.args.push(mt[1]);
+								if (mt[1].contains("...")) doc.rest = true;
 								if (mainComp != null) {
 									mainComp.doc = doc.getAcText();
 								}
