@@ -60,7 +60,7 @@ class GmlReader extends StringReader {
 	private static function skipComment_1(s:String, p:Int):Bool {
 		if (s.fastSub(p, 5) == "event") return true;
 		switch (s.fastSub(p, 6)) {
-			case "moment", "action", "target": return true;
+			case "moment", "action", "target", "define": return true;
 		}
 		if (s.fastSub(p, 7) == "section") return true;
 		return false;
