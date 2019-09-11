@@ -596,6 +596,7 @@ class GmlLinter {
 	static inline var xfAsStat = 2;
 	static inline var xfNoSfx = 4;
 	static inline var xfNoSemico = 8;
+	static inline var xfHasPrefix = 16;
 	var readExpr_currKind:GmlLinterKind;
 	function readExpr(flags:Int = 0, ?_nk:GmlLinterKind):FoundError {
 		var q = reader;
@@ -617,11 +618,19 @@ class GmlLinter {
 		var statKind = nk;
 		var currKind = nk;
 		var currName = nk == KIdent ? nextVal : null;
+		//
+		inline function checkConst():Void {
+			if (currKind == KIdent && locals[currName] == KConst) {
+				addWarning('Assigning to a `const` local `$currName`');
+			}
+		}
+		//
 		switch (nk) {
 			case KNumber, KString, KUndefined: {
 				
 			};
 			case KIdent: {
+				if (hasFlag(xfHasPrefix)) checkConst();
 				if (isProperties && isStat()) {
 					if (skipIf(peek() == KColon)) { // name:type
 						rc(readCheckSkip(KIdent, "variable type"));
@@ -643,8 +652,11 @@ class GmlLinter {
 				rc(readExpr());
 				if (next() != KParClose) return readExpect("a `)`");
 			};
-			case KInc, KDec, KNot, KBitNot: {
+			case KNot, KBitNot: {
 				rc(readExpr());
+			};
+			case KInc, KDec: {
+				rc(readExpr(xfHasPrefix));
 			};
 			case KSqbOpen: rc(readArgs(true) < 0);
 			case KLambda: rc(readLambda());
@@ -679,9 +691,7 @@ class GmlLinter {
 			switch (nk) {
 				case KSet: {
 					if (isStat()) {
-						if (currKind == KIdent && locals[currName] == KConst) {
-							addWarning('Assigning to a `const` local `$currName`');
-						}
+						checkConst();
 						skip();
 						flags &= ~xfAsStat;
 						statKind = KSet;
@@ -710,6 +720,7 @@ class GmlLinter {
 				case KInc, KDec: { // x++, x--
 					if (hasFlag(xfNoSfx)) break;
 					if (!currKind.canPostfix()) break;
+					checkConst();
 					skip();
 					statKind = currKind = nk;
 				};
@@ -772,6 +783,7 @@ class GmlLinter {
 				default: {
 					if (nk.isSetOp()) {
 						if (!isStat()) return readError("Can't use " + nextDump() + " here.");
+						checkConst();
 						skip();
 						currKind = statKind = KSet;
 						rc(readExpr());
