@@ -57,7 +57,12 @@ class GmlLinter {
 	var editor:EditCode;
 	
 	var context:String = "";
-	var locals:Dictionary<GmlLinterKind> = new Dictionary();
+	
+	var localNames:Array<String> = [];
+	var localKinds:Dictionary<GmlLinterKind> = new Dictionary();
+	var localDepth:Dictionary<Int> = new Dictionary();
+	
+	
 	var isProperties:Bool = false;
 	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
@@ -257,7 +262,9 @@ class GmlLinter {
 									//q.pos = p;
 									q.pos = p;
 									context = q.readContextName(null);
-									locals = new Dictionary();
+									localNames = [];
+									localKinds = new Dictionary();
+									localDepth = new Dictionary();
 									isProperties = nv == "event" && context == "properties";
 									q.skipLine();
 								} else {
@@ -405,8 +412,9 @@ class GmlLinter {
 									setError("Macro stack overflow");
 									return KEOF;
 								}
-								if (mcr.expr == "var" && mcr.name == "const") {
-									return retv(KConst, nv);
+								if (mcr.expr == "var") switch (mcr.name) {
+									case "const": return retv(KConst, nv);
+									case "let": return retv(KLet, nv);
 								}
 								q.pushSource(mcr.expr, mcr.name);
 								break;
@@ -485,15 +493,15 @@ class GmlLinter {
 		return readExpect(expect);
 	}
 	//
-	function __readExpr_invalid(flags:Int):FoundError {
-		return readExpect((flags & xfAsStat) != 0 ? "a statement" : "an expression");
+	function __readExpr_invalid(flags:GmlLinterReadFlags):FoundError {
+		return readExpect(flags.has(AsStat) ? "a statement" : "an expression");
 	}
 	
 	/** `+¦ a - b;` -> `+ a - b¦;` */
 	function readOps():FoundError {
 		var q = reader;
 		while (q.loop) {
-			rc(readExpr(xfNoOps));
+			rc(readExpr(NoOps));
 			var nk = peek();
 			if (nk.isBinOp() || nk == KSet) {
 				skip();
@@ -592,13 +600,13 @@ class GmlLinter {
 		} while (false);
 	}
 	
-	static inline var xfNoOps = 1;
-	static inline var xfAsStat = 2;
-	static inline var xfNoSfx = 4;
-	static inline var xfNoSemico = 8;
-	static inline var xfHasPrefix = 16;
 	var readExpr_currKind:GmlLinterKind;
-	function readExpr(flags:Int = 0, ?_nk:GmlLinterKind):FoundError {
+	function readExpr(flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind):FoundError {
+		//var newDepth = oldDepth + 1;oldDepth:Int, 
+		//inline function readExpr(flags:Int = 0, ?_nk:GmlLinterKind):FoundError {
+		//	return this.readExpr(newDepth, flags, _nk);
+		//}
+		//
 		var q = reader;
 		var nk:GmlLinterKind = nextOr(_nk);
 		//
@@ -607,11 +615,11 @@ class GmlLinter {
 		}
 		if (nk == KEOF) return invalid();
 		//
-		inline function hasFlag(flag:Int):Bool {
-			return (flags & flag) != 0;
+		inline function hasFlag(flag:GmlLinterReadFlags):Bool {
+			return flags.has(flag);
 		}
 		inline function isStat():Bool {
-			return hasFlag(xfAsStat);
+			return hasFlag(AsStat);
 		}
 		var wasStat = isStat();
 		// the thing itself:
@@ -620,7 +628,7 @@ class GmlLinter {
 		var currName = nk == KIdent ? nextVal : null;
 		//
 		inline function checkConst():Void {
-			if (currKind == KIdent && locals[currName] == KConst) {
+			if (currKind == KIdent && localKinds[currName] == KConst) {
 				addWarning('Assigning to a `const` local `$currName`');
 			}
 		}
@@ -630,7 +638,10 @@ class GmlLinter {
 				
 			};
 			case KIdent: {
-				if (hasFlag(xfHasPrefix)) checkConst();
+				if (hasFlag(HasPrefix)) checkConst();
+				if (localKinds[currName] == KGhostVar) {
+					addWarning('Trying to access a variable `$currName` outside of its scope');
+				}
 				if (isProperties && isStat()) {
 					if (skipIf(peek() == KColon)) { // name:type
 						rc(readCheckSkip(KIdent, "variable type"));
@@ -656,7 +667,7 @@ class GmlLinter {
 				rc(readExpr());
 			};
 			case KInc, KDec: {
-				rc(readExpr(xfHasPrefix));
+				rc(readExpr(HasPrefix));
 			};
 			case KSqbOpen: rc(readArgs(true) < 0);
 			case KLambda: rc(readLambda());
@@ -693,22 +704,22 @@ class GmlLinter {
 					if (isStat()) {
 						checkConst();
 						skip();
-						flags &= ~xfAsStat;
+						flags.remove(AsStat);
 						statKind = KSet;
 						rc(readExpr());
 					} else {
-						if (hasFlag(xfNoOps)) break;
+						if (hasFlag(NoOps)) break;
 						if (optNoSingleEqu) {
 							addWarning("Using single `=` as a comparison operator");
 						}
 						skip();
 						rc(readOps());
-						flags |= xfNoSfx;
+						flags.add(NoSfx);
 					}
 				};
 				case KParOpen: { // fn(...)
 					if (!currKind.canCall()) return readError('Expression ${currKind.getName()} isStat not callable');
-					if (hasFlag(xfNoSfx)) return readError("Can't call this");
+					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
 					statKind = KCall;
 					var argc = readArgs(false);
@@ -718,7 +729,7 @@ class GmlLinter {
 					}
 				};
 				case KInc, KDec: { // x++, x--
-					if (hasFlag(xfNoSfx)) break;
+					if (hasFlag(NoSfx)) break;
 					if (!currKind.canPostfix()) break;
 					checkConst();
 					skip();
@@ -756,13 +767,13 @@ class GmlLinter {
 					currKind = KArray;
 				};
 				case KLiveIn: { // field in object
-					if (hasFlag(xfNoOps)) break;
+					if (hasFlag(NoOps)) break;
 					skip();
 					rc(readExpr());
 					currKind = KLiveIn;
 				};
 				case KNot: {
-					if (hasFlag(xfNoOps) || version != GmlVersion.live) break;
+					if (hasFlag(NoOps) || version != GmlVersion.live) break;
 					seqStart.setTo(reader);
 					skip();
 					if (!skipIf(peek() == KLiveIn)) {
@@ -773,7 +784,7 @@ class GmlLinter {
 					currKind = KLiveIn;
 				};
 				case KQMark: { // x ? y : z
-					if (hasFlag(xfNoOps)) break;
+					if (hasFlag(NoOps)) break;
 					skip();
 					rc(readExpr());
 					rc(readCheckSkip(KColon, "a colon in a ?: operator"));
@@ -787,13 +798,13 @@ class GmlLinter {
 						skip();
 						currKind = statKind = KSet;
 						rc(readExpr());
-						flags |= xfNoSfx;
+						flags.add(NoSfx);
 					}
 					else if (nk.isBinOp()) {
-						if (hasFlag(xfNoOps)) break;
+						if (hasFlag(NoOps)) break;
 						skip();
 						rc(readOps());
-						flags |= xfNoSfx;
+						flags.add(NoSfx);
 					}
 					else break;
 				};
@@ -811,7 +822,7 @@ class GmlLinter {
 	
 	var canBreak = false;
 	var canContinue = false;
-	function readLoopStat(flags:Int = 0):FoundError {
+	function readLoopStat(flags:GmlLinterReadFlags = None):FoundError {
 		var _canBreak = canBreak;
 		var _canContinue = canContinue;
 		canBreak = true;
@@ -886,17 +897,23 @@ class GmlLinter {
 				}
 			}
 		}
-		var oldLocals = locals;
-		locals = new Dictionary();
+		var oldLocalNames = localNames;
+		var oldLocalKinds = localKinds;
+		var oldLocalDepth = localDepth;
+		localNames = [];
+		localKinds = new Dictionary();
+		localDepth = new Dictionary();
 		rc(readStat());
-		locals = oldLocals;
+		localNames = oldLocalNames;
+		localKinds = oldLocalKinds;
+		localDepth = oldLocalDepth;
 		return false;
 	}
 	
 	/**
 	 * 
 	 */
-	function readStat(flags:Int = 0, ?nk:GmlLinterKind):FoundError {
+	function readStat(flags:GmlLinterReadFlags = None, ?nk:GmlLinterKind):FoundError {
 		var q = reader;
 		nk = nextOr(nk);
 		var mainKind = nk;
@@ -910,7 +927,7 @@ class GmlLinter {
 			case KMFuncDecl, KMacro: {};
 			case KArgs: {};
 			case KEnum: rc(readEnum());
-			case KVar, KConst, KGlobalVar: {
+			case KVar, KConst, KLet, KGlobalVar: {
 				//z = nk == KArgs;
 				seqStart.setTo(reader);
 				var found = 0;
@@ -918,7 +935,14 @@ class GmlLinter {
 					nk = peek();
 					//if (z && nk == KQMark) { skip(); nk = peek(); }
 					if (!skipIf(nk == KIdent)) break;
-					locals[nextVal] = mainKind;
+					var name = nextVal;
+					switch (localKinds[name]) {
+						case null: localNames.push(name);
+						case KLet: addWarning('Redefinition of a `let` variable `$name`');
+						default:
+					}
+					localKinds[name] = mainKind;
+					localDepth[name] = 0;
 					found++;
 					//
 					nk = peek();
@@ -986,7 +1010,7 @@ class GmlLinter {
 					skipIf(peek() == KSemico);
 				}
 				if (!skipIf(peek() == KParClose)) {
-					rc(readLoopStat(xfNoSemico));
+					rc(readLoopStat(NoSemico));
 					if (next() != KParClose) return readExpect("a `)` to close a for-loop");
 				}
 				rc(readLoopStat());
@@ -994,7 +1018,7 @@ class GmlLinter {
 			case KExit: {};
 			case KReturn: {
 				switch (peek()) {
-					case KSemico, KCubClose: skip(); flags |= xfNoSemico;
+					case KSemico, KCubClose: skip(); flags.add(NoSemico);
 					default: rc(readExpr());
 				}
 			};
@@ -1039,12 +1063,12 @@ class GmlLinter {
 			//
 			case KLamDef: rc(readLambda());
 			default: {
-				rc(readExpr(xfAsStat|flags, nk));
+				rc(readExpr(flags.with(AsStat), nk));
 			};
 		}
 		if (skipIf(peek() == KSemico)) {
 			// OK!
-		} else if (optRequireSemico && mainKind.needSemico() && (flags & xfNoSemico) == 0 && q.peek(-1) != ";".code) {
+		} else if (optRequireSemico && mainKind.needSemico() && !flags.has(NoSemico) && q.peek(-1) != ";".code) {
 			addWarning("Expected a semicolon after a statement (" + mainKind.getName() + ")");
 		}
 		return false;
@@ -1065,7 +1089,7 @@ class GmlLinter {
 		while (q.loop) {
 			var nk = next();
 			if (nk == KEOF) break;
-			if (readStat(0, nk)) {
+			if (readStat(None, nk)) {
 				errors.push(new GmlLinterProblem(errorText, errorPos));
 				ohno = true;
 				break;

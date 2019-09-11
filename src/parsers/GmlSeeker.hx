@@ -405,7 +405,8 @@ class GmlSeeker {
 							out.macroList.remove(old);
 						} else {
 							out.kindList.push(name);
-							if (m.name == "const" && m.expr == "var") {
+							if (GmlAPI.stdKind[m.expr] == "keyword") {
+								// keyword forwarding
 								out.kindMap.set(name, "keyword");
 							} else {
 								out.kindMap.set(name, "macro");
