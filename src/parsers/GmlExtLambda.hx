@@ -653,8 +653,8 @@ class GmlExtLambda {
 				saveProject = true;
 				break;
 			}
-			pj.unlinkSync(path);
-			pj.unlinkSync('scripts\\$s\\$s.gml');
+			pj.unlinkSyncSafe(path);
+			pj.unlinkSyncSafe('scripts\\$s\\$s.gml');
 			pj.rmdirSync('scripts\\$s');
 			var stv = ui.treeview.TreeView.find(true, {rel:"Scripts/#gmedit-lambda/"+s});
 			if (stv != null) stv.parentElement.removeChild(stv);

@@ -415,6 +415,9 @@ import ui.treeview.TreeView;
 	public function unlinkSync(path:String):Void {
 		FileSystem.unlinkSync(fullPath(path));
 	}
+	public function unlinkSyncSafe(path:String):Void {
+		if (existsSync(path)) unlinkSync(path);
+	}
 	public function readTextFile(path:String, fn:Error->String->Void):Void {
 		FileSystem.readTextFile(fullPath(path), fn);
 	}
