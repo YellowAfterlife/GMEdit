@@ -40,7 +40,7 @@ class PrefLinter {
 		function add(name:String,
 			get:GmlLinterPrefs->Bool,
 			set:GmlLinterPrefs->Null<Bool>->Void,
-		defValue:Bool) {
+		defValue:Bool):Element {
 			var initialValue = get(opt);
 			if (project != null) {
 				var options = PrefLinter.selectOpts.copy();
@@ -50,14 +50,14 @@ class PrefLinter {
 				options[0] += ' (➜ ' + (parentValue ? "on" : "off") + ")";
 				//
 				var initialOption = options[values.indexOf(initialValue)];
-				addDropdown(out, name, initialOption, options, function(s) {
+				return addDropdown(out, name, initialOption, options, function(s) {
 					var z = values[options.indexOf(s)];
 					set(opt, z);
 					saveOpt();
 				});
 			} else {
 				if (initialValue == null) initialValue = defValue;
-				addCheckbox(out, name, initialValue, function(z) {
+				return addCheckbox(out, name, initialValue, function(z) {
 					set(opt, z);
 					saveOpt();
 				});
@@ -68,5 +68,7 @@ class PrefLinter {
 		addf("Warn about missing semicolons", opt.requireSemicolons);
 		addf("Warn about single `=` comparisons", opt.noSingleEquals);
 		addf("Warn about conditions without ()", opt.requireParentheses);
+		el = addf("Treat `var` as block-scoped", opt.blockScopedVar);
+		el.title = "You can also use `#macro const var` and `#macro let var`";
 	}
 }
