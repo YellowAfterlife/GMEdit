@@ -184,21 +184,24 @@ class YyManip {
 			}
 		};
 		//
-		var res:YyProjectResource = {
-			Key: ni,
-			Value: {
-				id: nix[1],
-				resourcePath: StringTools.replace(nPath, "/", "\\"),
-				resourceType: nType,
+		{
+			var res:YyProjectResource = {
+				Key: ni,
+				Value: {
+					id: nix[1],
+					resourcePath: StringTools.replace(nPath, "/", "\\"),
+					resourceType: nType,
+				}
+			};
+			//
+			var resources = py.resources;
+			var i = 0;
+			while (i < resources.length) {
+				if (ni.toString() < resources[i].Key.toString()) break;
+				i++;
 			}
-		};
-		if (args.pyBefore != null) {
-			var i = py.resources.indexOf(args.pyBefore);
-			if (i < 0) i = 0;
 			py.resources.insert(i, res);
-		} else {
-			py.resources.push(res);
-		}
+		};
 		//
 		var ord = args.order;
 		switch (ord) {
