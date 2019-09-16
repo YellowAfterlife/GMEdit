@@ -911,10 +911,10 @@ class GmlLinter {
 	/**
 	 * 
 	 */
-	function readStat(oldDepth:Int, flags:GmlLinterReadFlags = None, ?nk:GmlLinterKind):FoundError {
+	function readStat(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind):FoundError {
 		var newDepth = oldDepth + 1;
 		var q = reader;
-		nk = nextOr(nk);
+		var nk:GmlLinterKind = nextOr(_nk);
 		var mainKind = nk;
 		var z:Bool, z2:Bool, i:Int;
 		inline function checkParens():Void {
