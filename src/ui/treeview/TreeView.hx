@@ -338,10 +338,11 @@ class TreeView {
 	}
 	// EventEmitter:
 	@:native("_emit") public static dynamic function emit<E:{}>(eventName:String, ?e:E):Dynamic {
-		throw "EventEmitter is not hooked for TreeView!";
+		console.error("EventEmitter is not hooked for TreeView!");
+		return null;
 	}
 	@:native("_signal") public static dynamic function signal<E>(eventName:String, e:E):Void {
-		throw "EventEmitter is not hooked for TreeView!";
+		console.error("EventEmitter is not hooked for TreeView!");
 	}
 }
 typedef TreeViewQuery = {
