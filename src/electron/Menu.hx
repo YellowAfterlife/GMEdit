@@ -28,23 +28,24 @@ using tools.HtmlTools;
 	function insert(pos:Int, item:MenuItem):Void;
 	var items:Array<MenuItem>;
 	//
-	function popup(wnd:Dynamic, ?opt:MenuPopupOptions):Void;
+	function popup(?opt:MenuPopupOptions):Void;
 	private inline function popupAuto(?opt:MenuPopupOptions):Void {
-		popup(Electron != null ? Electron.remote.getCurrentWindow() : null, opt);
+		popup(opt);
 	}
 	inline function popupSync(e:MouseEvent):Void {
 		MenuFallback.contextEvent = e;
 		popupAuto({});
 	}
-	inline function popupAsync(e:MouseEvent):Void {
+	inline function popupAsync(e:MouseEvent, ?fn:Void->Void):Void {
 		MenuFallback.contextEvent = e;
-		popupAuto({ async: true });
+		popupAuto({ async: true, callback: fn });
 	}
 	//
 	static function setApplicationMenu(menu:Menu):Void;
 }
 @:keep class MenuFallback {
 	public static var contextEvent:MouseEvent = null;
+	public var currentCallback:Void->Void;
 	public var items:Array<MenuItemFallback> = [];
 	public var element:UListElement;
 	//
@@ -84,8 +85,14 @@ using tools.HtmlTools;
 		if (element.parentElement != null) {
 			element.parentElement.removeChild(element);
 		}
+		var cb = currentCallback;
+		if (cb != null) {
+			currentCallback = null;
+			cb();
+		}
 	}
-	public function popup(wnd:Dynamic, ?opt:MenuPopupOptions):Void {
+	public function popup(?opt:MenuPopupOptions):Void {
+		currentCallback = opt != null ? opt.callback : null;
 		if (contextEvent != null) {
 			element.style.left = contextEvent.pageX + "px";
 			element.style.top = contextEvent.pageY + "px";
@@ -96,7 +103,11 @@ using tools.HtmlTools;
 	}
 }
 typedef MenuPopupOptions = {
-	?x:Int, ?y:Int, ?async:Bool, ?positioningItem:Int,
+	?x:Int,
+	?y:Int,
+	?async:Bool,
+	?positioningItem:Int,
+	?callback:Void->Void,
 };
 @:native("Electron_MenuItem") extern class MenuItem {
 	function new(opt:MenuItemOptions);
