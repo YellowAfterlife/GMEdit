@@ -169,7 +169,8 @@ class TreeViewMenus {
 		}
 		TreeViewItemMenus.update(true);
 		TreeView.signal("dirMenu", { element: el, event: ev });
-		dirMenu.popupAsync(ev);
+		el.classList.add("selected");
+		dirMenu.popupAsync(ev, () -> el.classList.remove("selected"));
 	}
 	public static function showItemMenu(el:Element, ev:MouseEvent) {
 		var z:Bool;
@@ -188,7 +189,8 @@ class TreeViewMenus {
 		items.findReferences.enabled = ~/^\w+$/g.match(el.getAttribute(TreeView.attrIdent));
 		TreeViewItemMenus.update(false);
 		TreeView.signal("itemMenu", { element: el, event: ev });
-		itemMenu.popupAsync(ev);
+		el.classList.add("selected");
+		itemMenu.popupAsync(ev, () -> el.classList.remove("selected"));
 	}
 	//
 	static function initIconMenu() {
