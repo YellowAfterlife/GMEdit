@@ -13,16 +13,22 @@ let mainWindow
 
 function createWindow () {
 	// Create the browser window.
+	const showOnceReady = false
 	mainWindow = new BrowserWindow({
 		width: 960,
 		height: 720,
 		frame: false,
 		backgroundColor: "#889EC5",
 		title: "GMEdit",
-		//show: false,
+		webPreferences: {
+			nodeIntegration: true
+		},
+		show: !showOnceReady,
 		icon: __dirname + '/icon.png'
 	})
-	//mainWindow.once('ready-to-show', () => mainWindow.show());
+	if (showOnceReady) {
+		mainWindow.once('ready-to-show', () => mainWindow.show());
+	}
 
 	// and load the index.html of the app.
 	let index_url = url.format({
