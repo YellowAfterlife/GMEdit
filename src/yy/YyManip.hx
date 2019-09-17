@@ -310,7 +310,7 @@ class YyManip {
 			}
 			return true;
 		}
-		removeItemRec(d.ri);
+		if (!removeItemRec(d.ri)) return false;
 		pj.writeTextFileSync(pj.name, NativeString.yyJson(d.py));
 		//
 		if (d.vy.children.remove(d.ri)) {
