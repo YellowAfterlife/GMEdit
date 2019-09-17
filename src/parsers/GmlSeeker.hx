@@ -72,7 +72,7 @@ class GmlSeeker {
 	}
 	
 	private static var jsDoc_full:RegExp = new RegExp("^///\\s*" // start
-		+ "(?:@desc(?:ription)?\\s+)?" // opt: `@desc `
+		//+ "(?:@desc(?:ription)?\\s+)?" // opt: `@desc `
 		+ "\\w*[ \t]*(\\(.+)" // `func(...`
 	);
 	private static var jsDoc_param = new RegExp("^///\\s*"
