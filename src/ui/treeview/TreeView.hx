@@ -6,6 +6,7 @@ import file.FileKind;
 import gml.file.*;
 import gml.file.GmlFile;
 import gml.Project;
+import js.html.MutationObserver;
 import js.lib.RegExp;
 import js.html.CSSStyleSheet;
 import js.html.DragEvent;
@@ -207,7 +208,7 @@ class TreeView {
 	//
 	public static function makeDir(name:String):TreeViewDir {
 		var r:TreeViewDir = cast document.createDivElement();
-		r.className = "dir";
+		r.className = "dir is-empty";
 		//
 		var header = document.createDivElement();
 		header.className = "header";
@@ -223,6 +224,15 @@ class TreeView {
 		c.className = "items";
 		r.treeItems = c;
 		r.appendChild(c);
+		//
+		var observer = new MutationObserver(function(records, observer) {
+			var rcl = r.classList;
+			if (rcl.contains("is-empty") != (c.children.length == 0)) {
+				rcl.toggle("is-empty");
+			}
+		});
+		observer.observe(c, { childList: true });
+		//
 		return r;
 	}
 	public static function makeAssetDir(name:String, rel:String):TreeViewDir {
