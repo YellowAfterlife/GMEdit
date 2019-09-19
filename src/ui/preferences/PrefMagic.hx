@@ -56,7 +56,7 @@ class PrefMagic {
 			current.coroutineMagic = z;
 			save();
 		});
-		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-coroutine-magic");
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23gmcr-magic");
 		//
 		el = addCheckbox(out, "Use lambda magic", current.lambdaMagic, function(z) {
 			current.lambdaMagic = z;
