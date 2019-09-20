@@ -238,7 +238,7 @@ class YyLoader {
 										));
 									}
 								}
-							}
+							} // for file
 							if (ext.name == "GMLive" && GmlAPI.extKind.exists("live_init")) {
 								project.hasGMLive = true;
 							}
@@ -252,9 +252,12 @@ class YyLoader {
 					var kind = type.substring(2).toLowerCase(); // GMScript -> script
 					var item = TreeView.makeAssetItem(name, rel, full, kind);
 					item.setAttribute(TreeView.attrYYID, res.Key);
+					// a thumbnail if we may:
+					if (ui.Preferences.current.assetThumbs)
 					switch (type) {
 						case "GMSprite": TreeView.setThumbSprite(full, name, item);
 					}
+					//
 					out.appendChild(item);
 					if (type == "GMRoom") { // child rooms?
 						var vdir:YyView = roomViews[res.Key];
