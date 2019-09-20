@@ -546,7 +546,7 @@ class GmlExtLambda {
 				break;
 			}
 		}
-		function makeFn(s:String) {
+		function makeFn(s:String):YyExtensionFunc {
 			return {
 				id: new YyGUID(),
 				modelName: "GMExtensionFunction",

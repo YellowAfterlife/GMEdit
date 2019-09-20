@@ -125,11 +125,8 @@ import js.Syntax;
 	private static var yyJson_1 = new RegExp('([ \t]+)(".*": )\\[\\]', 'g');
 	private static var yyJson_2 = new RegExp('\\n', 'g');
 	/** Stringifes a value while matching output format to that of GMS2 */
-	@:noUsing public static function yyJson(value:Dynamic):String {
-		var s = haxe.Json.stringify(value, null, "    ");
-		s = replaceExt(s, yyJson_1, '$1$2[\n$1    \n$1]');
-		s = replaceExt(s, yyJson_2, '\r\n');
-		return s;
+	@:noUsing public static inline function yyJson(value:Dynamic):String {
+		return yy.YyJson.stringify(value);
 	}
 	
 	/// Translates a single position to row-column
