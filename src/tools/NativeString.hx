@@ -48,6 +48,10 @@ import js.Syntax;
 		return str;
 	}
 	
+	public static inline function repeat(s:String, count:Int):String {
+		return untyped s.repeat(count);
+	}
+	
 	public static inline function trimLeft(s:String):String {
 		return untyped s.trimLeft();
 	}
