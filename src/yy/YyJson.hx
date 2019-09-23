@@ -39,6 +39,13 @@ class YyJson {
 	}
 	
 	public static var mvcOrder = ["configDeltas", "id", "modelName", "mvc", "name"];
+	public static var orderByModelName:Dictionary<Array<String>> = (function() {
+		var q = new Dictionary();
+		var plain = ["id", "modelName", "mvc"];
+		q["GMExtensionFunction"] = plain.concat([]);
+		q["GMEvent"] = plain.concat(["IsDnD"]);
+		return q;
+	})();
 	
 	static var isOrderedCache:Map<Array<String>, Dictionary<Bool>> = new Map();
 	
@@ -65,7 +72,10 @@ class YyJson {
 			var orderedFields:Array<String> = Reflect.field(obj, "hxOrder");
 			var found = 0, sep = false;
 			if (orderedFields == null) {
-				orderedFields = mvcOrder;
+				if (Reflect.hasField(obj, "mvc")) {
+					orderedFields = orderByModelName[Reflect.field(obj, "modelName")];
+				}
+				if (orderedFields == null) orderedFields = mvcOrder;
 			} else found++;
 			//
 			var isOrdered:Dictionary<Bool> = isOrderedCache[orderedFields];

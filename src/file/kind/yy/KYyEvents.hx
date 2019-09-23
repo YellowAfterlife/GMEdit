@@ -21,7 +21,6 @@ class KYyEvents extends KGml {
 		NativeArray.clear(file.extraFiles);
 		return obj.getCode(file.path, file.extraFiles);
 	}
-	static var eventOrder = YyJson.mvcOrder.concat(["IsDnD"]);
 	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
 		if (code == null) return null;
@@ -31,8 +30,6 @@ class KYyEvents extends KGml {
 			return null;
 		}
 		//
-		obj.hxOrder = YyJson.mvcOrder;
-		for (event in obj.eventList) event.hxOrder = eventOrder;
 		return NativeString.yyJson(obj);
 	}
 }
