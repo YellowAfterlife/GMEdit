@@ -38,7 +38,6 @@ class GmlAPI {
 		#if lwedit
 		"in", "debugger",
 		#end
-		"true", "false", // generally handled separately
 	];
 	/** whether something is a "flow" (branching, etc. - delimiting) keyword */
 	public static var kwFlow:Dictionary<Bool> = Dictionary.fromKeys(
