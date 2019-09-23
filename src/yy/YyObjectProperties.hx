@@ -263,7 +263,9 @@ class YyObjectProperties {
 		function propProc(name:String, type:String, guid:YyGUID, params:Array<GmlObjectPropertiesValue>, value:GmlObjectPropertiesValue):ErrorText {
 			try {
 				if (guid == null) {
-					for (prop in o.properties) if (prop.varName == name) {
+					if (o.properties != null)
+					for (prop in o.properties)
+					if (prop.varName == name) {
 						guid = prop.id;
 						break;
 					}
