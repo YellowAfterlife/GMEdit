@@ -240,6 +240,16 @@ class YyLoader {
 									}
 								}
 							} // for file
+							//
+							for (extMisc in ["AndroidSource", "iOSSource"]) {
+								var extMiscRel = rel + "/" + extMisc;
+								if (project.existsSync(extMiscRel)) {
+									var extMiscEl = TreeView.makeAssetDir(extMisc, extMiscRel, "file");
+									raw.RawLoader.loadDirRec(project, extMiscEl.treeItems, extMiscRel);
+									extEl.treeItems.appendChild(extMiscEl);
+								}
+							}
+							//
 							if (ext.name == "GMLive" && GmlAPI.extKind.exists("live_init")) {
 								project.hasGMLive = true;
 							}
