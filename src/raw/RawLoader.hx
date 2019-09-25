@@ -15,7 +15,7 @@ class RawLoader {
 			var item = pair.fileName;
 			var rel = Path.join([dirPath, item]);
 			if (pair.isDirectory) {
-				var nd = TreeView.makeAssetDir(item, rel);
+				var nd = TreeView.makeAssetDir(item, rel, "file");
 				loadDirRec(project, nd.treeItems, rel);
 				out.appendChild(nd);
 			} else {
@@ -42,7 +42,7 @@ class RawLoader {
 				var full = Path.join([dirFull, item]);
 				var rel = Path.join([dirRel, item]);
 				if (pair.isDirectory) {
-					var nd = TreeView.makeAssetDir(item, rel);
+					var nd = TreeView.makeAssetDir(item, rel, "file");
 					loadrec(nd.treeItems, full, rel);
 					rd.push(nd);
 				} else {

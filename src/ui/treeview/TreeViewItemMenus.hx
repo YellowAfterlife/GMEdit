@@ -74,7 +74,7 @@ class TreeViewItemMenus {
 		var nrel = q.tvDir.getAttribute(TreeView.attrRel) + name;
 		var ntv:Element;
 		if (q.mkdir) {
-			ntv = TreeView.makeAssetDir(name, nrel + "/");
+			ntv = TreeView.makeAssetDir(name, nrel + "/", "script");
 			ntv.classList.add(TreeView.clOpen);
 		} else {
 			var nfull = q.pj.fullPath(q.npath);

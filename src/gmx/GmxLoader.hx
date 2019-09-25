@@ -68,7 +68,7 @@ class GmxLoader {
 				var name = gmx.get("name");
 				if (out == tv) name = name.charAt(0).toUpperCase() + name.substring(1);
 				var next = path + name + "/";
-				var r = TreeView.makeAssetDir(name, next);
+				var r = TreeView.makeAssetDir(name, next, one);
 				var c = r.treeItems;
 				for (q in gmx.children) loadrec(q, c, one, next);
 				out.appendChild(r);
@@ -80,7 +80,7 @@ class GmxLoader {
 			var pfx = NativeString.capitalize(plural) + "/";
 			for (p in gmx.findAll(plural)) {
 				if (dir == null) {
-					dir = TreeView.makeAssetDir(NativeString.capitalize(plural), pfx);
+					dir = TreeView.makeAssetDir(NativeString.capitalize(plural), pfx, one);
 					tv.appendChild(dir);
 				}
 				for (q in p.children) {
@@ -112,14 +112,14 @@ class GmxLoader {
 			} else {
 				var name = gmx.get("name");
 				var next = path + name + "/";
-				var r = TreeView.makeAssetDir(name, next);
+				var r = TreeView.makeAssetDir(name, next, "datafile");
 				var c = r.treeItems;
 				for (q in gmx.children) loadinc(q, c, next);
 				out.appendChild(r);
 			}
 		}
 		for (datafiles in gmx.findAll("datafiles")) {
-			var parent = TreeView.makeAssetDir("Included files", "Included files/");
+			var parent = TreeView.makeAssetDir("Included files", "Included files/", "datafile");
 			for (c in datafiles.children) loadinc(c, parent.treeItems, "datafiles/");
 			if (parent.treeItems.children.length > 0) tv.appendChild(parent);
 		}
@@ -131,7 +131,7 @@ class GmxLoader {
 		for (extParent in gmx.findAll("NewExtensions")) {
 			var extNodes = extParent.findAll("extension");
 			if (extNodes.length == 0) continue;
-			var extParentDir = TreeView.makeAssetDir("Extensions", "Extensions/");
+			var extParentDir = TreeView.makeAssetDir("Extensions", "Extensions/", "extension");
 			for (extNode in extNodes) {
 				var extRel = extNode.text;
 				extRel = StringTools.replace(extRel, "\x5c", "/"); // no backslashes
@@ -140,7 +140,7 @@ class GmxLoader {
 				var extGmx = project.readGmxFileSync(extPath);
 				var extName = extGmx.findText("name");
 				//
-				var extDir = TreeView.makeAssetDir(extName, "Extensions/" + extName + "/");
+				var extDir = TreeView.makeAssetDir(extName, "Extensions/" + extName + "/", "extension");
 				extDir.setAttribute(TreeView.attrPath, extFull);
 				extDir.setAttribute(TreeView.attrIdent, extName);
 				//
@@ -209,7 +209,7 @@ class GmxLoader {
 			tv.appendChild(extParentDir);
 		}
 		//
-		var mcrDir = TreeView.makeAssetDir("Macros", "macros/");
+		var mcrDir = TreeView.makeAssetDir("Macros", "macros/", "config");
 		var mcrItems = mcrDir.querySelector(".items");
 		mcrItems.appendChild(TreeView.makeAssetItem(allConfigs, "Configs/default", project.fullPath(project.name), "config"));
 		for (configs in gmx.findAll("Configs")) {
@@ -223,7 +223,7 @@ class GmxLoader {
 		tv.appendChild(mcrDir);
 		//
 		if (project.existsSync("#import")) {
-			var idir = TreeView.makeAssetDir("Imports", "#import");
+			var idir = TreeView.makeAssetDir("Imports", "#import", "file");
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
 			tv.appendChild(idir);
 		}

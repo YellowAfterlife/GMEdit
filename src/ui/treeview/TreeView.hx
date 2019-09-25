@@ -32,6 +32,8 @@ class TreeView {
 	public static inline var attrIdent:String = "data-ident";
 	/** Labels for directories - only used for nesting resolution */
 	public static inline var attrLabel:String = "data-label";
+	/** Indicates data-kind for items inside directory, omitted if unknown */
+	public static inline var attrFilter:String = "data-filter";
 	public static inline var attrPath:String = "data-full-path";
 	public static inline var attrRel:String = "data-rel-path";
 	public static inline var attrKind:String = "data-kind";
@@ -235,7 +237,7 @@ class TreeView {
 		//
 		return r;
 	}
-	public static function makeAssetDir(name:String, rel:String):TreeViewDir {
+	public static function makeAssetDir(name:String, rel:String, ?filter:String):TreeViewDir {
 		rel = rel.ptNoBS();
 		var r:TreeViewDir = makeDir(name);
 		var header = r.treeHeader;
@@ -244,6 +246,7 @@ class TreeView {
 		TreeViewDnD.bind(header, rel);
 		r.setAttribute(attrLabel, name);
 		r.setAttribute(attrRel, rel);
+		if (filter != null) r.setAttribute(attrFilter, filter);
 		return r;
 	}
 	//

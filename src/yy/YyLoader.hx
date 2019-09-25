@@ -98,7 +98,8 @@ class YyLoader {
 							project.lambdaMap.set(res1.Value.resourceName, true);
 						}
 					}
-					var dir = TreeView.makeAssetDir(name, rel);
+					var filter = vdir.filterType.substring(2).toLowerCase();
+					var dir = TreeView.makeAssetDir(name, rel, filter);
 					dir.setAttribute(TreeView.attrYYID, res.Key);
 					var nextOut = dir.treeItems;
 					if (path == "" && vdir.folderName == "rooms") {
@@ -179,7 +180,7 @@ class YyLoader {
 							var ext:YyExtension = FileWrap.readJsonFileSync(full);
 							var extDir = Path.directory(full);
 							var extRel = path + ext.name + "/";
-							var extEl = TreeView.makeAssetDir(ext.name, extRel);
+							var extEl = TreeView.makeAssetDir(ext.name, extRel, "extension");
 							extEl.setAttribute(TreeView.attrPath, full);
 							extEl.setAttribute(TreeView.attrIdent, ext.name);
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
@@ -272,7 +273,7 @@ class YyLoader {
 		TreeView.clear();
 		loadrec(TreeView.element, rootView, "");
 		if (project.existsSync("#import")) {
-			var idir = TreeView.makeAssetDir("Imports", "#import");
+			var idir = TreeView.makeAssetDir("Imports", "#import", "file");
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
 			TreeView.element.appendChild(idir);
 		}
