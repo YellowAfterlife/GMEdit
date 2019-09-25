@@ -9,7 +9,29 @@ import ui.treeview.TreeView;
  * ...
  * @author YellowAfterlife
  */
-class GmlLoader {
+class RawLoader {
+	public static function loadDirRec(project:Project, out:Element, dirPath:String):Void {
+		for (pair in project.readdirSync(dirPath)) {
+			var item = pair.fileName;
+			var rel = Path.join([dirPath, item]);
+			if (pair.isDirectory) {
+				var nd = TreeView.makeAssetDir(item, rel);
+				loadDirRec(project, nd.treeItems, rel);
+				out.appendChild(nd);
+			} else {
+				var full = project.fullPath(rel);
+				var item = TreeView.makeAssetItem(item, rel, full, "file");
+				out.appendChild(item);
+				//
+				if (ui.Preferences.current.assetThumbs)
+				switch (Path.extension(full).toLowerCase()) {
+					case "png", "jpg", "jpeg", "gif", "bmp": {
+						TreeView.setThumb(full, full, item);
+					};
+				}
+			}
+		}
+	}
 	public static function run(project:Project) {
 		var pfx = Std.is(project, yy.YyZip) ? "" : project.dir;
 		var ths = [];

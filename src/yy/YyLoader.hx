@@ -271,6 +271,11 @@ class YyLoader {
 		TreeView.saveOpen();
 		TreeView.clear();
 		loadrec(TreeView.element, rootView, "");
+		if (project.existsSync("#import")) {
+			var idir = TreeView.makeAssetDir("Imports", "#import");
+			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
+			TreeView.element.appendChild(idir);
+		}
 		TreeView.restoreOpen();
 		//
 		return null;

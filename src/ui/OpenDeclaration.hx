@@ -16,6 +16,7 @@ import ui.treeview.TreeView;
 using tools.NativeString;
 using StringTools;
 import Main.aceEditor;
+import gml.Project;
 
 /**
  * ...
@@ -84,7 +85,7 @@ class OpenDeclaration {
 		var ename = tools.NativeString.escapeProp(name);
 		var el = TreeView.element.querySelector('.item[${TreeView.attrIdent}="$ename"]');
 		if (el != null) {
-			if (gml.Project.current.path == "") {
+			if (Project.current.path == "") {
 				TreeView.openProject(el);
 			} else {
 				GmlFile.open(el.title, el.getAttribute(TreeView.attrPath), nav);
@@ -99,14 +100,16 @@ class OpenDeclaration {
 		if (!FileWrap.existsSync(dir)) {
 			FileWrap.mkdirSync(dir);
 		}
+		var pj = Project.current;
 		var full = Path.join([dir, rel]);
 		var data = null;
-		if (!FileWrap.existsSync(full)) {
+		if (!pj.existsSync(full)) {
 			full += ".gml";
-			if (!FileWrap.existsSync(full)) data = "";
+			if (!pj.existsSync(full)) data = "";
 		}
-		if (data == null) data = FileWrap.readTextFileSync(full);
-		var file = new GmlFile(rel, full, KGmlScript.inst, data);
+		if (data == null) data = pj.readTextFileSync(full);
+		var name = Path.withoutDirectory(full);
+		var file = new GmlFile(name, pj.fullPath(full), KGmlScript.inst, data);
 		GmlFile.openTab(file);
 		return true;
 	}

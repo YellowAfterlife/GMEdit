@@ -12,7 +12,7 @@ import js.html.Element;
 import js.html.MouseEvent;
 import parsers.GmlSeekData;
 import parsers.GmlSeeker;
-import raw.GmlLoader;
+import raw.RawLoader;
 import tools.Dictionary;
 import tools.Aliases;
 import gml.GmlAPI;
@@ -390,7 +390,7 @@ import ui.treeview.TreeView;
 		} else switch (version) {
 			case GmlVersion.v1: GmxLoader.run(this);
 			case GmlVersion.v2: YyLoader.run(this);
-			case GmlVersion.live: GmlLoader.run(this);
+			case GmlVersion.live: RawLoader.run(this);
 			default:
 		}
 	}

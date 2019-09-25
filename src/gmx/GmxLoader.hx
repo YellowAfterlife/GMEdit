@@ -221,6 +221,12 @@ class GmxLoader {
 			}
 		}
 		tv.appendChild(mcrDir);
+		//
+		if (project.existsSync("#import")) {
+			var idir = TreeView.makeAssetDir("Imports", "#import");
+			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
+			tv.appendChild(idir);
+		}
 		//{
 		function loadAssets(r:Dictionary<String>, single:String, ?plural:String) {
 			if (plural == null) plural = single + "s";
