@@ -148,6 +148,9 @@ class GmlLinter {
 		q["div"] = KIntDiv;
 		q["mod"] = KMod;
 		//
+		//
+		q["begin"] = KCubOpen;
+		q["end"] = KCubClose;
 		q["if"] = KIf;
 		q["then"] = KThen;
 		q["else"] = KElse;
@@ -219,7 +222,12 @@ class GmlLinter {
 				};
 				//
 				case "?".code: return retv(KQMark, "?");
-				case ":".code: return retv(KColon, ":");
+				case ":".code: {
+					if (q.peek() == "=".code) {
+						q.skip();
+						return retv(KSet, ":=");
+					} else return retv(KColon, ":");
+				};
 				case "@".code: {
 					if (version.hasLiteralStrings()) {
 						c = q.peek();
