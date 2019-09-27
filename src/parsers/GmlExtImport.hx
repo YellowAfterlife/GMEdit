@@ -37,7 +37,13 @@ class GmlExtImport {
 	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+(?:<.*?>)?)\\*/";
 	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
 	private static var rxPeriod = new RegExp("\\.", "g");
-	private static var rxHasType = new RegExp("(?:\\w/\\*:|var.+?\\w:|#args.+?\\w:)", "");
+	
+	/** `var a:T`, `#args a:T`, `var a, b:T` */
+	private static var rxHasTypePost = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+:/);
+	
+	/** Ditto but accounting for `/*:Type` */
+	private static var rxHasTypePre = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+\/\*:/);
+	
 	public static var errorText:String;
 	//
 	static function parseRules(imp:GmlImports, mt:Array<String>, out:GmlExtImportRules) {
@@ -337,7 +343,7 @@ class GmlExtImport {
 		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
 		var globalExists = FileWrap.existsSync(globalPath);
 		if (code.indexOf("//!#import") < 0
-			&& !rxHasType.test(code)
+			&& !rxHasTypePre.test(code)
 			&& !globalExists
 		) return cancel();
 		var seekLocals = seekData != null ? seekData.locals : null;
@@ -560,6 +566,8 @@ class GmlExtImport {
 		var imps = data != null ? data.imports : null;
 		var imp = imps != null ? imps[""] : null;
 		var impc = 0;
+		var mayHaveType = imps != null || rxHasTypePost.test(code);
+		if (imp == null && mayHaveType) imp = new GmlImports();
 		//
 		while (q.loop) {
 			var p = q.pos;
@@ -596,6 +604,7 @@ class GmlExtImport {
 						var ctx = q.readContextName(null);
 						if (ctx != null) {
 							imp = imps != null ? imps[ctx] : null;
+							if (imp == null && mayHaveType) imp = new GmlImports();
 						} else q.pos = p + 1;
 					};
 				};
@@ -645,6 +654,7 @@ class GmlExtImport {
 								flush(d.type0);
 								if (d.type != null) {
 									out += isVar ? "/*:" + d.type + "*/" : ":" + d.type;
+									impc += 1;
 								}
 								out += q.substring(d.type1, d.expr0);
 								q.pos = d.expr0;
