@@ -109,6 +109,7 @@ class TreeViewDnD {
 					srcDir: cast src.parentElement.parentElement,
 					srcRef: src,
 					order: order,
+					pj: Project.current,
 				};
 				switch (Project.current.version) {
 					case v2: yy.YyManip.move(args);

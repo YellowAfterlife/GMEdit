@@ -8,6 +8,9 @@ import haxe.extern.EitherType;
  * @author YellowAfterlife
  */
 @:native("Electron_API") extern class Electron {
+	public static inline function isAvailable():Bool {
+		return Electron != null;
+	}
 	public static var shell:Dynamic;
 	public static var remote:Dynamic;
 	public static var clipboard:Clipboard;

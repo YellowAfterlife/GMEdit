@@ -26,7 +26,7 @@ using tools.PathTools;
  * ...
  * @author YellowAfterlife
  */
-class TreeView {
+@:keep class TreeView {
 	//
 	/** Names of items - used for lookups */
 	public static inline var attrIdent:String = "data-ident";
@@ -50,6 +50,7 @@ class TreeView {
 	public static var element:DivElement;
 	public static function clear() {
 		element.innerHTML = "";
+		element.removeAttribute(attrFilter);
 		//
 		var sheet = thumbSheet;
 		var rules = sheet.cssRules;
@@ -74,6 +75,9 @@ class TreeView {
 		prop(attrKind, query.kind);
 		propPath(attrRel, query.rel);
 		return element.querySelector(qjs);
+	}
+	public static inline function isDirectory(el:Element):Bool {
+		return el.classList.contains(clDir);
 	}
 	//
 	public static var thumbStyle:StyleElement;

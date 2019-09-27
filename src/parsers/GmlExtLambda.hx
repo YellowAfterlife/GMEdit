@@ -622,6 +622,8 @@ class GmlExtLambda {
 				order: 0,
 				mkdir: true,
 				name: "#gmedit-lambda",
+				kind: "script",
+				pj: pj,
 				py: py,
 			};
 			yy.YyManip.add(md);
@@ -675,7 +677,9 @@ class GmlExtLambda {
 				order: 0,
 				mkdir: false,
 				name: s,
+				kind: "script",
 				py: py,
+				pj: pj,
 				pyBefore: pyBefore,
 				openFile: false,
 			};

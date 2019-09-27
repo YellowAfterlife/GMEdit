@@ -134,11 +134,19 @@ class TreeViewMenus {
 	}
 	public static function openExternal() {
 		var path = target.getAttribute(TreeView.attrPath);
-		FileWrap.openExternal(path);
+		if (path != null) {
+			FileWrap.openExternal(path);
+		} else {
+			Project.current.openExternal(target.getAttribute(TreeView.attrRel));
+		}
 	}
 	public static function openDirectory() {
 		var path = target.getAttribute(TreeView.attrPath);
-		FileWrap.showItemInFolder(path);
+		if (path != null) {
+			FileWrap.showItemInFolder(path);
+		} else {
+			Project.current.showItemInFolder(target.getAttribute(TreeView.attrRel));
+		}
 	}
 	public static function openObjectInfo() {
 		GmlObjectInfo.showFor(
@@ -163,6 +171,9 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = true;
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
+		var isFileDir = target.getAttribute(TreeView.attrFilter) == "file";
+		items.openExternally.visible = isFileDir;
+		items.openDirectory.visible = isFileDir;
 		items.showAPI.visible = switch (Project.current.version) {
 			case v1, v2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
 			default: false;
@@ -182,6 +193,9 @@ class TreeViewMenus {
 		z = kind == "project";
 		items.removeFromRecentProjects.visible = z;
 		items.openCustomCSS.visible = !z;
+		//
+		items.openExternally.visible = true;
+		items.openDirectory.visible = true;
 		//
 		items.changeOpenIcon.visible = false;
 		items.resetOpenIcon.visible = false;
@@ -224,6 +238,8 @@ class TreeViewMenus {
 		return add(m, { label: label, click: click });
 	}
 	public static function init() {
+		var isNative = electron.Electron.isAvailable();
+		//
 		items = new TreeViewMenuData();
 		var iconItem = initIconMenu();
 		TreeViewItemMenus.init();
@@ -233,9 +249,11 @@ class TreeViewMenus {
 			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
 			addLink(itemMenu, "Open fragment shader", function() openYyShader("fsh")),
 		];
+		if (isNative) {
+			items.openExternally = addLink(itemMenu, "Open externally", openExternal);
+			items.openDirectory = addLink(itemMenu, "Show in directory", openDirectory);
+		}
 		addLink(itemMenu, "Open here", openHere);
-		addLink(itemMenu, "Open externally", openExternal);
-		if (electron.Electron != null) addLink(itemMenu, "Show in directory", openDirectory);
 		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
 		items.findReferences = addLink(itemMenu, "Find references", findReferences);
 		items.removeFromRecentProjects =
@@ -251,6 +269,10 @@ class TreeViewMenus {
 		items.showAPI = addLink(dirMenu, "Show API", showAPI);
 		items.openAll = addLink(dirMenu, "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
+		if (isNative) {
+			dirMenu.append(items.openExternally);
+			dirMenu.append(items.openDirectory);
+		}
 		dirMenu.appendSep();
 		for (q in items.manipOuter) dirMenu.append(q);
 		dirMenu.append(iconItem);
@@ -260,6 +282,8 @@ class TreeViewMenus {
 private class TreeViewMenuData {
 	public var openAll:MenuItem;
 	public var openCombined:MenuItem;
+	public var openExternally:MenuItem;
+	public var openDirectory:MenuItem;
 	//
 	public var objectInfo:MenuItem;
 	public var findReferences:MenuItem;
@@ -276,5 +300,6 @@ private class TreeViewMenuData {
 	//
 	public var removeFromRecentProjects:MenuItem;
 	public var shaderItems:Array<MenuItem>;
+	//
 	public function new() { }
 }

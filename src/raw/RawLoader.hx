@@ -11,7 +11,10 @@ import ui.treeview.TreeView;
  */
 class RawLoader {
 	public static function loadDirRec(project:Project, out:Element, dirPath:String):Void {
-		for (pair in project.readdirSync(dirPath)) {
+		var dirPairs = project.readdirSync(dirPath);
+		// directories first, files after
+		for (dirPass in 0 ... 2) for (pair in dirPairs) {
+			if (pair.isDirectory != (dirPass == 0)) continue;
 			var item = pair.fileName;
 			var rel = Path.join([dirPath, item]);
 			if (pair.isDirectory) {
@@ -33,37 +36,10 @@ class RawLoader {
 		}
 	}
 	public static function run(project:Project) {
-		var pfx = Std.is(project, yy.YyZip) ? "" : project.dir;
-		var ths = [];
-		function loadrec(out:Element, dirFull:String, dirRel:String):Void {
-			var rd = [], rf = [];
-			for (pair in project.readdirSync(dirFull)) {
-				var item = pair.fileName;
-				var full = Path.join([dirFull, item]);
-				var rel = Path.join([dirRel, item]);
-				if (pair.isDirectory) {
-					var nd = TreeView.makeAssetDir(item, rel, "file");
-					loadrec(nd.treeItems, full, rel);
-					rd.push(nd);
-				} else {
-					var ifull = Path.join([pfx, full]);
-					var item = TreeView.makeAssetItem(item, rel, ifull, "file");
-					rf.push(item);
-					if (ui.Preferences.current.assetThumbs)
-					switch (Path.extension(full).toLowerCase()) {
-						case "png", "jpeg", "gif": {
-							ths.push({ path: ifull, th: full, item: item });
-						};
-					}
-				}
-			}
-			for (el in rd) out.appendChild(el);
-			for (el in rf) out.appendChild(el);
-		}
 		TreeView.clear();
-		loadrec(TreeView.element, "", "");
-		for (pair in ths) {
-			TreeView.setThumb(pair.path, project.fullPath(pair.th), pair.item);
-		}
+		var topLevel = TreeView.makeAssetDir(project.name, "", "file");
+		topLevel.classList.add(TreeView.clOpen);
+		TreeView.element.appendChild(topLevel);
+		loadDirRec(project, topLevel.treeItems, "");
 	}
 }

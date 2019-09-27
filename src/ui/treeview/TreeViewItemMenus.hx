@@ -2,6 +2,7 @@ package ui.treeview;
 import electron.Dialog;
 import gml.Project;
 import electron.Menu;
+import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
 import ui.treeview.TreeViewMenus.items;
@@ -18,6 +19,10 @@ class TreeViewItemMenus {
 	static var prefix:String;
 	public static function getItemData(el:Element) {
 		var par = el.parentElement;
+		//
+		var isDir = TreeView.isDirectory(el);
+		var filter = (isDir ? el : par.parentElement).getAttribute(TreeView.attrFilter);
+		//
 		var root = TreeView.element;
 		var chain = [];
 		while (par != null && par != root) {
@@ -25,12 +30,16 @@ class TreeViewItemMenus {
 			if (d != null) chain.unshift(d);
 			par = par.parentElement;
 		}
+		//
 		var name = el.getAttribute(TreeView.attrIdent);
 		if (name == null) name = el.getAttribute(TreeView.attrLabel);
+		//
 		return {
+			isDir: isDir,
 			chain: chain,
 			last: name,
 			prefix: prefix,
+			filter: filter,
 			plural: prefix.substring(0, prefix.length - 1),
 			single: prefix.substring(0, prefix.length - 2),
 		};
@@ -50,10 +59,10 @@ class TreeViewItemMenus {
 		updatePrefix(target);
 		var v = Project.current.version;
 		switch (v) {
-			case v1 | v2: {
+			case v1 | v2 | live: {
 				var supported = switch (prefix) {
 					case "scripts/": true;
-					default: v == v2;
+					default: v != v1;
 				};
 				for (q in items.manipOuter) {
 					q.visible = true;
@@ -74,11 +83,13 @@ class TreeViewItemMenus {
 		var nrel = q.tvDir.getAttribute(TreeView.attrRel) + name;
 		var ntv:Element;
 		if (q.mkdir) {
-			ntv = TreeView.makeAssetDir(name, nrel + "/", "script");
+			ntv = TreeView.makeAssetDir(name, nrel + "/", q.kind);
 			ntv.classList.add(TreeView.clOpen);
 		} else {
-			var nfull = q.pj.fullPath(q.npath);
-			ntv = TreeView.makeAssetItem(name, nrel, nfull, 'script');
+			var pj = q.pj;
+			if (pj == null) pj = Project.current;
+			var nfull = pj.fullPath(q.npath);
+			ntv = TreeView.makeAssetItem(name, nrel, nfull, q.kind);
 		}
 		var dir = q.tvDir;
 		var ref = q.tvRef;
@@ -99,11 +110,18 @@ class TreeViewItemMenus {
 		}
 		return ntv;
 	}
-	static function validate(s:String, tvDir:TreeViewDir, asDir:Bool) {
-		if (asDir) {
+	//
+	static function validate(s:String, tvDir:TreeViewDir, asDir:Bool, filter:String) {
+		if (asDir || filter == "file") {
 			for (c in tvDir.treeItems.children) {
 				if (c.getAttribute(TreeView.attrLabel) == s) {
 					Dialog.showAlert("Group already exists!");
+					return false;
+				}
+			}
+			if (filter == "file") {
+				if ((new RegExp("[\\/*?\"<>|]")).test(s)) {
+					Dialog.showAlert("Not a valid file name");
 					return false;
 				}
 			}
@@ -119,13 +137,14 @@ class TreeViewItemMenus {
 		}
 		return true;
 	}
-	static function createImpl(z:Bool, order:Int) {
+	static function createImpl(mkdir:Bool, order:Int) {
 		var d = getItemData(target);
 		Dialog.showPrompt("Name?", "", function(s:String) {
 			if (s == "" || s == null) return;
 			//
 			var tvDir:TreeViewDir = cast (order != 0 ? target.parentElement.parentElement : target);
-			if (!validate(s, tvDir, z)) return;
+			if (!validate(s, tvDir, mkdir, d.filter)) return;
+			//
 			var args:TreeViewItemCreate = {
 				prefix: d.prefix,
 				plural: d.plural,
@@ -135,9 +154,25 @@ class TreeViewItemMenus {
 				chain: d.chain,
 				last: d.last,
 				name: s,
+				kind: d.filter,
 				order: order,
-				mkdir: z,
+				mkdir: mkdir,
 			};
+			//
+			if (d.filter == "file") {
+				try {
+					var full = Path.join([tvDir.getAttribute(TreeView.attrRel), s]);
+					if (mkdir) {
+						Project.current.mkdirSync(full);
+					} else {
+						Project.current.writeTextFileSync(full, "");
+					}
+					createImplTV(args);
+				} catch (x:Dynamic) {
+					Dialog.showError("Couldn't create the file: " + x);
+				}
+				return;
+			}
 			switch (Project.current.version) {
 				case v1: gmx.GmxManip.add(args);
 				case v2: yy.YyManip.add(args);
@@ -149,6 +184,20 @@ class TreeViewItemMenus {
 	static function removeImpl() {
 		var d = getItemData(target);
 		if (!Dialog.showConfirm("Are you sure you want to delete " + d.last + "?")) return;
+		if (d.filter == "file") {
+			try {
+				var path0 = target.getAttribute(TreeView.attrRel);
+				if (d.isDir) {
+					Project.current.rmdirSync(path0);
+				} else {
+					Project.current.unlinkSync(path0);
+				}
+				target.parentElement.removeChild(target);
+			} catch (x:Dynamic) {
+				Dialog.showError("Couldn't remove item: " + x);
+			}
+			return;
+		}
 		var args:TreeViewItemBase = {
 			prefix: d.prefix,
 			plural: d.plural,
@@ -174,7 +223,18 @@ class TreeViewItemMenus {
 			if (s == d.last || s == "" || s == null) return;
 			var dir = target.classList.contains(TreeView.clDir);
 			var tvDir:TreeViewDir = cast target.parentElement.parentElement;
-			if (!validate(s, tvDir, dir)) return;
+			if (!validate(s, tvDir, dir, d.filter)) return;
+			if (d.filter == "file") {
+				try {
+					var path0 = target.getAttribute(TreeView.attrRel);
+					var path1 = Path.join([Path.directory(path0), s]);
+					Project.current.renameSync(path0, path1);
+					if (d.isDir) Project.current.reload();
+				} catch (x:Dynamic) {
+					Dialog.showError("Couldn't rename item: " + x);
+				}
+				return;
+			}
 			var args:TreeViewItemRename = {
 				prefix: d.prefix,
 				plural: d.plural,
@@ -230,6 +290,7 @@ typedef TreeViewItemBase = {
 	tvDir:TreeViewDir,
 	tvRef:Element,
 	chain:Array<String>, last:String,
+	/** Project reference, defaults to Project.current */
 	?pj:Project,
 	/** if set, project JSON should be modified instead of reading-flushing */
 	?py:yy.YyProject,
@@ -243,6 +304,7 @@ typedef TreeViewItemBase = {
 typedef TreeViewItemCreate = {
 	>TreeViewItemBase,
 	name:String,
+	kind:String,
 	order:Int, mkdir:Bool,
 	?npath:String,
 };

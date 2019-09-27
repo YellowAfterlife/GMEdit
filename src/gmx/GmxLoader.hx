@@ -223,7 +223,7 @@ class GmxLoader {
 		tv.appendChild(mcrDir);
 		//
 		if (project.existsSync("#import")) {
-			var idir = TreeView.makeAssetDir("Imports", "#import", "file");
+			var idir = TreeView.makeAssetDir("Imports", "#import/", "file");
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
 			tv.appendChild(idir);
 		}
