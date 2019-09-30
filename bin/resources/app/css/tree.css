@@ -3,14 +3,14 @@
 	overflow: auto;
 }
 .treeview .dir .header {
-  -webkit-user-select: none;
-  user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 .treeview .dir .header,
 .treeview .item,
 .treeview .items {
-  border-left: 2px solid #f3f3f3;
-  -webkit-user-select: none;
+	border-left: 2px solid #f3f3f3;
+	-webkit-user-select: none;
 	user-select: none;
 }
 /*.treeview .items > div {
@@ -112,4 +112,12 @@
 .treeview > .dir > .header,
 .treeview > .dir > .items {
 	border-left: none;
+}
+/* oddish: if a header is hidden, child items don't get a step-in border */
+.treeview .dir .header.hidden {
+	display: none;
+}
+.treeview .dir .header.hidden + .items {
+	border-left: 0;
+	padding-left: 0;
 }

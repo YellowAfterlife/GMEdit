@@ -43,6 +43,7 @@ class RawLoader {
 		TreeView.clear();
 		var topLevel = TreeView.makeAssetDir(project.displayName, "", "file");
 		topLevel.classList.add(TreeView.clOpen);
+		topLevel.treeHeader.classList.add("hidden");
 		TreeView.element.appendChild(topLevel);
 		loadDirRec(project, topLevel.treeItems, "");
 		GmlSeeker.start();
