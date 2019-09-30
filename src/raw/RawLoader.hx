@@ -4,6 +4,10 @@ import gml.Project;
 import haxe.io.Path;
 import js.html.Element;
 import ui.treeview.TreeView;
+import gml.GmlAPI;
+import parsers.GmlSeeker;
+import ace.extern.*;
+using tools.PathTools;
 
 /**
  * ...
@@ -41,5 +45,28 @@ class RawLoader {
 		topLevel.classList.add(TreeView.clOpen);
 		TreeView.element.appendChild(topLevel);
 		loadDirRec(project, topLevel.treeItems, "");
+		GmlSeeker.start();
+		GmlAPI.gmlClear();
+		GmlAPI.extClear();
+		var wantIndex = (project.version.config.indexingMode == Directory);
+		for (item in tools.HtmlTools.querySelectorEls(topLevel, "div." + TreeView.clItem)) {
+			var full = item.getAttribute(TreeView.attrPath);
+			if (full == null) continue;
+			var rel = item.getAttribute(TreeView.attrRel);
+			GmlAPI.gmlLookup.set(rel, {
+				path: full,
+				sub: null,
+				row: 0,
+			});
+			GmlAPI.gmlLookupText += rel + "\n";
+			if (!wantIndex || full.ptExt() != "gml") continue;
+			// is a script
+			var name = full.ptNoDir().ptNoExt();
+			GmlSeeker.run(full, name, file.kind.gml.KGmlScript.inst);
+			GmlAPI.gmlKind[name] = "script";
+			var comp = new AceAutoCompleteItem(name, "script");
+			GmlAPI.gmlComp.push(comp);
+			GmlAPI.gmlAssetComp.set(name, comp);
+		}
 	}
 }
