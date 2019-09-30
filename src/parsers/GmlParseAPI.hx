@@ -46,7 +46,7 @@ class GmlParseAPI {
 		var lwFlags = data.lwFlags;
 		#end
 		//  : 1func (2args ) 3flags
-		~/^(:*(\w+)\((.*?)\))([ ~\$#*@&£!:]*);?[ \t]*$/gm.each(src, function(rx:EReg) {
+		~/^(:*(\w+)\((.*?)\))([ ~\$#*@&£!:]*);?/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
 			var args = rx.matched(3);
