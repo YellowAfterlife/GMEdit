@@ -392,6 +392,7 @@ import ui.treeview.TreeView;
 	public static var searchMap:DynamicAccess<(pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt)->Void> = {
 		"gms1": GmxSearcher.run,
 		"gms2": YySearcher.run,
+		"directory": raw.RawSearcher.run,
 	};
 	public function search(fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt) {
 		var func = searchMap[version.config.searchMode];
