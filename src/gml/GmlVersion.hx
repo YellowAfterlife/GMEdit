@@ -73,8 +73,7 @@ class GmlVersion {
 		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
 		#else
 		if (Electron.isAvailable()) {
-			var rel = FileSystem.readdirSync(Main.relPath("api"));
-			var usr = FileSystem.readdirSync(FileWrap.userPath + "/api");
+			// Allow overriding built-in APIs via user directory:
 			var found = new Dictionary();
 			function procDir(dir:String, isCustom:Bool):Void {
 				for (id in FileSystem.readdirSync(dir)) {
@@ -87,6 +86,12 @@ class GmlVersion {
 			}
 			procDir(FileWrap.userPath + "/api", true);
 			procDir(Main.relPath("api"), false);
+			// but show built-in APIs in front:
+			var l1 = [];
+			for (isCustom in [false, true]) for (v in list) {
+				if (v.isCustom == isCustom) l1.push(v);
+			}
+			list = l1;
 		} else {
 			list.push(new GmlVersion("v1", Main.relPath("api/v1"), false));
 			list.push(new GmlVersion("v2", Main.relPath("api/v2"), false));
