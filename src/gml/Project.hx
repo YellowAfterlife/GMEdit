@@ -2,6 +2,7 @@ package gml;
 import ace.extern.*;
 import electron.FileSystem;
 import electron.Electron;
+import haxe.DynamicAccess;
 import haxe.Json;
 import haxe.io.Path;
 import js.Boot;
@@ -102,8 +103,8 @@ import ui.treeview.TreeView;
 		// Going to let this be synchronous as otherwise we might
 		// fetch it several times in parallel while restoring tabs.
 		var r = frameRate;
-		if (r == null) switch (version) {
-			case v1 if (gmxFirstRoomName != null): {
+		if (r == null) switch (version.config.projectModeId) {
+			case 1 if (gmxFirstRoomName != null): {
 				try {
 					var txt = readTextFileSync("rooms/" + gmxFirstRoomName + ".room.gmx");
 					var rx = new RegExp("<speed>(\\d+)</speed>");
@@ -113,7 +114,7 @@ import ui.treeview.TreeView;
 					r = 30;
 				}
 			};
-			case v2: {
+			case 2: {
 				try {
 					var txt = readTextFileSync("options/main/inherited/options_main.inherited.yy");
 					var rx = new RegExp('"option_game_speed": (\\d+)');
@@ -189,12 +190,12 @@ import ui.treeview.TreeView;
 					if (path != null) version = GmlVersion.v1;
 				}
 				else if (FileSystem.existsSync(dir + ".extension.gmx")) {
-					version = v1;
+					version = GmlVersion.v1;
 					findV1(outer2);
 				}
 				if (version == GmlVersion.none) {
 					version = GmlVersion.detect(FileSystem.readTextFileSync(_path));
-					if (version == GmlVersion.none) version = v2;
+					if (version == GmlVersion.none) version = GmlVersion.v2;
 				}
 				delayTab();
 			};
@@ -217,7 +218,7 @@ import ui.treeview.TreeView;
 		#if !lwedit
 		if (path != null) detectVersion();
 		if (_load) {
-			document.title = name != "" ? (name + " - GMEdit") : "GMEdit";
+			document.title = path != "" ? (displayName + " - GMEdit") : "GMEdit";
 			TreeView.clear();
 			reload(true);
 		}
@@ -232,20 +233,9 @@ import ui.treeview.TreeView;
 			version = GmlVersion.none;
 			displayName = "Recent projects";
 		} else {
-			version = path.ptDetectProject();
-			switch (version) {
-				case GmlVersion.v2: {
-					displayName = name.ptNoExt();
-				};
-				case GmlVersion.v1: {
-					displayName = name.ptNoExt().ptNoExt();
-				};
-				case GmlVersion.live: {
-					name = dir.ptNoDir();
-					displayName = name;
-				};
-				default: displayName = name;
-			}
+			var pair = path.ptDetectProject();
+			version = pair.version;
+			displayName = pair.name;
 		}
 	}
 	public static function open(path:String) {
@@ -254,7 +244,7 @@ import ui.treeview.TreeView;
 		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
 	}
 	public function close() {
-		if (current.version != 0) {
+		if (version != GmlVersion.none) {
 			PluginEvents.projectClose({project:current});
 		}
 		TreeView.saveOpen();
@@ -376,32 +366,38 @@ import ui.treeview.TreeView;
 			if (GmlSeeker.itemsLeft == 0) {
 				nameNode.innerText = displayName;
 			} else nameNode.innerText = "Indexing...";
-			if (PluginManager.ready == true && this.version != 0) {
+			if (PluginManager.ready == true && version != GmlVersion.none) {
 				PluginEvents.projectOpen({project:this});
 			}
 			ui.ProjectStyle.reload();
 		}, 1);
 	}
+	public static var loaderMap:DynamicAccess<Project->Void> = {
+		"gms1": GmxLoader.run,
+		"gms2": YyLoader.run,
+		"directory": RawLoader.run,
+	};
 	private function reload_1() {
 		if (version == GmlVersion.none) {
 			ui.RecentProjects.show();
 		} else if (path == null) {
 			TreeView.clear();
-		} else switch (version) {
-			case GmlVersion.v1: GmxLoader.run(this);
-			case GmlVersion.v2: YyLoader.run(this);
-			case GmlVersion.live: RawLoader.run(this);
-			default:
+		} else {
+			var func = loaderMap[version.config.loadingMode];
+			if (func != null) func(this);
 		}
 	}
 	//
 	/** fn(name, path, code), */
+	public static var searchMap:DynamicAccess<(pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt)->Void> = {
+		"gms1": GmxSearcher.run,
+		"gms2": YySearcher.run,
+	};
 	public function search(fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt) {
-		switch (version) {
-			case GmlVersion.v1: GmxSearcher.run(this, fn, done, opt);
-			case GmlVersion.v2: YySearcher.run(this, fn, done, opt);
-			default:
-		}
+		var func = searchMap[version.config.searchMode];
+		if (func != null) {
+			func(this, fn, done, opt);
+		} else done();
 	}
 	//
 	public function fullPath(path:String) {
@@ -412,36 +408,63 @@ import ui.treeview.TreeView;
 	public function existsSync(path:String):Bool {
 		return FileSystem.existsSync(fullPath(path));
 	}
+	//
 	public function unlinkSync(path:String):Void {
 		FileSystem.unlinkSync(fullPath(path));
 	}
 	public function unlinkSyncSafe(path:String):Void {
 		if (existsSync(path)) unlinkSync(path);
 	}
+	//
 	public function readTextFile(path:String, fn:Error->String->Void):Void {
 		FileSystem.readTextFile(fullPath(path), fn);
 	}
 	public function readTextFileSync(path:String):String {
 		return FileSystem.readTextFileSync(fullPath(path));
 	}
+	public function writeTextFileSync(path:String, text:String) {
+		FileSystem.writeFileSync(fullPath(path), text);
+	}
+	//
 	public function readJsonFile<T:{}>(path:String, fn:Error->T->Void):Void {
 		FileSystem.readJsonFile(fullPath(path), fn);
 	}
 	public function readJsonFileSync<T>(path:String):T {
 		return FileSystem.readJsonFileSync(fullPath(path));
 	}
+	public inline function writeJsonFileSync(path:String, value:Dynamic) {
+		writeTextFileSync(path, NativeString.yyJson(value));
+	}
+	//
 	public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
 		return FileSystem.readGmxFile(fullPath(path), fn);
 	}
 	public function readGmxFileSync(path:String):SfGmx {
 		return FileSystem.readGmxFileSync(fullPath(path));
 	}
-	public function writeTextFileSync(path:String, text:String) {
-		FileSystem.writeFileSync(fullPath(path), text);
+	//
+	/**
+	 * Reads a JSON file relative to #config directory.
+	 * Returns null if something goes wrong.
+	 */
+	public function readConfigJsonFileSync<T:{}>(path:String):T {
+		if (existsSync("#config")) {
+			var full = "#config/" + path;
+			if (existsSync(full)) {
+				try {
+					return readJsonFileSync(full);
+				} catch (x:Dynamic) {
+					Main.console.error('Failed to read `$full`:', x);
+				}
+			}
+		}
+		return null;
 	}
-	public inline function writeJsonFileSync(path:String, value:Dynamic) {
-		writeTextFileSync(path, NativeString.yyJson(value));
+	public function writeConfigJsonFileSync(path:String, value:Dynamic):Void {
+		if (!existsSync("#config")) mkdirSync("#config");
+		writeJsonFileSync("#config/" + path, value);
 	}
+	//
 	public function renameSync(prev:String, next:String) {
 		if (existsSync(prev)) {
 			FileSystem.renameSync(fullPath(prev), fullPath(next));
@@ -460,14 +483,15 @@ import ui.treeview.TreeView;
 	 * Generally used for thumbnails.
 	 */
 	public function getSpriteURL(name:String):String {
-		if (version == GmlVersion.live) return null;
+		var vi = version.config.projectModeId;
+		if (vi == 0) return null;
 		if (spriteURLs.exists(name)) {
 			return spriteURLs[name];
 		}
 		var r:String;
-		switch (version) {
-			case v1: r = getImageURL("sprites/images/" + name + "_0.png");
-			case v2: {
+		switch (vi) {
+			case 1: r = getImageURL("sprites/images/" + name + "_0.png");
+			case 2: {
 				var g:YyGUID = yyResourceGUIDs[name];
 				if (g != null) {
 					if (yySpriteURLs.exists(g)) {
@@ -492,7 +516,7 @@ import ui.treeview.TreeView;
 		return r;
 	}
 	public function getSpriteURLasync(name:String, fn:String->Void):Void {
-		if (version == GmlVersion.live) return;
+		if (version.config.projectMode == null) return;
 		function soon_1(fn:String->Void, s:String):Void {
 			window.setTimeout(function() fn(s));
 		}
@@ -507,15 +531,15 @@ import ui.treeview.TreeView;
 			soon(spriteURLs[name]);
 			return;
 		}
-		switch (version) {
-			case v1: {
+		switch (version.config.projectModeId) {
+			case 1: {
 				var full = fullPath("sprites/images/" + name + "_0.png");
 				FileSystem.access(full, FileSystemAccess.Exists, function(e) {
 					full = e == null ? "file:///" + full : null;
 					now(full);
 				});
 			}
-			case v2: {
+			case 2: {
 				var g:YyGUID = yyResourceGUIDs[name];
 				if (g != null) {
 					if (yySpriteURLs.exists(g)) {

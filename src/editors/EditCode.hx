@@ -55,7 +55,7 @@ class EditCode extends Editor {
 	}
 	
 	override public function ready():Void {
-		if (GmlAPI.version == GmlVersion.live) {
+		if (GmlAPI.version.config.indexingMode == Local) {
 			GmlSeeker.runSync(file.path, file.code, null, file.kind);
 		}
 		var _prev = currentNew;

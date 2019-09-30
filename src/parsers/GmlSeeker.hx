@@ -268,7 +268,7 @@ class GmlSeeker {
 			else if (s.fastCodeAt(0) == "/".code) {
 				if (main != null) {
 					var check = true, mt;
-					if (v.hasJSDoc()) {
+					if (v.hasLiteralStrings()) {
 						mt = jsDoc_param.exec(s);
 						if (mt != null) {
 							doc = out.docMap[main];

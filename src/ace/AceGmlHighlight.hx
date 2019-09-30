@@ -328,17 +328,17 @@ using tools.NativeArray;
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
 		]; //}
-		if (version == GmlVersion.v2) { // regions
+		if (version.config.hasRegions) { // regions
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
 		}
 		rBase.push(rSection); // only used in v2 for object info
-		if (version == GmlVersion.v2) {
-			rBase.push(rxPush("string", ~/@"/, "gml.string.dq"));
-			rBase.push(rxPush("string", ~/@'/, "gml.string.sq"));
+		if (version.hasStringEscapeCharacters()) {
 			rBase.push(rxPush("string", ~/"/, "gml.string.esc"));
 		} else {
 			rBase.push(rxPush("string", ~/"/, "gml.string.dq"));
+		}
+		if (version.hasSingleQuoteStrings()) {
 			rBase.push(rxPush("string", ~/'/, "gml.string.sq"));
 		}
 		if (version.hasTemplateStrings()) {

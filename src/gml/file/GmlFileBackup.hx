@@ -30,13 +30,8 @@ class GmlFileBackup {
 		return;
 		#end
 		if (!FileSystem.canSync) return;
-		var num = switch (Project.current.version) {
-			case GmlVersion.v1: Preferences.current.backupCount.v1;
-			case GmlVersion.v2: Preferences.current.backupCount.v2;
-			case GmlVersion.live: Preferences.current.backupCount.live;
-			default: 0;
-		};
-		if (num <= 0) return;
+		var num = Preferences.current.backupCount[Project.current.version.name];
+		if (num == null || num <= 0) return;
 		//
 		var path = getPath(file);
 		if (path == null) return;

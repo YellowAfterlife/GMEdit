@@ -17,8 +17,6 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class ProjectProperties {
-	@:keep public static inline var dir:String = "#config";
-	@:keep public static inline var path:String = dir + "/properties.json";
 	public static function load(project:Project):ProjectData {
 		//
 		var def:ProjectData = {
@@ -26,30 +24,19 @@ class ProjectProperties {
 		};
 		if (project.path == "") return def;
 		//
-		var doSave = false;
-		var data:ProjectData;
-		try {
-			data = project.readJsonFileSync(path);
-		} catch (_:Dynamic) {
-			data = null;
-			if (!project.existsSync(dir)) project.mkdirSync(dir);
-			doSave = true;
-		}
-		//
+		var data:ProjectData = project.readConfigJsonFileSync("properties.json");
 		if (data == null) {
 			data = def;
 		} else NativeObject.forField(def, function(k) {
 			if (Reflect.field(data, k) == null) {
 				Reflect.setField(data, k, Reflect.field(def, k));
-				doSave = true;
 			}
 		});
 		//
-		//if (doSave) save(project, data); // we don't really want to create file unless needed
 		return data;
 	}
 	public static function save(project:Project, data:ProjectData) {
-		project.writeJsonFileSync(path, data);
+		project.writeConfigJsonFileSync("properties.json", data);
 	}
 	public static function build(project:Project, out:DivElement) {
 		var fs:FieldSetElement;
@@ -92,7 +79,7 @@ class ProjectProperties {
 			d.lambdaMode = lambdaModes.indexOf(s);
 			autosave();
 		});
-		if (project.version != v2) {
+		if (project.version.config.projectModeId != 2) {
 			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
 		}
 		//}

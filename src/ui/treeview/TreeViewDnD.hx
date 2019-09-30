@@ -58,7 +58,7 @@ class TreeViewDnD {
 		var prefix = prefixOf(rel).toLowerCase();
 		var ownType = dropType + "=" + rel.toLowerCase();
 		var ownPrefix = dropPrefix + "=" + prefix;
-		var v2 = Project.current.version == v2;
+		var v2 = Project.current.version.config.projectModeId == 2;
 		if (v2 || rxCanDropTo.test(rel)) {
 			function updateAuto(e:DragEvent) {
 				var y = e.offsetY;
@@ -111,9 +111,9 @@ class TreeViewDnD {
 					order: order,
 					pj: Project.current,
 				};
-				switch (Project.current.version) {
-					case v2: yy.YyManip.move(args);
-					case v1: gmx.GmxManip.move(args);
+				switch (Project.current.version.config.projectModeId) {
+					case 2: yy.YyManip.move(args);
+					case 1: gmx.GmxManip.move(args);
 					default:
 				}
 			}

@@ -171,7 +171,7 @@ class GmlEvent {
 						sctName = q.substring(nameStart, q.pos);
 						if (sctName == "") {
 							sctName = null;
-						} else if (version == GmlVersion.v2) {
+						} else if (version.config.hasJSDoc) {
 							if (sctName.charCodeAt(0) == "|".code) {
 								sctName = ' @desc ' + sctName.substring(1);
 							} else {
@@ -186,7 +186,7 @@ class GmlEvent {
 						//
 						evStart = q.pos;
 					}
-					else if (version == GmlVersion.v1 && q.substr(q.pos, 7) == "section") {
+					else if (version.config.hasEventSections && q.substr(q.pos, 7) == "section") {
 						q.skip(7);
 						//
 						var nameStart = q.pos;
@@ -214,7 +214,7 @@ class GmlEvent {
 						//
 						evStart = q.pos;
 					}
-					else if (version == GmlVersion.v1 && q.substr(q.pos, 6) == "action") {
+					else if (version.config.hasEventActions && q.substr(q.pos, 6) == "action") {
 						q.skip(6);
 						flush(q.pos - 7, true);
 						evStart = q.pos - 7;

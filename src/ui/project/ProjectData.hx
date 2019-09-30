@@ -5,6 +5,10 @@ package ui.project;
  * @author YellowAfterlife
  */
 typedef ProjectData = {
+	/** API override */
+	?gmlVersion:String,
+	
+	/** [in spaces] */
 	?indentSize:Int,
 	?indentWithTabs:Bool,
 	?lambdaMode:LambdaMode,

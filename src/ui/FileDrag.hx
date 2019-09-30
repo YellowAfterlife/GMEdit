@@ -64,10 +64,15 @@ class FileDrag {
 				}
 			};
 			default: {
-				var pair = GmlFileKindTools.detect(path);
-				if (pair.kind != KExtern.inst) {
-					GmlFile.open(Path.withoutExtension(name), path);
-				} else decline();
+				var ppair = tools.PathTools.ptDetectProject(path);
+				if (ppair.version != GmlVersion.none) {
+					Project.open(path);
+				} else {
+					var pair = GmlFileKindTools.detect(path);
+					if (pair.kind != KExtern.inst) {
+						GmlFile.open(Path.withoutExtension(name), path);
+					} else decline();
+				}
 			};
 		}
 	}

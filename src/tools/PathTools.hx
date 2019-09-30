@@ -51,13 +51,19 @@ class PathTools {
 		return ptNoBS(ptDir(path)).split("/").length;
 	}
 	
-	public static function ptDetectProject(path:String):GmlVersion {
-		switch (path.ptExt()) {
-			case "yyp": return GmlVersion.v2;
-			case "gmx" if (path.ptNoExt().ptExt() == "project"): return GmlVersion.v1;
-			case "txt", "cfg" if (path.ptName().toLowerCase() == "main"): return GmlVersion.live;
+	public static function ptDetectProject(path:String):{version:GmlVersion,name:String} {
+		var nd = path.ptNoDir();
+		for (v in GmlVersion.list) {
+			var rx = v.config.projectRegexCached;
+			if (rx == null) continue;
+			var mt = rx.exec(nd);
+			if (mt != null) {
+				var s = mt[1];
+				if (s == null) s = path.ptDir().ptNoDir();
+				return { version: v, name: s };
+			}
 		}
-		return GmlVersion.none;
+		return { version: GmlVersion.none, name: nd };
 	}
 	
 	/** no backslashes */

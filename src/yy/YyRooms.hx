@@ -74,7 +74,9 @@ class YyRooms {
 					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v2);
+				case '"'.code, "'".code, "`".code, "@".code: {
+					q.skipStringAuto(c, gml.GmlVersion.v2);
+				};
 				case "#".code if ((p == 0 || q.get(p - 1) == "\n".code)
 					&& q.substr(p + 1, 6) == "target"
 					&& q.get(p + 7).isSpace0()

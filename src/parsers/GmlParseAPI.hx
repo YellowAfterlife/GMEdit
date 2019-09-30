@@ -56,7 +56,7 @@ class GmlParseAPI {
 			var orig = name;
 			var show = true;
 			var doc = GmlFuncDoc.parse(comp);
-			if (version == GmlVersion.v2) {
+			if (version.config.docMode != "gms1") {
 				if (ukSpelling) {
 					if (flags.indexOf("$") >= 0) show = false;
 				} else {
@@ -127,7 +127,7 @@ class GmlParseAPI {
 			var kind:String = isConst ? "constant" : "variable";
 			//
 			var orig = name;
-			if (version != GmlVersion.v2 && version != GmlVersion.none) {
+			if (version.config.docMode == "gms1") {
 				// (todo: were there other things?)
 				var usn = NativeString.replaceExt(name, "colour", "color");
 				if (ukSpelling) orig = usn; else name = usn;

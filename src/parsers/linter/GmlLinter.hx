@@ -66,7 +66,7 @@ class GmlLinter {
 	var isProperties:Bool = false;
 	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
-	var seqStart:GmlReaderExt = new GmlReaderExt("", none);
+	var seqStart:GmlReaderExt = new GmlReaderExt("", GmlVersion.none);
 	function readSeqStartError(text:String):FoundError {
 		if (errorPos != null) return true;
 		errorText = text + seqStart.getStack();
@@ -175,10 +175,9 @@ class GmlLinter {
 		q["finally"] = KFinally;
 		q["throw"] = KThrow;
 		//
-		if (version == GmlVersion.live) {
-			q["in"] = KLiveIn;
-			q["wait"] = KLiveWait;
-		}
+		var kws = version.config.additionalKeywords;
+		if (kws != null && kws.indexOf("in") >= 0) q["in"] = KLiveIn;
+		if (kws != null && kws.indexOf("wait") >= 0) q["wait"] = KLiveWait;
 		//
 		keywords = q;
 	}
@@ -456,7 +455,7 @@ class GmlLinter {
 		return __next(reader);
 	}
 	//
-	private var __peekReader:GmlReaderExt = new GmlReaderExt("", none);
+	private var __peekReader:GmlReaderExt = new GmlReaderExt("", GmlVersion.none);
 	function peek() {
 		var q = __peekReader;
 		q.setTo(reader);
@@ -779,8 +778,8 @@ class GmlLinter {
 					rc(readExpr(newDepth));
 					currKind = KLiveIn;
 				};
-				case KNot: {
-					if (hasFlag(NoOps) || version != GmlVersion.live) break;
+				case KNot: { // field not in object
+					if (hasFlag(NoOps) || keywords["in"] == null) break;
 					seqStart.setTo(reader);
 					skip();
 					if (!skipIf(peek() == KLiveIn)) {

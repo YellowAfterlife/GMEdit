@@ -1,6 +1,7 @@
 package gml;
 import electron.FileWrap;
 import gmx.SfGmx;
+import haxe.DynamicAccess;
 import yy.YyExtension;
 import gml.file.GmlFile;
 import file.FileKind;
@@ -13,12 +14,13 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class GmlExtensionAPI {
+	public static var kindMap:DynamicAccess<FileKind> = {
+		"gms1": KGmxExtensionAPI.inst,
+		"gms2": KYyExtensionAPI.inst,
+	}
 	public static function showFor(path:String, ident:String) {
-		var kind = switch (Project.current.version) {
-			case v1: KGmxExtensionAPI.inst;
-			case v2: KYyExtensionAPI.inst;
-			default: return;
-		}
+		var kind = kindMap[Project.current.version.config.projectMode];
+		if (kind == null) return;
 		GmlFile.openTab(new GmlFile("api: " + ident, path, kind));
 	}
 	//

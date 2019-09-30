@@ -58,23 +58,20 @@ class TreeViewItemMenus {
 	static function updateCreateMenu(dir:Bool) {
 		updatePrefix(target);
 		var v = Project.current.version;
-		switch (v) {
-			case v1 | v2 | live: {
-				var supported = switch (prefix) {
-					case "scripts/": true;
-					default: v != v1;
-				};
-				for (q in items.manipOuter) {
-					q.visible = true;
-					q.enabled = supported;
-				}
-				var nonRoot = target.getAttribute(TreeView.attrRel).toLowerCase() != prefix;
-				for (q in items.manipNonRoot) q.enabled = supported && nonRoot;
-				for (q in items.manipDirOnly) q.enabled = supported && dir;
+		if (v != gml.GmlVersion.none) {
+			var supported = switch (prefix) {
+				case "scripts/": true;
+				default: v.config.projectModeId != 1;
 			};
-			default: {
-				for (q in items.manipOuter) q.visible = false;
+			for (q in items.manipOuter) {
+				q.visible = true;
+				q.enabled = supported;
 			}
+			var nonRoot = target.getAttribute(TreeView.attrRel).toLowerCase() != prefix;
+			for (q in items.manipNonRoot) q.enabled = supported && nonRoot;
+			for (q in items.manipDirOnly) q.enabled = supported && dir;
+		} else {
+			for (q in items.manipOuter) q.visible = false;
 		}
 	}
 	//
@@ -173,9 +170,10 @@ class TreeViewItemMenus {
 				}
 				return;
 			}
-			switch (Project.current.version) {
-				case v1: gmx.GmxManip.add(args);
-				case v2: yy.YyManip.add(args);
+			var vi = Project.current.version.config.projectModeId;
+			switch (vi) {
+				case 1: gmx.GmxManip.add(args);
+				case 2: yy.YyManip.add(args);
 				default: Dialog.showAlert("Can't create an item for this version!");
 			}
 		});
@@ -207,9 +205,10 @@ class TreeViewItemMenus {
 			tvDir: cast target.parentElement.parentElement,
 			tvRef: target,
 		};
-		switch (Project.current.version) {
-			case v1: gmx.GmxManip.remove(args);
-			case v2: yy.YyManip.remove(args);
+		var vi = Project.current.version.config.projectModeId;
+		switch (vi) {
+			case 1: gmx.GmxManip.remove(args);
+			case 2: yy.YyManip.remove(args);
 			default: Dialog.showAlert("Can't remove an item for this version!");
 		}
 	}
@@ -245,9 +244,10 @@ class TreeViewItemMenus {
 				tvRef: target,
 				name: s,
 			};
-			switch (Project.current.version) {
-				case v1: gmx.GmxManip.rename(args);
-				case v2: yy.YyManip.rename(args);
+			var vi = Project.current.version.config.projectModeId;
+			switch (vi) {
+				case 1: gmx.GmxManip.rename(args);
+				case 2: yy.YyManip.rename(args);
 				default: Dialog.showAlert("Can't rename an item for this version!");
 			}
 		});

@@ -459,7 +459,7 @@ class GmlExtImport {
 			}
 		}
 		flush(q.pos);
-		if (seekData == null && version == live) {
+		if (seekData == null && version.config.indexingMode == Local) {
 			seekData = new GmlSeekData();
 			GmlSeekData.map.set(path, seekData);
 		}

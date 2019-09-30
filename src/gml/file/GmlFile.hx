@@ -202,7 +202,7 @@ class GmlFile {
 				} else {
 					GmlSeeker.runSync(path, out, data.main, kind);
 				}
-				if (GmlAPI.version == GmlVersion.live) liveApply();
+				if (GmlAPI.version.config.indexingMode == Local) liveApply();
 				var next = GmlSeekData.map[path];
 				if (codeEditor.locals != next.locals) {
 					codeEditor.locals = next.locals;
@@ -253,7 +253,7 @@ class GmlFile {
 		checkChanges();
 		var version = GmlAPI.version;
 		GmlExternAPI.gmlResetOnDefine = version.resetOnDefine() && !Std.is(kind, KGmlSearchResults.inst);
-		if (version == GmlVersion.live) liveApply();
+		if (version.config.indexingMode == Local) liveApply();
 	}
 	//
 	private static function set_current(file:GmlFile) {

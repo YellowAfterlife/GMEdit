@@ -59,7 +59,7 @@ import ace.AceMacro.jsRx;
 				"";
 			}
 			if (out != "") out += "\n\n";
-			var pair = parsers.GmlHeader.parse(code, v2);
+			var pair = parsers.GmlHeader.parse(code, gml.GmlVersion.v2);
 			out += "#event " + name;
 			if (pair.name != null) out +=  pair.name;
 			out += "\n" + pair.code;

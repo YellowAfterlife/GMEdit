@@ -40,8 +40,8 @@ class YyZip extends Project {
 		var mainDepth = 0;
 		for (entry in entries) {
 			var path = entry.path;
-			var ver = path.ptDetectProject();
-			if (ver != GmlVersion.none) {
+			var pair = path.ptDetectProject();
+			if (pair.version != GmlVersion.none) {
 				var depth = path.ptDepth();
 				if (main == null || depth < mainDepth) {
 					main = path;

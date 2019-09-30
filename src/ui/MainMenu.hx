@@ -180,7 +180,7 @@ class MainMenu {
 		btn.addEventListener("click", function(e) {
 			var pj = Project.current;
 			#if !lwedit
-			exportItem.enabled = pj.version != none && Std.is(pj, YyZip);
+			exportItem.enabled = pj.version != gml.GmlVersion.none && Std.is(pj, YyZip);
 			#end
 			menu.popupAsync(e);
 		});

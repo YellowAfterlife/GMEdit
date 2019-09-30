@@ -1,4 +1,5 @@
 package ui.preferences;
+import haxe.DynamicAccess;
 
 /**
  * ...
@@ -28,7 +29,7 @@ typedef PrefData = {
 	tabSpaces:Bool,
 	detectTab:Bool,
 	eventOrder:Int,
-	backupCount:{ v1:Int, v2:Int, live:Int },
+	backupCount:DynamicAccess<Int>,
 	tooltipKind:PrefTooltipKind,
 	tooltipDelay:Int,
 	linterPrefs:parsers.linter.GmlLinterPrefs,

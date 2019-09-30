@@ -66,13 +66,8 @@ class GmlAPI {
 			sk.set(s, "keyword");
 		}
 		for (s in kwList) add(s);
-		if (version == GmlVersion.live) {
-			add("wait");
-			add("in");
-			add("try");
-			add("catch");
-			add("throw");
-		}
+		var kw2 = version.config.additionalKeywords;
+		if (kw2 != null) for (s in kw2) add(s);
 		if (Preferences.current.importMagic) add("new");
 		stdKind = sk;
 	}
@@ -196,7 +191,7 @@ class GmlAPI {
 		var getContent_rx = new RegExp("\r\n", "g");
 		function getContent(path:String, fn:String->Void):Void {
 			if (FileSystem.canSync) {
-				var rp = Main.relPath(path);
+				var rp = path;
 				if (FileSystem.existsSync(rp)) {
 					var s = FileSystem.readFileSync(rp, "utf8");
 					s = NativeString.replaceExt(s, getContent_rx, "\n");
@@ -208,146 +203,141 @@ class GmlAPI {
 				});
 			}
 		}
-		var dir = "api/" + version.getName();
+		var dir = version.dir;
 		//
 		helpURL = null;
 		helpLookup = null;
 		ukSpelling = Preferences.current.ukSpelling;
-		var confPath = Main.relPath(dir + "/config.json");
-		var files:Array<String> = null;
-		var assets:Array<String> = null;
-		FileSystem.readJsonFile(confPath, function(error, conf:GmlConfig) {
-			if (error == null) {
-				files = conf.apiFiles;
-				assets = conf.assetFiles;
-				if (ukSpelling == null) ukSpelling = conf.ukSpelling;
-				//
-				var confKeywords = conf.keywords;
-				if (confKeywords != null) for (kw in confKeywords) {
-					stdKind.set(kw, "keyword");
-				}
-				//
-				helpURL = conf.helpURL;
-				var helpIndexPath = conf.helpIndex;
-				if (helpIndexPath != null) {
-					helpIndexPath = Main.relPath(dir + "/" + helpIndexPath);
-					FileSystem.readTextFile(helpIndexPath, function(err, helpIndexJs) {
-						if (err != null) return;
-						helpLookup = new Dictionary();
-						helpIndexJs = helpIndexJs.substring(helpIndexJs.indexOf("["));
-						helpIndexJs = helpIndexJs.substring(0, helpIndexJs.indexOf(";"));
-						try {
-							var helpIndexArr:Array<Array<Dynamic>> = haxe.Json.parse(helpIndexJs);
-							for (pair in helpIndexArr) {
-								var item:Dynamic = pair[1];
-								if (Std.is(item, Array)) item = item[0][1];
-								helpLookup.set(pair[0], item);
-							}
-						} catch (x:Dynamic) {
-							trace("Couldn't parse help index:", x);
-						}
-					});
-				}
-			}
-			//
-			if (assets != null) for (file in assets) {
-				getContent('$dir/$file', function(raw) {
-					GmlParseAPI.loadAssets(raw, { kind: stdKind, comp: stdComp });
-				});
-			}
-			//
-			var data = {
-				kind: stdKind,
-				doc: stdDoc,
-				comp: stdComp,
-				ukSpelling: ukSpelling,
-				version: version,
-				#if lwedit
-				lwArg0: lwArg0,
-				lwArg1: lwArg1,
-				lwInst: lwInst,
-				lwConst: lwConst,
-				lwFlags: lwFlags,
-				#end
-			};
-			if (files != null) for (file in files) {
-				var path = dir + "/" + file;
-				getContent(path, function(raw) {
-					if (raw != null) {
-						GmlParseAPI.loadStd(raw, data);
-					} else Main.console.error("Couldn't load " + path);
-				});
-			} else {
-				var raw:String = "";
-				function fin_inst(s:String) {
-					if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
-						var name = rx.matched(1);
-						raw = new EReg('^$name\\b', "gm").replace(raw, ":" + name);
-					});
-					#if !lwedit
-					if (FileSystem.canSync) {
-						var xdir = FileWrap.userPath + "/api/" + version.getName();
-						if (FileSystem.existsSync(xdir))
-						for (xrel in FileSystem.readdirSync(xdir)) {
-							var xfull = xdir + "/" + xrel;
-							try {
-								raw += "\n" + FileSystem.readTextFileSync(xfull);
-							} catch (x:Dynamic) {
-								Main.console.error("Error loading API from " + xfull, x);
-							}
-						}
+		//
+		var conf:GmlVersionConfig = version.config;
+		var files = conf.apiFiles;
+		var assets = conf.assetFiles;
+		//
+		var confKeywords = conf.additionalKeywords;
+		if (confKeywords != null) for (kw in confKeywords) {
+			stdKind.set(kw, "keyword");
+		}
+		//
+		helpURL = conf.helpURL;
+		var helpIndexPath = conf.helpIndex;
+		if (helpIndexPath != null) {
+			helpIndexPath = dir + "/" + helpIndexPath;
+			FileSystem.readTextFile(helpIndexPath, function(err, helpIndexJs) {
+				if (err != null) return;
+				helpLookup = new Dictionary();
+				helpIndexJs = helpIndexJs.substring(helpIndexJs.indexOf("["));
+				helpIndexJs = helpIndexJs.substring(0, helpIndexJs.indexOf(";"));
+				try {
+					var helpIndexArr:Array<Array<Dynamic>> = haxe.Json.parse(helpIndexJs);
+					for (pair in helpIndexArr) {
+						var item:Dynamic = pair[1];
+						if (Std.is(item, Array)) item = item[0][1];
+						helpLookup.set(pair[0], item);
 					}
-					#end
+				} catch (x:Dynamic) {
+					trace("Couldn't parse help index:", x);
+				}
+			});
+		}
+		//
+		if (assets != null) for (file in assets) {
+			getContent('$dir/$file', function(raw) {
+				GmlParseAPI.loadAssets(raw, { kind: stdKind, comp: stdComp });
+			});
+		}
+		//
+		var data = {
+			kind: stdKind,
+			doc: stdDoc,
+			comp: stdComp,
+			ukSpelling: ukSpelling,
+			version: version,
+			#if lwedit
+			lwArg0: lwArg0,
+			lwArg1: lwArg1,
+			lwInst: lwInst,
+			lwConst: lwConst,
+			lwFlags: lwFlags,
+			#end
+		};
+		if (files != null) for (file in files) {
+			var path = dir + "/" + file;
+			getContent(path, function(raw) {
+				if (raw != null) {
 					GmlParseAPI.loadStd(raw, data);
-					#if lwedit
-					if (lwArg0 != null) { // give GMLive a copy of data
-						var cb = Reflect.field(Main.window, "lwSetAPI");
-						if (cb != null) cb(data);
-						LiveWeb.readyUp();
-					}
-					// so that the welcome page highlights correctly:
-					Main.aceEditor.session.bgTokenizer.start(0);
-					#end
-				}
-				function fin_exclude(s:String) {
-					if (s != null) ~/^(\w+)(\*?)$/gm.each(s, function(rx:EReg) {
-						var name = rx.matched(1);
-						if (rx.matched(2) != "") {
-							raw = new EReg('^$name.*$', "gm").replace(raw, "");
-						} else {
-							raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
+				} else Main.console.error("Couldn't load " + path);
+			});
+		} else {
+			var raw:String = "";
+			function fin_inst(s:String) {
+				if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
+					var name = rx.matched(1);
+					raw = new EReg('^$name\\b', "gm").replace(raw, ":" + name);
+				});
+				#if !lwedit
+				if (FileSystem.canSync) {
+					var xdir = FileWrap.userPath + "/api/" + version.getName();
+					if (FileSystem.existsSync(xdir))
+					for (xrel in FileSystem.readdirSync(xdir)) {
+						var xfull = xdir + "/" + xrel;
+						try {
+							raw += "\n" + FileSystem.readTextFileSync(xfull);
+						} catch (x:Dynamic) {
+							Main.console.error("Error loading API from " + xfull, x);
 						}
-					});
-					getContent(dir + "/inst.gml", fin_inst);
-				}
-				function fin_replace(s:String) {
-					if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
-						var name = rx.matched(1);
-						var code = rx.matched(0);
-						raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
-							return code;
-						});
-					});
-					getContent(dir + '/exclude.gml', fin_exclude);
-				}
-				function fin_extra(s:String) {
-					if (s != null && s != "") raw += "\n" + s;
-					#if lwedit
-					raw += "\ntrace(...)";
-					#end
-					getContent(dir + "/replace.gml", fin_replace);
-				}
-				function fin_fnames(s:String) {
-					if (s != null) {
-						raw = s;
-						getContent(dir + "/extra.gml", fin_extra);
-					} else {
-						Main.window.alert("Couldn't find fnames in " + dir);
 					}
 				}
-				getContent(dir + "/fnames", fin_fnames);
+				#end
+				GmlParseAPI.loadStd(raw, data);
+				#if lwedit
+				if (lwArg0 != null) { // give GMLive a copy of data
+					var cb = Reflect.field(Main.window, "lwSetAPI");
+					if (cb != null) cb(data);
+					LiveWeb.readyUp();
+				}
+				// so that the welcome page highlights correctly:
+				Main.aceEditor.session.bgTokenizer.start(0);
+				#end
 			}
-		}); // getContent conf
+			function fin_exclude(s:String) {
+				if (s != null) ~/^(\w+)(\*?)$/gm.each(s, function(rx:EReg) {
+					var name = rx.matched(1);
+					if (rx.matched(2) != "") {
+						raw = new EReg('^$name.*$', "gm").replace(raw, "");
+					} else {
+						raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
+					}
+				});
+				getContent(dir + "/inst.gml", fin_inst);
+			}
+			function fin_replace(s:String) {
+				if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
+					var name = rx.matched(1);
+					var code = rx.matched(0);
+					raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
+						return code;
+					});
+				});
+				getContent(dir + '/exclude.gml', fin_exclude);
+			}
+			function fin_extra(s:String) {
+				if (s != null && s != "") raw += "\n" + s;
+				#if lwedit
+				raw += "\ntrace(...)";
+				#end
+				getContent(dir + "/replace.gml", fin_replace);
+			}
+			function fin_fnames(s:String) {
+				if (s != null) {
+					raw = s;
+					getContent(dir + "/extra.gml", fin_extra);
+				} else {
+					Main.window.alert("Couldn't find fnames in " + dir);
+				}
+			}
+			getContent(dir + "/fnames", fin_fnames);
+		}
+		//}); // getContent conf
 	}
 }
 @:native("window") extern class GmlExternAPI {

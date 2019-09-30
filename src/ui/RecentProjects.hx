@@ -40,12 +40,8 @@ class RecentProjects {
 		var el = TreeView.element;
 		var lookup = "";
 		if (electron.Electron != null) for (path in get()) {
-			var name = Path.withoutDirectory(path);
-			switch (name.toLowerCase()) {
-				case "main.txt", "main.cfg": {
-					name = Path.withoutDirectory(Path.directory(path));
-				};
-			}
+			var pair = tools.PathTools.ptDetectProject(path);
+			var name = pair.name;
 			lookup += name + "\n";
 			var pj = TreeView.makeProject(name, path);
 			FileSystem.access(path, FileSystemAccess.Exists, function(e) {

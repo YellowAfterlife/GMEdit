@@ -12,6 +12,7 @@ import gml.GmlVersion;
 import gml.Project;
 import gml.file.GmlFile;
 import gmx.SfGmx;
+import haxe.DynamicAccess;
 import js.lib.RegExp;
 import tools.Dictionary;
 import tools.Aliases;
@@ -448,7 +449,11 @@ class GmlExtLambda {
 		flush(q.pos);
 		return out;
 	}
-	static function postGMS1(d:GmlExtLambdaPost) {
+	public static var postMap:DynamicAccess<GmlExtLambdaPost->Void> = {
+		"gms1": postGMS1,
+		"gms2": postGMS2,
+	};
+	public static function postGMS1(d:GmlExtLambdaPost) {
 		var pj = d.project;
 		var ext = FileWrap.readGmxFileSync(pj.lambdaExt);
 		var file:SfGmx = null;
@@ -513,7 +518,7 @@ class GmlExtLambda {
 		}
 		if (extz) FileWrap.writeTextFileSync(pj.lambdaExt, ext.toGmxString());
 	}
-	static function postGMS2(d:GmlExtLambdaPost) {
+	public static function postGMS2(d:GmlExtLambdaPost) {
 		var pj = d.project;
 		var ext:YyExtension = FileWrap.readJsonFileSync(pj.lambdaExt);
 		var file = ext.files[0];
@@ -719,12 +724,10 @@ class GmlExtLambda {
 		// had no lambdas and still has no actual lambdas?:
 		if (data.list0.length == 0 && data.list1.length == 0) return out;
 		
-		switch (pj.version) { // verify that we can at all
-			case v1, v2: {}; // OK!
-			default: {
-				errorText = "Lambdas are not supported for this version of GM.";
-				return null;
-			};
+		var postFunc = postMap[pj.version.config.projectMode];
+		if (postFunc == null) {
+			errorText = "Lambdas are not supported for this version of GM.";
+			return null;
 		}
 		
 		// figure out what changed:
@@ -792,7 +795,7 @@ class GmlExtLambda {
 		if (pj.lambdaExt == null || pj.lambdaGml == null) {
 			errorText = 'Please add an extension called `$extensionName` to the project,'
 				+ " add a placeholder GML file to it, and reload (Ctrl+R) in GMEdit.";
-			if (pj.version == GmlVersion.v1) errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
+			if (pj.version.config.projectMode == "gms1") errorText += "\n\nAs this is GMS1, you'll also need to reload the project after you save a file with lambdas for the first time. Sorry about that.";
 			return null;
 		}
 		
@@ -803,14 +806,7 @@ class GmlExtLambda {
 		}
 		
 		// apply extension changes if lambdas were added/removed:
-		if (changed) switch (pj.version) {
-			case v1: postGMS1(data);
-			case v2: postGMS2(data);
-			default: {
-				errorText = "Lambdas are not supported in this version of GM.";
-				return null;
-			};
-		}
+		if (changed) postFunc(data);
 		
 		// ensure that the extension has an init function:
 		if (data.checkInit) {

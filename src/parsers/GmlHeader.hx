@@ -14,7 +14,7 @@ class GmlHeader {
 	private static var rx2 = new RegExp("^/// @(description|desc)?( .*)(?:\r?\n|$)");
 	public static function parse(code:String, version:GmlVersion):GmlHeaderData {
 		var mt:RegExpMatch, name:String = null;
-		if (version.hasJSDoc()) {
+		if (version.config.hasJSDoc) {
 			mt = rx2.exec(code);
 			if (mt != null) {
 				name = mt[2];

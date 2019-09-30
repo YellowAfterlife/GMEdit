@@ -192,7 +192,7 @@ class GmlExtArgsDoc {
 		return replace.length > 0 || remove.length > 0 || insert.length > 0;
 	}
 	public static function proc(file:GmlFile) {
-		if (Project.current.version.hasJSDoc()) {
+		if (Project.current.version.config.hasJSDoc) {
 			return proc2(file, ui.Preferences.current.argsFormat);
 		} else return proc1(file);
 	}

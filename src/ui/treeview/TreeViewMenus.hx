@@ -174,8 +174,8 @@ class TreeViewMenus {
 		var isFileDir = target.getAttribute(TreeView.attrFilter) == "file";
 		items.openExternally.visible = isFileDir;
 		items.openDirectory.visible = isFileDir;
-		items.showAPI.visible = switch (Project.current.version) {
-			case v1, v2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
+		items.showAPI.visible = switch (Project.current.version.config.projectModeId) {
+			case 1, 2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
 			default: false;
 		}
 		TreeViewItemMenus.update(true);
@@ -187,7 +187,7 @@ class TreeViewMenus {
 		var z:Bool;
 		target = el;
 		var kind = el.getAttribute(TreeView.attrKind);
-		z = gml.GmlAPI.version == v2 && kind == "shader";
+		z = gml.GmlAPI.version.config.projectModeId == 2 && kind == "shader";
 		items.shaderItems.forEach(function(q) q.visible = z);
 		//
 		z = kind == "project";

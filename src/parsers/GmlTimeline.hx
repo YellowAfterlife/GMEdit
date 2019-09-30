@@ -24,7 +24,7 @@ class GmlTimeline {
 				if (mmNext != "") errors += "There's code prior to first moment definition.\n";
 			} else {
 				if (sctName != null && sctName != "") {
-					var pfx:String = (version == GmlVersion.v2) ? "/// @desc" : "///";
+					var pfx:String = (version.hasJSDoc()) ? "/// @desc" : "///";
 					pfx += sctName + "\r\n";
 					mmNext = pfx + mmNext;
 					sctName = null;
@@ -68,7 +68,7 @@ class GmlTimeline {
 						q.skipLineEnd();
 						//
 						mmStart = q.pos;
-					} else if (q.substr(q.pos, 7) == "section" && version == GmlVersion.v1) {
+					} else if (q.substr(q.pos, 7) == "section" && version.config.hasEventSections) {
 						q.skip(7);
 						var nameStart = q.pos;
 						q.skipLine();

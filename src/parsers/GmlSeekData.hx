@@ -96,7 +96,7 @@ class GmlSeekData {
 		
 		// single-file programs don't do incremental changes
 		// because API context is changed on tab switch:
-		if (GmlAPI.version == GmlVersion.live) return;
+		if (GmlAPI.version.config.indexingMode == Local) return;
 		
 		// todo: it might be <a bit> faster to merge changes instead
 		

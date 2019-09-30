@@ -1,4 +1,14 @@
 {
+	"parent": "gml2",
+	"name": "GameMaker Studio 2",
+	
+	"docMode": "gms2",
+	"projectMode": "gms2",
+	"indexingMode": "gms2",
+	"loadingMode": "gms2",
+	"searchMode": "gms2",
+	
+	"projectRegex": "(^.+)\\.yyp$",
 	"helpURL": "http://docs2.yoyogames.com/?tab=i&page=$1",
 	"helpIndex": "helpindexdat.js"
 }

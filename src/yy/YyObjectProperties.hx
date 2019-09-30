@@ -99,8 +99,8 @@ class YyObjectProperties {
 					} catch (_:Dynamic) { }
 				}
 				//
-				var q = new GmlReader(x, v2);
-				q.skipVarExpr(v2, -1);
+				var q = new GmlReader(x, gml.GmlVersion.v2);
+				q.skipVarExpr(gml.GmlVersion.v2, -1);
 				if (q.eof) {
 					return "(" + x + ")";
 				} else {
@@ -156,7 +156,7 @@ class YyObjectProperties {
 						while (q.loop) {
 							var start = q.pos;
 							do {
-								q.skipVarExpr(v2, ','.code);
+								q.skipVarExpr(gml.GmlVersion.v2, ','.code);
 								if (q.loop) {
 									if (q.peek() == ",".code) {
 										break;
@@ -499,7 +499,7 @@ class YyObjectProperties {
 				return Std.string(x);
 			}
 		}
-		var error = GmlObjectProperties.parse(code, v2, varProc, propProc);
+		var error = GmlObjectProperties.parse(code, gml.GmlVersion.v2, varProc, propProc);
 		o.properties = props.length > 0 ? props : null;
 		return error;
 	}
