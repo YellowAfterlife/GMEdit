@@ -41,7 +41,7 @@ class RawLoader {
 	}
 	public static function run(project:Project) {
 		TreeView.clear();
-		var topLevel = TreeView.makeAssetDir(project.name, "", "file");
+		var topLevel = TreeView.makeAssetDir(project.displayName, "", "file");
 		topLevel.classList.add(TreeView.clOpen);
 		TreeView.element.appendChild(topLevel);
 		loadDirRec(project, topLevel.treeItems, "");
