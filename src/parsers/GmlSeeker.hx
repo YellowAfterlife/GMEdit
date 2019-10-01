@@ -162,7 +162,8 @@ class GmlSeeker {
 									out.compList.push(mf.comp);
 									out.compMap.set(name, mf.comp);
 									out.kindList.push(name);
-									out.kindMap.set(name, "macro.function");
+									var tokenType = ace.AceMacro.jsOrx(json.token, "macro.function");
+									out.kindMap.set(name, tokenType);
 									var mfd = new GmlFuncDoc(name, name + "(", ")", mf.args, false);
 									out.docList.push(mfd);
 									out.docMap.set(name, mfd);
@@ -412,11 +413,13 @@ class GmlSeeker {
 								out.kindMap.set(name, "macro");
 							}
 						}
+						//
 						var i = name.indexOf("_mf");
-						if (!out.mfuncMap.exists(name.substring(0, i))) {
+						if (i < 0 || !out.mfuncMap.exists(name.substring(0, i))) {
 							out.compList.push(m.comp);
 							out.compMap.set(name, m.comp);
 						}
+						//
 						out.macroList.push(m);
 						out.macroMap.set(name, m);
 						setLookup(name, true);

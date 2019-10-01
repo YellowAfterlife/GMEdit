@@ -240,12 +240,13 @@ class GmlExtMFunc {
 							var nameEnd = line.indexOf(" ");
 							var name = line.substring(0, nameEnd);
 							var json:GmlExtMFuncData
-								= Json.parse(line.substring(nameEnd + 1));
+								= Json.parse(line.substring(nameEnd + 1));	
 							var args:Array<String> = json.args;
 							var order = json.order;
 							var ok = false;
 							//
 							var mf = "#mfunc " + name + "(" + args.join(",") + ")";
+							if (json.token != null) mf += " as " + Json.stringify(json.token);
 							var i = 0;
 							var n = order.length;
 							var pre = "#macro " + name + "_mf";
@@ -523,7 +524,45 @@ class GmlExtMFunc {
 								 + '` in arguments for $name');
 						}
 					}
-					if (!argsOK) return error('Expected a `(` after $name\'s arguments');
+					if (!argsOK) return error('Expected a `)` after $name\'s arguments');
+					
+					//
+					var tokenType:String = null;
+					do {
+						var ttp = q.pos;
+						var ttl = q.length;
+						var ttc:tools.CharCode;
+						while (ttp < ttl) {
+							ttc = q.get(ttp);
+							if (ttc.isSpace0()) ttp++; else break;
+						}
+						//
+						if (q.get(ttp++) != "a".code) break;
+						if (q.get(ttp++) != "s".code) break;
+						if (q.get(ttp).isIdent1_ni()) break; // asz
+						//
+						while (ttp < ttl) {
+							ttc = q.get(ttp);
+							if (ttc.isSpace0()) ttp++; else break;
+						}
+						//
+						if (q.get(ttp++) != '"'.code) break;
+						var ttStart = ttp;
+						var ttEnd = ttStart;
+						while (ttp < ttl) {
+							ttc = q.get(ttp++);
+							switch (ttc) {
+								case '"'.code: ttEnd = ttp - 1; break;
+								case '\r'.code, '\n'.code: {
+									return error('Unclosed token type for #mfunc $name');
+								};
+							}
+						}
+						if (ttEnd == ttStart) return error('Unclosed token type for #mfunc $name');
+						//
+						tokenType = q.substring(ttStart, ttEnd);
+						q.pos = ttp;
+					} while (false);
 					
 					// the time has come to read the macro value
 					var argStart = q.pos;
@@ -641,6 +680,7 @@ class GmlExtMFunc {
 						args: argFulls,
 						order: order,
 					};
+					if (tokenType != null) json.token = tokenType;
 					var mf = new GmlExtMFunc(name, json);
 					nextMap.set(name, mf);
 					out += '//!#mfunc $name ' + Json.stringify(json) + mfArgs;
@@ -681,6 +721,9 @@ typedef GmlExtMFuncData = {
 	
 	/** [1,0,1] for `#mfunc some(a,b) [b,a,b]`*/
 	var order:Array<GmlExtMFuncOrder>;
+	
+	/** Optional - ace token type */
+	var ?token:String;
 }
 abstract GmlExtMFuncOrder(Dynamic) {
 	//

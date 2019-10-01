@@ -222,7 +222,7 @@ using tools.NativeArray;
 		var rPragma_call:AceLangRule = {
 			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
 				'("global"|\'global\')(\\s*)(,)(\\s*)(@?)("|\')',
-			onMatch: function(value:String, state:String, stack:Array<String>, line:String) {
+			onMatch: function(value:String, state:String, stack:Array<String>, line:String, row) {
 				var values:Array<String> = jsThis.splitRegex.exec(value);
 				stack.push(state);
 				jsThis.nextState = values[10] == '"' ? "gml.pragma.dq" : "gml.pragma.sq";
@@ -434,10 +434,33 @@ using tools.NativeArray;
 		}
 		//}
 		//{ #mfunc
-		var rMFunc_decl = [
+		var rMFunc_decl:Array<AceLangRule> = [
 			rxRule("identifier", ~/(?:[a-zA-Z_]\w*|\.\.\.)/),
 			rxRule("punctuation.operator", ~/,/),
 			rxRule("text", ~/$/, "pop"),
+			{
+				regex: '(\\))(\\s*)(as)(\\s+)("[^"]*?(?:"|$))',
+				onMatch: function(value:String, curr:String, st, line:String, row) {
+					var values = (jsThis:AceLangRule).splitRegex.exec(value);
+					var t = values[5];
+					if (t.endsWith('"')) {
+						t = t.substring(1, t.length - 1);
+					} else t = t.substring(1, t.length);
+					return [
+						rtk("paren.rparen", values[1]),
+						rtk("text", values[2]),
+						rtk("keyword", values[3]),
+						rtk("text", values[4]),
+						rtk(t, values[5]),
+					];
+				},
+				next: "gml.mfunc",
+			},
+			rulePairs([
+				"\\)", "paren.rparen",
+				"\\s*", "text",
+				"as", "keyword",
+			], "gml.mfunc"),
 			rxRule("paren.rparen", ~/\)/, "gml.mfunc"),
 		];
 		// EOL exits the mfunc state unless it's escaped
@@ -448,7 +471,7 @@ using tools.NativeArray;
 		var rMFuncEOL:AceLangRule = null;
 		rMFuncEOL = {
 			regex: "$",
-			onMatch: function(value:String, currentState:String, stack:Array<String>, line:String) {
+			onMatch: function(value:String, currentState:String, stack:Array<String>, line:String, row) {
 				rMFuncEOL.next = line.endsWith("\\") ? null : rMFuncEOL_pop;
 				return "text";
 			}
