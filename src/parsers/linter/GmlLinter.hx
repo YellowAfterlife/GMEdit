@@ -412,7 +412,10 @@ class GmlLinter {
 							}
 							//
 							var mf = GmlAPI.gmlMFuncs[nv];
-							if (mf != null) return retv(KMFunc, nv);
+							if (mf != null) {
+								if (GmlLinterMFunc.read(this, q, nv)) return KEOF;
+								break;
+							}
 							// expand macros:
 							var mcr = GmlAPI.gmlMacros[nv];
 							if (mcr != null) {
@@ -677,7 +680,6 @@ class GmlLinter {
 			};
 			case KSqbOpen: rc(readArgs(newDepth, true) < 0);
 			case KLambda: rc(readLambda(newDepth));
-			case KMFunc: return GmlLinterMFunc.read(newDepth, this, flags);
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
 				if (skipIf(peek() == KCubClose)) {
 					// empty!

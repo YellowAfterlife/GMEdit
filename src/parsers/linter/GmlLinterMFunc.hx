@@ -16,11 +16,8 @@ using tools.NativeString;
  */
 @:access(parsers.linter.GmlLinter)
 class GmlLinterMFunc {
-	public static function read(oldDepth:Int, self:GmlLinter, flags:GmlLinterReadFlags) {
-		var newDepth = oldDepth + 1;
-		var mfName = self.nextVal;
+	public static function read(self:GmlLinter, q:GmlReaderExt, mfName:String) {
 		var mf = GmlAPI.gmlMFuncs[mfName];
-		var q = self.reader;
 		q.skipSpaces0();
 		if (q.read() != "(".code) return self.readExpect('a `(` after an #mfunc $mfName');
 		var mfStart = q.pos;
@@ -136,10 +133,6 @@ class GmlLinterMFunc {
 		}
 		q.pushSource(mfPre + "0", mfPre + "0");
 		q.showOnStack = false;
-		
-		//
-		if (flags.has(AsStat)) {
-			return self.readStat(newDepth, flags.without(AsStat));
-		} else return self.readExpr(newDepth, flags);
+		return false;
 	}
 }

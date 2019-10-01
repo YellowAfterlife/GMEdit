@@ -108,7 +108,6 @@ enum abstract GmlLinterKind(Int) {
 	
 	// syntax extensions:
 	var KMFuncDecl; // #mfunc
-	var KMFunc; // by-name ref, val
 	var KArgs;
 	var KLambda;
 	var KLamDef;
