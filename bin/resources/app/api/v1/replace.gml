@@ -84,3 +84,12 @@ phy_col_normal_y*@
 phy_position_xprevious*@
 phy_position_yprevious*@
 
+argument_relative*&
+instance_destroy(?id, ?execute_destroy_event)
+script_execute(script, ...arguments)
+mean(...values)
+choose(...values)
+median(...values)
+min(...values)
+max(...values)
+external_call(func_id, ...arguments)
