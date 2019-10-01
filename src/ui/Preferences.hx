@@ -10,6 +10,7 @@ import haxe.DynamicAccess;
 import haxe.Json;
 import haxe.io.Path;
 import js.html.Element;
+import js.html.FieldSetElement;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import js.html.MouseEvent;
@@ -53,7 +54,7 @@ class Preferences {
 		return mm;
 	}
 	//
-	public static function addGroup(out:Element, legend:String) {
+	public static function addGroup(out:Element, legend:String):FieldSetElement {
 		var fs = document.createFieldSetElement();
 		fs.classList.add("group");
 		var lg = document.createLegendElement();
@@ -218,6 +219,7 @@ class Preferences {
 	public static function addWiki(to:Element, url:String, label:String = "wiki") {
 		var lb:Element = to.querySelector("legend");
 		if (lb == null) lb = to.querySelector("label");
+		if (lb == null) lb = to;
 		lb.appendChild(document.createTextNode(" ("));
 		lb.appendChild(createShellAnchor(url, label));
 		lb.appendChild(document.createTextNode(")"));
