@@ -106,14 +106,13 @@ class GmlLinterMFunc {
 				case Plain: {};
 				case Quoted: {
 					// it's a valid string, do we care
-					q.pushSource("", mcArgContext);
+					q.pushSource('"`magic`"', mcArgContext);
 				};
 				case Magic: {
-					var p0 = q.pos;
-					q.pos = mfStart;
-					q.pushSource(GmlExtMFunc.magicMap[ord.asArray()[1]](self.editor, q),
-						'magic[${ord.asArray()[1]}] in $mfName in $mcArgContext');
-					q.pos = p0;
+					// note: doesn't pass valid reader state into magicMap handler,
+					// but that's OK for the time being
+					var mv = GmlExtMFunc.magicMap[ord.asArray()[1]](self.editor, q);
+					q.pushSource(mv, 'magic[${ord.asArray()[1]}] in $mfName in $mcArgContext');
 				};
 				case Pre, Post, PrePost: {
 					ai = ord.arg;
