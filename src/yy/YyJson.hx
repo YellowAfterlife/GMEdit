@@ -55,7 +55,10 @@ class YyJson {
 	
 	static inline var indentString:String = "    ";
 	static function stringify_rec(obj:Dynamic, indent:Int):String {
-		if (Std.is(obj, String)) {
+		if (obj == null) { // also hits "undefined"
+			return "null";
+		}
+		else if (Std.is(obj, String)) {
 			return stringify_string(obj);
 		}
 		else if (Std.is(obj, Array)) {
