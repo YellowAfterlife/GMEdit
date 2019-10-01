@@ -371,19 +371,19 @@ class GmlSeeker {
 					p = q.pos;
 					q.skipIdent1();
 					name = q.substring(p, q.pos);
-					q.skipSpaces0();
 					// `#macro Config:name`?
 					var cfg:String;
 					if (q.peek() == ":".code) {
-						cfg = name;
 						q.skip();
-						q.skipSpaces0();
-						c = q.peek(); if (!c.isIdent0()) continue;
-						p = q.pos;
-						q.skipIdent1();
-						name = q.substring(p, q.pos);
-						q.skipSpaces0();
+						c = q.peek();
+						if (c.isIdent0()) {
+							p = q.pos;
+							q.skipIdent1();
+							cfg = name;
+							name = q.substring(p, q.pos);
+						} else cfg = null;
 					} else cfg = null;
+					q.skipSpaces0();
 					// value:
 					p = q.pos;
 					s = "";
