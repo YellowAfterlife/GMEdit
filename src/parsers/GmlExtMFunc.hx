@@ -433,6 +433,12 @@ class GmlExtMFunc {
 						c = q.peek(); if (c.isIdent1()) out += " ";
 						return out;
 					};
+					case "/".code: switch (q.peek()) {
+						case "/".code: q.skipLine();
+						case "*".code: q.skip(); q.skipComment();
+						default:
+					};
+					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
 					case ",".code: if (depth == 1) {
 						flushArg(p);
 						start = q.pos;
