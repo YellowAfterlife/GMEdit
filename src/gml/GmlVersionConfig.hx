@@ -131,7 +131,7 @@ class GmlVersionConfigDefaults {
 			helpURL: null,
 			helpIndex: null,
 			//
-			indexingMode: null,
+			indexingMode: Directory,
 			loadingMode: "directory",
 			searchMode: "directory",
 			projectMode: null,
