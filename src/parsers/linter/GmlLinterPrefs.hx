@@ -12,6 +12,7 @@ package parsers.linter;
 		requireParentheses: false,
 		noSingleEquals: false,
 		blockScopedVar: false,
+		requireFunctions: true,
 	};
 }
 typedef GmlLinterPrefsImpl = {
@@ -21,4 +22,5 @@ typedef GmlLinterPrefsImpl = {
 	?requireParentheses:Bool,
 	?noSingleEquals:Bool,
 	?blockScopedVar:Bool,
+	?requireFunctions:Bool,
 }

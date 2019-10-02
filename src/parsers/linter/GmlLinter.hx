@@ -85,12 +85,14 @@ class GmlLinter {
 	var optNoSingleEqu:Bool;
 	var optRequireParentheses:Bool;
 	var optBlockScopedVar:Bool;
+	var optRequireFunctions:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
 		optNoSingleEqu = getOption((q) -> q.noSingleEquals);
 		optRequireParentheses = getOption((q) -> q.requireParentheses);
 		optBlockScopedVar = getOption((q) -> q.blockScopedVar);
+		optRequireFunctions = getOption((q) -> q.requireFunctions);
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -586,7 +588,9 @@ class GmlLinter {
 				// perhaps it's a hidden extension function? we don't add them to extDoc
 				minArgs = GmlAPI.extArgc[currName];
 				if (minArgs == null) {
-					addWarning('`$currName` doesn\'t seem to be a valid function');
+					if (optRequireFunctions) {
+						addWarning('`$currName` doesn\'t seem to be a valid function');
+					}
 					continue;
 				}
 				if (minArgs < 0) {
