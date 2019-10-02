@@ -16,7 +16,7 @@ import tools.macros.PrefLinterMacros.*;
  */
 class PrefLinter {
 	static var selectOpts:Array<String> = ["inherit", "on", "off"];
-	static var selectVals:Array<Bool> = [js.Lib.undefined, true, false];
+	static var selectVals:Array<Bool> = [null, true, false];
 	public static function build(out:Element, project:Project) {
 		out = addGroup(out, "Linter");
 		out.id = "pref-linter";
@@ -49,6 +49,7 @@ class PrefLinter {
 				if (parentValue == null) parentValue = defValue;
 				options[0] += ' (➜ ' + (parentValue ? "on" : "off") + ")";
 				//
+				if (initialValue == null) initialValue = null; // undefined -> null
 				var initialOption = options[values.indexOf(initialValue)];
 				return addDropdown(out, name, initialOption, options, function(s) {
 					var z = values[options.indexOf(s)];
