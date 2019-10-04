@@ -72,5 +72,7 @@ class PrefLinter {
 		addf("Warn about missing functions", opt.requireFunctions);
 		el = addf("Treat `var` as block-scoped", opt.blockScopedVar);
 		el.title = "You can also use `#macro const var` and `#macro let var`";
+		el = addf("Treat `case` as block-scoped", opt.blockScopedCase);
+		el.title = "Allows cases to redefine block-scoped variables inside cases, but variables in fall-through cases will not be considered accessible in subsequent case(s)";
 	}
 }

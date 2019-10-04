@@ -86,12 +86,14 @@ class GmlLinter {
 	var optRequireParentheses:Bool;
 	var optBlockScopedVar:Bool;
 	var optRequireFunctions:Bool;
+	var optBlockScopedCase:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
 		optNoSingleEqu = getOption((q) -> q.noSingleEquals);
 		optRequireParentheses = getOption((q) -> q.requireParentheses);
 		optBlockScopedVar = getOption((q) -> q.blockScopedVar);
+		optBlockScopedCase = getOption((q) -> q.blockScopedCase);
 		optRequireFunctions = getOption((q) -> q.requireFunctions);
 	}
 	//{
@@ -832,6 +834,15 @@ class GmlLinter {
 		return false;
 	}
 	
+	function discardBlockScopes(newDepth:Int):Void {
+		while (localNamesPerDepth.length > newDepth) {
+			var arr = localNamesPerDepth.pop();
+			if (arr != null) {
+				for (name in arr) localKinds[name] = KGhostVar;
+			}
+		}
+	}
+	
 	var canBreak = false;
 	var canContinue = false;
 	function readLoopStat(oldDepth:Int, flags:GmlLinterReadFlags = None):FoundError {
@@ -848,6 +859,15 @@ class GmlLinter {
 	function readSwitch(oldDepth:Int):FoundError {
 		var newDepth = oldDepth + 1;
 		rc(readCheckSkip(KCubOpen, "an opening `{` for switch-block"));
+		//
+		var isInCase = false;
+		inline function resetCase():Void {
+			if (isInCase) {
+				if (optBlockScopedCase) discardBlockScopes(newDepth);
+				isInCase = false;
+			}
+		}
+		//
 		seqStart.setTo(reader);
 		var hasDefault = false;
 		var q = reader;
@@ -862,13 +882,16 @@ class GmlLinter {
 					if (hasDefault) return readError("That's default-case redefinition");
 					hasDefault = true;
 					rc(readCheckSkip(KColon, "a colon after default-case"));
+					resetCase();
 				};
 				case KCase: {
 					skip();
 					rc(readExpr(newDepth));
 					rc(readCheckSkip(KColon, "a colon after a case"));
+					resetCase();
 				};
 				default: {
+					isInCase = true;
 					rc(readStat(newDepth));
 				};
 			}
@@ -1094,12 +1117,7 @@ class GmlLinter {
 			addWarning("Expected a semicolon after a statement (" + mainKind.getName() + ")");
 		}
 		//
-		while (localNamesPerDepth.length > newDepth) {
-			var arr = localNamesPerDepth.pop();
-			if (arr != null) {
-				for (name in arr) localKinds[name] = KGhostVar;
-			}
-		}
+		discardBlockScopes(newDepth);
 		//
 		return false;
 	}
