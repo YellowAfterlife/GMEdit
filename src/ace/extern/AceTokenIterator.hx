@@ -11,7 +11,6 @@ package ace.extern;
 	function getCurrentTokenPosition():AcePos;
 	function stepBackward():AceToken;
 	function stepForward():AceToken;
-	inline function getCurrentTokenRow():Int {
-		return getCurrentTokenPosition().row;
-	}
+	function getCurrentTokenRow():Int;
+	function getCurrentTokenColumn():Int;
 }
