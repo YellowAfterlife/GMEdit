@@ -14,7 +14,15 @@ using StringTools;
 class GmlExtArgsDoc {
 	static var rxGmDoc = new RegExp("^(///\\s*\\w*\\()(.*?)(\\).*)$");
 	static var rxAfter = new RegExp("^///\\s*@(?:func|function|description|desc)");
-	static var rxArg = new RegExp("^(///\\s*(@(?:arg|param|argument))\\s+(\\S+)\\s*)(.*)");
+	static var rxArg = new RegExp("^(///" // 1 -> until text
+		+ "(\\s*)" // 2 -> pre-meta
+		+ "(@(?:arg|param|argument))" // 3 -> meta
+		+ "(\\s+)" // 4 -> post-meta
+		+ "(?:{(.+?)}(\\s+))?" // 5 -> ?type, 6 -> ?post type
+		+ "(\\S+)" // 7 -> name
+		+ "(\\s*)" // 8 -> after name
+		+ ")(.*)" // 9 -> text
+	);
 	/** Modifies `/// func(...args)` line as per #args */
 	public static function proc1(file:GmlFile):Bool {
 		var session = file.getAceSession();
@@ -100,10 +108,13 @@ class GmlExtArgsDoc {
 	public static function proc2(file:GmlFile, meta:String):Bool {
 		var session = file.getAceSession();
 		if (session.getValue().indexOf("#args") < 0) return false;
+		var beforeMeta = " ";
+		var afterMeta = " ";
 		var argData = GmlExtArgs.argData;
 		var curr = argData[""];
 		var names = curr.names;
 		var texts = curr.texts;
+		var types = curr.types;
 		var aceDoc = session.doc;
 		var iter = new AceTokenIterator(session, 0, 0);
 		var tk = iter.getCurrentToken();
@@ -126,7 +137,10 @@ class GmlExtArgsDoc {
 					row = lastRow + 1;
 					var text = texts[i];
 					if (text != "") text = " " + text;
-					insert.push({ row: row, text: '/// $meta ${names[i]}' + text });
+					text = " " + names[i] + text;
+					var type = types[i];
+					if (type != "") text = ' {$type}' + text;
+					insert.push({ row: row, text: '/// ' + meta + text });
 					addOffset += 1;
 					changed = true;
 				} else row += addOffset;
@@ -142,24 +156,47 @@ class GmlExtArgsDoc {
 					} else {
 						var mt = rxArg.exec(val);
 						if (mt != null) {
-							meta = mt[2];
-							var name = mt[3];
-							var text = mt[4];
+							var untilText = mt[1];
+							// makes sure that new doc lines use the same convention
+							beforeMeta = mt[2];
+							meta = mt[3];
+							afterMeta = mt[4];
+							var type = mt[5]; if (type == null) type = "";
+							var afterType = mt[6]; if (afterType == null) afterType = " ";
+							var name = mt[7];
+							var afterName = mt[8];
+							if (afterName == "") afterName = " ";
+							var text = mt[9];
+							//
 							var index = names.indexOf(name);
 							var row = iter.getCurrentTokenRow() - delOffset;
-							if (index >= 0) {
-								rows[index] = row;
-								if (text != texts[index] && (
-									text == "" || text.startsWith("= ")
-								)) {
-									replace.push({
-										range: iter.getCurrentTokenRange(),
-										next: mt[1] + texts[index]
-									});
-								}
-							} else {
+							if (index < 0) {
+								// argument not used anymore
 								remove.push(new AceRange(0, row, 0, row + 1));
 								delOffset += 1;
+							} else {
+								rows[index] = row;
+								var updateDoc = false;
+								//
+								if (text != texts[index] && (
+									// (we leave handwritten docs alone)
+									text == "" || text.startsWith("= ")
+								)) {
+									text = texts[index];
+									updateDoc = true;
+								}
+								//
+								if (type != types[index]) {
+									type = types[index];
+									updateDoc = true;
+								}
+								//
+								if (updateDoc) replace.push({
+									range: iter.getCurrentTokenRange(),
+									next: "///" + beforeMeta + meta + afterMeta
+										+ (type != "" ? '{' + type + '}' + afterType : '')
+										+ name + (text != "" ? afterName + text : "")
+								});
 							}
 						}
 					}

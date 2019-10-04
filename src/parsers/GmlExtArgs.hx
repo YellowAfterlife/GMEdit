@@ -258,8 +258,9 @@ class GmlExtArgs {
 		if (!Preferences.current.argsMagic || code.indexOf("#args") < 0) return code;
 		var data = new Dictionary();
 		var argNames:Array<String> = [];
+		var argTypes:Array<String> = [];
 		var argTexts:Array<String> = [];
-		var curr = { names: argNames, texts: argTexts };
+		var curr:GmlExtArgData = { names: argNames, texts: argTexts, types: argTypes };
 		data.set("", curr);
 		//
 		var q = new GmlReader(code);
@@ -300,7 +301,7 @@ class GmlExtArgs {
 				p = q.pos;
 				q.skipIdent1();
 				var name = q.substring(p, q.pos);
-				var type = "";
+				var type = "", docType:String = "";
 				if (name == "") return error("Expected an argument name");
 				docName += name;
 				//
@@ -313,11 +314,10 @@ class GmlExtArgs {
 					q.skipIdent1();
 					if (q.pos > typePos) {
 						if (q.peek() == "<".code) q.skipTypeParams();
-						type = "/*:" + q.substring(typePos, q.pos) + "*/";
-					} else type = "";
-					type = q.substring(typePos, q.pos);
-					if (type != "") type = "/*:" + type + "*/";
-					q.skipSpaces0();
+						docType = q.substring(typePos, q.pos);
+						type = "/*:" + docType + "*/";
+						q.skipSpaces0();
+					}
 				}
 				if (q.peek() == "=".code) {
 					if (val != null) return error('?$name means that default value is undefined, why assign another default value after that');
@@ -371,6 +371,7 @@ class GmlExtArgs {
 					out += '$name$type = argument' + (hasOpt ? '[$found]' : "" + found);
 				}
 				argNames.push(docName);
+				argTypes.push(docType);
 				argTexts.push(docText);
 				found += 1;
 				q.skipSpaces0();
@@ -388,6 +389,7 @@ class GmlExtArgs {
 			}
 			if (hasTail) {
 				argNames.push("...");
+				argTypes.push("");
 				argTexts.push("");
 			}
 			if (found > 0 && reqDone == false) out += ";\r\n";
@@ -421,8 +423,9 @@ class GmlExtArgs {
 						q.skipIdent1();
 						//
 						argNames = [];
+						argTypes = [];
 						argTexts = [];
-						curr = { names: argNames, texts: argTexts };
+						curr = { names: argNames, texts: argTexts, types: argTypes };
 						data.set(q.substring(p, q.pos), curr);
 						//
 						q.skipLine();
@@ -437,5 +440,6 @@ class GmlExtArgs {
 }
 typedef GmlExtArgData = {
 	names:Array<String>,
+	types:Array<String>,
 	texts:Array<String>,
 };
