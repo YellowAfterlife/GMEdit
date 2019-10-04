@@ -64,7 +64,7 @@ class RawLoader {
 			// is a script
 			var name = full.ptNoDir().ptNoExt();
 			GmlSeeker.run(full, name, file.kind.gml.KGmlScript.inst);
-			GmlAPI.gmlKind[name] = "script";
+			GmlAPI.gmlKind[name] = "asset.script";
 			var comp = new AceAutoCompleteItem(name, "script");
 			GmlAPI.gmlComp.push(comp);
 			GmlAPI.gmlAssetComp.set(name, comp);
