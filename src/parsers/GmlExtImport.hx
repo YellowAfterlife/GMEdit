@@ -34,7 +34,18 @@ class GmlExtImport {
 		//+ "|([\\w]\\(.*\\))[ \t]+(?:in|as)[ \t]+([\\w]\\(.*\\))" // func(...) in func(...)
 	+ ")"), "");
 	private static var rxImportFile = new RegExp("^#import[ \t]+(\"[^\"]*\"|'[^']*')", "");
-	public static inline var rsLocalType = "/\\*[ \t]*:[ \t]*(\\w+(?:<.*?>)?)\\*/";
+	
+	private static inline var rsLocalType_c = "[ \t]*:[ \t]*";
+	
+	/** `Type` or `Type<Param>` */
+	private static inline var rsLocalType_t = "\\w+(?:[ \t]*<.*?>)?";
+	
+	/** matches `:Type` (inc. comment-closured), adds a group for `Type` */
+	public static inline var rsLocalType = ('(?:'
+		+ '(?=\\/\\*$rsLocalType_c$rsLocalType_t\\*\\/)\\/\\*|' // permit `/*:Type*/`
+		+ '(?!$rsLocalType_c$rsLocalType_t\\*\\/)' // forbid `:Type*/`
+	+ ')$rsLocalType_c($rsLocalType_t)(?:\\*\\/)?');
+	
 	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
 	private static var rxPeriod = new RegExp("\\.", "g");
 	
