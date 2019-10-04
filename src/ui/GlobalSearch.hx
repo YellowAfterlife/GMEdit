@@ -373,7 +373,6 @@ using tools.HtmlTools;
 		cbCheckHeaders = element.querySelectorAuto('#global-search-check-headers');
 		cbCheckComments = element.querySelectorAuto('#global-search-check-comments');
 		cbCheckTimelines = element.querySelectorAuto('#global-search-check-timelines');
-		cbCheckRooms = element.querySelectorAuto('#global-search-check-rooms');
 		cbCheckMacros = element.querySelectorAuto('#global-search-check-macros');
 		cbCheckShaders = element.querySelectorAuto('#global-search-check-shaders');
 		cbCheckExtensions = element.querySelectorAuto('#global-search-check-extensions');
