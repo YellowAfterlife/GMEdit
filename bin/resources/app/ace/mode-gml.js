@@ -114,13 +114,14 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 	
-	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#moment\b|#section\b|#region\b|#target\b/;
+	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#moment\b|#section\b|#region\b|#target\b|^\s*(?:case|default)\b/;
 	this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
 	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
 	this.startRegionRe = /^\s*(\/\*|\/\/)#region\b/;
 	this.startBlockRe = /^\s*#region\b/;
 	this.startScriptRe = /^(?:#define|#event|#section|#moment|#target)\b/;
+	this.startCaseRe = /^\s*(case|default)\b/;
 	this._getFoldWidgetBase = this.getFoldWidget;
 	this.getFoldWidget = function(session, foldStyle, row) {
 		var line = session.getLine(row);
@@ -142,10 +143,12 @@ oop.inherits(FoldMode, BaseFoldMode);
 		var line = session.getLine(row);
 		
 		if (this.startScriptRe.test(line)) return this.getScriptRegionBlock(session, line, row);
+		var match = line.match(this.startCaseRe);
+		if (match) return this.getCaseRegionBlock(session, line, row, match[0].length);
 		if (this.startBlockRe.test(line)) return this.getCodeRegionBlock(session, line, row);
 		if (this.startRegionRe.test(line)) return this.getCommentRegionBlock(session, line, row);
 		
-		var match = line.match(this.foldingStartMarker);
+		match = line.match(this.foldingStartMarker);
 		if (match) {
 			var i = match.index;
 
@@ -271,6 +274,34 @@ oop.inherits(FoldMode, BaseFoldMode);
 			return new Range(startRow, startCol, endRow - 1, session.getLine(endRow - 1).length);
 		}
 	};
+	this.getCaseRegionBlock = function(session, line, row, col) {
+		var iter = new AceTokenIterator(session, row, col);
+		var tk = iter.stepForward();
+		var depth = 0;
+		while (tk) {
+			switch (tk.type) {
+				case "curly.paren.lparen": depth++; break;
+				case "curly.paren.rparen":
+					if (--depth < 0) {
+						var endRow = iter.getCurrentTokenRow() - 1;
+						return new Range(row, line.length,
+							endRow, session.getLine(endRow).length);
+					}
+					break;
+				case "keyword":
+					switch (tk.value) {
+						case "case": case "default":
+							var endRow = iter.getCurrentTokenRow() - 1;
+							return new Range(row, line.length,
+								endRow, session.getLine(endRow).length);
+					}
+					break;
+			}
+			console.log(tk);
+			tk = iter.stepForward();
+		}
+		return null;
+	}
 
 }).call(FoldMode.prototype);
 
