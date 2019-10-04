@@ -275,7 +275,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 		}
 	};
 	this.getCaseRegionBlock = function(session, line, row, col) {
-		var iter = new AceTokenIterator(session, row, col);
+		var iter = new AceTokenIterator(session, row, line.length);
 		var tk = iter.stepForward();
 		var depth = 0;
 		while (tk) {
