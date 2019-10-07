@@ -127,7 +127,17 @@ using tools.NativeArray;
 								ns = imp.namespaces[object];
 								if (ns != null) {
 									objType = "namespace";
-									fdType = jsOr(ns.kind[field], "identifier");
+									fdType = ns.kind[field];
+									if (fdType == null) {
+										fdType = "identifier";
+										var e1 = imp.longenEnum[object];
+										if (e1 != null) {
+											en = GmlAPI.gmlEnums[e1];
+											if (en != null) {
+												fdType = en.items[field] ? "enumfield" : "identifier";
+											}
+										}
+									}
 								} else {
 									var e1 = imp.longenEnum[object];
 									if (e1 != null) {
