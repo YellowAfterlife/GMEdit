@@ -314,8 +314,8 @@ class GmlExtImport {
 					if (q.substring(selfDot, q.pos) != selfEnum.lastItem) break;
 					q.skipSpaces1();
 					if (q.read() != ")".code) break;
-					return selfEnumName + "()";
-					break;
+					//
+					return AceMacro.jsOrx(imp.shorten[selfEnumName], selfEnumName) + "()";
 				}
 				var selfNs = imp.namespaces[selfType];
 				if (selfNs == null) break;
