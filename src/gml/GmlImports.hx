@@ -175,6 +175,7 @@ class GmlImports {
 						if (c != null) ns.shorten.remove(c);
 						ns.longen.set(name, full);
 						ns.shorten.set(full, name);
+						ns.kind.set(name, "enumfield");
 					}
 				}
 				longenEnum.set(short, long);
