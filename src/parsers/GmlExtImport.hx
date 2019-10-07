@@ -227,11 +227,11 @@ class GmlExtImport {
 		return false;
 	}
 	/** `var v:Enum`, "v[Enum.field]" -> "v.field" */
-	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, t:String, p0:Int):String {
-		var ns:GmlNamespace = imp.namespaces[t];
+	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, typeName:String, p0:Int):String {
+		var ns:GmlNamespace = imp.namespaces[typeName];
 		var e:GmlEnum;
 		if (ns == null) {
-			e = GmlAPI.gmlEnums[t];
+			e = GmlAPI.gmlEnums[typeName];
 			if (e == null) return null;
 		} else e = null;
 		// spaces between `$id` and `[`
@@ -258,7 +258,7 @@ class GmlExtImport {
 				if (indexField == null) return null; // must be a member of namespace
 			}
 		} else {
-			if (index1 != t) return null; // must be <enum name>
+			if (index1 != typeName) return null; // must be <enum name>
 			if (q.read() != ".".code) return null;
 			var indexDot = q.pos;
 			q.skipIdent1();
