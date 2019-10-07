@@ -427,6 +427,10 @@ class GmlExtImport {
 								flush(d.type0);
 								if (d.type != null) {
 									imp.localTypes.set(d.name, d.type);
+									if (imp.kind[d.type] == "enum") {
+										// convert enum to namespace if used as one
+										imp.ensureNamespace(d.type);
+									}
 									out += ":" + d.type;
 								}
 								out += q.substring(d.type1, d.expr0);
