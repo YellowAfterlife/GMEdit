@@ -480,25 +480,42 @@ class GmlExtImport {
 	
 	public static var post_numImports = 0;
 	static var post_procIdent_p1:Int = 0;
-	static function post_procIdent(q:GmlReader, imp:GmlImports, p0:Int, dot:Int, full:String) {
-		var p1 = q.pos;
-		var one:String = dot != -1 ? q.substring(p0, dot) : null;
+	static var post_procIdent_peeker:GmlReaderExt = new GmlReaderExt("", gml.GmlVersion.none);
+	/**
+	 * @param	reader
+	 * @param	imp
+	 * @param	p0	`¦Type.field`
+	 * @param	dot	`Type¦.field` (-1 if none)
+	 * @param	full "Type.field"
+	 */
+	static function post_procIdent(reader:GmlReaderExt, imp:GmlImports, p0:Int, dot:Int, full:String) {
+		var p1 = reader.pos; // `Type.field¦`
+		var one:String = dot != -1 ? reader.substring(p0, dot) : null;
+		var peeker = post_procIdent_peeker;
+		
+		// `new Type` -> `Type.create`:
 		if (full == "new") {
-			q.skipSpaces1_local();
-			var typePos = q.pos;
-			if (q.read().isIdent0_ni()) {
-				q.skipIdent1();
-				one = q.substring(typePos, q.pos);
+			peeker.setTo(reader);
+			peeker.skipSpaces1();
+			var typePos = peeker.pos;
+			var typeFirst = peeker.read();
+			if (typeFirst.isIdent0()) { // `new T¦ype`
+				peeker.skipIdent1();
+				one = peeker.substring(typePos, peeker.pos); // -> "Type"
+				reader.setTo(peeker);
 				full = one + ".create";
-				dot = q.pos;
-				p1 = q.pos;
-			} else q.pos = p1;
+				dot = reader.pos;
+				p1 = reader.pos;
+			}
 		}
+		
+		// `typedVar.method(...)` -> `func(typedVar, ...)`,
+		// `typedVar.field` -> `typedVar[fieldId]`:
 		var type = dot != -1 ? imp.localTypes[one] : null;
 		if (type != null) {
 			var ns:GmlNamespace = imp.namespaces[type], en:GmlEnum;
 			var ind:String = null;
-			var fd = q.substring(dot + 1, p1);
+			var fd = reader.substring(dot + 1, p1);
 			if (ns != null) {
 				ind = ns.longen[fd];
 				en = null;
@@ -506,42 +523,41 @@ class GmlExtImport {
 				en = GmlAPI.gmlEnums[type];
 				if (en != null && en.items.exists(fd)) ind = type + '.' + fd;
 			}
+			//
 			if (ind != null) {
-				q.skipSpaces1_local();
-				if (q.read() == "(".code) {
-					var argPos = q.pos;
-					q.skipSpaces0();
-					var argPre = q.peek() != ")".code ? ", " : "";
-					q.pos = argPos;
-					post_procIdent_p1 = argPos;
+				peeker.setTo(reader);
+				peeker.skipSpaces1();
+				if (peeker.read() == "(".code) {
+					reader.setTo(peeker);
+					peeker.skipSpaces0();
+					var argPre = peeker.peek() != ")".code ? ", " : "";
+					post_procIdent_p1 = reader.pos;
 					return ind + "(" + one + argPre;
-				} else q.pos = p1;
-				post_procIdent_p1 = p1;
-				return one + (q.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
-			} else if (en != null || ns != null && ns.isStruct) {
+				} else { // `typedVar.field`
+					post_procIdent_p1 = p1;
+					return one + (reader.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
+				}
+			}
+			else if (en != null || ns != null && ns.isStruct) {
 				if (errorText != "") errorText += "\n";
-				errorText += q.getPos(dot + 1).toString() + ' Could not find field $fd in '
+				errorText += reader.getPos(dot + 1).toString() + ' Could not find field $fd in '
 					+ (ns != null ? 'namespace' : en != null ? 'enum' : 'unknown type')
 					+ ' ' + type + '.';
 				return null;
 			}
 		}
-		//
+		
+		// `Enum()` -> `array_create(Enum.lastItem)`:
 		var id = imp.longen[full];
 		var en = dot == -1 ? GmlAPI.gmlEnums[AceMacro.jsOr(id, full)] : null;
 		if (en != null) do {
-			var ep = q.pos;
-			q.skipSpaces1();
-			if (q.peek() != "(".code) {
-				q.pos = ep;
-				break;
-			} else q.skip();
-			q.skipSpaces1();
-			if (q.peek() != ")".code) {
-				q.pos = ep;
-				break;
-			} else q.skip();
-			post_procIdent_p1 = q.pos;
+			peeker.setTo(reader);
+			peeker.skipSpaces1();
+			if (peeker.read() != "(".code) break;
+			peeker.skipSpaces1();
+			if (peeker.read() != ")".code) break;
+			reader.setTo(peeker);
+			post_procIdent_p1 = reader.pos;
 			return "array_create(" + en.name + "." + en.lastItem + ")";
 		} while (false);
 		//
@@ -566,7 +582,7 @@ class GmlExtImport {
 			return code;
 		}
 		var version = GmlAPI.version;
-		var q = new GmlReader(code);
+		var q = new GmlReaderExt(code);
 		var out = "";
 		var start = 0;
 		inline function flush(till:Int) {

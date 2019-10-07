@@ -409,7 +409,7 @@ class GmlLinter {
 							if (nv != "var") {
 								var imp = editor.imports[context];
 								if (imp != null) {
-									var ir = GmlLinterImports.proc(this, p, imp, nv);
+									var ir = GmlLinterImports.proc(this, q, p, imp, nv);
 									if (ir) return KEOF;
 									if (ir != null) return __next(q);
 								}

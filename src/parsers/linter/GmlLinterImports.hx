@@ -11,8 +11,7 @@ import tools.CharCode;
 @:access(parsers.linter.GmlLinter)
 @:access(parsers.GmlExtImport)
 class GmlLinterImports {
-	public static function proc(self:GmlLinter, dotStart:Int, imp:GmlImports, nv:String):Null<Bool> {
-		var q = self.reader;
+	public static function proc(self:GmlLinter, q:GmlReaderExt, dotStart:Int, imp:GmlImports, nv:String):Null<Bool> {
 		var dotPos = -1;
 		var dotFull:String;
 		var origPos = q.pos;
