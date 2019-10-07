@@ -46,15 +46,16 @@ class GmlImports {
 		//
 	}
 	//
-	public function ensureNamespace(space:String) {
+	public function ensureNamespace(space:String):GmlNamespace {
 		var ns = namespaces[space];
 		if (ns != null) return ns;
 		ns = new GmlNamespace();
-		this.kind.set(space, "namespace");
+		var origKind = this.kind[space];
+		this.kind[space] = "namespace";
 		namespaceComp.push(new AceAutoCompleteItem(space, "namespace"));
 		namespaces.set(space, ns);
 		var enLong:String, en:GmlEnum;
-		if (this.kind[space] == "enum") {
+		if (origKind == "enum") {
 			enLong = longen[space];
 			en = GmlAPI.gmlEnums[enLong];
 		} else {
