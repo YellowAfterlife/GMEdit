@@ -90,6 +90,32 @@ class AceTooltips {
 				var comp = GmlAPI.extCompMap[v];
 				if (comp != null) r = comp.doc;
 			};
+			case "numeric": {
+				var bgr:String;
+				if (v.length == 8 && v.startsWith("0x")) {
+					bgr = v.substring(2);
+				} else if (v.length == 7 && v.charCodeAt(0) == "$".code) {
+					bgr = v.substring(1);
+				} else bgr = null;
+				if (bgr != null) {
+					r = "color:0x" + bgr;
+					if (text != r) {
+						text = r;
+						var bit = Std.parseInt("0x" + bgr);
+						var rgb = bgr.substr(4, 2) + bgr.substr(2, 2) + bgr.substr(0, 2);
+						ttip.setHtml('<span style="'
+							+ 'display: inline-block;'
+							+ 'background-color: #$rgb;'
+							+ 'vertical-align: middle;'
+							+ 'width: 0.8em;'
+							+ 'height: 0.8em;'
+						+ '"></span> (' + (bit & 0xff)
+							+ ', ' + ((bit >> 8) & 0xff)
+							+ ', ' + ((bit >> 16) & 0xff)
+						+ ')');
+					}
+				}
+			};
 			case "asset.sprite": {
 				r = "sprite:" + v;
 				if (text != r) {
