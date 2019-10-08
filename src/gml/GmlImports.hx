@@ -164,7 +164,7 @@ class GmlImports {
 							if (ns != null) cache.enumNsComps = nsComps;
 						}
 						for (comp in comps) this.comp.push(comp);
-						for (comp in nsComps) ns.comp.push(comp);
+						if (ns != null) for (comp in nsComps) ns.comp.push(comp);
 					} else for (comp in en.compList) {
 						this.comp.push(enumCompToFullComp(comp, short));
 						if (ns != null) ns.comp.push(enumCompToNsComp(comp));
