@@ -47,8 +47,12 @@ class PrefCode {
 			current.tooltipKind = tooltipKinds.indexOf(s);
 			save();
 		});
-		addIntInput(out, "Code tooltip delay (ms):", current.tooltipDelay, function(t) {
+		addIntInput(out, "Code tooltip delay for mouse activity (ms; 0 to disable):", current.tooltipDelay, function(t) {
 			current.tooltipDelay = t;
+			save();
+		});
+		addIntInput(out, "Code tooltip delay for keyboard activity (ms; 0 to disable):", current.tooltipKeyboardDelay, function(t) {
+			current.tooltipKeyboardDelay = t;
 			save();
 		});
 		//

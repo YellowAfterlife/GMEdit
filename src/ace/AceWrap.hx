@@ -126,7 +126,7 @@ extern class AceEditor {
 	public var keyBinding:AceKeybinding;
 	public var commands:AceCommandManager;
 	public var completer:AceAutocomplete;
-	public var renderer:Dynamic;
+	public var renderer:AceRenderer;
 	public var container:Element;
 	public function focus():Void;
 	//

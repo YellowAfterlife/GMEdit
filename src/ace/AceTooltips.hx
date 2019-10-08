@@ -234,5 +234,29 @@ class AceTooltips {
 				}, t);
 			} else sync(pos, ev.x, ev.y);
 		});
+		//
+		var lang = AceWrap.require("ace/lib/lang");
+		var kbdc = lang.delayedCall(function updateKeyboard() {
+			var session = editor.session;
+			var selection = session.selection;
+			if (!selection.isEmpty()) return;
+			var pos = selection.lead;
+			var tk = session.getTokenAtPos(pos);
+			if (tk != null) {
+				if (tk != token) {
+					token = tk;
+					update(editor.session, pos, tk);
+				}
+				if (text != null) {
+					var pp = editor.renderer.textToScreenCoordinates(pos.row, pos.column);
+					ttip.setPosition(pp.pageX, pp.pageY + editor.renderer.lineHeight);
+					show();
+				} else hide();
+			}
+		});
+		editor.on("keyboardActivity", function() {
+			var t = Preferences.current.tooltipKeyboardDelay;
+			if (t > 0) kbdc.schedule(t);
+		});
 	}
 }

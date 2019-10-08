@@ -290,6 +290,7 @@ class Preferences {
 			detectTab: true,
 			eventOrder: 1,
 			tooltipDelay: 350,
+			tooltipKeyboardDelay: 0,
 			tooltipKind: Custom,
 			linterPrefs: {},
 		};

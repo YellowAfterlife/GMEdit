@@ -32,6 +32,7 @@ typedef PrefData = {
 	backupCount:DynamicAccess<Int>,
 	tooltipKind:PrefTooltipKind,
 	tooltipDelay:Int,
+	tooltipKeyboardDelay:Int,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
 }
 enum abstract PrefMatchMode(Int) from Int to Int {
