@@ -109,7 +109,7 @@ class OpenDeclaration {
 		}
 		if (data == null) data = pj.readTextFileSync(full);
 		var name = Path.withoutDirectory(full);
-		var file = new GmlFile(name, pj.fullPath(full), KGmlScript.inst, data);
+		var file = new GmlFile(name, pj.fullPath(full), file.kind.gml.KGmlImports.inst, data);
 		GmlFile.openTab(file);
 		return true;
 	}
