@@ -29,9 +29,19 @@ class GlobalLookup {
 		var i:Int, el:Element;
 		if (filter == current) return;
 		current = filter;
+		//
 		var isCmd = NativeString.startsWith(filter, ">");
+		if (isCmd) filter = filter.substring(1);
+		var kindFilter:String = null;
+		if (!isCmd) {
+			var pos = filter.indexOf(":");
+			if (pos >= 0) {
+				kindFilter = filter.substring(pos + 1);
+				filter = filter.substring(0, pos);
+			}
+		}
+		//
 		if (filter.length >= 2 || isCmd) {
-			if (isCmd) filter = filter.substring(1);
 			var pattern = NativeString.escapeRx(filter);
 			var selection = list.selectedOptions.length > 0
 				? list.selectedOptions[0].textContent : null;
@@ -41,12 +51,6 @@ class GlobalLookup {
 			var data = isCmd ? CommandPalette.lookupText : GmlAPI.gmlLookupText;
 			//
 			function addOption(name:String):Void {
-				var option = list.children[found];
-				if (option == null) {
-					option = pool.pop();
-					if (option == null) option = document.createOptionElement();
-					list.appendChild(option);
-				}
 				//
 				var hint:String, title:String;
 				if (isCmd) {
@@ -60,8 +64,21 @@ class GlobalLookup {
 					} else {
 						hint = AceMacro.jsOrx(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
 					}
+					if (kindFilter != null) {
+						if (hint == null || !NativeString.contains(hint, kindFilter)) {
+							return;
+						}
+					}
 					title = null;
 				}
+				//
+				var option = list.children[found];
+				if (option == null) {
+					option = pool.pop();
+					if (option == null) option = document.createOptionElement();
+					list.appendChild(option);
+				}
+				//
 				if (hint != null) {
 					option.setAttribute("hint", hint);
 				} else option.removeAttribute("hint");
@@ -166,7 +183,7 @@ class GlobalLookup {
 	public static function init() {
 		element = document.querySelector("#global-lookup");
 		field = element.querySelectorAuto("input");
-		field.placeholder = "Resource name or >command";
+		field.placeholder = "Resource `name[:type]` or `>command`";
 		list = element.querySelectorAuto("select");
 		list.onclick = function(_) {
 			window.setTimeout(function() {
