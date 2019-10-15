@@ -144,10 +144,10 @@ class YyLoader {
 					if (out == null) continue;
 					switch (type) {
 						case "GMScript": {
-							GmlAPI.gmlLookupText += name + "\n";
 							full = Path.withoutExtension(full) + ".gml";
 							// we'll index lambda scripts on demand
 							if (!scriptLambdas || !NativeString.startsWith(name, GmlExtLambda.lfPrefix)) {
+								GmlAPI.gmlLookupText += name + "\n";
 								GmlSeeker.run(full, name, KGmlScript.inst);
 							}
 						};
