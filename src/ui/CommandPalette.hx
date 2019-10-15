@@ -29,6 +29,10 @@ class CommandPalette {
 			name: "Project properties",
 			exec: function() ProjectProperties.open()
 		});
+		add({
+			name: "Reload GMEdit",
+			exec: function() Main.document.location.reload()
+		});
 	}
 }
 typedef CommandDef = {
