@@ -8,6 +8,8 @@ import js.html.SelectElement;
 import Main.*;
 import tools.Dictionary;
 import tools.NativeString;
+import ace.AceMacro;
+import gml.GmlAPI;
 using tools.HtmlTools;
 
 /**
@@ -36,7 +38,7 @@ class GlobalLookup {
 			var found = 0;
 			var foundMap = new Dictionary<Bool>();
 			list.selectedIndex = -1;
-			var data = isCmd ? CommandPalette.lookupText : gml.GmlAPI.gmlLookupText;
+			var data = isCmd ? CommandPalette.lookupText : GmlAPI.gmlLookupText;
 			//
 			function addOption(name:String):Void {
 				var option = list.children[found];
@@ -52,7 +54,12 @@ class GlobalLookup {
 					hint = cmd.key;
 					title = cmd.title;
 				} else {
-					hint = null;
+					var ac = GmlAPI.gmlAssetComp[name];
+					if (ac != null) {
+						hint = ac.meta;
+					} else {
+						hint = AceMacro.jsOrx(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
+					}
 					title = null;
 				}
 				if (hint != null) {
