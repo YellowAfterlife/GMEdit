@@ -1,3 +1,5 @@
+array_create(size, ?value)
+
 x@
 y@
 xprevious@
