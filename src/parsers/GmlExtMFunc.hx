@@ -574,10 +574,11 @@ class GmlExtMFunc {
 					var argStart = q.pos;
 					var mfArgs = "";
 					var order:Array<GmlExtMFuncOrder> = [];
+					var argFlush_arg:String;
 					inline function argFlush(i:Int = 0):Void {
-						var arg = q.substring(argStart, p);
-						if (NativeString.trimRight(arg) == "") arg += "//";
-						mfArgs += '\n#macro ${name}_mf' + (i + order.length) + ' $arg';
+						argFlush_arg = q.substring(argStart, p);
+						if (NativeString.trimRight(argFlush_arg) == "") argFlush_arg += "//";
+						mfArgs += '\n#macro ${name}_mf' + (i + order.length) + ' $argFlush_arg';
 					}
 					while (q.loop) {
 						p = q.pos;
@@ -680,6 +681,7 @@ class GmlExtMFunc {
 							}
 						}
 					}
+					if (q.eof) p = q.pos;
 					argFlush();
 					//
 					var json:GmlExtMFuncData = {
