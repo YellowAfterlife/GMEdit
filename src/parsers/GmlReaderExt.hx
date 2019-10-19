@@ -10,7 +10,7 @@ using StringTools;
  * Like GmlReader, but supports stacking states for macro parsing
  * @author YellowAfterlife
  */
-class GmlReaderExt extends GmlReader {
+@:keep class GmlReaderExt extends GmlReader {
 	/** not obligatory */
 	public var row:Int = 0;
 	
@@ -188,5 +188,14 @@ class GmlReaderExt extends GmlReader {
 		}
 		if (loopLocal) skip();
 		return n;
+	}
+	
+	public function print() {
+		var i = this.depth;
+		var r = [source.substring(pos, length)];
+		while (--i >= 0) {
+			r.push(oldSource[i].substring(oldPos[i], oldLength[i]));
+		}
+		return r;
 	}
 }
