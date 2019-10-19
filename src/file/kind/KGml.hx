@@ -48,8 +48,8 @@ class KGml extends KCode {
 	
 	override public function preproc(editor:EditCode, code:String):String {
 		var onDisk = editor.file.path != null;
-		if (canMFunc) code = GmlExtMFunc.pre(editor, code);
 		if (onDisk && canLambda) code = GmlExtLambda.pre(editor, code);
+		if (canMFunc) code = GmlExtMFunc.pre(editor, code);
 		if (onDisk && canImport) code = GmlExtImport.pre(code, editor.file.path);
 		if (canHyper) code = GmlExtHyper.pre(code);
 		return code;
@@ -65,17 +65,17 @@ class KGml extends KCode {
 			code = pair.val;
 			if (pair.sessionChanged) saveSessionChanged = true;
 		}
-		if (onDisk && canLambda) {
-			code = GmlExtLambda.post(editor, code);
-			if (code == null) {
-				Dialog.showError("Can't process #lambda:\n" + GmlExtLambda.errorText);
-				return null;
-			}
-		}
 		if (canMFunc) {
 			code = GmlExtMFunc.post(editor, code);
 			if (code == null) {
 				Dialog.showError("Can't process #mfunc:\n" + GmlExtMFunc.errorText);
+				return null;
+			}
+		}
+		if (onDisk && canLambda) {
+			code = GmlExtLambda.post(editor, code);
+			if (code == null) {
+				Dialog.showError("Can't process #lambda:\n" + GmlExtLambda.errorText);
 				return null;
 			}
 		}
