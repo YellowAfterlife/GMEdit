@@ -162,7 +162,7 @@ enum abstract GmlLinterKind(Int) {
 	public inline function isStat() return __isStat[this];
 	
 	static var __canCall = new GmlLinterKindSet([
-		KIdent, KField,
+		KIdent, KField, KLambda,
 	]);
 	public inline function canCall() return __canCall[this];
 	

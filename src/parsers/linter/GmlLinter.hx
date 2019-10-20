@@ -732,7 +732,7 @@ class GmlLinter {
 					}
 				};
 				case KParOpen: { // fn(...)
-					if (!currKind.canCall()) return readError('Expression ${currKind.getName()} isStat not callable');
+					if (!currKind.canCall()) return readError('Expression ${currKind.getName()} is not callable');
 					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
 					statKind = KCall;
