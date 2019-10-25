@@ -342,11 +342,11 @@ class GmlExtLambda {
 					|| !map0.exists(laFull) && project.lambdaMap.exists(laFull)
 				);
 				//
-				laCode = '/// $laFull($laArgsDoc)\n'
+				laCode = '/// $laFull($laArgsDoc)\r\n'
 					+ '//!#lambda'
 					+ laNamePre + (laName != null ? laName : "$")
 					+ laArgsPre + (laArgsMt != null ? "(" + laArgsMt[1] + "$" + laArgsMt[3] + ")" : "")
-					+ "\n" + laCode;
+					+ "\r\n" + laCode;
 				//
 				if (laName != null) {
 					if (scope.remap.exists(laName)) return error(
