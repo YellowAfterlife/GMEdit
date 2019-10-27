@@ -520,7 +520,7 @@ class GmlExtLambda {
 	}
 	public static function postGMS2(d:GmlExtLambdaPost) {
 		var pj = d.project;
-		var ext:YyExtension = FileWrap.readJsonFileSync(pj.lambdaExt);
+		var ext:YyExtension = FileWrap.readYyFileSync(pj.lambdaExt);
 		var file = ext.files[0];
 		var fns:Array<YyExtensionFunc> = file.functions;
 		var mcs:Array<YyExtensionMacro> = file.constants;
@@ -604,11 +604,11 @@ class GmlExtLambda {
 			extz = true;
 			d.checkInit = true;
 		}
-		if (extz) FileWrap.writeJsonFileSync(pj.lambdaExt, ext);
+		if (extz) FileWrap.writeYyFileSync(pj.lambdaExt, ext);
 	}
 	static function postGMS2_scripts(d:GmlExtLambdaPost) {
 		var pj = d.project;
-		var py:yy.YyProject = d.project.readJsonFileSync(pj.name);
+		var py:yy.YyProject = d.project.readYyFileSync(pj.name);
 		var ry = py.resources;
 		var saveProject = false;
 		//
@@ -654,7 +654,7 @@ class GmlExtLambda {
 				if (r.Value.resourcePath != path) continue;
 				pj.yyResourceGUIDs.remove(s);
 				pj.yyResources.remove(r.Value.id);
-				if (lview == null) lview = pj.readJsonFileSync(pj.lambdaView);
+				if (lview == null) lview = pj.readYyFileSync(pj.lambdaView);
 				if (lview.children.remove(r.Value.id)) saveView = true;
 				ry.splice(i, 1);
 				saveProject = true;
@@ -666,7 +666,7 @@ class GmlExtLambda {
 			var stv = ui.treeview.TreeView.find(true, {rel:"Scripts/#gmedit-lambda/"+s});
 			if (stv != null) stv.parentElement.removeChild(stv);
 		}
-		if (saveView) pj.writeJsonFileSync(pj.lambdaView, lview);
+		if (saveView) pj.writeYyFileSync(pj.lambdaView, lview);
 		// adding:
 		for (s in d.list1) if (!d.map0.exists(s)) {
 			var path = 'scripts\\$s\\$s.yy';
@@ -697,7 +697,7 @@ class GmlExtLambda {
 			pj.writeTextFileSync('scripts\\$s\\$s.gml', v);
 		}
 		//
-		if (saveProject) pj.writeJsonFileSync(pj.name, py);
+		if (saveProject) pj.writeYyFileSync(pj.name, py);
 	}
 	
 	/**

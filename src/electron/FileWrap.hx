@@ -50,6 +50,16 @@ class FileWrap {
 	public static inline function writeJsonFileSync(path:String, value:Dynamic) {
 		writeTextFileSync(path, NativeString.yyJson(value));
 	}
+	/** The difference is that YY may contain off-spec JSON */
+	public static function readYyFileSync<T>(path:String, ?c:Class<T>):T {
+		if (Path.isAbsolute(path)) {
+			return FileSystem.readYyFileSync(path);
+		} else return Project.current.readYyFileSync(path);
+	}
+	public static function writeYyFileSync<T>(path:String, value:T):Void {
+		writeTextFileSync(path, yy.YyJson.stringify(value));
+	}
+	//
 	public static function readGmxFileSync(path:String):SfGmx {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.readGmxFileSync(path);

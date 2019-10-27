@@ -26,7 +26,7 @@ class KYy extends FileKind {
 		arr.unshift(file);
 	}
 	override public function detect(path:String, data:Dynamic):FileKindDetect {
-		var json:YyBase = data != null ? data : FileWrap.readJsonFileSync(path);
+		var json:YyBase = data != null ? data : FileWrap.readYyFileSync(path);
 		var kinds = map[json.modelName];
 		if (kinds != null) for (kind in kinds) {
 			var out = kind.detect(path, json);
@@ -35,7 +35,7 @@ class KYy extends FileKind {
 		return super.detect(path, json);
 	}
 	override public function create(name:String, path:String, data:Dynamic, nav:GmlFileNav):GmlFile {
-		var json:YyBase = data != null ? data : FileWrap.readJsonFileSync(path);
+		var json:YyBase = data != null ? data : FileWrap.readYyFileSync(path);
 		var opt:Int;
 		var dunno = 'GMEdit doesn\'t know how to open YY type ${json.modelName}.';
 		if (FileSystem.canSync) {

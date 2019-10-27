@@ -15,7 +15,7 @@ import yy.YyJson;
 class KYyEvents extends KGml {
 	public static var inst:KYyEvents = new KYyEvents();
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
-		if (data == null) data = Json.parse(super.loadCode(editor, data));
+		if (data == null) data = YyJson.parse(super.loadCode(editor, data));
 		var obj:YyObject = data;
 		var file = editor.file;
 		NativeArray.clear(file.extraFiles);
@@ -24,7 +24,7 @@ class KYyEvents extends KGml {
 	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
 		if (code == null) return null;
-		var obj:YyObject = FileWrap.readJsonFileSync(editor.file.path);
+		var obj:YyObject = FileWrap.readYyFileSync(editor.file.path);
 		if (!obj.setCode(editor.file.path, code)) {
 			editor.setSaveError("Can't update YY:\n" + YyObject.errorText);
 			return null;

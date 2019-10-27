@@ -50,6 +50,9 @@ import haxe.extern.EitherType;
 	public static inline function readJsonFileSync(path:String):Dynamic {
 		return Json.parse(readTextFileSync(path));
 	}
+	public static inline function readYyFileSync(path:String):Dynamic {
+		return yy.YyJson.parse(readTextFileSync(path));
+	}
 	//
 	public static function writeFileSync(path:String, data:Dynamic, ?options:Dynamic):Void;
 	//

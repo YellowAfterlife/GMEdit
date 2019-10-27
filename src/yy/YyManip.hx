@@ -25,9 +25,9 @@ class YyManip {
 	static function resolve(q:TreeViewItemBase) {
 		var pj = Project.current;
 		var py = q.py;
-		if (py == null) py = pj.readJsonFileSync(pj.name);
+		if (py == null) py = pj.readYyFileSync(pj.name);
 		var vp = "views/" + q.tvDir.getAttribute(TreeView.attrYYID) + ".yy";
-		var vy:YyView = pj.readJsonFileSync(vp);
+		var vy:YyView = pj.readYyFileSync(vp);
 		var ri:YyGUID = cast q.tvRef.getAttribute(TreeView.attrYYID);
 		q.pj = pj;
 		return {
@@ -291,7 +291,7 @@ class YyManip {
 			switch (type) {
 				case "GMFolder": {
 					try {
-						var vi:YyView = pj.readJsonFileSync(path);
+						var vi:YyView = pj.readYyFileSync(path);
 						for (idc in vi.children) removeItemRec(idc);
 						try {
 							pj.unlinkSync(path);
@@ -334,9 +334,9 @@ class YyManip {
 		var pj = d.pj;
 		switch (pair.resourceType) {
 			case "GMFolder": {
-				var vj:YyView = pj.readJsonFileSync(pair.resourcePath);
+				var vj:YyView = pj.readYyFileSync(pair.resourcePath);
 				vj.folderName = q.name;
-				pj.writeJsonFileSync(pair.resourcePath, vj);
+				pj.writeYyFileSync(pair.resourcePath, vj);
 			};
 			case "GMScript", "GMObject", "GMShader", "GMSprite": {
 				var path = pair.resourcePath;
@@ -349,9 +349,9 @@ class YyManip {
 				var next_yy = Path.join([ndir, q.name + ".yy"]);
 				pair.resourcePath = next_yy;
 				pj.renameSync(curr_yy, next_yy);
-				var next_res:YyResource = pj.readJsonFileSync(next_yy);
+				var next_res:YyResource = pj.readYyFileSync(next_yy);
 				next_res.name = q.name;
-				pj.writeJsonFileSync(next_yy, next_res);
+				pj.writeYyFileSync(next_yy, next_res);
 				//
 				var samename:Array<String> = switch (pair.resourceType) {
 					case "GMScript": ["gml"];
@@ -372,7 +372,7 @@ class YyManip {
 			};
 		}
 		TreeViewItemMenus.renameImpl_1(q);
-		pj.writeJsonFileSync(pj.name, d.py);
+		pj.writeYyFileSync(pj.name, d.py);
 		pj.reload();
 		return true;
 	}
@@ -382,7 +382,7 @@ class YyManip {
 		var pj = d.pj;
 		var vy = d.vy;
 		var sp = "views/" + q.srcDir.getAttribute(TreeView.attrYYID) + ".yy";
-		var sy = d.vp != sp ? pj.readJsonFileSync(sp) : vy;
+		var sy = d.vp != sp ? pj.readYyFileSync(sp) : vy;
 		var si = (cast q.srcRef.getAttribute(TreeView.attrYYID):YyGUID);
 		//
 		sy.children.remove(si);

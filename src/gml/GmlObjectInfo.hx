@@ -79,7 +79,7 @@ class GmlObjectInfo {
 			var obj = FileWrap.readGmxFileSync(path);
 			info = gmx.GmxObject.getInfo(obj, path);
 		} else if (Path.extension(path) == "yy") {
-			var yy:yy.YyObject = FileWrap.readJsonFileSync(path);
+			var yy:yy.YyObject = FileWrap.readYyFileSync(path);
 			info = yy.getInfo();
 		} else return;
 		GmlFile.openTab(new GmlFile(

@@ -427,14 +427,28 @@ import ui.treeview.TreeView;
 		FileSystem.writeFileSync(fullPath(path), text);
 	}
 	//
-	public function readJsonFile<T:{}>(path:String, fn:Error->T->Void):Void {
-		FileSystem.readJsonFile(fullPath(path), fn);
+	public function readJsonFile<T:{}>(path:String, callback:Error->T->Void):Void {
+		readTextFile(path, function(e:Error, d:Dynamic) {
+			if (e == null) try {
+				d = Json.parse(d);
+			} catch (x:Dynamic) {
+				d = null;
+				e = x;
+			}
+			callback(e, d);
+		});
 	}
 	public function readJsonFileSync<T>(path:String):T {
-		return FileSystem.readJsonFileSync(fullPath(path));
+		return Json.parse(readTextFileSync(path));
+	}
+	public function readYyFileSync(path:String):Dynamic {
+		return YyJson.parse(readTextFileSync(path));
 	}
 	public inline function writeJsonFileSync(path:String, value:Dynamic) {
 		writeTextFileSync(path, NativeString.yyJson(value));
+	}
+	public inline function writeYyFileSync(path:String, value:Dynamic) {
+		writeTextFileSync(path, YyJsonPrinter.stringify(value, yyExtJson));
 	}
 	//
 	public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
@@ -499,7 +513,7 @@ import ui.treeview.TreeView;
 						r = yySpriteURLs[g];
 					} else try {
 						var spritePath = yyResources[g].Value.resourcePath;
-						var sprite:YySprite = readJsonFileSync(spritePath);
+						var sprite:YySprite = readYyFileSync(spritePath);
 						var frame = sprite.frames[0];
 						if (frame != null) {
 							var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);

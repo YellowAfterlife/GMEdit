@@ -15,7 +15,7 @@ class YySearcher {
 	public static function run(
 		pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt
 	):Void {
-		var yyProject:YyProject = pj.readJsonFileSync(pj.name);
+		var yyProject:YyProject = pj.readYyFileSync(pj.name);
 		var rxName = Project.rxName;
 		var filesLeft = 1;
 		inline function next():Void {
@@ -109,7 +109,7 @@ class YySearcher {
 					filesLeft += 1;
 					pj.readJsonFile(resFull, function(err, ext:YyExtension) {
 						if (err != null) { next(); return; }
-						var ext:YyExtension = FileWrap.readJsonFileSync(resFull);
+						var ext:YyExtension = FileWrap.readYyFileSync(resFull);
 						var extDir = Path.directory(resFull);
 						for (file in ext.files) {
 							var fileName = file.filename;

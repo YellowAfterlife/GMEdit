@@ -25,7 +25,7 @@ class YyRooms {
 			if (res.resourceType != "GMRoom") continue;
 			try {
 				var roomFull:String = pjDir.ptJoin(res.resourcePath);
-				var room:YyRoom = FileWrap.readJsonFileSync(roomFull);
+				var room:YyRoom = FileWrap.readYyFileSync(roomFull);
 				var roomCCrel = room.creationCodeFile;
 				if (roomCCrel == "") continue;
 				var roomCCfull = roomFull.ptDir().ptJoin(roomCCrel);
@@ -99,7 +99,7 @@ class YyRooms {
 	}
 	public static function setCCs(pjPath:String, code:String, extraFiles:Array<GmlFileExtra>):Bool {
 		var pjDir:String = pjPath.ptDir();
-		var pjd:YyProject = FileWrap.readJsonFileSync(pjPath);
+		var pjd:YyProject = FileWrap.readYyFileSync(pjPath);
 		var data = parse(code);
 		if (data == null) return false;
 		// remove:

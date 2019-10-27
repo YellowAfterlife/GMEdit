@@ -228,6 +228,14 @@ class YyZip extends Project {
 			return Json.parse(file.getText());
 		} else throw new Error("File not found: " + path);
 	}
+	override public function readYyFileSync<T>(path:String):T {
+		var file = yyzFileMap[fixSlashes(path)];
+		if (file != null) {
+			return YyJson.parse(file.getText());
+		} else throw new Error("File not found: " + path);
+	}
+	// no need to override writeJson/Yy - base version already uses writeTextFileSync
+	
 	override public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];
 		if (file != null) {
