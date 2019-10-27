@@ -30,26 +30,13 @@ import ace.AceMacro.jsRx;
 		// GMS2 doesn't sort events so not doing anything means
 		// that the events will maintain order as authored.
 		if (ui.Preferences.current.eventOrder == 1) {
-			var evOrder:Dictionary<Int> = new Dictionary();
-			var evCount = 0;
-			for (ev in this.eventList) evOrder.set(ev.id, evCount++);
-			this.eventList.sort(function(a, b) {
-				var at = a.eventtype, bt = b.eventtype;
-				if (at != bt) return at - bt;
-				//
-				if (at == 4) { // collision
-					return evOrder[a.id] - evOrder[b.id];
-				} else return a.enumb - b.enumb;
-			});
+			this.eventList.sort(YyObjectEvent.compare);
 		}
 		//
-		for (ev in this.eventList) {
-			var eid = ev.id;
-			var oid = ev.collisionObjectId;
-			var type = ev.eventtype;
-			var numb = ev.enumb;
-			var rel = YyEvent.toPath(type, numb, eid);
-			var name = YyEvent.toString(type, numb, oid);
+		for (event in this.eventList) {
+			var ed = event.unpack();
+			var rel = ed.getPath();
+			var name = ed.getName();
 			var full = Path.join([dir, rel]);
 			if (extras != null) extras.push(new GmlFileExtra(full));
 			var code = try {
@@ -70,6 +57,7 @@ import ace.AceMacro.jsRx;
 	public function setCode(objPath:String, gmlCode:String) {
 		var dir = Path.directory(objPath);
 		var sorted = ui.Preferences.current.eventOrder == 1;
+		var v22 = YyTools.isV22(this);
 		
 		//
 		var eventData:GmlEventList = GmlEvent.parse(gmlCode, gml.GmlVersion.v2);
@@ -109,7 +97,8 @@ import ace.AceMacro.jsRx;
 		var oldMap = new Dictionary<YyObjectEvent>();
 		var oldNames:Array<String> = [];
 		for (ev in oldList) {
-			var oldName = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
+			var ed = ev.unpack();
+			var oldName = ev.unpack().getName();
 			oldNames.push(oldName);
 			oldMap.set(oldName, ev);
 		}
@@ -172,7 +161,7 @@ import ace.AceMacro.jsRx;
 		return true;
 	}
 	private function getParentJson():YyObject {
-		var parentName = gml.Project.current.yyObjectNames[this.parentObjectId];
+		var parentName = Project.current.yyObjectNames[this.parentObjectId];
 		if (parentName == null) return null;
 		// todo: have an actual asset name -> asset path lookup instead
 		var el = TreeView.element.querySelector('.item['
@@ -180,7 +169,7 @@ import ace.AceMacro.jsRx;
 		if (el == null) return null;
 		var path = el.getAttribute(TreeView.attrPath);
 		if (!FileWrap.existsSync(path)) return null;
-		var json:YyObject = FileWrap.readJsonFileSync(path);
+		var json:YyObject = FileWrap.readYyFileSync(path);
 		json.path = path;
 		return json;
 	}
@@ -191,7 +180,7 @@ import ace.AceMacro.jsRx;
 		var enumb = edata.numb;
 		var eobj = edata.obj; if (eobj == null) eobj = YyGUID.zero;
 		//
-		var obj:YyObject = FileWrap.readJsonFileSync(full);
+		var obj:YyObject = FileWrap.readYyFileSync(full);
 		var parentId = obj.parentObjectId;
 		var tries = 1024;
 		while (parentId != YyGUID.zero && --tries >= 0) {
@@ -213,7 +202,7 @@ import ace.AceMacro.jsRx;
 		if (info == null) {
 			info = new GmlObjectInfo();
 			info.objectName = objName;
-			if (this.spriteId != YyGUID.zero) {
+			if (this.spriteId.isValid()) {
 				var res = Project.current.yyResources[this.spriteId];
 				if (res != null) {
 					info.spriteName = res.Value.resourceName;
@@ -275,14 +264,6 @@ typedef YyObjectImpl = {
 typedef YyObjectPhysicsShapePoint = {
 	>YyBase, // GMPoint 1.0
 	x:Float, y:Float,
-};
-typedef YyObjectEvent = {
-	>YyBase,
-	eventtype:Int,
-	enumb:Int,
-	collisionObjectId:YyGUID,
-	m_owner:YyGUID,
-	IsDnD:Bool,
 };
 typedef YyObjectProperty = YyBase & {
 	?listItems:Array<String>,

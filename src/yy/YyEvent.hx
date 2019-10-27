@@ -7,7 +7,7 @@ import parsers.GmlEvent;
  * @author YellowAfterlife
  */
 class YyEvent {
-	public static function toPath(type:Int, numb:Int, eid:YyGUID) {
+	public static function toPath(type:Int, numb:Int, eid:String) {
 		var ename = GmlEvent.getTypeNameCap(type);
 		// todo: key*
 		if (type == GmlEvent.typeCollision) {
@@ -15,11 +15,11 @@ class YyEvent {
 		}
 		return ename + "_" + numb + ".gml";
 	}
-	public static function toString(type:Int, numb:Int, oid:YyGUID) {
-		var name = null;
+	public static function toString(type:Int, numb:Int, oid:String) {
+		var name:String;
 		if (type == GmlEvent.typeCollision) {
-			name = Project.current.yyObjectNames.get(oid);
-		}
+			name = Project.current.yyObjectNames[oid];
+		} else name = null;
 		return GmlEvent.toString(type, numb, name);
 	}
 	public static function fromString(name:String) {

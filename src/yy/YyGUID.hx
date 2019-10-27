@@ -40,6 +40,12 @@ abstract YyGUID(String) to String {
 	public inline function new() {
 		this = create();
 	}
+	public function isBlank():Bool {
+		return this == null || this == "" || this == zero;
+	}
+	public function isValid():Bool {
+		return this != null && this != "" && this != zero;
+	}
 	public inline function toString() {
 		return this;
 	}

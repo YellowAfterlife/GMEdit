@@ -27,7 +27,7 @@ class KYy extends FileKind {
 	}
 	override public function detect(path:String, data:Dynamic):FileKindDetect {
 		var json:YyBase = data != null ? data : FileWrap.readYyFileSync(path);
-		var kinds = map[json.modelName];
+		var kinds = map[tools.JsTools.or(json.resourceType, json.modelName)];
 		if (kinds != null) for (kind in kinds) {
 			var out = kind.detect(path, json);
 			if (out != null) return out;
