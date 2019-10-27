@@ -111,6 +111,18 @@ import tools.Dictionary;
 		return changed ? 1 : 0;
 	}
 	
+	/**
+	 * Ran by GmlSeeker.
+	 * Should return whether done instantly (true)
+	 * or will call GmlSeeker.runNext later itself (false).
+	 * @param	path	Full (normal) or relative (ZIP) path to file
+	 * @param	content	Raw file content (text/JSON)
+	 */
+	public function index(path:String, content:String, main:String):Bool {
+		return true;
+	}
+	
+	/** We're asked to bring `nav` into view */
 	public function navigate(editor:Editor, nav:GmlFileNav):Bool {
 		return false;
 	}

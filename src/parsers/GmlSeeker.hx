@@ -59,15 +59,18 @@ class GmlSeeker {
 			runItem(item);
 		} else itemQueue.push(item);
 	}
-	private static function runNext():Void {
+	public static function runFinish():Void {
+		GmlAPI.gmlComp.autoSort();
+		if (Project.current != null) Project.current.finishedIndexing();
+		Main.aceEditor.session.bgTokenizer.start(0);
+	}
+	public static function runNext():Void {
 		var left = --itemsLeft;
 		var item = itemQueue.shift();
 		if (item != null) {
 			runItem(item);
 		} else if (left <= 0) {
-			GmlAPI.gmlComp.autoSort();
-			if (Project.current != null) Project.current.finishedIndexing();
-			Main.aceEditor.session.bgTokenizer.start(0);
+			runFinish();
 		}
 	}
 	
@@ -621,12 +624,12 @@ class GmlSeeker {
 		if (project.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
 	}
 	
-	static inline function finish(orig:String, out:GmlSeekData):Void {
+	public static function finish(orig:String, out:GmlSeekData):Void {
 		GmlSeekData.apply(orig, GmlSeekData.map[orig], out);
 		GmlSeekData.map.set(orig, out);
 		out.compList.autoSort();
 	}
-	static inline function addObjectChild(parentName:String, childName:String) {
+	public static function addObjectChild(parentName:String, childName:String) {
 		var pj = Project.current;
 		var parChildren = pj.objectChildren[parentName];
 		if (parChildren == null) {
@@ -635,133 +638,8 @@ class GmlSeeker {
 		}
 		parChildren.push(childName);
 	}
-	public static function runYyObject(orig:String, src:String, ?allSync:Bool) {
-		var obj:YyObject = haxe.Json.parse(src);
-		var dir = Path.directory(orig);
-		//
-		var project = Project.current;
-		var parentName = project.yyObjectNames[obj.parentObjectId];
-		if (parentName != null) addObjectChild(parentName, obj.name);
-		//
-		if (Preferences.current.assetThumbs && !allSync) {
-			var spriteId = obj.spriteId;
-			if (spriteId != YyGUID.zero) {
-				var res = project.yyResources[spriteId];
-				TreeView.setThumbSprite(orig, res != null ? res.Value.resourceName : null);
-			} else TreeView.resetThumb(orig);
-		}
-		//
-		var out = new GmlSeekData();
-		var eventsLeft = 0;
-		var eventFiles = [];
-		for (ev in obj.eventList) {
-			var rel = yy.YyEvent.toPath(ev.eventtype, ev.enumb, ev.id);
-			var full = Path.join([dir, rel]);
-			var name = YyEvent.toString(ev.eventtype, ev.enumb, ev.collisionObjectId);
-			eventsLeft += 1;
-			eventFiles.push({
-				name: name,
-				full: full,
-			});
-		}
-		{ // hack: use locals for properties-specific variables
-			var locals = new GmlLocals();
-			out.locals.set("properties", locals);
-			for (prop in YyObjectProperties.propertyList) {
-				locals.add(prop, "property.variable", "(object property)");
-			}
-			for (prop in YyObjectProperties.typeList) {
-				locals.add(prop, "property.namespace", "(object variable type)");
-			}
-			for (pair in YyObjectProperties.assetTypes) {
-				locals.add(pair.name, "property.namespace", "(asset type)");
-			}
-		};
-		if (eventFiles.length == 0) {
-			finish(orig, out);
-			return true;
-		}
-		for (file in eventFiles) (function(name, full) {
-			if (!allSync) {
-				function procEvent(err, code) {
-					if (err == null) try {
-						var locals = new GmlLocals();
-						out.locals.set(name, locals);
-						runSyncImpl(orig, code, null, out, locals, KYyEvents.inst);
-					} catch (_:Dynamic) {
-						//
-					}
-					if (--eventsLeft <= 0) {
-						finish(orig, out);
-						runNext();
-					}
-				}
-				FileWrap.readTextFile(full, procEvent);
-			} else try {
-				var code = FileWrap.readTextFileSync(full);
-				var locals = new GmlLocals();
-				out.locals.set(name, locals);
-				runSyncImpl(orig, code, null, out, locals, KYyEvents.inst);
-			} catch (_:Dynamic) {
-				//
-			}
-		})(file.name, file.full);
-		if (allSync) finish(orig, out);
-		return false;
-	}
-	public static function runGmxObject(orig:String, src:String) {
-		var obj = SfGmx.parse(src);
-		var out = new GmlSeekData();
-		//
-		var parentName = obj.findText("parentName");
-		if (parentName != "<undefined>") {
-			var objectName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(orig)));
-			addObjectChild(parentName, objectName);
-		}
-		//
-		if (Preferences.current.assetThumbs) {
-			var sprite = obj.findText("spriteName");
-			if (sprite != "<undefined>") {
-				var framePath = Path.join(["sprites", "images", sprite + "_0.png"]);
-				var frameURL = Project.current.getImageURL(framePath);
-				if (frameURL != null) TreeView.setThumb(orig, frameURL);
-			}
-		}
-		//
-		for (events in obj.findAll("events"))
-		for (event in events.findAll("event")) {
-			var etype = Std.parseInt(event.get("eventtype"));
-			var ename = event.get("ename");
-			var enumb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
-			var name = GmxEvent.toString(etype, enumb, ename);
-			var locals = new GmlLocals();
-			out.locals.set(name, locals);
-			for (action in event.findAll("action")) {
-				var code = GmxAction.getCode(action);
-				if (code != null) {
-					runSyncImpl(orig, code, null, out, locals, KGmxEvents.inst);
-				}
-			}
-		}
-		finish(orig, out);
-		return true;
-	}
-	public static function runSync(orig:String, src:String, main:String, kind:FileKind) {
-		switch (Path.extension(orig)) {
-			case "yy": return runYyObject(orig, src);
-			case "gmx": return runGmxObject(orig, src);
-		}
-		var src_ncr = src;
-		src = GmlExtCoroutines.pre(src);
-		//
-		var out = new GmlSeekData();
-		out.hasCoroutines = src_ncr != src;
-		out.main = main;
-		var locals = new GmlLocals();
-		out.locals.set("", locals);
-		runSyncImpl(orig, src, main, out, locals, kind);
-		finish(orig, out);
-		return true;
+	public static function runSync(path:String, content:String, main:String, kind:FileKind) {
+		return kind.index(path, content, main);
 	} // runSync
 }
 

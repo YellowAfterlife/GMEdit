@@ -204,7 +204,7 @@ class GmlFile {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
 				if (Std.is(kind, KYyEvents)) {
-					GmlSeeker.runYyObject(path, out, true);
+					KYyEvents.runSync(path, out, true);
 				} else {
 					GmlSeeker.runSync(path, out, data.main, kind);
 				}

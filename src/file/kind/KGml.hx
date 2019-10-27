@@ -7,7 +7,7 @@ import js.lib.RegExp;
 import parsers.GmlExtHyper;
 import parsers.GmlExtImport;
 import parsers.GmlExtLambda;
-import parsers.GmlExtMFunc;
+import parsers.*;
 import tools.NativeString;
 
 /**
@@ -151,5 +151,19 @@ class KGml extends KCode {
 			} else Main.aceEditor.gotoLine0(row, col);
 		}
 		return found;
+	}
+	
+	override public function index(path:String, content:String, main:String):Bool {
+		var content_noCoroutines = content;
+		content = GmlExtCoroutines.pre(content);
+		//
+		var out = new GmlSeekData();
+		out.hasCoroutines = content != content_noCoroutines;
+		out.main = main;
+		var locals = new gml.GmlLocals();
+		out.locals.set("", locals);
+		GmlSeeker.runSyncImpl(path, content, main, out, locals, this);
+		GmlSeeker.finish(path, out);
+		return true;
 	}
 }
