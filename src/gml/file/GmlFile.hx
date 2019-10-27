@@ -159,12 +159,18 @@ class GmlFile {
 			}
 		}
 		// determine what to do with the file:
-		var kd = GmlFileKindTools.detect(path);
-		var kind = (nav != null && nav.kind != null) ? nav.kind : kd.kind;
+		var kind:FileKind, data:Dynamic;
+		if (nav != null && nav.kind != null) {
+			kind = nav.kind;
+			data = null;
+		} else {
+			var kd = GmlFileKindTools.detect(path);
+			kind = kd.kind;
+			data = kd.data;
+		}
 		if (nav != null && nav.noExtern && Std.is(kind, file.kind.misc.KExtern)) {
 			kind = file.kind.misc.KPlain.inst;
 		}
-		var data = kd.data;
 		return kind.create(name, path, data, nav);
 	}
 	public static function openTab(file:GmlFile) {
