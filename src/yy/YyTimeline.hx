@@ -13,7 +13,7 @@ import parsers.GmlTimeline;
  * ...
  * @author YellowAfterlife
  */
-abstract YyTimeline(YyTimelineImpl) {
+abstract YyTimeline(YyTimelineImpl) from YyTimelineImpl {
 	public static var errorText:String;
 	public static function getMomentPath(time:Int):String {
 		return "moment_" + time + ".gml";

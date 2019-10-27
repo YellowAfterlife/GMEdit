@@ -296,6 +296,23 @@ using tools.PathTools;
 		return r;
 	}
 	//
+	public static function insertSorted(dir:TreeViewDir, item:Element) {
+		var itemDir = item.classList.contains(clDir);
+		var itemName = item.getAttribute(itemDir ? attrLabel : attrIdent);
+		var children = dir.treeItems.children;
+		var i = -1;
+		while (++i < children.length) {
+			var ref = children[i];
+			var refDir = ref.classList.contains(clDir);
+			if (refDir != itemDir) {
+				if (itemDir) break; else continue;
+			}
+			var refName = ref.getAttribute(refDir ? attrLabel : attrIdent);
+			if (itemName < refName) break;
+		}
+		dir.treeItems.insertBefore(item, children[i]);
+	}
+	//
 	public static function openProject(el:Element) {
 		if (!el.classList.contains("item")) el = el.parentElement;
 		var path = el.getAttribute(attrPath);

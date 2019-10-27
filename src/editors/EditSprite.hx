@@ -115,6 +115,7 @@ class EditSprite extends Editor {
 	}
 	override public function load(data:Dynamic):Void {
 		var v2 = Std.is(file.kind, KYySprite);
+		if (v2 && data == null) data = FileWrap.readYyFileSync(file.path);
 		var d:EditSpriteData = v2 ? getData2(data) : getData1(data);
 		element.clearInner();
 		//

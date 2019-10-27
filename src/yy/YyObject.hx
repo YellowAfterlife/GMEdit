@@ -13,6 +13,7 @@ import tools.Aliases;
 import tools.Dictionary;
 import tools.NativeArray;
 import tools.NativeString;
+import tools.JsTools;
 import ui.treeview.TreeView;
 import ace.AceMacro.jsRx;
 
@@ -22,6 +23,33 @@ import ace.AceMacro.jsRx;
  */
 @:forward abstract YyObject(YyObjectImpl) from YyObjectImpl to YyObjectImpl {
 	public static var errorText:String;
+	static var fieldOrder = [
+		"spriteId",
+		"solid",
+		"visible",
+		"spriteMaskId",
+		"persistent",
+		"parentObjectId",
+		"physicsObject",
+		"physicsSensor",
+		"physicsShape",
+		"physicsGroup",
+		"physicsDensity",
+		"physicsRestitution",
+		"physicsLinearDamping",
+		"physicsAngularDamping",
+		"physicsFriction",
+		"physicsStartAwake",
+		"physicsKinematic",
+		"physicsShapePoints",
+		"eventList",
+		"properties",
+		"overriddenProperties",
+		"parent",
+		"resourceType",
+		"name", "tags",
+		"resourceVersion",
+	];
 	
 	public function getCode(objPath:String, ?extras:Array<GmlFileExtra>):String {
 		var dir = Path.directory(objPath);
@@ -134,17 +162,34 @@ import ace.AceMacro.jsRx;
 			if (sorted && oldMap.exists(name)) continue; // see above
 			var item = eventData[i];
 			var idat = item.data;
-			var ev = sorted ? null : oldMap[name];
-			if (ev == null) ev = {
-				id: new YyGUID(),
-				modelName: "GMEvent",
-				mvc: "1.0",
-				IsDnD: false,
-				collisionObjectId: idat.obj,
-				eventtype: idat.type,
-				enumb: idat.numb != null ? idat.numb : 0,
-				m_owner: this.id,
-			};
+			var ev:YyObjectEvent = sorted ? null : oldMap[name];
+			if (ev != null) {
+				// OK!
+			}
+			else if (YyTools.isV22(this)) {
+				ev = {
+					id: new YyGUID(),
+					modelName: "GMEvent",
+					mvc: "1.0",
+					IsDnD: false,
+					collisionObjectId: idat.obj,
+					eventtype: idat.type,
+					enumb: idat.numb != null ? idat.numb : 0,
+					m_owner: this.id,
+				};
+			} else {
+				var obj = idat.obj;
+				ev = {
+					resourceType: "GMEvent",
+					resourceVersion: "1.0",
+					isDnD: false,
+					collisionObjectId: { name: obj, path: obj },
+					eventType: idat.type,
+					eventNum: idat.numb != null ? idat.numb : 0,
+					name: null,
+					tags: [],
+				};
+			}
 			newList.push({ event: ev, code: item.code.join("\r\n") });
 		}
 		
@@ -152,10 +197,12 @@ import ace.AceMacro.jsRx;
 		this.eventList = [];
 		for (item in newList) {
 			var ev = item.event;
-			var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
+			if (!v22) ev.hxOrder = YyObjectEvent.fieldOrder;
+			var full = Path.join([dir, ev.unpack().getPath()]);
 			FileWrap.writeTextFileSync(full, item.code);
 			this.eventList.push(ev);
 		}
+		if (!v22) this.hxOrder = fieldOrder;
 		
 		//
 		return true;
@@ -237,7 +284,10 @@ typedef YyObjectImpl = {
 	>YyResource,
 	?path:String,
 	spriteId:YyGUID,
-	maskSpriteId:YyGUID,
+	/** older */
+	?maskSpriteId:YyGUID,
+	/** newer */
+	?spriteMaskId:YyGUID,
 	eventList:Array<YyObjectEvent>,
 	parentObjectId:YyGUID,
 	solid:Bool,

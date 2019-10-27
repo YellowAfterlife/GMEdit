@@ -75,6 +75,10 @@ import ui.treeview.TreeView;
 	public var yyResourceGUIDs:Dictionary<YyGUID>;
 	/** GUID -> URL */
 	public var yySpriteURLs:Dictionary<String>;
+	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
+	public var yyExtJson:Bool = false;
+	/** This will be false for 2.3 */
+	public var yyUsesGUID:Bool = true;
 	
 	/** name -> URL */
 	public var spriteURLs:Dictionary<String> = new Dictionary();

@@ -5,8 +5,11 @@ package yy;
  * @author YellowAfterlife
  */
 typedef YyProjectResource = {
-	Key:YyGUID,
-	Value:YyProjectResourceValue,
+	?Key:YyGUID,
+	?Value:YyProjectResourceValue,
+	//
+	?name:String,
+	?path:String,
 };
 typedef YyProjectResourceValue = {
 	id:YyGUID,

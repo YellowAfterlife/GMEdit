@@ -49,9 +49,10 @@ class YyObjectProperties {
 	private static var rxJSONish = new RegExp("^[-\\d.\"]");
 	public static function get(o:YyObject):String {
 		var out = GmlObjectProperties.header;
+		var v22 = YyTools.isV22(o);
 		function addID(key:String, val:YyGUID):Void {
 			out += '\n$key = ';
-			if (val != YyGUID.zero) {
+			if (val.isValid()) {
 				var res = Project.current.yyResources[val];
 				if (res != null) {
 					out += res.Value.resourceName + ";";
@@ -63,8 +64,9 @@ class YyObjectProperties {
 		}
 		//
 		addID("parent_index", o.parentObjectId);
-		if (o.spriteId != YyGUID.zero) addID("sprite_index", o.spriteId);
-		if (o.maskSpriteId != YyGUID.zero) addID("mask_index", o.maskSpriteId);
+		if (o.spriteId.isValid()) addID("sprite_index", o.spriteId);
+		var mask = v22 ? o.maskSpriteId : o.spriteMaskId;
+		if (mask.isValid()) addID("mask_index", mask);
 		if (!o.visible) addPrim("visible", o.visible);
 		if (o.solid) addPrim("solid", o.solid);
 		if (o.persistent) addPrim("persistent", o.persistent);
@@ -190,13 +192,14 @@ class YyObjectProperties {
 		return out;
 	}
 	public static function set(o:YyObject, code:String) {
+		var v22 = YyTools.isV22(o);
 		function id(v:GmlObjectPropertiesValue, t:String):YyGUID {
 			var id:YyGUID, res:YyProjectResource;
 			switch (v) {
 				case Ident("noone"): return YyGUID.zero;
 				case Number(f): {
 					if (f < 0) {
-						return YyGUID.zero;
+						return v22 ? YyGUID.zero : null;
 					} else throw "Can't assign numeric IDs aside of -1";
 				};
 				case CString(s): {
@@ -435,7 +438,13 @@ class YyObjectProperties {
 				switch (key) {
 					case "parent_index": o.parentObjectId = id(val, "GMObject");
 					case "sprite_index": o.spriteId = id(val, "GMSprite");
-					case "mask_index": o.maskSpriteId = id(val, "GMSprite");
+					case "mask_index": {
+						if (v22) {
+							o.maskSpriteId = id(val, "GMSprite");
+						} else {
+							o.spriteMaskId = id(val, "GMSprite");
+						}
+					};
 					case "visible": o.visible = bool(val);
 					case "solid": o.solid = bool(val);
 					case "persistent": o.persistent = bool(val);
@@ -500,7 +509,7 @@ class YyObjectProperties {
 			}
 		}
 		var error = GmlObjectProperties.parse(code, gml.GmlVersion.v2, varProc, propProc);
-		o.properties = props.length > 0 ? props : null;
+		o.properties = props.length > 0 ? props : (v22 ? null : []);
 		return error;
 	}
 }

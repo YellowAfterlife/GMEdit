@@ -6,4 +6,6 @@ package yy;
  */
 typedef YyResource = {>YyBase,
 	name:String,
+	//
+	?parent:YyProjectResource,
 };

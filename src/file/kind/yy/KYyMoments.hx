@@ -14,7 +14,7 @@ import yy.YyTimeline;
 class KYyMoments extends KGml {
 	public static var inst:KYyMoments = new KYyMoments();
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
-		if (data == null) data = haxe.Json.parse(super.loadCode(editor, data));
+		if (data == null) data = yy.YyJson.parse(super.loadCode(editor, data));
 		var tl:YyTimeline = data;
 		var file = editor.file;
 		NativeArray.clear(file.extraFiles);
@@ -28,6 +28,6 @@ class KYyMoments extends KGml {
 			editor.setSaveError("Can't update YY:\n" + YyTimeline.errorText);
 			return null;
 		}
-		return yy.YyJson.stringify(tl);
+		return yy.YyJson.stringify(tl, gml.Project.current.yyExtJson);
 	}
 }
