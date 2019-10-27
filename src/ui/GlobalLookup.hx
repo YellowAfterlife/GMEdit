@@ -62,7 +62,7 @@ class GlobalLookup {
 					if (ac != null) {
 						hint = ac.meta;
 					} else {
-						hint = AceMacro.jsOrx(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
+						hint = tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
 					}
 					if (kindFilter != null) {
 						if (hint == null || !NativeString.contains(hint, kindFilter)) {

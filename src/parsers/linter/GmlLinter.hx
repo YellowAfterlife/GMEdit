@@ -576,7 +576,7 @@ class GmlLinter {
 	}
 	
 	function checkCallArgs(currName:String, argc:Int) {
-		var doc = ace.AceMacro.jsOrx(
+		var doc = tools.JsTools.orx(
 			GmlAPI.gmlDoc[currName],
 			GmlAPI.extDoc[currName],
 			GmlAPI.stdDoc[currName]

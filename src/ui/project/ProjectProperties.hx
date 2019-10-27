@@ -9,7 +9,6 @@ import js.html.InputElement;
 import tools.Dictionary;
 import tools.NativeObject;
 import electron.FileWrap;
-import ace.AceMacro.jsOr;
 using tools.HtmlTools;
 
 /**
@@ -74,7 +73,7 @@ class ProjectProperties {
 			"Scripts (GMS2 only)",
 		];
 		el = Preferences.addRadios(fs, "#lambda mode",
-			lambdaModes[jsOr(d.lambdaMode, Default)], lambdaModes,
+			lambdaModes[tools.JsTools.or(d.lambdaMode, Default)], lambdaModes,
 		function(s) {
 			d.lambdaMode = lambdaModes.indexOf(s);
 			autosave();

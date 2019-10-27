@@ -205,7 +205,7 @@ class GmlFuncDoc {
 			var c:CharCode;
 			if (!hasRet && hasRetRx.test(chunk)) hasRet = true;
 			while (mt != null) {
-				var argis = ace.AceMacro.jsOr(mt[1], mt[2]);
+				var argis = tools.JsTools.or(mt[1], mt[2]);
 				if (argis != null) {
 					var argi:Int = Std.parseInt(argis);
 					var k = mt.index;

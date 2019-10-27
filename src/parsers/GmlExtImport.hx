@@ -315,7 +315,7 @@ class GmlExtImport {
 					q.skipSpaces1();
 					if (q.read() != ")".code) break;
 					//
-					return AceMacro.jsOrx(imp.shorten[selfEnumName], selfEnumName) + "()";
+					return tools.JsTools.or(imp.shorten[selfEnumName], selfEnumName) + "()";
 				}
 				var selfNs = imp.namespaces[selfType];
 				if (selfNs == null) break;
@@ -553,7 +553,7 @@ class GmlExtImport {
 		
 		// `Enum()` -> `array_create(Enum.lastItem)`:
 		var id = imp.longen[full];
-		var en = dot == -1 ? GmlAPI.gmlEnums[AceMacro.jsOr(id, full)] : null;
+		var en = dot == -1 ? GmlAPI.gmlEnums[tools.JsTools.or(id, full)] : null;
 		if (en != null) do {
 			peeker.setTo(reader);
 			peeker.skipSpaces1();
