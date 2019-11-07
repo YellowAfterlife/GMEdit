@@ -10,7 +10,7 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class GMLive {
-	static var rxLive:RegExp = new RegExp("if\\b\\s*\\("
+	static var rxLive:RegExp = new RegExp("if\\b\\s*\\(?\\s*"
 		+ "\\b(?:live_call|live_call_ext|live_defcall|live_defcall_ext)"
 	, "");
 	public static var attr:String = "data-gmlive";
