@@ -7,6 +7,7 @@ import haxe.macro.Context;
  * @author YellowAfterlife
  */
 class JsTools {
+	/** raw JS (a || b) */
 	public static inline function or<T>(a:T, b:T):T {
 		#if !macro
 		return js.Syntax.code("({0} || {1})", a, b);
@@ -22,5 +23,16 @@ class JsTools {
 			q = macro @:pos(p) tools.JsTools.or($q, ${exprs[i]});
 		}
 		return q;
+	}
+	/** Haxe regexp literal to JS regexp literal */
+	public static macro function rx(e:ExprOf<EReg>) {
+		switch (e.expr) {
+			case EConst(CRegexp(s, o)): {
+				s = ~/\//g.replace(s, "\\/");
+				var s = '/$s/$o';
+				return macro (cast js.Syntax.code($v{s}):js.lib.RegExp);
+			};
+			default: throw Context.error("Expected a regexp literal", e.pos);
+		}
 	}
 }
