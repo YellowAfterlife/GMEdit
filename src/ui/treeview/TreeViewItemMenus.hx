@@ -100,6 +100,10 @@ class TreeViewItemMenus {
 					dir.treeItems.insertBefore(ntv, after);
 				} else dir.treeItems.appendChild(ntv);
 			};
+			case -2: {
+				dir.treeItems.insertBefore(ntv, dir.treeItems.lastElementChild);
+				dir.classList.add(TreeView.clOpen);
+			};
 			default: {
 				dir.treeItems.appendChild(ntv);
 				dir.classList.add(TreeView.clOpen);
@@ -170,10 +174,10 @@ class TreeViewItemMenus {
 		//
 		if (d.filter == "file") {
 			try {
-					var full = Path.join([tvDir.getAttribute(TreeView.attrRel), s]);
-					if (mkdir) {
-						Project.current.mkdirSync(full);
-					} else {
+				var full = Path.join([tvDir.getAttribute(TreeView.attrRel), s]);
+				if (mkdir) {
+					Project.current.mkdirSync(full);
+				} else {
 					Project.current.writeTextFileSync(full, "");
 				}
 				createImplTV(args);

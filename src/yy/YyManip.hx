@@ -215,6 +215,12 @@ class YyManip {
 					} else d.vy.children.push(ni);
 				}
 			};
+			case -2: { // before the last child (fewer conflicts due to lack of trailing comma)
+				var i = d.vy.children.length;
+				if (i > 0) {
+					d.vy.children.insert(i - 1, ni);
+				} else d.vy.children.push(ni);
+			};
 			default: {
 				d.vy.children.push(ni);
 			};

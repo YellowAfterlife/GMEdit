@@ -655,7 +655,7 @@ class GmlExtLambda {
 				pj.yyResourceGUIDs.remove(s);
 				pj.yyResources.remove(r.Value.id);
 				if (lview == null) lview = pj.readYyFileSync(pj.lambdaView);
-				if (lview.children.remove(r.Value.id)) saveView = true;
+				if (lview.children.remove(r.Key)) saveView = true;
 				ry.splice(i, 1);
 				saveProject = true;
 				break;
@@ -679,7 +679,7 @@ class GmlExtLambda {
 				tvDir: cast ltv,
 				tvRef: ltv,
 				chain: ["Scripts", "#gmedit-lambda"],
-				order: 0,
+				order: -2,
 				mkdir: false,
 				name: s,
 				kind: "script",
