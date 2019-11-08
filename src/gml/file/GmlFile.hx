@@ -5,6 +5,7 @@ import editors.*;
 import electron.Dialog;
 import electron.FileSystem;
 import parsers.*;
+import parsers.GmlMultifile;
 import electron.FileWrap;
 import file.FileKind;
 import file.kind.gml.KGmlSearchResults;
@@ -111,7 +112,7 @@ class GmlFile {
 	}
 	
 	/** only for Multifle */
-	public var multidata:Array<{ name:String, path:String }>;
+	public var multidata:GmlMultifileData;
 	
 	/** only for SearchResults */
 	public var searchData:GlobalSeachData;

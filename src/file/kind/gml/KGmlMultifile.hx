@@ -9,6 +9,7 @@ import parsers.GmlSeeker;
 import tools.Dictionary;
 import tools.NativeArray;
 import tools.NativeString;
+import ui.treeview.TreeViewItemMenus;
 
 /**
  * The "Open in a combined view" option
@@ -22,11 +23,18 @@ class KGmlMultifile extends KGml {
 	}
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		var file = editor.file;
-		if (data != null) file.multidata = data;
+		if (data != null) {
+			if (Std.is(data, Array)) {
+				file.multidata = {
+					items: data,
+					tvDir: null
+				};
+			} else file.multidata = data;
+		}
 		NativeArray.clear(file.extraFiles);
 		var out = "";
 		var errors = "";
-		for (item in file.multidata) {
+		for (item in file.multidata.items) {
 			if (out != "") out += "\n\n";
 			out += "#define " + item.name + "\n";
 			var itemCode = FileWrap.readTextFileSync(item.path);
@@ -68,7 +76,7 @@ class KGmlMultifile extends KGml {
 		var file = editor.file;
 		var next = GmlMultifile.split(code, "<detached code>");
 		var map0 = new Dictionary<String>();
-		for (item in file.multidata) map0.set(item.name, item.path);
+		for (item in file.multidata.items) map0.set(item.name, item.path);
 		var errors = "";
 		for (item in next) {
 			var itemPath = map0[item.name];
@@ -76,6 +84,15 @@ class KGmlMultifile extends KGml {
 				var itemCode = item.code;
 				FileWrap.writeTextFileSync(itemPath, itemCode);
 				GmlSeeker.runSync(itemPath, itemCode, item.name, KGmlScript.inst);
+			} else if (tools.JsTools.rx(~/^\w+$/).test(item.name)) {
+				var dir = file.multidata.tvDir;
+				var args = TreeViewItemMenus.createImplBoth(false, 0, dir, item.name);
+				if (args != null) {
+					file.multidata.items.push({
+						name: item.name,
+						path: args.npath
+					});
+				}
 			} else errors += "Can't save script " + item.name
 				+ " because it is not among the edited group.\n";
 		}

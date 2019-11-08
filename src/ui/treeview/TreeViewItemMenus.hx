@@ -134,48 +134,68 @@ class TreeViewItemMenus {
 		}
 		return true;
 	}
-	static function createImpl(mkdir:Bool, order:Int) {
-		var d = getItemData(target);
-		Dialog.showPrompt("Name?", "", function(s:String) {
-			if (s == "" || s == null) return;
-			//
-			var tvDir:TreeViewDir = cast (order != 0 ? target.parentElement.parentElement : target);
-			if (!validate(s, tvDir, mkdir, d.filter)) return;
-			//
-			var args:TreeViewItemCreate = {
-				prefix: d.prefix,
-				plural: d.plural,
-				single: d.single,
-				tvDir: tvDir,
-				tvRef: target,
-				chain: d.chain,
-				last: d.last,
-				name: s,
-				kind: d.filter,
-				order: order,
-				mkdir: mkdir,
-			};
-			//
-			if (d.filter == "file") {
-				try {
+	
+	/**
+	 * @param	mkdir	Make a directory (true) or file (false)
+	 * @param	order	-1: before, 1: after, 0: inside, -2: inside but prefer non-last
+	 * @param	  dir	Treeview directory to work with
+	 * @param	 name	Name of new item
+	 * @return	TVIC if successful, null if not
+	 */
+	public static function createImplBoth(mkdir:Bool, order:Int, dir:Element, name:String, ?preproc:TreeViewItemCreate->TreeViewItemCreate):TreeViewItemCreate {
+		var s = name;
+		var d = getItemData(dir);
+		//
+		var tvDir:TreeViewDir = cast (order != 0 ? dir.parentElement.parentElement : dir);
+		if (!validate(s, tvDir, mkdir, d.filter)) return null;
+		//
+		var args:TreeViewItemCreate = {
+			prefix: d.prefix,
+			plural: d.plural,
+			single: d.single,
+			tvDir: tvDir,
+			tvRef: dir,
+			chain: d.chain,
+			last: d.last,
+			name: s,
+			kind: d.filter,
+			order: order,
+			mkdir: mkdir,
+		};
+		//
+		if (preproc != null) {
+			args = preproc(args);
+			if (args == null) return null;
+		}
+		//
+		if (d.filter == "file") {
+			try {
 					var full = Path.join([tvDir.getAttribute(TreeView.attrRel), s]);
 					if (mkdir) {
 						Project.current.mkdirSync(full);
 					} else {
-						Project.current.writeTextFileSync(full, "");
-					}
-					createImplTV(args);
-				} catch (x:Dynamic) {
-					Dialog.showError("Couldn't create the file: " + x);
+					Project.current.writeTextFileSync(full, "");
 				}
-				return;
+				createImplTV(args);
+				return args;
+			} catch (x:Dynamic) {
+				Dialog.showError("Couldn't create the file: " + x);
+				return null;
 			}
-			var vi = Project.current.version.config.projectModeId;
-			switch (vi) {
-				case 1: gmx.GmxManip.add(args);
-				case 2: yy.YyManip.add(args);
-				default: Dialog.showAlert("Can't create an item for this version!");
-			}
+		}
+		var vi = Project.current.version.config.projectModeId;
+		switch (vi) {
+			case 1: gmx.GmxManip.add(args);
+			case 2: yy.YyManip.add(args);
+			default: Dialog.showAlert("Can't create an item for this version!"); return null;
+		}
+		return args;
+	}
+	public static function createImpl(mkdir:Bool, order:Int) {
+		var dir = target;
+		Dialog.showPrompt("Name?", "", function(s) {
+			if (s == "" || s == null) return;
+			createImplBoth(mkdir, order, dir, s);
 		});
 	}
 	//

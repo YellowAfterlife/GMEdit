@@ -2,6 +2,7 @@ package parsers;
 import tools.Dictionary;
 import tools.NativeString;
 import gml.GmlAPI;
+import ui.treeview.TreeView;
 
 /**
  * Parses combined code with `#define` headers into individual name-code pairs.
@@ -9,10 +10,10 @@ import gml.GmlAPI;
  */
 class GmlMultifile {
 	public static var errorText:String;
-	public static function split(gmlCode:String, first:String):GmlMultifileData {
+	public static function split(gmlCode:String, first:String):GmlMultifilePairs {
 		var q = new GmlReader(gmlCode);
 		var start = 0;
-		var out:GmlMultifileData = [];
+		var out:GmlMultifilePairs = [];
 		var scriptName = first;
 		var errors = "";
 		var version = GmlAPI.version;
@@ -64,4 +65,8 @@ class GmlMultifile {
 		} else return out;
 	}
 }
-typedef GmlMultifileData = Array<{ name:String, code:String }>;
+typedef GmlMultifilePairs = Array<{ name:String, code:String }>;
+typedef GmlMultifileData = {
+	items:Array<{ name:String, path:String }>,
+	tvDir:TreeViewDir,
+}

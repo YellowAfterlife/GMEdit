@@ -70,10 +70,12 @@ class TreeViewMenus {
 			mpath += path;
 			items.push({ name: ident, path: path });
 		}
-		if (items.length > 0) {
-			var name = target.querySelector('.header').innerText;
-			GmlFile.openTab(new GmlFile(name, mpath, KGmlMultifile.inst, items));
-		}
+		var name = target.querySelector('.header').innerText;
+		var data:parsers.GmlMultifile.GmlMultifileData = {
+			items: items,
+			tvDir: cast target,
+		};
+		GmlFile.openTab(new GmlFile(name, mpath, KGmlMultifile.inst, data));
 	}
 	//
 	static function openYyShader(ext:String) {
