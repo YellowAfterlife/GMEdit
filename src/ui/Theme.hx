@@ -12,6 +12,7 @@ using tools.HtmlTools;
  */
 class Theme {
 	public static inline var path:String = "themes";
+	private static var refElement:Element = document.getElementById("project-style");
 	private static var elements:Array<Element> = [];
 	private static function reset() {
 		for (el in elements) {
@@ -41,7 +42,7 @@ class Theme {
 				var link = Main.document.createLinkElement();
 				link.rel = "stylesheet";
 				link.href = Path.join([dir, rel]);
-				Main.document.head.appendChild(link);
+				Main.document.head.insertBeforeEl(link, refElement);
 				elements.push(link);
 			}
 		}
