@@ -59,7 +59,7 @@ class AceTooltips {
 			var showRow = row;
 			var startRow = row + 1;
 			var checkRx = GmlAPI.scopeResetRx;
-			if (GmlExternAPI.gmlResetOnDefine) while (--startRow > 0) {
+			if (GmlExternAPI.gmlResetOnDefine) while (--startRow >= 0) {
 				if (checkRx.test(session.getLine(startRow))) {
 					showRow -= startRow + 1;
 					break;
