@@ -55,6 +55,18 @@ class AceTooltips {
 				}
 			}
 		}
+		inline function calcRow(row:Int) {
+			var showRow = row;
+			var startRow = row + 1;
+			var checkRx = GmlAPI.scopeResetRx;
+			if (GmlExternAPI.gmlResetOnDefine) while (--startRow > 0) {
+				if (checkRx.test(session.getLine(startRow))) {
+					showRow -= startRow + 1;
+					break;
+				}
+			}
+			return showRow;
+		}
 		if (doc == null) switch (t) {
 			case "enumfield": {
 				var iter = new AceTokenIterator(session, pos.row, pos.column);
@@ -142,7 +154,7 @@ class AceTooltips {
 						case "curly.paren.rparen": depth++;
 						case "curly.paren.lparen": if (--depth <= 0) {
 							var row = iter.getCurrentTokenRow();
-							r = "Closes line " + (row + 1) + ": ";
+							r = "Closes line " + (calcRow(row) + 1) + ": ";
 							var rowText = session.getLine(row);
 							while (row > 0 && rowText.trimBoth().length <= 1) rowText = session.getLine(--row);
 							r += rowText;
@@ -161,9 +173,12 @@ class AceTooltips {
 						case "curly.paren.lparen": depth++;
 						case "curly.paren.rparen": if (--depth <= 0) {
 							var row = iter.getCurrentTokenRow();
-							r = "Spans until line " + (row + 1);
+							r = "Spans until line " + (calcRow(row) + 1);
 							var rowText = session.getLine(row);
-							while (rowText != null && rowText.trimBoth().length <= 1) rowText = session.getLine(++row);
+							var len = session.getLength();
+							while (rowText != null && row < len && rowText.trimBoth().length <= 1) {
+								rowText = session.getLine(++row);
+							}
 							if (rowText != null) r += ": " + rowText;
 							break;
 						};
