@@ -531,7 +531,8 @@ using tools.NativeArray;
 				rdef("comment.line"),
 			]), //}
 			"gml.comment.doc.line": rComment.concat([ //{
-				rxRule((_) -> commentDocLineType, ~/.*$/, "pop"),
+				rule("comment.meta", "@\\w+"),
+				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),
 			]), //}
 			"gml.comment": rComment.concat(rCommentPop).concat([ //{

@@ -148,6 +148,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #app .ace-tm .ace_comment.ace_link {
 	color: white;
 }
+#app .ace-tm .ace_comment.ace_meta {
+	color: #A7B;
+}
 #app .ace-tm .ace_regionname,
 #app .ace-tm .ace_sectionname,
 #app .ace-tm .ace_momentname,
