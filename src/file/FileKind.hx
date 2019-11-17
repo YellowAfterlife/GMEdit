@@ -147,6 +147,7 @@ import tools.Dictionary;
 		KYy.register("GMTimeline", KYyMoments.inst);
 		KYy.register("GMScript", KGmlScript.inst);
 		KYy.register("GMSprite", KYySprite.inst);
+		KYy.register("GMExtension", KYyExtension.inst);
 		//
 		register("md", new KMarkdown(false));
 		register("dmd", new KMarkdown(true));

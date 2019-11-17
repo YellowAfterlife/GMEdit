@@ -1,5 +1,6 @@
 package file.kind.yy;
 import gml.file.GmlFile;
+import js.html.DivElement;
 import ui.treeview.TreeView;
 using tools.NativeString;
 
@@ -25,15 +26,20 @@ class KYyUnknown extends FileKind {
 		});
 		var full = gml.Project.current.fullPath(path);
 		if (dir != null) {
+			var makeEl = true;
 			switch (resource.resourceType) {
 				case "GMScript": {
 					full = haxe.io.Path.withoutExtension(full) + ".gml";
+					content = electron.FileWrap.readTextFileSync(full);
 				};
+				case "GMExtension": makeEl = false;
 			}
-			var kind = resource.resourceType.substring(2).toLowerCase();
-			var item = TreeView.makeAssetItem(resource.name, path, full, kind);
-			item.yyOpenAs = detect.kind;
-			TreeView.insertSorted(cast dir, item);
+			if (makeEl) {
+				var kind = resource.resourceType.substring(2).toLowerCase();
+				var item = TreeView.makeAssetItem(resource.name, path, full, kind);
+				item.yyOpenAs = detect.kind;
+				TreeView.insertSorted(cast dir, item);
+			}
 		} else Main.console.error('`$path` has missing parent `$parentPath`');
 		return detect.kind.index(full, content, main);
 	}

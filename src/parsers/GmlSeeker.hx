@@ -107,6 +107,8 @@ class GmlSeeker {
 		var notLam = !Std.is(kind, KGmlLambdas);
 		var canLam = notLam && project.canLambda();
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
+		var cubDepth:Int = 0; // depth of {}
+		var funcsAreGlobal:Bool = Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
 		var localKind = notLam ? "local" : "sublocal";
 		if (project.properties.lambdaMode == Scripts) {
 			if (orig.contains("/" + GmlExtLambda.lfPrefix)) {
@@ -140,8 +142,8 @@ class GmlSeeker {
 					case ")".code: if (flags.has(Par1)) return ")";
 					case "[".code: if (flags.has(Sqb0)) return "[";
 					case "]".code: if (flags.has(Sqb1)) return "]";
-					case "{".code: if (flags.has(Cub0)) return "{";
-					case "}".code: if (flags.has(Cub1)) return "}";
+					case "{".code: cubDepth--; if (flags.has(Cub0)) return "{";
+					case "}".code: cubDepth++; if (flags.has(Cub1)) return "}";
 					case "=".code: if (flags.has(SetOp) && q.peek() != "=".code) return "=";
 					case "/".code: switch (q.peek()) {
 						case "/".code: {
@@ -214,6 +216,7 @@ class GmlSeeker {
 									return find(flags);
 								} else return null;
 							}
+							if (flags.has(Define) && id == "function") return id;
 							if (flags.has(Ident)) return id;
 						}
 					};
@@ -334,8 +337,10 @@ class GmlSeeker {
 				}
 			}
 			else switch (s) {
-				case "#define", "#target": {
+				case "#define", "#target", "function": {
 					var isDefine = (s == "#define");
+					var isFunc = (s == "function");
+					if (isFunc && funcsAreGlobal && cubDepth == 0) isDefine = true;
 					// we don't have to worry about #event/etc because they
 					// do not occur in files themselves
 					flushDoc();
@@ -346,9 +351,9 @@ class GmlSeeker {
 					setLookup(main, true);
 					locals = new GmlLocals();
 					out.locals.set(main, locals);
-					if (isDefine && v.hasScriptArgs()) { // `#define name(...args)`
+					if (isFunc || isDefine && v.hasScriptArgs()) { // `#define name(...args)`
 						s = find(Line | Par0);
-						if (s == "(") {
+						if (s == "(" && isDefine) {
 							while (q.loop) {
 								s = find(Ident | Line | Par1);
 								if (s == ")" || s == "\n" || s == null) break;

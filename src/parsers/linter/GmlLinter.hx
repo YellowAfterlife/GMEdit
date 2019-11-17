@@ -180,8 +180,18 @@ class GmlLinter {
 		q["throw"] = KThrow;
 		//
 		var kws = version.config.additionalKeywords;
-		if (kws != null && kws.indexOf("in") >= 0) q["in"] = KLiveIn;
-		if (kws != null && kws.indexOf("wait") >= 0) q["wait"] = KLiveWait;
+		if (kws != null) {
+			inline function addOpt(name:String, k:GmlLinterKind) {
+				if (kws.indexOf(name) >= 0) q[name] = k;
+			}
+			addOpt("in", KLiveIn);
+			addOpt("wait", KLiveWait);
+			addOpt("new", KNew);
+			addOpt("delete", KDelete);
+			addOpt("function", KFunction);
+			addOpt("static", KStatic);
+			addOpt("constructor", KConstructor);
+		}
 		//
 		keywords = q;
 	}
@@ -686,6 +696,7 @@ class GmlLinter {
 			};
 			case KSqbOpen: rc(readArgs(newDepth, true) < 0);
 			case KLambda: rc(readLambda(newDepth));
+			case KFunction: rc(readLambda(newDepth, true));
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
 				if (skipIf(peek() == KCubClose)) {
 					// empty!
@@ -922,9 +933,9 @@ class GmlLinter {
 		}
 		return readSeqStartError("Unclosed {}");
 	}
-	function readLambda(oldDepth:Int):FoundError {
+	function readLambda(oldDepth:Int, isFunc:Bool = false):FoundError {
 		skipIf(peek() == KIdent);
-		if (skipIf(peek() == KParOpen)) {
+		if (skipIf(peek() == KParOpen)) { // (...args)
 			var depth = 1;
 			while (reader.loop) {
 				switch (next()) {
@@ -933,7 +944,17 @@ class GmlLinter {
 					default:
 				}
 			}
+		} else if (isFunc) return readExpect("function literal arguments");
+		//
+		if (isFunc && skipIf(peek() == KColon)) { // : 
+			readCheckSkip(KIdent, "a parent type name");
+			readCheckSkip(KParOpen, "opening bracket");
+			rc(readArgs(oldDepth + 1, false) < 0);
 		}
+		if (isFunc && skipIf(peek() == KConstructor)) {
+			// nothing else to do?
+		}
+		//
 		var oldLocalNames = localNamesPerDepth;
 		var oldLocalKinds = localKinds;
 		localNamesPerDepth = [];
@@ -1083,7 +1104,7 @@ class GmlLinter {
 				} else canBreak = z;
 			};
 			//
-			case KLiveWait, KYield, KGoto, KThrow: { // keyword <value>
+			case KLiveWait, KYield, KGoto, KThrow, KDelete: { // keyword <value>
 				rc(readExpr(newDepth));// wait <time>
 			}
 			case KLabel: { // label <name>[:]
@@ -1094,6 +1115,9 @@ class GmlLinter {
 					default: return readExpect("a label name");
 				}
 				skipIf(peek() == KColon);
+			};
+			case KStatic: { // todo: checking
+				rc(readExpr(newDepth, flags.with(AsStat)));
 			};
 			case KTry: {
 				rc(readStat(newDepth));

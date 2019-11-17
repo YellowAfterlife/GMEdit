@@ -91,10 +91,18 @@ enum abstract GmlLinterKind(Int) {
 	var KDefault;
 	var KCase;
 	
+	// exception handling:
 	var KTry;
 	var KCatch;
 	var KFinally;
 	var KThrow;
+	
+	// other features:
+	var KFunction;
+	var KConstructor;
+	var KStatic;
+	var KNew;
+	var KDelete;
 	
 	// loops:
 	var KFor;
@@ -157,12 +165,12 @@ enum abstract GmlLinterKind(Int) {
 	public inline function canSet() return __canSet[this];
 	
 	static var __isStat = new GmlLinterKindSet([
-		KSet, KCall, KInc, KDec,
+		KSet, KCall, KInc, KDec, KFunction,
 	]);
 	public inline function isStat() return __isStat[this];
 	
 	static var __canCall = new GmlLinterKindSet([
-		KIdent, KField, KLambda,
+		KIdent, KField, KLambda, KFunction,
 	]);
 	public inline function canCall() return __canCall[this];
 	

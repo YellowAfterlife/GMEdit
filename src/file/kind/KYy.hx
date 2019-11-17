@@ -37,7 +37,8 @@ class KYy extends FileKind {
 	override public function create(name:String, path:String, data:Dynamic, nav:GmlFileNav):GmlFile {
 		var json:YyBase = data != null ? data : FileWrap.readYyFileSync(path);
 		var opt:Int;
-		var dunno = 'GMEdit doesn\'t know how to open YY type ${json.modelName}.';
+		var kind = tools.JsTools.or(json.resourceType, json.modelName);
+		var dunno = 'GMEdit doesn\'t know how to open YY type $kind.';
 		if (FileSystem.canSync) {
 			opt = Dialog.showMessageBox({
 				message: '$dunno What would you like to do?',

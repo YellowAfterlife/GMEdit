@@ -5,7 +5,7 @@ package yy;
  * @author YellowAfterlife
  */
 typedef YyExtension = {
-	>YyBase,
+	>YyResource,
 	name:String,
 	files:Array<YyExtensionFile>,
 }
