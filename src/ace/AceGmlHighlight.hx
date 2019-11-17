@@ -351,6 +351,10 @@ using tools.NativeArray;
 		if (version.hasSingleQuoteStrings()) {
 			rBase.push(rxPush("string", ~/'/, "gml.string.sq"));
 		}
+		if (version.hasLiteralStrings()) {
+			rBase.push(rxPush("string", ~/@"/, "gml.string.dq"));
+			rBase.push(rxPush("string", ~/@'/, "gml.string.sq"));
+		}
 		if (version.hasTemplateStrings()) {
 			rBase.push(rxPush("string", ~/`/, "gml.string.tpl"));
 		}
