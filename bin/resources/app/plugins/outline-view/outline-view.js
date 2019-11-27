@@ -20,7 +20,7 @@
 			var rxDef = /^(?:(#event)|#define|#moment|#section|#roomcc)\b\s*(\w+(?::\w+)?)(.*)$/;
 			var rxPush = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
 			var rxPop = /^\s*(?:#endregion|\/\/#endregion)\b/;
-			var rxMark = /^\s*(\/\/#mark\b\s*(.*))$/;
+			var rxMark = /^\s*((?:\/\/#mark|#section)\b\s*(.*))$/;
 			var rxCtx = /^\s*((?:#region|\/\/#region|\/\/#mark)\b.*)$/
 			function update(file, pos) {
 				var def = pos.def, row = pos.row;
