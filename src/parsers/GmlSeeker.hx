@@ -354,14 +354,20 @@ class GmlSeeker {
 					if (isFunc || isDefine && v.hasScriptArgs()) { // `#define name(...args)`
 						s = find(Line | Par0);
 						if (s == "(" && isDefine) {
+							var openPos = q.pos;
+							flags = Ident | Par1 | (isFunc ? 0 : Line);
+							var foundArg = false;
 							while (q.loop) {
-								s = find(Ident | Line | Par1);
+								s = find(flags);
 								if (s == ")" || s == "\n" || s == null) break;
 								locals.add(s, localKind);
+								foundArg = true;
 							}
-							doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
-							out.docList.push(doc);
-							out.docMap.set(main, doc);
+							if (!isFunc || foundArg) {
+								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
+								out.docList.push(doc);
+								out.docMap.set(main, doc);
+							}
 						}
 					}
 					//
