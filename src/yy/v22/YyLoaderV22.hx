@@ -230,6 +230,7 @@ class YyLoaderV22 {
 								}
 								for (mcr in file.constants) {
 									var name = mcr.constantName;
+									if (name.indexOf("/*") >= 0) continue;
 									GmlAPI.extKind.set(name, "extmacro");
 									if (!mcr.hidden) {
 										var expr = mcr.value;
