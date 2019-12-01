@@ -162,10 +162,17 @@ using tools.HtmlTools;
 							ctxLast = ctxLink;
 							var head = '\n\n// in @[$ctxLink]:\n' + line;
 							if (isRepl) {
-								var next:String = isReplFn ? repl(curr, {
-									ctx: ctxName,
-									row: pos.row,
-								}) : repl;
+								var next:String;
+								if (isReplFn) {
+									next = repl(curr, {
+										ctx: ctxName,
+										row: pos.row,
+									});
+								} else if (mt.length > 1) {
+									var li = rx.lastIndex;
+									next = NativeString.replaceExt(mt[0], rx, repl);
+									rx.lastIndex = li;
+								} else next = repl;
 								out += q.substring(replStart, ofs) + next;
 								replStart = ofs + mt[0].length;
 								if (mt[0] != next) {
