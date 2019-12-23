@@ -48,6 +48,7 @@ using tools.HtmlTools;
 	public static var cbCheckExtensions:InputElement;
 	public static var cbExpandLambdas:InputElement;
 	public static var cbRegExp:InputElement;
+	public static var cbUnique:InputElement;
 	public static var divSearching:DivElement;
 	public static var currentPath:String;
 	//
@@ -346,7 +347,18 @@ using tools.HtmlTools;
 		});
 	}
 	public static function findAuto(?opt:GlobalSearchOpt) {
-		if (opt == null) opt = getOptions();
+		if (opt == null) {
+			opt = getOptions();
+			if (cbUnique.checked) {
+				var found = new Dictionary<Bool>();
+				opt.findFilter = function(mt:Dynamic) {
+					var k:String = Std.is(mt, Array) ? mt[0] : mt;
+					if (found[k]) return false;
+					found[k] = true;
+					return true;
+				};
+			}
+		}
 		if (opt != null) runAuto(opt);
 	}
 	public static function replaceAuto(?opt:GlobalSearchOpt) {
@@ -386,6 +398,7 @@ using tools.HtmlTools;
 		cbCheckRooms = element.querySelectorAuto('#global-search-check-rooms');
 		cbExpandLambdas = element.querySelectorAuto('#global-search-expand-lambdas');
 		cbRegExp = element.querySelectorAuto('#global-search-regexp');
+		cbUnique = element.querySelectorAuto('#global-search-unique');
 		//}
 		fdFind.onkeydown = function(e:KeyboardEvent) {
 			switch (e.keyCode) {
