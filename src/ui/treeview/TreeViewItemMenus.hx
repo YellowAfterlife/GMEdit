@@ -59,10 +59,14 @@ class TreeViewItemMenus {
 		updatePrefix(target);
 		var v = Project.current.version;
 		if (v != gml.GmlVersion.none) {
-			var supported = switch (prefix) {
-				case "scripts/": true;
-				default: v.config.projectModeId != 1;
-			};
+			var supported:Bool = true;
+			if (v.config.projectModeId == 1) {
+				supported = switch (prefix) {
+					case "scripts/": true;
+					case "objects/": true;
+					default: false;
+				};
+			}
 			for (q in items.manipOuter) {
 				q.visible = true;
 				q.enabled = supported;
