@@ -17,6 +17,9 @@ typedef YySpriteImpl = {
 	playbackSpeed:Float,
 	playbackSpeedType:Int,
 	frames:Array<YySpriteFrame>,
+	For3D:Bool,
+	HTile:Bool,
+	VTile:Bool,
 };
 typedef YySpriteFrame = {
 	>YyBase,
