@@ -53,7 +53,7 @@ class GmlExtImport {
 	private static var rxHasTypePost = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+:/);
 	
 	/** Ditto but accounting for `/*:Type` */
-	private static var rxHasTypePre = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+\/\*:/);
+	private static var rxHasTypePre = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+(?:\/\*)?:/);
 	
 	public static var errorText:String;
 	//
