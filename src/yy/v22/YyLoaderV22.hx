@@ -34,6 +34,7 @@ class YyLoaderV22 {
 		var roomViews:Dictionary<YyView> = new Dictionary();
 		var rootView:YyView = null;
 		var rxName = Project.rxName;
+		var treeLocation = new Dictionary<String>(); // GUID -> where at
 		for (res in yyProject.resources) {
 			var key = res.Key;
 			var val = res.Value;
@@ -80,9 +81,19 @@ class YyLoaderV22 {
 			for (el in view.children) {
 				var res = resources[el];
 				if (res == null) continue;
+				//
 				var val = res.Value;
 				var name:String, rel:String;
 				var type = val.resourceType;
+				//
+				if (treeLocation.exists(el)) {
+					Main.console.warn('Resource `$el` ('
+						+ (type == "GMFolder" ? views[res.Key].folderName : val.resourcePath)
+						+ ') exists in two places at once, `$path` and `' + treeLocation[el]
+						+ '`. This may cause GMS2 to remove your resource on load.'
+					);
+				} else treeLocation[el] = path;
+				//
 				function loadrec_dir(vdir:YyView, name:String) {
 					if (out == null) {
 						loadrec(out, vdir, null);
