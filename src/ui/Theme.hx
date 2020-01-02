@@ -37,6 +37,9 @@ class Theme {
 			if (theme.parentTheme != null) add(theme.parentTheme);
 			if (theme.darkChromeTabs != null) setDarkTabs(theme.darkChromeTabs);
 			if (theme.windowsAccentColors) electron.WindowsAccentColors.update();
+			if (theme.useBracketDepth != null) {
+				ace.AceGmlHighlight.useBracketDepth = theme.useBracketDepth;
+			}
 			//
 			if (theme.stylesheets != null) for (rel in theme.stylesheets) {
 				var link = Main.document.createLinkElement();
@@ -67,6 +70,7 @@ class Theme {
 		if (current == name) return name;
 		current = name;
 		reset();
+		ace.AceGmlHighlight.useBracketDepth = false;
 		add(name);
 		return name;
 	}
@@ -76,4 +80,5 @@ typedef ThemeImpl = {
 	?stylesheets:Array<String>,
 	?darkChromeTabs:Bool,
 	?windowsAccentColors:Bool,
+	?useBracketDepth:Bool,
 }

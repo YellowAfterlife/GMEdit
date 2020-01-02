@@ -32,8 +32,12 @@ using tools.NativeArray;
  */
 @:expose("AceGmlHighlight")
 @:keep class AceGmlHighlight extends AceHighlight {
+	static inline var depthSep:String = "-depth=";
+	static inline var depthSepLen:Int = 7; // "-depth=".length;
+	public static var useBracketDepth:Bool = false;
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
+		var rules:AceHighlightRuleset = null;
 		var fakeMultiline:Bool = false;
 		var fieldDef = "localfield";
 		if (Std.is(editor.kind, KGmlSearchResults)) fakeMultiline = true;
@@ -358,6 +362,60 @@ using tools.NativeArray;
 		if (version.hasTemplateStrings()) {
 			rBase.push(rxPush("string", ~/`/, "gml.string.tpl"));
 		}
+		//{ braces
+		var rCurlyOpen:AceLangRule = {
+			regex: "\\{",
+			onMatch: function(value:String, state:String, stack, line, row) {
+				if (useBracketDepth) {
+					var pos = state.lastIndexOf(depthSep);
+					if (pos >= 0) {
+						return "curly.paren.lparen.depth" +
+							Std.parseInt(state.substring(pos + depthSepLen));
+					} else if (state == "start") {
+						return "curly.paren.lparen.depth0";
+					}
+				}
+				return "curly.paren.lparen";
+			},
+			next: function(current:String, stack:Array<String>) {
+				if (useBracketDepth) {
+					var pos = current.lastIndexOf(depthSep), next:String;
+					if (pos >= 0) {
+						next = current.substring(0, pos + depthSepLen)
+							+ (Std.parseInt(current.substring(pos + depthSepLen)) + 1);
+					} else {
+						next = current + (depthSep + "1");
+					}
+					if (rules.exists(next)) return next;
+				}
+				return current;
+			}
+		};
+		var rCurlyClose:AceLangRule = {
+			regex: "\\}",
+			onMatch: function(value:String, state:String, stack, line, row) {
+				if (useBracketDepth) {
+					var pos = state.lastIndexOf(depthSep);
+					if (pos >= 0) {
+						return "curly.paren.rparen.depth" +
+							(Std.parseInt(state.substring(pos + depthSepLen)) - 1);
+					}
+				}
+				return "curly.paren.lparen";
+			},
+			next: function(current:String, stack:Array<String>) {
+				if (useBracketDepth) {
+					var pos = current.lastIndexOf(depthSep), next:String;
+					if (pos >= 0) {
+						var ind = Std.parseInt(current.substring(pos + depthSepLen)) - 1;
+						if (ind <= 0) return current.substring(0, pos);
+						return current.substring(0, pos + depthSepLen) + ind;
+					}
+				}
+				return current;
+			}
+		};
+		//}
 		rBase = rBase.concat([ //{
 			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]+\b/), // $c0ffee
 			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
@@ -377,8 +435,8 @@ using tools.NativeArray;
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
 			rxRule("operator", ~/!|%|&|@|\*|\-\-|\-|\+\+|\+|~|!=|<=|>=|<>|<|>|!|&&|\|\|/),
 			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
-			rxRule("curly.paren.lparen", ~/\{/),
-			rxRule("curly.paren.rparen", ~/\}/),
+			rCurlyOpen,
+			rCurlyClose,
 			rxRule("square.paren.lparen", ~/\[/),
 			rxRule("square.paren.rparen", ~/\]/),
 			rxRule("paren.lparen", ~/\(/),
@@ -499,7 +557,7 @@ using tools.NativeArray;
 		rMFunc.replaceOne(rIdentPair, rIdentPairMF);
 		//}
 		//
-		var rules = {
+		rules = {
 			"start": rBase,
 			"gml.enum": rEnum,
 			"gml.enumvalue": rEnumValue,
@@ -551,6 +609,13 @@ using tools.NativeArray;
 				rxRule("comment", ~/.*?\*\//, "pop"),
 			]).concat(rBase),
 		};
+		//
+		for (k in ["start"]) {
+			for (i in 0 ... 32) {
+				rules[k + depthSep + i] = rules[k];
+			}
+		}
+		//
 		return rules;
 	}
 	public function new() {
