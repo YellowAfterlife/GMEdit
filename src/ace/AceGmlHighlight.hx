@@ -296,6 +296,7 @@ using tools.NativeArray;
 			fakeMultiline
 				? rxRule(["comment", "comment.preproc", "comment"], ~/(\/\*(?:\/\/)?\s*)(#gml)(.*?(?:\*\/|$))/)
 				: rxPush(["comment", "comment.preproc"],            ~/(\/\*(?:\/\/)?\s*)(#gml)/, "gml.comment.gml"),
+			rxRule("comment.doc", ~/\/\*\*\//), // /**/
 			fakeMultiline
 				? rxRule("comment.doc", ~/\/\*\*.*?(?:\*\/|$)/)
 				: rxPush("comment.doc", ~/\/\*\*/, "gml.comment.doc"),
