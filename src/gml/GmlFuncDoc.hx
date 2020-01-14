@@ -188,6 +188,8 @@ class GmlFuncDoc {
 		//
 		return k;
 	}
+	static var nameTrimPattern:String = null;
+	static var nameTrimRegex:RegExp = null;
 	public function fromCode(gml:String, from:Int = 0, ?till:Int) {
 		var q = new GmlReader(gml);
 		var rx = fromCode_rx;
@@ -195,6 +197,20 @@ class GmlFuncDoc {
 		var start = from;
 		if (till == null) till = gml.length;
 		clear();
+		//
+		{ // sync regex
+			var pt = Project.current.properties.argNameRegex;
+			if (pt != nameTrimPattern) {
+				nameTrimPattern = pt;
+				nameTrimRegex = null;
+				if (pt != null) try {
+					nameTrimRegex = new RegExp(pt);
+				} catch (x:Dynamic) {
+					Main.console.error('Error compiling `$pt`:', x);
+				}
+			}
+		};
+		var ntrx = nameTrimRegex;
 		//
 		var hasRet = false;
 		var hasRetRx = fromCode_hasRet;
@@ -263,6 +279,10 @@ class GmlFuncDoc {
 							break;
 						}
 						name = chunk.substring(nameStart, nameEnd);
+						if (ntrx != null) {
+							var mt = ntrx.exec(name);
+							if (mt != null && mt[1] != null) name = mt[1];
+						}
 						if (suffix != null) name += suffix;
 						// perhaps it's GMS1-style `if (argument_count > 1) v = argument[1]`?
 						if (fromCode_skipIf(chunk, k) >= 0) isOpt = true;

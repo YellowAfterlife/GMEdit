@@ -6,9 +6,13 @@ import gml.Project;
 import file.kind.misc.KProjectProperties;
 import js.html.FieldSetElement;
 import js.html.InputElement;
+import js.lib.RegExp;
 import tools.Dictionary;
 import tools.NativeObject;
+import tools.JsTools.or;
+import tools.JsTools.orx;
 import electron.FileWrap;
+import tools.NativeString;
 using tools.HtmlTools;
 
 /**
@@ -73,7 +77,7 @@ class ProjectProperties {
 			"Scripts (GMS2 only)",
 		];
 		el = Preferences.addRadios(fs, "#lambda mode",
-			lambdaModes[tools.JsTools.or(d.lambdaMode, Default)], lambdaModes,
+			lambdaModes[or(d.lambdaMode, Default)], lambdaModes,
 		function(s) {
 			d.lambdaMode = lambdaModes.indexOf(s);
 			autosave();
@@ -81,6 +85,21 @@ class ProjectProperties {
 		if (project.version.config.projectModeId != 2) {
 			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
 		}
+		//
+		el = Preferences.addInput(fs,
+			"Regex for trimming argument name (e.g. `^_(\\w+)$`)",
+			or(d.argNameRegex, ""),
+		function(s) {
+			if (NativeString.trimBoth(s) == "") s = null;
+			if (s != null) try {
+				new RegExp(s);
+			} catch (x:Dynamic) {
+				electron.Dialog.showError("Invalid regexp: " + x);
+				return;
+			}
+			d.argNameRegex = s;
+			autosave();
+		});
 		//}
 		ui.preferences.PrefLinter.build(out, project);
 		//

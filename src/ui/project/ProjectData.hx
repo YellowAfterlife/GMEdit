@@ -12,6 +12,7 @@ typedef ProjectData = {
 	?indentSize:Int,
 	?indentWithTabs:Bool,
 	?lambdaMode:LambdaMode,
+	?argNameRegex:String,
 	?linterPrefs:parsers.linter.GmlLinterPrefs,
 }
 enum abstract LambdaMode(Int) from Int to Int {

@@ -151,7 +151,7 @@ class GmlExtArgs {
 						q.skip();
 						q.skipSpaces0();
 						// do not allow #args with trailing data
-						if (!q.peek().isSpace1()) return null;
+						if (q.loopLocal && !q.peek().isSpace1()) return null;
 						break;
 					};
 					default: if (c.isIdent0()) break; else return null;

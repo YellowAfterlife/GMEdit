@@ -19,5 +19,5 @@ package ace.extern;
 	public var start:AcePos;
 	public var end:AcePos;
 	public function new(startRow:Int, startCol:Int, endRow:Int, endCol:Int):Void;
-	// todo
+	public function extend(row:Int, col:Int):AceRange;
 }

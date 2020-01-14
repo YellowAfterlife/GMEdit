@@ -12,6 +12,7 @@ using StringTools;
  * @author YellowAfterlife
  */
 class GmlExtArgsDoc {
+	static var rxGmDocStart = new RegExp("^(///\\s*)$");
 	static var rxGmDoc = new RegExp("^(///\\s*\\w*\\()(.*?)(\\).*)$");
 	static var rxAfter = new RegExp("^///\\s*@(?:func|function|description|desc)");
 	static var rxArg = new RegExp("^(///" // 1 -> until text
@@ -113,6 +114,19 @@ class GmlExtArgsDoc {
 		var argData = GmlExtArgs.argData;
 		var curr = argData[""];
 		var names = curr.names;
+		var rxTrim:RegExp = null; {
+			var s = Project.current.properties.argNameRegex;
+			if (s != null && s.trim() != "") try {
+				rxTrim = new RegExp(s);
+			} catch (x:Dynamic) {
+				Main.console.error("Error parsing argument regex: ", x);
+			}
+		};
+		if (rxTrim != null) for (i in 0 ... names.length) {
+			var name = names[i];
+			var mt = rxTrim.exec(name);
+			if (mt != null && mt[1] != null) names[i] = mt[1];
+		}
 		var texts = curr.texts;
 		var types = curr.types;
 		var aceDoc = session.doc;
@@ -148,9 +162,23 @@ class GmlExtArgsDoc {
 			}
 		}
 		while (tk != null) {
+			var next = true;
 			switch (tk.type) {
 				case "comment.doc.line": {
 					var val = tk.value;
+					var tkRow = iter.getCurrentTokenRow();
+					var tkCol = iter.getCurrentTokenColumn();
+					if (rxGmDocStart.test(val)) {
+						tk = iter.stepForward();
+						next = false;
+						if (tk.type == "comment.meta") {
+							val += tk.value;
+							tk = iter.stepForward();
+							if (tk.type == "comment.doc.line") {
+								val += tk.value;
+							}
+						}
+					}
 					if (rxAfter.test(val)) {
 						lastRow = iter.getCurrentTokenRow();
 					} else {
@@ -186,17 +214,21 @@ class GmlExtArgsDoc {
 									updateDoc = true;
 								}
 								//
-								if (type != types[index]) {
+								if (types[index] != "" && type != types[index]) {
 									type = types[index];
 									updateDoc = true;
 								}
 								//
-								if (updateDoc) replace.push({
-									range: iter.getCurrentTokenRange(),
-									next: "///" + beforeMeta + meta + afterMeta
-										+ (type != "" ? '{' + type + '}' + afterType : '')
-										+ name + (text != "" ? afterName + text : "")
-								});
+								if (updateDoc) {
+									var range = iter.getCurrentTokenRange();
+									if (!next) range = range.extend(tkRow, tkCol);
+									replace.push({
+										range: range,
+										next: "///" + beforeMeta + meta + afterMeta
+											+ (type != "" ? '{' + type + '}' + afterType : '')
+											+ name + (text != "" ? afterName + text : "")
+									});
+								}
 							}
 						}
 					}
@@ -218,7 +250,7 @@ class GmlExtArgsDoc {
 					}
 				};
 			}
-			tk = iter.stepForward();
+			if (next) tk = iter.stepForward();
 		}
 		flush();
 		//
