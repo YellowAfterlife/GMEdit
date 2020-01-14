@@ -45,7 +45,7 @@
 				click: onClick,
 			});
 			$gmedit["ui.treeview.TreeView"].on("dirMenu", function(e) {
-				menuItem.visible = proj().version == 2;
+				menuItem.visible = proj().version.config.projectMode == "gms2";
 			});
 			//
 			var menu = TreeViewMenus.dirMenu;
