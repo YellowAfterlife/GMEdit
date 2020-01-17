@@ -292,7 +292,7 @@ body {
 }
 .chrome-tab-changed .chrome-tab-close::before,
 .chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-changed .chrome-tab-close:not(:hover)::before {
-	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="#5198D9"/></svg>');
+	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="%235198D9"/></svg>');
 }
 .chrome-tabs-hint {
 	position: absolute;
