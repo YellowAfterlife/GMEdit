@@ -1,5 +1,5 @@
 #outline-view {
-	overflow-y: auto;
+	overflow: auto;
 }
 #outline-view.popout-window {
 	right: 20px;
