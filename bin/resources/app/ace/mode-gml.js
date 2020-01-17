@@ -297,7 +297,6 @@ oop.inherits(FoldMode, BaseFoldMode);
 					}
 					break;
 			}
-			console.log(tk);
 			tk = iter.stepForward();
 		}
 		return null;
