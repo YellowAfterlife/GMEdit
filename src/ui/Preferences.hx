@@ -282,6 +282,7 @@ class Preferences {
 			singleClickOpen: false,
 			assetThumbs: true,
 			showGMLive: Everywhere,
+			codeLiterals: false,
 			fileChangeAction: Ask,
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,

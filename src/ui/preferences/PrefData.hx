@@ -7,9 +7,6 @@ import haxe.DynamicAccess;
  */
 typedef PrefData = {
 	theme:String,
-	ukSpelling:Bool,
-	?compExactMatch:Bool, // deprecated
-	compMatchMode:PrefMatchMode,
 	fileSessionTime:Float,
 	projectSessionTime:Float,
 	argsMagic:Bool,
@@ -25,14 +22,20 @@ typedef PrefData = {
 	showGMLive:PrefGMLive,
 	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,
+	//
+	ukSpelling:Bool,
+	?compExactMatch:Bool, // deprecated
+	compMatchMode:PrefMatchMode,
+	detectTab:Bool,
 	tabSize:Int,
 	tabSpaces:Bool,
-	detectTab:Bool,
-	eventOrder:Int,
-	backupCount:DynamicAccess<Int>,
 	tooltipKind:PrefTooltipKind,
 	tooltipDelay:Int,
 	tooltipKeyboardDelay:Int,
+	codeLiterals:Bool,
+	//
+	eventOrder:Int,
+	backupCount:DynamicAccess<Int>,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
 }
 enum abstract PrefMatchMode(Int) from Int to Int {

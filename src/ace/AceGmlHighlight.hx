@@ -276,6 +276,10 @@ using tools.NativeArray;
 		var rSection = rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/);
 		var commentDocLineType:String = "comment.doc.line";
 		//
+		var rGmlComment = (fakeMultiline
+			? rxRule(["comment", "comment.preproc", "comment"], ~/(\/\*(?:\/\/)?\s*)(#gml)(.*?(?:\*\/|$))/)
+			: rxPush(["comment", "comment.preproc"],            ~/(\/\*(?:\/\/)?\s*)(#gml)/, "gml.comment.gml")
+		);
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
@@ -293,9 +297,7 @@ using tools.NativeArray;
 			}, ~/\/\/\//, "gml.comment.doc.line"),
 			rxRule("comment.line", ~/\/\/$/),
 			rxPush("comment.line", ~/\/\//, "gml.comment.line"),
-			fakeMultiline
-				? rxRule(["comment", "comment.preproc", "comment"], ~/(\/\*(?:\/\/)?\s*)(#gml)(.*?(?:\*\/|$))/)
-				: rxPush(["comment", "comment.preproc"],            ~/(\/\*(?:\/\/)?\s*)(#gml)/, "gml.comment.gml"),
+			rGmlComment,
 			rxRule("comment.doc", ~/\/\*\*\//), // /**/
 			fakeMultiline
 				? rxRule("comment.doc", ~/\/\*\*.*?(?:\*\/|$)/)
@@ -305,7 +307,7 @@ using tools.NativeArray;
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
 			//
 			rDefine, rAction, rKeyEvent, rEvent, rMoment, rTarget,
-			//
+			//{ macros
 			rpushPairs([
 				"#macro", "preproc.macro",
 				"\\s+", "text",
@@ -321,7 +323,6 @@ using tools.NativeArray;
 				"\\w+", "macroname",
 			], "gml.mfunc"),
 			rxRule("preproc.macro", ~/#macro\b/),
-			//
 			rpushPairs([
 				"#mfunc", "preproc.mfunc",
 				"\\s+", "text",
@@ -331,7 +332,7 @@ using tools.NativeArray;
 			], "gml.mfunc.decl"),
 			rxRule(["preproc.mfunc", "text", "macroname"], ~/(#mfunc)(\s+)(\w+)/),
 			rxRule("preproc.mfunc", ~/#mfunc\b/),
-			//
+			//}
 			rulePairs([
 				"#import\\s+", "preproc.import",
 				"\"[^\"]*\"|'[^']*'", "string.importpath"
@@ -610,6 +611,29 @@ using tools.NativeArray;
 				rxRule("comment", ~/.*?\*\//, "pop"),
 			]).concat(rBase),
 		};
+		//
+		if (ui.Preferences.current.codeLiterals && (version.hasLiteralStrings() || version.hasSingleQuoteStrings())) {
+			function addShaderBlock(substart:String, subset:AceHighlightRuleset) {
+				var start = subset["start"].slice(0);
+				start.unshift(rxRule("string", ~/'/, "pop"));
+				for (key in subset.keys()) if (key != "start") rules[key] = subset[key];
+				rules[substart] = start;
+			}
+			addShaderBlock("gml.string.hlsl", shaders.ShaderHighlight.makeRules(null, HLSL));
+			addShaderBlock("gml.string.glsl", shaders.ShaderHighlight.makeRules(null, GLSL));
+			rules["gml.string.gml"] = [rxRule("string", ~/'/, "pop")].concat(rBase);
+			var sfx = version.hasSingleQuoteStrings() ? "'" : "@'";
+			inline function add(mode:String) {
+				rBase.insertBefore(rule(
+					["comment", "string"],
+					"(/\\*" + mode + "\\*/)(" + sfx + ")",
+					"gml.string." + mode
+				), rGmlComment);
+			}
+			add("hlsl");
+			add("glsl");
+			add("gml");
+		}
 		//
 		for (k in ["start"]) {
 			for (i in 0 ... 32) {

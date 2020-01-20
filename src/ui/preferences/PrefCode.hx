@@ -55,6 +55,15 @@ class PrefCode {
 			current.tooltipKeyboardDelay = t;
 			save();
 		});
+		addCheckbox(out,
+			"Highlight code inside hinted GML strings (e.g. /*gml*/@'return 1')",
+			current.codeLiterals, function(z) {
+			current.codeLiterals = z;
+			save();
+		}).title = "Supported modes: gml, hlsl, glsl."
+			+ "\nGMS2: use /*mode*/@'string'."
+			+ "\nGMS1: use /*mode*/'string'."
+			+ "\nAffects newly opened code tabs.";
 		//
 		var optSnippets_0 = ["gml", "gml_search", "shader"];
 		var optSnippets_1 = ["GML", "Search results", "Shaders"];
