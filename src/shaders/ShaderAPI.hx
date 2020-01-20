@@ -28,16 +28,15 @@ class ShaderAPI {
 			var doc = new Dictionary<GmlFuncDoc>();
 			var comp = new AceAutoCompleteItems();
 			//
-			FileSystem.readTextFile(Main.relPath('api/shaders/keywords_$name.txt'), function(e, d) {
-				~/(\w+)/gm.each(d, function(rx:EReg) {
-					kind.set(rx.matched(1), "keyword");
-				});
-			});
-			//
 			FileSystem.readTextFile(Main.relPath('api/shaders/${name}_names'), function(e, defs) {
 				GmlParseAPI.loadStd(defs, {
 					kind: kind, doc: doc, comp: comp,
 					kindPrefix: name
+				});
+				FileSystem.readTextFile(Main.relPath('api/shaders/keywords_$name.txt'), function(e, d) {
+					~/(\w+)/gm.each(d, function(rx:EReg) {
+						kind.set(rx.matched(1), "keyword");
+					});
 				});
 			});
 			//
