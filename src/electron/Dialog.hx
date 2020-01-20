@@ -1,10 +1,12 @@
 package electron;
+import js.html.CustomEvent;
 import js.html.Element;
 import js.html.FileList;
 import js.html.FormElement;
 import js.html.InputElement;
 import js.html.File;
 import js.html.KeyboardEvent;
+import js.lib.Promise;
 import js.lib.Uint8Array;
 import Main.document;
 
@@ -13,13 +15,18 @@ import Main.document;
  * @author YellowAfterlife
  */
 @:native("Electron_Dialog") extern class Dialog {
-	public static function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int;
+	@:native("showMessageBox")
+	public static function showMessageBoxPromise(options:DialogMessageOptions):Promise<DialogPromiseProps>;
+	public static function showMessageBoxSync(options:DialogMessageOptions):Int;
+	public static inline function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int {
+		return DialogFallback.showMessageBoxProxy(options, async);
+	}
 	
 	public static inline function showAlert(s:String):Void {
-		Main.window.alert(s);
+		DialogFallback.showAlert(s);
 	}
 	public static inline function showError(s:String):Void {
-		Main.window.alert(s);
+		DialogFallback.showError(s);
 	}
 	
 	public static function showOpenDialog(
@@ -48,6 +55,40 @@ import Main.document;
 	//
 	private static var form:FormElement;
 	private static var input:InputElement;
+	
+	public static function showMessageBoxProxy(options:DialogMessageOptions, async:Int->Bool->Void):Int {
+		if (Electron == null) {
+			Main.console.error("Don't have a showMessageBox here");
+			return -1;
+		} else if (async != null) {
+			Dialog.showMessageBoxPromise(options).then(function(result) {
+				async(result.response, result.checkboxChecked);
+			});
+			return -1;
+		} else return Dialog.showMessageBoxSync(options);
+	}
+	public static function showAlert(s:String):Void {
+		if (Electron != null) {
+			Dialog.showMessageBoxSync({
+				type: "info",
+				message: s,
+				buttons: ["OK"],
+			});
+		} else Main.window.alert(s);
+	}
+	public static function showError(s:String):Void {
+		if (Electron != null) {
+			Dialog.showMessageBoxSync({
+				type: "error",
+				message: s,
+				buttons: ["OK"],
+			});
+		} else Main.window.alert(s);
+	}
+	public static function showConfirm(text:String):Bool {
+		return Main.window.confirm(text);
+	}
+	
 	public static function showOpenDialogWrap(
 		options:DialogOpenOptions, func:FileList->Void
 	):Void {
@@ -154,6 +195,7 @@ import Main.document;
 	}
 }
 //
+typedef DialogPromiseProps = { response:Int, checkboxChecked:Bool };
 typedef DialogOpenOptions = {
 	?title:String,
 	?defaultPath:String,
