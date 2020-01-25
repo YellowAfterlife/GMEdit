@@ -84,8 +84,8 @@ class YyLoader {
 		project.yyResourceGUIDs = new Dictionary();
 		project.yySpriteURLs = new Dictionary();
 		for (resource in yyProject.resources) {
-			var resPath = resource.path;
-			var resName = resource.name;
+			var resPath = resource.id.path;
+			var resName = resource.id.name;
 			// get rid of this mess later
 			project.yyResources[resName] = resource;
 			project.yyResourceGUIDs[resName] = cast resName;
@@ -97,7 +97,7 @@ class YyLoader {
 		}
 		//
 		for (resource in yyProject.resources) {
-			GmlSeeker.run(resource.path, resource.name, KYyUnknown.inst);
+			GmlSeeker.run(resource.id.path, resource.id.name, KYyUnknown.inst);
 		}
 	}
 }
