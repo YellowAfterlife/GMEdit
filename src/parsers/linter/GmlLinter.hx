@@ -688,7 +688,7 @@ class GmlLinter {
 				rc(readExpr(newDepth));
 				if (next() != KParClose) return readExpect("a `)`");
 			};
-			case KNot, KBitNot: {
+			case KNot, KBitNot, KNew: {
 				rc(readExpr(newDepth));
 			};
 			case KInc, KDec: {
