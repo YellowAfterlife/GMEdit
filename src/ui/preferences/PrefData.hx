@@ -19,6 +19,7 @@ typedef PrefData = {
 	mfuncMagic:Bool,
 	assetThumbs:Bool,
 	singleClickOpen:Bool,
+	taskbarOverlays:Bool,
 	showGMLive:PrefGMLive,
 	fileChangeAction:PrefFileChangeAction,
 	recentProjectCount:Int,

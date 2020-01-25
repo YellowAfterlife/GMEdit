@@ -72,6 +72,13 @@ electron.ipcMain.on('shell-show', (e, path) => {
 	electron.shell.showItemInFolder(path);
 })
 
+//
+const nativeImage = electron.nativeImage
+const taskbarIcons = Object.create(null)
+electron.ipcMain.on('set-taskbar-icon', (e, path, text) => {
+	mainWindow.setOverlayIcon(path, text);
+})
+
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
 	// On OS X it is common for applications and their menu bar

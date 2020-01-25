@@ -370,6 +370,15 @@ import ui.treeview.TreeView;
 			if (GmlSeeker.itemsLeft == 0) {
 				nameNode.innerText = displayName;
 			} else nameNode.innerText = "Indexing...";
+			
+			if (Electron != null && ui.Preferences.current.taskbarOverlays) try {
+				if (version != GmlVersion.none) {
+					if (!isVirtual && existsSync(name + ".taskbar-overlay.png")) {
+						electron.IPC.send("set-taskbar-icon", path + ".taskbar-overlay.png", "");
+					} else electron.IPC.send("set-taskbar-icon", version.dir + "/taskbar-overlay.png", version.label);
+				} else electron.IPC.send("set-taskbar-icon", null, "");
+			} catch (x:Dynamic) {}
+			
 			if (PluginManager.ready == true && version != GmlVersion.none) {
 				PluginEvents.projectOpen({project:this});
 			}

@@ -280,6 +280,7 @@ class Preferences {
 			fileSessionTime: 7,
 			projectSessionTime: 14,
 			singleClickOpen: false,
+			taskbarOverlays: false,
 			assetThumbs: true,
 			showGMLive: Everywhere,
 			codeLiterals: false,

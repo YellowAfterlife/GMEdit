@@ -25,6 +25,13 @@ class PrefNav {
 			save();
 			gml.Project.current.reload();
 		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
+		addCheckbox(out, "Show taskbar overlays", current.taskbarOverlays, function(z) {
+			current.taskbarOverlays = z;
+			save();
+			gml.Project.current.reload();
+		}).title = "Shows GM version icon"
+			+ " (or `<project path>.taskbar-overlay.png`, if available)"
+			+ " over the GMEdit icon (Windows-only?)";
 		//
 		var eventOrder = [
 			"As authored",
