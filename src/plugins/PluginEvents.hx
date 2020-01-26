@@ -4,6 +4,7 @@ import gml.Project;
 import js.html.Element;
 import ui.ChromeTabs;
 import ui.ChromeTabs.ChromeTabsImpl;
+import ace.AceWrap;
 
 /**
  * Calls to these compile to
@@ -83,5 +84,11 @@ extern class PluginEvents {
 	 * You can use this to insert your plugin-specific DOM elements into it.
 	 * ui.Preferences is similarly used here.
 	 */
-	static function projectPropertiesBuilt(e:{project:Project,target:Element}):Void;
+	static function projectPropertiesBuilt(e:{project:Project, target:Element}):Void;
+	
+	/**
+	 * Called whenever instantiating a new Ace editor.
+	 * You can use this to apply editor hooks/modifications.
+	 */
+	static function editorCreated(e:{editor:AceWrap, options:AceWrapOptions}):Void;
 }

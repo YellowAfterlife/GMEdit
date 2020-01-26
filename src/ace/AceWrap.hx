@@ -31,6 +31,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		if (o.tooltips != false) AceTooltips.bind(this);
 		if (o.preferences != false) ui.Preferences.bindEditor(this);
 		if (o.scrollMode != false) new ScrollMode().bind(this);
+		if (o.dispatchEvent != false) plugins.PluginEvents.editorCreated({editor:this, options:o});
 	}
 	//
 	public static inline function loadModule(path:String, fn:Dynamic->Void):Void {
@@ -91,6 +92,7 @@ typedef AceWrapOptions = {
 	?tooltips:Bool,
 	?preferences:Bool,
 	?scrollMode:Bool,
+	?dispatchEvent:Bool,
 };
 @:native("ace")
 extern class AceEditor {

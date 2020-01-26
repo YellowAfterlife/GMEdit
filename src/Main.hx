@@ -106,7 +106,10 @@ class Main {
 		AceSnippets.init();
 		AceWrap.init();
 		CommandPalette.init();
-		aceEditor = new AceWrap(document.querySelector("#source"),{isPrimary:true});
+		aceEditor = new AceWrap(document.querySelector("#source"), {
+			isPrimary: true,
+			dispatchEvent: false,
+		});
 		(window:Dynamic).aceEditor = aceEditor;
 		AceCtxMenu.initMac(aceEditor);
 		editors.EditCode.currentNew = cast new gml.file.GmlFile("", null, KPlain.inst, "").editor;
