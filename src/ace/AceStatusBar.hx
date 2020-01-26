@@ -170,7 +170,10 @@ class AceStatusBar {
 			ctk = iter.stepForward();
 			if (ctk != null) {
 				switch (ctk.type) {
-					case "paren.rparen": depth -= 1; parEmpty = true;
+					case "paren.rparen": {
+						depth -= ctk.value.length;
+						parEmpty = true;
+					};
 					case "punctuation.operator" if (ctk.value == ";"): ctk = iter.stepBackward();
 					case "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
 					case "preproc.macro": ctk = iter.stepBackward();
