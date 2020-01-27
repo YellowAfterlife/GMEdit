@@ -403,7 +403,7 @@ using tools.NativeArray;
 							(Std.parseInt(state.substring(pos + depthSepLen)) - 1);
 					}
 				}
-				return "curly.paren.lparen";
+				return "curly.paren.rparen";
 			},
 			next: function(current:String, stack:Array<String>) {
 				if (useBracketDepth) {
