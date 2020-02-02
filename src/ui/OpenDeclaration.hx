@@ -25,9 +25,10 @@ import gml.Project;
 class OpenDeclaration {
 	public static function openLink(meta:String, pos:AcePos) {
 		// name(def):ctx
-		var rx:RegExp = new RegExp("^(.+?)" 
-			+ "(?:\\(([^)]*)\\))?"
-			+ "(?::(.+))?$");
+		var rx:RegExp = new RegExp("^(.+?)" // -> name
+			+ "(?:\\(([^)]*)\\))?" // -> (definition)
+			+ "(?::(.+))?$" // -> line/context
+		);
 		var vals = rx.exec(meta);
 		if (vals == null) return false;
 		var name = vals[1];

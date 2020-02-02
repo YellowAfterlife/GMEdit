@@ -70,7 +70,8 @@ using tools.HtmlTools;
 	public static function run(opt:GlobalSearchOpt, ?finish:Void->Void) {
 		var pj = Project.current;
 		var version = pj.version;
-		if (version == gml.GmlVersion.none) return;
+		if (version == GmlVersion.none) return;
+		var showPaths = version.config.searchMode == "directory";
 		var term:String, rx:RegExp;
 		if (Std.is(opt.find, RegExp)) {
 			rx = opt.find;
@@ -152,6 +153,7 @@ using tools.HtmlTools;
 					var sol = ofs - pos.column;
 					var line = code.substring(sol, eol);
 					var ctxLink = ctxName;
+					if (showPaths) ctxLink = path + "(" + ctxLink + ")";
 					if (pos.row >= 0) ctxLink += ":" + (pos.row + 1);
 					if (isRepl || ctxLink != ctxLast) {
 						// todo: show multiple changes on the same line combined
