@@ -1,4 +1,5 @@
 {
 	"name": "gen-enum-names",
+	"description": "Allows to automate name array/name->index generation via 'Generate enum names/lookup' in Command Palette.",
 	"scripts": ["gen-enum-names.js"]
 }

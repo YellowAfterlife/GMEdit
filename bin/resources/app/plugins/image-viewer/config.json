@@ -1,4 +1,5 @@
 {
 	"name": "image-viewer",
+	"description": "Lets you view PNG/JPG/GIF/BMP images inside GMEdit.",
 	"scripts": ["image-viewer.js"]
 }

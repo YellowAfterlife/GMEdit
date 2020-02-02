@@ -43,6 +43,7 @@
 			var kimg = new KImage();
 			FileKind.register("png", kimg);
 			FileKind.register("jpg", kimg);
+			FileKind.register("jpeg", kimg);
 			FileKind.register("gif", kimg);
 			FileKind.register("bmp", kimg);
 		},

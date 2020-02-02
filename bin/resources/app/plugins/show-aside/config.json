@@ -1,5 +1,6 @@
 {
 	"name": "show-aside",
+	"description": "Adds a context menu item to code editor for splitting into a two-pane layout",
 	"scripts": ["show-aside.js"],
 	"stylesheets": []
 }

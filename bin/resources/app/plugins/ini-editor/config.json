@@ -1,4 +1,5 @@
 {
 	"name": "ini-editor",
+	"description": "Adds INI file syntax highlighting.",
 	"scripts": ["ini-editor.js"]
 }

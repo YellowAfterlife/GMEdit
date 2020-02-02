@@ -1,4 +1,5 @@
 {
 	"name": "gms2-sort",
+	"description": "Adds a 'Sort' button to context menus for GMS2 asset groups.",
 	"scripts": ["gms2-sort.js"]
 }
