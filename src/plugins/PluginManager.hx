@@ -3,9 +3,12 @@ import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
 import haxe.DynamicAccess;
+import js.html.Element;
 import js.lib.Error;
 import js.html.ErrorEvent;
 import plugins.PluginAPI;
+import plugins.PluginConfig;
+import plugins.PluginState;
 import tools.Dictionary;
 
 /**
@@ -13,11 +16,13 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 class PluginManager {
-	/// name -> state
+	/** name from config.json */
+	public static var pluginList:Array<String> = [];
+	/** name -> state */
 	public static var pluginMap:Dictionary<PluginState> = new Dictionary();
-	/// name -> containing directory
+	/** name -> containing directory */
 	private static var pluginDir:Dictionary<String> = new Dictionary();
-	/// name from config.json -> state
+	/** name from config.json -> state */
 	public static var registerMap:Dictionary<PluginState> = new Dictionary();
 	
 	public static function load(name:String, ?cb:PluginCallback) {
@@ -47,7 +52,11 @@ class PluginManager {
 			if (conf.name == null) {
 				state.finish(new Error("Plugin's config.json has no name"));
 				return;
-			} else registerMap.set(conf.name, state);
+			} else {
+				state.config = conf;
+				registerMap.set(conf.name, state);
+				pluginMap.set(name, state);
+			}
 			//
 			function loadResources():Void {
 				var queue:Array<{kind:Int,rel:String}> = [];
@@ -164,29 +173,5 @@ class PluginManager {
 		//
 		for (name in list) load(name);
 		ready = true;
-	}
-}
-typedef PluginCallback = (error:Null<Error>)->Void;
-class PluginState {
-	public var name:String;
-	public var ready:Bool = false;
-	public var error:Error = null;
-	public var listeners:Array<PluginCallback> = [];
-	public var data:PluginData = null;
-	public function new(name:String) {
-		this.name = name;
-	}
-	public function finish(?error:Error):Void {
-		ready = true;
-		if (error == null && data == null) {
-			error = new Error('Plugin did not call register()');
-		}
-		if (error != null) {
-			Main.console.error('Plugin load failed for $name:', error);
-		} else Main.console.log("Plugin loaded: " + name);
-		this.error = error;
-		for (fn in listeners) fn(error);
-		listeners.resize(0);
-		if (error == null && data.init != null) data.init();
 	}
 }

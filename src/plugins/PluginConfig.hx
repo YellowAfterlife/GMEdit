@@ -6,15 +6,18 @@ package plugins;
  */
 typedef PluginConfig = {
 	
-	/// one of the scripts then should do GMEdit.register(name, {...})
+	/** One of the scripts then should do GMEdit.register(name, {...}) */
 	name:String,
 	
-	/// relative paths to .js files
+	/** Optional - shows in Preferences */
+	?description:String,
+	
+	/** Relative paths to .js files (if any) */
 	?scripts:Array<String>,
 	
-	/// relative paths to .css files
+	/** relative paths to .css files(if any) */
 	?stylesheets:Array<String>,
 	
-	/// plugins that should be loaded before this one can be loaded
+	/** Plugins that should be loaded before this one can be loaded */
 	?dependencies:Array<String>,
 };

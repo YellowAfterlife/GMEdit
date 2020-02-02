@@ -216,6 +216,17 @@ class Preferences {
 		a.appendChild(document.createTextNode(label));
 		return a;
 	}
+	public static function createFuncAnchor(label:String, func:js.html.Event->Void) {
+		var a = document.createAnchorElement();
+		a.href = "javascript:void(0)";
+		a.target = "_blank";
+		a.onclick = function(e) {
+			func(e);
+			return false;
+		};
+		a.appendChild(document.createTextNode(label));
+		return a;
+	}
 	public static function addWiki(to:Element, url:String, label:String = "wiki") {
 		var lb:Element = to.querySelector("legend");
 		if (lb == null) lb = to.querySelector("label");

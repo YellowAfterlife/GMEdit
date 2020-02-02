@@ -16,13 +16,9 @@ class PrefMenu {
 		PrefLinter.build(out, null);
 		PrefNav.build(out);
 		PrefBackups.build(out);
+		PrefPlugins.build(out);
 		if (electron.Electron.isAvailable()) {
 			var gr = addGroup(out, "Other useful things"), el:Element;
-			//
-			el = addButton(gr, "Plugins directory", function() {
-				Shell.openExternal(FileWrap.userPath + "/plugins");
-			});
-			addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-plugins");
 			//
 			el = addButton(gr, "GML dialects directory", function() {
 				Shell.openExternal(FileWrap.userPath + "/api");

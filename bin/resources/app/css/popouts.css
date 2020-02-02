@@ -89,6 +89,8 @@
 	padding: 0.5em;
 	padding-top: 0em;
 }
+#preferences-editor label[title],
+.project-properties label[title],
 #preferences-editor div[title] label,
 .project-properties div[title] label {
 	cursor: help;
@@ -131,6 +133,17 @@
 }
 .popout-window input[type="text"].error {
 	border-color: rgb(250, 50, 50);
+}
+.popout-window label.error {
+	color: rgb(250, 50, 50);
+}
+
+.popout-window div.plugin-info {
+	margin-top: 0.5em;
+}
+.popout-window .plugin-info > .plugin-description {
+	margin-top: 0em;
+	margin-left: 0.5em;
 }
 /* */
 .ace_closeButton {

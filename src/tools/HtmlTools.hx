@@ -1,5 +1,6 @@
 package tools;
 import gml.file.GmlFile;
+import js.html.DOMTokenList;
 import js.html.DivElement;
 import js.html.Document;
 import js.html.Element;
@@ -24,6 +25,7 @@ class HtmlTools {
 	):T {
 		return cast asElement(el).querySelector(selectors);
 	}
+	
 	public static function clearInner(el:Element) {
 		el.innerHTML = "";
 	}
@@ -31,12 +33,19 @@ class HtmlTools {
 		el.innerHTML = "";
 		el.appendChild(Main.document.createTextNode(text));
 	}
+	
 	public static function setAttributeFlag(el:Element, attr:String, val:Bool) {
 		if (val) {
 			if (!el.hasAttribute(attr)) el.setAttribute(attr, "");
 		} else {
 			if (el.hasAttribute(attr)) el.removeAttribute(attr);
 		}
+	}
+	public static function setTokenFlag(tl:DOMTokenList, name:String, val:Bool) {
+		if (tl.contains(name) != val) tl.toggle(name);
+	}
+	public static function setDisplayFlag(el:Element, visible:Bool):Void {
+		el.style.display = visible ? "" : "none";
 	}
 	
 	public static inline function insertBeforeEl(ctr:Element, insertWhat:Element, beforeWhat:Element) {
