@@ -636,7 +636,7 @@ import ui.treeview.TreeView;
 			var itemFull = Path.join([full, rel]);
 			out.push({
 				fileName: rel,
-				relPath: path + "/" + rel,
+				relPath: Path.join([path, rel]),
 				fullPath: itemFull,
 				isDirectory: FileSystem.statSync(itemFull).isDirectory()
 			});
