@@ -15,7 +15,7 @@ import ui.CommandPalette;
 @:expose("AceCommands")
 @:keep class AceCommands {
 	
-	/// adds a command to the code editor(s)
+	/** adds a command to the code editor(s) */
 	@:doc public static function add(command:AceCommand) {
 		Main.aceEditor.commands.addCommand(command);
 	}
@@ -51,7 +51,13 @@ import ui.CommandPalette;
 		return key;
 	}
 	
-	/// Adds a command to the command palette; cmd.
+	/**
+	 * Takes a command where "exec" is an Ace command name,
+	 * modifies it to call editor.execCommand instead,
+	 * sets keybind field (if not specified yet),
+	 * and adds it to command palette.
+	 * NB! The input command is modified in process.
+	 */
 	@:doc public static function addToPalette(cmd:CommandDef):Void {
 		var cmdName:String = cast cmd.exec;
 		var editor = Main.aceEditor;
@@ -61,9 +67,14 @@ import ui.CommandPalette;
 		CommandPalette.add(cmd);
 	}
 	
-	/// removes a command from the editor(s)
+	/** Removes a command from the editor(s) */
 	@:doc public static function remove(command:EitherType<AceCommand, String>) {
 		Main.aceEditor.commands.removeCommand(command);
+	}
+	
+	/** Is here purely for complete-ness */
+	@:doc public static function removeFromPalette(cmd:CommandDef) {
+		CommandPalette.remove(cmd);
 	}
 	
 	public static function init(editor:AceWrap, isPrimary:Bool) {

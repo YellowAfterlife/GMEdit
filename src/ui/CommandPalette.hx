@@ -1,5 +1,6 @@
 package ui;
 import js.html.OptionElement;
+import js.lib.RegExp;
 import tools.NativeString;
 import ui.project.ProjectProperties;
 
@@ -19,6 +20,15 @@ class CommandPalette {
 			lookupList.push(name);
 		}
 		lookupMap[name] = cmd;
+	}
+	public static function remove(cmd:CommandDef) {
+		var name = cmd.name;
+		if (lookupMap[name] != null) {
+			var rx = new RegExp("^" + NativeString.escapeRx(name) + "\n", "m");
+			lookupText = NativeString.replaceExt(lookupText, rx, "");
+			lookupList.remove(name);
+			lookupMap.remove(name);
+		}
 	}
 	public static function init() {
 		add({
