@@ -93,33 +93,44 @@
 		}
 		window.alert("Could not find an enum. Did you put your cursor after one?");
 	};
+	var aceCommands = [];
+	var palCommands = [];
 	GMEdit.register("gen-enum-names", {
 		init: function() {
-			AceCommands.add({
+			aceCommands = [{
 				name: "genEnumNames",
 				exec: function(editor) {
 					run(editor, false);
 				}
-			});
-			AceCommands.addToPalette({
-				name: "Macro: generate enum names",
-				exec: "genEnumNames",
-				title: "Generates an array with index->name matches for the closest enum above the cursor."
-			});
-			AceCommands.add({
+			}, {
 				name: "genEnumLookup",
 				exec: function(editor) {
 					run(editor, true);
 				}
-			});
-			AceCommands.addToPalette({
+			}];
+			palCommands = [{
+				name: "Macro: generate enum names",
+				exec: "genEnumNames",
+				title: "Generates an array with index->name matches for the closest enum above the cursor."
+			}, {
 				name: "Macro: generate enum lookup",
 				exec: "genEnumLookup",
 				title: "Generates map setters for name->index matches for the closest enum above the cursor."
-			});
+			}];
+			for (var i = 0; i < aceCommands.length; i++) {
+				AceCommands.add(aceCommands[i]);
+			}
+			for (var i = 0; i < palCommands.length; i++) {
+				AceCommands.addToPalette(palCommands[i]);
+			}
 		},
 		cleanup: function() {
-			// todo
+			for (var i = 0; i < aceCommands.length; i++) {
+				AceCommands.remove(aceCommands[i]);
+			}
+			for (var i = 0; i < palCommands.length; i++) {
+				AceCommands.removeFromPalette(palCommands[i]);
+			}
 		}
 	});
 })();
