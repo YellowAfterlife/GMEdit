@@ -375,7 +375,12 @@ import ui.treeview.TreeView;
 				if (version != GmlVersion.none) {
 					if (!isVirtual && existsSync(name + ".taskbar-overlay.png")) {
 						electron.IPC.send("set-taskbar-icon", path + ".taskbar-overlay.png", "");
-					} else electron.IPC.send("set-taskbar-icon", version.dir + "/taskbar-overlay.png", version.label);
+					} else {
+						var vov = version.dir + "/taskbar-overlay.png";
+						if (FileSystem.existsSync(vov)) {
+							electron.IPC.send("set-taskbar-icon", vov, version.label);
+						} else electron.IPC.send("set-taskbar-icon", null, "");
+					}
 				} else electron.IPC.send("set-taskbar-icon", null, "");
 			} catch (x:Dynamic) {}
 			
