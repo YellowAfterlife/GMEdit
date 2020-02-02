@@ -533,7 +533,7 @@ using tools.NativeArray;
 			rulePairs([
 				"\\)", "paren.rparen",
 				"\\s*", "text",
-				"as", "keyword",
+				"as\\b", "keyword",
 			], "gml.mfunc"),
 			rxRule("paren.rparen", ~/\)/, "gml.mfunc"),
 		];
