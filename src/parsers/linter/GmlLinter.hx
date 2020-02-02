@@ -1,4 +1,5 @@
 package parsers.linter;
+import gml.GmlFuncDoc;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;
@@ -586,11 +587,15 @@ class GmlLinter {
 	}
 	
 	function checkCallArgs(currName:String, argc:Int) {
-		var doc = tools.JsTools.orx(
+		var doc:GmlFuncDoc = tools.JsTools.orx(
 			GmlAPI.gmlDoc[currName],
 			GmlAPI.extDoc[currName],
 			GmlAPI.stdDoc[currName]
 		);
+		if (doc == null) {
+			var lm = editor.lambdas[context];
+			if (lm != null) doc = lm.docs[currName];
+		}
 		do {
 			var minArgs:Int, maxArgs:Int;
 			if (doc != null) {
