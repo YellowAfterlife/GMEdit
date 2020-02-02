@@ -36,8 +36,10 @@ class PrefTheme {
 		el = el.querySelector('legend');
 		el.appendChild(document.createTextNode(" ("));
 		el.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-themes", "wiki"));
-		el.appendChild(document.createTextNode("; "));
-		el.append(createShellAnchor(FileWrap.userPath + "/themes", "manage"));
+		if (FileSystem.canSync) {
+			el.appendChild(document.createTextNode("; "));
+			el.append(createShellAnchor(FileWrap.userPath + "/themes", "manage"));
+		}
 		el.appendChild(document.createTextNode(")"));
 	}
 }
