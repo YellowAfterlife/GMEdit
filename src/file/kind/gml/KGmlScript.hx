@@ -1,6 +1,7 @@
 package file.kind.gml;
 import parsers.*;
 import editors.EditCode;
+import editors.Editor;
 import electron.Dialog;
 import ui.Preferences;
 
@@ -15,6 +16,32 @@ class KGmlScript extends KGml {
 		super();
 		canDefineComp = true;
 	}
+	
+	//{ Freshly made empty GML files don't exist on disk
+	private var doesNotExist:Bool = false;
+	override public function loadCode(editor:EditCode, data:Dynamic):String {
+		if (data != null) return data;
+		if (electron.FileWrap.existsSync(editor.file.path)) {
+			var text = electron.FileWrap.readTextFileSync(editor.file.path);
+			doesNotExist = false;
+			return text;
+		} else {
+			Main.console.warn('`${editor.file.path}` is amiss, assuming to be empty.');
+			doesNotExist = true;
+			return "";
+		}
+	}
+	override public function saveCode(editor:EditCode, code:String):Bool {
+		doesNotExist = false;
+		return super.saveCode(editor, code);
+	}
+	override public function checkForChanges(editor:Editor):Int {
+		var result = super.checkForChanges(editor);
+		if (result == -1 && doesNotExist) result = 0;
+		return result;
+	}
+	//}
+	
 	override public function preproc(editor:EditCode, code:String):String {
 		code = GmlExtCoroutines.pre(code);
 		code = super.preproc(editor, code);
