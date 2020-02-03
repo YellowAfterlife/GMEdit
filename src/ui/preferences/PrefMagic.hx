@@ -13,24 +13,33 @@ class PrefMagic {
 	public static function build(out:Element) {
 		out = addGroup(out, "Syntax extensions");
 		out.id = "pref-magic";
-		var el:Element;
+		var el:Element, gr:Element;
 		//
-		el = addCheckbox(out, "Use `#args` magic", current.argsMagic, function(z) {
-			current.argsMagic = z;
-			save();
-		});
-		el.title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`.";
-		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
-		//
-		var noAutoArgs = "Don't auto-generate";
-		el = addDropdown(out, "JSDoc format for #args",
-			current.argsFormat != "" ? current.argsFormat : noAutoArgs,
-			[noAutoArgs, "@arg", "@param", "@argument"],
+		gr = addGroup(out, "#args magic"); {
+			addWiki(gr, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
+			//
+			el = addCheckbox(gr, "Use `#args` magic", current.argsMagic, function(z) {
+				current.argsMagic = z;
+				save();
+			});
+			el.title = "Allows writing `#args a, b` instead of `var a = argument0, b = argument1`.";
+			//
+			var noAutoArgs = "Don't auto-generate";
+			el = addDropdown(gr, "JSDoc format for #args",
+				current.argsFormat != "" ? current.argsFormat : noAutoArgs,
+				[noAutoArgs, "@arg", "@param", "@argument"],
 			function(v) {
 				if (v == noAutoArgs) v = "";
 				current.argsFormat = v;
 				save();
 			});
+			//
+			el = addCheckbox(gr, "Strict mode", current.argsStrict, function(z) {
+				current.argsStrict = z;
+				save();
+			});
+			el.title = "Doesn't collapse arguments unless the format is binary identical.";
+		};
 		//
 		el = addCheckbox(out, "Use `#import` magic", current.importMagic, function(z) {
 			current.importMagic = z;

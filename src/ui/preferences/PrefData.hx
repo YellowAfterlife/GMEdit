@@ -11,6 +11,7 @@ typedef PrefData = {
 	projectSessionTime:Float,
 	argsMagic:Bool,
 	argsFormat:String,
+	argsStrict:Bool,
 	importMagic:Bool,
 	allowImportUndo:Bool,
 	coroutineMagic:Bool,

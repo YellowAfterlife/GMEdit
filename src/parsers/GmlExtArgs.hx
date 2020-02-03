@@ -18,21 +18,35 @@ class GmlExtArgs {
 	/** subscript ("" for top) -> argument data; null on error */
 	public static var argData:Dictionary<GmlExtArgData>;
 	
-	/** `argument_count > n` */
-	private static inline var rsOpt0 = '\\s*argument_count\\s*>\\s*(\\d+)\\s*';
-	
-	/** `argument[n]` */
-	private static inline var rsOpt1 = '\\s*argument\\s*\\[\\s*(\\d+)\\s*\\]\\s*';
-	private static var rxOpt = new RegExp("^var\\s+(\\w+)" // -> name
-	+ "(?:" + GmlExtImport.rsLocalType + ")?" // -> :type (opt.)
-	+ "\\s*(?:"
-		// `var q; if (argument_count > 3) q = argument[3]; else q = `
-		+ ';\\s*if\\s\\($rsOpt0\\)\\s*(\\w+)\\s*=$rsOpt1;\\s*else\\s*(\\w+)\\s*='
-		// -> 
-	+ '|'
-		// `var q = argument_count > 3 ? argument[3] : `
-		+ '=$rsOpt0\\?\\s*$rsOpt1\\:'
-	+ ')\\s*([^;]+);', "g");
+	static function rxOpt_init() {
+		var rx:RegExp;
+		for (it in 0 ... 2) {
+			var z = it > 0;
+			var s1p = z ? "\\s+" : " ";
+			var s1x = z ? "\\s*" : " ";
+			var s0x = z ? "\\s*" : "";
+			//
+			var rsOpt0 = 'argument_count$s1x>$s1x(\\d+)';
+			var rsOpt1 = 'argument$s0x\\[$s0x(\\d+)$s0x\\]';
+			//
+			rx = new RegExp("^var" + s1p + "(\\w+)" // -> name
+			+ "(?:" + GmlExtImport.rsLocalType + ")?" // -> :type (opt.)
+			+ "(?:" + s0x
+				// `var q; if (argument_count > 3) q = argument[3]; else q = `
+				+ ';${s1x}if$s1x\\($s0x$rsOpt0$s0x\\)$s1x' // `; if (argument_count > 3) `
+				+ '(\\w+)$s1x=$s1x$rsOpt1$s0x;$s1x' // `q = argument[3]; `
+				+ 'else$s1x(\\w+)$s1x=' // `else q = `
+				// -> 
+			+ '|' + s1x
+				// `var q = argument_count > 3 ? argument[3] : `
+				+ '=$s1x$rsOpt0$s1x\\?$s1x$rsOpt1$s1x\\:'
+			+ ')$s1x([^;]+);', "g");
+			if (!z) rxOptStrict = rx;
+		}
+		return rx;
+	}
+	private static var rxOptStrict:RegExp = null;
+	private static var rxOpt:RegExp = rxOpt_init();
 	private static inline var rxOpt_name = 1;
 	private static inline var rxOpt_type = 2;
 	private static inline var rxOpt_then = 3;
@@ -52,13 +66,14 @@ class GmlExtArgs {
 	public static function pre(code:String):String {
 		var version = GmlAPI.version;
 		if (!Preferences.current.argsMagic) return code;
+		var strict = Preferences.current.argsStrict;
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
 		inline function flush(till:Int) {
 			out += q.substring(start, till);
 		}
-		var rxOpt = GmlExtArgs.rxOpt;
+		var rxOpt = strict ? GmlExtArgs.rxOptStrict : GmlExtArgs.rxOpt;
 		var rxType = GmlExtImport.rxLocalType;
 		function proc() {
 			var args = "#args";
@@ -68,6 +83,12 @@ class GmlExtArgs {
 			var proc_start = q.pos;
 			var c:CharCode;
 			var s:String;
+			var spStart:Int;
+			inline function qSkipSpaceStrict(n:Int):Bool {
+				spStart = q.pos;
+				q.skipSpaces0();
+				return strict && (q.pos - spStart != n);
+			}
 			//
 			pos = q.pos;
 			q.skipLine();
@@ -77,7 +98,7 @@ class GmlExtArgs {
 			// pass 1: required arguments (could do regexp..?)
 			if (hasReq) while (q.loop) {
 				//
-				q.skipSpaces0();
+				if (qSkipSpaceStrict(1)) return null;
 				if (q.eof) return null;
 				// match var name:
 				pos = q.pos;
@@ -88,16 +109,21 @@ class GmlExtArgs {
 				// add to args:
 				if (found > 0) args += ",";
 				args += " " + s;
+				//
+				spStart = q.pos;
 				q.skipSpaces0();
 				// type?
 				if (q.peek() == "/".code && q.peek(1) == "*".code) { // `var a/*:t*/`
+					if (strict && q.pos != spStart) return null;
 					var typePos = q.pos;
 					q.skip(2);
 					q.skipComment();
 					var type = GmlExtImport.rxLocalType.exec(q.substring(typePos, q.pos));
 					if (type != null) args += ":" + type[1];
+					//
 					q.skipSpaces0();
 				} else if (q.peek() == ":".code) { // `var a:t`
+					if (strict && q.pos != spStart) return null;
 					var typePos = q.pos;
 					q.skip();
 					q.skipSpaces0();
@@ -107,30 +133,33 @@ class GmlExtArgs {
 						while (q.loop) if (q.read() == ">".code) break;
 					}
 					args += q.substring(typePos, q.pos);
+					//
 					q.skipSpaces0();
+				} else {
+					if (strict && q.pos != spStart + 1) return null;
 				}
 				// match `=`:
 				if (q.eof || q.peek() != "=".code) return null;
 				q.skip();
 				// match `argument`:
-				q.skipSpaces0();
+				if (qSkipSpaceStrict(1)) return null;
 				if (q.eof || q.peek() != "a".code) return null;
 				pos = q.pos;
 				q.skipIdent1();
 				s = q.substring(pos, q.pos);
 				if (s == "argument") { // match `argument[$i]`
 					// `[`:
-					q.skipSpaces0();
+					if (qSkipSpaceStrict(0)) return null;
 					if (q.eof || q.peek() != "[".code) return null;
 					q.skip();
 					// `$i`:
-					q.skipSpaces0();
+					if (qSkipSpaceStrict(0)) return null;
 					if (q.eof) return null;
 					pos = q.pos;
 					q.skipIdent1();
 					if (q.substring(pos, q.pos) != "" + found) return null;
 					// `]`:
-					q.skipSpaces0();
+					if (qSkipSpaceStrict(0)) return null;
 					if (q.eof || q.peek() != "]".code) return null;
 					q.skip();
 					//

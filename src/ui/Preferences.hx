@@ -282,6 +282,7 @@ class Preferences {
 			compMatchMode: PrefMatchMode.StartsWith,
 			argsMagic: true,
 			argsFormat: "@param",
+			argsStrict: false,
 			importMagic: true,
 			allowImportUndo: false,
 			coroutineMagic: true,
