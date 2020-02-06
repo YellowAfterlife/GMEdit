@@ -55,7 +55,7 @@ class PluginState {
 		for (fn in listeners) fn(error);
 		listeners.resize(0);
 		//
-		if (error == null && data.init != null) data.init();
+		if (error == null && data.init != null) data.init(this);
 	}
 }
 typedef PluginCallback = (error:Null<Error>)->Void;

@@ -8,7 +8,7 @@ typedef PluginData = {
 	/**
 	 * Called after all of plugin's files are loaded up.
 	 */
-	?init:()->Void,
+	?init:(state:PluginState)->Void,
 	
 	/**
 	 * Called before unloading the plugin (currently you cannot)
