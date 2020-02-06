@@ -312,7 +312,29 @@ function ace_mode_gml_1() {
 var rxDefine = /^(?:#define|#event|#action|#section|#moment|#target)\b/;
 var rxLine1 = /^#moment\s+\d+[|\s]\s*.+$|^#event\s+\w+(?:\:\w*)?[|\s]\s*.+$|#section[|\s]\s*.+/;
 var rxSection = /^#section\b/;
+var rxMFunc = /^\s*#mfunc\s+(\w+)/;
 var Gutter = ace.require("ace/layer/gutter").Gutter;
+var GmlSeekData;
+
+function syncGutterState(gutter) {
+	var session = gutter.session;
+	var isGML = session.$modeId == "ace/mode/gml";
+	gutter.gmlResetOnDefine = isGML && window.gmlResetOnDefine;
+	gutter.gmlHasMFunc = false;
+	if (isGML) do {
+		var file = session.gmlFile;
+		if (!file.path) break;
+		if (!GmlSeekData) {
+			if (!$gmedit) break;
+			GmlSeekData = $gmedit["parsers.GmlSeekData"];
+		}
+		var sd = GmlSeekData.map[file.path];
+		if (sd && sd.mfuncList.length) {
+			gutter.gmlHasMFunc = true;
+			gutter.gmlMFuncMap = sd.mfuncMap;
+		}
+	} while (false);
+}
 
 /**
  * When starting to update gutter, we want to figure out how the starting line number
@@ -322,7 +344,7 @@ var Gutter_update = Gutter.prototype.update;
 if (!Gutter_update) throw "Gutter:update is amiss";
 Gutter.prototype.update = function(config) {
 	var session = this.session;
-	this.gmlResetOnDefine = session.$modeId == "ace/mode/gml" && window.gmlResetOnDefine;
+	syncGutterState(this);
 	if (this.gmlResetOnDefine) {
 		var checkRow = config.firstRow;
 		session.$firstLineNumber = 1;
@@ -343,7 +365,7 @@ var Gutter_$renderLines = Gutter.prototype.$renderLines;
 if (!Gutter_$renderLines) throw "Gutter:$renderLines is amiss";
 Gutter.prototype.$renderLines = function(config, firstRow, lastRow) {
 	var session = this.session;
-	this.gmlResetOnDefine = session.$modeId == "ace/mode/gml" && window.gmlResetOnDefine;
+	syncGutterState(this);
 	if (this.gmlResetOnDefine) {
 		var checkRow = firstRow;
 		session.$firstLineNumber = 1;
@@ -373,7 +395,14 @@ Gutter.prototype.gmlCellClass = function(row, className) {
 		className += "ace_gutter-define ";
 	} else if (rxSection.test(rowText)) {
 		className += "ace_gutter-define ";
-	}
+	} else if (this.gmlHasMFunc) do {
+		var mt = rxMFunc.exec(rowText)
+		if (!mt) break;
+		var mf = this.gmlMFuncMap[mt[1]];
+		if (!mf) break;
+		this.$gmlCellText = (row + session.$firstLineNumber).toString();
+		session.$firstLineNumber += mf.order.length + 1;
+	} while (false);
 	return className;
 }
 

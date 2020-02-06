@@ -162,6 +162,7 @@ class GmlSeeker {
 										haxe.Json.parse(line.substring(sp + 1));
 									} catch (_:Dynamic) break;
 									var mf = new GmlExtMFunc(name, json);
+									setLookup(name);
 									out.mfuncList.push(mf);
 									out.mfuncMap.set(name, mf);
 									out.compList.push(mf.comp);
@@ -408,6 +409,7 @@ class GmlSeeker {
 							s += q.substring(p, q.pos - 1) + "\n";
 							q.skipLineEnd();
 							p = q.pos;
+							row += 1;
 						} else break;
 					} while (q.loopLocal);
 					s += q.substring(p, q.pos);
@@ -432,11 +434,14 @@ class GmlSeeker {
 						if (i < 0 || !out.mfuncMap.exists(name.substring(0, i))) {
 							out.compList.push(m.comp);
 							out.compMap.set(name, m.comp);
+							setLookup(name, true);
+						} else {
+							// adjust for mfunc rows being hidden
+							row -= 1;
 						}
 						//
 						out.macroList.push(m);
 						out.macroMap.set(name, m);
-						setLookup(name, true);
 					}
 				};
 				case "globalvar": {
