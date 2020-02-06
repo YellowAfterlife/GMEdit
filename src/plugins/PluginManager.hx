@@ -21,7 +21,7 @@ class PluginManager {
 	/** name -> state */
 	public static var pluginMap:Dictionary<PluginState> = new Dictionary();
 	/** name -> containing directory */
-	private static var pluginDir:Dictionary<String> = new Dictionary();
+	public static var pluginDir:Dictionary<String> = new Dictionary();
 	/** name from config.json -> state */
 	public static var registerMap:Dictionary<PluginState> = new Dictionary();
 	
@@ -42,7 +42,7 @@ class PluginManager {
 			return;
 		}
 		//
-		var state = new PluginState(name);
+		var state = new PluginState(name, dir + "/" + name);
 		if (cb != null) state.listeners.push(cb);
 		FileSystem.readJsonFile('$dir/$name/config.json', function(err, conf:PluginConfig) {
 			if (err != null) {

@@ -18,6 +18,7 @@ import tools.Dictionary;
 class PluginState {
 	public var name:String;
 	public var config:PluginConfig;
+	public var dir:String;
 	public var ready:Bool = false;
 	public var error:Error = null;
 	public var listeners:Array<PluginCallback> = [];
@@ -27,8 +28,9 @@ class PluginState {
 	public var elements:Array<Element> = [];
 	
 	//
-	public function new(name:String) {
+	public function new(name:String, dir:String) {
 		this.name = name;
+		this.dir = dir;
 	}
 	public function destroy() {
 		if (data != null && data.cleanup != null) data.cleanup();

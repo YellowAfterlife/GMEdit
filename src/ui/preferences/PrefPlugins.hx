@@ -25,7 +25,7 @@ class PrefPlugins {
 		el.appendChild(p_label);
 		//
 		el.appendChild(document.createTextNode(" ("));
-		el.append(createShellAnchor(FileWrap.userPath + "/plugins/" + p.name, "open"));
+		el.append(createShellAnchor(p.dir, "open"));
 		//
 		var p_reload = document.createSpanElement(); {
 			p_reload.appendChild(document.createTextNode("; "));
