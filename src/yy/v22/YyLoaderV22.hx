@@ -146,6 +146,9 @@ class YyLoaderV22 {
 						"GMObject", "GMRoom": {
 							var atype = type.substring(2).toLowerCase();
 							GmlAPI.gmlKind.set(name, "asset." + atype);
+							if (type != "GMScript") { // scripts have custom logic below
+								GmlAPI.gmlLookupText += name + "\n";
+							}
 							var next = new AceAutoCompleteItem(name, atype);
 							comp.push(next);
 							GmlAPI.gmlAssetComp.set(name, next);
@@ -162,17 +165,9 @@ class YyLoaderV22 {
 							}
 						};
 						case "GMObject": {
-							GmlAPI.gmlLookupText += name + "\n";
 							objectNames.set(res.Key, name);
 							objectGUIDs.set(name, res.Key);
 							GmlSeeker.run(full, null, KYyEvents.inst);
-						};
-						case "GMShader": {
-							GmlAPI.gmlLookupText += name + "\n";
-							//full = Path.directory(full);
-						};
-						case "GMTimeline": {
-							GmlAPI.gmlLookupText += name + "\n";
 						};
 						case "GMNotes": {
 							rel = Path.withoutExtension(rel);
