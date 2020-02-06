@@ -39,17 +39,20 @@ class ChromeTabMenu {
 			backupsItem.visible = true;
 		} else backupsItem.visible = false;
 		#end
+		plugins.PluginEvents.tabMenu({target:el,event:ev});
 		menu.popupAsync(ev);
 	}
 	public static function init() {
 		menu = new Menu();
 		menu.append(new MenuItem({
+			id: "close",
 			label: "Close",
 			accelerator: "CommandOrControl+W",
 			click: function() {
 			target.querySelector(".chrome-tab-close").click();
 		} }));
 		menu.append(new MenuItem({
+			id: "close-others",
 			label: "Close Others",
 			accelerator: "CommandOrControl+Shift+W",
 			click: function() {
@@ -57,14 +60,22 @@ class ChromeTabMenu {
 				if (tab != target) tab.querySelector(".chrome-tab-close").click();
 			}
 		} }));
-		menu.append(new MenuItem({ label: "Close All", click: function() {
-			for (tab in target.parentElement.querySelectorEls(".chrome-tab")) {
-				tab.querySelector(".chrome-tab-close").click();
+		menu.append(new MenuItem({
+			id: "close-all",
+			label: "Close All",
+			click: function() {
+				for (tab in target.parentElement.querySelectorEls(".chrome-tab")) {
+					tab.querySelector(".chrome-tab-close").click();
+				}
 			}
-		} }));
-		menu.append(new MenuItem({ type: MenuItemType.Sep }));
+		}));
+		menu.append(new MenuItem({
+			id: "close-sep",
+			type: MenuItemType.Sep
+		}));
 		#if lwedit
 		menu.append(new MenuItem({
+			id: "rename",
 			label: "Rename",
 			click: function() {
 				var gmlFile = target.gmlFile;
@@ -85,12 +96,14 @@ class ChromeTabMenu {
 		}));
 		#else
 		menu.append(showInDirectoryItem = new MenuItem({
+			id: "show-in-directory",
 			label: "Show in directory",
 			click: function() {
 				electron.FileWrap.showItemInFolder(target.gmlFile.path);
 			}
 		}));
 		menu.append(openExternally = new MenuItem({
+			id: "open-externally",
 			label: "Open externally",
 			click: function() {
 				electron.FileWrap.openExternal(target.gmlFile.path);
@@ -98,6 +111,7 @@ class ChromeTabMenu {
 		}));
 		if (electron.Electron == null) showInDirectoryItem.visible = false;
 		menu.append(showInTreeItem = new MenuItem({
+			id: "show-in-tree",
 			label: "Show in tree",
 			click: function() {
 				var tree = TreeView.element;
@@ -129,10 +143,12 @@ class ChromeTabMenu {
 			}
 		}));
 		menu.append(findReferences = new MenuItem({
+			id: "find-references",
 			label: "Find references",
 			click: function() GlobalSearch.findReferences(target.gmlFile.name)
 		}));
 		menu.append(showObjectInfo = new MenuItem({
+			id: "object-information",
 			label: "Object information",
 			click: function() {
 				var file = target.gmlFile;
@@ -142,6 +158,7 @@ class ChromeTabMenu {
 		//
 		GmlFileBackup.init();
 		menu.append(backupsItem = new MenuItem({
+			id: "backups",
 			label: "Previous versions",
 			submenu: GmlFileBackup.menu,
 			type: Sub,

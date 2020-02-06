@@ -2,6 +2,7 @@ package plugins;
 import gml.file.GmlFile;
 import gml.Project;
 import js.html.Element;
+import js.html.MouseEvent;
 import ui.ChromeTabs;
 import ui.ChromeTabs.ChromeTabsImpl;
 import ace.AceWrap;
@@ -20,6 +21,11 @@ extern class PluginEvents {
 	 * Dispatches whenever the user drags tabs around to change their order.
 	 */
 	static function tabsReorder(e:{target:ChromeTabsImpl}):Void;
+	
+	/**
+	 * Dispatches prior to showing the tab context menu.
+	 */
+	static function tabMenu(e:{target:ChromeTab,event:MouseEvent}):Void;
 	
 	/**
 	 * Dispatches when a new file is opened and ready to go.
