@@ -5,6 +5,7 @@ import gml.Project;
 import haxe.io.Path;
 import js.lib.Error;
 import parsers.GmlExtLambda;
+import tools.NativeString;
 import ui.GlobalSearch;
 
 /**
@@ -16,6 +17,7 @@ class YySearcher {
 		pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt
 	):Void {
 		var yyProject:YyProject = pj.readYyFileSync(pj.name);
+		var scriptLambdas = pj.properties.lambdaMode == Scripts;
 		var rxName = Project.rxName;
 		var filesLeft = 1;
 		inline function next():Void {
@@ -32,17 +34,19 @@ class YySearcher {
 			switch (res.resourceType) {
 				case "GMScript": if (opt.checkScripts) {
 					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = Path.withoutExtension(res.resourcePath) + ".gml";
-					filesLeft += 1;
-					pj.readTextFile(resFull, function(error, code) {
-						if (error == null) {
-							var gml1 = fn(resName, resFull, code);
-							if (gml1 != null && gml1 != code) {
-								FileWrap.writeTextFileSync(resFull, gml1);
+					if (!scriptLambdas || !NativeString.startsWith(resName, GmlExtLambda.lfPrefix)) {
+						resFull = Path.withoutExtension(res.resourcePath) + ".gml";
+						filesLeft += 1;
+						pj.readTextFile(resFull, function(error, code) {
+							if (error == null) {
+								var gml1 = fn(resName, resFull, code);
+								if (gml1 != null && gml1 != code) {
+									FileWrap.writeTextFileSync(resFull, gml1);
+								}
 							}
-						}
-						next();
-					});
+							next();
+						});
+					}
 				};
 				case "GMObject": if (opt.checkObjects) {
 					resName = rxName.replace(res.resourcePath, "$1");
