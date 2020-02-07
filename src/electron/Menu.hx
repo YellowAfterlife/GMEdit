@@ -22,8 +22,8 @@ using tools.HtmlTools;
 	inline function appendOpt(opt:MenuItemOptions):MenuItem {
 		return MenuFallback.appendOpt(this, opt);
 	}
-	inline function appendSep():Void {
-		append(new MenuItem({ type:Sep }));
+	inline function appendSep(?id:String):Void {
+		append(new MenuItem({ type:Sep, id:id }));
 	}
 	function insert(pos:Int, item:MenuItem):Void;
 	var items:Array<MenuItem>;

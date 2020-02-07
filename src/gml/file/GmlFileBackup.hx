@@ -102,6 +102,7 @@ class GmlFileBackup {
 				if (FileSystem.existsSync(bkp)) {
 					var t = FileSystem.statSync(bkp).mtime;
 					menu.append(new MenuItem({
+						id: "backup-" + i,
 						label: i + ": " + t.toString(),
 						click: function() load(name + " <backup>", bkp, kind)
 					}));

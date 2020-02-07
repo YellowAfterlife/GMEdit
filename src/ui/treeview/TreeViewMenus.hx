@@ -211,24 +211,29 @@ class TreeViewMenus {
 	//
 	static function initIconMenu() {
 		var iconMenu = new Menu();
-		addLink(iconMenu, "Change icon", function() {
+		addLink(iconMenu, "change-icon", "Change icon", function() {
 			changeIcon({ reset: false, open: false });
 		});
-		addLink(iconMenu, "Reset icon", function() {
+		addLink(iconMenu, "reset-icon", "Reset icon", function() {
 			changeIcon({ reset: true, open: false });
 		});
-		items.changeOpenIcon = addLink(iconMenu, 'Change "open" icon', function() {
+		items.changeOpenIcon = addLink(iconMenu, "change-open-icon", 'Change "open" icon', function() {
 			changeIcon({ reset: false, open: true });
 		});
-		items.resetOpenIcon = addLink(iconMenu, 'Reset "open" icon', function() {
+		items.resetOpenIcon = addLink(iconMenu, "reset-open-icon", 'Reset "open" icon', function() {
 			changeIcon({ reset: true, open: true });
 		});
-		items.openCustomCSS = addLink(iconMenu, "Open custom CSS file", function() {
+		items.openCustomCSS = addLink(iconMenu, "open-css", "Open custom CSS file", function() {
 			var path = ProjectStyle.getPath();
 			if (!FileSystem.existsSync(path)) FileSystem.writeFileSync(path, "");
 			electron.Shell.openItem(path);
 		});
-		return new MenuItem({ label: "Custom icon", type: Sub, submenu: iconMenu });
+		return new MenuItem({
+			id: "sub-custom-icon",
+			label: "Custom icon",
+			type: Sub,
+			submenu: iconMenu
+		});
 	}
 	//
 	public static function add(m:Menu, o:MenuItemOptions) {
@@ -236,8 +241,12 @@ class TreeViewMenus {
 		m.append(r);
 		return r;
 	}
-	public static inline function addLink(m:Menu, label:String, click:Void->Void) {
-		return add(m, { label: label, click: click });
+	public static inline function addLink(m:Menu, id:String, label:String, click:Void->Void) {
+		return add(m, {
+			id: id,
+			label: label,
+			click: click
+		});
 	}
 	public static function init() {
 		var isNative = electron.Electron.isAvailable();
@@ -248,34 +257,36 @@ class TreeViewMenus {
 		//{
 		itemMenu = new Menu();
 		items.shaderItems = [
-			addLink(itemMenu, "Open vertex shader", function() openYyShader("vsh")),
-			addLink(itemMenu, "Open fragment shader", function() openYyShader("fsh")),
+			addLink(itemMenu, "open-vertex", "Open vertex shader", function() openYyShader("vsh")),
+			addLink(itemMenu, "open-fragment", "Open fragment shader", function() openYyShader("fsh")),
 		];
 		if (isNative) {
-			items.openExternally = addLink(itemMenu, "Open externally", openExternal);
-			items.openDirectory = addLink(itemMenu, "Show in directory", openDirectory);
+			items.openExternally = addLink(itemMenu, "open-external", "Open externally", openExternal);
+			items.openDirectory = addLink(itemMenu, "show-in-directory", "Show in directory", openDirectory);
 		}
-		addLink(itemMenu, "Open here", openHere);
-		items.objectInfo = addLink(itemMenu, "Object information", openObjectInfo);
-		items.findReferences = addLink(itemMenu, "Find references", findReferences);
-		items.removeFromRecentProjects =
-			addLink(itemMenu, "Remove from Recent projects", removeFromRecentProjects);
-		itemMenu.appendSep();
+		addLink(itemMenu, "open-here", "Open here", openHere);
+		items.objectInfo = addLink(itemMenu, "object-info", "Object information", openObjectInfo);
+		items.findReferences = addLink(itemMenu, "find-references", "Find references", findReferences);
+		items.removeFromRecentProjects = addLink(itemMenu,
+			"remove-from-recent-projects",
+			"Remove from Recent projects",
+			removeFromRecentProjects);
+		itemMenu.appendSep("sep-manip");
 		for (q in items.manipOuter) itemMenu.append(q);
 		itemMenu.append(iconItem);
 		//}
 		//{
 		dirMenu = new Menu();
-		addLink(dirMenu, "Expand all", expandAll);
-		addLink(dirMenu, "Collapse all", collapseAll);
-		items.showAPI = addLink(dirMenu, "Show API", showAPI);
-		items.openAll = addLink(dirMenu, "Open all", openAll);
-		items.openCombined = addLink(dirMenu, "Open combined view", openCombined);
+		addLink(dirMenu, "expand-all", "Expand all", expandAll);
+		addLink(dirMenu, "collapse-all", "Collapse all", collapseAll);
+		items.showAPI = addLink(dirMenu, "show-extension-api", "Show API", showAPI);
+		items.openAll = addLink(dirMenu, "open-all-items", "Open all", openAll);
+		items.openCombined = addLink(dirMenu, "open-combined-view", "Open combined view", openCombined);
 		if (isNative) {
 			dirMenu.append(items.openExternally);
 			dirMenu.append(items.openDirectory);
 		}
-		dirMenu.appendSep();
+		dirMenu.appendSep("sep-manip");
 		for (q in items.manipOuter) dirMenu.append(q);
 		dirMenu.append(iconItem);
 		//}

@@ -53,7 +53,7 @@
 			while (insertAt < menu.items.length) {
 				var check = menu.items[insertAt++];
 				if (check.type == "separator") { insertAt--; break; }
-				if (check.label.includes("Combined")) break;
+				if (check.id == "open-combined-view") break;
 			}
 			menu.insert(insertAt, menuItem);
 			//

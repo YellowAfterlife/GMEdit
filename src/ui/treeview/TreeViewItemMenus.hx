@@ -284,21 +284,35 @@ class TreeViewItemMenus {
 	static function initCreateMenu() {
 		var createMenu = new Menu();
 		for (kind in 0 ... 2) {
-			if (kind > 0) createMenu.appendSep();
+			var si = kind > 0 ? "group" : "item";
+			if (kind > 0) createMenu.appendSep("sep-" + si);
 			var s = kind > 0 ? "Group" : "Item";
-			items.manipNonRoot.push(addLink(createMenu, s + " before", function() {
+			items.manipNonRoot.push(addLink(createMenu, si+"-before", s + " before", function() {
 				createImpl(kind > 0, -1);
 			}));
-			items.manipDirOnly.push(addLink(createMenu, s + " inside", function() {
+			items.manipDirOnly.push(addLink(createMenu, si+"-inside", s + " inside", function() {
 				createImpl(kind > 0, 0);
 			}));
-			items.manipNonRoot.push(addLink(createMenu, s + " after", function() {
+			items.manipNonRoot.push(addLink(createMenu, si+"-after", s + " after", function() {
 				createImpl(kind > 0, 1);
 			}));
 		}
-		var createItem = new MenuItem({ label: "Create", type: Sub, submenu: createMenu });
-		var removeItem = new MenuItem({ label: "Remove", click: removeImpl });
-		var renameItem = new MenuItem({ label: "Rename", click: renameImpl });
+		var createItem = new MenuItem({
+			id: "sub-create",
+			label: "Create",
+			type: Sub,
+			submenu: createMenu
+		});
+		var removeItem = new MenuItem({
+			id: "remove",
+			label: "Remove",
+			click: removeImpl
+		});
+		var renameItem = new MenuItem({
+			id: "rename",
+			label: "Rename",
+			click: renameImpl
+		});
 		items.manipCreate = createItem;
 		// new MenuItem({type:Sep}), 
 		items.manipOuter = [createItem, removeItem, renameItem];

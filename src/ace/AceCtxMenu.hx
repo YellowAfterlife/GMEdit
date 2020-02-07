@@ -50,6 +50,7 @@ class AceCtxMenu {
 		}
 		function cmdItem(cmd:String, label:String):MenuItem {
 			var item = new MenuItem({
+				id: cmd,
 				accelerator: commandAccels[cmd],
 				label: label,
 				click: function() {
@@ -63,6 +64,7 @@ class AceCtxMenu {
 		var edit:Menu = editMenu = new Menu();
 		edit.append(cmdItem("duplicateSelection", "Duplicate selection"));
 		menu.appendOpt({
+			id: "sub-edit",
 			type: Sub,
 			label: "Edit",
 			submenu: edit,
@@ -72,6 +74,7 @@ class AceCtxMenu {
 		search.append(cmdItem("find", "Quick find"));
 		search.append(cmdItem("replace", "Find and replace..."));
 		search.appendOpt({
+			id: "global-search",
 			label: "Global find and replace...",
 			accelerator: "CommandOrControl+Shift+F",
 			click: function() GlobalSearch.toggle()
@@ -80,13 +83,15 @@ class AceCtxMenu {
 		search.append(cmdItem("gotoPreviousFoldRegion", "Goto previous fold"));
 		search.append(cmdItem("gotoNextFoldRegion", "Goto next fold"));
 		menu.appendOpt({
+			id: "sub-search",
 			type: Sub,
 			label: "Search",
 			submenu: search,
 		});
 		//
-		menu.appendSep();
+		menu.appendSep("sep-definition");
 		var findRefs = menu.appendOpt({
+			id: "open-definition",
 			label: "Open definition",
 			accelerator: "F1",
 			click: function() {
@@ -94,6 +99,7 @@ class AceCtxMenu {
 			}
 		});
 		var findRefs = menu.appendOpt({
+			id: "find-references",
 			label: "Find references",
 			accelerator: "Shift+F1",
 			click: function() {
@@ -101,15 +107,16 @@ class AceCtxMenu {
 			}
 		});
 		//
-		menu.appendSep();
+		menu.appendSep("sep-history");
 		var undo = cmdItem("undo", "Undo");
 		menu.append(undo);
 		var redo = cmdItem("redo", "Redo");
 		menu.append(redo);
 		//
 		if (Electron != null) {
-			menu.appendSep();
+			menu.appendSep("sep-clipboard");
 			menu.appendOpt({
+				id: "cut",
 				label: "Cut",
 				accelerator: "CommandOrControl+X",
 				click: function() {
@@ -120,6 +127,7 @@ class AceCtxMenu {
 				}
 			});
 			menu.appendOpt({
+				id: "copy",
 				label: "Copy",
 				accelerator: "CommandOrControl+C",
 				click: function() {
@@ -130,6 +138,7 @@ class AceCtxMenu {
 				}
 			});
 			menu.appendOpt({
+				id: "paste",
 				label: "Paste",
 				accelerator: "CommandOrControl+V",
 				click: function() {
@@ -138,7 +147,7 @@ class AceCtxMenu {
 			});
 		}
 		//
-		menu.appendSep();
+		menu.appendSep("sep-select");
 		menu.append(cmdItem("selectall", "Select all"));
 		//
 		editor.container.addEventListener("contextmenu", function(ev) {
@@ -157,6 +166,7 @@ class AceCtxMenu {
 		if (Electron == null || !FileWrap.isMac) return;
 		var menu = new Menu();
 		menu.appendOpt({
+			id: "sub-edit",
 			label: "Edit",
 			submenu: editor.contextMenu.menu,
 		});

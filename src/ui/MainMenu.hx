@@ -33,6 +33,7 @@ class MainMenu {
 			form.appendChild(input);
 			Main.document.body.appendChild(form);
 			menu.append(new MenuItem({ label: "Open archive...",
+				id: "open-archive",
 				click: function() {
 					form.reset();
 					input.click();
@@ -40,12 +41,14 @@ class MainMenu {
 			}));
 			//
 			menu.append(new MenuItem({ label: "Open directory...",
+				id: "open-directory",
 				click: function() {
 					YyZip.directoryDialog();
 				}
 			}));
 			//
 		} else menu.append(new MenuItem({ label: "Open...",
+			id: "open-dialog",
 			click: function() {
 				Dialog.showOpenDialog({
 					filters: [
@@ -60,11 +63,15 @@ class MainMenu {
 				});
 			}
 		}));
-		menu.append(new MenuItem({ label: "Reload project",
+		menu.append(new MenuItem({
+			id: "reload-project",
+			label: "Reload project",
 			accelerator: "CommandOrControl+R",
 			click: function() gml.Project.current.reload()
 		}));
-		exportItem = new MenuItem({ label: "Export project...",
+		exportItem = new MenuItem({
+			id: "export-project",
+			label: "Export project...",
 			click: function() {
 				var pj = Project.current;
 				var yyz:YyZip = cast pj;
@@ -86,7 +93,9 @@ class MainMenu {
 			}
 		});
 		menu.append(exportItem);
-		menu.append(new MenuItem({ label: "Close project",
+		menu.append(new MenuItem({
+			id: "close-project",
+			label: "Close project",
 			click: function() {
 				gml.Project.open("");
 				for (q in Main.document.querySelectorAll(".chrome-tab .chrome-tab-close")) {
@@ -95,8 +104,10 @@ class MainMenu {
 			}
 		}));
 		if (Electron != null) {
-			menu.append(new MenuItem({ type: Sep }));
-			menu.append(new MenuItem({ label: "Show in directory",
+			menu.appendSep("sep-show-in-directory");
+			menu.append(new MenuItem({
+				id: "show-in-directory",
+				label: "Show in directory",
 				click: function() electron.Shell.showItemInFolder(Project.current.path)
 			}));
 		}
@@ -140,8 +151,10 @@ class MainMenu {
 		addGMLiveWebItems(menu);
 		#end
 		//
-		menu.append(new MenuItem({ type: Sep }));
-		menu.append(new MenuItem({ label: "Help",
+		menu.appendSep("sep-help");
+		menu.append(new MenuItem({
+			id: "help",
+			label: "Help",
 			click: function() {
 				var url:String = "https://github.com/GameMakerDiscord/GMEdit/wiki";
 				#if lwedit
@@ -152,24 +165,32 @@ class MainMenu {
 				} else window.open(url, "_blank");
 			}
 		}));
-		menu.append(new MenuItem({ label: "Project properties",
+		menu.append(new MenuItem({
+			id: "project-properties",
+			label: "Project properties",
 			click: function() ProjectProperties.open()
 		}));
-		menu.append(new MenuItem({ label: "Preferences",
+		menu.append(new MenuItem({
+			id: "preferences",
+			label: "Preferences",
 			click: function() Preferences.open()
 		}));
 		if (Electron != null && window.location.host == "") menu.append(new MenuItem({
 			#if lwedit
+			id: "switch-gmedit",
 			label: "Switch to GMEdit",
 			click: function() window.location.href = StringTools.replace(window.location.href, 
 				"index-live.html", "index.html"),
 			#else
+			id: "switch-gmlive",
 			label: "Switch to GMLive.js",
 			click: function() window.location.href = StringTools.replace(window.location.href, 
 				"index.html", "index-live.html"),
 			#end
 		}));
-		if (Electron != null) menu.append(new MenuItem({ label: "Dev tools",
+		if (Electron != null) menu.append(new MenuItem({
+			id: "open-dev-tools",
+			label: "Dev tools",
 			accelerator: "CommandOrControl+Shift+I",
 			click: function() {
 				Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
