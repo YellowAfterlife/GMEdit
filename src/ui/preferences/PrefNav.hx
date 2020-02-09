@@ -41,6 +41,17 @@ class PrefNav {
 			current.eventOrder = eventOrder.indexOf(s);
 			save();
 		});
+		//
+		var apiOrder = [
+			"As authored",
+			"Alphabetical",
+		];
+		addDropdown(out, '"Show extension API" entry order',
+			apiOrder[current.extensionAPIOrder], apiOrder,
+		function(s:String) {
+			current.extensionAPIOrder = apiOrder.indexOf(s);
+			save();
+		});
 		#end
 		//
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {

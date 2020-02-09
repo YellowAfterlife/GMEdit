@@ -37,6 +37,7 @@ typedef PrefData = {
 	codeLiterals:Bool,
 	//
 	eventOrder:Int,
+	extensionAPIOrder:Int,
 	backupCount:DynamicAccess<Int>,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
 }

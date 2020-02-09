@@ -2,6 +2,7 @@ package gml;
 import electron.FileWrap;
 import gmx.SfGmx;
 import haxe.DynamicAccess;
+import ui.Preferences;
 import yy.YyExtension;
 import gml.file.GmlFile;
 import file.FileKind;
@@ -60,6 +61,11 @@ class GmlExtensionAPI {
 	static function procSort(a:String, b:String) {
 		return untyped (a < b ? -1 : a > b ? 1 : 0);
 	}
+	static function procSortAuto(lines:Array<String>) {
+		if (Preferences.current.extensionAPIOrder == 1) {
+			lines.sort(procSort);
+		}
+	}
 	//
 	public static function get1(src:String):String {
 		var ext = SfGmx.parse(src);
@@ -85,13 +91,13 @@ class GmlExtensionAPI {
 				));
 			}
 			//
-			linesShow.sort(procSort);
+			procSortAuto(linesShow);
 			if (out != "") out += "\n";
 			out += "#section " + file.findText("filename");
 			for (line in linesShow) out += "\n" + line;
 			//
 			if (linesHide.length > 0) {
-				linesHide.sort(procSort);
+				procSortAuto(linesHide);
 				out += "\n#section " + file.findText("filename") + " (hidden)";
 				for (line in linesHide) out += "\n" + line;
 			}
@@ -111,13 +117,13 @@ class GmlExtensionAPI {
 					mc.constantName, mc.value, mc.hidden));
 			}
 			//
-			linesShow.sort(procSort);
+			procSortAuto(linesShow);
 			if (out != "") out += "\n";
 			out += "#section " + file.filename;
 			for (line in linesShow) out += "\n" + line;
 			//
 			if (linesHide.length > 0) {
-				linesHide.sort(procSort);
+				procSortAuto(linesHide);
 				out += "\n#section " + file.filename + " (hidden)";
 				for (line in linesHide) out += "\n" + line;
 			}

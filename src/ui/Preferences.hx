@@ -303,6 +303,7 @@ class Preferences {
 			tabSpaces: true,
 			detectTab: true,
 			eventOrder: 1,
+			extensionAPIOrder: 1,
 			tooltipDelay: 350,
 			tooltipKeyboardDelay: 0,
 			tooltipKind: Custom,
