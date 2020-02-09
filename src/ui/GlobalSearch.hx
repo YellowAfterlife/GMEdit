@@ -109,7 +109,7 @@ using tools.HtmlTools;
 		var saveItems = saveData.list;
 		var saveItem:GlobalSearchItem;
 		var saveCtxItems:Array<GlobalSearchItem>;
-		var canLambda = pj.canLambda();
+		var canLambda = pj.canLambda() && opt.expandLambdas;
 		var lambdaGml:String = null;
 		pj.search(function(name:String, path:String, code:String) {
 			var lambdaPre:GmlExtLambdaPre;

@@ -34,7 +34,10 @@ class YySearcher {
 			switch (res.resourceType) {
 				case "GMScript": if (opt.checkScripts) {
 					resName = rxName.replace(res.resourcePath, "$1");
-					if (!scriptLambdas || !NativeString.startsWith(resName, GmlExtLambda.lfPrefix)) {
+					if (!scriptLambdas
+						|| !opt.expandLambdas
+						|| !NativeString.startsWith(resName, GmlExtLambda.lfPrefix)
+					) {
 						resFull = Path.withoutExtension(res.resourcePath) + ".gml";
 						filesLeft += 1;
 						pj.readTextFile(resFull, function(error, code) {
