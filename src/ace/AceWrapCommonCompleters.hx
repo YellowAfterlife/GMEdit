@@ -46,7 +46,7 @@ class AceWrapCommonCompleters {
 		// tokens to not show normal auto-completion in
 		var excl = [
 			"comment", "comment.doc", "comment.line", "comment.doc.line",
-			"string", "string.quasi", "string.importpath",
+			"string", "string.quasi", "string.importpath", "numeric",
 			"scriptname",
 			"eventname", "eventkeyname", "eventtext",
 			"sectionname",
