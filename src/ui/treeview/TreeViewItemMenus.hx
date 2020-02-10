@@ -106,11 +106,11 @@ class TreeViewItemMenus {
 			};
 			case -2: {
 				dir.treeItems.insertBefore(ntv, dir.treeItems.lastElementChild);
-				dir.classList.add(TreeView.clOpen);
+				if (q.showInTree != false) dir.classList.add(TreeView.clOpen);
 			};
 			default: {
 				dir.treeItems.appendChild(ntv);
-				dir.classList.add(TreeView.clOpen);
+				if (q.showInTree != false) dir.classList.add(TreeView.clOpen);
 			};
 		}
 		return ntv;
@@ -341,7 +341,9 @@ typedef TreeViewItemBase = {
 	/** filled out during call */
 	?outGUID:yy.YyGUID,
 	/** whether to open the freshly made thing (defaults to true) */
-	?openFile:Bool
+	?openFile:Bool,
+	/** whether to reveal the freshly made thing in treeview */
+	?showInTree:Bool,
 };
 typedef TreeViewItemCreate = {
 	>TreeViewItemBase,

@@ -687,6 +687,7 @@ class GmlExtLambda {
 				pj: pj,
 				pyBefore: pyBefore,
 				openFile: false,
+				showInTree: false,
 			};
 			yy.YyManip.add(md);
 			saveProject = true;
