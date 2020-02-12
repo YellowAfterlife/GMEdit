@@ -95,18 +95,19 @@ class ChromeTabMenu {
 			}
 		}));
 		#else
-		menu.append(showInDirectoryItem = new MenuItem({
-			id: "show-in-directory",
-			label: "Show in directory",
-			click: function() {
-				electron.FileWrap.showItemInFolder(target.gmlFile.path);
-			}
-		}));
 		menu.append(openExternally = new MenuItem({
 			id: "open-externally",
 			label: "Open externally",
 			click: function() {
 				electron.FileWrap.openExternal(target.gmlFile.path);
+			}
+		}));
+		if (electron.Electron == null) openExternally.visible = false;
+		menu.append(showInDirectoryItem = new MenuItem({
+			id: "show-in-directory",
+			label: "Show in directory",
+			click: function() {
+				electron.FileWrap.showItemInFolder(target.gmlFile.path);
 			}
 		}));
 		if (electron.Electron == null) showInDirectoryItem.visible = false;
