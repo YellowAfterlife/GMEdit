@@ -29,9 +29,14 @@ import Main.document;
 		DialogFallback.showError(s);
 	}
 	
-	public static function showOpenDialog(
+	@:native("showOpenDialog")
+	public static function showOpenDialogPromise(options:DialogOpenOptions):Promise<DialogOpenFileResult>;
+	public static function showOpenDialogSync(options:DialogOpenOptions):Array<String>;
+	public static inline function showOpenDialog(
 		options:DialogOpenOptions, ?async:Array<String>->Void
-	):Array<String>;
+	):Array<String> {
+		return DialogFallback.showOpenDialogProxy(options, async);
+	}
 	
 	public static inline function showOpenDialogWrap(
 		options:DialogOpenOptions, func:FileList->Void
@@ -67,6 +72,19 @@ import Main.document;
 			return -1;
 		} else return Dialog.showMessageBoxSync(options);
 	}
+	
+	public static function showOpenDialogProxy(options:DialogOpenOptions, async:Array<String>->Void):Array<String> {
+		if (Electron == null) {
+			Main.console.log("Don't have sync showOpenDialog here");
+			return null;
+		} else if (async != null) {
+			Dialog.showOpenDialogPromise(options).then(function(result) {
+				async(result.canceled ? null : result.filePaths);
+			});
+			return null;
+		} else return Dialog.showOpenDialogSync(options);
+	}
+	
 	public static function showAlert(s:String):Void {
 		if (Electron != null) {
 			Dialog.showMessageBoxSync({
@@ -121,6 +139,7 @@ import Main.document;
 		};
 		input.click();
 	}
+	
 	static function initDialog() {
 		//
 		form = document.createFormElement();
@@ -196,6 +215,7 @@ import Main.document;
 }
 //
 typedef DialogPromiseProps = { response:Int, checkboxChecked:Bool };
+typedef DialogOpenFileResult = { canceled:Bool, filePaths:Array<String> };
 typedef DialogOpenOptions = {
 	?title:String,
 	?defaultPath:String,
