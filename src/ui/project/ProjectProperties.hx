@@ -105,7 +105,7 @@ class ProjectProperties {
 		//
 		plugins.PluginEvents.projectPropertiesBuilt({
 			project: project,
-			target: el,
+			target: out,
 		});
 	}
 	public static function open() {
