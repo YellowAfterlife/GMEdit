@@ -293,8 +293,7 @@ class YyLoaderV22 {
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
 			TreeView.element.appendChild(idir);
 		}
-		TreeView.restoreOpen();
-		//
+		// restoreOpen runs in Project:reload
 		return null;
 	}
 }

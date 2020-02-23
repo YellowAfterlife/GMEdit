@@ -76,8 +76,7 @@ class YyLoader {
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
 			TreeView.element.appendChild(idir);
 		}
-		TreeView.restoreOpen();
-		//
+		// restoreOpen runs in Project:reload
 		project.yyObjectNames = new Dictionary();
 		project.yyObjectGUIDs = new Dictionary();
 		project.yyResources = new Dictionary();
