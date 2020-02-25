@@ -209,7 +209,9 @@ class TreeViewItemMenus {
 	//
 	static function removeImpl() {
 		var d = getItemData(target);
-		if (!Dialog.showConfirm("Are you sure you want to delete " + d.last + "?")) return;
+		if (!Dialog.showConfirmWarn("Are you sure you want to delete " + d.last + "?"
+			+ "\nThis cannot be undone!"
+		)) return;
 		if (d.filter == "file") {
 			try {
 				var path0 = target.getAttribute(TreeView.attrRel);

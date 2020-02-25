@@ -49,7 +49,11 @@ import Main.document;
 	}
 	
 	public static inline function showConfirm(text:String):Bool {
-		return Main.window.confirm(text);
+		return DialogFallback.showConfirmProxy(text);
+	}
+	
+	public static inline function showConfirmWarn(text:String):Bool {
+		return DialogFallback.showConfirmWarnProxy(text);
 	}
 	
 	/*public static inline function showConfirmBoxSync(text:String, title:String) {
@@ -103,8 +107,23 @@ import Main.document;
 			});
 		} else Main.window.alert(s);
 	}
-	public static function showConfirm(text:String):Bool {
-		return Main.window.confirm(text);
+	public static function showConfirmProxy(text:String):Bool {
+		if (Electron != null) {
+			return Dialog.showMessageBoxSync({
+				type: "question",
+				message: text,
+				buttons: ["Yes", "No"],
+			}) == 0;
+		} else return Main.window.confirm(text);
+	}
+	public static function showConfirmWarnProxy(text:String):Bool {
+		if (Electron != null) {
+			return Dialog.showMessageBoxSync({
+				type: "warning",
+				message: text,
+				buttons: ["Yes", "No"],
+			}) == 0;
+		} else return Main.window.confirm(text);
 	}
 	
 	public static function showOpenDialogWrap(

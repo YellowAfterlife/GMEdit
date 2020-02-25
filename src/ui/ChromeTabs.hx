@@ -142,7 +142,7 @@ class ChromeTabs {
 			#if (lwedit)
 			if (Std.is(gmlFile.kind, file.kind.gml.KGmlScript)) {
 				if (gmlFile.getAceSession().getValue().length > 0) {
-					if (!window.confirm(
+					if (!Dialog.showConfirmWarn(
 						"Are you sure you want to discard this tab? Contents will be lost"
 					)) e.preventDefault();
 				}
@@ -152,7 +152,7 @@ class ChromeTabs {
 				if (gmlFile.path != null) {
 					var bt:Int;
 					if (Electron == null) {
-						bt = window.confirm(
+						bt = Dialog.showConfirmWarn(
 							"Are you sure you want to close " + gmlFile.name + "?" +
 							"\nThere are unsaved changes."
 						) ? 1 : 2;

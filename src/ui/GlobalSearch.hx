@@ -5,6 +5,7 @@ import ace.extern.*;
 import Main.aceEditor;
 import Main.window;
 import gml.*;
+import electron.Dialog;
 import gml.file.GmlFile;
 import js.lib.RegExp;
 import js.Syntax;
@@ -416,7 +417,7 @@ using tools.HtmlTools;
 		}
 		btFind.onclick = function(_) findAuto();
 		btReplace.onclick = function(_) {
-			if (!window.confirm("Are you sure that you want to globally replace?"
+			if (!Dialog.showConfirmWarn("Are you sure that you want to globally replace?"
 				+ "\nThis cannot be undone!")) return;
 			replaceAuto();
 		};
