@@ -1,4 +1,6 @@
 package file.kind.yy;
+import ace.extern.AceAutoCompleteItem;
+import gml.GmlAPI;
 import gml.file.GmlFile;
 import js.html.DivElement;
 import ui.treeview.TreeView;
@@ -27,7 +29,22 @@ class KYyUnknown extends FileKind {
 		var full = gml.Project.current.fullPath(path);
 		if (dir != null) {
 			var makeEl = true;
-			switch (resource.resourceType) {
+			var resType = resource.resourceType;
+			var kind = resType.substring(2).toLowerCase();
+			var name = resource.name;
+			switch (resType) {
+				case "GMSprite", "GMTileSet", "GMSound", "GMPath",
+					"GMScript", "GMShader", "GMFont", "GMTimeline",
+					"GMObject", "GMRoom"
+				: {
+					GmlAPI.gmlKind.set(name, "asset." + kind);
+					GmlAPI.gmlLookupText += name + "\n";
+					var next = new AceAutoCompleteItem(name, kind);
+					GmlAPI.gmlComp.push(next);
+					GmlAPI.gmlAssetComp.set(name, next);
+				};
+			}
+			switch (resType) {
 				case "GMScript": {
 					full = haxe.io.Path.withoutExtension(full) + ".gml";
 					content = electron.FileWrap.readTextFileSync(full);
@@ -35,8 +52,7 @@ class KYyUnknown extends FileKind {
 				case "GMExtension": makeEl = false;
 			}
 			if (makeEl) {
-				var kind = resource.resourceType.substring(2).toLowerCase();
-				var item = TreeView.makeAssetItem(resource.name, path, full, kind);
+				var item = TreeView.makeAssetItem(name, path, full, kind);
 				item.yyOpenAs = detect.kind;
 				TreeView.insertSorted(cast dir, item);
 			}

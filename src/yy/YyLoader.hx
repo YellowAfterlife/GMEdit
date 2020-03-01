@@ -54,6 +54,10 @@ class YyLoader {
 		TreeView.saveOpen();
 		TreeView.clear();
 		//
+		GmlSeeker.start();
+		GmlAPI.gmlClear();
+		GmlAPI.extClear();
+		//
 		var topLevel = TreeView.makeAssetDir(project.displayName, "", "mixed");
 		topLevel.classList.add(TreeView.clOpen);
 		topLevel.treeHeader.classList.add("hidden");

@@ -15,6 +15,7 @@ class KYyExtension extends FileKind {
 	public static var inst:KYyExtension = new KYyExtension();
 	override public function index(path:String, content:String, main:String):Bool {
 		var ext:YyExtension = YyJson.parse(content);
+		var pj = gml.Project.current;
 		//
 		var parentPath = ext.parent.path;
 		if (parentPath.endsWith(".yy")) {
@@ -26,8 +27,8 @@ class KYyExtension extends FileKind {
 		var treeDir = TreeView.makeAssetDir(ext.name, parentPath, "mixed");
 		TreeView.insertSorted(cast parentDir, treeDir);
 		//
-		var extDirRel = Path.directory(path);
-		var full = gml.Project.current.fullPath(path);
+		var extDirRel = pj.relPath(path);
+		var full = path;
 		var extDir = Path.directory(full);
 		for (file in ext.files) {
 			// todo: this is too alike with V22 and I don't like that
@@ -68,7 +69,6 @@ class KYyExtension extends FileKind {
 				}
 			}
 		}
-		trace(ext);
 		return true;
 	}
 }
