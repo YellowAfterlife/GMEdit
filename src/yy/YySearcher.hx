@@ -5,6 +5,7 @@ import gml.Project;
 import haxe.io.Path;
 import js.lib.Error;
 import parsers.GmlExtLambda;
+import tools.Aliases;
 import tools.NativeString;
 import ui.GlobalSearch;
 
@@ -28,19 +29,32 @@ class YySearcher {
 				opt.errors += "\n" + s;
 			} else opt.errors = s;
 		}
+		var v22 = yyProject.resourceType != "GMProject";
 		for (resPair in yyProject.resources) {
-			var res = resPair.Value;
-			var resName:String, resFull:String;
-			switch (res.resourceType) {
+			var resName:String, resPath:RelPath, resFull:String, resType:String;
+			if (v22) {
+				var resVal = resPair.Value;
+				resPath = resVal.resourcePath;
+				resType = resVal.resourceType;
+				resName = null;
+			} else {
+				resPath = resPair.id.path;
+				resType = pj.yyResourceTypes[resPair.id.name];
+			}
+			inline function ensureName():Void {
+				if (v22) {
+					resName = rxName.replace(resPath, "$1");
+				} else resName = resPair.id.name;
+			}
+			switch (resType) {
 				case "GMScript": if (opt.checkScripts) {
-					resName = rxName.replace(res.resourcePath, "$1");
+					ensureName();
 					if (!scriptLambdas
 						|| !opt.expandLambdas
 						|| !NativeString.startsWith(resName, GmlExtLambda.lfPrefix)
 					) {
-						resFull = Path.withoutExtension(res.resourcePath) + ".gml";
 						filesLeft += 1;
-						pj.readTextFile(resFull, function(error, code) {
+						pj.readTextFile(Path.withExtension(resPath, "gml"), function(error, code) {
 							if (error == null) {
 								var gml1 = fn(resName, resFull, code);
 								if (gml1 != null && gml1 != code) {
@@ -52,12 +66,10 @@ class YySearcher {
 					}
 				};
 				case "GMObject": if (opt.checkObjects) {
-					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = res.resourcePath;
+					ensureName();
 					filesLeft += 1;
-					pj.readTextFile(resFull, function(error, data) {
+					pj.readTextFile(resPath, function(error, data) {
 						if (error == null) try {
-							var resDir = Path.directory(resFull);
 							var obj:YyObject = haxe.Json.parse(data);
 							var code = obj.getCode(resFull);
 							var gml1 = fn(resName, resFull, code);
@@ -72,12 +84,10 @@ class YySearcher {
 					});
 				};
 				case "GMTimeline": if (opt.checkObjects) {
-					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = res.resourcePath;
+					ensureName();
 					filesLeft += 1;
-					pj.readTextFile(resFull, function(error, data) {
+					pj.readTextFile(resPath, function(error, data) {
 						if (error == null) try {
-							var resDir = Path.directory(resFull);
 							var tl:YyTimeline = haxe.Json.parse(data);
 							var code = tl.getCode(resFull);
 							var gml1 = fn(resName, resFull, code);
@@ -92,10 +102,9 @@ class YySearcher {
 					});
 				};
 				case "GMShader": if (opt.checkShaders) {
-					resName = rxName.replace(res.resourcePath, "$1");
-					resFull = Path.withoutExtension(res.resourcePath);
+					ensureName();
 					inline function procShader(ext:String, type:String) {
-						pj.readTextFile(resFull + "." + ext, function(error, code) {
+						pj.readTextFile(Path.withExtension(resPath, ext), function(error, code) {
 							if (error == null) {
 								var gml1 = fn(resName + '($type)', resFull, code);
 								if (gml1 != null && gml1 != code) {
@@ -110,13 +119,11 @@ class YySearcher {
 					procShader("vsh", "vertex");
 				};
 				case "GMExtension": if (opt.checkExtensions) {
-					resName = rxName.replace(res.resourcePath, "$1");
+					ensureName();
 					if (opt.expandLambdas && resName == GmlExtLambda.extensionName) continue;
-					resFull = res.resourcePath;
 					filesLeft += 1;
-					pj.readJsonFile(resFull, function(err, ext:YyExtension) {
+					pj.readYyFile(resPath, function(err, ext:YyExtension) {
 						if (err != null) { next(); return; }
-						var ext:YyExtension = FileWrap.readYyFileSync(resFull);
 						var extDir = Path.directory(resFull);
 						for (file in ext.files) {
 							var fileName = file.filename;
@@ -136,14 +143,15 @@ class YySearcher {
 					});
 				};
 				case "GMRoom": if (opt.checkRooms) {
-					resName = "roomCreationCodes(" + rxName.replace(res.resourcePath, "$1") + ")";
-					resFull = Path.directory(res.resourcePath) + "\\RoomCreationCode.gml";
+					ensureName();
+					var rccName = "roomCreationCodes(" + resName + ")";
+					var rccPath = Path.directory(resPath) + "\\RoomCreationCode.gml";
 					filesLeft += 1;
-					pj.readTextFile(resFull, function(error, code) {
+					pj.readTextFile(rccPath, function(error, code) {
 						if (error == null) {
-							var gml1 = fn(resName, resFull, code);
+							var gml1 = fn(rccName, rccPath, code);
 							if (gml1 != null && gml1 != code) {
-								FileWrap.writeTextFileSync(resFull, gml1);
+								FileWrap.writeTextFileSync(rccPath, gml1);
 							}
 						}
 						next();

@@ -73,6 +73,8 @@ import ui.treeview.TreeView;
 	public var yyResources:Dictionary<YyProjectResource>;
 	/** Resource name -> GUID */
 	public var yyResourceGUIDs:Dictionary<YyGUID>;
+	/** Resource name -> "GMScript"/etc. (2.3 only) */
+	public var yyResourceTypes:Dictionary<String>;
 	/** GUID -> URL */
 	public var yySpriteURLs:Dictionary<String>;
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
@@ -465,6 +467,18 @@ import ui.treeview.TreeView;
 			callback(e, d);
 		});
 	}
+	public function readYyFile<T:{}>(path:String, callback:Error->T->Void):Void {
+		readTextFile(path, function(e:Error, d:Dynamic) {
+			if (e == null) try {
+				d = YyJson.parse(d);
+			} catch (x:Dynamic) {
+				d = null;
+				e = x;
+			}
+			callback(e, d);
+		});
+	}
+	//
 	public function readJsonFileSync<T>(path:String):T {
 		return Json.parse(readTextFileSync(path));
 	}

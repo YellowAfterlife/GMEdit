@@ -86,6 +86,7 @@ class YyLoader {
 		project.yyResources = new Dictionary();
 		project.yyResourceGUIDs = new Dictionary();
 		project.yySpriteURLs = new Dictionary();
+		project.yyResourceTypes = new Dictionary();
 		for (resource in yyProject.resources) {
 			var resPath = resource.id.path;
 			var resName = resource.id.name;

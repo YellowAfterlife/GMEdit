@@ -1,6 +1,7 @@
 package file.kind.yy;
 import ace.extern.AceAutoCompleteItem;
 import gml.GmlAPI;
+import gml.Project;
 import gml.file.GmlFile;
 import js.html.DivElement;
 import ui.treeview.TreeView;
@@ -23,13 +24,15 @@ class KYyUnknown extends FileKind {
 			parentPath = parentPath.substring(0, parentPath.length - 3);
 		}
 		//
+		var resType = resource.resourceType;
+		Project.current.yyResourceTypes[resource.name] = resType;
+		//
 		var dir = TreeView.find(false, {
 			rel: parentPath
 		});
 		var full = gml.Project.current.fullPath(path);
 		if (dir != null) {
 			var makeEl = true;
-			var resType = resource.resourceType;
 			var kind = resType.substring(2).toLowerCase();
 			var name = resource.name;
 			switch (resType) {
