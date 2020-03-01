@@ -419,10 +419,19 @@ import ui.treeview.TreeView;
 		} else done();
 	}
 	//
-	public function fullPath(path:String) {
+	public function fullPath(path:String):FullPath {
 		if (dir != "") {
 			return (dir + "/" + path).ptNoBS();
 		} else return path;
+	}
+	public function relPath(path:FullPath):RelPath {
+		if (dir != "" && NativeString.startsWith(path, dir)) {
+			var p = dir.length;
+			switch (path.charCodeAt(p)) {
+				case "/".code, "\\".code: return path.substring(p + 1);
+			}
+		}
+		return path;
 	}
 	public function existsSync(path:String):Bool {
 		return FileSystem.existsSync(fullPath(path));
