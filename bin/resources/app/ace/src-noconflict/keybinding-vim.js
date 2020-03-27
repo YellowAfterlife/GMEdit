@@ -2933,6 +2933,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
         if (!text) {
           return;
         }
+        var nlregx = /(?:\r\n|\r|\n)$/g;
         if (actionArgs.matchIndent) {
           var tabSize = cm.getOption("tabSize");
           var whitespaceLength = function(str) {
@@ -2942,7 +2943,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
           };
           var currentLine = cm.getLine(cm.getCursor().line);
           var indent = whitespaceLength(currentLine.match(/^\s*/)[0]);
-          var chompedText = text.replace(/\n$/, '');
+          var chompedText = text.replace(nlregx, '');
           var wasChomped = text !== chompedText;
           var firstIndent = whitespaceLength(text.match(/^\s*/)[0]);
           var text = chompedText.replace(/^\s*/gm, function(wspace) {
@@ -2967,9 +2968,13 @@ dom.importCssString(".normal-mode .ace_cursor{\
         var blockwise = register.blockwise;
         if (linewise && !blockwise) {
           if(vim.visualMode) {
-            text = vim.visualLine ? text.slice(0, -1) : '\n' + text.slice(0, text.length - 1) + '\n';
+              if(vim.visualLine){
+                  text = text.replace(nlregx, '');
+              }else{
+                  text = '\n' + text.slice(0, -1);
+              }
           } else if (actionArgs.after) {
-            text = '\n' + text.slice(0, text.length - 1);
+            text = '\n' + text.replace(nlregx, '');
             cur.ch = lineLength(cm, cur.line);
           } else {
             cur.ch = 0;
