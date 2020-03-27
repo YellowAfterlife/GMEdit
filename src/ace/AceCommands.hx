@@ -107,6 +107,7 @@ import ui.CommandPalette;
 			bindKey: "F1|F12",
 			exec: function(editor:AceWrap) {
 				var pos = editor.getCursorPosition();
+				pos.column += 1;
 				var tk = editor.session.getTokenAtPos(pos);
 				ui.OpenDeclaration.proc(editor.session, pos, tk);
 			}
