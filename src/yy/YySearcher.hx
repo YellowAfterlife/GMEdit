@@ -41,6 +41,7 @@ class YySearcher {
 				resPath = resPair.id.path;
 				resType = pj.yyResourceTypes[resPair.id.name];
 			}
+			resFull = pj.fullPath(resPath);
 			inline function ensureName():Void {
 				if (v22) {
 					resName = rxName.replace(resPath, "$1");
