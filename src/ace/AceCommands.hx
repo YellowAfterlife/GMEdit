@@ -4,8 +4,10 @@ import ace.extern.*;
 import ace.extern.AceCommandManager;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
+import tools.CharCode;
 import tools.NativeString;
 import ui.CommandPalette;
+using StringTools;
 
 /**
  * GMS-style keybinds, as per
@@ -107,7 +109,13 @@ import ui.CommandPalette;
 			bindKey: "F1|F12",
 			exec: function(editor:AceWrap) {
 				var pos = editor.getCursorPosition();
+				var line = editor.session.getLine(pos.row);
+				var col = pos.column;
+				if (CharCode.at(line, col).isIdent1_ni()
+					&& !CharCode.at(line, col - 1).isIdent1_ni()
+				) pos.column++;
 				var tk = editor.session.getTokenAtPos(pos);
+				trace(tk);
 				ui.OpenDeclaration.proc(editor.session, pos, tk);
 			}
 		});
@@ -116,6 +124,11 @@ import ui.CommandPalette;
 			bindKey: "Shift-F1|Shift-F12",
 			exec: function(editor:AceWrap) {
 				var pos = editor.getCursorPosition();
+				var line = editor.session.getLine(pos.row);
+				var col = pos.column;
+				if (CharCode.at(line, col).isIdent1_ni()
+					&& !CharCode.at(line, col - 1).isIdent1_ni()
+				) pos.column++;
 				var tk = editor.session.getTokenAtPos(pos);
 				if (tk != null) ui.GlobalSearch.findReferences(tk.value);
 			}

@@ -6,6 +6,10 @@ package tools;
  */
 abstract CharCode(Int) from Int to Int {
 	
+	public static inline function at(s:String, index:Int):CharCode {
+		return StringTools.fastCodeAt(s, index);
+	}
+	
 	public var code(get, never):Int;
 	private inline function get_code():Int return this;
 	
