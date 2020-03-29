@@ -35,6 +35,7 @@ typedef PrefData = {
 	tooltipDelay:Int,
 	tooltipKeyboardDelay:Int,
 	codeLiterals:Bool,
+	ctrlWheelFontSize:Bool,
 	//
 	eventOrder:Int,
 	extensionAPIOrder:Int,

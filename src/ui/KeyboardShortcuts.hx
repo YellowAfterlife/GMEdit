@@ -231,11 +231,13 @@ class KeyboardShortcuts {
 		editor.on("mousewheel", function(ev:Dynamic) {
 			var dom:WheelEvent = ev.domEvent;
 			var flags = getEventFlags(dom);
-			if (flags != CTRL && flags != META) return;
-			var delta = dom.deltaY;
-			if (delta == 0) return;
-			delta = delta < 0 ? 1 : -1;
-			editor.setOption("fontSize", editor.getOption("fontSize") + delta);
+			if (Preferences.current.ctrlWheelFontSize) do {
+				if (flags != CTRL && flags != META) break;
+				var delta = dom.deltaY;
+				if (delta == 0) break;
+				delta = delta < 0 ? 1 : -1;
+				editor.setOption("fontSize", editor.getOption("fontSize") + delta);
+			} while (false);
 		});
 		(editor:Dynamic).debugShowToken = function() {
 			editor.on("mousemove", function(ev:Dynamic) {

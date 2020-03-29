@@ -41,6 +41,15 @@ class PrefCode {
 			save();
 		}).title = "If enabled, will auto-detect whether to indent with tabs or spaces"
 			+ " based on whether the file has lines starting with either.";
+		
+		//
+		addCheckbox(out,
+			"Allow changing code editor font size via Control+mouse wheel",
+		current.ctrlWheelFontSize, function(z) {
+			current.ctrlWheelFontSize = z;
+			save();
+		}).title = "If disabled, you can still use F7, F8, or code editor settings.";
+		
 		//
 		var tooltipKinds = ["None", "Custom"];
 		addDropdown(out, "Code tooltips", tooltipKinds[current.tooltipKind], tooltipKinds, function(s) {
