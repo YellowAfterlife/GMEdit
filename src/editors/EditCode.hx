@@ -198,7 +198,12 @@ class EditCode extends Editor {
 					"Close the file"
 				], cancelId: 0,
 			})) {
-				case 1: file.tabEl.querySelector(".chrome-tab-close").click();
+				case 1: {
+					file.path = null;
+					Main.window.setTimeout(function() {
+						file.tabEl.querySelector(".chrome-tab-close").click();
+					});
+				};
 				default: file.path = null;
 			}
 			return;
