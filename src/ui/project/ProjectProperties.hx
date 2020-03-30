@@ -1,4 +1,5 @@
 package ui.project;
+import gml.GmlAPI;
 import haxe.Json;
 import js.html.DivElement;
 import js.html.Element;
@@ -41,23 +42,15 @@ class ProjectProperties {
 	public static function save(project:Project, data:ProjectData) {
 		project.writeConfigJsonFileSync("properties.json", data);
 	}
-	public static function build(project:Project, out:DivElement) {
-		var fs:FieldSetElement;
+	
+	static function buildCode(project:Project, out:DivElement) {
 		var d = project.properties;
-		var el:Element, input:InputElement;
-		inline function autosave():Void {
-			save(project, d);
-		}
-		inline function findInput(e:Element):InputElement {
-			return e.querySelectorAuto("input", InputElement);
-		}
-		//{
-		fs = Preferences.addGroup(out, "Code editor (these take effect for newly opened editors)");
-		el = Preferences.addInput(fs, "Indentation size override",
+		var fs = Preferences.addGroup(out, "Code editor (these take effect for newly opened editors)");
+		var el = Preferences.addInput(fs, "Indentation size override",
 			(d.indentSize != null ? "" + d.indentSize : ""),
 		function(s) {
 			d.indentSize = Std.parseInt(s);
-			autosave();
+			save(project, d);
 		});
 		el.title = "Blank for default";
 		//
@@ -66,26 +59,30 @@ class ProjectProperties {
 			d.indentWithTabs == null ? 0 : (d.indentWithTabs ? 1 : 2)
 		], indentModes, function(v) {
 			d.indentWithTabs = v == indentModes[0] ? null : v == indentModes[1];
-			autosave();
+			save(project, d);
 		});
-		//}
-		//{
-		fs = Preferences.addGroup(out, "Syntax extensions");
+	}
+	
+	static function buildSyntax(project:Project, out:DivElement) {
+		var d = project.properties;
+		var fs = Preferences.addGroup(out, "Syntax extensions");
 		var lambdaModes = [
 			"Default (extension)",
 			"Compatible (extension macros)",
 			"Scripts (GMS2 only)",
 		];
-		el = Preferences.addRadios(fs, "#lambda mode",
+		var el:Element = Preferences.addRadios(fs, "#lambda mode",
 			lambdaModes[or(d.lambdaMode, Default)], lambdaModes,
 		function(s) {
 			d.lambdaMode = lambdaModes.indexOf(s);
-			autosave();
+			save(project, d);
 		});
 		if (project.version.config.projectModeId != 2) {
 			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
 		}
+		
 		//
+		var argRegexInput:InputElement;
 		el = Preferences.addInput(fs,
 			"Regex for trimming argument name (e.g. `^_(\\w+)$`)",
 			or(d.argNameRegex, ""),
@@ -93,14 +90,46 @@ class ProjectProperties {
 			if (NativeString.trimBoth(s) == "") s = null;
 			if (s != null) try {
 				new RegExp(s);
+				argRegexInput.classList.remove("error");
 			} catch (x:Dynamic) {
+				argRegexInput.classList.add("error");
 				electron.Dialog.showError("Invalid regexp: " + x);
 				return;
 			}
 			d.argNameRegex = s;
-			autosave();
+			save(project, d);
 		});
-		//}
+		argRegexInput = el.querySelectorAuto("input");
+		
+		//
+		var templateStringInput:InputElement;
+		el = Preferences.addInput(fs,
+			"Template string script name",
+			or(d.templateStringScript, ""),
+		function(s) {
+			s = NativeString.trimBoth(s);
+			if (s == "") s = null;
+			d.templateStringScript = s;
+			if (s != null && GmlAPI.gmlKind[s] == null) {
+				templateStringInput.classList.add("error");
+				templateStringInput.title = "Couldn't find script `" + s + "`.";
+			} else {
+				templateStringInput.classList.remove("error");
+				templateStringInput.title = "";
+			}
+			GmlAPI.forceTemplateStrings = s != null;
+			save(project, d);
+		});
+		Preferences.addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-template-strings");
+		templateStringInput = el.querySelectorAuto("input");
+		if (d.templateStringScript != null && GmlAPI.gmlKind[d.templateStringScript] == null) {
+			templateStringInput.classList.add("error");
+		}
+	}
+	
+	public static function build(project:Project, out:DivElement) {
+		buildCode(project, out);
+		buildSyntax(project, out);
 		ui.preferences.PrefLinter.build(out, project);
 		//
 		plugins.PluginEvents.projectPropertiesBuilt({

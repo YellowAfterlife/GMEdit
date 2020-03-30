@@ -62,7 +62,9 @@ class GmlVersion {
 	public function hasStringEscapeCharacters() return config.hasStringEscapeCharacters;
 	public function hasLiteralStrings() return config.hasLiteralStrings;
 	public function hasSingleQuoteStrings() return config.hasSingleQuotedStrings;
-	public function hasTemplateStrings() return config.hasTemplateStrings;
+	public function hasTemplateStrings():Bool {
+		return config.hasTemplateStrings || GmlAPI.forceTemplateStrings;
+	}
 	public function hasJSDoc() return config.hasJSDoc;
 	public function hasScriptArgs() return config.hasDefineArgs;
 	public function resetOnDefine() return config.resetLineCounterOnDefine;

@@ -193,7 +193,7 @@ using tools.NativeArray;
 		}
 		function genIdentPair(mf:Bool):AceLangRule {
 			return {
-				regex: '([a-zA-Z_][a-zA-Z0-9_]*)(\\s*)(\\.)(\\s*)([a-zA-Z_][a-zA-Z0-9_]*|)',
+				regex: '([a-zA-Z_]\\w*)(\\s*)(\\.)(\\s*)([a-zA-Z_]\\w*|)',
 				onMatch: genIdentPairFunc(mf)
 			};
 		}
@@ -493,8 +493,20 @@ using tools.NativeArray;
 			rxRule("string", ~/.*?["]/, "pop"),
 			rxRule("string", ~/.+/),
 		];
+		var rString_tpl_id:AceLangRule = {
+			regex: "(\\$)([a-zA-Z_]\\w*)",
+			onMatch: function(
+				value:String, state:String, stack:Array<String>, line:String, row:Int
+			) {
+				value = value.substring(1);
+				var type:String = getLocalType(row, value, true);
+				if (type == null) type = getGlobalType(value, fieldDef);
+				return [rtk("string", "$"), rtk(type, value)];
+			},
+		};
 		var rString_tpl = [
 			rxPush(["string", "curly.paren.lparen"], ~/(\$)(\{)/, "gml.tpl"),
+			rString_tpl_id,
 			rxRule("string", ~/[`]/, "pop"),
 			rdef("string"),
 		];

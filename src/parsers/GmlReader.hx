@@ -111,6 +111,37 @@ class GmlReader extends StringReader {
 		return n;
 	}
 	
+	public function skipStringTemplate(version:GmlVersion):Int {
+		var n = 0;
+		while (loop) {
+			var c = read();
+			if (c == "`".code) {
+				break;
+			} else if (c == "$".code && peek() == "{".code) {
+				skip();
+				var depth = 0;
+				while (loop) {
+					c = read();
+					switch (c) {
+						case "{".code: depth++;
+						case "}".code: {
+							if (--depth < 0) break;
+						};
+						case "/".code: switch (peek()) {
+							case "/".code: skipLine();
+							case "*".code: skip(); skipComment();
+							default:
+						};
+						case '"'.code, "'".code, "@".code, "`".code: {
+							skipStringAuto(c, version);
+						};
+					}
+				}
+			} else if (c == "\n".code) n++;
+		}
+		return n;
+	}
+	
 	public function skipNumber(canDot:Bool = true):Void {
 		var c = peek();
 		while (loopLocal) {
@@ -150,7 +181,7 @@ class GmlReader extends StringReader {
 			};
 			case "`".code: {
 				if (version.hasTemplateStrings()) {
-					return skipString1("`".code);
+					return skipStringTemplate(version);
 				} else return 0;
 			};
 			case "@".code: {

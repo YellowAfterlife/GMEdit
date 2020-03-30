@@ -474,7 +474,8 @@ oop.inherits(Mode, TextMode);
 	this.autoOutdent = function(state, doc, row) {
 		this.$outdent.autoOutdent(doc, row);
 	};
-
+	
+	this.$quotes = {'"': '"', "'": "'", "`": "`"};
 	this.$id = "ace/mode/gml";
 }).call(Mode.prototype);
 

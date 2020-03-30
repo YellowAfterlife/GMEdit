@@ -25,6 +25,9 @@ class KGml extends KCode {
 	/// Whether #hyper magic is supported for this kind
 	public var canHyper:Bool = true;
 	
+	/// Whether `..${expr}..` magic is supported for this kind
+	public var canTemplateString:Bool = true;
+	
 	/// Whether #mfunc magic is supported for this kind
 	public var canMFunc:Bool = true;
 	
@@ -51,6 +54,7 @@ class KGml extends KCode {
 		if (onDisk && canLambda) code = GmlExtLambda.pre(editor, code);
 		if (canMFunc) code = GmlExtMFunc.pre(editor, code);
 		if (onDisk && canImport) code = GmlExtImport.pre(code, editor.file.path);
+		if (canTemplateString) code = GmlExtTemplateStrings.pre(code);
 		if (canHyper) code = GmlExtHyper.pre(code);
 		return code;
 	}
@@ -59,6 +63,7 @@ class KGml extends KCode {
 		saveSessionChanged = false;
 		var onDisk = editor.file.path != null;
 		if (canHyper) code = GmlExtHyper.post(code);
+		if (canTemplateString) code = GmlExtTemplateStrings.post(code);
 		if (onDisk && canImport) {
 			var pair = editor.postpImport(code);
 			if (pair == null) return null;

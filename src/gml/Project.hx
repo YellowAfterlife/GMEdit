@@ -356,6 +356,7 @@ import ui.treeview.TreeView;
 			var state:ProjectState = null;
 			if (first) {
 				properties = ProjectProperties.load(this);
+				GmlAPI.forceTemplateStrings = properties.templateStringScript != null;
 				GmlSeekData.map = new Dictionary();
 				try {
 					var stateText = window.localStorage.getItem("project:" + path);

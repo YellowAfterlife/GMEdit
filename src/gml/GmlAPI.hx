@@ -55,6 +55,8 @@ class GmlAPI {
 	public static var helpURL:String = null;
 	public static var ukSpelling:Bool = false;
 	//
+	public static var forceTemplateStrings:Bool = false;
+	//
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
 	public static var stdKind:Dictionary<String> = new Dictionary();
