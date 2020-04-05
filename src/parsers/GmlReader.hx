@@ -113,9 +113,19 @@ class GmlReader extends StringReader {
 	
 	public function skipStringTemplate(version:GmlVersion):Int {
 		var n = 0;
+		var esc = version.hasStringEscapeCharacters();
 		while (loop) {
 			var c = read();
-			if (c == "`".code) {
+			if (c == "\\".code) {
+				if (esc) {
+					switch (read()) {
+						case "x".code: pos += 2;
+						case "u".code: pos += 4;
+					}
+				} else {
+					if (peek() == "`".code) skip();
+				}
+			} else if (c == "`".code) {
 				break;
 			} else if (c == "$".code && peek() == "{".code) {
 				skip();

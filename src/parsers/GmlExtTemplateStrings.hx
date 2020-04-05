@@ -10,7 +10,7 @@ using StringTools;
  * @author YellowAfterlife
  */
 class GmlExtTemplateStrings {
-	static function pre_format(fmt:String, args:Array<String>, spacing:Array<Bool>) {
+	static function pre_format(fmt:String, args:Array<String>, spacing:Array<Bool>, esc:Bool) {
 		var out = "";
 		var start = 0;
 		var p = 0;
@@ -32,6 +32,12 @@ class GmlExtTemplateStrings {
 					out += "${" + pre(arg) + "}";
 				}
 				start = p;
+			} else if (c == "`".code) {
+				out += fmt.substring(start, p - 1) + "\\`";
+				start = p;
+			} else if (esc && c == "\\".code && fmt.fastCodeAt(p) == '"'.code) {
+				out += fmt.substring(start, p - 1) + '"';
+				start = ++p;
 			}
 		}
 		if (p > start) out += fmt.substring(start, p);
@@ -43,6 +49,7 @@ class GmlExtTemplateStrings {
 		var tpls = Project.current.properties.templateStringScript;
 		if (tpls == null || tpls == "") return code;
 		var version = GmlAPI.version;
+		var esc = version.hasStringEscapeCharacters();
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
@@ -65,10 +72,13 @@ class GmlExtTemplateStrings {
 				case _ if (c.isIdent0()): {
 					q.skipIdent1();
 					do {
+						// `¦template("%/%",1,2)`
 						if (q.substring(startInner, q.pos) != tpls) break;
 						q.skipSpaces1_local();
+						// `template¦("%/%",1,2)`
 						if (q.peek() == "(".code) q.skip(); else break;
 						q.skipSpaces1_local();
+						// `template(¦"%/%",1,2)`
 						var isLiteral = (q.peek() == '@'.code);
 						if (isLiteral) q.skip();
 						if (q.peek() == '"'.code) q.skip(); else break;
@@ -76,6 +86,17 @@ class GmlExtTemplateStrings {
 							var fmtStart = q.pos;
 							q.skipStringAuto('"'.code, version);
 							fmt = q.substring(fmtStart, q.pos - 1);
+							if (!esc) { // collapse GMS1 "1"+'"'+"2" into `1"2`
+								var sep = "+'\"'+\"";
+								while (q.loopLocal) {
+									if (q.peek(0) != "+".code) break;
+									if (q.substr(q.pos, sep.length) != sep) break;
+									q.pos += sep.length;
+									fmtStart = q.pos;
+									q.skipString1('"'.code);
+									fmt += '"' + q.substring(fmtStart, q.pos - 1);
+								}
+							}
 						};
 						q.skipSpaces1_local();
 						var args:Array<String> = [];
@@ -119,7 +140,7 @@ class GmlExtTemplateStrings {
 						} else break;
 						//
 						flush(startInner);
-						out += "`" + pre_format(fmt, args, spacing) + "`";
+						out += "`" + pre_format(fmt, args, spacing, esc) + "`";
 						start = q.pos;
 					} while (false);
 				};
@@ -134,6 +155,7 @@ class GmlExtTemplateStrings {
 		var tpls = Project.current.properties.templateStringScript;
 		if (tpls == null || tpls == "") return code;
 		var version = GmlAPI.version;
+		var esc = version.hasStringEscapeCharacters();
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
@@ -158,6 +180,23 @@ class GmlExtTemplateStrings {
 					var curEnd = -1;
 					while (q.loopLocal) {
 						c = q.read();
+						if (c == "\\".code) {
+							switch (q.peek()) {
+								case "`".code: {
+									curFmt += q.substring(curStart, q.pos - 1) + "`";
+									q.pos += 1;
+									curStart = q.pos;
+								};
+								case "x".code: if (esc) q.pos += 3;
+								case "u".code: if (esc) q.pos += 5;
+								default: if (esc) q.pos += 1;
+							}
+							continue;
+						}
+						if (!esc && c == '"'.code) { // expand GMS1 " into "+'"'+"
+							curFmt += q.substring(curStart, q.pos - 1) + "\"+'\"'+\"";
+							curStart = q.pos;
+						}
 						if (c == "`".code) {
 							curEnd = q.pos - 1;
 							break;
