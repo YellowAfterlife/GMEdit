@@ -17,10 +17,18 @@ body {
 	--main-height: calc(100% - 36px);
 	--main-height-vh: calc(100vh - 36px);
 }
+/*
+min-width:0 / min-height:0 in the following few are required
+to prevent inner elements (such as status bars, code editors, other UI)
+from overflowing the outer UI. A decent explanation:
+https://stackoverflow.com/a/36247448/5578773
+*/
 #main > div {
 	padding: 0;
 	box-sizing: border-box;
 	position: relative;
+	min-width: 0;
+	min-height: 0;
 }
 #splitter-td, .splitter-td {
 	border-right: 1px solid;
@@ -39,6 +47,10 @@ body {
 	display: flex;
 	position: relative;
 }
+#main #editor-td .bottom > div {
+	min-width: 0;
+	min-height: 0;
+}
 #main #editor-td .bottom > .tabview {
 	flex-grow: 1;
 	display: flex;
@@ -46,6 +58,8 @@ body {
 }
 #main #editor-td .bottom > .tabview > div {
 	flex-grow: 1;
+	min-width: 0;
+	min-height: 0;
 }
 .resinfo {
 	padding: 0.5em;
@@ -113,6 +127,7 @@ body {
 	cursor: move;
 	width: 100%;
 	position: relative;
+	/* blue/dark blue checkerboard */
 	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABCSURBVFhH7c4hEQAgEABB2lGCBMRAUIl4T4E3zAvMijOntvWxotLcpxQAAAAAAADAf0A2X8pQLwEAAAAAAAB8Bqy4mHeUiBSSWmgAAAAASUVORK5CYIIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==);
 }
 .panner img {
