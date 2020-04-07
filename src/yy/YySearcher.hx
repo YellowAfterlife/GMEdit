@@ -55,11 +55,12 @@ class YySearcher {
 						|| !NativeString.startsWith(resName, GmlExtLambda.lfPrefix)
 					) {
 						filesLeft += 1;
-						pj.readTextFile(Path.withExtension(resPath, "gml"), function(error, code) {
+						var gmlPath = Path.withExtension(resPath, "gml");
+						pj.readTextFile(gmlPath, function(error, code) {
 							if (error == null) {
 								var gml1 = fn(resName, resFull, code);
 								if (gml1 != null && gml1 != code) {
-									FileWrap.writeTextFileSync(resFull, gml1);
+									pj.writeTextFileSync(gmlPath, gml1);
 								}
 							}
 							next();
@@ -104,12 +105,14 @@ class YySearcher {
 				};
 				case "GMShader": if (opt.checkShaders) {
 					ensureName();
+					var shPath:String;
 					inline function procShader(ext:String, type:String) {
-						pj.readTextFile(Path.withExtension(resPath, ext), function(error, code) {
+						shPath = Path.withExtension(resPath, ext);
+						pj.readTextFile(shPath, function(error, code) {
 							if (error == null) {
-								var gml1 = fn(resName + '($type)', resFull, code);
+								var gml1 = fn(resName + '($type)', shPath, code);
 								if (gml1 != null && gml1 != code) {
-									FileWrap.writeTextFileSync(resFull, gml1);
+									FileWrap.writeTextFileSync(shPath, gml1);
 								}
 							}
 							next();
