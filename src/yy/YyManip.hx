@@ -11,6 +11,7 @@ import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
 import tools.NativeString;
+import ui.ChromeTabs;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
 import yy.YyProjectResource;
@@ -350,6 +351,27 @@ class YyManip {
 				var ndir = Path.join([Path.directory(dir), q.name]);
 				var rel = Path.withoutDirectory(path);
 				pj.renameSync(dir, ndir);
+				//
+				{ // rename tab(s)
+					var fd0 = pj.fullPath(dir) + "/";
+					var fd1 = pj.fullPath(ndir) + "/";
+					var fn0 = Path.withoutExtension(Path.withoutDirectory(pair.resourcePath));
+					var fn1 = q.name;
+					var fp0 = fd0 + fn0 + ".";
+					var fp1 = fd1 + fn1 + ".";
+					for (tab in ChromeTabs.impl.tabEls){
+						var tp = tab.gmlFile.path;
+						if (!NativeString.startsWith(tp, fd0)) continue;
+						if (NativeString.startsWith(tp, fp0)) {
+							tp = fp1 + tp.substring(fp0.length);
+						} else {
+							tp = fd1 + tp.substring(fd0.length);
+						}
+						tab.gmlFile.path = tp;
+						if (tab.tabText == fn0) tab.tabText = fn1;
+						tab.setAttribute(ChromeTabs.attrContext, tab.gmlFile.path);
+					}
+				};
 				//
 				var curr_yy = Path.join([ndir, rel]);
 				var next_yy = Path.join([ndir, q.name + ".yy"]);

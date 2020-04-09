@@ -342,10 +342,6 @@ typedef TreeViewItemBase = {
 	?pyBefore:yy.YyProjectResource,
 	/** filled out during call */
 	?outGUID:yy.YyGUID,
-	/** whether to open the freshly made thing (defaults to true) */
-	?openFile:Bool,
-	/** whether to reveal the freshly made thing in treeview */
-	?showInTree:Bool,
 };
 typedef TreeViewItemCreate = {
 	>TreeViewItemBase,
@@ -353,6 +349,10 @@ typedef TreeViewItemCreate = {
 	kind:String,
 	order:Int, mkdir:Bool,
 	?npath:String,
+	/** whether to open the freshly made thing (defaults to true) */
+	?openFile:Bool,
+	/** whether to reveal the freshly made thing in treeview */
+	?showInTree:Bool,
 };
 typedef TreeViewItemRename = {
 	>TreeViewItemBase,

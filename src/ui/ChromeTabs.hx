@@ -271,6 +271,14 @@ class ChromeTabs {
 }
 extern class ChromeTab extends Element {
 	public var gmlFile:GmlFile;
+	public var tabText(get, set):String;
+	private inline function get_tabText():String {
+		return this.getElementsByClassName("chrome-tab-title-text")[0].innerText;
+	}
+	private inline function set_tabText(s:String):String {
+		this.getElementsByClassName("chrome-tab-title-text")[0].innerText = s;
+		return s;
+	}
 }
 extern class ChromeTabList implements ArrayAccess<ChromeTab> {
 	public var length(default, never):Int;

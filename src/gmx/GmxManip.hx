@@ -3,6 +3,7 @@ import electron.Dialog;
 import gml.Project;
 import js.lib.RegExp;
 import js.html.Element;
+import ui.ChromeTabs;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
 import parsers.GmlSeeker;
@@ -198,6 +199,17 @@ class GmxManip {
 				return false;
 			}
 			var p1 = mt[1] + q.name + mt[3];
+			//
+			var fp0 = pj.fullPath(p0);
+			var fp1 = pj.fullPath(p1);
+			for (tab in ChromeTabs.impl.tabEls){
+				if (tab.gmlFile.path != fp0) continue;
+				tab.gmlFile.path = fp1;
+				tab.tabText = q.name;
+				tab.setAttribute(ChromeTabs.attrContext, fp1);
+				break;
+			}
+			//
 			pj.renameSync(p0, p1);
 			gmx.text = p1;
 		}
