@@ -871,13 +871,14 @@ class GmlExtLambda {
 			hasLambda: null,
 		};
 	}
-	public static function post(edit:EditCode, code:String):String {
+	public static function post(edit:EditCode, code:GmlCode):GmlCode {
 		if (!Preferences.current.lambdaMagic) return code;
 		var hasLambda = hasHashLambda(code);
 		if (!hasLambda && edit.lambdaList.length == 0) return code;
 		var data = postInit(edit.file.name, Project.current, edit.lambdaList, edit.lambdaMap);
 		data.hasLambda = hasLambda;
 		var out = postImpl(code, data);
+		if (out == null) return null;
 		edit.lambdas = data.scopes;
 		edit.lambdaList = data.list1;
 		edit.lambdaMap = data.map1;
