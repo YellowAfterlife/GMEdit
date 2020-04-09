@@ -140,7 +140,6 @@ using StringTools;
 				var file = editor.session.gmlFile;
 				if (file == null) return;
 				file.save();
-				editor.session.getUndoManager().markClean();
 			}
 		});
 		add({
