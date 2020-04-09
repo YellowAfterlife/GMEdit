@@ -63,10 +63,10 @@ class GmlExtArgs {
 		for (i in 0 ... 16) out.set("argument" + i, true);
 		out;
 	};
-	public static function pre(code:String):String {
+	public static function pre(code:String, ?strict:Bool):String {
 		var version = GmlAPI.version;
 		if (!Preferences.current.argsMagic) return code;
-		var strict = Preferences.current.argsStrict;
+		if (strict == null) strict = Preferences.current.argsStrict;
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;

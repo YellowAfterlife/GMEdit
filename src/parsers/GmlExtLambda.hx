@@ -113,7 +113,7 @@ class GmlExtLambda {
 				impl = mt[2];
 			}
 			// convert #args (if used) and match extras:
-			impl = GmlExtArgs.pre(impl);
+			impl = GmlExtArgs.pre(impl, false);
 			mt = rxLambdaPre.exec(impl);
 			if (mt == null) return false;
 			// form the magic code:
