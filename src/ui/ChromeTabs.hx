@@ -271,12 +271,23 @@ class ChromeTabs {
 }
 extern class ChromeTab extends Element {
 	public var gmlFile:GmlFile;
+	//
+	public var closeButton(get, never):Element;
+	private inline function get_closeButton():Element {
+		return this.querySelector(".chrome-tab-close");
+	}
+	//
+	public var tabTitleText(get, never):Element;
+	private inline function get_tabTitleText():Element {
+		return this.querySelector(".chrome-tab-title-text");
+	}
+	//
 	public var tabText(get, set):String;
 	private inline function get_tabText():String {
-		return this.getElementsByClassName("chrome-tab-title-text")[0].innerText;
+		return tabTitleText.innerText;
 	}
 	private inline function set_tabText(s:String):String {
-		this.getElementsByClassName("chrome-tab-title-text")[0].innerText = s;
+		tabTitleText.innerText = s;
 		return s;
 	}
 }

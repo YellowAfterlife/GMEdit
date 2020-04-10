@@ -64,6 +64,7 @@ class PrefNav {
 		addIntInput(out, "Max recent project count:", current.recentProjectCount, function(v) {
 			current.recentProjectCount = v; save();
 		});
+		//
 		var fileChangeActions = [
 			"Do nothing",
 			"Ask what to do",
@@ -71,6 +72,9 @@ class PrefNav {
 		];
 		addDropdown(out, "If the source file changes", fileChangeActions[current.fileChangeAction], fileChangeActions, function(v) {
 			current.fileChangeAction = fileChangeActions.indexOf(v); save();
+		});
+		addCheckbox(out, "Close associated tab(s) when deleting a resource in GMEdit", current.closeTabsOnFileDeletion, function(v) {
+			current.closeTabsOnFileDeletion = v; save();
 		});
 		#end
 	}

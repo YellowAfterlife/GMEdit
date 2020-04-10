@@ -161,12 +161,18 @@ class GmxManip {
 		function remrec(node:SfGmx):Void {
 			if (node.name == single) {
 				var dp = node.text;
-				switch (single) {
-					case "script": {};
-					default: dp += '.$single.gmx';
-				};
+				var isScript = single == "script";
+				if (!isScript) dp += '.$single.gmx';
 				if (pj.existsSync(dp)) {
 					pj.unlinkSync(dp);
+					var fp = pj.fullPath(dp);
+					if (ui.Preferences.current.closeTabsOnFileDeletion)
+					for (tab in ChromeTabs.impl.tabEls){
+						if (tab.gmlFile.path == fp) {
+							tab.closeButton.click();
+							break;
+						}
+					}
 				}
 			} else {
 				for (child in node.children) remrec(child);

@@ -310,7 +310,15 @@ class YyManip {
 					}
 				};
 				case "GMScript", "GMObject", "GMSprite", "GMShader": {
-					removeDirRec(Path.directory(path));
+					var d = Path.directory(path);
+					removeDirRec(d);
+					var fd = pj.fullPath(d);
+					if (ui.Preferences.current.closeTabsOnFileDeletion)
+					for (tab in ChromeTabs.impl.tabEls){
+						if (NativeString.startsWith(tab.gmlFile.path, fd)) {
+							tab.closeButton.click();
+						}
+					}
 				};
 				default: {
 					Dialog.showAlert('No idea how to remove type `$type`, sorry');

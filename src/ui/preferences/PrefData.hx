@@ -23,6 +23,7 @@ typedef PrefData = {
 	taskbarOverlays:Bool,
 	showGMLive:PrefGMLive,
 	fileChangeAction:PrefFileChangeAction,
+	closeTabsOnFileDeletion:Bool,
 	recentProjectCount:Int,
 	//
 	ukSpelling:Bool,

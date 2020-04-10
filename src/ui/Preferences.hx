@@ -298,6 +298,7 @@ class Preferences {
 			codeLiterals: false,
 			ctrlWheelFontSize: true,
 			fileChangeAction: Ask,
+			closeTabsOnFileDeletion: true,
 			backupCount: { v1: 2, v2: 0, live: 0 },
 			recentProjectCount: 16,
 			tabSize: 4,
