@@ -1,9 +1,11 @@
 package editors;
 
 import editors.Editor;
+import electron.FileSystem;
 import electron.FileWrap;
 import gml.Project;
 import gml.file.GmlFile;
+import gml.file.GmlFileExtra;
 import gmx.SfGmx;
 import haxe.io.Path;
 import js.html.DivElement;
@@ -29,7 +31,9 @@ class EditSprite extends Editor {
 	var currentFrame:Int = 0;
 	var currentFrameElement:DivElement;
 	var frameURLs:Array<String> = [];
+	var framePaths:Array<String> = [];
 	var frameElements:Array<DivElement> = [];
+	var frameTimes:Array<Float> = [];
 	var interval:Null<Int> = null;
 	var playbackDelta:Int = 1;
 	var recenter = true;
@@ -77,8 +81,12 @@ class EditSprite extends Editor {
 		d.width = q.findFloat("width");
 		d.height = q.findFloat("height");
 		for (frame in q.find("frames").findAll("frame")) {
-			d.frames.push(pj.getImageURL("sprites/" + frame.text));
+			var frel = "sprites/" + frame.text;
+			var url = pj.getImageURL(frel);
+			d.frameURLs.push(url);
+			d.framePaths.push(frel);
 		}
+		d.frameCount = d.frameURLs.length;
 		return d;
 	}
 	function getData2(q:YySprite):EditSpriteData {
@@ -90,12 +98,14 @@ class EditSprite extends Editor {
 		d.playbackLegacy = q.playbackSpeedType != 0;
 		d.playbackSpeed = q.playbackSpeed;
 		var dir = Path.directory(file.path);
-		var isAbs = Path.isAbsolute(dir);
 		var pj = Project.current;
 		for (frame in q.frames) {
 			var frel = Path.join([dir, frame.id + ".png"]);
-			d.frames.push(isAbs ? "file:///" + frel : pj.getImageURL(frel));
+			var url = FileWrap.getImageURL(frel);
+			d.frameURLs.push(url);
+			d.framePaths.push(frel);
 		}
+		d.frameCount = d.frameURLs.length;
 		return d;
 	}
 	function setCurrentFrameElement(i:Int, ?frame:DivElement):DivElement {
@@ -126,8 +136,8 @@ class EditSprite extends Editor {
 		info.appendChild(document.createTextNode(d.width + "x" + d.height
 			+ "; " + d.xorig + "," + d.yorig));
 		info.appendChild(document.createBRElement());
-		info.appendChild(document.createTextNode(d.frames.length + " frame" + (d.frames.length != 1 ? "s" : "")));
-		if (d.frames.length > 1) {
+		info.appendChild(document.createTextNode(d.frameCount + " frame" + (d.frameCount != 1 ? "s" : "")));
+		if (d.frameCount > 1) {
 			info.appendChild(document.createBRElement());
 			var toggle:InputElement, mult:InputElement, fps:InputElement;
 			toggle = document.createInputElement();
@@ -219,10 +229,14 @@ class EditSprite extends Editor {
 		//
 		var frames = document.createDivElement();
 		frames.classList.add("frames");
-		frameCount = d.frames.length;
+		frameCount = d.frameCount;
 		frameElements = [];
 		frameURLs = [];
-		for (url in d.frames) {
+		framePaths = [];
+		frameTimes = [];
+		for (i in 0 ... d.frameCount) {
+			var url = d.frameURLs[i];
+			var framePath = d.framePaths[i];
 			var frame = document.createDivElement();
 			var index = frameElements.length;
 			if (index == 0) {
@@ -232,6 +246,8 @@ class EditSprite extends Editor {
 			frame.title = "" + index;
 			frameElements.push(frame);
 			frameURLs.push(url);
+			framePaths.push(framePath);
+			frameTimes.push(FileWrap.mtimeSync(framePath));
 			//
 			frame.classList.add("frame");
 			if (d.width > 48 || d.height > 48) {
@@ -264,11 +280,35 @@ class EditSprite extends Editor {
 			img.onload = null;
 			checkRecenter();
 		}
-		img.src = d.frames[0];
+		img.src = d.frameURLs[0];
 		pan.appendChild(img);
 		panner = new Panner(pan, img);
 		element.appendChild(pan);
 		//
+	}
+	
+	override public function checkChanges():Void {
+		if (!Path.isAbsolute(file.path)) return;
+		var t1 = FileWrap.mtimeSync(file.path);
+		if (t1 != file.time) {
+			file.time = t1;
+			load(null);
+			return;
+		}
+		
+		// if a single frame of the sprite is updated,
+		// we might as well just update that element+URL:
+		for (i in 0 ... frameTimes.length) {
+			var framePath = framePaths[i];
+			t1 = FileWrap.mtimeSync(framePath);
+			if (t1 != frameTimes[i]) {
+				frameTimes[i] = t1;
+				var url = FileWrap.getImageURL(framePaths[i]);
+				frameURLs[i] = url;
+				frameElements[i].style.backgroundImage = 'url($url)';
+				if (currentFrame == i) panner.image.src = url;
+			}
+		}
 	}
 }
 class EditSpriteData {
@@ -276,7 +316,9 @@ class EditSpriteData {
 	public var yorig:Float;
 	public var width:Float;
 	public var height:Float;
-	public var frames:Array<String> = [];
+	public var frameCount:Int = 0;
+	public var frameURLs:Array<String> = [];
+	public var framePaths:Array<String> = [];
 	public var playbackSpeed = 1.;
 	public var playbackLegacy = true;
 	public function new() {
