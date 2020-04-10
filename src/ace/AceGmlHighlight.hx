@@ -213,6 +213,7 @@ using tools.NativeArray;
 			} else kindToken = "identifier";
 			return [
 				"preproc.event",
+				"text",
 				"eventname",
 				"punctuation.operator",
 				kindToken,
@@ -268,7 +269,8 @@ using tools.NativeArray;
 			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventtext"],
 			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
 		);
-		var rEvent = rxRule(mtEventHead, ~/^(#event[ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
+		var rEvent = rxRule(mtEventHead, ~/^(#event)([ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
+		var rEventBlank = rxRule(["preproc.event", "eventname"], ~/^(#event)([ \t]*)/);
 		var rMoment = rxRule(
 			["preproc.moment", "momenttime", "momentname"],
 			~/^(#moment[ \t]+)(\d+)(.*)/
@@ -306,7 +308,7 @@ using tools.NativeArray;
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
 			//
-			rDefine, rAction, rKeyEvent, rEvent, rMoment, rTarget,
+			rDefine, rAction, rKeyEvent, rEvent, rEventBlank, rMoment, rTarget,
 			//{ macros
 			rpushPairs([
 				"#macro", "preproc.macro",

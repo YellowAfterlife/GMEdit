@@ -10,6 +10,7 @@ import parsers.GmlKeycode;
 import shaders.ShaderAPI;
 import tools.Dictionary;
 import file.kind.misc.*;
+import tools.NativeString;
 
 /**
  * ...
@@ -62,6 +63,7 @@ class AceWrapCommonCompleters {
 		gmlCompleter = new AceWrapCompleter(GmlAPI.gmlComp, excl, true, gmlf);
 		//
 		eventCompleter = new AceWrapCompleter(parsers.GmlEvent.comp, ["eventname"], false, gmlf);
+		eventCompleter.minLength = 0;
 		keynameCompleter = new AceWrapCompleter(GmlKeycode.comp, ["eventkeyname"], false, gmlf);
 		//
 		importCompleter = new AceWrapCompleter([], excl, true, gmlf);
@@ -162,11 +164,21 @@ class AceWrapCommonCompleters {
 			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 			if (AceWrapCompleter.checkColon(iter)) openAC();
 		}
+		function onSpace(e:AfterExecArgs) {
+			var session = editor.session;
+			var lead = session.selection.lead;
+			if (!NativeString.startsWith(session.getLine(lead.row), "#event")) return;
+			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
+			var token = iter.stepBackward();
+			if (token == null) return;
+			if (token.type == "preproc.event") openAC();
+		}
 		editor.commands.on("afterExec", function(e:AfterExecArgs) {
 			if (e.command.name == "insertstring") {
 				switch (e.args) {
 					case ".": onDot(e);
 					case ":": onColon(e);
+					case " ": onSpace(e);
 				}
 			}
 		});
