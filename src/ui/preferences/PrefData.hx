@@ -19,6 +19,7 @@ typedef PrefData = {
 	hyperMagic:Bool,
 	mfuncMagic:Bool,
 	assetThumbs:Bool,
+	clearAssetThumbsOnRefresh:Bool,
 	singleClickOpen:Bool,
 	taskbarOverlays:Bool,
 	showGMLive:PrefGMLive,

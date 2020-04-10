@@ -56,6 +56,7 @@ using tools.PathTools;
 		var rules = sheet.cssRules;
 		var i = rules.length;
 		while (--i >= 0) sheet.deleteRule(i);
+		thumbMap = new Dictionary();
 	}
 	//
 	public static function find(item:Bool, query:TreeViewQuery):Element {

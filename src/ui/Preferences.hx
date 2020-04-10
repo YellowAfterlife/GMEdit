@@ -294,6 +294,7 @@ class Preferences {
 			singleClickOpen: false,
 			taskbarOverlays: false,
 			assetThumbs: true,
+			clearAssetThumbsOnRefresh: true,
 			showGMLive: Everywhere,
 			codeLiterals: false,
 			ctrlWheelFontSize: true,

@@ -28,6 +28,7 @@ import Main.moduleArgs;
 import tools.HtmlTools;
 import tools.NativeString;
 import ui.ChromeTabs;
+import ui.Preferences;
 using tools.PathTools;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
@@ -362,7 +363,13 @@ import ui.treeview.TreeView;
 					var stateText = window.localStorage.getItem("project:" + path);
 					state = Json.parse(stateText);
 				} catch (_:Dynamic) { }
-			} else TreeView.saveOpen();
+			} else {
+				TreeView.saveOpen();
+				if (Preferences.current.clearAssetThumbsOnRefresh) {
+					spriteURLs = new Dictionary();
+					yySpriteURLs = new Dictionary();
+				}
+			}
 			reload_1();
 			ace.AceTooltips.resetCache();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);

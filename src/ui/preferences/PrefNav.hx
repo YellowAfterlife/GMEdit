@@ -20,11 +20,24 @@ class PrefNav {
 			save();
 			gml.Project.current.reload();
 		}).title = "Allows to open treeview items with single click";
+		//
 		addCheckbox(out, "Show asset thumbnails", current.assetThumbs, function(z) {
 			current.assetThumbs = z;
 			save();
 			gml.Project.current.reload();
-		}).title = "Loads and displays the assigned sprites as object thumbnails in resource tree.";
+		}).title = (
+			"Loads and displays the assigned sprites as object thumbnails in resource tree."
+			+ " Disabling this can improve memory use."
+		);
+		addCheckbox(out, "Clear asset thumbnails on refresh", current.clearAssetThumbsOnRefresh, function(z) {
+			current.clearAssetThumbsOnRefresh = z;
+			save();
+		}).title = (
+			"Reloads asset thumbnails when refreshing (Ctrl+R) a project."
+			+ " Disabling this can improve refresh speeds"
+			+ " at cost of not reflecting any potential changes to sprites"
+		);
+		//
 		addCheckbox(out, "Show taskbar overlays", current.taskbarOverlays, function(z) {
 			current.taskbarOverlays = z;
 			save();
