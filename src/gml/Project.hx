@@ -439,6 +439,10 @@ import ui.treeview.TreeView;
 	public function existsSync(path:String):Bool {
 		return FileSystem.existsSync(fullPath(path));
 	}
+	/** Returns modified time of a file, null if not existing */
+	public function mtimeSync(path:String):Null<Float> {
+		return FileSystem.mtimeSync(fullPath(path));
+	}
 	//
 	public function unlinkSync(path:String):Void {
 		FileSystem.unlinkSync(fullPath(path));
@@ -533,7 +537,8 @@ import ui.treeview.TreeView;
 	 */
 	public function getImageURL(path:String):String {
 		var full = fullPath(path);
-		return FileSystem.existsSync(full) ? ("file:///" + full) : null;
+		var t = mtimeSync(path);
+		return t != null ? 'file:///$full?mtime=$t' : null;
 	}
 	/**
 	 * Like getImageURL but takes a sprite name and gets you a URL for it's first frame

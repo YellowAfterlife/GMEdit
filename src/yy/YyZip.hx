@@ -58,7 +58,7 @@ class YyZip extends Project {
 			var entryList = haxe.zip.Reader.readZip(new haxe.io.BytesInput(bytes));
 			var entries:Array<YyZipFile> = [];
 			for (entry in entryList) {
-				var file = new YyZipFile(entry.fileName);
+				var file = new YyZipFile(entry.fileName, entry.fileTime.getTime());
 				file.setBytes(entry.data, entry.compressed);
 				entries.push(file);
 			}
@@ -164,7 +164,7 @@ class YyZip extends Project {
 			reader.onloadend = function(_) {
 				var abuf:js.lib.ArrayBuffer = reader.result;
 				var bytes = haxe.io.Bytes.ofData(abuf);
-				var zipFile = new YyZipFile(rel);
+				var zipFile = new YyZipFile(rel, file.lastModified);
 				zipFile.setBytes(bytes);
 				entries.push(zipFile);
 				next();
@@ -185,6 +185,10 @@ class YyZip extends Project {
 	}
 	override public function existsSync(path:String):Bool {
 		return yyzFileMap[fixSlashes(path)] != null;
+	}
+	override public function mtimeSync(path:String):Null<Float> {
+		var file = yyzFileMap[fixSlashes(path)];
+		return file != null ? file.time : null;
 	}
 	override public function unlinkSync(path:String):Void {
 		path = fixSlashes(path);
@@ -209,12 +213,16 @@ class YyZip extends Project {
 	override public function writeTextFileSync(path:String, text:String) {
 		var fwpath = fixSlashes(path);
 		var file = yyzFileMap[fwpath];
+		var t = Date.now().getTime();
 		if (file == null) {
-			file = new YyZipFile(fwpath);
+			file = new YyZipFile(fwpath, t);
 			file.setText(text);
 			yyzFileMap.set(fwpath, file);
 			yyzFileList.push(file);
-		} else file.setText(text);
+		} else {
+			file.setText(text);
+			file.time = t;
+		}
 	}
 	override public function readJsonFile<T:{}>(path:String, fn:Error->T->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];
@@ -341,13 +349,16 @@ class YyZip extends Project {
 }
 class YyZipFile {
 	public var path:String;
+	/** last change time */
+	public var time:Float;
 	private var bytes:Bytes;
 	/** whether .bytes are compressed */
 	private var compressed:Bool = false;
 	private var text:String;
 	private var dataURL:String = null;
-	public function new(path:String) {
+	public function new(path:String, time:Float) {
 		this.path = path;
+		this.time = time;
 	}
 	private function uncompress() {
 		bytes = tools.BufferTools.inflate(bytes);

@@ -81,8 +81,23 @@ import haxe.extern.EitherType;
 	}
 	//
 	public static function statSync(path:String):FileSystemStat;
-	public static inline function getMTimeMs(path:String):Float {
-		return statSync(path).mtimeMs;
+	public static inline function mtimeSync(path:String):Null<Float> {
+		return FileSystemImpl.mtimeSync(path);
+	}
+	//
+	public static inline function getImageURL(path:String):Null<String> {
+		return FileSystemImpl.getImageURL(path);
+	}
+}
+private class FileSystemImpl {
+	public static function mtimeSync(path:String):Null<Float> {
+		try {
+			return FileSystem.statSync(path).mtimeMs;
+		} catch (x:Dynamic) return null;
+	}
+	public static function getImageURL(path:String):Null<String> {
+		var t = mtimeSync(path);
+		return t != null ? 'file:///$path?mtime=$t' : null;
 	}
 }
 enum abstract FileSystemAccess(Int) from Int to Int {
@@ -105,9 +120,6 @@ extern class FileSystemStat {
 	public var atime:Date;
 	public var mtime:Date;
 	public var ctime:Date;
-	public var mtimeMs(get, never):Float;
-	private inline function get_mtimeMs():Float {
-		return mtime.getTime();
-	}
+	public var mtimeMs:Float;
 	public var size:Int;
 }

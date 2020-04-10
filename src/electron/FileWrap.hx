@@ -1,4 +1,5 @@
 package electron;
+import electron.FileSystem;
 import gml.Project;
 import gmx.SfGmx;
 import haxe.Json;
@@ -19,6 +20,11 @@ class FileWrap {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.existsSync(path);
 		} else return Project.current.existsSync(path);
+	}
+	public static function mtimeSync(path:String):Null<Float> {
+		if (Path.isAbsolute(path)) {
+			return FileSystem.mtimeSync(path);
+		} else return Project.current.mtimeSync(path);
 	}
 	
 	public static function unlinkSync(path:String):Void {
@@ -107,6 +113,13 @@ class FileWrap {
 			FileSystem.writeFileSync(full, text);
 		} else Main.window.localStorage.setItem(name, text);
 	}
+	
+	public static function getImageURL(path:String):Null<String> {
+		if (Path.isAbsolute(path)) {
+			return FileSystem.getImageURL(path);
+		} else return Project.current.getImageURL(path);
+	}
+	
 	public static function init() {
 		
 	}
