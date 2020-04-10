@@ -15,17 +15,17 @@ class GmlKeycode {
 		var r:Array<String> = [], i;
 		tools.NativeArray.clearResize(r, 256);
 		//
+		function add(k:Int, s:String) {
+			r[k] = s;
+			comp.push(new AceAutoCompleteItem(s, "key", "keycode:" + k));
+		}
 		i = "A".code; while (i <= "Z".code) {
-			r[i] = String.fromCharCode(i);
+			add(i, String.fromCharCode(i));
 			i += 1;
 		}
 		i = "0".code; while (i <= "9".code) {
-			r[i] = String.fromCharCode(i);
+			add(i, String.fromCharCode(i));
 			i += 1;
-		}
-		function add(k:Int, s:String) {
-			r[k] = s;
-			comp.push(new AceAutoCompleteItem(s, "key", "key" + k));
 		}
 		//{ autogen from fnames:
 		add(0, "vk_nokey");

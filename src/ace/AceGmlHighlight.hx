@@ -265,10 +265,14 @@ using tools.NativeArray;
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
 		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
-		var rKeyEvent = rxRule(
-			["preproc.event", "eventname", "punctuation.operator", "eventkeyname", "eventtext"],
-			~/^(#event[ \t]+)(keyboard|keypress|keyrelease)(\s*:\s*)(\w+)(.*)/
-		);
+		var rKeyEvent = rulePairs([
+			"^#event", "preproc.event",
+			"[ \\t]+", "text",
+			"keyboard|keypress|keyrelease", "eventname",
+			"\\s*:\\s*", "eventsep.punctuation.operator", // has prefix to filter AC on
+			"\\w*", "eventkeyname",
+			".*", "eventtext",
+		]);
 		var rEvent = rxRule(mtEventHead, ~/^(#event)([ \t]+)(\w+)(?:(:)(\w+)?)?((?:\b.+)?)/);
 		var rEventBlank = rxRule(["preproc.event", "eventname"], ~/^(#event)([ \t]*)/);
 		var rMoment = rxRule(

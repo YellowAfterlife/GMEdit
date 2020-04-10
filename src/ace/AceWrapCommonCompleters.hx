@@ -64,7 +64,11 @@ class AceWrapCommonCompleters {
 		//
 		eventCompleter = new AceWrapCompleter(parsers.GmlEvent.comp, ["eventname"], false, gmlf);
 		eventCompleter.minLength = 0;
-		keynameCompleter = new AceWrapCompleter(GmlKeycode.comp, ["eventkeyname"], false, gmlf);
+		keynameCompleter = new AceWrapCompleter(GmlKeycode.comp, [
+			"eventkeyname",
+			"eventsep.punctuation.operator",
+		], false, gmlf);
+		keynameCompleter.minLength = 0;
 		//
 		importCompleter = new AceWrapCompleter([], excl, true, gmlf);
 		localCompleter = new AceWrapCompleter([], excl, true, gmlf);
@@ -160,8 +164,9 @@ class AceWrapCommonCompleters {
 			if (open) openAC();
 		}
 		function onColon(e:AfterExecArgs) {
-			var lead = editor.session.selection.lead;
-			var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
+			var session = editor.session;
+			var lead = session.selection.lead;
+			var iter = new AceTokenIterator(session, lead.row, lead.column);
 			if (AceWrapCompleter.checkColon(iter)) openAC();
 		}
 		function onSpace(e:AfterExecArgs) {

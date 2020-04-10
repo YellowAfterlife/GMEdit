@@ -49,6 +49,7 @@ using tools.NativeString;
 		if (token == null) return false;
 		switch (token.type) {
 			case "local", "sublocal", "localfield": {};
+			case "eventname" if (token.value.startsWith("key")): return true;
 			default: return false;
 		}
 		// `[var] some:type`:
