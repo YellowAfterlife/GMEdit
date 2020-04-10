@@ -307,6 +307,7 @@ private class TreeViewMenuData {
 	public var openCustomCSS:MenuItem;
 	//
 	public var manipCreate:MenuItem;
+	public var manipDuplicate:MenuItem;
 	public var manipOuter:Array<MenuItem> = [];
 	public var manipDirOnly:Array<MenuItem> = [];
 	public var manipNonRoot:Array<MenuItem> = [];

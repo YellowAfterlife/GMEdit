@@ -109,7 +109,9 @@ class YyManip {
 					IsCompatibility: false,
 					IsDnD: false,
 				};
-				pj.writeTextFileSync(nBase + ".gml", "");
+				var gml = args.gmlCode;
+				if (gml == null) gml = '';
+				pj.writeTextFileSync(nBase + ".gml", gml);
 				nJson = nyScr;
 			};
 			case "object": {

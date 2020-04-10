@@ -89,8 +89,10 @@ class GmxManip {
 			switch (single) {
 				case "script": {
 					q.npath = '$plural/$name.gml';
-					pj.writeTextFileSync(q.npath, '/// $name');
-					GmlSeeker.runSync(pj.fullPath(q.npath), "", q.name, KGmlScript.inst);
+					var gml = q.gmlCode;
+					if (gml == null) gml = '/// $name';
+					pj.writeTextFileSync(q.npath, gml);
+					GmlSeeker.runSync(pj.fullPath(q.npath), gml, q.name, KGmlScript.inst);
 					GmlFile.open(q.name, pj.fullPath(q.npath));
 				};
 				case "object": {

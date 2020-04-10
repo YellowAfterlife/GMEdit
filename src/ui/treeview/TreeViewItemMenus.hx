@@ -74,6 +74,7 @@ class TreeViewItemMenus {
 			var nonRoot = target.getAttribute(TreeView.attrRel).toLowerCase() != prefix;
 			for (q in items.manipNonRoot) q.enabled = supported && nonRoot;
 			for (q in items.manipDirOnly) q.enabled = supported && dir;
+			items.manipDuplicate.enabled = supported && (prefix == "scripts/") && !dir;
 		} else {
 			for (q in items.manipOuter) q.visible = false;
 		}
@@ -299,6 +300,27 @@ class TreeViewItemMenus {
 				createImpl(kind > 0, 1);
 			}));
 		}
+		//
+		createMenu.appendSep("sep-duplicate");
+		items.manipDuplicate = addLink(createMenu, "item-duplicate", "Duplicate", function() {
+			var dir = target;
+			var d = getItemData(dir);
+			Dialog.showPrompt("Name?", d.last, function(s) {
+				if (s == "" || s == null) return;
+				createImplBoth(false, 1, dir, s, function(c) {
+					var fp = dir.getAttribute(TreeView.attrPath);
+					if (Path.extension(fp) == "yy") fp = Path.withExtension(fp, "gml");
+					try {
+						c.gmlCode = electron.FileWrap.readTextFileSync(fp);
+					} catch (x:Dynamic) {
+						Main.console.error('Error reading `$fp`:', x);
+						c.gmlCode = "";
+					}
+					return c;
+				});
+			});
+		});
+		//
 		var createItem = new MenuItem({
 			id: "sub-create",
 			label: "Create",
@@ -316,8 +338,7 @@ class TreeViewItemMenus {
 			click: renameImpl
 		});
 		items.manipCreate = createItem;
-		// new MenuItem({type:Sep}), 
-		items.manipOuter = [createItem, removeItem, renameItem];
+		items.manipOuter = [createItem, renameItem, removeItem];
 		items.manipNonRoot.push(removeItem);
 	}
 	public static function update(dir:Bool) {
@@ -353,6 +374,8 @@ typedef TreeViewItemCreate = {
 	?openFile:Bool,
 	/** whether to reveal the freshly made thing in treeview */
 	?showInTree:Bool,
+	/** initial content for GML files */
+	?gmlCode:String,
 };
 typedef TreeViewItemRename = {
 	>TreeViewItemBase,
