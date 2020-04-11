@@ -238,7 +238,7 @@ class GmlSeeker {
 				}
 				doc.fromCode(src, start, q.pos);
 				if (mainComp != null) mainComp.doc = doc.getAcText();
-			}
+			} else doc.procHasReturn(src, start, q.pos);
 			doc = null;
 		}
 		function procLambdaIdent(s:GmlName, locals:GmlLocals):Void {

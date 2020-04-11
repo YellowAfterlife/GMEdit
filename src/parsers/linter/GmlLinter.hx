@@ -87,6 +87,7 @@ class GmlLinter {
 	var optRequireParentheses:Bool;
 	var optBlockScopedVar:Bool;
 	var optRequireFunctions:Bool;
+	var optCheckHasReturn:Bool;
 	var optBlockScopedCase:Bool;
 	
 	public function new() {
@@ -96,6 +97,7 @@ class GmlLinter {
 		optBlockScopedVar = getOption((q) -> q.blockScopedVar);
 		optBlockScopedCase = getOption((q) -> q.blockScopedCase);
 		optRequireFunctions = getOption((q) -> q.requireFunctions);
+		optCheckHasReturn = getOption((q) -> q.checkHasReturn);
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -586,7 +588,7 @@ class GmlLinter {
 		} else return argc;
 	}
 	
-	function checkCallArgs(currName:String, argc:Int) {
+	function checkCallArgs(currName:String, argc:Int, isExpr:Bool) {
 		var doc:GmlFuncDoc = tools.JsTools.orx(
 			GmlAPI.gmlDoc[currName],
 			GmlAPI.extDoc[currName],
@@ -596,42 +598,45 @@ class GmlLinter {
 			var lm = editor.lambdas[context];
 			if (lm != null) doc = lm.docs[currName];
 		}
-		do {
-			var minArgs:Int, maxArgs:Int;
-			if (doc != null) {
-				minArgs = doc.minArgs;
-				maxArgs = doc.maxArgs;
+		//
+		if (isExpr && optCheckHasReturn && doc != null && doc.hasReturn == false) {
+			addWarning('`$currName` does not return anything, so this is 0');
+		}
+		//
+		var minArgs:Int, maxArgs:Int;
+		if (doc != null) {
+			minArgs = doc.minArgs;
+			maxArgs = doc.maxArgs;
+		} else {
+			// perhaps it's a hidden extension function? we don't add them to extDoc
+			minArgs = GmlAPI.extArgc[currName];
+			if (minArgs == null) {
+				if (optRequireFunctions) {
+					addWarning('`$currName` doesn\'t seem to be a valid function');
+				}
+				return;
+			}
+			if (minArgs < 0) {
+				minArgs = 0;
+				maxArgs = 0x7fffffff;
+			} else maxArgs = minArgs;
+		}
+		//
+		if (argc < minArgs) {
+			if (maxArgs == minArgs) {
+				addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
+			} else if (maxArgs >= 0x7fffffff) {
+				addError('Not enough arguments for $currName (expected $minArgs+, got $argc)');
 			} else {
-				// perhaps it's a hidden extension function? we don't add them to extDoc
-				minArgs = GmlAPI.extArgc[currName];
-				if (minArgs == null) {
-					if (optRequireFunctions) {
-						addWarning('`$currName` doesn\'t seem to be a valid function');
-					}
-					continue;
-				}
-				if (minArgs < 0) {
-					minArgs = 0;
-					maxArgs = 0x7fffffff;
-				} else maxArgs = minArgs;
+				addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
 			}
-			//
-			if (argc < minArgs) {
-				if (maxArgs == minArgs) {
-					addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
-				} else if (maxArgs >= 0x7fffffff) {
-					addError('Not enough arguments for $currName (expected $minArgs+, got $argc)');
-				} else {
-					addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
-				}
-			} else if (argc > maxArgs) {
-				if (minArgs == maxArgs) {
-					addError('Too many arguments for $currName (expected $maxArgs, got $argc)');
-				} else {
-					addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
-				}
+		} else if (argc > maxArgs) {
+			if (minArgs == maxArgs) {
+				addError('Too many arguments for $currName (expected $maxArgs, got $argc)');
+			} else {
+				addError('Not enough arguments for $currName (expected $minArgs..$maxArgs, got $argc)');
 			}
-		} while (false);
+		}
 	}
 	
 	var readExpr_currKind:GmlLinterKind;
@@ -755,7 +760,7 @@ class GmlLinter {
 					var argc = readArgs(newDepth, false);
 					rc(argc < 0);
 					if (currKind == KIdent && currName != null) {
-						checkCallArgs(currName, argc);
+						checkCallArgs(currName, argc, !isStat());
 					}
 				};
 				case KInc, KDec: { // x++, x--

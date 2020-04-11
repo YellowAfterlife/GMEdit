@@ -70,6 +70,7 @@ class PrefLinter {
 		addf("Warn about single `=` comparisons", opt.noSingleEquals);
 		addf("Warn about conditions without ()", opt.requireParentheses);
 		addf("Warn about missing functions", opt.requireFunctions);
+		addf("Warn about trying to use result of a script with no returned values", opt.checkHasReturn);
 		el = addf("Treat `var` as block-scoped", opt.blockScopedVar);
 		el.title = "You can also use `#macro const var` and `#macro let var`";
 		el = addf("Treat `case` as block-scoped", opt.blockScopedCase);

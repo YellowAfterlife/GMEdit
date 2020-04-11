@@ -23,6 +23,8 @@ class GmlFuncDoc {
 	/** array of argument names */
 	public var args:Array<String>;
 	
+	public var hasReturn:Bool = null;
+	
 	var minArgsCache:Null<Int> = null;
 	
 	static var rxIsOpt:RegExp = ace.AceMacro.jsRx(~/^\s*(?:\[|\?|\.\.\.)/);
@@ -188,14 +190,15 @@ class GmlFuncDoc {
 		//
 		return k;
 	}
+	
 	static var nameTrimPattern:String = null;
 	static var nameTrimRegex:RegExp = null;
-	public function fromCode(gml:String, from:Int = 0, ?till:Int) {
+	public function fromCode(gml:String, from:Int = 0, ?_till:Int) {
 		var q = new GmlReader(gml);
 		var rx = fromCode_rx;
 		q.pos = from;
 		var start = from;
-		if (till == null) till = gml.length;
+		var till:Int = _till != null ? _till : gml.length;
 		clear();
 		//
 		{ // sync regex
@@ -311,6 +314,38 @@ class GmlFuncDoc {
 		post = ")";
 		if (rest) post = "..." + post;
 		if (hasRet) post += "➜";
+		hasReturn = hasRet;
+	}
+	
+	/** A cheaper version of procCode that just figures out hasReturn and that's it */
+	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int) {
+		var start = from;
+		var till:Int = _till != null ? _till : gml.length;
+		var q = new GmlReader(gml);
+		var chunk:GmlCode;
+		var hasRetRx = fromCode_hasRet;
+		q.pos = from;
+		while (q.pos < till) {
+			var p = q.pos, n;
+			var n = q.skipCommon_inline();
+			if (n >= 0) {
+				chunk = q.substring(start, p);
+				if (hasRetRx.test(chunk)) {
+					hasReturn = true;
+					if (post == ")") post = ")➜";
+					return;
+				}
+				start = q.pos;
+			} else q.skip();
+		}
+		chunk = q.substring(start, q.pos);
+		var hasRet = hasRetRx.test(chunk);
+		if (hasRet) {
+			if (post == ")") post = ")➜";
+		} else {
+			if (post == ")➜") post = ")";
+		}
+		hasReturn = hasRet;
 	}
 	
 	static var autogen_argi = [for (i in 0 ... 16) new RegExp('\\bargument$i\\b')];
