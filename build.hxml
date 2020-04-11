@@ -1,0 +1,4 @@
+-js bin/resources/app/app.js
+-cp src
+-main Main
+-dce full
