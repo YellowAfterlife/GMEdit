@@ -111,58 +111,58 @@ using tools.NativeString;
 			proc(false);
 			return;
 		}
-		else if (dotKind != DKNone && tk.type == "punctuation.operator" && tk.value.contains(".")) {
-			var iter = new AceTokenIterator(session, pos.row, pos.column);
-			tk = iter.stepBackward();
-			switch (dotKind) {
-				case DKNamespace: {
-					if (tk.type == "namespace") {
-						var scope = session.gmlScopes.get(pos.row);
-						if (scope != null) {
-							var imp = GmlFile.current.codeEditor.imports[scope];
-							if (imp != null) {
-								var ns = imp.namespaces[tk.value];
-								if (ns != null) {
-									callback(null, ns.comp);
-									return;
-								}
-							}
+		else if (dotKind != DKNone) {
+			do { // once
+				var iter:AceTokenIterator = null;
+				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) {
+					if (dotKind == DKEnum) {
+						if (tk.type == "enumerror") {
+							iter = new AceTokenIterator(session, pos.row, pos.column);
+							tk = iter.stepBackward();
 						}
 					}
-					proc(false);
-				};
-				case DKLocalType: {
-					if (tk.type == "local") {
+				}
+				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) continue;
+				if (iter == null) iter = new AceTokenIterator(session, pos.row, pos.column);
+				tk = iter.stepBackward();
+				switch (dotKind) {
+					case DKNamespace: {
+						if (tk.type != "namespace") continue;
 						var scope = session.gmlScopes.get(pos.row);
-						if (scope != null) {
-							var imp = GmlFile.current.codeEditor.imports[scope];
-							if (imp != null) {
-								var t = imp.localTypes[tk.value];
-								if (t != null) {
-									var ns = imp.namespaces[t];
-									if (ns != null) {
-										callback(null, ns.comp);
-										return;
-									} else {
-										var en = GmlAPI.gmlEnums[t];
-										if (en != null) {
-											callback(null, en.fieldComp);
-											return;
-										}
-									}
-								}
-							}
+						if (scope == null) continue;
+						var imp = GmlFile.current.codeEditor.imports[scope];
+						if (imp == null) continue;
+						var ns = imp.namespaces[tk.value];
+						if (ns == null) continue;
+						callback(null, ns.comp);
+						return;
+					};
+					case DKLocalType: {
+						if (tk.type != "local") continue;
+						var scope = session.gmlScopes.get(pos.row);
+						if (scope == null) continue;
+						var imp = GmlFile.current.codeEditor.imports[scope];
+						if (imp == null) continue;
+						var t = imp.localTypes[tk.value];
+						if (t == null) continue;
+						var ns = imp.namespaces[t];
+						if (ns != null) {
+							callback(null, ns.comp);
+							return;
+						} else {
+							var en = GmlAPI.gmlEnums[t];
+							if (en == null) continue;
+							callback(null, en.fieldComp);
+							return;
 						}
-					}
-					proc(false);
-				};
-				case DKGlobal: {
-					proc(tk.value == "global");
-				};
-				case DKEnum: {
-					if (tk.type == "enum") {
+					};
+					case DKGlobal: {
+						proc(tk.value == "global");
+					};
+					case DKEnum: {
+						if (tk.type != "enum") continue;
 						var name = tk.value;
-						//
+						// expand imports:
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope != null) {
 							var imp = GmlFile.current.codeEditor.imports[scope];
@@ -177,13 +177,14 @@ using tools.NativeString;
 							callback(null, en.fieldComp);
 							return;
 						}
-					}
-					proc(false);
-				};
-				default:
-			}
+					};
+					default:
+				}
+			} while (false);
+			proc(false);
 			return;
 		}
+		//
 		var tkf:Bool = tokenFilter.exists(tk.type);
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
 		proc(tkf != tokenFilterNot);
