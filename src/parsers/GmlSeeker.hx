@@ -201,6 +201,7 @@ class GmlSeeker {
 										return s;
 									}
 								};
+								case "#region", "#endregion": q.skipLine();
 								case "#macro": if (flags.has(Macro)) return s;
 								default:
 							}
