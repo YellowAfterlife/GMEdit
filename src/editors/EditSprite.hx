@@ -19,6 +19,7 @@ using tools.HtmlTools;
 import yy.YySprite;
 import Main.document;
 import Main.window;
+import electron.Shell;
 
 /**
  * This is a big mess as for something that's just an image strip viewer.
@@ -264,6 +265,9 @@ class EditSprite extends Editor {
 			frame.onclick = function(_) {
 				currentFrame = index;
 				setCurrentFrameElement(index, frame);
+			}
+			frame.ondblclick = function(_) {
+				Shell.openExternal(url);
 			};
 			frames.appendChild(frame);
 		}
