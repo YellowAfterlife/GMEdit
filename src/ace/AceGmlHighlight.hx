@@ -313,6 +313,7 @@ using tools.NativeArray;
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
 			//
 			rDefine, rAction, rKeyEvent, rEvent, rEventBlank, rMoment, rTarget,
+			rxRule(["keyword", "text", "field"], ~/(static)(\s+)([_a-zA-Z]\w*)/),
 			//{ macros
 			rpushPairs([
 				"#macro", "preproc.macro",
