@@ -49,7 +49,7 @@ class GmlAPI {
 		).split("|"), true
 	);
 	//
-	public static var scopeResetRx = new js.lib.RegExp('^(?:#define|#event|#moment|#target)[ \t]+([\\w:]+)', '');
+	public static var scopeResetRx = new js.lib.RegExp('^(?:#define|#event|#moment|#target|function)[ \t]+([\\w:]+)', '');
 	//
 	public static var helpLookup:Dictionary<String> = null;
 	public static var helpURL:String = null;
