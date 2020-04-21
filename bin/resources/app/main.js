@@ -32,8 +32,8 @@ function createWindow () {
 	
 	// https://github.com/electron/electron/issues/19789#issuecomment-559825012
 	electron.protocol.interceptFileProtocol('file', (request, cb) => {
-		const show = request.url.includes("index")
-		if (show) console.log("in: " + request.url)
+		//const show = request.url.includes("index")
+		//if (show) console.log("in: " + request.url)
         let url = request.url.replace(/file:[/\\]*/, '')
         url = decodeURIComponent(url)
 		//
@@ -41,7 +41,7 @@ function createWindow () {
 		//
 		let qmark = url.indexOf("?")
 		if (qmark >= 0) url = url.substring(0, qmark)
-		if (show) console.log("out: " + url)
+		//if (show) console.log("out: " + url)
         cb(url)
     })
 
