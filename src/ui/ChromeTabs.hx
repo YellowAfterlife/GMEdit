@@ -15,6 +15,7 @@ import parsers.GmlSeeker;
 import plugins.PluginAPI;
 import plugins.PluginEvents;
 import ui.liveweb.LiveWeb;
+import ui.liveweb.LiveWebState;
 using tools.NativeString;
 using tools.HtmlTools;
 
@@ -238,7 +239,7 @@ class ChromeTabs {
 			});
 		});
 		else window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
-			LiveWeb.saveState();
+			LiveWebState.save();
 		});
 		//
 		if (document.hasFocus()) {

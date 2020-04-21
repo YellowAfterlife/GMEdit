@@ -22,7 +22,7 @@ using StringTools;
 @:expose("GmlAPI")
 class GmlAPI {
 	public static var version(default, set):GmlVersion = GmlVersion.none;
-	private static inline function set_version(v:GmlVersion):GmlVersion {
+	private static function set_version(v:GmlVersion):GmlVersion {
 		if (version != v) {
 			version = v;
 			init();
@@ -295,7 +295,9 @@ class GmlAPI {
 				if (lwArg0 != null) { // give GMLive a copy of data
 					var cb = Reflect.field(Main.window, "lwSetAPI");
 					if (cb != null) cb(data);
-					LiveWeb.readyUp();
+					Main.window.setTimeout(function() {
+						LiveWeb.readyUp();
+					});
 				}
 				// so that the welcome page highlights correctly:
 				Main.aceEditor.session.bgTokenizer.start(0);

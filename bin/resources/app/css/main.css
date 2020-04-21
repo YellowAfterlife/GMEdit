@@ -257,8 +257,24 @@ https://stackoverflow.com/a/36247448/5578773
 .chrome-tabs .chrome-tab-title-text {
 	float: right;
 }
-.chrome-tabs .chrome-tab, .system-button, .chrome-tabs .lw-controls {
+.chrome-tabs .chrome-tab,
+.system-button,
+.chrome-tabs .lw-controls {
 	-webkit-app-region: no-drag;
+}
+.chrome-tabs.has-lw-buttons {
+	display: flex;
+}
+#app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
+	display: none;
+}
+.chrome-tabs.has-lw-buttons .app-region-drag {
+	-webkit-app-region: drag;
+	flex-grow: 1;
+}
+#game-td .chrome-tabs.has-lw-buttons > input,
+#game-td .chrome-tabs.has-lw-buttons > select {
+	margin-right: 2px;
 }
 #app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
 	left: 230px;

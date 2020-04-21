@@ -27,8 +27,23 @@ function createWindow () {
 		icon: __dirname + '/icon.png'
 	})
 	if (showOnceReady) {
-		mainWindow.once('ready-to-show', () => mainWindow.show());
+		mainWindow.once('ready-to-show', () => mainWindow.show())
 	}
+	
+	// https://github.com/electron/electron/issues/19789#issuecomment-559825012
+	electron.protocol.interceptFileProtocol('file', (request, cb) => {
+		const show = request.url.includes("index")
+		if (show) console.log("in: " + request.url)
+        let url = request.url.replace(/file:[/\\]*/, '')
+        url = decodeURIComponent(url)
+		//
+        url = url.replace(/\/index-live\.html(?:\?.*?)?#live-(v[12]-(?:2d|GL)).*$/, '/livejs-$1.html')
+		//
+		let qmark = url.indexOf("?")
+		if (qmark >= 0) url = url.substring(0, qmark)
+		if (show) console.log("out: " + url)
+        cb(url)
+    })
 
 	// and load the index.html of the app.
 	let index_url = url.format({
@@ -38,8 +53,21 @@ function createWindow () {
 	})
 	let args = process.argv
 	let openArg = 1
+	
 	// https://apple.stackexchange.com/questions/207895/app-gets-in-commandline-parameter-psn-0-nnnnnn-why
 	if (process.platform === 'darwin' && openArg < args.length && args[openArg].startsWith("-psn")) openArg += 1
+	
+	//
+	if (openArg < args.length && args[openArg] == "--liveweb") {
+		openArg += 1
+		index_url = url.format({
+			pathname: path.join(__dirname, "index-live.html"),
+			protocol: 'file:',
+			slashes: true
+		})
+	}
+	
+	
 	if (openArg < args.length) index_url += "?open=" + encodeURIComponent(args[openArg])
 	mainWindow.loadURL(index_url)
 
@@ -59,24 +87,24 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function () {
-	createWindow();
+	createWindow()
 })
 
 // https://github.com/electron/electron/issues/4349
 electron.ipcMain.on('shell-open', (e, path) => {
-	electron.shell.openItem(path);
+	electron.shell.openItem(path)
 })
 electron.ipcMain.on('shell-show', (e, path) => {
 	// https://github.com/electron/electron/issues/11617
-	if (process.platform.startsWith("win")) path = path.replace(/\//g, "\\");
-	electron.shell.showItemInFolder(path);
+	if (process.platform.startsWith("win")) path = path.replace(/\//g, "\\")
+	electron.shell.showItemInFolder(path)
 })
 
 //
 const nativeImage = electron.nativeImage
 const taskbarIcons = Object.create(null)
 electron.ipcMain.on('set-taskbar-icon', (e, path, text) => {
-	mainWindow.setOverlayIcon(path, text);
+	mainWindow.setOverlayIcon(path, text)
 })
 
 // Quit when all windows are closed.

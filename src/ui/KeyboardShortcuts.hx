@@ -141,7 +141,7 @@ class KeyboardShortcuts {
 					}
 				}
 				#if lwedit
-				ui.liveweb.LiveWeb.saveState();
+				ui.liveweb.LiveWebState.save();
 				#end
 			};
 			case KeyboardEvent.DOM_VK_F: {

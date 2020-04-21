@@ -7,6 +7,7 @@ import js.html.Element;
 import js.html.MouseEvent;
 import haxe.extern.EitherType;
 import js.html.Node;
+import js.html.SelectElement;
 
 /**
  * ...
@@ -60,6 +61,14 @@ class HtmlTools {
 	}
 	public static function insertAfterSelf(el:Element, insertWhat:Element) {
 		insertAfterEl(el.parentElement, insertWhat, el);
+	}
+	
+	public static function setSelectValueWithoutOnChange(el:SelectElement, value:String, def:String) {
+		var e = el.onchange;
+		el.onchange = null;
+		el.value = value;
+		if (el.value == "") el.value = def;
+		el.onchange = e;
 	}
 }
 extern class ElementList implements ArrayAccess<Element> {

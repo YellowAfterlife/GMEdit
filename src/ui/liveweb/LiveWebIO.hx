@@ -2,7 +2,7 @@ package ui.liveweb;
 import electron.Dialog;
 import haxe.io.Bytes;
 import haxe.io.Path;
-import js.html.ArrayBuffer;
+import js.lib.ArrayBuffer;
 import js.html.File;
 import js.html.FileList;
 import tools.BufferTools;
@@ -23,7 +23,7 @@ class LiveWebIO {
 		});
 	}
 	public static function exportDialog() {
-		var pairs = LiveWeb.getPairs();
+		var pairs = LiveWebState.getPairs();
 		if (pairs.length == 0) return;
 		if (pairs.length == 1) {
 			BufferTools.saveAs(Bytes.ofString(pairs[0].code), pairs[0].name + ".gml", "text/gml");

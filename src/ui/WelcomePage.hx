@@ -31,7 +31,7 @@ class WelcomePage {
 		return session;
 	}
 	#if lwedit
-	static var lwText:String = [
+	public static var lwText:String = [
 		'/*',
 		'Hello!',
 		'',

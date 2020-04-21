@@ -73,6 +73,7 @@ class GmlVersion {
 	public static function init() {
 		#if lwedit
 		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
+		list.push(new GmlVersion("gmlivejs-v2", Main.relPath("api/gmlivejs-v2"), false));
 		#else
 		if (Electron.isAvailable()) {
 			// Allow overriding built-in APIs via user directory:
@@ -153,8 +154,13 @@ class GmlVersion {
 			if (v.label == null) v.label = v.name;
 		}
 		for (v in list) loadVer(v);
+		#if lwedit
+		v1 = map["gmlivejs-v1"];
+		v2 = map["gmlivejs-v2"];
+		#else
 		v1 = map["v1"];
 		v2 = map["v2"];
+		#end
 	}
 	public static function detect(gml:String):GmlVersion {
 		return GmlVersionDetect.run(gml);

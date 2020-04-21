@@ -61,6 +61,7 @@ class YyLoader {
 		var topLevel = TreeView.makeAssetDir(project.displayName, "", "mixed");
 		topLevel.classList.add(TreeView.clOpen);
 		topLevel.treeHeader.classList.add("hidden");
+		topLevel.setAttribute(TreeView.attrRel, project.name);
 		TreeView.element.appendChild(topLevel);
 		folderMap["folders"] = topLevel;
 		//

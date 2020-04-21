@@ -230,8 +230,7 @@ import ui.treeview.TreeView;
 			reload(true);
 		}
 		#else
-		version = GmlVersion.v1;
-		GmlAPI.version = version;
+		version = GmlAPI.version;
 		#end
 	}
 	public function detectVersion() {
