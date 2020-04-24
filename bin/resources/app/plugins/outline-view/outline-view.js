@@ -17,7 +17,7 @@
 	var escapeProp = $gmedit["tools.NativeString"].escapeProp;
 	var modeMap = {
 		"ace/mode/gml": (function() {
-			var rxDef = /^(?:(#event)|#define|#moment|#section|#roomcc)\b\s*(\w+(?::\w+)?)(.*)$/;
+			var rxDef = /^(?:(#event)|#define|#moment|#section|#roomcc|function)\b\s*(\w+(?::\w+)?)(.*)$/;
 			var rxPush = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
 			var rxPop = /^\s*(?:#endregion|\/\/#endregion)\b/;
 			var rxMark = /^\s*((?:\/\/#mark|#section)\b\s*(.*))$/;
