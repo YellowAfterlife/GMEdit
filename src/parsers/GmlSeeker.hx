@@ -346,7 +346,22 @@ class GmlSeeker {
 					// we don't have to worry about #event/etc because they
 					// do not occur in files themselves
 					flushDoc();
-					main = find(Ident);
+					var fname:String;
+					if (isFunc) {
+						q.skipSpaces0();
+						if (q.peek().isIdent0_ni()) {
+							p = q.pos;
+							q.skipIdent1();
+							fname = q.substring(p, q.pos);
+						} else fname = null;
+					} else fname = find(Ident);
+					if (isFunc && (!isDefine || fname == null)) {
+						if (find(Line | Par0) == "(") {
+							find(Line | Par1);
+						}
+						continue;
+					}
+					//
 					start = q.pos;
 					sub = main;
 					row = 0;
