@@ -9,7 +9,7 @@ import tools.Base64;
 import tools.Dictionary;
 import ui.WelcomePage;
 using tools.HtmlTools;
-
+#if lwedit
 /**
  * ...
  * @author YellowAfterlife
@@ -156,3 +156,4 @@ class LiveWebState {
 	public static function decompressFromEncodedURIComponent(s:String):String;
 }
 typedef LiveWebTab = { name:String, code:String };
+#end

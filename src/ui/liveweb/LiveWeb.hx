@@ -22,6 +22,7 @@ import Main.window;
  * Helpers for GMLive-web
  * @author YellowAfterlife
  */
+#if lwedit
 class LiveWeb {
 	//
 	public static var modeEl:SelectElement = document.querySelectorAuto("#mode");
@@ -164,3 +165,4 @@ class LiveWeb {
 		#end
 	}
 }
+#end

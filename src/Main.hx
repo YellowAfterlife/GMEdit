@@ -135,8 +135,8 @@ class Main {
 		aceEditor.statusBar.update();
 		#if lwedit
 		aceEditor.session = WelcomePage.init(aceEditor);
-		#end
 		LiveWeb.init();
+		#end
 		plugins.PluginManager.init();
 		console.log("hello!");
 		return null;

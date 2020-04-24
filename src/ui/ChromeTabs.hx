@@ -239,7 +239,9 @@ class ChromeTabs {
 			});
 		});
 		else window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
+			#if lwedit
 			LiveWebState.save();
+			#end
 		});
 		//
 		if (document.hasFocus()) {
