@@ -230,7 +230,9 @@ class GmlSeeker {
 		var s:String, name:String, start:Int;
 		var doc:GmlFuncDoc = null;
 		function flushDoc():Void {
-			if (doc == null && main != null) {
+			if (doc != null) {
+				doc.procHasReturn(src, start, q.pos);
+			} else if (main != null) {
 				doc = out.docMap[main];
 				if (doc == null) {
 					doc = new GmlFuncDoc(main, main + "(", ")", [], false);
@@ -239,7 +241,7 @@ class GmlSeeker {
 				}
 				doc.fromCode(src, start, q.pos);
 				if (mainComp != null) mainComp.doc = doc.getAcText();
-			} else doc.procHasReturn(src, start, q.pos);
+			}
 			doc = null;
 		}
 		function procLambdaIdent(s:GmlName, locals:GmlLocals):Void {
