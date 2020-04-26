@@ -269,6 +269,16 @@ class GmlSeeker {
 			}
 			if (lfLocals != null) locals.addLocals(lfLocals);
 		}
+		//
+		var q_swap:GmlReaderExt = null;
+		inline function q_store():Void {
+			if (q_swap == null) q_swap = new GmlReaderExt(src);
+			q_swap.setTo(q);
+		}
+		inline function q_restore():Void {
+			q.setTo(q_swap);
+		}
+		//
 		var p:Int, flags:Int;
 		var c:CharCode, mt:RegExpMatch;
 		while (q.loop) {
@@ -502,7 +512,7 @@ class GmlSeeker {
 							break;
 						}
 						locals.add(name, localKind);
-						p = q.pos;
+						q_store();
 						flags = SetOp | Comma | Semico | Ident | ComBlock;
 						s = find(flags);
 						if (s != null && s.startsWith("/*")) { // name/*...*/
@@ -519,7 +529,7 @@ class GmlSeeker {
 							var depth = 0;
 							var exit = false;
 							while (q.loop) {
-								p = q.pos;
+								q_store();
 								s = find(Par0 | Par1 | Sqb0 | Sqb1 | Cub0 | Cub1
 									| Comma | Semico | Ident);
 								// EOF:
@@ -534,7 +544,7 @@ class GmlSeeker {
 									case ";": exit = true; break;
 									default: { // ident
 										if (GmlAPI.kwFlow[s]) {
-											q.pos = p;
+											q_restore();
 											exit = true;
 											break;
 										} else if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
@@ -547,7 +557,7 @@ class GmlSeeker {
 							if (exit) break;
 						} else {
 							// EOF or `var name something_else`
-							q.pos = p;
+							q_restore();
 							break;
 						}
 					}
