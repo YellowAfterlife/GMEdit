@@ -373,6 +373,7 @@ class GmlSeeker {
 						}
 						continue;
 					}
+					main = fname;
 					//
 					start = q.pos;
 					sub = main;
