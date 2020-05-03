@@ -1126,8 +1126,10 @@ class GmlLinter {
 				}
 				skipIf(peek() == KColon);
 			};
-			case KStatic: { // todo: checking
-				rc(readExpr(newDepth, flags.with(AsStat)));
+			case KStatic: {
+				rc(readCheckSkip(KIdent, "a variable name"));
+				rc(readCheckSkip(KSet, "a `=` after static variable name"));
+				rc(readExpr(newDepth, flags));
 			};
 			case KTry: {
 				rc(readStat(newDepth));
