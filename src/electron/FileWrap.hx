@@ -89,6 +89,7 @@ class FileWrap {
 	}
 	
 	public static var isMac:Bool = false;
+	public static var isUnix:Bool = false;
 	public static var userPath:String = null;
 	public static function readConfigSync<T:{}>(cat:String, name:String):T {
 		var text:String = null;

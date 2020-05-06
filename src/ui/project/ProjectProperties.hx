@@ -61,6 +61,16 @@ class ProjectProperties {
 			d.indentWithTabs = v == indentModes[0] ? null : v == indentModes[1];
 			save(project, d);
 		});
+		//
+		var newLineModeDef = "auto-detect";
+		var newLineModes = [newLineModeDef, "windows", "unix"];
+		Preferences.addDropdown(fs, "New line mode override",
+			d.newLineMode != null ? d.newLineMode : newLineModeDef,
+		newLineModes, function(s) {
+			if (s == newLineModeDef) s = null;
+			d.newLineMode = s;
+			save(project, d);
+		});
 	}
 	
 	static function buildSyntax(project:Project, out:DivElement) {

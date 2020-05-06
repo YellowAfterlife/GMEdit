@@ -15,6 +15,9 @@ typedef ProjectData = {
 	
 	?indentWithTabs:Bool,
 	
+	/** "windows", "unix", null */
+	?newLineMode:String,
+	
 	?lambdaMode:LambdaMode,
 	
 	?argNameRegex:String,

@@ -331,13 +331,19 @@ class Preferences {
 		GmlAPI.ukSpelling = pref.ukSpelling;
 	}
 	public static function init() {
-		var isMac:Bool;
+		var isMac:Bool, isUnix:Bool;
 		var ep = untyped window.process;
 		if (ep == null) {
 			var np = Main.window.navigator.platform;
-			isMac = np != null && np.toLowerCase().indexOf("mac") >= 0;
-		} else isMac = ep.platform == "darwin";
+			np = np != null ? np.toLowerCase() : "";
+			isMac = np.indexOf("mac") >= 0;
+			isUnix = np.indexOf("win") < 0;
+		} else {
+			isMac = ep.platform == "darwin";
+			isUnix = ep.platform != "win32";
+		}
 		FileWrap.isMac = isMac;
+		FileWrap.isUnix = isUnix;
 		load();
 	}
 	public static function hookSetOption(obj:Dynamic):Void {

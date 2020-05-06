@@ -29,8 +29,12 @@ import ui.Preferences;
 		var session = new AceSession(context, mode);
 		session.gmlScopes = new GmlScopes(session);
 		session.setUndoManager(new AceUndoManager());
-		// todo: does Mac version of GMS2 use Mac line endings? Probably not
-		session.setOption("newLineMode", "windows");
+		var pj = gml.Project.current;
+		var newLineMode = pj != null ? pj.properties.newLineMode : null;
+		if (newLineMode == null) {
+			newLineMode = electron.FileWrap.isUnix ? "unix" : "windows";
+		}
+		session.setOption("newLineMode", newLineMode);
 		session.setOption("tabSize", Preferences.current.tabSize);
 		session.setOption("useSoftTabs", Preferences.current.tabSpaces);
 		session.setOption("wrap", Main.aceEditor.getOption("wrap"));
