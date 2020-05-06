@@ -168,6 +168,7 @@ class GmxManip {
 					var fp = pj.fullPath(dp);
 					if (ui.Preferences.current.closeTabsOnFileDeletion)
 					for (tab in ChromeTabs.impl.tabEls){
+						if (tab.gmlFile.path == null) continue;
 						if (tab.gmlFile.path == fp) {
 							tab.closeButton.click();
 							break;

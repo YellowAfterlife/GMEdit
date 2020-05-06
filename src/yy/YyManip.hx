@@ -315,6 +315,7 @@ class YyManip {
 					var fd = pj.fullPath(d);
 					if (ui.Preferences.current.closeTabsOnFileDeletion)
 					for (tab in ChromeTabs.impl.tabEls){
+						if (tab.gmlFile.path == null) continue;
 						if (NativeString.startsWith(tab.gmlFile.path, fd)) {
 							tab.closeButton.click();
 						}
