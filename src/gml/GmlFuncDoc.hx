@@ -20,10 +20,16 @@ class GmlFuncDoc {
 	/** "): doc" */
 	public var post:String;
 	
-	/** array of argument names */
+	/** an array of argument names */
 	public var args:Array<String>;
 	
 	public var hasReturn:Bool = null;
+	
+	/**
+	 * Whether this is a 2.3 `function(...) constructor`
+	 * (implications: should only be called via `new`, does not need to return)
+	 */
+	public var isConstructor:Bool = false;
 	
 	var minArgsCache:Null<Int> = null;
 	
@@ -85,7 +91,7 @@ class GmlFuncDoc {
 		return pre + args.join(", ") + post;
 	}
 	
-	public static function parse(s:String, ?out:GmlFuncDoc) {
+	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
 		var p0 = s.indexOf("(");
 		var p1 = s.indexOf(")", p0);
 		var name:String, pre:String, post:String, args:Array<String>, rest:Bool;

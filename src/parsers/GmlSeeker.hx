@@ -137,6 +137,7 @@ class GmlSeeker {
 					};
 					case ",".code: if (flags.has(Comma)) return ",";
 					case ".".code: if (flags.has(Period)) return ".";
+					case ":".code: if (flags.has(Colon)) return ";";
 					case ";".code: if (flags.has(Semico)) return ";";
 					case "(".code: if (flags.has(Par0)) return "(";
 					case ")".code: if (flags.has(Par1)) return ")";
@@ -229,15 +230,27 @@ class GmlSeeker {
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
 		var s:String, name:String, start:Int = 0;
 		var doc:GmlFuncDoc = null;
+		/**  */
+		inline function linkDoc():Void {
+			out.docList.push(doc);
+			out.docMap.set(main, doc);
+		}
 		function flushDoc():Void {
 			if (doc != null) {
-				doc.procHasReturn(src, start, q.pos);
-			} else if (main != null) {
+				if (doc.acc && doc.args.length == 0) {
+					// we were supposed to pick up JSDoc args but there weren't any
+					doc.fromCode(src, start, q.pos);
+					if (mainComp != null) mainComp.doc = doc.getAcText();
+				} else {
+					// we picked up some JSDOc args, now let's see if it returns anything
+					doc.procHasReturn(src, start, q.pos);
+				}
+			} else if (main != null && main != "") {
+				// no doc yet, but there should be, so let's scrap what we may
 				doc = out.docMap[main];
 				if (doc == null) {
 					doc = new GmlFuncDoc(main, main + "(", ")", [], false);
-					out.docList.push(doc);
-					out.docMap.set(main, doc);
+					linkDoc();
 				}
 				doc.fromCode(src, start, q.pos);
 				if (mainComp != null) mainComp.doc = doc.getAcText();
@@ -286,7 +299,7 @@ class GmlSeeker {
 			if (s == null) {
 				//
 			}
-			else if (s.fastCodeAt(0) == "/".code) {
+			else if (s.fastCodeAt(0) == "/".code) { // JSDoc
 				if (main != null) {
 					var check = true, mt;
 					if (v.hasLiteralStrings()) {
@@ -296,8 +309,7 @@ class GmlSeeker {
 							if (doc == null) {
 								doc = GmlFuncDoc.parse(main + "()");
 								doc.acc = true;
-								out.docList.push(doc);
-								out.docMap.set(main, doc);
+								linkDoc();
 							}
 							if (doc.acc) {
 								doc.args.push(mt[1]);
@@ -314,8 +326,7 @@ class GmlSeeker {
 						if (mt != null) {
 							if (!out.docMap.exists(main)) {
 								doc = GmlFuncDoc.parse(main + mt[1]);
-								out.docList.push(doc);
-								out.docMap.set(main, doc);
+								linkDoc();
 								if (mainComp != null && mainComp.doc == null) {
 									mainComp.doc = s;
 								}
@@ -331,8 +342,7 @@ class GmlSeeker {
 									doc.name = main;
 									doc.pre = main + "(";
 								} else doc = GmlFuncDoc.parse(main + "(...) " + s);
-								out.docList.push(doc);
-								out.docMap.set(main, doc);
+								linkDoc();
 							} else {
 								if (gmlDoc_full.test(s)) {
 									GmlFuncDoc.parse(s, doc);
@@ -395,8 +405,7 @@ class GmlSeeker {
 							}
 							if (!isFunc || foundArg) {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
-								out.docList.push(doc);
-								out.docMap.set(main, doc);
+								linkDoc();
 							}
 						}
 					}
@@ -408,6 +417,18 @@ class GmlSeeker {
 						out.compMap.set(main, mainComp);
 						out.kindList.push(main);
 						out.kindMap.set(main, "asset.script");
+					}
+					//
+					if (isFunc) {
+						s = find(Line | Cub0 | Ident | Colon);
+						if (s == ":" || s == "constructor") { // function A(a, b) : B(a, b) constructor
+							if (doc == null) {
+								doc = GmlFuncDoc.parse(main + "()");
+								doc.acc = true;
+								linkDoc();
+							}
+							doc.isConstructor = true;
+						}
 					}
 				};
 				case "#macro": {
@@ -715,6 +736,7 @@ typedef GmlSeekerItem = {
 	var Par1;
 	var Sqb0;
 	var Sqb1;
+	var Colon;
 	//
 	public inline function has(flag:GmlSeekerFlags) {
 		return this & flag != 0;

@@ -22,6 +22,9 @@ enum abstract GmlLinterReadFlags(Int) {
 	/** Expression is being read after a ++ or -- */
 	var HasPrefix = 16;
 	
+	/** Expression is being read after a `new` */
+	var IsNew = 32;
+	
 	public inline function new(flag:Int) {
 		this = flag;
 	}

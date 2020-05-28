@@ -82,6 +82,8 @@ class GmlLinter {
 	
 	var version:GmlVersion;
 	
+	var optForbidNonIdentCalls:Bool;
+	
 	var optRequireSemico:Bool;
 	var optNoSingleEqu:Bool;
 	var optRequireParentheses:Bool;
@@ -98,6 +100,7 @@ class GmlLinter {
 		optBlockScopedCase = getOption((q) -> q.blockScopedCase);
 		optRequireFunctions = getOption((q) -> q.requireFunctions);
 		optCheckHasReturn = getOption((q) -> q.checkHasReturn);
+		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -587,7 +590,7 @@ class GmlLinter {
 		} else return argc;
 	}
 	
-	function checkCallArgs(currName:String, argc:Int, isExpr:Bool) {
+	function checkCallArgs(currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
 		var doc:GmlFuncDoc = tools.JsTools.orx(
 			GmlAPI.gmlDoc[currName],
 			GmlAPI.extDoc[currName],
@@ -597,15 +600,21 @@ class GmlLinter {
 			var lm = editor.lambdas[context];
 			if (lm != null) doc = lm.docs[currName];
 		}
-		//
-		if (isExpr && optCheckHasReturn && doc != null && doc.hasReturn == false) {
-			addWarning('`$currName` does not return anything, so this is 0');
-		}
-		//
+		
+		// figure out min/max argument counts:
 		var minArgs:Int, maxArgs:Int;
 		if (doc != null) {
 			minArgs = doc.minArgs;
 			maxArgs = doc.maxArgs;
+			
+			// also check for other problems while we are here:
+			if (doc.isConstructor) {
+				if (!isNew) addWarning('`$currName` is a constructor, but is not used via `new`');
+			} else {
+				if (isExpr && optCheckHasReturn && doc.hasReturn == false) {
+					addWarning('`$currName` does not return anything, so this is 0');
+				}
+			}
 		} else {
 			// perhaps it's a hidden extension function? we don't add them to extDoc
 			minArgs = GmlAPI.extArgc[currName];
@@ -697,7 +706,10 @@ class GmlLinter {
 				rc(readExpr(newDepth));
 				if (next() != KParClose) return readExpect("a `)`");
 			};
-			case KNot, KBitNot, KNew: {
+			case KNew: {
+				rc(readExpr(newDepth, IsNew));
+			};
+			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
 			};
 			case KInc, KDec: {
@@ -752,15 +764,17 @@ class GmlLinter {
 					}
 				};
 				case KParOpen: { // fn(...)
-					if (!currKind.canCall()) return readError('Expression ${currKind.getName()} is not callable');
+					if (optForbidNonIdentCalls && !currKind.canCall()) {
+						return readError('Expression ${currKind.getName()} is not callable');
+					}
 					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
-					statKind = KCall;
 					var argc = readArgs(newDepth, false);
 					rc(argc < 0);
 					if (currKind == KIdent && currName != null) {
-						checkCallArgs(currName, argc, !isStat());
+						checkCallArgs(currName, argc, !isStat(), hasFlag(IsNew));
 					}
+					statKind = currKind = KCall;
 				};
 				case KInc, KDec: { // x++, x--
 					if (hasFlag(NoSfx)) break;
