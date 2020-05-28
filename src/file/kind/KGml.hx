@@ -152,7 +152,7 @@ class KGml extends KCode {
 				Main.aceEditor.gotoLine0(row, col);
 				if (z) {
 					untyped Main.aceEditor.scrollToLine = f;
-				} else untyped __js__("delete {0}.scrollToLine", Main.aceEditor);
+				} else js.Syntax.code("delete {0}.scrollToLine", Main.aceEditor);
 			} else Main.aceEditor.gotoLine0(row, col);
 		}
 		return found;

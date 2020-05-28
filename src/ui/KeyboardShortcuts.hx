@@ -62,7 +62,7 @@ class KeyboardShortcuts {
 		switch (keyCode) {
 			case KeyboardEvent.DOM_VK_F2: {
 				if (isMod) {
-					untyped __js__("formatAceGMLContents();");
+					js.Syntax.code("formatAceGMLContents();");
 				}
 			};
 			case KeyboardEvent.DOM_VK_F5: {

@@ -125,13 +125,13 @@ class PluginManager {
 	public static function init() {
 		try {
 			Type.resolveClass("Main");
-			untyped __js__("window.$hxClasses = $hxClasses");
-			untyped __js__("window.$gmedit = $hxClasses");
+			js.Syntax.code("window.$hxClasses = $hxClasses");
+			js.Syntax.code("window.$gmedit = $hxClasses");
 		} catch (x:Dynamic) {
 			Main.console.error("Couldn't expose hxClasses:", x);
 		}
 		try {
-			PluginAPI.extend = untyped __js__("$extend");
+			PluginAPI.extend = js.Syntax.code("$extend");
 		} catch (x:Dynamic) {
 			// this will not work for ES6 classes
 			/*PluginAPI.extend = function(from:Dynamic, fields:Dynamic) {

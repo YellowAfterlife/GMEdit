@@ -33,17 +33,17 @@ class Main {
 	//
 	public static var window(get, never):Window;
 	private static inline function get_window() {
-		return untyped __js__("window");
+		return js.Syntax.code("window");
 	}
 	//
 	public static var console(get, never):RawConsole;
 	private static inline function get_console() {
-		return untyped __js__("console");
+		return js.Syntax.code("console");
 	}
 	//
 	public static var document(get, never):HTMLDocument;
 	private static inline function get_document() {
-		return untyped __js__("document");
+		return js.Syntax.code("document");
 	}
 	//
 	public static var modulePath:String;

@@ -37,7 +37,7 @@ class AceMacro {
 	public static var jsThis(get, never):Dynamic;
 	private static inline function get_jsThis():Dynamic {
 		#if !macro
-		return untyped __js__("this");
+		return js.Syntax.code("this");
 		#else
 		return null;
 		#end

@@ -14,7 +14,7 @@ class BufferTools {
 			var end = pos + 0x8000;
 			if (end > length) end = length;
 			var sub = haxe.io.UInt8Array.fromBytes(bytes, offset + pos, end - pos);
-			raw += untyped __js__("String.fromCharCode.apply(null, {0})", sub);
+			raw += js.Syntax.code("String.fromCharCode.apply(null, {0})", sub);
 			pos = end;
 		}
 		return Main.window.btoa(raw);

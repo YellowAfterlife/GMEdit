@@ -43,7 +43,7 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	}
 	//
 	public inline function remove(k:String):Void {
-		untyped __js__("delete {0}[{1}]", this, k);
+		js.Syntax.code("delete {0}[{1}]", this, k);
 	}
 	public inline function keys():Array<String> {
 		return Reflect.fields(this);

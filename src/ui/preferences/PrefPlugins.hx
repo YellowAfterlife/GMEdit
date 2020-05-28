@@ -18,7 +18,7 @@ class PrefPlugins {
 		var el = document.createElement("div");
 		el.classList.add("plugin-info");
 		out.appendChild(el);
-		var syncLabelState:Void->Void;
+		var syncLabelState:Void->Void = null;
 		//
 		var p_label = document.createLabelElement();
 		p_label.appendChild(document.createTextNode(p.name));

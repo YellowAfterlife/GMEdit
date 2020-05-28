@@ -227,7 +227,7 @@ class GmlSeeker {
 			return null;
 		} // find
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
-		var s:String, name:String, start:Int;
+		var s:String, name:String, start:Int = 0;
 		var doc:GmlFuncDoc = null;
 		function flushDoc():Void {
 			if (doc != null) {

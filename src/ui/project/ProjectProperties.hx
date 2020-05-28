@@ -92,7 +92,7 @@ class ProjectProperties {
 		}
 		
 		//
-		var argRegexInput:InputElement;
+		var argRegexInput:InputElement = null;
 		el = Preferences.addInput(fs,
 			"Regex for trimming argument name (e.g. `^_(\\w+)$`)",
 			or(d.argNameRegex, ""),
@@ -112,7 +112,7 @@ class ProjectProperties {
 		argRegexInput = el.querySelectorAuto("input");
 		
 		//
-		var templateStringInput:InputElement;
+		var templateStringInput:InputElement = null;
 		el = Preferences.addInput(fs,
 			"Template string script name",
 			or(d.templateStringScript, ""),
