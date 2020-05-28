@@ -193,7 +193,6 @@ class GmlLinter {
 			addOpt("delete", KDelete);
 			addOpt("function", KFunction);
 			addOpt("static", KStatic);
-			addOpt("constructor", KConstructor);
 		}
 		//
 		keywords = q;
@@ -961,8 +960,8 @@ class GmlLinter {
 			readCheckSkip(KParOpen, "opening bracket");
 			rc(readArgs(oldDepth + 1, false) < 0);
 		}
-		if (isFunc && skipIf(peek() == KConstructor)) {
-			// nothing else to do?
+		if (isFunc) {
+			skipIf(peek() == KIdent && nextVal == "constructor");
 		}
 		//
 		var oldLocalNames = localNamesPerDepth;

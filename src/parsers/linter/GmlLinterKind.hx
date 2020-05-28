@@ -99,7 +99,6 @@ enum abstract GmlLinterKind(Int) {
 	
 	// other features:
 	var KFunction;
-	var KConstructor;
 	var KStatic;
 	var KNew;
 	var KDelete;

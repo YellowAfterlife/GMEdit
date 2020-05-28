@@ -425,6 +425,7 @@ using tools.NativeArray;
 			}
 		};
 		//}
+		var rParOpen:AceLangRule;
 		rBase = rBase.concat([ //{
 			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]*\b/), // $c0ffee
 			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
@@ -448,10 +449,14 @@ using tools.NativeArray;
 			rCurlyClose,
 			rxRule("square.paren.lparen", ~/\[/),
 			rxRule("square.paren.rparen", ~/\]/),
-			rxRule("paren.lparen", ~/\(/),
+			rParOpen = rxRule("paren.lparen", ~/\(/),
 			rxRule("paren.rparen", ~/\)/),
 			rdef("text"),
 		]); //}
+		if (GmlAPI.stdKind["new"] == "keyword") {
+			var rxCtr = rxRule(["paren.rparen", "text", "keyword"], ~/(\))(\s*)(constructor)/);
+			rBase.insertBefore(rxCtr, rParOpen);
+		}
 		//
 		var rEnum = [ //{
 			rxPush(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "gml.enumvalue"),
