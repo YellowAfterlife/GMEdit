@@ -352,6 +352,13 @@ import ui.treeview.TreeView;
 		nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
 			objectChildren = new Dictionary();
+			if (version.name == "v2" && first) {
+				var yypContent = readTextFileSync(name);
+				if (YyLoader.isV23(yypContent)) {
+					version = GmlVersion.map["v23"];
+				}
+				@:privateAccess YyLoader.nextYypContent = yypContent;
+			}
 			GmlAPI.version = version;
 			var state:ProjectState = null;
 			if (first) {

@@ -23,9 +23,18 @@ import file.kind.misc.*;
  * @author YellowAfterlife
  */
 class YyLoader {
+	static var nextYypContent:String = null;
+	public static inline function isV23(yypContent:String) {
+		return yypContent.contains('"resourceType": "GMProject"');
+	}
 	public static function run(project:Project):Void {
-		var yyProjectTxt = project.readTextFileSync(project.name);
-		if (yyProjectTxt.contains('"resourceType": "GMProject"')) {
+		var yyProjectTxt:String;
+		if (nextYypContent != null) {
+			yyProjectTxt = nextYypContent;
+			nextYypContent = null;
+		} else yyProjectTxt = project.readTextFileSync(project.name);
+		//
+		if (isV23(yyProjectTxt)) {
 			project.yyExtJson = true;
 			project.yyUsesGUID = false;
 		} else {

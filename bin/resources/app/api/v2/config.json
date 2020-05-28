@@ -8,7 +8,7 @@
 	"loadingMode": "gms2",
 	"searchMode": "gms2",
 	
-	"additionalKeywords": ["function", "try", "catch", "finally", "throw", "static", "new", "delete"],
+	"additionalKeywords": [],
 	
 	"projectRegex": "(^.+)\\.yyp$",
 	"helpURL": "http://docs2.yoyogames.com/?tab=i&page=$1",
