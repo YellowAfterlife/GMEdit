@@ -46,10 +46,7 @@ import ace.AceMacro.jsRx;
 		"properties",
 		"overriddenProperties",
 		"parent",
-		"resourceType",
-		"name", "tags",
-		"resourceVersion",
-	];
+	].concat(YyJsonPrinter.mvcOrder23);
 	
 	public function getCode(objPath:String, ?extras:Array<GmlFileExtra>):String {
 		var dir = Path.directory(objPath);
@@ -109,11 +106,11 @@ import ace.AceMacro.jsRx;
 		for (item in eventData) {
 			var idat = item.data;
 			if (idat.type == GmlEvent.typeCollision) {
-				var obj = gml.Project.current.yyObjectGUIDs[idat.name];
+				var obj = Project.current.yyObjectGUIDs[idat.name];
 				if (obj == null) {
 					errors += "Couldn't find object " + idat.name + " for collision event.\n";
 				} else idat.obj = obj;
-			} else idat.obj = YyGUID.zero;
+			} else idat.obj = YyGUID.getDefault(v22);
 		}
 		if (errors != "") {
 			errorText = errors;
@@ -158,11 +155,11 @@ import ace.AceMacro.jsRx;
 		
 		// form newly introduced events:
 		for (i in 0 ... eventData.length) {
-			var name = newNames[i];
-			if (sorted && oldMap.exists(name)) continue; // see above
+			var ename = newNames[i];
+			if (sorted && oldMap.exists(ename)) continue; // see above
 			var item = eventData[i];
 			var idat = item.data;
-			var ev:YyObjectEvent = sorted ? null : oldMap[name];
+			var ev:YyObjectEvent = sorted ? null : oldMap[ename];
 			if (ev != null) {
 				// OK!
 			}
@@ -184,6 +181,7 @@ import ace.AceMacro.jsRx;
 					resourceVersion: "1.0",
 					isDnD: false,
 					collisionObjectId: { name: obj, path: obj },
+					parent: { name: this.name, path: 'objects/${this.name}/${this.name}.yy' },
 					eventType: idat.type,
 					eventNum: idat.numb != null ? idat.numb : 0,
 					name: null,

@@ -11,11 +11,7 @@ import haxe.extern.EitherType;
 		"eventType",
 		"collisionObjectId",
 		"parent",
-		"resourceType",
-		"name",
-		"tags",
-		"resourceVersion",
-	];
+	].concat(YyJsonPrinter.mvcOrder23);
 	public static function compare(a:YyObjectEvent, b:YyObjectEvent):Int {
 		if (YyTools.isV22(a)) {
 			var at = a.eventtype, bt = b.eventtype;
@@ -29,8 +25,8 @@ import haxe.extern.EitherType;
 			if (at != bt) return at - bt;
 			//
 			if (at == 4) {
-				var aq:YyObjectEventColId = a.collisionObjectId;
-				var bq:YyObjectEventColId = a.collisionObjectId;
+				var aq:YyResourceRef = a.collisionObjectId;
+				var bq:YyResourceRef = a.collisionObjectId;
 				return aq.name < bq.name ? -1 : 1;
 			} else return a.eventNum - b.eventNum;
 		}
@@ -43,7 +39,7 @@ import haxe.extern.EitherType;
 			num = this.enumb;
 			type = this.eventtype;
 		} else {
-			var col:YyObjectEventColId = this.collisionObjectId;
+			var col:YyResourceRef = this.collisionObjectId;
 			id = (col != null ? col.name : null);
 			obj = id;
 			num = this.eventNum;
@@ -69,17 +65,19 @@ typedef YyObjectEventDataImpl = {
 };
 typedef YyObjectEventImpl = {
 	>YyBase,
-	collisionObjectId:EitherType<YyGUID, YyObjectEventColId>,
-	// older:
+	collisionObjectId:EitherType<YyGUID, YyResourceRef>,
+	
+	// 2.2:
 	?IsDnD:Bool,
 	?eventtype:Int,
 	?enumb:Int,
 	?m_owner:YyGUID,
-	// newer:
+	
+	// 2.3+:
 	?isDnD:Bool,
 	?eventType:Int,
 	?eventNum:Int,
 	?tags:Array<String>,
+	?parent:YyResourceRef,
 	?name:String, // always null?
 };
-typedef YyObjectEventColId = { name:String, path:String };

@@ -6,7 +6,15 @@ import js.lib.RegExp;
  * @author YellowAfterlife
  */
 abstract YyGUID(String) to String {
+	/** 2.2 */
 	public static inline var zero:YyGUID = cast "00000000-0000-0000-0000-000000000000";
+	/** 2.3 */
+	public static inline var blank:YyGUID = cast "";
+	
+	public static inline function getDefault(v22:Bool) {
+		return v22 ? zero : blank;
+	}
+	
 	public static var test:RegExp = {
 		var h = '[0-9a-fA-F]';
 		new RegExp('^$h{8}-$h{4}-$h{4}-$h{4}-$h{12}' + "$");

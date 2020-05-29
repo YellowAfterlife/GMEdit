@@ -41,7 +41,8 @@ class YyJsonPrinter {
 		} else return r + '"';
 	}
 	
-	public static var mvcOrder = ["configDeltas", "id", "modelName", "mvc", "name"];
+	public static var mvcOrder22 = ["configDeltas", "id", "modelName", "mvc", "name"];
+	public static var mvcOrder23 = ["resourceVersion", "name", "tags", "resourceType"];
 	public static var orderByModelName:Dictionary<Array<String>> = (function() {
 		var q = new Dictionary();
 		var plain = ["id", "modelName", "mvc"];
@@ -91,7 +92,7 @@ class YyJsonPrinter {
 				if (Reflect.hasField(obj, "mvc")) {
 					orderedFields = orderByModelName[Reflect.field(obj, "modelName")];
 				}
-				if (orderedFields == null) orderedFields = mvcOrder;
+				if (orderedFields == null) orderedFields = mvcOrder22;
 			} else found++;
 			//
 			var isOrdered:Dictionary<Bool> = isOrderedCache[orderedFields];
