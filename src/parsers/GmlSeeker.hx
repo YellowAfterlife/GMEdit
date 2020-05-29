@@ -137,7 +137,7 @@ class GmlSeeker {
 					};
 					case ",".code: if (flags.has(Comma)) return ",";
 					case ".".code: if (flags.has(Period)) return ".";
-					case ":".code: if (flags.has(Colon)) return ";";
+					case ":".code: if (flags.has(Colon)) return ":";
 					case ";".code: if (flags.has(Semico)) return ";";
 					case "(".code: if (flags.has(Par0)) return "(";
 					case ")".code: if (flags.has(Par1)) return ")";

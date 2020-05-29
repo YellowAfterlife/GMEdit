@@ -619,7 +619,7 @@ class GmlLinter {
 			// perhaps it's a hidden extension function? we don't add them to extDoc
 			minArgs = GmlAPI.extArgc[currName];
 			if (minArgs == null) {
-				if (optRequireFunctions) {
+				if (optRequireFunctions && optForbidNonIdentCalls) {
 					addWarning('`$currName` doesn\'t seem to be a valid function');
 				}
 				return;
