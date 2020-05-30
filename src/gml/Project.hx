@@ -301,6 +301,16 @@ import ui.treeview.TreeView;
 	}
 	//
 	public static function init() {
+		loaderMap = {
+			"gms1": GmxLoader.run,
+			"gms2": YyLoader.run,
+			"directory": RawLoader.run,
+		};
+		searchMap = {
+			"gms1": GmxSearcher.run,
+			"gms2": YySearcher.run,
+			"directory": raw.RawSearcher.run,
+		};
 		//
 		var ls = window.localStorage;
 		var renList:Array<String> = [];
@@ -406,11 +416,7 @@ import ui.treeview.TreeView;
 			ui.ProjectStyle.reload();
 		}, 1);
 	}
-	public static var loaderMap:DynamicAccess<Project->Void> = {
-		"gms1": GmxLoader.run,
-		"gms2": YyLoader.run,
-		"directory": RawLoader.run,
-	};
+	public static var loaderMap:DynamicAccess<Project->Void> = null; // -> init
 	private function reload_1() {
 		if (version == GmlVersion.none) {
 			ui.RecentProjects.show();
@@ -423,11 +429,7 @@ import ui.treeview.TreeView;
 	}
 	//
 	/** fn(name, path, code), */
-	public static var searchMap:DynamicAccess<(pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt)->Void> = {
-		"gms1": GmxSearcher.run,
-		"gms2": YySearcher.run,
-		"directory": raw.RawSearcher.run,
-	};
+	public static var searchMap:DynamicAccess<(pj:Project, fn:ProjectSearcher, done:Void->Void, opt:GlobalSearchOpt)->Void> = null; // -> init
 	public function search(fn:ProjectSearcher, done:Void->Void, ?opt:GlobalSearchOpt) {
 		var func = searchMap[version.config.searchMode];
 		if (func != null) {
