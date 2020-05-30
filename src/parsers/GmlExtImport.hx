@@ -87,15 +87,17 @@ class GmlExtImport {
 			flat = path.substring(0, path.length - 1).replaceExt(rxPeriod, "_");
 			flen = flat.length;
 			function check(
-				kind:Dictionary<String>, comp:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
+				kind:Dictionary<String>, autoCompleteItems:AceAutoCompleteItems, docs:Dictionary<GmlFuncDoc>
 			) {
 				kind.forField(function(fd) {
 					if (fd.startsWith(flat) && fd != flat) {
-						var comps = comp.filter(function(comp) {
-							return comp.name == fd;
-						});
+						var autoCompleteItem:AceAutoCompleteItem = null;
+						for (item in autoCompleteItems) if (item.name == fd) {
+							autoCompleteItem = item;
+							break;
+						}
 						short = fd.substring(flen);
-						add(fd, short, kind[fd], comps[0], docs[fd], alias, nsOnly);
+						add(fd, short, kind[fd], autoCompleteItem, docs[fd], alias, nsOnly);
 					}
 				});
 			}
