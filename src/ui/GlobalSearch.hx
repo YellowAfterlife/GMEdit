@@ -269,7 +269,17 @@ using tools.HtmlTools;
 			return isRepl && !isPrev ? out : null;
 		}, function() {
 			if (finish != null) finish();
-			var name = (isRepl ? (isPrev ? "preview: " : "replace: ") : "search: ") + term;
+			var name:String;
+			if (checkRefKind) {
+				name = "references";
+			} else if (!isRepl) {
+				name = "search";
+			} else if (isPrev) {
+				name = "preview";
+			} else {
+				name = "replace";
+			}
+			name += ": " + term;
 			var head = '// ' + found + ' result';
 			if (found != 1) head += "s";
 			if (isRepl) {
