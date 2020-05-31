@@ -90,12 +90,20 @@ class AceCtxMenu {
 		});
 		//
 		menu.appendSep("sep-definition");
+		function autofixToken() {
+			if (tk == null) return;
+			if (tk.value.trimBoth() != "") return;
+			pos.column++;
+			tk = editor.session.getTokenAtPos(pos);
+			if (tk.value.trimBoth() == "") tk = null;
+		}
 		var findRefs = menu.appendOpt({
 			id: "open-definition",
 			label: "Open definition",
 			accelerator: "F1",
 			click: function() {
-				OpenDeclaration.proc(editor.session, pos, tk);
+				autofixToken();
+				if (tk != null) OpenDeclaration.proc(editor.session, pos, tk);
 			}
 		});
 		var findRefs = menu.appendOpt({
@@ -103,6 +111,7 @@ class AceCtxMenu {
 			label: "Find references",
 			accelerator: "Shift+F1",
 			click: function() {
+				autofixToken();
 				if (tk != null) GlobalSearch.findReferences(tk.value);
 			}
 		});

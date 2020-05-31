@@ -115,7 +115,6 @@ using StringTools;
 					&& !CharCode.at(line, col - 1).isIdent1_ni()
 				) pos.column++;
 				var tk = editor.session.getTokenAtPos(pos);
-				trace(tk);
 				ui.OpenDeclaration.proc(editor.session, pos, tk);
 			}
 		});
