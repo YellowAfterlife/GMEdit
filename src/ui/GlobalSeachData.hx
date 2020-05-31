@@ -24,7 +24,9 @@ class GlobalSeachData {
 	public function new(opt:GlobalSearchOpt) {
 		options = opt;
 	}
-	private static var sync_rx = new RegExp("// in @\\[(.+):(\\d+)\\]:\r?\n(.*)", "g");
+	private static var sync_rx = new RegExp("// in @\\[(.+):(\\d+)\\]"
+		+ "(?:\\s*\\(.*?\\))?"
+	+ ":\r?\n(.*)", "g");
 	public function sync(code:String) {
 		var rx = sync_rx;
 		rx.lastIndex = 0;

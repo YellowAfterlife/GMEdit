@@ -15,6 +15,7 @@ import js.html.InputElement;
 import js.html.KeyboardEvent;
 import parsers.GmlExtLambda;
 import parsers.GmlReader;
+import tools.CharCode;
 import tools.Dictionary;
 import tools.NativeString;
 import ui.GlobalSeachData;
@@ -98,6 +99,7 @@ using tools.HtmlTools;
 		if (term == "") return;
 		var results = "";
 		var found = 0;
+		var checkRefKind = opt.checkRefKind;
 		var repl:Dynamic = opt.replaceBy;
 		var filterFn:Function = opt.findFilter;
 		var ctxFilter = opt.headerFilter;
@@ -122,6 +124,7 @@ using tools.HtmlTools;
 			} else lambdaPre = null;
 			currentPath = path;
 			var q = new GmlReader(code);
+			var qSqb:GmlReader = null;
 			var start = 0;
 			var row = 0;
 			var ctxName = name;
@@ -164,7 +167,13 @@ using tools.HtmlTools;
 							saveItems.push(saveItem);
 							saveCtxItems.push(saveItem);
 							ctxLast = ctxLink;
-							var head = '\n\n// in @[$ctxLink]:\n' + line;
+							var head = '\n\n// in @[$ctxLink]';
+							if (checkRefKind) {
+								var mtEnd = ofs + mt[0].length;
+								var rk = tools.GmlCodeTools.getReferenceKind(q.source, ofs, mtEnd);
+								head += " (" + rk.toFullString() + ")";
+							}
+							head += ':\n' + line;
 							if (isRepl) {
 								var next:String;
 								if (isReplFn) {
@@ -296,6 +305,7 @@ using tools.HtmlTools;
 			checkShaders: false,
 			checkExtensions: true,
 			expandLambdas: true,
+			checkRefKind: true,
 		});
 	}
 	public static function toggle() {
@@ -444,6 +454,7 @@ typedef GlobalSearchOpt = {
 	checkExtensions:Bool,
 	expandLambdas:Bool,
 	?headerFilter:EitherType<RegExp, GlobalSearchCtxFilter>,
+	?checkRefKind:Bool,
 	?errors:String,
 };
 typedef GlobalSearchCtxFilter = (ctx:String, path:String)->Bool;

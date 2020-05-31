@@ -472,37 +472,16 @@ class GmlReader extends StringReader {
 		}
 		return n;
 	}
+	
 	/**
+	 * Returns whether the expression is being written (true) or read (false)
 	 * `a = {p0}v{p1} + 1;` -> false
 	 * `{p0}v{p1} = 1;` -> true
 	 * `++{p0}v{p1}` -> true
+	 * Checks both forward and by backtracking
 	 */
 	public function checkWrites(p0:Int, p1:Int) {
-		// prefix:
-		while (--p0 >= 0) switch (get(p0)) {
-			case " ".code, "\t".code, "\r".code, "\n".code: { };
-			case "+".code: if (get(--p0) == "+".code) return true; else break;
-			case "-".code: if (get(--p0) == "-".code) return true; else break;
-			default: break;
-		}
-		// postfix/setop:
-		while (p1 < length) switch (get(p1++)) {
-			case " ".code, "\t".code, "\r".code, "\n".code: { };
-			case "=".code: return get(p1) != "=".code;
-			case "+".code: switch (get(p1)) {
-				case "+".code, "=".code: return true;
-				default: return false;
-			};
-			case "-".code: switch (get(p1)) {
-				case "-".code, "=".code: return true;
-				default: return false;
-			};
-			case "*".code, "/".code, "%".code, "^".code, "|".code, "&".code: {
-				return get(p1) == "=".code;
-			};
-			default: return false;
-		}
-		return false;
+		return tools.GmlCodeTools.isWrite(source, p0, p1);
 	}
 	
 	/** offset to row+column */
