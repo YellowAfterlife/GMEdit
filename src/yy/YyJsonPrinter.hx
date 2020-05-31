@@ -58,7 +58,7 @@ class YyJsonPrinter {
 	}
 	
 	static var indentString:String = "    ";
-	static function stringify_rec(obj:Dynamic, indent:Int, compact:Bool):String {
+	static function stringify_rec(obj:Dynamic, indent:Int, compact:Bool, ?digits:Int):String {
 		if (obj == null) { // also hits "undefined"
 			return "null";
 		}
@@ -86,7 +86,8 @@ class YyJsonPrinter {
 		else if (Reflect.isObject(obj)) {
 			var indentString = YyJsonPrinter.indentString;
 			var r = (compact ? "{" : "{\r\n" + indentString.repeat(++indent));
-			var orderedFields:Array<String> = Reflect.field(obj, "hxOrder");
+			var orderedFields = (obj:YyBase).hxOrder;
+			var fieldDigits = (obj:YyBase).hxDigits;
 			var found = 0, sep = false;
 			if (orderedFields == null) {
 				if (Reflect.hasField(obj, "mvc")) {
@@ -99,6 +100,7 @@ class YyJsonPrinter {
 			if (isOrdered == null) {
 				isOrdered = new Dictionary();
 				isOrdered["hxOrder"] = true;
+				isOrdered["hxDigits"] = true;
 				for (field in orderedFields) isOrdered[field] = true;
 				isOrderedCache[orderedFields] = isOrdered;
 			}
@@ -112,7 +114,9 @@ class YyJsonPrinter {
 				}
 				found++;
 				r += stringify_string(field) + (compact ? ":" : ": ")
-					+ stringify_rec(Reflect.field(obj, field), indent, compact);
+					+ stringify_rec(Reflect.field(obj, field), indent, compact,
+						fieldDigits != null ? fieldDigits[field] : null
+					);
 				if (tcs) r += ",";
 			}
 			//
@@ -132,7 +136,9 @@ class YyJsonPrinter {
 			return r + (compact ? "}" : "\r\n" + indentString.repeat(--indent) + "}");
 		}
 		else {
-			return Json.stringify(obj);
+			if (digits != null && Std.is(obj, Int)) {
+				return obj + "." + NativeString.repeat("0", digits);
+			} else return Json.stringify(obj);
 		}
 	}
 	

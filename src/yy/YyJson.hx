@@ -28,8 +28,9 @@ class YyJson {
 		}
 		return false;
 	}
-	public static function parse(src:String):Dynamic {
-		if (isExtJson(src)) {
+	public static function parse(src:String, ?isExt:Bool):Dynamic {
+		if (isExt == null) isExt = isExtJson(src);
+		if (isExt) {
 			return YyJsonParser.parse(src);
 		} else return Json.parse(src);
 	}

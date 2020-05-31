@@ -1,4 +1,5 @@
 package yy;
+import haxe.DynamicAccess;
 
 /**
  * ...
@@ -13,7 +14,9 @@ typedef YyBase = {
 	// newer:
 	?resourceType:String,
 	?resourceVersion:String,
+	?tags:Array<String>,
 	
 	// field order for YyJson
 	?hxOrder:Array<String>,
+	?hxDigits:DynamicAccess<Int>,
 };

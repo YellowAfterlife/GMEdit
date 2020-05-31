@@ -1,12 +1,17 @@
 package yy;
+import haxe.DynamicAccess;
+import haxe.extern.EitherType;
 import js.lib.RegExp;
 import parsers.GmlObjectProperties;
+import tools.NativeString;
+import yy.YyJson;
 import yy.YyObject;
 import gml.Project;
 import haxe.Json;
 import tools.Aliases;
 import tools.Dictionary;
 import parsers.GmlReader;
+import yy.YyResourceRef;
 
 /**
  * ...
@@ -50,12 +55,26 @@ class YyObjectProperties {
 	public static function get(o:YyObject):String {
 		var out = GmlObjectProperties.header;
 		var v22 = YyTools.isV22(o);
-		function addID(key:String, val:YyGUID):Void {
+		function addID(key:String, val:EitherType<YyResourceRef, YyGUID>):Void {
 			out += '\n$key = ';
-			if (val.isValid()) {
-				var res = Project.current.yyResources[val];
+			var valid:Bool, vr:YyResourceRef;
+			if (!v22) {
+				vr = (val:YyResourceRef);
+				if (val != null) {
+					valid = vr.name != null && vr.name != "";
+				} else valid = false;
+			} else {
+				valid = (val:YyGUID).isValid();
+				vr = null;
+			}
+			if (valid) {
+				var res = Project.current.yyResources[v22 ? val : vr.name];
 				if (res != null) {
-					out += res.Value.resourceName + ";";
+					if (v22) {
+						out += res.Value.resourceName + ";";
+					} else {
+						out += res.id.name + ";";
+					}
 				} else out += '"$val"; // amiss';
 			} else out += "-1;";
 		}
@@ -89,7 +108,7 @@ class YyObjectProperties {
 		}
 		//
 		if (o.properties != null) for (prop in o.properties) {
-			out += '\n' + prop.varName + ':';
+			out += '\n' + (v22 ? prop.varName : prop.name) + ':';
 			var found = true;
 			function printExpr(x:String):String {
 				if (rxLString.test(x)) {
@@ -186,15 +205,35 @@ class YyObjectProperties {
 					} else out += "unknown = @'" + json + "'";
 				};
 			}
-			out += '; // ' + prop.id;
+			out += v22 ? '; // ' + prop.id : ';';
 		}
 		//
 		return out;
 	}
+	static var propFieldOrder23:Array<String> = [
+		"varType", "value",
+		"rangeEnabled", "rangeMin", "rangeMax",
+		"listItems", "multiselect",
+		"filters",
+	].concat(YyJsonPrinter.mvcOrder23);
+	static var digitCount23:DynamicAccess<Int> = { "rangeMin": 1, "rangeMax": 1 };
 	public static function set(o:YyObject, code:String) {
 		var v22 = YyTools.isV22(o);
-		function id(v:GmlObjectPropertiesValue, t:String):YyGUID {
+		function id(v:GmlObjectPropertiesValue, t:String):EitherType<YyGUID, YyResourceRef> {
 			var id:YyGUID, res:YyProjectResource;
+			inline function checkResourceType():Void {
+				if (res == null) return;
+				if (v22) {
+					if (res.Value.resourceType != t) {
+						throw 'Wrong resource type - expected $t, got ' + res.Value.resourceType;
+					}
+				} else {
+					var pathPrefix = t.substring(2).toLowerCase() + "s/";
+					if (!NativeString.startsWith(res.id.path, pathPrefix)) {
+						throw 'Wrong resource type - expected $pathPrefix, got ' + res.id.path;
+					}
+				}
+			}
 			switch (v) {
 				case Ident("noone"): return YyGUID.zero;
 				case Number(f): {
@@ -203,23 +242,19 @@ class YyObjectProperties {
 					} else throw "Can't assign numeric IDs aside of -1";
 				};
 				case CString(s): {
-					if (YyGUID.test.test(s)) {
+					if (v22 ? YyGUID.test.test(s) : s != "") {
 						id = cast s;
 						res = Project.current.yyResources[id];
-						if (res != null && res.Value.resourceType != t) {
-							throw 'Wrong resource type - expected $t, got ' + res.Value.resourceType;
-						}
-						return id;
+						checkResourceType();
+						return v22 ? id : res.id;
 					} else throw "Expected a GUID";
 				};
 				case Ident(v): {
 					id = Project.current.yyResourceGUIDs[v];
 					if (id == null) throw 'Could not find $v in the project';
 					res = Project.current.yyResources[id];
-					if (res != null && res.Value.resourceType != t) {
-						throw 'Wrong resource type - expected $t, got ' + res.Value.resourceType;
-					}
-					return id;
+					checkResourceType();
+					return v22 ? id : res.id;
 				};
 				default: throw 'Expected an identifier, got ' + v.getName();
 			}
@@ -265,15 +300,41 @@ class YyObjectProperties {
 		var props:Array<YyObjectProperty> = [];
 		function propProc(name:String, type:String, guid:YyGUID, params:Array<GmlObjectPropertiesValue>, value:GmlObjectPropertiesValue):ErrorText {
 			try {
-				if (guid == null) {
-					if (o.properties != null)
-					for (prop in o.properties)
-					if (prop.varName == name) {
-						guid = prop.id;
-						break;
-					}
-					if (guid == null) guid = new YyGUID();
+				var orig:YyObjectProperty = null;
+				if (o.properties != null) for (prop in o.properties) {
+					if ((v22 ? prop.varName : prop.name) != name) continue;
+					orig = prop;
+					if (v22 && guid == null) guid = prop.id;
+					break;
 				}
+				if (v22 && guid == null) guid = new YyGUID();
+				//
+				function addProp(prop:YyObjectProperty) {
+					if (v22) {
+						prop.id = guid;
+						prop.modelName = "GMObjectProperty";
+						prop.mvc = "1.0";
+						prop.varName = name;
+						if (prop.resourceFilter == null) {
+							prop.resourceFilter = 1023;
+						}
+					} else {
+						prop.resourceType = "GMObjectProperty";
+						prop.resourceVersion = "1.0";
+						prop.name = name;
+						prop.hxOrder = propFieldOrder23;
+						prop.hxDigits = digitCount23;
+						if (prop.listItems == null) prop.listItems = [];
+						if (orig == null) {
+							prop.tags = [];
+							prop.filters = [];
+						} else {
+							tools.NativeObject.fillDefaults(prop, orig);
+						}
+					}
+					props.push(prop);
+				}
+				//
 				switch (type) {
 					case "real", "int": {
 						var asInt = type == "int";
@@ -286,36 +347,26 @@ class YyObjectProperties {
 							rangeMax = asInt ? int(params[1]) : real(params[1]);
 							rangeEnabled = true;
 						}
-						props.push({
-							id: guid,
-							modelName: "GMObjectProperty",
-							mvc: "1.0",
+						addProp({
 							listItems: null,
 							multiselect: false,
 							rangeEnabled: rangeEnabled,
 							rangeMax: rangeMax,
 							rangeMin: rangeMin,
-							resourceFilter: 1023,
 							value: Json.stringify(asInt ? int(value) : real(value)),
-							varName: name,
 							varType: asInt ? 1 : 0,
 						});
 					};
 					case "string", "expr": {
 						if (params != null) throw type + " has no params";
 						var asExpr = type == "expr";
-						props.push({
-							id: guid,
-							modelName: "GMObjectProperty",
-							mvc: "1.0",
+						addProp({
 							listItems: null,
 							multiselect: false,
 							rangeEnabled: false,
 							rangeMax: 10,
 							rangeMin: 0,
-							resourceFilter: 1023,
 							value: asExpr ? expr(value) : string(value),
-							varName: name,
 							varType: asExpr ? 4 : 2,
 						});
 					};
@@ -337,10 +388,7 @@ class YyObjectProperties {
 							case Number(f): Json.stringify(f);
 							default: throw 'Expected an asset, got $value';
 						};
-						props.push({
-							id: guid,
-							modelName: "GMObjectProperty",
-							mvc: "1.0",
+						addProp({
 							listItems: null,
 							multiselect: false,
 							rangeEnabled: false,
@@ -348,24 +396,18 @@ class YyObjectProperties {
 							rangeMin: 0,
 							resourceFilter: flags,
 							value: asset,
-							varName: name,
 							varType: 5,
 						});
 					};
 					case "bool": {
 						if (params != null) throw "String has no params";
-						props.push({
-							id: guid,
-							modelName: "GMObjectProperty",
-							mvc: "1.0",
+						addProp({
 							listItems: null,
 							multiselect: false,
 							rangeEnabled: false,
 							rangeMax: 10,
 							rangeMin: 0,
-							resourceFilter: 1023,
 							value: bool(value) ? "True" : "False",
-							varName: name,
 							varType: 3,
 						});
 					};
@@ -394,35 +436,25 @@ class YyObjectProperties {
 							default: out = expr(value);
 						}
 						//
-						props.push({
-							id: guid,
-							modelName: "GMObjectProperty",
-							mvc: "1.0",
+						addProp({
 							listItems: items,
 							multiselect: multi,
 							rangeEnabled: false,
 							rangeMax: 10,
 							rangeMin: 0,
-							resourceFilter: 1023,
 							value: out,
-							varName: name,
 							varType: 6,
 						});
 					};
 					case "color": {
 						if (params != null) throw "String has no params";
-						props.push({
-							id: guid,
-							modelName: "GMObjectProperty",
-							mvc: "1.0",
+						addProp({
 							listItems: null,
 							multiselect: false,
 							rangeEnabled: false,
 							rangeMax: 10,
 							rangeMin: 0,
-							resourceFilter: 1023,
 							value: string(value),
-							varName: name,
 							varType: 7,
 						});
 					};
