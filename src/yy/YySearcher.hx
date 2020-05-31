@@ -72,7 +72,7 @@ class YySearcher {
 					filesLeft += 1;
 					pj.readTextFile(resPath, function(error, data) {
 						if (error == null) try {
-							var obj:YyObject = haxe.Json.parse(data);
+							var obj:YyObject = YyJson.parse(data, !v22);
 							var code = obj.getCode(resFull);
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
@@ -90,7 +90,7 @@ class YySearcher {
 					filesLeft += 1;
 					pj.readTextFile(resPath, function(error, data) {
 						if (error == null) try {
-							var tl:YyTimeline = haxe.Json.parse(data);
+							var tl:YyTimeline = YyJson.parse(data, !v22);
 							var code = tl.getCode(resFull);
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
