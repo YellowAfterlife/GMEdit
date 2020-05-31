@@ -82,33 +82,51 @@ import js.Syntax;
 		return replaceExt(s, escapeProp_1, "\\$1");
 	}
 	
+	/**
+	 * Returns a string with a substring inserted at a position.
+	 */
 	public static function insert(s:String, i:Int, sub:String) {
 		return s.substring(0, i) + sub + s.substring(i);
 	}
 	
-	/** (" text") -> " " */
+	/**
+	 * Returns spaces at the start of a string.
+	 * (" text") -> " "
+	 */
 	public static function getPadLeft(s:String):String {
 		return s.substring(0, s.length - trimLeft(s).length);
 	}
 	
-	/** ("text ") -> " " */
+	/**
+	 * Returns spaces at the end of a string.
+	 * ("text ") -> " "
+	 */
 	public static function getPadRight(s:String):String {
 		return s.substring(trimRight(s).length);
 	}
 	
-	/** (" text", "!!") -> " !!text" */
+	/**
+	 * Inserts a substring at the start of a string, after any spaces.
+	 * (" text", "!!") -> " !!text"
+	 */
 	public static function insertAtPadLeft(s:String, what:String):String {
 		var s1 = trimLeft(s);
 		return s.substring(0, s.length - s1.length) + what + s1;
 	}
 	
-	/** ("text ", "!") -> "text! " */
+	/**
+	 * Inserts a substring at the end of a string, before any spaces.
+	 * ("text ", "!") -> "text! "
+	 */
 	public static function insertAtPadRight(s:String, what:String):String {
 		var s1 = trimRight(s);
 		return s1 + what + s.substring(s1.length);
 	}
 	
-	/** ("  text ", "1, "2") -> "  1text2 " */
+	/**
+	 * Inserts substrings at start/end of a string, excluding spaces.
+	 * ("  text ", "1, "2") -> "  1text2 "
+	 */
 	public static function insertAtPadBoth(s:String, atStart:String, atEnd:String):String {
 		var s1 = trimLeft(s);
 		var p1 = s.substring(0, s.length - s1.length);
@@ -117,6 +135,12 @@ import js.Syntax;
 		return p1 + atStart + s2 + atEnd + p2;
 	}
 	
+	/**
+	 * "non-zero-size concat"
+	 * ("a", "+", "b") -> "a+b"
+	 * (null, "+", "b") -> "b"
+	 * ("", "+", "b") -> "b"
+	 */
 	public static function nzcct(s:String, sep:String, add:String):String {
 		if (s == null || s == "") return add;
 		return s + sep + add;
@@ -129,7 +153,7 @@ import js.Syntax;
 		return yy.YyJson.stringify(value);
 	}
 	
-	/// Translates a single position to row-column
+	/** Translates a single position to a row-column pair */
 	public static function offsetToPos(s:String, ofs:Int):AcePos {
 		var rowStart = s.lastIndexOf("\n", ofs);
 		var col = ofs - rowStart;
