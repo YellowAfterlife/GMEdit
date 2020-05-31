@@ -24,4 +24,6 @@ typedef YySpriteImpl = {
 typedef YySpriteFrame = {
 	>YyBase,
 	SpriteId:YyGUID,
+	/** 2.3, but still an ID */
+	?name:String,
 };

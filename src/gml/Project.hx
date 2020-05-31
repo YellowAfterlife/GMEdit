@@ -574,11 +574,14 @@ import ui.treeview.TreeView;
 					if (yySpriteURLs.exists(g)) {
 						r = yySpriteURLs[g];
 					} else try {
-						var spritePath = yyResources[g].Value.resourcePath;
+						var spritePath = yyUsesGUID
+							? yyResources[g].Value.resourcePath
+							: yyResources[g].id.path;
 						var sprite:YySprite = readYyFileSync(spritePath);
 						var frame = sprite.frames[0];
 						if (frame != null) {
-							var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
+							var frameName:String = yyUsesGUID ? frame.id : frame.name;
+							var framePath = Path.join([Path.directory(spritePath), frameName + ".png"]);
 							r = getImageURL(framePath);
 						} else r = null;
 						yySpriteURLs.set(g, r);
