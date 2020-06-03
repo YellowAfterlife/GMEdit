@@ -16,6 +16,7 @@ import tools.NativeString;
 import tools.JsTools;
 import ui.treeview.TreeView;
 import ace.AceMacro.jsRx;
+import yy.YyResourceRef;
 
 /**
  * ...
@@ -180,7 +181,8 @@ import ace.AceMacro.jsRx;
 					resourceType: "GMEvent",
 					resourceVersion: "1.0",
 					isDnD: false,
-					collisionObjectId: { name: obj, path: obj },
+					collisionObjectId: obj != null && obj != ""
+						? { name:obj, path:'objects/$obj/$obj.yy' } : null,
 					parent: { name: this.name, path: 'objects/${this.name}/${this.name}.yy' },
 					eventType: idat.type,
 					eventNum: idat.numb != null ? idat.numb : 0,
