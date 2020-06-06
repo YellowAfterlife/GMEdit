@@ -33,7 +33,11 @@ class GmlFuncDoc {
 	
 	var minArgsCache:Null<Int> = null;
 	
-	static var rxIsOpt:RegExp = ace.AceMacro.jsRx(~/^\s*(?:\[|\?|\.\.\.)/);
+	static var rxIsOpt:RegExp = new RegExp("^\\s*(?:"
+		+ "\\[" // [arg]
+		+ "|\\?" // ?arg
+		+ "|\\.\\.\\." // ...rest
+	+ ")");
 	public var minArgs(get, never):Int;
 	private function get_minArgs():Int {
 		if (minArgsCache != null) return minArgsCache;
@@ -323,35 +327,50 @@ class GmlFuncDoc {
 		hasReturn = hasRet;
 	}
 	
-	/** A cheaper version of procCode that just figures out hasReturn and that's it */
-	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int) {
+	static var procHasReturn_rxHasArgArray:RegExp = new RegExp("\\bargument\\b\\s*\\[");
+	/** A cheaper version of procCode that just figures out hasReturn and whether arguments might be optional */
+	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int, ?isAuto:Bool) {
 		var start = from;
 		var till:Int = _till != null ? _till : gml.length;
 		var q = new GmlReader(gml);
 		var chunk:GmlCode;
 		var hasRetRx = fromCode_hasRet;
+		var seekHasRet = true;
+		var seekArg = isAuto && args.length > 0 && !rest;
+		var hasArgRx = procHasReturn_rxHasArgArray;
 		q.pos = from;
 		while (q.pos < till) {
 			var p = q.pos, n;
 			var n = q.skipCommon_inline();
 			if (n >= 0) {
 				chunk = q.substring(start, p);
-				if (hasRetRx.test(chunk)) {
+				if (seekHasRet && hasRetRx.test(chunk)) {
+					seekHasRet = false;
 					hasReturn = true;
 					if (post == ")") post = ")➜";
-					return;
+					if (!seekArg) return;
+				}
+				if (seekArg && hasArgRx.test(chunk)) {
+					seekArg = false;
+					minArgsCache = 0;
+					if (!seekHasRet) return;
 				}
 				start = q.pos;
 			} else q.skip();
 		}
 		chunk = q.substring(start, q.pos);
-		var hasRet = hasRetRx.test(chunk);
-		if (hasRet) {
-			if (post == ")") post = ")➜";
-		} else {
-			if (post == ")➜") post = ")";
+		if (seekHasRet) {
+			var hasRet = hasRetRx.test(chunk);
+			if (hasRet) {
+				if (post == ")") post = ")➜";
+			} else {
+				if (post == ")➜") post = ")";
+			}
+			hasReturn = hasRet;
 		}
-		hasReturn = hasRet;
+		if (seekArg && hasArgRx.test(chunk)) {
+			minArgsCache = 0;
+		}
 	}
 	
 	static var autogen_argi = [for (i in 0 ... 16) new RegExp('\\bargument$i\\b')];

@@ -108,8 +108,10 @@ class GmlSeeker {
 		var canLam = notLam && project.canLambda();
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var cubDepth:Int = 0; // depth of {}
+		var hasFunctionLiterals = v.config.additionalKeywords.contains("function");
 		var funcsAreGlobal:Bool = Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
 		var localKind = notLam ? "local" : "sublocal";
+		var subLocalDepth:Null<Int> = null;
 		if (project.properties.lambdaMode == Scripts) {
 			if (orig.contains("/" + GmlExtLambda.lfPrefix)) {
 				canLam = true;
@@ -143,8 +145,18 @@ class GmlSeeker {
 					case ")".code: if (flags.has(Par1)) return ")";
 					case "[".code: if (flags.has(Sqb0)) return "[";
 					case "]".code: if (flags.has(Sqb1)) return "]";
-					case "{".code: cubDepth--; if (flags.has(Cub0)) return "{";
-					case "}".code: cubDepth++; if (flags.has(Cub1)) return "}";
+					case "{".code: {
+						cubDepth++;
+						if (flags.has(Cub0)) return "{";
+					};
+					case "}".code: {
+						cubDepth--;
+						if (subLocalDepth != null && cubDepth <= subLocalDepth) {
+							localKind = "local";
+							subLocalDepth = null;
+						}
+						if (flags.has(Cub1)) return "}";
+					}
 					case "=".code: if (flags.has(SetOp) && q.peek() != "=".code) return "=";
 					case "/".code: switch (q.peek()) {
 						case "/".code: {
@@ -219,7 +231,7 @@ class GmlSeeker {
 									return find(flags);
 								} else return null;
 							}
-							if (flags.has(Define) && id == "function") return id;
+							if (hasFunctionLiterals && flags.has(Define) && id == "function") return id;
 							if (flags.has(Ident)) return id;
 						}
 					};
@@ -230,6 +242,7 @@ class GmlSeeker {
 		var mainComp:AceAutoCompleteItem = main != null ? GmlAPI.gmlAssetComp[main] : null;
 		var s:String, name:String, start:Int = 0;
 		var doc:GmlFuncDoc = null;
+		var docIsAutoFunc = false;
 		/**  */
 		inline function linkDoc():Void {
 			out.docList.push(doc);
@@ -243,7 +256,7 @@ class GmlSeeker {
 					if (mainComp != null) mainComp.doc = doc.getAcText();
 				} else {
 					// we picked up some JSDOc args, now let's see if it returns anything
-					doc.procHasReturn(src, start, q.pos);
+					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
 				}
 			} else if (main != null && main != "") {
 				// no doc yet, but there should be, so let's scrap what we may
@@ -256,6 +269,7 @@ class GmlSeeker {
 				if (mainComp != null) mainComp.doc = doc.getAcText();
 			}
 			doc = null;
+			docIsAutoFunc = false;
 		}
 		function procLambdaIdent(s:GmlName, locals:GmlLocals):Void {
 			var seekData = GmlExtLambda.seekData;
@@ -291,11 +305,22 @@ class GmlSeeker {
 		inline function q_restore():Void {
 			q.setTo(q_swap);
 		}
+		inline function procFuncLiteralArgs() {
+			if (find(Par0) == "(") {
+				while (q.loop) {
+					var s = find(Ident | Par1);
+					if (s == ")" || s == null) break;
+					locals.add(s, localKind);
+				}
+			}
+		}
 		//
 		var p:Int, flags:Int;
 		var c:CharCode, mt:RegExpMatch;
-		while (q.loop) {
-			s = find(Ident | Doc | Define | Macro);
+		function doLoop(?exitAtCubDepth:Int) while (q.loop) {
+			flags = Ident | Doc | Define | Macro;
+			if (exitAtCubDepth != null) flags |= Cub1;
+			s = find(flags);
 			if (s == null) {
 				//
 			}
@@ -361,13 +386,13 @@ class GmlSeeker {
 				}
 			}
 			else switch (s) {
+				case "}": if (cubDepth <= exitAtCubDepth) return;
 				case "#define", "#target", "function": {
 					var isDefine = (s == "#define");
 					var isFunc = (s == "function");
 					if (isFunc && funcsAreGlobal && cubDepth == 0) isDefine = true;
 					// we don't have to worry about #event/etc because they
 					// do not occur in files themselves
-					flushDoc();
 					var fname:String;
 					if (isFunc) {
 						q.skipSpaces0();
@@ -378,11 +403,14 @@ class GmlSeeker {
 						} else fname = null;
 					} else fname = find(Ident);
 					if (isFunc && (!isDefine || fname == null)) {
-						if (find(Line | Par0) == "(") {
-							find(Line | Par1);
+						if (cubDepth > 0 || !funcsAreGlobal) {
+							subLocalDepth = cubDepth;
+							localKind = "sublocal";
 						}
+						procFuncLiteralArgs();
 						continue;
 					}
+					flushDoc();
 					main = fname;
 					//
 					start = q.pos;
@@ -405,6 +433,7 @@ class GmlSeeker {
 							}
 							if (!isFunc || foundArg) {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
+								docIsAutoFunc = isFunc;
 								linkDoc();
 							}
 						}
@@ -561,11 +590,25 @@ class GmlSeeker {
 								}
 								switch (s) {
 									case "(", "[", "{": depth += 1;
-									case ")", "]", "}": depth -= 1;
+									case ")", "]", "}": {
+										depth -= 1;
+										if (depth < 0) {
+											q.pos--;
+											break;
+										}
+									};
 									case ",": if (depth == 0) break;
 									case ";": exit = true; break;
 									default: { // ident
-										if (GmlAPI.kwFlow[s]) {
+										if (hasFunctionLiterals && s == "function") {
+											var oldLocalKind = localKind;
+											if (cubDepth > 0 || !funcsAreGlobal) {
+												localKind = "sublocal";
+											}
+											procFuncLiteralArgs();
+											doLoop(cubDepth);
+											localKind = oldLocalKind;
+										} else if (GmlAPI.kwFlow[s]) {
 											q_restore();
 											exit = true;
 											break;
@@ -684,7 +727,8 @@ class GmlSeeker {
 					}
 				};
 			} // switch (s)
-		} // while
+		} // while in doLoop
+		doLoop();
 		flushDoc();
 		//
 		if (project.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
