@@ -108,7 +108,10 @@ class GmlSeeker {
 		var canLam = notLam && project.canLambda();
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var cubDepth:Int = 0; // depth of {}
-		var hasFunctionLiterals = v.config.additionalKeywords.contains("function");
+		var hasFunctionLiterals = {
+			var kws = v.config.additionalKeywords;
+			kws != null && kws.contains("function");
+		};
 		var funcsAreGlobal:Bool = Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
 		var localKind = notLam ? "local" : "sublocal";
 		var subLocalDepth:Null<Int> = null;
