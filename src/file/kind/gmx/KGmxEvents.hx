@@ -68,6 +68,15 @@ class KGmxEvents extends KGml {
 				}
 			}
 		}
+		//
+		{ // hack: use locals for properties-specific variables
+			var locals = new GmlLocals();
+			out.locals.set("properties", locals);
+			for (prop in GmxObjectProperties.propertyList) {
+				locals.add(prop, "property.variable", "(object property)");
+			}
+		};
+		//
 		GmlSeeker.finish(path, out);
 		return true;
 	}

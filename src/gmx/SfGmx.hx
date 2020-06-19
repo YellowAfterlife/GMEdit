@@ -80,6 +80,21 @@ class SfGmx {
 		}
 		return r;
 	}
+	
+	/** Updates inner text of first child element with given name */
+	public function setChildText(elName:String, val:String):Void {
+		for (q in children) if (q.name == elName) {
+			q.text = val;
+			return;
+		}
+		children.push(new SfGmx(elName, val));
+	}
+	public function setChildInt(elName:String, val:Int):Void {
+		setChildText(elName, "" + val);
+	}
+	public function setChildFloat(elName:String, val:Float):Void {
+		setChildText(elName, "" + val);
+	}
 	//
 	public inline function get(attr:String):String {
 		return attrMap[attr];

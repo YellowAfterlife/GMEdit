@@ -3,9 +3,11 @@ import gml.*;
 import electron.FileWrap;
 import gml.file.GmlFile;
 import gmx.GmxEvent;
+import gmx.GmxObjectProperties;
 import gmx.SfGmx;
 import haxe.io.Path;
 import parsers.GmlEvent;
+import tools.NativeArray;
 using StringTools;
 
 /**
@@ -15,7 +17,8 @@ using StringTools;
 class GmxObject {
 	public static var errorText:String;
 	public static function getCode(gmx:SfGmx):String {
-		var out = "";
+		var out = GmxObjectProperties.get(gmx);
+		if (out != "") out += "\n";
 		var errors = "";
 		var objectIDs = GmlAPI.gmlAssetIDs["object"];
 		for (evOuter in gmx.findAll("events")) {
@@ -69,6 +72,20 @@ class GmxObject {
 		var eventData = GmlEvent.parse(gmlCode, GmlVersion.v1);
 		if (eventData == null) {
 			errorText = GmlEvent.parseError;
+			return false;
+		}
+		//
+		var filterErrors = "";
+		NativeArray.filterSelf(eventData, function(item) {
+			var idat:GmlEventData = item.data;
+			if (idat.type != GmlEvent.typeMagic) return true;
+			if (idat.numb != GmlEvent.kindMagicProperties) return true;
+			var err = GmxObjectProperties.set(gmx, item.code.join("\n"));
+			if (err != null) filterErrors += err;
+			return false;
+		});
+		if (filterErrors != "") {
+			errorText = filterErrors;
 			return false;
 		}
 		//
