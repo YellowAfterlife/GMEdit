@@ -8,6 +8,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlScopes;
 import gml.file.GmlFile;
+import js.lib.RegExp;
 import parsers.GmlKeycode;
 import parsers.GmlEvent;
 import shaders.ShaderAPI;
@@ -29,12 +30,14 @@ using tools.NativeString;
 	public var minLength:Int = AceWrapCompleterMinLength.Default;
 	public var dotKind:AceWrapCompleterDotKind = DKNone;
 	public var colKind:AceWrapCompletionColKind = CKNone;
+	public var identifierRegexps:Array<RegExp>;
 	
 	public function new(
 		items:AceAutoCompleteItems, filters:Array<String>, not:Bool,
 		modeFilter:AceSession->Bool
 	) {
 		items.autoSort();
+		identifierRegexps = [new RegExp("[_"+"a-z"+"A-Z"+"0-9"+"\\u00A2-\\uFFFF]")];
 		this.items = items;
 		this.tokenFilter = Dictionary.fromKeys(filters, true);
 		this.tokenFilterComment = tokenFilter["comment"];
