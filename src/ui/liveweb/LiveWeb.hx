@@ -141,7 +141,7 @@ class LiveWeb {
 		};
 		//
 		document.getElementById("share").onclick = function() {
-			var params = ["mode=" + modeEl.value];
+			var params = ["mode=" + modeEl.value, "ver=" + verEl.value];
 			//
 			var src = Json.stringify(LiveWebState.getPairs());
 			var lzs = "tabs_lz=" + LZString.compressToEncodedURIComponent(src);
