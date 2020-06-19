@@ -698,13 +698,6 @@ class GmlSeeker {
 					if (GmlAPI.extKind[s] != null) continue;
 					if (GmlAPI.stdKind[s] != null) continue;
 					var skip = false, i;
-					// skip if it's `field.some`
-					i = q.pos - s.length;
-					while (--i >= 0) switch (q.get(i)) {
-						case " ".code, "\t".code, "\r".code, "\n".code: { };
-						case ".".code: skip = true; break;
-						default: break;
-					}
 					if (skip) continue;
 					// skip unless it's `some =` (and no `some ==`)
 					i = q.pos;
