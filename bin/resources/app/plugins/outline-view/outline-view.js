@@ -68,7 +68,7 @@
 			}
 		})(),
 		"ace/mode/markdown": (function() {
-			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}])/;
+			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}\s])/;
 			function update_dmd(file, pos) {
 				var row = pos.row;
 				var doc = file.codeEditor.session.doc;
