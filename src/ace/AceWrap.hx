@@ -1,4 +1,5 @@
 package ace;
+import ace.AceMacro;
 import ace.extern.*;
 import gml.file.GmlFile;
 import haxe.Constraints.Function;
@@ -15,6 +16,7 @@ import ui.ScrollMode;
  */
 @:forward @:forwardStatics
 abstract AceWrap(AceEditor) from AceEditor to AceEditor {
+	static var vimReady:Bool = false;
 	public function new(el:EitherType<String, Element>, ?o:AceWrapOptions) {
 		this = AceEditor.edit(el);
 		untyped {
@@ -32,6 +34,24 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		if (o.preferences != false) ui.Preferences.bindEditor(this);
 		if (o.scrollMode != false) new ScrollMode().bind(this);
 		if (o.dispatchEvent != false) plugins.PluginEvents.editorCreated({editor:this, options:o});
+		
+		// I don't know how I'm supposed to track Vim module loading up, so:
+		var setKeyboardHandler_base:js.lib.Function = cast this.keyBinding.setKeyboardHandler;
+		function setKeyboardHandler_hook(kb:Dynamic) {
+			if (Reflect.field(kb, "$id") == "ace/keyboard/vim" && !vimReady) {
+				var vim:Dynamic = AceWrap.require("ace/keyboard/vim");
+				if (vim != null) {
+					vim.Vim.defineEx('write', 'w', function(cm:Dynamic, params) {
+						var editor:AceWrap = cm.ace;
+						var file = editor.session.gmlFile;
+						if (file != null) file.save();
+					});
+					vimReady = true;
+				}
+			}
+			return setKeyboardHandler_base.apply(AceMacro.jsThis, AceMacro.jsArgs);
+		};
+		untyped this.keyBinding.setKeyboardHandler = setKeyboardHandler_hook;
 	}
 	//
 	public static inline function loadModule(path:String, fn:Dynamic->Void):Void {
@@ -146,6 +166,7 @@ extern class AceEditor {
 }
 extern class AceKeybinding {
 	public function getStatusText(e:AceWrap):String;
+	public function setKeyboardHandler(kb:Dynamic):Void;
 	public function addKeyboardHandler(kb:Dynamic):Void;
 	public function removeKeyboardHandler(kb:Dynamic):Void;
 }

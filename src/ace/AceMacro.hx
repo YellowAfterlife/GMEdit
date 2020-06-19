@@ -42,6 +42,16 @@ class AceMacro {
 		return null;
 		#end
 	}
+	
+	public static var jsArgs(get, never):Array<Dynamic>;
+	private static inline function get_jsArgs():Array<Dynamic> {
+		#if !macro
+		return js.Syntax.code("arguments");
+		#else
+		return null;
+		#end
+	}
+	
 	public static inline function jsOr<T>(a:T, b:T):T {
 		#if !macro
 		return js.Syntax.code("({0} || {1})", a, b);
