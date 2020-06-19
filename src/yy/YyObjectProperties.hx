@@ -23,7 +23,7 @@ class YyObjectProperties {
 		"visible", "solid", "persistent", "uses_physics",
 		"physics_density", "physics_restitution",
 		"physics_collision_group",
-		"physics_linear_damping", "physics_angular_damping",
+		"physics_linear_damping", "physics_angular_damping", "physics_friction",
 		"physics_sensor", "physics_start_awake", "physics_kinematic",
 		"physics_shape", "physics_shape_data",
 	];
@@ -96,6 +96,7 @@ class YyObjectProperties {
 			addPrim("physics_collision_group", o.physicsGroup);
 			addPrim("physics_linear_damping", o.physicsLinearDamping);
 			addPrim("physics_angular_damping", o.physicsAngularDamping);
+			addPrim("physics_friction", o.physicsFriction);
 			addPrim("physics_sensor", o.physicsSensor);
 			addPrim("physics_start_awake", o.physicsStartAwake);
 			addPrim("physics_kinematic", o.physicsKinematic);
@@ -487,6 +488,7 @@ class YyObjectProperties {
 					case "physics_collision_group": o.physicsGroup = int(val);
 					case "physics_linear_damping": o.physicsLinearDamping = real(val);
 					case "physics_angular_damping": o.physicsAngularDamping = real(val);
+					case "physics_friction": o.physicsFriction = real(val);
 					case "physics_sensor": o.physicsSensor = bool(val);
 					case "physics_start_awake": o.physicsStartAwake = bool(val);
 					case "physics_kinematic": o.physicsKinematic = bool(val);
