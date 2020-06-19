@@ -83,7 +83,6 @@ class FileDrag {
 		}
 		document.body.addEventListener("dragover", cancelDefault);
 		document.body.addEventListener("dragenter", cancelDefault);
-		document.body.addEventListener("dragleave", cancelDefault);
 		document.body.addEventListener("drop", function(e:DragEvent) {
 			e.preventDefault();
 			//Main.console.log(e.dataTransfer.files);
