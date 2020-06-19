@@ -15,6 +15,7 @@ import Main.document;
 import parsers.GmlExtLambda;
 import shaders.ShaderAPI;
 import tools.Dictionary;
+using tools.NativeString;
 
 /**
  * This handles everything about that status bar on the bottom of the code editor.
@@ -238,7 +239,7 @@ class AceStatusBar {
 			switch (tk.type) {
 				case "paren.lparen", "square.paren.lparen": depth += tk.value.length;
 				case "paren.rparen", "square.paren.rparen": depth -= tk.value.length;
-				case "punctuation.operator" if (tk.value == "," && depth == 0): argCurr += 1;
+				case "punctuation.operator" if (tk.value.contains(",") && depth == 0): argCurr += 1;
 			}
 			if (tk == ctk) break;
 			tk = iter.stepForward();
