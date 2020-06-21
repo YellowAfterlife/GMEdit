@@ -123,6 +123,11 @@ using tools.NativeString;
 							iter = new AceTokenIterator(session, pos.row, pos.column);
 							tk = iter.stepBackward();
 						}
+					} else if (dotKind == DKGlobal) {
+						if (tk.type == "globalfield") {
+							iter = new AceTokenIterator(session, pos.row, pos.column);
+							tk = iter.stepBackward();
+						}
 					}
 				}
 				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) continue;
