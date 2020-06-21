@@ -50,7 +50,7 @@ class AceWrapCommonCompleters {
 			"string", "string.quasi", "string.importpath", "numeric",
 			"scriptname",
 			"eventname", "eventkeyname", "eventtext",
-			"sectionname",
+			"sectionname", "regionname",
 			"momenttime", "momentname",
 			"macroname",
 			"namespace",
