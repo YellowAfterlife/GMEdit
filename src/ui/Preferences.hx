@@ -281,7 +281,7 @@ class Preferences {
 			ukSpelling: false,
 			compMatchMode: PrefMatchMode.StartsWith,
 			argsMagic: true,
-			argsFormat: "@param",
+			argsFormat: "",
 			argsStrict: false,
 			importMagic: true,
 			allowImportUndo: false,
