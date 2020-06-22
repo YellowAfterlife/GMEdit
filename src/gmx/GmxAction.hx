@@ -1,5 +1,7 @@
 package gmx;
+import gmx.SfGmx;
 import js.lib.RegExp;
+import parsers.GmlReader;
 using tools.NativeString;
 
 /**
@@ -21,11 +23,25 @@ class GmxAction {
 		inline function actionArg0():String {
 			return action.find("arguments").find("argument").find("string").text;
 		}
+		function actionArg(i:Int):String {
+			var arg = action.find("arguments").findAll("argument")[i];
+			return arg != null ? arg.find("string").text : null;
+		}
+		function actionArgs():Array<SfGmx> {
+			return action.find("arguments").findAll("argument");
+		}
 		inline function actionNot():Bool {
 			return action.find("isnot").text == "1";
 		}
 		var a:String;
 		switch (Std.parseInt(aid)) {
+			case 601: {
+				var args = actionArgs();
+				a = "action_execute_script " + args[0].find("script").text;
+				for (i in 1 ... args.length) {
+					a += ", " + args[i].find("string").text;
+				}
+			};
 			case 603: return actionArg0();
 			case 604: a = "action_inherited";
 			case 605: a = "// " + actionArg0();
@@ -71,8 +87,15 @@ class GmxAction {
 			action.addChild(arguments);
 			for (arg in d.args) {
 				var argument = new SfGmx("argument");
-				argument.addTextChild("kind", s(arg.kind, Text));
-				if (arg.s != null) argument.addTextChild("string", arg.s);
+				var kind:GmxActionArgKind = arg.kind;
+				if (kind == null) kind = Text;
+				argument.addTextChild("kind", "" + kind);
+				switch (kind) {
+					case Script: argument.addTextChild("script", arg.s);
+					default: {
+						if (arg.s != null) argument.addTextChild("string", arg.s);
+					};
+				}
 				arguments.addChild(argument);
 			}
 		}
@@ -104,6 +127,44 @@ class GmxAction {
 				return null;
 			}
 			switch (actName) {
+				case "action_execute_script": {
+					var args:Array<GmxActionArg> = [];
+					var first = true;
+					var q = new GmlReader(actData);
+					var depth = 0;
+					var start = 0;
+					inline function flush(p:Int) {
+						var s = q.substring(start, p);
+						if (first) {
+							first = false;
+							args.push({ kind: Script, s: s });
+						} else args.push({ kind: Snip, s: s });
+					}
+					while (q.loopLocal) {
+						var n = q.skipCommon_inline();
+						if (n >= 0) continue;
+						var c = q.read();
+						switch (c) {
+							case "(".code, "[".code: depth++;
+							case ")".code, "]".code: depth--;
+							case ",".code: {
+								if (depth == 0) {
+									flush(q.pos - 1);
+									if (q.peek() == " ".code) q.skip();
+									start = q.pos;
+								};
+							};
+							default: 
+						}
+					}
+					flush(q.pos);
+					return makeDndBlock({
+						id: 601,
+						fn: "action_execute_script",
+						who: "self",
+						args: args,
+					});
+				};
 				case "action_inherited": {
 					if (actData != "") return noArgs();
 					return makeDndFuncBlock(604, "action_inherited", null);
@@ -164,5 +225,7 @@ typedef GmxActionData = {
 }
 typedef GmxActionArg = { ?kind:Int, ?s:String };
 @:enum abstract GmxActionArgKind(Int) from Int to Int {
+	var Snip = 0;
 	var Text = 1;
+	var Script = 9;
 }
