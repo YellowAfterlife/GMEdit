@@ -153,7 +153,7 @@ class GmlExtArgsDoc {
 					if (text != "") text = " " + text;
 					text = " " + names[i] + text;
 					var type = types[i];
-					if (type != "") text = ' {$type}' + text;
+					if (type != "" && type != null) text = ' {$type}' + text;
 					insert.push({ row: row, text: '/// ' + meta + text });
 					addOffset += 1;
 					changed = true;
@@ -225,7 +225,7 @@ class GmlExtArgsDoc {
 									replace.push({
 										range: range,
 										next: "///" + beforeMeta + meta + afterMeta
-											+ (type != "" ? '{' + type + '}' + afterType : '')
+											+ (type != "" && type != null ? '{' + type + '}' + afterType : '')
 											+ name + (text != "" ? afterName + text : "")
 									});
 								}
