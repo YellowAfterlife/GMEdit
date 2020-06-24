@@ -35,17 +35,36 @@ class YyLoaderV22 {
 		var rootView:YyView = null;
 		var rxName = Project.rxName;
 		var treeLocation = new Dictionary<String>(); // GUID -> where at
+		var secondaryKeys = new Dictionary<YyProjectResource>();
+		var resourcePaths = new Dictionary<YyProjectResource>();
 		for (res in yyProject.resources) {
 			var key = res.Key;
 			var val = res.Value;
-			val.resourceName = rxName.replace(val.resourcePath, "$1");
+			var path = val.resourcePath;
+			val.resourceName = rxName.replace(path, "$1");
+			//
+			if (secondaryKeys.exists(val.id)) {
+				Main.console.error('Secondary resource ID collision for ${val.id}!'
+					+ '\nFirst path: ' + secondaryKeys[val.id].Value.resourcePath
+					+ '\nSecond path: ' + path
+					+ '\nGMS2 will deny to load your project unless you fix this.');
+			} else secondaryKeys[val.id] = res;
+			//
 			if (resources.exists(key)) {
 				Main.console.error('Resource ID collision for $key!'
 					+ '\nFirst path: ' + resources[key].Value.resourcePath
-					+ '\nSecond path: ' + val.resourcePath
+					+ '\nSecond path: ' + path
 					+ '\nGMS2 will deny to load your project unless you fix this.');
 			}
 			resources.set(key, res);
+			//
+			if (resourcePaths.exists(path)) {
+				Main.console.error('Resource path collision for $path!'
+					+ '\nFirst ID: ' + resourcePaths[path].Key
+					+ '\nSecond ID: ' + key
+					+ '\nGMS2 will deny to load your project unless you fix this.');
+			} else resourcePaths.set(path, res);
+			//
 			if (val.resourceType == "GMFolder") {
 				var view:YyView = project.readYyFileSync(val.resourcePath);
 				val.resourceName = view.folderName;

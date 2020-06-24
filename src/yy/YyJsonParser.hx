@@ -63,9 +63,12 @@ class YyJsonParser {
 						// if( field != null || comma == false ) invalidChar(); // +y: allowed
 						return obj;
 					case ':'.code:
-						if( field == null )
-							invalidChar();
-						Reflect.setField(obj,field,parseRec());
+						if( field == null ) invalidChar();
+						if (Reflect.hasField(obj, field)) {
+							Main.console.log('Duplicate field definition: $field');
+						} else {
+							Reflect.setField(obj, field, parseRec());
+						}
 						field = null;
 						comma = true;
 					case ','.code:

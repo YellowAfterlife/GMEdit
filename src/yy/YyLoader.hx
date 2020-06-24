@@ -38,7 +38,7 @@ class YyLoader {
 			project.yyExtJson = true;
 			project.yyUsesGUID = false;
 		} else {
-			yy.v22.YyLoaderV22.run(project, haxe.Json.parse(yyProjectTxt));
+			yy.v22.YyLoaderV22.run(project, YyJson.parse(yyProjectTxt));
 			return;
 		}
 		var yyProject:YyProject = YyJsonParser.parse(yyProjectTxt);
