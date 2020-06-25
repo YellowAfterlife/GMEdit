@@ -259,7 +259,7 @@ class GmlFile {
 	public function focus() {
 		checkChanges();
 		var version = GmlAPI.version;
-		GmlExternAPI.gmlResetOnDefine = version.resetOnDefine() && !Std.is(kind, KGmlSearchResults.inst);
+		GmlExternAPI.gmlResetOnDefine = version.resetOnDefine() && !Std.is(kind, KGmlSearchResults);
 		if (version.config.indexingMode == Local) liveApply();
 	}
 	//
