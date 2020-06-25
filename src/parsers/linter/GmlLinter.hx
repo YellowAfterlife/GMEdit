@@ -284,15 +284,17 @@ class GmlLinter {
 							case "import", "hyper": {
 								q.skipLine();
 							};
-							case "define", "event", "moment", "target": {
+							case "define", "event", "moment", "target", "action": {
 								if (p - 2 <= 0 || q.get(p - 2) == "\n".code) {
 									//q.row = 0;
 									//q.pos = p;
 									q.pos = p;
-									context = q.readContextName(null);
-									localNamesPerDepth = [];
-									localKinds = new Dictionary();
-									isProperties = nv == "event" && context == "properties";
+									if (nv != "action") {
+										context = q.readContextName(null);
+										localNamesPerDepth = [];
+										localKinds = new Dictionary();
+										isProperties = nv == "event" && context == "properties";
+									}
 									q.skipLine();
 								} else {
 									q.pos = p; return retv(KHash, "#");
