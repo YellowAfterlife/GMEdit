@@ -170,8 +170,14 @@ using tools.HtmlTools;
 							var head = '\n\n// in @[$ctxLink]';
 							if (checkRefKind) {
 								var mtEnd = ofs + mt[0].length;
-								var rk = tools.GmlCodeTools.getReferenceKind(q.source, ofs, mtEnd);
-								head += " (" + rk.toFullString() + ")";
+								if (NativeString.endsWith(ctxName, "(properties)")) {
+									head += " (properties)";
+								} else if (NativeString.startsWith(line, "#event collision:")) {
+									head += " (collision)";
+								} else {
+									var rk = tools.GmlCodeTools.getReferenceKind(q.source, ofs, mtEnd);
+									head += " (" + rk.toFullString() + ")";
+								}
 							}
 							head += ':\n' + line;
 							if (isRepl) {
