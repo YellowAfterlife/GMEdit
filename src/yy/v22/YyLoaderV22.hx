@@ -16,6 +16,7 @@ import ui.treeview.TreeView;
 import file.kind.gml.*;
 import file.kind.yy.*;
 import file.kind.misc.*;
+import yy.YyProjectResource;
 
 /**
  * Loads project files for GMS <= 2.2
@@ -35,38 +36,50 @@ class YyLoaderV22 {
 		var rootView:YyView = null;
 		var rxName = Project.rxName;
 		var treeLocation = new Dictionary<String>(); // GUID -> where at
-		var secondaryKeys = new Dictionary<YyProjectResource>();
-		var resourcePaths = new Dictionary<YyProjectResource>();
+		//
+		var cfdKey1 = new Dictionary<YyProjectResource>();
+		var cfdKey2 = new Dictionary<YyProjectResource>();
+		var cfdPath = new Dictionary<YyProjectResource>();
+		function checkForDuplicates(map:Dictionary<YyProjectResource>, key:String, item:YyProjectResource):Void {
+			if (map.exists(key)) {
+				Main.console.error('Collision for $key!'
+					+ ' GMS2 will not load the project unless you fix this.'
+					+ ' Contenders:', map[key], item);
+			} else map[key] = item;
+		}
+		//
 		for (res in yyProject.resources) {
 			var key = res.Key;
 			var val = res.Value;
 			var path = val.resourcePath;
+			var type = val.resourceType;
 			val.resourceName = rxName.replace(path, "$1");
 			//
-			if (secondaryKeys.exists(val.id)) {
-				Main.console.error('Secondary resource ID collision for ${val.id}!'
-					+ '\nFirst path: ' + secondaryKeys[val.id].Value.resourcePath
-					+ '\nSecond path: ' + path
-					+ '\nGMS2 will deny to load your project unless you fix this.');
-			} else secondaryKeys[val.id] = res;
+			checkForDuplicates(cfdKey1, key.toString().toLowerCase(), res);
+			checkForDuplicates(cfdKey2, val.id.toString().toLowerCase(), res);
+			checkForDuplicates(cfdKey2, StringTools.replace(val.resourcePath.toLowerCase(), "\\", "/"), res);
 			//
-			if (resources.exists(key)) {
-				Main.console.error('Resource ID collision for $key!'
-					+ '\nFirst path: ' + resources[key].Value.resourcePath
-					+ '\nSecond path: ' + path
-					+ '\nGMS2 will deny to load your project unless you fix this.');
+			var expectedPathPrefix:String = switch (type) {
+				case "GMScript": "scripts";
+				case "GMSprite": "sprites";
+				case "GMObject": "objects";
+				case "GMRoom": "rooms";
+				default: null;
+			};
+			if (expectedPathPrefix != null && !NativeString.startsWith(path, expectedPathPrefix)) {
+				Main.console.warn('`$path` is marked as $type but is not in $expectedPathPrefix directory.'
+					+ ' This suggests that your resource type might be mismatched.');
 			}
+			//
 			resources.set(key, res);
 			//
-			if (resourcePaths.exists(path)) {
-				Main.console.error('Resource path collision for $path!'
-					+ '\nFirst ID: ' + resourcePaths[path].Key
-					+ '\nSecond ID: ' + key
-					+ '\nGMS2 will deny to load your project unless you fix this.');
-			} else resourcePaths.set(path, res);
-			//
 			if (val.resourceType == "GMFolder") {
-				var view:YyView = project.readYyFileSync(val.resourcePath);
+				var view:YyView = try {
+					project.readYyFileSync(val.resourcePath);
+				} catch (x:Dynamic) {
+					Main.console.error("Failed to load " + val.resourcePath);
+					continue;
+				};
 				val.resourceName = view.folderName;
 				if (view.isDefaultView) rootView = view;
 				views.set(key, view);
@@ -145,6 +158,7 @@ class YyLoaderV22 {
 				}
 				if (type == "GMFolder") {
 					var vdir = views[res.Key];
+					if (vdir == null) continue;
 					name = vdir.folderName;
 					if (path == "") switch (name) {
 						case "datafiles": name = "Included Files";
