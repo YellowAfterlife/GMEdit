@@ -90,6 +90,11 @@ class YyLoader {
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
 			TreeView.element.appendChild(idir);
 		}
+		if (project.existsSync("datafiles")) {
+			var idir = TreeView.makeAssetDir("Included Files", "datafiles/", "file");
+			raw.RawLoader.loadDirRec(project, idir.treeItems, "datafiles");
+			TreeView.element.appendChild(idir);
+		}
 		// restoreOpen runs in Project:reload
 		project.yyObjectNames = new Dictionary();
 		project.yyObjectGUIDs = new Dictionary();
