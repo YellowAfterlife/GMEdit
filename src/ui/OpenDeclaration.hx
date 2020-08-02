@@ -133,6 +133,10 @@ class OpenDeclaration {
 			if (vals != null) openLink(vals[1], pos);
 			return true;
 		}
+		//
+		if (token.type.contains("link.url")) {
+			Shell.openExternal(term);
+		}
 		// parent event navigation overrides early:
 		if (term == "event_inherited" || term == "action_inherited") {
 			var def = session.gmlScopes.get(pos.row);

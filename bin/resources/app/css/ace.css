@@ -95,6 +95,9 @@ textarea#source {
 #main .ace-tm .ace_comment.ace_link {
 	color: #0000FF;
 }
+#main .ace-tm .ace_comment.ace_link.ace_url {
+	text-decoration: underline;
+
 #main .ace-tm .ace_comment.ace_meta {
 	color: #914BAF;
 }
