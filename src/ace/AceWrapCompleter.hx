@@ -142,7 +142,7 @@ using tools.NativeString;
 						if (imp == null) continue;
 						var ns = imp.namespaces[tk.value];
 						if (ns == null) continue;
-						callback(null, ns.comp);
+						callback(null, ns.compStaticList);
 						return;
 					};
 					case DKLocalType: {
@@ -155,7 +155,7 @@ using tools.NativeString;
 						if (t == null) continue;
 						var ns = imp.namespaces[t];
 						if (ns != null) {
-							callback(null, ns.comp);
+							callback(null, ns.compInstList);
 							return;
 						} else {
 							var en = GmlAPI.gmlEnums[t];

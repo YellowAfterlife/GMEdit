@@ -1,4 +1,5 @@
 package gml;
+import gml.GmlFuncDoc;
 import tools.Dictionary;
 using tools.NativeString;
 import ace.AceWrap;
@@ -64,7 +65,12 @@ class GmlImports {
 		}
 		if (en != null) {
 			ns.isStruct = true;
-			for (comp in en.compList) ns.comp.push(enumCompToNsComp(comp));
+			for (comp in en.compList) {
+				var c = enumCompToNsComp(comp);
+				ns.compStaticList.push(c);
+				ns.compInstList.push(c);
+				// TODO: need to fill out maps too?
+			}
 			for (name in en.names) {
 				var full = enLong + "." + name;
 				ns.longen.set(name, full);
@@ -118,10 +124,12 @@ class GmlImports {
 				ns.shorten.set(long, short);
 				ns.longen.set(short, long);
 			}
-			if (comp != null) {
+			if (comp != null) for (iter in 0 ... 2) {
+				var compList = iter > 0 ? ns.compInstList : ns.compStaticList;
+				var compMap = iter > 0 ? ns.compInstMap : ns.compStaticMap;
 				// remove existing completion item if replacing
-				nc = ns.compMap[short];
-				if (nc != null) ns.comp.remove(nc);
+				nc = compMap[short];
+				if (nc != null) compList.remove(nc);
 				// add the new one:
 				if (cache != null) {
 					nc = cache.nsComp;
@@ -130,8 +138,8 @@ class GmlImports {
 						cache.nsComp = nc;
 					}
 				} else makeAliasComp();
-				ns.compMap.set(short, nc);
-				ns.comp.push(nc);
+				compMap.set(short, nc);
+				compList.push(nc);
 			}
 			if (doc != null) ns.docs.set(short, doc);
 			short = space + "." + short;
@@ -164,10 +172,19 @@ class GmlImports {
 							if (ns != null) cache.enumNsComps = nsComps;
 						}
 						for (comp in comps) this.comp.push(comp);
-						if (ns != null) for (comp in nsComps) ns.comp.push(comp);
+						if (ns != null) for (comp in nsComps) {
+							ns.compStaticList.push(comp);
+							ns.compInstList.push(comp);
+							// TODO: need to fill out maps too?
+						}
 					} else for (comp in en.compList) {
 						this.comp.push(enumCompToFullComp(comp, short));
-						if (ns != null) ns.comp.push(enumCompToNsComp(comp));
+						if (ns != null) {
+							var c = enumCompToNsComp(comp);
+							ns.compStaticList.push(c);
+							ns.compInstList.push(c);
+							// TODO: need to fill out maps too?
+						}
 					}
 					if (ns != null) for (name in en.names) {
 						var full = long + "." + name;
@@ -204,6 +221,39 @@ class GmlImports {
 			this.comp.push(nc);
 		}
 	}
+	public function addFieldHint(
+		field:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc,
+		space:String, isInst:Bool, cache:GmlImportsCache
+	) {
+		//
+		var ns:GmlNamespace = ensureNamespace(space);
+		var nc:AceAutoCompleteItem;
+		inline function makeAliasComp():Void {
+			nc = comp.makeAlias(field);
+			if (nc.doc == null) nc.doc = field;
+		}
+		ns.kind.set(field, "field");
+		//
+		if (doc != null) docs.set(field, doc);
+		//
+		if (comp != null) {
+			var compList = isInst ? ns.compInstList : ns.compStaticList;
+			var compMap = isInst ? ns.compInstMap : ns.compStaticMap;
+			// remove existing completion item if replacing
+			nc = compMap[field];
+			if (nc != null) compList.remove(nc);
+			// add the new one:
+			if (cache != null) {
+				nc = cache.nsComp;
+				if (nc == null) {
+					makeAliasComp();
+					cache.nsComp = nc;
+				}
+			} else makeAliasComp();
+			compMap.set(field, nc);
+			compList.push(nc);
+		}
+	}
 	//
 }
 typedef GmlImportsCache = {
@@ -213,12 +263,23 @@ typedef GmlImportsCache = {
 	?enumNsComps:AceAutoCompleteItems,
 }
 class GmlNamespace {
-	public var kind:Dictionary<String> = new Dictionary();
+	public var kind:Dictionary<AceTokenType> = new Dictionary();
+	
 	/** "draw_text" in ns:"draw" -> "text" */
 	public var shorten:Dictionary<String> = new Dictionary();
+	
+	/** "text" in ns:"draw" -> "draw_text" */
 	public var longen:Dictionary<String> = new Dictionary();
-	public var comp:AceAutoCompleteItems = [];
-	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	
+	/** static (`Buffer.ptr`) completions */
+	public var compStaticList:AceAutoCompleteItems = [];
+	public var compStaticMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	
+	/** instance (`var b; b.ptr`) completions */
+	public var compInstList:AceAutoCompleteItems = [];
+	public var compInstMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	
+	
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	
 	public var isStruct:Bool = false;

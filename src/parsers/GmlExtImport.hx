@@ -78,7 +78,16 @@ class GmlExtImport {
 			imp.add(long, short, kind, comp, doc, space, spaceOnly, add_cache);
 		}
 		if (path == "_") {
-			if (alias != null) {
+			var field = mt[4];
+			if (field != null) {
+				var comp = new AceAutoCompleteItem(field, "field");
+				var ns = alias;
+				if (out != null) {
+					add_cache = {};
+					out.push(FieldHint(field, comp, null, ns, nsOnly, add_cache));
+				} else add_cache = null;
+				imp.addFieldHint(field, comp, null, ns, nsOnly, add_cache);
+			} else if (alias != null) {
 				imp.ensureNamespace(alias);
 				if (out != null) out.push(EnsureNS(alias));
 			}
@@ -161,6 +170,9 @@ class GmlExtImport {
 					case EnsureNS(s): imp.ensureNamespace(s);
 					case Import(long, short, kind, comp, doc, space, spaceOnly, cache): {
 						imp.add(long, short, kind, comp, doc, space, spaceOnly, cache);
+					};
+					case FieldHint(field, comp, doc, space, isInst, cache): {
+						imp.addFieldHint(field, comp, doc, space, isInst, cache);
 					};
 				}
 				return true;
@@ -745,6 +757,8 @@ private enum GmlExtImportRule {
 	EnsureNS(name:String);
 	Import(long:String, short:String, kind:String, comp:AceAutoCompleteItem,
 		doc:GmlFuncDoc, space:String, spaceOnly:Bool, cache:GmlImportsCache);
+	FieldHint(field:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc,
+		space:String, isInst:Bool, cache:GmlImportsCache);
 }
 private typedef GmlExtImportRules = Array<GmlExtImportRule>;
 private typedef GmlExtImportRuleCache = Dictionary<GmlExtImportRules>;
