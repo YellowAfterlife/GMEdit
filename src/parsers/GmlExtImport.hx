@@ -371,6 +371,8 @@ class GmlExtImport {
 		}
 		//
 		var imp = new GmlImports();
+		var firstImp = imp;
+		var cubDepth = 0;
 		var imps = new Dictionary<GmlImports>();
 		var files = new Dictionary<Bool>();
 		if (globalExists) parseFile(imp, "global.gml", files, cache);
@@ -409,13 +411,28 @@ class GmlExtImport {
 						if (globalExists) parseFile(imp, "global.gml", files, cache);
 					} else q.pos = p + 1;
 				};
+				case "{".code: cubDepth++;
+				case "}".code: cubDepth--;
 				default: {
 					if (c.isIdent0()) {
 						q.skipIdent1();
 						var p1 = q.pos;
 						var ident = q.substring(p, p1);
 						var next:String = null;
-						if (ident == "var" || ident == "args" && q.get(p - 1) == "#".code) {
+						if (ident == "function" && cubDepth == 0) {
+							q.skipSpaces1();
+							c = q.peek();
+							if (c.isIdent0()) {
+								p = q.pos;
+								q.skipIdent1();
+								ident = q.substring(p, q.pos);
+								imp = new GmlImports();
+								imps.set(ident, imp);
+								files = new Dictionary();
+								if (globalExists) parseFile(imp, "global.gml", files, cache);
+							}
+						}
+						else if (ident == "var" || ident == "args" && q.get(p - 1) == "#".code) {
 							var isVar = ident == "var";
 							next = isVar ? imp.shorten[ident] : null;
 							if (next != null) {
