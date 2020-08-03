@@ -210,6 +210,7 @@ class GmlFile {
 					GmlSeeker.runSync(path, out, data.main, kind);
 				}
 				if (GmlAPI.version.config.indexingMode == Local) liveApply();
+				codeEditor.session.gmlScopes.updateOnSave();
 				var next = GmlSeekData.map[path];
 				if (codeEditor.locals != next.locals) {
 					codeEditor.locals = next.locals;

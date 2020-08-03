@@ -5,7 +5,8 @@ import tools.Dictionary;
 using tools.NativeArray;
 
 /**
- * 
+ * Allows to get GML scope (top-level script/event/etc. name) at a given line of an Ace Session.
+ * Caches results and updates them when necessary.
  * @author YellowAfterlife
  */
 @:expose("GmlScopes")
@@ -61,6 +62,27 @@ class GmlScopes {
 		while (++i <= row) scopes[i] = scope;
 		//
 		return scope;
+	}
+	
+	/** Go over the current cache and update items in case something was moved/renamed */
+	public function updateOnSave():Void {
+		var rx = GmlAPI.scopeResetRx;
+		var currScope:String = "";
+		var updateScope = false;
+		for (i in 0 ... scopes.length) {
+			var mt = rx.exec(session.getLine(i));
+			if (mt != null) {
+				currScope = mt[1];
+				if (defs[i] != currScope) { // renamed or added a scope
+					defs[i] = currScope;
+					updateScope = true;
+				} else updateScope = false;
+			} else if (defs[i] != "") { // no longer has a define, but had before
+				defs[i] = "";
+				updateScope = true;
+			}
+			if (updateScope) scopes[i] = currScope;
+		}
 	}
 	
 	public function clear() {
