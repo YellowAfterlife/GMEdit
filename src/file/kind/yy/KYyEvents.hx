@@ -52,10 +52,16 @@ class KYyEvents extends KGml {
 		//
 		if (ui.Preferences.current.assetThumbs && !allSync) {
 			var spriteId = obj.spriteId;
-			if (spriteId.isValid()) {
-				var res = project.yyResources[spriteId];
-				TreeView.setThumbSprite(orig, res != null ? res.Value.resourceName : null);
-			} else TreeView.resetThumb(orig);
+			if (!project.yyUsesGUID) {
+				if (spriteId != null) {
+					TreeView.setThumbSprite(orig, (cast spriteId:YyResourceRef).name);
+				} else TreeView.resetThumb(orig);
+			} else {
+				if (spriteId.isValid()) {
+					var res = project.yyResources[spriteId];
+					TreeView.setThumbSprite(orig, res != null ? res.Value.resourceName : null);
+				} else TreeView.resetThumb(orig);
+			}
 		}
 		//
 		var out = new GmlSeekData();

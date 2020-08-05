@@ -625,13 +625,19 @@ import ui.treeview.TreeView;
 					if (yySpriteURLs.exists(g)) {
 						soon(yySpriteURLs[g]);
 					} else {
-						var spritePath = yyResources[g].Value.resourcePath;
-						readJsonFile(spritePath, function(e, sprite:YySprite) {
+						var yyRes = yyResources[g];
+						var spritePath = (yyRes.Value != null
+							? yyRes.Value.resourcePath
+							: yyRes.id.path
+						);
+						readYyFile(spritePath, function(e, sprite:YySprite) {
 							var r:String;
 							if (e == null) {
 								var frame = sprite.frames[0];
 								if (frame != null) {
-									var framePath = Path.join([Path.directory(spritePath), frame.id + ".png"]);
+									var fid = frame.name;
+									if (fid == null) fid = frame.id;
+									var framePath = Path.join([Path.directory(spritePath), fid + ".png"]);
 									r = getImageURL(framePath);
 								} else r = null;
 							} else r = null;

@@ -58,6 +58,9 @@ class KYyUnknown extends FileKind {
 				var item = TreeView.makeAssetItem(name, path, full, kind);
 				item.yyOpenAs = detect.kind;
 				TreeView.insertSorted(cast dir, item);
+				switch (resType) {
+					case "GMSprite": TreeView.setThumbSprite(full, name, item);
+				}
 			}
 		} else Main.console.error('`$path` has missing parent `$parentPath`');
 		return detect.kind.index(full, content, main);

@@ -101,7 +101,9 @@ class EditSprite extends Editor {
 		var dir = Path.directory(file.path);
 		var pj = Project.current;
 		for (frame in q.frames) {
-			var frel = Path.join([dir, frame.id + ".png"]);
+			var fid = frame.name;
+			if (fid == null) fid = frame.id;
+			var frel = Path.join([dir, fid + ".png"]);
 			var url = FileWrap.getImageURL(frel);
 			d.frameURLs.push(url);
 			d.framePaths.push(frel);
