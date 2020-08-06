@@ -81,7 +81,7 @@ class GmlSeeker {
 	private static var jsDoc_param = new RegExp("^///\\s*"
 		+ "@(?:arg|param|argument)\\s+"
 		+ "(?:\\{.*?\\}\\s*)?" // {type}?
-		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value`
+		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value` -> $1
 	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
@@ -246,33 +246,42 @@ class GmlSeeker {
 		var s:String, name:String, start:Int = 0;
 		var doc:GmlFuncDoc = null;
 		var docIsAutoFunc = false;
+		var jsDocArgs:Array<String> = null;
+		var jsDocRest:Bool = false;
 		/**  */
 		inline function linkDoc():Void {
 			out.docList.push(doc);
 			out.docMap.set(main, doc);
 		}
 		function flushDoc():Void {
-			if (doc != null) {
-				if (doc.acc && doc.args.length == 0) {
-					// we were supposed to pick up JSDoc args but there weren't any
-					doc.fromCode(src, start, q.pos);
-					if (mainComp != null) mainComp.doc = doc.getAcText();
-				} else {
-					// we picked up some JSDOc args, now let's see if it returns anything
-					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
-				}
-			} else if (main != null && main != "") {
+			var updateComp = false;
+			if (doc == null && (main != null && main != "")) {
 				// no doc yet, but there should be, so let's scrap what we may
 				doc = out.docMap[main];
 				if (doc == null) {
-					doc = new GmlFuncDoc(main, main + "(", ")", [], false);
+					doc = GmlFuncDoc.create(main);
 					linkDoc();
 				}
-				doc.fromCode(src, start, q.pos);
-				if (mainComp != null) mainComp.doc = doc.getAcText();
+				updateComp = true;
+			}
+			if (doc != null) {
+				if (jsDocArgs != null) {
+					doc.args = jsDocArgs;
+					if (jsDocRest) doc.rest = jsDocRest;
+					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
+				} else if (doc.args.length != 0) {
+					// have some arguments and no JSDoc
+					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
+				} else { // no JSDoc, try indexing
+					doc.fromCode(src, start, q.pos);
+					updateComp = true;
+				}
+				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
 			}
 			doc = null;
 			docIsAutoFunc = false;
+			jsDocArgs = null;
+			jsDocRest = null;
 		}
 		function procLambdaIdent(s:GmlName, locals:GmlLocals):Void {
 			var seekData = GmlExtLambda.seekData;
@@ -318,84 +327,85 @@ class GmlSeeker {
 			}
 		}
 		//
-		var p:Int, flags:Int;
-		var c:CharCode, mt:RegExpMatch;
 		function doLoop(?exitAtCubDepth:Int) while (q.loop) {
+			var p:Int, flags:Int;
+			var c:CharCode, mt:RegExpMatch;
 			flags = Ident | Doc | Define | Macro;
-			if (exitAtCubDepth != null) flags |= Cub1;
+			if (exitAtCubDepth != null || funcsAreGlobal) flags |= Cub1;
 			s = find(flags);
-			if (s == null) {
-				//
-			}
-			else if (s.fastCodeAt(0) == "/".code) { // JSDoc
-				if (main != null) {
-					var check = true, mt;
-					if (v.hasLiteralStrings()) {
-						mt = jsDoc_param.exec(s);
-						if (mt != null) {
-							doc = out.docMap[main];
-							if (doc == null) {
-								doc = GmlFuncDoc.parse(main + "()");
-								doc.acc = true;
-								linkDoc();
-							}
-							if (doc.acc) {
-								doc.args.push(mt[1]);
-								if (mt[1].contains("...")) doc.rest = true;
-								if (mainComp != null) {
-									mainComp.doc = doc.getAcText();
-								}
-							}
-							check = false;
-						}
-					}
-					if (check) {
-						mt = jsDoc_full.exec(s);
-						if (mt != null) {
-							if (!out.docMap.exists(main)) {
-								doc = GmlFuncDoc.parse(main + mt[1]);
-								linkDoc();
-								if (mainComp != null && mainComp.doc == null) {
-									mainComp.doc = s;
-								}
-							}
-							check = false;
-						} else if (v.hasScriptArgs()) {
-							// `#define func(a, b)\n/// does things` -> `func(a, b) does things`
-							s = s.substring(3).trimLeft();
-							doc = out.docMap[main];
-							if (doc == null) {
-								if (gmlDoc_full.test(s)) {
-									doc = GmlFuncDoc.parse(s);
-									doc.name = main;
-									doc.pre = main + "(";
-								} else doc = GmlFuncDoc.parse(main + "(...) " + s);
-								linkDoc();
-							} else {
-								if (gmlDoc_full.test(s)) {
-									GmlFuncDoc.parse(s, doc);
-									doc.name = main;
-									doc.pre = main + "(";
-								} else doc.post += " " + s;
-							}
-							mainComp.doc = doc.getAcText();
-							check = false;
-						}
-					}
-					if (check) {
-						s = s.substring(3).trimBoth();
-						if (mainComp != null) mainComp.doc = mainComp.doc.nzcct("\n", s);
+			if (s == null) continue;
+			if (s.fastCodeAt(0) == "/".code) { // JSDoc
+				if (main == null) continue; // don't parse JSDoc if we don't know where to put it
+				
+				// GMS2+ JSDoc (`/// @param name`) ?:
+				if (v.hasJSDoc()) {
+					mt = jsDoc_param.exec(s);
+					if (mt != null) {
+						if (jsDocArgs == null) jsDocArgs = [];
+						var arg = mt[1];
+						jsDocArgs.push(arg);
+						if (arg.contains("...")) jsDocRest = true;
+						continue; // found!
 					}
 				}
+				
+				// Classic JSDoc (`/// func(arg1, arg2)`) ?:
+				mt = jsDoc_full.exec(s);
+				if (mt != null) {
+					if (!out.docMap.exists(main)) {
+						doc = GmlFuncDoc.parse(main + mt[1]);
+						linkDoc();
+						if (mainComp != null && mainComp.doc == null) {
+							mainComp.doc = s;
+						}
+					}
+					continue; // found!
+				}
+				
+				// merge suffix-docs in GML variants with #define args into the doc line:
+				if (v.hasScriptArgs()) {
+					// `#define func(a, b)\n/// does things` -> `func(a, b) does things`
+					s = s.substring(3).trimLeft();
+					doc = out.docMap[main];
+					if (doc == null) {
+						if (gmlDoc_full.test(s)) {
+							doc = GmlFuncDoc.parse(s);
+							doc.name = main;
+							doc.pre = main + "(";
+						} else doc = GmlFuncDoc.createRest(main);
+						linkDoc();
+					} else {
+						if (gmlDoc_full.test(s)) {
+							GmlFuncDoc.parse(s, doc);
+							doc.name = main;
+							doc.pre = main + "(";
+						} else doc.post += " " + s;
+					}
+					mainComp.doc = doc.getAcText();
+					continue; // found!
+				}
+				
+				// perhaps it's just extra text
+				s = s.substring(3).trimBoth();
+				if (mainComp != null) mainComp.doc = mainComp.doc.nzcct("\n", s);
+				continue;
 			}
-			else switch (s) {
-				case "}": if (cubDepth <= exitAtCubDepth) return;
+			// (known to not be JSDoc from hereafter):
+			switch (s) {
+				case "}": {
+					if (cubDepth <= 0 && funcsAreGlobal && docIsAutoFunc) {
+						flushDoc();
+						main = null;
+					}
+					if (exitAtCubDepth != null && cubDepth <= exitAtCubDepth) return;
+				};
 				case "#define", "#target", "function": {
+					// we don't have to worry about #event/etc because they
+					// do not occur in files themselves
 					var isDefine = (s == "#define");
 					var isFunc = (s == "function");
 					if (isFunc && funcsAreGlobal && cubDepth == 0) isDefine = true;
-					// we don't have to worry about #event/etc because they
-					// do not occur in files themselves
+					
 					var fname:String;
 					if (isFunc) {
 						q.skipSpaces0();
@@ -405,6 +415,8 @@ class GmlSeeker {
 							fname = q.substring(p, q.pos);
 						} else fname = null;
 					} else fname = find(Ident);
+					
+					// early exit if it's a `x = function()` or a function-in-function
 					if (isFunc && (!isDefine || fname == null)) {
 						if (cubDepth > 0 || !funcsAreGlobal) {
 							subLocalDepth = cubDepth;
@@ -413,9 +425,13 @@ class GmlSeeker {
 						procFuncLiteralArgs();
 						continue;
 					}
-					flushDoc();
+					
+					if (isFunc) {
+						// soft flush so that JSDocs prior to declaration can apply
+						doc = null;
+						docIsAutoFunc = false;
+					} else flushDoc();
 					main = fname;
-					//
 					start = q.pos;
 					sub = main;
 					row = 0;
@@ -423,8 +439,8 @@ class GmlSeeker {
 					locals = new GmlLocals();
 					out.locals.set(main, locals);
 					if (isFunc || isDefine && v.hasScriptArgs()) { // `#define name(...args)`
-						s = find(Line | Par0);
-						if (s == "(" && isDefine) {
+						s = find(isFunc ? Par0 : Line | Par0);
+						if (s == "(") {
 							var openPos = q.pos;
 							flags = Ident | Par1 | (isFunc ? 0 : Line);
 							var foundArg = false;
@@ -434,7 +450,13 @@ class GmlSeeker {
 								locals.add(s, localKind);
 								foundArg = true;
 							}
-							if (!isFunc || foundArg) {
+							if (isDefine && jsDocArgs != null) {
+								doc = GmlFuncDoc.create(main, jsDocArgs, jsDocRest);
+								jsDocArgs = null;
+								jsDocRest = false;
+								docIsAutoFunc = isFunc;
+								linkDoc();
+							} else if (!isFunc || foundArg) {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 								docIsAutoFunc = isFunc;
 								linkDoc();
@@ -443,8 +465,10 @@ class GmlSeeker {
 					}
 					//
 					if (isDefine && canDefineComp) {
-						mainComp = new AceAutoCompleteItem(main, "script",
-							q.pos > start ? main + q.substring(start, q.pos) : null);
+						mainComp = new AceAutoCompleteItem(main, "script", doc != null 
+							? doc.getAcText()
+							: (q.pos > start ? main + q.substring(start, q.pos) : null)
+						);
 						out.compList.push(mainComp);
 						out.compMap.set(main, mainComp);
 						out.kindList.push(main);
@@ -455,8 +479,7 @@ class GmlSeeker {
 						s = find(Line | Cub0 | Ident | Colon);
 						if (s == ":" || s == "constructor") { // function A(a, b) : B(a, b) constructor
 							if (doc == null) {
-								doc = GmlFuncDoc.parse(main + "()");
-								doc.acc = true;
+								doc = GmlFuncDoc.create(main);
 								linkDoc();
 							}
 							doc.isConstructor = true;
@@ -723,7 +746,7 @@ class GmlSeeker {
 					}
 				};
 			} // switch (s)
-		} // while in doLoop
+		} // while in doLoop, can continue
 		doLoop();
 		flushDoc();
 		//

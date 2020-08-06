@@ -72,9 +72,6 @@ class GmlFuncDoc {
 	/** whether to show "..." in the end of argument list */
 	public var rest:Bool;
 	
-	/** Whether this is an incomplete/accumulating doc */
-	public var acc:Bool = false;
-	
 	public function new(name:String, pre:String, post:String, args:Array<String>, rest:Bool) {
 		this.name = name;
 		this.pre = pre;
@@ -87,12 +84,28 @@ class GmlFuncDoc {
 		post = ")";
 		args.resize(0);
 		rest = false;
-		acc = false;
 		minArgsCache = null;
 	}
 	
 	public function getAcText() {
 		return pre + args.join(", ") + post;
+	}
+	
+	public static function create(name:String, ?args:Array<String>, ?rest:Bool):GmlFuncDoc {
+		if (args == null) {
+			args = [];
+			if (rest == null) rest = false;
+		} else if (rest == null) {
+			rest = false;
+			for (arg in args) {
+				if (arg.contains("...")) rest = true;
+			}
+		}
+		return new GmlFuncDoc(name, name + "(", ")", args, rest);
+	}
+	
+	public static function createRest(name:String):GmlFuncDoc {
+		return new GmlFuncDoc(name, name + "(", ")", ["..."], true);
 	}
 	
 	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
@@ -107,7 +120,7 @@ class GmlFuncDoc {
 			if (sw != "") {
 				args = sw.splitReg(js.Syntax.code("/,\\s*/g"));
 			} else args = [];
-			rest = sw.indexOf("...") >= 0;
+			rest = sw.contains("...");
 		} else {
 			name = s;
 			pre = s;
@@ -130,6 +143,7 @@ class GmlFuncDoc {
 		+ "(\\d+)" // argument0
 		+ "|\\s*\\[\\s*(?:(\\d+)\\s*\\])?" // argument[0] | argument[???]
 	+ ")", "g");
+	static var fromCode_hasVarArg = new RegExp("\\bargument_count\\b");
 	static var fromCode_hasRet:RegExp = new RegExp("\\breturn\\b\\s*[^;]");
 	private static function fromCode_skipArgCountCmp(chunk:GmlCode, k:Int):Int {
 		var c:CharCode;
@@ -227,12 +241,16 @@ class GmlFuncDoc {
 		//
 		var hasRet = false;
 		var hasRetRx = fromCode_hasRet;
+		var hasVarArg = false;
+		var hasVarArgRx = fromCode_hasVarArg;
+		var hasOpt = false;
 		function flush(p:Int):Void {
 			var chunk = q.substring(start, p);
 			rx.lastIndex = 0;
 			var mt = rx.exec(chunk);
 			var c:CharCode;
 			if (!hasRet && hasRetRx.test(chunk)) hasRet = true;
+			if (!hasVarArg && hasVarArgRx.test(chunk)) hasVarArg = true;
 			while (mt != null) {
 				var argis = tools.JsTools.or(mt[1], mt[2]);
 				if (argis != null) {
@@ -302,7 +320,10 @@ class GmlFuncDoc {
 						break;
 					}
 					if (name == null) name = "arg" + argi;
-					if (isOpt) name = "?" + name;
+					if (isOpt) {
+						hasOpt = true;
+						name = "?" + name;
+					}
 					args[argi] = name;
 				} else rest = true;
 				mt = rx.exec(chunk);
@@ -325,10 +346,14 @@ class GmlFuncDoc {
 		if (rest) post = "..." + post;
 		if (hasRet) post += "➜";
 		hasReturn = hasRet;
+		if (!hasOpt && hasVarArg) minArgsCache = 0;
 	}
 	
 	static var procHasReturn_rxHasArgArray:RegExp = new RegExp("\\bargument\\b\\s*\\[");
-	/** A cheaper version of procCode that just figures out hasReturn and whether arguments might be optional */
+	/**
+	 * A cheaper version of procCode that just figures out hasReturn and whether arguments might be optional.
+	 * 
+	 */
 	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int, ?isAuto:Bool) {
 		var start = from;
 		var till:Int = _till != null ? _till : gml.length;
@@ -351,6 +376,8 @@ class GmlFuncDoc {
 					if (!seekArg) return;
 				}
 				if (seekArg && hasArgRx.test(chunk)) {
+					// mimicking 2.3 IDE behaviour where having
+					// argument[] access makes all arguments optional.
 					seekArg = false;
 					minArgsCache = 0;
 					if (!seekHasRet) return;
@@ -359,6 +386,7 @@ class GmlFuncDoc {
 			} else q.skip();
 		}
 		chunk = q.substring(start, q.pos);
+		// final:
 		if (seekHasRet) {
 			var hasRet = hasRetRx.test(chunk);
 			if (hasRet) {
