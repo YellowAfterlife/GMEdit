@@ -108,6 +108,7 @@ class GmlFuncDoc {
 		return new GmlFuncDoc(name, name + "(", ")", ["..."], true);
 	}
 	
+	/** ("func(a, b)") -> { pre:"func(", args:["a","b"], post:")" } */
 	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
 		var p0 = s.indexOf("(");
 		var p1 = s.indexOf(")", p0);

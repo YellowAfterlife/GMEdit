@@ -49,6 +49,8 @@ class GmlExtImport {
 	public static var rxLocalType = new RegExp("^" + rsLocalType + "$");
 	private static var rxPeriod = new RegExp("\\.", "g");
 	
+	static var rxHasHint = new RegExp("///\\s+@hint");
+	
 	/** `var a:T`, `#args a:T`, `var a, b:T` */
 	private static var rxHasTypePost = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+:/);
 	
@@ -200,7 +202,18 @@ class GmlExtImport {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
 						q.skipLine();
-						if (q.get(p + 2) == "!".code
+						if (q.get(p + 2) == "/".code) {
+							var i = p + 3;
+							while (q.get(i).isSpace0()) i++;
+							if (q.get(i) == "@".code
+								&& q.substring(i + 1, i + 5) == "hint"
+								&& !q.get(i + 5).isIdent1_ni()
+							) {
+								var txt = q.substring(i + 5, q.pos);
+								parseHint(imp, txt, found, cache, null);
+							}
+						}
+						else if (q.get(p + 2) == "!".code
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);
@@ -240,6 +253,44 @@ class GmlExtImport {
 		}
 		return false;
 	}
+	
+	static var parseHint_rx:RegExp = new RegExp("^\\s+"
+		+ "(\\w+)([.:])(\\w+)" // Class.staticField, Class:instField
+		+ "(\\(.*?\\)\\S*)?" // $4 -> function arguments, if any
+		+ "(?:\\s+)?" // $5 -> rest
+	+ "");
+	static function parseHint(
+		imp:GmlImports, txt:String, found:Dictionary<Bool>,
+		cache:GmlExtImportRuleCache, rules:GmlExtImportRules
+	) {
+		var mt = parseHint_rx.exec(txt);
+		if (mt != null) {
+			var ns = mt[1];
+			var isInst = mt[2] == ":";
+			var field = mt[3];
+			var args = mt[4];
+			var info = mt[5];
+			//
+			var doc:GmlFuncDoc = null;
+			if (args != null) {
+				args = StringTools.replace(args, "->", "➜");
+				var fa = field + args;
+				doc = GmlFuncDoc.parse(fa);
+				info = NativeString.nzcct(fa, "\n", info);
+			}
+			var comp = new AceAutoCompleteItem(field, "field", info);
+			var add_cache:GmlImportsCache;
+			if (rules != null) {
+				add_cache = {};
+				rules.push(FieldHint(field, comp, doc, ns, isInst, add_cache));
+			} else add_cache = null;
+			imp.addFieldHint(field, comp, doc, ns, isInst, add_cache);
+			//
+			return true;
+		}
+		return false;
+	}
+	
 	/** `var v:Enum`, "v[Enum.field]" -> "v.field" */
 	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, typeName:String, p0:Int):String {
 		var ns:GmlNamespace = imp.namespaces[typeName];
@@ -370,6 +421,7 @@ class GmlExtImport {
 		if (code.indexOf("//!#import") < 0
 			&& !rxHasTypePre.test(code)
 			&& !globalExists
+			&& !rxHasHint.test(code)
 		) return cancel();
 		var seekLocals = seekData != null ? seekData.locals : null;
 		var needsCache = pre_needsCache.test(code);
@@ -397,7 +449,18 @@ class GmlExtImport {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
 						q.skipLine();
-						if (q.get(p + 2) == "!".code
+						if (q.get(p + 2) == "/".code) {
+							var i = p + 3;
+							while (q.get(i).isSpace0()) i++;
+							if (q.get(i) == "@".code
+								&& q.substring(i + 1, i + 5) == "hint"
+								&& !q.get(i + 5).isIdent1_ni()
+							) {
+								var txt = q.substring(i + 5, q.pos);
+								parseHint(imp, txt, files, cache, null);
+							}
+						}
+						else if (q.get(p + 2) == "!".code
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							var txt = q.substring(p + 3, q.pos);

@@ -622,6 +622,17 @@ using tools.NativeArray;
 				rdef("comment.line"),
 			]), //}
 			"gml.comment.doc.line": rComment.concat([ //{
+				rulePairs([
+					"@hint\\b", "comment.meta",
+					"\\s*", "text",
+					"\\w*", "namespace", 
+					"[.:]?", "punctuation.operator",
+					"\\w*", "field",
+					"\\(?", "paren.lparen",
+					"[^)]*", "comment.doc.line",
+					"\\)?", "paren.rparen",
+					"(?:->)?", "punctuation.operator",
+				]),
 				rule("comment.meta", "@\\w+"),
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),

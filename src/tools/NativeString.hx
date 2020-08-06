@@ -143,6 +143,7 @@ import js.Syntax;
 	 */
 	public static function nzcct(s:String, sep:String, add:String):String {
 		if (s == null || s == "") return add;
+		if (add == null || add == "") return s;
 		return s + sep + add;
 	}
 	

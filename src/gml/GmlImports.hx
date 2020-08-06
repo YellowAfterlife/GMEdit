@@ -232,9 +232,21 @@ class GmlImports {
 			nc = comp.makeAlias(field);
 			if (nc.doc == null) nc.doc = field;
 		}
-		ns.kind.set(field, "field");
+		ns.kind.set(field, doc != null ? "asset.script" : "field");
 		//
-		if (doc != null) docs.set(field, doc);
+		if (doc != null) {
+			if (isInst) {
+				ns.docs.set(field, doc);
+			} else {
+				docs.set(space + "." + field, doc);
+			}
+		}
+		//
+		if (!isInst && !compMap.exists(space)) {
+			nc = new AceAutoCompleteItem(space, "namespace", "type");
+			compMap.set(space, nc);
+			this.comp.push(nc);
+		}
 		//
 		if (comp != null) {
 			var compList = isInst ? ns.compInstList : ns.compStaticList;
