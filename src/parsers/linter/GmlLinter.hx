@@ -235,7 +235,11 @@ class GmlLinter {
 				};
 				case '"'.code, "'".code, "`".code: {
 					start();
-					q.skipStringAuto(c, version);
+					var rows = q.skipStringAuto(c, version);
+					if (rows > 0) {
+						q.row += rows;
+						q.rowStart = q.source.lastIndexOf("\n", q.pos) + 1;
+					}
 					return ret(KString);
 				};
 				//

@@ -134,6 +134,7 @@ class GmlReader extends StringReader {
 					c = read();
 					switch (c) {
 						case "{".code: depth++;
+						case "\n".code: n++;
 						case "}".code: {
 							if (--depth < 0) break;
 						};
