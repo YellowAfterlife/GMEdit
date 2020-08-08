@@ -12,6 +12,7 @@ import tools.NativeString;
 import ui.Preferences;
 import ui.liveweb.LiveWeb;
 import electron.FileWrap;
+import gml.GmlImports;
 using tools.ERegTools;
 using StringTools;
 
@@ -145,6 +146,9 @@ class GmlAPI {
 	/** `\n` separated asset names for regular expression search */
 	public static var gmlLookupText:String = "";
 	
+	/** @hint and other namespaces collected across the code */
+	public static var gmlNamespaces:Dictionary<GmlNamespace> = new Dictionary();
+	
 	#if lwedit
 	/** Function name -> min. argument count */
 	public static var lwArg0:Dictionary<Int> = new Dictionary();
@@ -180,6 +184,7 @@ class GmlAPI {
 		gmlInstFieldComp.clear();
 		gmlLookup = new Dictionary();
 		gmlLookupText = "";
+		gmlNamespaces = new Dictionary();
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}

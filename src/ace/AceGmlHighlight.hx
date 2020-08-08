@@ -125,41 +125,44 @@ using tools.NativeArray;
 					if (row != null) {
 						var scope = editor.session.gmlScopes.get(row);
 						if (scope != null) {
-							var imp = editor.imports[scope];
-							var ns:GmlNamespace;
-							if (imp != null) {
-								ns = imp.namespaces[object];
+							var imp:GmlImports = editor.imports[scope], ns:GmlNamespace;
+							for (step in (imp != null ? 0 : 1) ... 2) {
+								ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
+								//
+								var e1:String;
+								inline function checkEnum(error:String) {
+									if (step != 0) return;
+									e1 = imp.longenEnum[object];
+									if (e1 == null) return;
+									en = GmlAPI.gmlEnums[e1];
+									if (en == null) return;
+									fdType = en.items[field] ? "enumfield" : error;
+								}
+								//
 								if (ns != null) {
 									objType = "namespace";
 									fdType = ns.kind[field];
-									if (fdType == null) {
-										fdType = "identifier";
-										var e1 = imp.longenEnum[object];
-										if (e1 != null) {
-											en = GmlAPI.gmlEnums[e1];
-											if (en != null) {
-												fdType = en.items[field] ? "enumfield" : "identifier";
-											}
-										}
-									}
-								} else {
-									var e1 = imp.longenEnum[object];
-									if (e1 != null) {
-										en = GmlAPI.gmlEnums[e1];
-										if (en != null) {
-											objType = "enum";
-											fdType = en.items[field] ? "enumfield" : "enumerror";
-										}
-									}
-								}
+									if (fdType != null) break;
+									fdType = "identifier";
+									checkEnum("identifier");
+								} else checkEnum("enumerror");
+								if (fdType != null) break;
 							}
 							if (objType == null) {
 								objType = getLocalType_1(object, scope, !mf);
 								if ((objType == "local" || objType == "sublocal") && imp != null) {
 									var lt = imp.localTypes[object];
 									ns = imp.namespaces[lt];
+									var ns2 = GmlAPI.gmlNamespaces[lt];
 									if (ns != null) {
-										fdType = jsOr(ns.kind[field], "typeerror");
+										fdType = ns.kind[field];
+										if (fdType == null) {
+											if (ns2 != null) {
+												fdType = jsOrx(ns2.kind[field], "typeerror");
+											} else fdType = "typeerror";
+										}
+									} else if (ns2 != null) {
+										fdType = jsOrx(ns2.kind[field], "typeerror");
 									} else {
 										en = GmlAPI.gmlEnums[lt];
 										if (en != null) {

@@ -29,6 +29,8 @@ using tools.NativeString;
 	public var modeFilter:AceSession->Bool;
 	public var minLength:Int = AceWrapCompleterMinLength.Default;
 	public var dotKind:AceWrapCompleterDotKind = DKNone;
+	/** Used for some dotKinds */
+	public var dotKindMeta:Dynamic = null;
 	public var colKind:AceWrapCompletionColKind = CKNone;
 	public var identifierRegexps:Array<RegExp>;
 	
@@ -134,18 +136,18 @@ using tools.NativeString;
 				if (iter == null) iter = new AceTokenIterator(session, pos.row, pos.column);
 				tk = iter.stepBackward();
 				switch (dotKind) {
-					case DKNamespace: {
+					case DKNamespace: { // NameSpace.staticField
 						if (tk.type != "namespace") continue;
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
 						var imp = GmlFile.current.codeEditor.imports[scope];
 						if (imp == null) continue;
-						var ns = imp.namespaces[tk.value];
+						var ns = (dotKindMeta ? GmlAPI.gmlNamespaces : imp.namespaces)[tk.value];
 						if (ns == null) continue;
 						callback(null, ns.compStaticList);
 						return;
 					};
-					case DKLocalType: {
+					case DKLocalType: { // local.instField
 						if (tk.type != "local") continue;
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
@@ -153,21 +155,29 @@ using tools.NativeString;
 						if (imp == null) continue;
 						var t = imp.localTypes[tk.value];
 						if (t == null) continue;
-						var ns = imp.namespaces[t];
-						if (ns != null) {
-							callback(null, ns.compInstList);
-							return;
+						if (dotKindMeta) {
+							var ns = GmlAPI.gmlNamespaces[t];
+							if (ns != null) {
+								callback(null, ns.compInstList);
+								return;
+							}
 						} else {
-							var en = GmlAPI.gmlEnums[t];
-							if (en == null) continue;
-							callback(null, en.fieldComp);
-							return;
+							var ns = imp.namespaces[t];
+							if (ns != null) {
+								callback(null, ns.compInstList);
+								return;
+							} else {
+								var en = GmlAPI.gmlEnums[t];
+								if (en == null) continue;
+								callback(null, en.fieldComp);
+								return;
+							}
 						}
 					};
-					case DKGlobal: {
+					case DKGlobal: { // global.variable
 						proc(tk.value == "global");
 					};
-					case DKEnum: {
+					case DKEnum: { // Enum.Construct
 						if (tk.type != "enum") continue;
 						var name = tk.value;
 						// expand imports:

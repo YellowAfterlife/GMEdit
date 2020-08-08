@@ -23,11 +23,17 @@ class AceWrapCommonCompleters {
 	public var eventCompleter:AceWrapCompleter;
 	public var localCompleter:AceWrapCompleter;
 	public var importCompleter:AceWrapCompleter;
+	/** completes from file's imports */
 	public var namespaceCompleter:AceWrapCompleter;
+	/** completes from global namespaces */
+	public var namespaceAltCompleter:AceWrapCompleter;
 	public var namespaceTypeCompleter:AceWrapCompleter;
 	public var enumTypeCompleter:AceWrapCompleter;
 	public var lambdaCompleter:AceWrapCompleter;
+	/** completes from file's imports */
 	public var localTypeCompleter:AceWrapCompleter;
+	/** completes from global namespaces */
+	public var localTypeAltCompleter:AceWrapCompleter;
 	public var enumCompleter:AceWrapCompleter;
 	public var globalCompleter:AceWrapCompleter;
 	public var globalFullCompleter:AceWrapCompleter;
@@ -88,6 +94,11 @@ class AceWrapCommonCompleters {
 		namespaceCompleter.minLength = 0;
 		namespaceCompleter.dotKind = DKNamespace;
 		//
+		namespaceAltCompleter = new AceWrapCompleter([], excl, true, gmlf);
+		namespaceAltCompleter.minLength = 0;
+		namespaceAltCompleter.dotKind = DKNamespace;
+		namespaceAltCompleter.dotKindMeta = true;
+		//
 		namespaceTypeCompleter = new AceWrapCompleter([], excl, true, gmlf);
 		namespaceTypeCompleter.minLength = 0;
 		namespaceTypeCompleter.colKind = CKNamespaces;
@@ -99,6 +110,11 @@ class AceWrapCommonCompleters {
 		localTypeCompleter = new AceWrapCompleter([], excl, true, gmlf);
 		localTypeCompleter.minLength = 0;
 		localTypeCompleter.dotKind = DKLocalType;
+		//
+		localTypeAltCompleter = new AceWrapCompleter([], excl, true, gmlf);
+		localTypeAltCompleter.minLength = 0;
+		localTypeAltCompleter.dotKind = DKLocalType;
+		localTypeAltCompleter.dotKindMeta = true;
 		//
 		enumCompleter = new AceWrapCompleter([], ["enumfield"], false, gmlf);
 		enumCompleter.minLength = 0;
@@ -129,9 +145,11 @@ class AceWrapCommonCompleters {
 				globalCompleter,
 				instCompleter,
 				namespaceCompleter,
+				namespaceAltCompleter,
 				namespaceTypeCompleter,
 				enumTypeCompleter,
 				localTypeCompleter,
+				localTypeAltCompleter,
 				enumCompleter,
 				glslCompleter,
 				hlslCompleter,

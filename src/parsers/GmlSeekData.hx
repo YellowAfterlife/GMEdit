@@ -4,6 +4,7 @@ import ace.extern.*;
 import gml.GmlAPI;
 import gml.*;
 import tools.Dictionary;
+using tools.NativeString;
 
 /**
  * Represents processed state of a file,
@@ -57,6 +58,10 @@ class GmlSeekData {
 	
 	public var docList:Array<GmlFuncDoc> = [];
 	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
+	
+	// namespace hints
+	public var hintList:Array<GmlSeekDataHint> = [];
+	public var hintMap:Dictionary<GmlSeekDataHint> = new Dictionary();
 	
 	// features
 	public var imports:Dictionary<GmlImports> = null;
@@ -186,6 +191,21 @@ class GmlSeekData {
 			}
 		}
 		
+		// hints (not very smart):
+		for (hint in prev.hintList) {
+			var ns = GmlAPI.gmlNamespaces[hint.namespace];
+			if (ns == null) continue;
+			ns.removeFieldHint(hint.field, hint.isInst);
+		}
+		for (hint in next.hintList) {
+			var ns = GmlAPI.gmlNamespaces[hint.namespace];
+			if (ns == null) {
+				ns = new GmlNamespace();
+				GmlAPI.gmlNamespaces[hint.namespace] = ns;
+			}
+			ns.addFieldHint(hint.field, hint.isInst, hint.comp, hint.doc);
+		}
+		
 		if (prev.hasGMLive || next.hasGMLive) {
 			ui.GMLive.update(path, next.hasGMLive);
 		}
@@ -203,5 +223,47 @@ class GmlSeekData {
 		}
 		
 		// (locals don't have to be added/removed)
+	}
+}
+class GmlSeekDataHint {
+	public var namespace:String;
+	public var field:String;
+	public var isInst:Bool;
+	public var key:String;
+	public var comp:AceAutoCompleteItem;
+	public var doc:GmlFuncDoc;
+	public function new(namespace:String, isInst:Bool, field:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc) {
+		this.namespace = namespace;
+		this.field = field;
+		this.isInst = isInst;
+		this.doc = doc;
+		this.comp = comp;
+		this.key = namespace + (isInst ? ":" : ".") + field;
+	}
+	public function merge(hint:GmlSeekDataHint) {
+		var cd0 = comp.doc;
+		var cd1 = hint.comp.doc;
+		var cdp = field + "(";
+		if (cd0 == null) {
+			comp.doc = cd1;
+		} else if (cd0.startsWith(cdp)) {
+			if (cd1 == null) {
+				// OK!
+			} else if (cd1.startsWith(cdp)) {
+				comp.doc = cd1;
+			} else {
+				comp.doc = cd0 + "\n" + cd1;
+			}
+		} else {
+			if (cd1 == null) {
+				// OK!
+			} else if (cd1.startsWith(cdp)) {
+				comp.doc = cd1 + "\n" + cd0;
+			} else {
+				comp.doc = cd1;
+			}
+		}
+		//
+		if (hint.doc != null) doc = hint.doc;
 	}
 }

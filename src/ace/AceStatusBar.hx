@@ -92,6 +92,7 @@ class AceStatusBar {
 			case "lambda.function": return flushDocs(ctx.lambdas.docs);
 			case "extfunction": return flushDocs(GmlAPI.extDoc);
 			case "namespace": { // `new Type`?
+				if (ctx.imports == null) return false;
 				var ns = ctx.imports.namespaces[tk.value];
 				tk = iter.stepBackward();
 				if (tk != null && tk.type == "text") {
@@ -137,12 +138,21 @@ class AceStatusBar {
 					name = tk.value + "." + name;
 					doc = AceMacro.jsOr(imports.docs[name], doc);
 				} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
-					var ns = imports.namespaces[imports.localTypes[tk.value]];
+					var lt = imports.localTypes[tk.value];
+					var ns = imports.namespaces[lt];
+					var td:GmlFuncDoc = null;
 					if (ns != null) {
-						var td = ns.docs[name];
+						td = ns.docs[name];
 						if (td != null) {
 							doc = td;
-							argStart = 1;
+							if (ns.longen.exists(name)) argStart = 1;
+						}
+					}
+					if (td == null) {
+						var ns2 = GmlAPI.gmlNamespaces[lt];
+						if (ns2 != null) {
+							td = ns2.docs[name];
+							if (td != null) doc = td;
 						}
 					}
 				} else iter.stepForward();

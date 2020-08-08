@@ -159,7 +159,7 @@ class OpenDeclaration {
 			//
 			var iter = new AceTokenIterator(session, pos.row, pos.column);
 			var tk = iter.stepBackward();
-			var next:String, ns:GmlNamespace;
+			var next:String, ns:GmlImportNamespace;
 			if (tk != null && tk.value == ".") {
 				tk = iter.stepBackward();
 				if (tk != null) switch (tk.type) {

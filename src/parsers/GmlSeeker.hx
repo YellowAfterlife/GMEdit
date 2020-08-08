@@ -15,6 +15,7 @@ import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
 import parsers.GmlReader;
+import parsers.GmlSeekData;
 import tools.CharCode;
 import tools.Dictionary;
 import tools.Aliases;
@@ -82,6 +83,14 @@ class GmlSeeker {
 		+ "@(?:arg|param|argument)\\s+"
 		+ "(?:\\{.*?\\}\\s*)?" // {type}?
 		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value` -> $1
+	);
+	private static var jsDoc_hint = new RegExp("^///\\s*"
+		+ "@hint\\b"
+		+ "\\s*(\\w+)?" // namespace (opt.) -> $1
+		+ "\\s*([:.])" // separator -> $2
+		+ "\\s*(\\w+)" // field -> $3
+		+ "\\s*(\\(.*?\\))?" // args -> $4
+		+ "\\s*(.*)" // text -> $5
 	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
@@ -235,6 +244,7 @@ class GmlSeeker {
 								} else return null;
 							}
 							if (hasFunctionLiterals && flags.has(Define) && id == "function") return id;
+							if (flags.has(Static) && id == "static") return id;
 							if (flags.has(Ident)) return id;
 						}
 					};
@@ -334,6 +344,27 @@ class GmlSeeker {
 			if (exitAtCubDepth != null || funcsAreGlobal) flags |= Cub1;
 			s = find(flags);
 			if (s == null) continue;
+			function addFieldHint(namespace:String, isInst:Bool, field:String, args:String, info:String) {
+				if (namespace == null && doc != null) namespace = doc.name;
+					
+				var hintDoc:GmlFuncDoc = null;
+				if (args != null) {
+					args = StringTools.replace(args, "->", "➜");
+					var fa = field + args;
+					hintDoc = GmlFuncDoc.parse(fa);
+					info = NativeString.nzcct(fa, "\n", info);
+				}
+				var comp = new AceAutoCompleteItem(field, "field", info);
+				
+				if (namespace != null) {
+					var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc);
+					var lastHint = out.hintMap[hint.key];
+					if (lastHint == null) {
+						out.hintList.push(hint);
+						out.hintMap[hint.key] = hint;
+					} else lastHint.merge(hint);
+				}
+			}
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
 				if (main == null) continue; // don't parse JSDoc if we don't know where to put it
 				
@@ -347,6 +378,12 @@ class GmlSeeker {
 						if (arg.contains("...")) jsDocRest = true;
 						continue; // found!
 					}
+				}
+				
+				mt = jsDoc_hint.exec(s);
+				if (mt != null) {
+					addFieldHint(mt[1], mt[2] == ":", mt[3], mt[4], mt[5]);
+					continue; // found!
 				}
 				
 				// Classic JSDoc (`/// func(arg1, arg2)`) ?:
@@ -720,13 +757,16 @@ class GmlSeeker {
 						procLambdaIdent(s, locals);
 						continue;
 					}
+					var isConstructor = cubDepth == 1 && doc != null && doc.isConstructor;
 					if (GmlAPI.gmlKind[s] != null) continue;
 					if (GmlAPI.extKind[s] != null) continue;
-					if (GmlAPI.stdKind[s] != null) continue;
-					var skip = false, i;
-					if (skip) continue;
+					//
+					var kind = GmlAPI.stdKind[s];
+					var addInstField = (kind == null);
+					if (!addInstField && (kind != "variable" || !isConstructor)) continue;
 					// skip unless it's `some =` (and no `some ==`)
-					i = q.pos;
+					var skip = false;
+					var i = q.pos;
 					while (i < q.length) switch (q.get(i++)) {
 						case " ".code, "\t".code, "\r".code, "\n".code: { };
 						case "=".code: skip = q.get(i) == "=".code; break;
@@ -734,7 +774,7 @@ class GmlSeeker {
 					}
 					if (skip) continue;
 					// that's an instance variable then
-					if (out.instFieldMap[s] == null) {
+					if (addInstField && out.instFieldMap[s] == null) {
 						var fd = GmlAPI.gmlInstFieldMap[s];
 						if (fd == null) {
 							fd = new GmlField(s, "variable");
@@ -743,6 +783,32 @@ class GmlSeeker {
 						out.instFieldList.push(fd);
 						out.instFieldMap.set(s, fd);
 						out.instFieldComp.push(fd.comp);
+					}
+					//
+					if (isConstructor) {
+						var oldPos = q.pos;
+						q.pos = i;
+						q.skipSpaces1();
+						var args:String = null;
+						do {
+							if (!q.peek().isIdent0_ni()) continue;
+							var start = q.pos;
+							q.skipIdent1();
+							if (q.substring(start, q.pos) != "function") continue;
+							q.skipSpaces1();
+							if (q.peek().isIdent0_ni()) {
+								// though you've messed up if you did `static name = function name`
+								start = q.pos;
+								q.skipIdent1();
+								q.skipSpaces1();
+							}
+							start = q.pos;
+							if (q.read() != "(".code) continue;
+							while (q.read() != ")".code) {}
+							args = q.substring(start, q.pos);
+						} while (false);
+						addFieldHint(null, true, s, args, null);
+						q.pos = oldPos;
 					}
 				};
 			} // switch (s)
@@ -800,6 +866,7 @@ typedef GmlSeekerItem = {
 	var Sqb0;
 	var Sqb1;
 	var Colon;
+	var Static;
 	//
 	public inline function has(flag:GmlSeekerFlags) {
 		return this & flag != 0;

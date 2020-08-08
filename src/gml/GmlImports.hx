@@ -1,5 +1,6 @@
 package gml;
 import gml.GmlFuncDoc;
+import gml.GmlNamespace;
 import tools.Dictionary;
 using tools.NativeString;
 import ace.AceWrap;
@@ -32,7 +33,7 @@ class GmlImports {
 	public var longenEnum:Dictionary<String> = new Dictionary();
 	
 	/** namespace name -> namespace data */
-	public var namespaces:Dictionary<GmlNamespace> = new Dictionary();
+	public var namespaces:Dictionary<GmlImportNamespace> = new Dictionary();
 	
 	public var namespaceComp:AceAutoCompleteItems = [];
 	
@@ -47,10 +48,10 @@ class GmlImports {
 		//
 	}
 	//
-	public function ensureNamespace(space:String):GmlNamespace {
+	public function ensureNamespace(space:String):GmlImportNamespace {
 		var ns = namespaces[space];
 		if (ns != null) return ns;
-		ns = new GmlNamespace();
+		ns = new GmlImportNamespace();
 		var origKind = this.kind[space];
 		this.kind[space] = "namespace";
 		namespaceComp.push(new AceAutoCompleteItem(space, "namespace"));
@@ -108,7 +109,7 @@ class GmlImports {
 	) {
 		var isGlobal = long.startsWith("global.");
 		//
-		var ns:GmlNamespace, en:GmlEnum;
+		var ns:GmlImportNamespace, en:GmlEnum;
 		var nc:AceAutoCompleteItem;
 		inline function makeAliasComp():Void {
 			nc = comp.makeAlias(short);
@@ -225,45 +226,24 @@ class GmlImports {
 		field:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc,
 		space:String, isInst:Bool, cache:GmlImportsCache
 	) {
-		//
-		var ns:GmlNamespace = ensureNamespace(space);
-		var nc:AceAutoCompleteItem;
-		inline function makeAliasComp():Void {
-			nc = comp.makeAlias(field);
-			if (nc.doc == null) nc.doc = field;
-		}
-		ns.kind.set(field, doc != null ? "asset.script" : "field");
-		//
-		if (doc != null) {
-			if (isInst) {
-				ns.docs.set(field, doc);
-			} else {
-				docs.set(space + "." + field, doc);
+		var ns:GmlImportNamespace = ensureNamespace(space);
+		ns.addFieldHint(field, isInst, comp, doc);
+		if (!isInst) { // static-specific
+			if (doc != null) docs.set(space + "." + field, doc);
+			
+			if (!compMap.exists(space)) {
+				var nc = new AceAutoCompleteItem(space, "namespace", "type");
+				compMap.set(space, nc);
+				this.comp.push(nc);
 			}
 		}
-		//
-		if (!isInst && !compMap.exists(space)) {
-			nc = new AceAutoCompleteItem(space, "namespace", "type");
-			compMap.set(space, nc);
-			this.comp.push(nc);
-		}
-		//
-		if (comp != null) {
-			var compList = isInst ? ns.compInstList : ns.compStaticList;
-			var compMap = isInst ? ns.compInstMap : ns.compStaticMap;
-			// remove existing completion item if replacing
-			nc = compMap[field];
-			if (nc != null) compList.remove(nc);
-			// add the new one:
-			if (cache != null) {
-				nc = cache.nsComp;
-				if (nc == null) {
-					makeAliasComp();
-					cache.nsComp = nc;
-				}
-			} else makeAliasComp();
-			compMap.set(field, nc);
-			compList.push(nc);
+	}
+	public function removeFieldHint(space:String, isInst:Bool, field:String) {
+		var ns = namespaces[space];
+		if (ns == null) return;
+		ns.removeFieldHint(field, isInst);
+		if (!isInst) { // static-specific
+			docs.remove(space + "." + field);
 		}
 	}
 	//
@@ -274,28 +254,16 @@ typedef GmlImportsCache = {
 	?enumComps:AceAutoCompleteItems,
 	?enumNsComps:AceAutoCompleteItems,
 }
-class GmlNamespace {
-	public var kind:Dictionary<AceTokenType> = new Dictionary();
-	
+class GmlImportNamespace extends GmlNamespace {
 	/** "draw_text" in ns:"draw" -> "text" */
 	public var shorten:Dictionary<String> = new Dictionary();
 	
 	/** "text" in ns:"draw" -> "draw_text" */
 	public var longen:Dictionary<String> = new Dictionary();
 	
-	/** static (`Buffer.ptr`) completions */
-	public var compStaticList:AceAutoCompleteItems = [];
-	public var compStaticMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
-	
-	/** instance (`var b; b.ptr`) completions */
-	public var compInstList:AceAutoCompleteItems = [];
-	public var compInstMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
-	
-	
-	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
-	
+	/**
+	 * Means that the namespace is structurally complete and no extra variables can be used
+	 * on local variables with this namespace type.
+	 */
 	public var isStruct:Bool = false;
-	public function new() {
-		//
-	}
 }

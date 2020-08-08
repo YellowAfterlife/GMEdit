@@ -293,7 +293,7 @@ class GmlExtImport {
 	
 	/** `var v:Enum`, "v[Enum.field]" -> "v.field" */
 	static function pre_mapIdent_local(q:GmlReader, imp:GmlImports, ident:String, typeName:String, p0:Int):String {
-		var ns:GmlNamespace = imp.namespaces[typeName];
+		var ns = imp.namespaces[typeName];
 		var e:GmlEnum;
 		if (ns == null) {
 			e = GmlAPI.gmlEnums[typeName];
@@ -611,7 +611,7 @@ class GmlExtImport {
 		// `typedVar.field` -> `typedVar[fieldId]`:
 		var type = dot != -1 ? imp.localTypes[one] : null;
 		if (type != null) {
-			var ns:GmlNamespace = imp.namespaces[type], en:GmlEnum;
+			var ns = imp.namespaces[type], en:GmlEnum;
 			var ind:String = null;
 			var fd = reader.substring(dot + 1, p1);
 			if (ns != null) {
