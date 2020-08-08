@@ -216,14 +216,44 @@ class GmlFuncDoc {
 		return k;
 	}
 	
+	public static function splitOnSubFunctions(gml:String):Array<String> {
+		if (!GmlAPI.stdKind.exists("function")) return [gml];
+		var arr:Array<String> = [];
+		var start = 0;
+		var q = new GmlReader(gml);
+		while (q.loop) {
+			var n = q.skipCommon_inline();
+			if (n >= 0) continue;
+			//
+			var p = q.pos;
+			var c = q.read();
+			if (!c.isIdent0()) continue;
+			q.skipIdent1();
+			var id = q.substring(p, q.pos);
+			if (id != "function") continue;
+			//
+			while (q.loop && q.peek() != "{".code) q.skip();
+			var depth = 1;
+			while (q.loop) {
+				c = q.read();
+				switch (c) {
+					case "{".code: depth++;
+					case "}".code: if (--depth <= 0) break;
+					default: q.skipCommon_inline();
+				}
+			}
+			//
+			arr.push(gml.substring(start, p));
+			start = q.pos;
+		}
+		arr.push(gml.substring(start));
+		return arr;
+	}
+	
 	static var nameTrimPattern:String = null;
 	static var nameTrimRegex:RegExp = null;
 	public function fromCode(gml:String, from:Int = 0, ?_till:Int) {
-		var q = new GmlReader(gml);
 		var rx = fromCode_rx;
-		q.pos = from;
-		var start = from;
-		var till:Int = _till != null ? _till : gml.length;
 		clear();
 		//
 		{ // sync regex
@@ -245,6 +275,7 @@ class GmlFuncDoc {
 		var hasVarArg = false;
 		var hasVarArgRx = fromCode_hasVarArg;
 		var hasOpt = false;
+		var q:GmlReader = null, start:Int = 0;
 		function flush(p:Int):Void {
 			var chunk = q.substring(start, p);
 			rx.lastIndex = 0;
@@ -331,17 +362,22 @@ class GmlFuncDoc {
 			}
 		}
 		//
-		while (q.pos < till) {
-			var p = q.pos, n;
-			if (q.peek() == "/".code && q.peek(1) == "*".code && q.peek(2) == ":".code) {
-				q.pos += 2; q.skipComment(); n = -1;
-			} else n = q.skipCommon_inline();
-			if (n >= 0) {
-				flush(p);
-				start = q.pos;
-			} else q.skip();
+		var sections = splitOnSubFunctions(gml.substring(from, _till));
+		for (section in sections) {
+			q = new GmlReader(section);
+			start = 0;
+			while (q.loop) {
+				var p = q.pos, n;
+				if (q.peek() == "/".code && q.peek(1) == "*".code && q.peek(2) == ":".code) {
+					q.pos += 2; q.skipComment(); n = -1;
+				} else n = q.skipCommon_inline();
+				if (n >= 0) {
+					flush(p);
+					start = q.pos;
+				} else q.skip();
+			}
+			flush(q.pos);
 		}
-		flush(q.pos);
 		//
 		post = ")";
 		if (rest) post = "..." + post;
