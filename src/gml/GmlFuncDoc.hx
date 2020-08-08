@@ -3,6 +3,7 @@ import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.Aliases;
+import tools.RegExpCache;
 using StringTools;
 using tools.NativeString;
 
@@ -250,25 +251,21 @@ class GmlFuncDoc {
 		return arr;
 	}
 	
-	static var nameTrimPattern:String = null;
-	static var nameTrimRegex:RegExp = null;
+	static var nameTrimRegex = new RegExpCache();
+	
+	public function trimArgs():Void {
+		var ntrx = nameTrimRegex.update(Project.current.properties.argNameRegex);
+		if (ntrx == null) return;
+		for (i in 0 ... args.length) {
+			var mt = ntrx.exec(args[i]);
+			if (mt != null && mt[1] != null) args[i] = mt[1];
+		}
+	}
+	
 	public function fromCode(gml:String, from:Int = 0, ?_till:Int) {
 		var rx = fromCode_rx;
 		clear();
-		//
-		{ // sync regex
-			var pt = Project.current.properties.argNameRegex;
-			if (pt != nameTrimPattern) {
-				nameTrimPattern = pt;
-				nameTrimRegex = null;
-				if (pt != null) try {
-					nameTrimRegex = new RegExp(pt);
-				} catch (x:Dynamic) {
-					Main.console.error('Error compiling `$pt`:', x);
-				}
-			}
-		};
-		var ntrx = nameTrimRegex;
+		var ntrx = nameTrimRegex.update(Project.current.properties.argNameRegex);
 		//
 		var hasRet = false;
 		var hasRetRx = fromCode_hasRet;

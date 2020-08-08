@@ -1,5 +1,6 @@
 package ui;
 import ace.AceWrap;
+import electron.Dialog;
 import electron.FileSystem;
 import electron.FileWrap;
 import electron.Menu;
@@ -18,8 +19,11 @@ import js.html.SelectElement;
 import js.html.Window;
 import Main.document;
 import Main.console;
+import js.lib.RegExp;
 import tools.Dictionary;
+import tools.JsTools;
 import tools.NativeObject;
+import tools.NativeString;
 import ui.treeview.TreeView;
 import ui.preferences.PrefData;
 import ui.preferences.*;
@@ -156,6 +160,43 @@ class Preferences {
 			if (e.keyCode == KeyboardEvent.DOM_VK_RETURN) fn(cb.value);
 		});
 		ctr.appendChild(cb);
+		//
+		out.appendChild(ctr);
+		return ctr;
+	}
+	public static function addRegexPatternInput(out:Element, legend:String, curr:String, fn:String->Void):Element {
+		var ctr = document.createDivElement();
+		ctr.classList.add("input");
+		//
+		var lb = document.createLabelElement();
+		lb.htmlFor = legend;
+		lb.appendChild(document.createTextNode(legend));
+		ctr.appendChild(lb);
+		//
+		var fd = document.createInputElement();
+		fd.type = "text";
+		fd.value = JsTools.or(curr, "");
+		fd.name = legend;
+		inline function invoke() {
+			if (NativeString.trimBoth(fd.value) == "") {
+				fd.classList.remove("error");
+				fn(null);
+			} else try {
+				new RegExp(fd.value);
+				fd.classList.remove("error");
+				fn(fd.value);
+			} catch (x:Dynamic) {
+				fd.classList.add("error");
+				Dialog.showError('Error compiling a regular expression: $x');
+			}
+		}
+		fd.addEventListener("change", function(_) {
+			invoke();
+		});
+		fd.addEventListener("keydown", function(e:KeyboardEvent) {
+			if (e.keyCode == KeyboardEvent.DOM_VK_RETURN) invoke();
+		});
+		ctr.appendChild(fd);
 		//
 		out.appendChild(ctr);
 		return ctr;

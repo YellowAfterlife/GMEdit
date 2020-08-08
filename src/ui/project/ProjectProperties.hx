@@ -93,9 +93,9 @@ class ProjectProperties {
 		
 		//
 		var argRegexInput:InputElement = null;
-		el = Preferences.addInput(fs,
+		el = Preferences.addRegexPatternInput(fs,
 			"Regex for trimming argument name (e.g. `^_(\\w+)$`)",
-			or(d.argNameRegex, ""),
+			d.argNameRegex,
 		function(s) {
 			if (NativeString.trimBoth(s) == "") s = null;
 			if (s != null) try {
@@ -110,6 +110,18 @@ class ProjectProperties {
 			save(project, d);
 		});
 		argRegexInput = el.querySelectorAuto("input");
+		
+		//
+		var privateFieldRegexInput:InputElement = null;
+		el = Preferences.addRegexPatternInput(fs,
+			"Regex for determining that 2.3 struct variables are private (e.g. `^_` for anything starting with an underscore)",
+			d.privateFieldRegex,
+		function(s) {
+			if (NativeString.trimBoth(s) == "") s = null;
+			d.privateFieldRegex = s;
+			save(project, d);
+		});
+		privateFieldRegexInput = el.querySelectorAuto("input");
 		
 		//
 		var templateStringInput:InputElement = null;

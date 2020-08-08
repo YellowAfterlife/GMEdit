@@ -22,6 +22,8 @@ typedef ProjectData = {
 	
 	?argNameRegex:String,
 	
+	?privateFieldRegex:String,
+	
 	?templateStringScript:GmlName,
 	
 	?linterPrefs:parsers.linter.GmlLinterPrefs,

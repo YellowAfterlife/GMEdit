@@ -19,6 +19,7 @@ import parsers.GmlSeekData;
 import tools.CharCode;
 import tools.Dictionary;
 import tools.Aliases;
+import tools.RegExpCache;
 import ui.Preferences;
 import ui.treeview.TreeView;
 import yy.YyObject;
@@ -103,6 +104,8 @@ class GmlSeeker {
 		if (mt != null) return Std.parseInt("0x" + mt[1]);
 		return null;
 	}
+	
+	private static var privateFieldRC:RegExpCache = new RegExpCache();
 	
 	public static function runSyncImpl(
 		orig:FullPath, src:GmlCode, main:String, out:GmlSeekData, locals:GmlLocals, kind:FileKind
@@ -337,6 +340,8 @@ class GmlSeeker {
 			}
 		}
 		//
+		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
+		//
 		function doLoop(?exitAtCubDepth:Int) while (q.loop) {
 			var p:Int, flags:Int;
 			var c:CharCode, mt:RegExpMatch;
@@ -352,7 +357,8 @@ class GmlSeeker {
 					args = StringTools.replace(args, "->", "➜");
 					var fa = field + args;
 					hintDoc = GmlFuncDoc.parse(fa);
-					info = NativeString.nzcct(fa, "\n", info);
+					hintDoc.trimArgs();
+					info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 				}
 				var comp = new AceAutoCompleteItem(field, "field", info);
 				
@@ -495,6 +501,7 @@ class GmlSeeker {
 								linkDoc();
 							} else if (!isFunc || foundArg) {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
+								doc.trimArgs();
 								docIsAutoFunc = isFunc;
 								linkDoc();
 							}
@@ -757,13 +764,16 @@ class GmlSeeker {
 						procLambdaIdent(s, locals);
 						continue;
 					}
-					var isConstructor = cubDepth == 1 && doc != null && doc.isConstructor;
+					var isConstructorField = (cubDepth == 1
+						&& doc != null && doc.isConstructor
+						&& (privateFieldRegex == null || !privateFieldRegex.test(s))
+					);
 					if (GmlAPI.gmlKind[s] != null) continue;
 					if (GmlAPI.extKind[s] != null) continue;
 					//
 					var kind = GmlAPI.stdKind[s];
 					var addInstField = (kind == null);
-					if (!addInstField && (kind != "variable" || !isConstructor)) continue;
+					if (!addInstField && (kind != "variable" || !isConstructorField)) continue;
 					// skip unless it's `some =` (and no `some ==`)
 					var skip = false;
 					var i = q.pos;
@@ -785,7 +795,7 @@ class GmlSeeker {
 						out.instFieldComp.push(fd.comp);
 					}
 					//
-					if (isConstructor) {
+					if (isConstructorField) {
 						var oldPos = q.pos;
 						q.pos = i;
 						q.skipSpaces1();
