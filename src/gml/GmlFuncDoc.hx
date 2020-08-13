@@ -414,6 +414,7 @@ class GmlFuncDoc {
 					// argument[] access makes all arguments optional.
 					seekArg = false;
 					minArgsCache = 0;
+					rest = true;
 					if (!seekHasRet) return;
 				}
 				start = q.pos;
@@ -432,6 +433,7 @@ class GmlFuncDoc {
 		}
 		if (seekArg && hasArgRx.test(chunk)) {
 			minArgsCache = 0;
+			rest = true;
 		}
 	}
 	
