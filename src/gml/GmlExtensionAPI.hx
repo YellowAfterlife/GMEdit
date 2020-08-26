@@ -25,14 +25,15 @@ class GmlExtensionAPI {
 		GmlFile.openTab(new GmlFile("api: " + ident, path, kind));
 	}
 	//
-	static function procFn(name:String, exname:String, help:String, argc:Int, hidden:Bool):String {
+	static function procFn(name:String, exname:String, help:String, args:Array<String>, hidden:Bool):String {
 		var r = help;
 		if (r == "") {
 			r = name + "(";
-			if (argc >= 0) for (i in 0 ... argc) {
-				if (i > 0) r += ", ";
-				r += "v" + i;
-			} else r += "...";
+			var sep = false;
+			for (arg in args) {
+				if (sep) r += ", "; else sep = true;
+				r += arg;
+			}
 			r += ")";
 		} else {
 			var p = r.indexOf(")");
@@ -74,11 +75,18 @@ class GmlExtensionAPI {
 			var linesShow = [], linesHide = [];
 			for (fn in file.find("functions").findAll("function")) {
 				var hidden = fn.findText("help") == "";
+				var argc = fn.findInt("argCount");
+				var args:Array<String> = [];
+				if (argc < 0) {
+					args.push("...");
+				} else for (arg in fn.find("args").findAll("arg")) {
+					args.push((arg.text == "1" ? "s" : "v") + args.length);
+				}
 				(hidden ? linesHide : linesShow).push(procFn(
 					fn.findText("name"),
 					fn.findText("externalName"),
 					fn.findText("help"),
-					fn.findInt("argCount"),
+					args,
 					hidden
 				));
 			}
@@ -109,8 +117,14 @@ class GmlExtensionAPI {
 		for (file in ext.files) {
 			var linesShow = [], linesHide = [];
 			for (fn in file.functions) {
+				var args = [];
+				if (fn.argCount < 0) {
+					args.push("...");
+				} else for (arg in fn.args) {
+					args.push((arg == 1 ? "s" : "v") + args.length);
+				}
 				(fn.hidden ? linesHide : linesShow).push(procFn(
-					fn.name, fn.externalName, fn.help, fn.argCount, fn.hidden));
+					fn.name, fn.externalName, fn.help, args, fn.hidden));
 			}
 			for (mc in file.constants) {
 				(mc.hidden ? linesHide : linesShow).push(procMc(
