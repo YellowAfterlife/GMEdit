@@ -91,7 +91,12 @@ class AceGotoLine {
 				} else {
 					row -= 1;
 					if (GmlExternAPI.gmlResetOnDefine) {
-						var ctr = q.editor.statusBar.contextRow;
+						var rxReset = new RegExp('^(?:#define|#event|#section|#moment|#target)\\b');
+						var ctr = q.editor.selection.lead.row;
+						while (ctr >= 0) {
+							if (rxReset.test(q.editor.session.getLine(ctr))) break;
+							ctr--;
+						}
 						if (ctr >= 0) row += ctr + 1;
 					}
 					editor.gotoLine0(row, 0);
