@@ -32,9 +32,10 @@ using tools.PathTools;
  * @author YellowAfterlife
  */
 class GmlSeeker {
-	public static inline var maxAtOnce = 8;
+	public static inline var maxAtOnce = 16;
 	public static var itemsLeft:Int = 0;
 	static var itemQueue:Array<GmlSeekerItem> = [];
+	static var lastLabelUpdateTime:Float = 0;
 	public static function start() {
 		itemsLeft = 0;
 		itemQueue.resize(0);
@@ -69,6 +70,11 @@ class GmlSeeker {
 	public static function runNext():Void {
 		var left = --itemsLeft;
 		var item = itemQueue.shift();
+		var now = Date.now().getTime();
+		if (lastLabelUpdateTime < now - 333) {
+			lastLabelUpdateTime = now;
+			Project.nameNode.innerText = 'Indexing (${itemQueue.length})...';
+		}
 		if (item != null) {
 			runItem(item);
 		} else if (left <= 0) {
