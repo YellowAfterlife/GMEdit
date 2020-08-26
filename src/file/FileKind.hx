@@ -15,6 +15,7 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 @:keep class FileKind {
+	public static var inst:FileKind = new FileKind();
 	public static var map:Dictionary<Array<FileKind>> = new Dictionary();
 	public static function register(fileExt:String, file:FileKind):Void {
 		var arr = map[fileExt];

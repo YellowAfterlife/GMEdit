@@ -24,6 +24,12 @@ import file.kind.misc.*;
  */
 class YyLoader {
 	static var nextYypContent:String = null;
+	
+	/** Only to be used during indexing */
+	static var folderMap:Dictionary<TreeViewDir> = null;
+	
+	static var itemsToInsert:Array<{item:TreeViewItem,dir:TreeViewDir}> = null;
+	
 	public static inline function isV23(yypContent:String) {
 		return yypContent.contains('"resourceType": "GMProject"');
 	}
@@ -37,6 +43,7 @@ class YyLoader {
 		if (isV23(yyProjectTxt)) {
 			project.yyExtJson = true;
 			project.yyUsesGUID = false;
+			project.isGMS23 = true;
 		} else {
 			yy.v22.YyLoaderV22.run(project, YyJson.parse(yyProjectTxt));
 			return;
@@ -44,6 +51,8 @@ class YyLoader {
 		var yyProject:YyProject = YyJsonParser.parse(yyProjectTxt);
 		//
 		var folderMap = new Dictionary<TreeViewDir>();
+		itemsToInsert = [];
+		YyLoader.folderMap = folderMap;
 		var folderPairs = [];
 		for (folder in yyProject.Folders) {
 			//

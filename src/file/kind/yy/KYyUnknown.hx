@@ -4,7 +4,9 @@ import gml.GmlAPI;
 import gml.Project;
 import gml.file.GmlFile;
 import js.html.DivElement;
+import js.lib.RegExp;
 import ui.treeview.TreeView;
+import yy.*;
 using tools.NativeString;
 
 /**
@@ -15,11 +17,22 @@ using tools.NativeString;
 class KYyUnknown extends FileKind {
 	public static var inst:KYyUnknown = new KYyUnknown();
 	
+	static var rxParentPath:RegExp = new RegExp(
+		'\n  "parent":\\s*\\{'
+		+ '[^}]*"path":\\s*"([^"]+)\\.yy"'
+	);
 	override public function index(path:String, content:String, main:String):Bool {
-		var resource:yy.YyResource = yy.YyJson.parse(content);
-		var detect = KYy.inst.detect(path, resource);
+		var mtParentPath = rxParentPath.exec(content);
+		var resource:YyResource = null;
+		var parentPath:String = {
+			var mt = rxParentPath.exec(content);
+			if (mt != null) {
+				resource = YyJson.parse(content);
+				resource.parent.path;
+			} else mt[1];
+		}
+		var detect = KYy.inst.detect(path, resource != null ? resource : parentPath);
 		//
-		var parentPath = resource.parent.path;
 		if (parentPath.endsWith(".yy")) {
 			parentPath = parentPath.substring(0, parentPath.length - 3);
 		}
@@ -27,10 +40,10 @@ class KYyUnknown extends FileKind {
 		var resType = resource.resourceType;
 		Project.current.yyResourceTypes[resource.name] = resType;
 		//
-		var dir = TreeView.find(false, {
-			rel: parentPath
-		});
-		var full = gml.Project.current.fullPath(path);
+		var dir = @:privateAccess YyLoader.folderMap[parentPath];
+		if (dir == null) dir = cast TreeView.find(false, { rel: parentPath });
+		//
+		var full = Project.current.fullPath(path);
 		if (dir != null) {
 			var makeEl = true;
 			var kind = resType.substring(2).toLowerCase();
@@ -57,7 +70,11 @@ class KYyUnknown extends FileKind {
 			if (makeEl) {
 				var item = TreeView.makeAssetItem(name, path, full, kind);
 				item.yyOpenAs = detect.kind;
-				TreeView.insertSorted(cast dir, item);
+				@:privateAccess YyLoader.itemsToInsert.push({
+					item: item,
+					dir: dir
+				});
+				//TreeView.insertSorted(dir, item);
 				switch (resType) {
 					case "GMSprite": TreeView.setThumbSprite(full, name, item);
 				}

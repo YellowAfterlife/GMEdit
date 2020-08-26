@@ -78,6 +78,9 @@ import ui.treeview.TreeView;
 	public var yyResourceTypes:Dictionary<String>;
 	/** GUID -> URL */
 	public var yySpriteURLs:Dictionary<String>;
+	
+	/** Whether this is a new-format GMS2.3 project */
+	public var isGMS23:Bool = false;
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
 	public var yyExtJson:Bool = false;
 	/** This will be false for 2.3 */
@@ -278,6 +281,13 @@ import ui.treeview.TreeView;
 	public function finishedIndexing() {
 		nameNode.innerText = displayName;
 		if (current.hasGMLive) ui.GMLive.updateAll();
+		//
+		if (isGMS23) {
+			@:privateAccess YyLoader.folderMap = null;
+			for (pair in @:privateAccess YyLoader.itemsToInsert) {
+				TreeView.insertSorted(pair.dir, pair.item);
+			}
+		}
 		// try restoring tabs:
 		var state = firstLoadState;
 		if (state != null) {
