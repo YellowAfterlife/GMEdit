@@ -7,6 +7,8 @@ import electron.Shell;
 import gml.GmlAPI;
 import gml.file.GmlFile;
 import gml.Project;
+import haxe.Constraints.Function;
+import haxe.extern.EitherType;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.InputElement;
@@ -14,11 +16,15 @@ import js.html.KeyboardEvent;
 import js.html.Element;
 import js.html.MouseEvent;
 import js.html.WheelEvent;
+import tools.Dictionary;
+import tools.JsTools;
 import ui.ChromeTabs;
 import ace.AceWrap;
 import ace.extern.*;
+import ace.extern.AceHashHandler;
 import ace.extern.AceCommand;
 using StringTools;
+using tools.NativeString;
 using tools.HtmlTools;
 
 /**
@@ -26,165 +32,202 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class KeyboardShortcuts {
-	static function prevTab() {
-		var tab = document.querySelector(".chrome-tab-current");
-		if (tab == null) return;
-		var next = tab.previousElementSibling;
-		if (next == null) next = tab.parentElement.lastElementChild;
-		if (next != null) next.click();
-	}
-	static function nextTab() {
-		var tab = document.querySelector(".chrome-tab-current");
-		if (tab == null) return;
-		var next = tab.nextElementSibling;
-		if (next == null) next = tab.parentElement.firstElementChild;
-		if (next != null) next.click();
-	}
-	private static inline var NONE = 0;
-	private static inline var CTRL = 1;
-	private static inline var SHIFT = 2;
-	private static inline var ALT = 4;
-	private static inline var META = 8;
-	private static inline function getEventFlags(e:HasKeyboardFlags):Int {
-		var flags = 0x0;
-		if (e.ctrlKey) flags |= CTRL;
-		if (e.shiftKey) flags |= SHIFT;
-		if (e.altKey) flags |= ALT;
-		if (e.metaKey) flags |= META;
-		return flags;
-	}
-	public static function keydown(e:KeyboardEvent) {
-		var flags = getEventFlags(e);
-		var keyCode = e.keyCode;
-		var isAlt = (flags == ALT);
-		var isMod = (flags == CTRL || flags == META);
-		var isShift = flags == SHIFT;
-		var isShiftMod = (flags == SHIFT + CTRL || flags == SHIFT + META);
-		switch (keyCode) {
-			case KeyboardEvent.DOM_VK_F2: {
-				if (isMod) {
-					js.Syntax.code("formatAceGMLContents();");
-				}
-			};
-			case KeyboardEvent.DOM_VK_F5: {
-				// debug
-				//document.location.reload(true);
-			};
-			case KeyboardEvent.DOM_VK_TAB: {
-				if (isShiftMod) {
-					e.preventDefault();
-					prevTab();
-				}
-				if (isMod) {
-					e.preventDefault();
-					nextTab();
-				}
-			};
-			case KeyboardEvent.DOM_VK_PAGE_DOWN: {
-				if (isMod) {
-					e.preventDefault();
-					nextTab();
-				}
-			};
-			case KeyboardEvent.DOM_VK_PAGE_UP: {
-				if (isMod) {
-					e.preventDefault();
-					prevTab();
-				}
-			};
-			case KeyboardEvent.DOM_VK_I: {
-				if (isShiftMod && Electron != null) {
-					Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
-				}
-			};
-			#if !lwedit
-			case KeyboardEvent.DOM_VK_R: {
-				if (isMod) {
-					e.preventDefault();
-					if (Project.current != null) {
-						Project.current.reload();
-					}
-				}
-			};
-			#end
-			case KeyboardEvent.DOM_VK_W: {
-				if (isMod) {
-					e.preventDefault();
-					var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
-					if (q != null) {
-						q.click();
-					} else if (document.querySelectorAll(".chrome-tab").length == 0) {
-						Project.open("");
-					}
-				}
-				if (isShiftMod) {
-					e.preventDefault();
-					for (q in document.querySelectorAll(
-						".chrome-tab:not(.chrome-tab-current) .chrome-tab-close"
-					)) {
-						var qe:Element = cast q; qe.click();
-					}
-				}
-			};
-			case KeyboardEvent.DOM_VK_S: {
-				if (isMod) {
-					// for code editors, this is handled in AceCommands
-					e.preventDefault();
-					var q = GmlFile.current;
-					if (q != null) {
-						q.save();
-					}
-				} else if (isShiftMod) {
-					e.preventDefault();
-					for (tabEl in ChromeTabs.impl.tabEls) {
-						var file = tabEl.gmlFile;
-						if (file != null) file.save();
-					}
-				}
-				#if lwedit
-				ui.liveweb.LiveWebState.save();
-				#end
-			};
-			case KeyboardEvent.DOM_VK_F: {
-				if (isMod) e.preventDefault();
-				#if !lwedit
-				if (isShiftMod) GlobalSearch.toggle();
-				#end
-			};
-			case KeyboardEvent.DOM_VK_T: {
-				#if lwedit
-				if (isAlt) {
-					e.preventDefault();
-					GlobalLookup.toggle(">");
-				} else
-				#end
-				if (isShiftMod) {
-					e.preventDefault();
-					GlobalLookup.toggle(">");
-				} else if (isMod) {
-					e.preventDefault();
-					GlobalLookup.toggle();
-				}
-			};
-			case KeyboardEvent.DOM_VK_9: {
-				if (isMod) {
-					e.preventDefault();
-					var tabs = document.querySelectorEls(".chrome-tab");
-					var tabEl:Element = tabs[tabs.length - 1];
-					if (tabEl != null) tabEl.click();
-				}
-			};
-			default: {
-				if (isMod
-				&& keyCode >= KeyboardEvent.DOM_VK_1
-				&& keyCode <= KeyboardEvent.DOM_VK_8) {
-					e.preventDefault();
-					var tabs = document.querySelectorEls(".chrome-tab");
-					var tabEl:Element = cast tabs[keyCode - KeyboardEvent.DOM_VK_1];
-					if (tabEl != null) tabEl.click();
-				}
-			};
+	static var commands:Dictionary<KeyboardEvent->Void> = new Dictionary();
+	static var hashHandler:AceHashHandler;
+	static var hashHandlerCtx:AceHashHandlerKeyContext;
+	//
+	static var pressedKeys:Dictionary<Int> = new Dictionary();
+	static var ctrlAltTimestamp = 0.;
+	static var currentEvent:KeyboardEvent;
+	
+	static function initCommands():Void {
+		hashHandler = new AceHashHandler();
+		//
+		var rxMod = new RegExp("\\bmod\\-");
+		var hh = hashHandler;
+		function keyToCommandKey(key:String):AceCommandKey {
+			if (rxMod.test(key)) {
+				return {
+					win: key.replaceExt(rxMod, "ctrl-"),
+					mac: key.replaceExt(rxMod, "cmd-"),
+				};
+			} else return key;
 		}
+		function addCommand(name:String, keys:EitherType<String, Array<String>>, exec:Void->Void):Void {
+			var multikey = Std.is(keys, Array);
+			var key = multikey ? keys[0] : keys;
+			hh.addCommand({
+				bindKey: keyToCommandKey(key),
+				name: name,
+				exec: cast exec,
+			});
+			if (multikey) {
+				var keys:Array<String> = keys;
+				for (i in 1 ... keys.length) {
+					hh.bindKey(keyToCommandKey(keys[i]), name);
+				}
+			}
+		}
+		addCommand("prev-tab", ["mod-shift-tab", "mod-pageup"], function() {
+			var tab = document.querySelector(".chrome-tab-current");
+			if (tab == null) return;
+			var next = tab.previousElementSibling;
+			if (next == null) next = tab.parentElement.lastElementChild;
+			if (next != null) next.click();
+		});
+		addCommand("next-tab", ["mod-tab", "mod-pagedown"], function() {
+			var tab = document.querySelector(".chrome-tab-current");
+			if (tab == null) return;
+			var next = tab.nextElementSibling;
+			if (next == null) next = tab.parentElement.firstElementChild;
+			if (next != null) next.click();
+		});
+		addCommand("dev-tools", "mod-shift-i", function() {
+			if (Electron == null) return;
+			Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+		});
+		//
+		#if !lwedit
+		addCommand("dev-tools", "mod-r", function() {
+			if (Project.current != null) {
+				Project.current.reload();
+			}
+		});
+		#end
+		//
+		addCommand("close-tab", "mod-w", function() {
+			var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
+			if (q != null) {
+				q.click();
+			} else if (document.querySelectorAll(".chrome-tab").length == 0) {
+				Project.open("");
+			}
+		});
+		addCommand("close-others", "mod-shift-w", function() {
+			for (q in document.querySelectorAll(
+				".chrome-tab:not(.chrome-tab-current) .chrome-tab-close"
+			)) {
+				var qe:Element = cast q; qe.click();
+			}
+		});
+		//
+		addCommand("save-tab", "mod-s", function() {
+			var q = GmlFile.current;
+			if (q != null) q.save();
+		});
+		addCommand("save-all", "mod-shift-s", function() {
+			for (tabEl in ChromeTabs.impl.tabEls) {
+				var file = tabEl.gmlFile;
+				if (file != null) file.save();
+			}
+			#if lwedit
+			ui.liveweb.LiveWebState.save();
+			#end
+		});
+		//
+		addCommand("local-search", "mod-f", function() {
+			// maybe later
+		});
+		addCommand("global-search", "mod-shift-f", function() {
+			GlobalSearch.toggle();
+		});
+		//
+		var lookupPre = Electron != null ? "mod" : "alt";
+		addCommand("global-lookup", '$lookupPre-t', function() {
+			GlobalLookup.toggle();
+		});
+		addCommand("command-palette", '$lookupPre-shift-t', function() {
+			GlobalLookup.toggle(">");
+		});
+		//
+		addCommand("switch-to-last-tab", "mod-9", function() {
+			var tabs = document.querySelectorEls(".chrome-tab");
+			var tabEl:Element = tabs[tabs.length - 1];
+			if (tabEl != null) tabEl.click();
+		});
+		for (i in 1 ... 9) {
+			addCommand('switch-to-tab-$i', 'mod-$i', function() {
+				var tabs = document.querySelectorEls(".chrome-tab");
+				var tabEl:Element = cast tabs[i - 1];
+				if (tabEl != null) tabEl.click();
+			});
+		}
+	}
+	
+	static function handleKey(e:KeyboardEvent, hashId:Int, keyCode:Int) {
+		var keyString = AceKeys.keyCodeToString(keyCode);
+		var result = hashHandler.handleKeyboard(hashHandlerCtx, hashId, keyString, keyCode);
+		if (result == null
+			|| result.command == null
+			|| result.command == "null" // see this.$callKeyboardHandlers in ace.js
+		) return null;
+		currentEvent = e;
+		var command:AceCommand = result.command;
+		e.preventDefault();
+		command.exec(aceEditor);
+		currentEvent = null;
+		return false;
+	}
+	
+	/**
+	 * Pretty much a replica of Ace's normalizeCommandKeys
+	 */
+	static function normalizeCommandKeys(e:KeyboardEvent, keyCode:Int) {
+		var hashId = 0 | (e.ctrlKey ? 1 : 0) | (e.altKey ? 2 : 0) | (e.shiftKey ? 4 : 0) | (e.metaKey ? 8 : 0);
+		inline function getLocation():Int {
+			var location = e.location;
+			if (location == null) location = Reflect.field(e, "keyLocation");
+			return location;
+		}
+		// AltGr shenanigans
+		if (!AceUserAgent.isMac) {
+			if (e.getModifierState("OS") || e.getModifierState("Win")) hashId |= 8;
+			if (pressedKeys["altGr"] > 0) {
+				if ((hashId & 3) != 3) {
+					pressedKeys["altGr"] = 0;
+				} else return false;
+			}
+			if (keyCode == KeyboardEvent.DOM_VK_CONTROL || keyCode == KeyboardEvent.DOM_VK_ALT) {
+				var location = getLocation();
+				if (keyCode == KeyboardEvent.DOM_VK_CONTROL && location == 1) {
+					if (pressedKeys["" + keyCode] == 1) ctrlAltTimestamp = e.timeStamp;
+				} else if (keyCode == KeyboardEvent.DOM_VK_ALT && hashId == 3 && location == 2) {
+					var dt = e.timeStamp - ctrlAltTimestamp;
+					if (dt < 50) pressedKeys["altGr"] = 1;
+				}
+			}
+		}
+		//
+		switch (keyCode) {
+			case KeyboardEvent.DOM_VK_SHIFT,
+				KeyboardEvent.DOM_VK_CONTROL,
+				KeyboardEvent.DOM_VK_ALT,
+				KeyboardEvent.DOM_VK_META
+			: keyCode = -1;
+		}
+		// Windows, Menu, ?
+		if ((hashId & 8) != 0 && (keyCode >= 91 && keyCode <= 93)) keyCode = -1;
+		// a different Enter key..?
+		if (hashId == 0 && keyCode == 13) {
+			var location = getLocation();
+			if (location == 3) {
+				handleKey(e, hashId, -keyCode);
+				if (e.defaultPrevented) return null;
+			}
+		}
+		// some Chrome OS hack?
+		if (AceUserAgent.isChromeOS && (hashId & 8) != 0) {
+			handleKey(e, hashId, keyCode);
+			if (e.defaultPrevented) return null;
+			hashId &= ~8;
+		}
+		// illegal key?
+		if (hashId == 0
+			&& !AceKeys.FUNCTION_KEYS.exists(keyCode)
+			&& !AceKeys.PRINTABLE_KEYS.exists(keyCode)
+		) return false;
+		// OK?
+		return handleKey(e, hashId, keyCode);
 	}
 	//
 	static function initSystemButtons(closeButton:Element) {
@@ -210,7 +253,31 @@ class KeyboardShortcuts {
 		});
 	}
 	public static function initGlobal() {
-		document.body.addEventListener("keydown", KeyboardShortcuts.keydown);
+		hashHandlerCtx = new AceHashHandlerKeyContext(aceEditor);
+		initCommands();
+		//
+		var lastDefaultPrevented:Bool = null;
+		document.body.addEventListener("keydown", function(e:KeyboardEvent) {
+			var kcs = Std.string(e.keyCode);
+			pressedKeys[kcs] = JsTools.or(pressedKeys[kcs], 0) + 1;
+			var result = normalizeCommandKeys(e, e.keyCode);
+			lastDefaultPrevented = e.defaultPrevented;
+			return result;
+		});
+		document.body.addEventListener("keypress", function(e:KeyboardEvent) {
+			if (lastDefaultPrevented && (e.ctrlKey || e.altKey || e.shiftKey || e.metaKey)) {
+				e.stopPropagation();
+				e.preventDefault();
+				lastDefaultPrevented = null;
+			}
+		});
+		document.body.addEventListener("keyup", function(e:KeyboardEvent) {
+			pressedKeys[Std.string(e.keyCode)] = null;
+		});
+		window.addEventListener("focus", function() {
+			pressedKeys = new Dictionary();
+		});
+		//
 		initSystemButtons(document.querySelector(".system-button.close"));
 	}
 	public static function initEditor(editor:AceWrap) {
@@ -231,9 +298,8 @@ class KeyboardShortcuts {
 		});
 		editor.on("mousewheel", function(ev:Dynamic) {
 			var dom:WheelEvent = ev.domEvent;
-			var flags = getEventFlags(dom);
 			if (Preferences.current.ctrlWheelFontSize) do {
-				if (flags != CTRL && flags != META) break;
+				if (!dom.ctrlKey && !dom.metaKey) break;
 				var delta = dom.deltaY;
 				if (delta == 0) break;
 				delta = delta < 0 ? 1 : -1;
