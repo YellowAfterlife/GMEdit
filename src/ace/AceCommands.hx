@@ -7,6 +7,7 @@ import js.lib.RegExp;
 import tools.CharCode;
 import tools.NativeString;
 import ui.CommandPalette;
+import ace.extern.AceCommand;
 using StringTools;
 
 /**

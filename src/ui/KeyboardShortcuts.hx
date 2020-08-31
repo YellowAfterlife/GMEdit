@@ -17,6 +17,7 @@ import js.html.WheelEvent;
 import ui.ChromeTabs;
 import ace.AceWrap;
 import ace.extern.*;
+import ace.extern.AceCommand;
 using StringTools;
 using tools.HtmlTools;
 
