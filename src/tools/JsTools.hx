@@ -10,7 +10,7 @@ class JsTools {
 	/** raw JS (a || b) */
 	public static inline function or<T>(a:T, b:T):T {
 		#if !macro
-		return js.Syntax.code("({0} || {1})", a, b);
+		return js.Syntax.code("(({0}) || ({1}))", a, b);
 		#else
 		return untyped (a || b);
 		#end
