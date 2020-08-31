@@ -92,6 +92,9 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		AceEditor.editWrap = function(q) return new AceWrap(q);
 		window.AceEditSession = AceEditor.require("ace/edit_session").EditSession;
 		window.AceUndoManager = AceEditor.require("ace/undomanager").UndoManager;
+		window.AceUserAgent = AceEditor.require("ace/lib/useragent");
+		window.AceHashHandler = AceEditor.require("ace/keyboard/hash_handler").HashHandler;
+		window.AceKeys = AceEditor.require("ace/lib/keys");
 		window.AceTokenIterator = AceEditor.require("ace/token_iterator").TokenIterator;
 		var ns_autocomplete = AceEditor.require("ace/autocomplete");
 		window.AceAutocomplete = ns_autocomplete.Autocomplete;
