@@ -91,5 +91,6 @@ class PrefCode {
 				untyped Main.aceEditor.showSettingsMenu();
 			});
 		});
+		addButton(out, "Edit Keyboard Shortcuts", function() editors.EditKeybindings.open());
 	}
 }

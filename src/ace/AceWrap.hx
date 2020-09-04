@@ -34,6 +34,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		if (o.preferences != false) ui.Preferences.bindEditor(this);
 		if (o.scrollMode != false) new ScrollMode().bind(this);
 		if (o.dispatchEvent != false) plugins.PluginEvents.editorCreated({editor:this, options:o});
+		editors.EditKeybindings.initEditor(this);
 		
 		// I don't know how I'm supposed to track Vim module loading up, so:
 		var setKeyboardHandler_base:js.lib.Function = cast this.keyBinding.setKeyboardHandler;

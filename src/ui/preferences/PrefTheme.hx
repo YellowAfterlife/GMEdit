@@ -1,5 +1,6 @@
 package ui.preferences;
 import js.html.Element;
+import js.html.FieldSetElement;
 import ui.Preferences.*;
 import Main.document;
 import electron.FileSystem;
@@ -27,19 +28,20 @@ class PrefTheme {
 				if (FileSystem.existsSync(full)) themeList.push(name);
 			}
 		}
-		var el:Element = addRadios(out, "Theme", current.theme, themeList, function(theme) {
+		var fs:FieldSetElement = addRadios(out, "Theme", current.theme, themeList, function(theme) {
 			current.theme = theme;
 			Theme.current = theme;
 			save();
 		});
-		el.id = "pref-theme";
-		el = el.querySelector('legend');
-		el.appendChild(document.createTextNode(" ("));
-		el.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-themes", "wiki"));
+		addGroupToggle(fs);
+		fs.id = "pref-theme";
+		var lg = fs.querySelector('legend');
+		lg.appendChild(document.createTextNode(" ("));
+		lg.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-themes", "wiki"));
 		if (FileSystem.canSync) {
-			el.appendChild(document.createTextNode("; "));
-			el.append(createShellAnchor(FileWrap.userPath + "/themes", "manage"));
+			lg.appendChild(document.createTextNode("; "));
+			lg.append(createShellAnchor(FileWrap.userPath + "/themes", "manage"));
 		}
-		el.appendChild(document.createTextNode(")"));
+		lg.appendChild(document.createTextNode(")"));
 	}
 }

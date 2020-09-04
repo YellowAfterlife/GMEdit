@@ -32,8 +32,7 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class KeyboardShortcuts {
-	static var commands:Dictionary<KeyboardEvent->Void> = new Dictionary();
-	static var hashHandler:AceHashHandler;
+	public static var hashHandler:AceHashHandler;
 	static var hashHandlerCtx:AceHashHandlerKeyContext;
 	//
 	static var pressedKeys:Dictionary<Int> = new Dictionary();
@@ -68,34 +67,34 @@ class KeyboardShortcuts {
 				}
 			}
 		}
-		addCommand("prev-tab", ["mod-shift-tab", "mod-pageup"], function() {
+		addCommand("previousTab", ["mod-shift-tab", "mod-pageup"], function() {
 			var tab = document.querySelector(".chrome-tab-current");
 			if (tab == null) return;
 			var next = tab.previousElementSibling;
 			if (next == null) next = tab.parentElement.lastElementChild;
 			if (next != null) next.click();
 		});
-		addCommand("next-tab", ["mod-tab", "mod-pagedown"], function() {
+		addCommand("nextTab", ["mod-tab", "mod-pagedown"], function() {
 			var tab = document.querySelector(".chrome-tab-current");
 			if (tab == null) return;
 			var next = tab.nextElementSibling;
 			if (next == null) next = tab.parentElement.firstElementChild;
 			if (next != null) next.click();
 		});
-		addCommand("dev-tools", "mod-shift-i", function() {
+		addCommand("toggleDevTools", "mod-shift-i", function() {
 			if (Electron == null) return;
 			Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
 		});
 		//
 		#if !lwedit
-		addCommand("dev-tools", "mod-r", function() {
+		addCommand("reloadProject", "mod-r", function() {
 			if (Project.current != null) {
 				Project.current.reload();
 			}
 		});
 		#end
 		//
-		addCommand("close-tab", "mod-w", function() {
+		addCommand("closeTab", "mod-w", function() {
 			var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
 			if (q != null) {
 				q.click();
@@ -103,7 +102,7 @@ class KeyboardShortcuts {
 				Project.open("");
 			}
 		});
-		addCommand("close-others", "mod-shift-w", function() {
+		addCommand("closeOtherTabs", "mod-shift-w", function() {
 			for (q in document.querySelectorAll(
 				".chrome-tab:not(.chrome-tab-current) .chrome-tab-close"
 			)) {
@@ -111,11 +110,11 @@ class KeyboardShortcuts {
 			}
 		});
 		//
-		addCommand("save-tab", "mod-s", function() {
+		addCommand("saveTab", "mod-s", function() {
 			var q = GmlFile.current;
 			if (q != null) q.save();
 		});
-		addCommand("save-all", "mod-shift-s", function() {
+		addCommand("saveAll", "mod-shift-s", function() {
 			for (tabEl in ChromeTabs.impl.tabEls) {
 				var file = tabEl.gmlFile;
 				if (file != null) file.save();
@@ -125,28 +124,28 @@ class KeyboardShortcuts {
 			#end
 		});
 		//
-		addCommand("local-search", "mod-f", function() {
+		addCommand("localSearch", "mod-f", function() {
 			// maybe later
 		});
-		addCommand("global-search", "mod-shift-f", function() {
+		addCommand("globalSearch", "mod-shift-f", function() {
 			GlobalSearch.toggle();
 		});
 		//
 		var lookupPre = Electron != null ? "mod" : "alt";
-		addCommand("global-lookup", '$lookupPre-t', function() {
+		addCommand("globalLookup", '$lookupPre-t', function() {
 			GlobalLookup.toggle();
 		});
-		addCommand("command-palette", '$lookupPre-shift-t', function() {
+		addCommand("commandPalette", '$lookupPre-shift-t', function() {
 			GlobalLookup.toggle(">");
 		});
 		//
-		addCommand("switch-to-last-tab", "mod-9", function() {
+		addCommand("switchToLastTab", "mod-9", function() {
 			var tabs = document.querySelectorEls(".chrome-tab");
 			var tabEl:Element = tabs[tabs.length - 1];
 			if (tabEl != null) tabEl.click();
 		});
 		for (i in 1 ... 9) {
-			addCommand('switch-to-tab-$i', 'mod-$i', function() {
+			addCommand('switchToTab$i', 'mod-$i', function() {
 				var tabs = document.querySelectorEls(".chrome-tab");
 				var tabEl:Element = cast tabs[i - 1];
 				if (tabEl != null) tabEl.click();
@@ -161,8 +160,12 @@ class KeyboardShortcuts {
 			|| result.command == null
 			|| result.command == "null" // see this.$callKeyboardHandlers in ace.js
 		) return null;
+		var command:AceCommand;
+		if (Std.is(result.command, String)) {
+			command = hashHandler.commands[result.command];
+		} else command = result.command;
+		if (command == null) return null;
 		currentEvent = e;
-		var command:AceCommand = result.command;
 		e.preventDefault();
 		command.exec(aceEditor);
 		currentEvent = null;
@@ -278,6 +281,7 @@ class KeyboardShortcuts {
 			pressedKeys = new Dictionary();
 		});
 		//
+		editors.EditKeybindings.initGlobal();
 		initSystemButtons(document.querySelector(".system-button.close"));
 	}
 	public static function initEditor(editor:AceWrap) {

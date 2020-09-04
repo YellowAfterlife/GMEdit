@@ -1,7 +1,10 @@
 package tools;
 
+import haxe.iterators.DynamicAccessIterator;
+import haxe.iterators.DynamicAccessKeyValueIterator;
+
 /**
- * ...
+ * This is _almost_ like haxe.DynamicAccess, but with some JS-specific tricks.
  * @author YellowAfterlife
  */
 #if (js)
@@ -47,6 +50,13 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	}
 	public inline function keys():Array<String> {
 		return Reflect.fields(this);
+	}
+	//
+	public inline function keyValueIterator():DynamicAccessKeyValueIterator<T> {
+		return new DynamicAccessKeyValueIterator(this);
+	}
+	public inline function forEach(fn:String->T->Void):Void {
+		NativeObject.forField(this, function(s) fn(s, get(s)));
 	}
 }
 #else

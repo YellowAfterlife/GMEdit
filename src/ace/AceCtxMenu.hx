@@ -41,12 +41,13 @@ class AceCtxMenu {
 		}
 		var commandAccels = new Dictionary<String>();
 		for (k in editor.commands.commandKeyBinding.keys()) {
-			var cmd = editor.commands.commandKeyBinding[k];
 			k = k.charAt(0).toUpperCase() + k.substring(1);
 			k = k.replaceExt(AceMacro.jsRx(~/-(\w)/g), function(_, c) {
 				return "+" + c.toUpperCase();
 			});
-			commandAccels.set(cmd.name, k);
+			for (cmdName in editor.commands.getCommandNamesForKeybinding(k)) {
+				commandAccels.set(cmdName, k);
+			}
 		}
 		function cmdItem(cmd:String, label:String):MenuItem {
 			var item = new MenuItem({

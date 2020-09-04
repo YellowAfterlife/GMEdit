@@ -1,4 +1,5 @@
 package ui;
+import gml.file.GmlFile;
 import js.html.OptionElement;
 import js.lib.RegExp;
 import tools.NativeString;
@@ -42,6 +43,12 @@ class CommandPalette {
 		add({
 			name: "Reload GMEdit",
 			exec: function() Main.document.location.reload()
+		});
+		add({
+			name: "Edit keybinds",
+			exec: function() {
+				editors.EditKeybindings.open();
+			}
 		});
 	}
 }

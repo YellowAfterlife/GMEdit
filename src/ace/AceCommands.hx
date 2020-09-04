@@ -29,11 +29,7 @@ using StringTools;
 		var key:String = null;
 		if (kb == null) kb = cmd.bindKey;
 		if (kb == null) {
-			var ckb = editor.commands.commandKeyBinding;
-			for (k in ckb.keys()) {
-				var ckv = ckb[k];
-				if (ckv == cmd || (cast ckv) == cmdName) { key = k; break; } 
-			}
+			kb = editor.commands.getKeybindingsForCommand(cmdName)[0];
 		}
 		if (kb == null || key != null) {
 			// OK!
@@ -71,7 +67,7 @@ using StringTools;
 	}
 	
 	/** Removes a command from the editor(s) */
-	@:doc public static function remove(command:EitherType<AceCommand, String>) {
+	@:doc public static function remove(command:AceCommandOrName) {
 		Main.aceEditor.commands.removeCommand(command);
 	}
 	

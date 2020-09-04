@@ -62,11 +62,21 @@
 	color: #FFB871;
 }
 .popout-window input[type="text"],
+.popout-window input[type="button"],
 .popout-window select {
 	border: 1px solid #495057;
 	background: #222;
 	color: white;
 }
+.popout-window input[type="button"] {
+	border: 1px solid #697077;
+	background: linear-gradient(to bottom, #495057, #222);
+}
+.popout-window input[type="button"]:hover {
+	background: #495057;
+	border: 1px solid #aaa;
+}
+
 
 /* gutter */
 #main .ace_gutter,

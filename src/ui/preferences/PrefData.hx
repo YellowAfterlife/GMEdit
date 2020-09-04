@@ -43,6 +43,9 @@ typedef PrefData = {
 	extensionAPIOrder:Int,
 	backupCount:DynamicAccess<Int>,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
+	
+	/** section -> commandName -> keybinds */
+	customizedKeybinds:DynamicAccess<DynamicAccess<Array<String>>>,
 }
 enum abstract PrefMatchMode(Int) from Int to Int {
 	/// GMS1 style

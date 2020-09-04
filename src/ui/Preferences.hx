@@ -14,6 +14,7 @@ import js.html.Element;
 import js.html.FieldSetElement;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
+import js.html.LegendElement;
 import js.html.MouseEvent;
 import js.html.SelectElement;
 import js.html.Window;
@@ -58,12 +59,27 @@ class Preferences {
 		return mm;
 	}
 	//
+	public static function addGroupToggle(fs:FieldSetElement) {
+		var lg:LegendElement = fs.querySelectorAuto("legend");
+		lg.addEventListener("click", function(e:MouseEvent) {
+			if (e.target == lg) fs.classList.toggle("collapsed");
+		});
+		/*var cb = document.createInputElement();
+		cb.type = "checkbox";
+		cb.checked = true;
+		cb.title = "Show/hide group";
+		cb.onchange = function(_) {
+			fs.classList.setTokenFlag("collapsed", !cb.checked);
+		};
+		lg.prepend(cb);*/
+	}
 	public static function addGroup(out:Element, legend:String):FieldSetElement {
 		var fs = document.createFieldSetElement();
 		fs.classList.add("group");
 		var lg = document.createLegendElement();
-		lg.innerText = legend;
+		lg.appendChild(document.createTextNode(legend));
 		fs.appendChild(lg);
+		addGroupToggle(fs);
 		out.appendChild(fs);
 		return fs;
 	}
@@ -352,6 +368,7 @@ class Preferences {
 			tooltipKeyboardDelay: 0,
 			tooltipKind: Custom,
 			linterPrefs: {},
+			customizedKeybinds: {},
 		};
 		// load/merge defaults:
 		var doSave = false;
