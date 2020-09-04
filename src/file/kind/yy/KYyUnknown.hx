@@ -19,26 +19,45 @@ class KYyUnknown extends FileKind {
 	
 	static var rxParentPath:RegExp = new RegExp(
 		'\n  "parent":\\s*\\{'
-		+ '[^}]*"path":\\s*"([^"]+)\\.yy"'
+		+ '[^}]*"path":\\s*"([^"]+?)(\\.yy)?"'
 	);
+	static var rxName = new RegExp('\n  "name": "([^"]+)');
+	static var rxResourceType = new RegExp('\n  "resourceType": "([^"]+)');
 	override public function index(path:String, content:String, main:String):Bool {
 		var mtParentPath = rxParentPath.exec(content);
 		var resource:YyResource = null;
 		var parentPath:String = {
 			var mt = rxParentPath.exec(content);
-			if (mt != null) {
+			if (mt == null) {
 				resource = YyJson.parse(content);
 				resource.parent.path;
 			} else mt[1];
 		}
-		var detect = KYy.inst.detect(path, resource != null ? resource : parentPath);
+		//
+		var resType:String;
+		if (resource == null) {
+			var mt = rxResourceType.exec(content);
+			if (mt == null) {
+				resource = YyJson.parse(content);
+				resType = resource.resourceType;
+			} else resType = mt[1];
+		} else resType = resource.resourceType;
+		//
+		var detect = KYy.inst.detect(path, resource != null ? resource : content);
 		//
 		if (parentPath.endsWith(".yy")) {
 			parentPath = parentPath.substring(0, parentPath.length - 3);
 		}
 		//
-		var resType = resource.resourceType;
-		Project.current.yyResourceTypes[resource.name] = resType;
+		var name:String;
+		if (resource == null) {
+			var mt = rxName.exec(content);
+			if (mt == null) {
+				resource = YyJson.parse(content);
+				name = resource.name;
+			} else name = mt[1];
+		} else name = resource.name;
+		Project.current.yyResourceTypes[name] = resType;
 		//
 		var dir = @:privateAccess YyLoader.folderMap[parentPath];
 		if (dir == null) dir = cast TreeView.find(false, { rel: parentPath });
@@ -47,7 +66,6 @@ class KYyUnknown extends FileKind {
 		if (dir != null) {
 			var makeEl = true;
 			var kind = resType.substring(2).toLowerCase();
-			var name = resource.name;
 			switch (resType) {
 				case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 					"GMScript", "GMShader", "GMFont", "GMTimeline",

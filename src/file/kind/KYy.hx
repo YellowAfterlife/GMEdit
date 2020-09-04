@@ -36,7 +36,7 @@ class KYy extends FileKind {
 		var json:YyBase, isObject:Bool;
 		if (data != null) {
 			json = data;
-			isObject = Reflect.isObject(json);
+			isObject = !Std.is(json, String);
 		} else try {
 			json = FileWrap.readYyFileSync(path);
 			isObject = true;
