@@ -1,4 +1,5 @@
 package ace;
+import ace.extern.AceDelayedCall;
 import ace.extern.AcePos;
 import ace.extern.AceSession;
 import ace.extern.AceToken;
@@ -23,13 +24,18 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class AceTooltips {
-	static var ttip:AceTooltip;
-	static var text:String = null;
+	var ttip:AceTooltip;
+	var text:String = null;
+	var token:AceToken = null;
+	var timeout:Int = null;
+	var kbdc:AceDelayedCall;
+	//
 	static var spriteThumbs:Dictionary<String> = new Dictionary();
 	public static function resetCache():Void {
 		spriteThumbs = new Dictionary();
 	}
-	static function update(session:AceSession, pos:AcePos, token:AceToken) {
+	//
+	function update(session:AceSession, pos:AcePos, token:AceToken) {
 		var t = token.type;
 		var v = token.value;
 		var r:String = null;
@@ -198,20 +204,18 @@ class AceTooltips {
 			if (r != null && !z) ttip.setText(r);
 		}
 	}
-	public static function bind(editor:AceWrap) {
-		var token:AceToken = null;
+	function new(editor:AceWrap) {
 		ttip = new AceTooltip(editor.container);
-		var visible = false;
-		var timeout:Int = null;
 		var content = editor.container.querySelector(".ace_content");
 		inline function show():Void {
-			if (!visible) { visible = true; ttip.show(); }
+			ttip.show();
 		}
 		inline function hide():Void {
-			if (visible) { visible = false; ttip.hide(); }
+			ttip.hide();
 		}
 		inline function stop():Void {
 			if (timeout != null) { Main.window.clearTimeout(timeout); timeout = null; }
+			kbdc.cancel();
 		}
 		function sync(pos:AcePos, x:Float, y:Float) {
 			var line = editor.session.getLine(pos.row);
@@ -235,6 +239,10 @@ class AceTooltips {
 		editor.on("mousedown", function(_) {
 			hide();
 		});
+		editor.on("blur", function(_) {
+			hide();
+			stop();
+		});
 		editor.on("mousemove", function(ev:Dynamic) {
 			var pc = Preferences.current;
 			if (pc.tooltipKind == None) return;
@@ -251,7 +259,7 @@ class AceTooltips {
 		});
 		//
 		var lang = AceWrap.require("ace/lib/lang");
-		var kbdc = lang.delayedCall(function updateKeyboard() {
+		kbdc = lang.delayedCall(function updateKeyboard() {
 			var session = editor.session;
 			var selection = session.selection;
 			if (!selection.isEmpty()) return;
@@ -273,5 +281,8 @@ class AceTooltips {
 			var t = Preferences.current.tooltipKeyboardDelay;
 			if (t > 0) kbdc.schedule(t);
 		});
+	}
+	public static function bind(editor:AceWrap) {
+		editor.tooltipManager = new AceTooltips(editor);
 	}
 }
