@@ -121,23 +121,23 @@ class TreeViewItemMenus {
 		if (asDir || filter == "file") {
 			for (c in tvDir.treeItems.children) {
 				if (c.getAttribute(TreeView.attrLabel) == s) {
-					Dialog.showAlert("Group already exists!");
+					Dialog.showError("Group already exists!");
 					return false;
 				}
 			}
 			if (filter == "file") {
 				if ((new RegExp("[\\/*?\"<>|]")).test(s)) {
-					Dialog.showAlert("Not a valid file name");
+					Dialog.showError("Not a valid file name!");
 					return false;
 				}
 			}
 		} else {
 			if (!(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
-				Dialog.showAlert("Name contains illegal characters!");
+				Dialog.showError("Name contains illegal characters!");
 				return false;
 			}
 			if (TreeView.find(true, {ident:s}) != null) {
-				Dialog.showAlert("Item already exists!");
+				Dialog.showError("Item already exists!");
 				return false;
 			}
 		}
