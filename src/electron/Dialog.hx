@@ -10,127 +10,98 @@ import js.lib.Promise;
 import js.lib.Uint8Array;
 import Main.document;
 
-/**
- * https://electronjs.org/docs/api/dialog
- * @author YellowAfterlife
- */
-@:native("Electron_Dialog") extern class Dialog {
-	@:native("showMessageBox")
-	public static function showMessageBoxPromise(options:DialogMessageOptions):Promise<DialogPromiseProps>;
-	public static function showMessageBoxSync(options:DialogMessageOptions):Int;
-	public static inline function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int {
-		return DialogFallback.showMessageBoxProxy(options, async);
-	}
+class Dialog {
 	
-	public static inline function showAlert(s:String):Void {
-		DialogFallback.showAlert(s);
-	}
-	public static inline function showError(s:String):Void {
-		DialogFallback.showError(s);
-	}
-	
-	@:native("showOpenDialog")
-	public static function showOpenDialogPromise(options:DialogOpenOptions):Promise<DialogOpenFileResult>;
-	public static function showOpenDialogSync(options:DialogOpenOptions):Array<String>;
-	public static inline function showOpenDialog(
-		options:DialogOpenOptions, ?async:Array<String>->Void
-	):Array<String> {
-		return DialogFallback.showOpenDialogProxy(options, async);
-	}
-	
-	public static inline function showOpenDialogWrap(
-		options:DialogOpenOptions, func:FileList->Void
-	):Void {
-		DialogFallback.showOpenDialogWrap(options, func);
-	}
-	
-	public static inline function showPrompt(text:String, def:String, fn:String->Void):Void {
-		DialogFallback.showPrompt(text, def, fn);
-	}
-	
-	public static inline function showConfirm(text:String):Bool {
-		return DialogFallback.showConfirmProxy(text);
-	}
-	
-	public static inline function showConfirmWarn(text:String):Bool {
-		return DialogFallback.showConfirmWarnProxy(text);
-	}
-	
-	/*public static inline function showConfirmBoxSync(text:String, title:String) {
-		//if (Dialog 
-	}*/
-}
-@:keep class DialogFallback {
-	//
-	private static var form:FormElement;
-	private static var input:InputElement;
-	
-	public static function showMessageBoxProxy(options:DialogMessageOptions, async:Int->Bool->Void):Int {
+	/**
+	 * The most advanced dialog box you can get.
+	 * Only available on Electron.
+	 */
+	public static function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int {
 		if (Electron == null) {
 			Main.console.error("Don't have a showMessageBox here");
 			return -1;
 		} else if (async != null) {
-			Dialog.showMessageBoxPromise(options).then(function(result) {
+			Electron_Dialog.showMessageBox(options).then(function(result) {
 				async(result.response, result.checkboxChecked);
 			});
 			return -1;
-		} else return Dialog.showMessageBoxSync(options);
+		} else return Electron_Dialog.showMessageBoxSync(options);
 	}
 	
-	public static function showOpenDialogProxy(options:DialogOpenOptions, async:Array<String>->Void):Array<String> {
-		if (Electron == null) {
-			Main.console.log("Don't have sync showOpenDialog here");
-			return null;
-		} else if (async != null) {
-			Dialog.showOpenDialogPromise(options).then(function(result) {
-				async(result.canceled ? null : result.filePaths);
-			});
-			return null;
-		} else return Dialog.showOpenDialogSync(options);
-	}
-	
-	public static function showAlert(s:String):Void {
+	/**
+	 * Shows a generic message box.
+	 */
+	public static function showAlert(message:String):Void {
 		if (Electron != null) {
-			Dialog.showMessageBoxSync({
+			Electron_Dialog.showMessageBoxSync({
 				type: "info",
-				message: s,
+				message: message,
 				buttons: ["OK"],
 			});
-		} else Main.window.alert(s);
+		} else Main.window.alert(message);
 	}
-	public static function showError(s:String):Void {
+	
+	/**
+	 * Shows a message with an error indicator.
+	 * Generally used for reporting errors.
+	 */
+	public static function showError(message:String):Void {
 		if (Electron != null) {
-			Dialog.showMessageBoxSync({
+			Electron_Dialog.showMessageBoxSync({
 				type: "error",
-				message: s,
+				message: message,
 				buttons: ["OK"],
 			});
-		} else Main.window.alert(s);
+		} else Main.window.alert("❌ " + message);
 	}
-	public static function showConfirmProxy(text:String):Bool {
+	
+	/**
+	 * Shows a yes/no dialog box.
+	 */
+	public static function showConfirm(text:String):Bool {
 		if (Electron != null) {
-			return Dialog.showMessageBoxSync({
+			return Electron_Dialog.showMessageBoxSync({
 				type: "question",
 				message: text,
 				buttons: ["Yes", "No"],
 			}) == 0;
 		} else return Main.window.confirm(text);
 	}
-	public static function showConfirmWarnProxy(text:String):Bool {
+	
+	/**
+	 * Shows a yes/no dialog box with a warning sign of some sort.
+	 * Generally used for confirmations that may result in loss of work.
+	 */
+	public static function showConfirmWarn(text:String):Bool {
 		if (Electron != null) {
-			return Dialog.showMessageBoxSync({
+			return Electron_Dialog.showMessageBoxSync({
 				type: "warning",
 				message: text,
 				buttons: ["Yes", "No"],
 			}) == 0;
-		} else return Main.window.confirm(text);
+		} else return Main.window.confirm("⚠ " + text);
 	}
 	
+	public static function showOpenDialog(options:DialogOpenOptions, ?async:Array<String>->Void):Array<String> {
+		if (Electron == null) {
+			Main.console.log("Don't have sync showOpenDialog here");
+			return null;
+		} else if (async != null) {
+			Electron_Dialog.showOpenDialog(options).then(function(result) {
+				async(result.canceled ? null : result.filePaths);
+			});
+			return null;
+		} else return Electron_Dialog.showOpenDialogSync(options);
+	}
+	
+	//{
+	private static var form:FormElement;
+	private static var input:InputElement;
 	public static function showOpenDialogWrap(
 		options:DialogOpenOptions, func:FileList->Void
 	):Void {
 		if (Electron != null) {
-			Dialog.showOpenDialog(options, function(paths:Array<String>) {
+			showOpenDialog(options, function(paths:Array<String>) {
 				var files:Array<File> = [];
 				if (paths != null) for (path in paths) {
 					var raw = FileSystem.readFileSync(path);
@@ -168,6 +139,8 @@ import Main.document;
 		form.style.display = "none";
 		Main.document.body.appendChild(form);
 	}
+	//}
+	
 	//
 	static var promptCtr:Element;
 	static var promptSpan:Element;
@@ -232,6 +205,19 @@ import Main.document;
 		}
 	}
 }
+
+/**
+ * https://electronjs.org/docs/api/dialog
+ * @author YellowAfterlife
+ */
+@:native("Electron_Dialog") extern class Electron_Dialog {
+	public static function showMessageBox(options:DialogMessageOptions):Promise<DialogPromiseProps>;
+	public static function showMessageBoxSync(options:DialogMessageOptions):Int;
+	
+	public static function showOpenDialog(options:DialogOpenOptions):Promise<DialogOpenFileResult>;
+	public static function showOpenDialogSync(options:DialogOpenOptions):Array<String>;
+}
+
 //
 typedef DialogPromiseProps = { response:Int, checkboxChecked:Bool };
 typedef DialogOpenFileResult = { canceled:Bool, filePaths:Array<String> };
