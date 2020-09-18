@@ -204,6 +204,23 @@ class Dialog {
 			buttons.appendChild(bt);
 		}
 	}
+	
+	public static function initWorkarounds() {
+		// https://github.com/electron/electron/issues/20400
+		untyped js.Browser.window.alert = function(text) {
+			Electron_Dialog.showMessageBoxSync({
+				message: text,
+				buttons: ["OK"],
+			});
+		};
+		untyped js.Browser.window.confirm = function(text) {
+			return Electron_Dialog.showMessageBoxSync({
+				type: "question",
+				message: text,
+				buttons: ["OK", "Cancel"],
+			}) == 0;
+		};
+	}
 }
 
 /**

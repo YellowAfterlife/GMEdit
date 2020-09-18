@@ -30,6 +30,7 @@ import haxe.extern.EitherType;
 			load("Electron_API", "electron");
 			load("Electron_FS", "fs");
 			set("Electron_Dialog", remote.dialog);
+			Dialog.initWorkarounds();
 			set("Electron_IPC", ipcRenderer);
 			set("Electron_Shell", shell);
 			set("Electron_Menu", remote.Menu);
