@@ -102,6 +102,7 @@ using tools.HtmlTools;
 		var checkRefKind = opt.checkRefKind;
 		var repl:Dynamic = opt.replaceBy;
 		var filterFn:Function = opt.findFilter;
+		var lineFilter = opt.lineFilter;
 		var ctxFilter = opt.headerFilter;
 		var ctxFilterFn:GlobalSearchCtxFilter = Syntax.typeof(ctxFilter) == "function" ? ctxFilter : null;
 		var ctxFilterRx:RegExp = Std.is(ctxFilter, RegExp) ? ctxFilter : null;
@@ -162,7 +163,9 @@ using tools.HtmlTools;
 					if (isRepl || ctxLink != ctxLast) {
 						// todo: show multiple changes on the same line combined
 						var curr:Dynamic = mt.length > 1 ? mt : mt[0];
-						if (filterFn == null || filterFn(curr)) {
+						if ((filterFn == null || filterFn(curr))
+							&& (lineFilter == null || lineFilter(line))
+						) {
 							saveItem = { row: pos.row, code: line, next: null };
 							saveItems.push(saveItem);
 							saveCtxItems.push(saveItem);
@@ -454,6 +457,7 @@ using tools.HtmlTools;
 typedef GlobalSearchOpt = {
 	find:EitherType<String, RegExp>,
 	?findFilter:Function,
+	?lineFilter:String->Bool,
 	?replaceBy:EitherType<String, Function>,
 	?previewReplace:Bool,
 	wholeWord:Bool,
