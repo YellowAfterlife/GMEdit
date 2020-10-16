@@ -118,13 +118,14 @@ class YyLoaderV22 {
 				var name:String, rel:String;
 				var type = val.resourceType;
 				//
+				var treeLocPath = '`$path` (in ${view.id}.yy)';
 				if (treeLocation.exists(el)) {
 					Main.console.warn('Resource `$el` ('
 						+ (type == "GMFolder" ? views[res.Key].folderName : val.resourcePath)
-						+ ') exists in two places at once, `$path` and `' + treeLocation[el]
+						+ ') exists in two places at once, $treeLocPath and `' + treeLocation[el]
 						+ '`. This may cause GMS2 to remove your resource on load.'
 					);
-				} else treeLocation[el] = path;
+				} else treeLocation[el] = treeLocPath;
 				//
 				function loadrec_dir(vdir:YyView, name:String) {
 					if (out == null) {
