@@ -10,14 +10,16 @@ import haxe.macro.Expr;
 class AceMacro {
 	public static macro function timestamp() {
 		var now = Date.now();
-		var out = DateTools.format(now, "%b %e, %Y");
+		var pretty = DateTools.format(now, "%b %e, %Y");
+		var short = DateTools.format(now, "%F");
 		var dir = Sys.getCwd();
 		dir = Path.removeTrailingSlashes(dir);
 		dir = Path.withoutDirectory(dir);
-		var path = "bin/buildnumber.txt";
+		var path = "bin";
 		if (dir == "src") path = "../" + path;
-		sys.io.File.saveContent(path, out);
-		return macro $v{out};
+		sys.io.File.saveContent('$path/buildnumber.txt', short);
+		sys.io.File.saveContent('$path/builddate.txt', pretty);
+		return macro $v{pretty};
 	}
 	
 	public static macro function rxRule(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
