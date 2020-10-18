@@ -77,6 +77,22 @@ class FileWrap {
 		} else Project.current.mkdirSync(path);
 	}
 	
+	public static function readdirSync(path:String) {
+		if (Path.isAbsolute(path)) {
+			var out:Array<ProjectDirInfo> = [];
+			for (rel in FileSystem.readdirSync(path)) {
+				var itemFull = Path.join([path, rel]);
+				out.push({
+					fileName: rel,
+					relPath: itemFull,
+					fullPath: itemFull,
+					isDirectory: FileSystem.statSync(itemFull).isDirectory()
+				});
+			}
+			return out;
+		} else return Project.current.readdirSync(path);
+	}
+	
 	public static function openExternal(path:String):Void {
 		if (Path.isAbsolute(path)) {
 			Shell.openItem(path);

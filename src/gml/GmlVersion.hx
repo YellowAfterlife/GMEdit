@@ -145,9 +145,10 @@ class GmlVersion {
 			}
 			//
 			selfConf.projectModeId = switch (selfConf.projectMode) {
-				case "gms1": 1;
-				case "gms2": 2;
-				default: 0;
+				case "gms1": GMS1;
+				case "gms2": GMS2;
+				case "gmk-splitter": GmkSplitter;
+				default: Other;
 			}
 			//
 			v.label = selfConf.name;

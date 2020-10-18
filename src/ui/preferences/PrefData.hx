@@ -43,6 +43,9 @@ typedef PrefData = {
 	extensionAPIOrder:Int,
 	backupCount:DynamicAccess<Int>,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
+	//
+	?gmkSplitPath:String,
+	?gmkSplitOpenExisting:Bool,
 	
 	/** section -> commandName -> keybinds */
 	customizedKeybinds:DynamicAccess<DynamicAccess<Array<String>>>,

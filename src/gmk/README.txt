@@ -1,0 +1,1 @@
+Very limited legacy version support through GMK-Splitter https://github.com/Medo42/Gmk-Splitter

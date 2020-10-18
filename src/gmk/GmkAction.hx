@@ -1,15 +1,12 @@
-package gmx;
+package gmk;
 import gmx.SfGmx;
-import js.lib.RegExp;
-import parsers.GmlReader;
-using tools.NativeString;
 
 /**
  * ...
  * @author YellowAfterlife
  */
-class GmxAction {
-	static var impl = new GmxActionImpl();
+class GmkAction {
+	static var impl = new GmkActionImpl();
 	public static var errorText:String;
 	public static function getCode(action:SfGmx):String {
 		var code = impl.getCode(action);

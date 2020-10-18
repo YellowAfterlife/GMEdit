@@ -1,0 +1,17 @@
+{
+	"parent": "gml1",
+	"name": "GameMaker≤8.1 (via gmk-splitter)",
+	
+	"docMode": "gmk-splitter",
+	"projectMode": "gmk-splitter",
+	"indexingMode": "gmk-splitter",
+	"loadingMode": "gmk-splitter",
+	"searchMode": "gmk-splitter",
+	
+	"hasEventSections": true,
+	"hasEventActions": true,
+	
+	"projectRegex": "Global Game Settings\\.xml$",
+	"helpURL": "http://docs.yoyogames.com/?tab=i&page=$1",
+	"helpIndex": "helpindexdat.js"
+}

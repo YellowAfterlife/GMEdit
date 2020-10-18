@@ -44,6 +44,7 @@ class FileDrag {
 				}
 			};
 			case "yyp": Project.open(path);
+			case "gmd", "gmk", "gm81": gmk.GmkSplit.proc(path);
 			case "gml": {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 				GmlFile.open(Path.withoutExtension(name), path);

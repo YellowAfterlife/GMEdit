@@ -42,6 +42,19 @@ class Dialog {
 	}
 	
 	/**
+	 * Shows a message box with a warning sign of some sort.
+	 */
+	public static function showWarning(message:String):Void {
+		if (Electron != null) {
+			Electron_Dialog.showMessageBoxSync({
+				type: "warning",
+				message: message,
+				buttons: ["OK"],
+			});
+		} else Main.window.alert("⚠ " + message);
+	}
+	
+	/**
 	 * Shows a message with an error indicator.
 	 * Generally used for reporting errors.
 	 */

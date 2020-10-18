@@ -60,8 +60,11 @@ typedef GmlVersionConfig = {
 	/** Used for magic and other features */
 	var projectMode:String;
 	
-	/** 1, 2, or 0 */
-	var ?projectModeId:Int;
+	/**
+	 * Used to shortcut some checks in project handling code.
+	 * This is set automatically based on `projectMode` in `GmlVersion.init`
+	 */
+	var ?projectModeId:GmlVersionProjectModeId;
 	
 	/** If specified, will be used on a directory-less path to detect project version */
 	var projectRegex:String;
@@ -102,6 +105,12 @@ typedef GmlVersionConfig = {
 	
 	/** Documentation index file path (for official documentation) */
 	var helpIndex:String;
+}
+enum abstract GmlVersionProjectModeId(Int) from Int to Int {
+	var Other = 0;
+	var GMS1 = 1;
+	var GMS2 = 2;
+	var GmkSplitter = -81;
 }
 enum abstract GmlVersionConfigIndexingMode(String) {
 	var GMS1 = "gms1";

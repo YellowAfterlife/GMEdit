@@ -13,14 +13,15 @@ import js.html.Element;
 import js.html.MouseEvent;
 import parsers.GmlSeekData;
 import parsers.GmlSeeker;
-import raw.RawLoader;
 import tools.Dictionary;
 import tools.Aliases;
 import gml.GmlAPI;
 import plugins.PluginEvents;
 import plugins.PluginManager;
 import ace.AceWrap;
+import gmk.*;
 import gmx.*;
+import raw.*;
 import yy.*;
 import Main.window;
 import Main.document;
@@ -314,12 +315,14 @@ import ui.treeview.TreeView;
 		loaderMap = {
 			"gms1": GmxLoader.run,
 			"gms2": YyLoader.run,
+			"gmk-splitter": GmkLoader.run,
 			"directory": RawLoader.run,
 		};
 		searchMap = {
 			"gms1": GmxSearcher.run,
 			"gms2": YySearcher.run,
-			"directory": raw.RawSearcher.run,
+			"gmk-splitter": GmkSearcher.run,
+			"directory": RawSearcher.run,
 		};
 		//
 		var ls = window.localStorage;
@@ -528,6 +531,12 @@ import ui.treeview.TreeView;
 	public function readGmxFileSync(path:String):SfGmx {
 		return FileSystem.readGmxFileSync(fullPath(path));
 	}
+	public function writeGmxFileSync(path:String, gmx:SfGmx) {
+		writeTextFileSync(path, gmx.toGmxString());
+	}
+	public function writeGmkSplitFileSync(path:String, xml:SfGmx) {
+		writeTextFileSync(path, xml.toGmkSplitString());
+	}
 	//
 	/**
 	 * Reads a JSON file relative to #config directory.
@@ -571,14 +580,15 @@ import ui.treeview.TreeView;
 	 */
 	public function getSpriteURL(name:String):String {
 		var vi = version.config.projectModeId;
-		if (vi == 0) return null;
+		if (vi == Other) return null;
 		if (spriteURLs.exists(name)) {
 			return spriteURLs[name];
 		}
 		var r:String;
 		switch (vi) {
-			case 1: r = getImageURL("sprites/images/" + name + "_0.png");
-			case 2: {
+			case GmkSplitter: r = getImageURL("sprites/" + name + ".images/image 0.png");
+			case GMS1: r = getImageURL("sprites/images/" + name + "_0.png");
+			case GMS2: {
 				var g:YyGUID = yyResourceGUIDs[name];
 				if (g != null) {
 					if (yySpriteURLs.exists(g)) {
@@ -622,14 +632,21 @@ import ui.treeview.TreeView;
 			return;
 		}
 		switch (version.config.projectModeId) {
-			case 1: {
+			case GmkSplitter: {
+				var full = fullPath("sprites/" + name + ".images/image 0.png");
+				FileSystem.access(full, FileSystemAccess.Exists, function(e) {
+					full = e == null ? "file:///" + full : null;
+					now(full);
+				});
+			}
+			case GMS1: {
 				var full = fullPath("sprites/images/" + name + "_0.png");
 				FileSystem.access(full, FileSystemAccess.Exists, function(e) {
 					full = e == null ? "file:///" + full : null;
 					now(full);
 				});
 			}
-			case 2: {
+			case GMS2: {
 				var g:YyGUID = yyResourceGUIDs[name];
 				if (g != null) {
 					if (yySpriteURLs.exists(g)) {

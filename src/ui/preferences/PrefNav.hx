@@ -1,4 +1,5 @@
 package ui.preferences;
+import electron.Electron;
 import js.html.Element;
 import ui.Preferences.*;
 import gml.GmlAPI;
@@ -88,6 +89,10 @@ class PrefNav {
 		});
 		addCheckbox(out, "Close associated tab(s) when deleting a resource in GMEdit", current.closeTabsOnFileDeletion, function(v) {
 			current.closeTabsOnFileDeletion = v; save();
+		});
+		//
+		if (Electron != null) addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
+			current.gmkSplitPath = v; save();
 		});
 		#end
 	}
