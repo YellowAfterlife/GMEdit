@@ -32,6 +32,7 @@ class KCode extends FileKind {
 		return data != null ? data : FileWrap.readTextFileSync(editor.file.path);
 	}
 	public function saveCode(editor:EditCode, code:String):Bool {
+		if (editor.file.path == null) return false;
 		FileWrap.writeTextFileSync(editor.file.path, code);
 		return true;
 	}
