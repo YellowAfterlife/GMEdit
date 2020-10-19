@@ -62,6 +62,7 @@ class YyLoader {
 			}
 			//
 			var folderDir = TreeView.makeAssetDir(folder.name, folderPath, "mixed");
+			folderDir.yyOrder = folder.order;
 			folderMap[folderPath] = folderDir;
 			folderPairs.push({
 				dir: folderDir,
@@ -111,9 +112,11 @@ class YyLoader {
 		project.yyResourceGUIDs = new Dictionary();
 		project.yySpriteURLs = new Dictionary();
 		project.yyResourceTypes = new Dictionary();
+		project.yyOrder = new Dictionary();
 		for (resource in yyProject.resources) {
 			var resPath = resource.id.path;
 			var resName = resource.id.name;
+			project.yyOrder[resName] = resource.order;
 			// get rid of this mess later
 			project.yyResources[resName] = resource;
 			project.yyResourceGUIDs[resName] = cast resName;

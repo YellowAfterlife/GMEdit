@@ -56,6 +56,16 @@ class PrefNav {
 			save();
 		});
 		//
+		var assetOrder23 = [
+			"Custom order (as authored)",
+			"Ascending (A-Z)",
+			"Descdning (Z-A)",
+		];
+		addDropdown(out, "GMS2.3 asset order", assetOrder23[current.assetOrder23], assetOrder23, function(s:String) {
+			current.assetOrder23 = assetOrder23.indexOf(s);
+			save();
+		});
+		//
 		var apiOrder = [
 			"As authored",
 			"Alphabetical",

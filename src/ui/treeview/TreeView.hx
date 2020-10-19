@@ -299,17 +299,31 @@ using tools.PathTools;
 	//
 	public static function insertSorted(dir:TreeViewDir, item:Element) {
 		var itemDir = item.classList.contains(clDir);
-		var itemName = item.getAttribute(itemDir ? attrLabel : attrIdent);
+		var assetOrder = Preferences.current.assetOrder23;
+		var itemOrder:Int = 0, itemName:String = null;
+		if (assetOrder == Custom) {
+			itemOrder = (cast item:TreeViewElement).yyOrder;
+		} else itemName = item.getAttribute(itemDir ? attrLabel : attrIdent);
 		var children = dir.treeItems.children;
 		var i = -1;
 		while (++i < children.length) {
 			var ref = children[i];
-			var refDir = ref.classList.contains(clDir);
-			if (refDir != itemDir) {
-				if (itemDir) break; else continue;
+			if (assetOrder == Custom) {
+				if (itemOrder < (cast ref:TreeViewElement).yyOrder) break;
+			} else {
+				// folders before items:
+				var refDir = ref.classList.contains(clDir);
+				if (refDir != itemDir) {
+					if (itemDir) break; else continue;
+				}
+				// compare names:
+				var refName = ref.getAttribute(refDir ? attrLabel : attrIdent);
+				if (assetOrder == Ascending) {
+					if (itemName < refName) break;
+				} else {
+					if (itemName > refName) break;
+				}
 			}
-			var refName = ref.getAttribute(refDir ? attrLabel : attrIdent);
-			if (itemName < refName) break;
 		}
 		dir.treeItems.insertBefore(item, children[i]);
 	}
@@ -387,10 +401,13 @@ typedef TreeViewQuery = {
 	?rel:String,
 	?ident:String,
 };
-extern class TreeViewDir extends DivElement {
+extern class TreeViewElement extends DivElement {
+	public var yyOrder:Int;
+}
+extern class TreeViewDir extends TreeViewElement {
 	public var treeHeader:DivElement;
 	public var treeItems:DivElement;
 }
-extern class TreeViewItem extends DivElement {
+extern class TreeViewItem extends TreeViewElement {
 	public var yyOpenAs:FileKind;
 }

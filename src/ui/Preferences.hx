@@ -333,43 +333,7 @@ class Preferences {
 			}
 		}
 		// default settings:
-		var def:PrefData = {
-			theme: "dark",
-			ukSpelling: false,
-			compMatchMode: PrefMatchMode.StartsWith,
-			argsMagic: true,
-			argsFormat: "",
-			argsStrict: false,
-			importMagic: true,
-			allowImportUndo: false,
-			coroutineMagic: true,
-			lambdaMagic: true,
-			hyperMagic: true,
-			mfuncMagic: true,
-			fileSessionTime: 7,
-			projectSessionTime: 14,
-			singleClickOpen: false,
-			taskbarOverlays: false,
-			assetThumbs: true,
-			clearAssetThumbsOnRefresh: true,
-			showGMLive: Everywhere,
-			codeLiterals: false,
-			ctrlWheelFontSize: true,
-			fileChangeAction: Ask,
-			closeTabsOnFileDeletion: true,
-			backupCount: { v1: 2, v2: 0, live: 0 },
-			recentProjectCount: 16,
-			tabSize: 4,
-			tabSpaces: true,
-			detectTab: true,
-			eventOrder: 1,
-			extensionAPIOrder: 1,
-			tooltipDelay: 350,
-			tooltipKeyboardDelay: 0,
-			tooltipKind: Custom,
-			linterPrefs: {},
-			customizedKeybinds: {},
-		};
+		var def:PrefData = PrefData.defValue();
 		// load/merge defaults:
 		var doSave = false;
 		if (pref == null) {

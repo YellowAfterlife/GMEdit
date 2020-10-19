@@ -17,6 +17,14 @@ class HtmlTools {
 	private static inline function asElement(el:EitherType<Document, Element>):Element {
 		return cast el;
 	}
+	
+	public static function getAttributeAsInt(el:Element, attr:String, ?defValue:Int):Null<Int> {
+		var val = el.getAttribute(attr);
+		if (val == null) return defValue;
+		var result = Std.parseInt(val);
+		return result != null ? result : defValue;
+	}
+	
 	/** For when you are 100% sure that you are getting Elements in querySelector */
 	public static inline function querySelectorEls(el:EitherType<Document, Element>, selectors:String):ElementList {
 		return cast asElement(el).querySelectorAll(selectors);

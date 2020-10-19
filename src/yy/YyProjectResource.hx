@@ -8,7 +8,8 @@ typedef YyProjectResource = {
 	?Key:YyGUID,
 	?Value:YyProjectResourceValue,
 	//
-	?id:YyResourceRef
+	?id:YyResourceRef,
+	?order:Int,
 };
 typedef YyProjectResourceValue = {
 	id:YyGUID,

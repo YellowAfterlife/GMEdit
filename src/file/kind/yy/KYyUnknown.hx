@@ -87,6 +87,7 @@ class KYyUnknown extends FileKind {
 			}
 			if (makeEl) {
 				var item = TreeView.makeAssetItem(name, path, full, kind);
+				item.yyOrder = Project.current.yyOrder.defget(name, 0);
 				item.yyOpenAs = detect.kind;
 				@:privateAccess YyLoader.itemsToInsert.push({
 					item: item,

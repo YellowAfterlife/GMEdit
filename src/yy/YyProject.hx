@@ -13,5 +13,6 @@ typedef YyProject = {
 typedef YyProjectFolder = {
 	>YyBase,
 	folderPath:String,
+	order:Int,
 	name:String,
 }

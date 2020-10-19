@@ -79,6 +79,8 @@ import ui.treeview.TreeView;
 	public var yyResourceTypes:Dictionary<String>;
 	/** GUID -> URL */
 	public var yySpriteURLs:Dictionary<String>;
+	/** Resource name -> 2.3 order */
+	public var yyOrder:Dictionary<Int>;
 	
 	/** Whether this is a new-format GMS2.3 project */
 	public var isGMS23:Bool = false;

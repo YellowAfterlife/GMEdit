@@ -5,7 +5,47 @@ import haxe.DynamicAccess;
  * ...
  * @author YellowAfterlife
  */
-typedef PrefData = {
+@:forward abstract PrefData(PrefDataImpl) from PrefDataImpl to PrefDataImpl {
+	public static function defValue():PrefData return {
+		theme: "dark",
+		ukSpelling: false,
+		compMatchMode: PrefMatchMode.StartsWith,
+		argsMagic: true,
+		argsFormat: "",
+		argsStrict: false,
+		importMagic: true,
+		allowImportUndo: false,
+		coroutineMagic: true,
+		lambdaMagic: true,
+		hyperMagic: true,
+		mfuncMagic: true,
+		fileSessionTime: 7,
+		projectSessionTime: 14,
+		singleClickOpen: false,
+		taskbarOverlays: false,
+		assetThumbs: true,
+		clearAssetThumbsOnRefresh: true,
+		showGMLive: Everywhere,
+		codeLiterals: false,
+		ctrlWheelFontSize: true,
+		fileChangeAction: Ask,
+		closeTabsOnFileDeletion: true,
+		backupCount: { v1: 2, v2: 0, live: 0 },
+		recentProjectCount: 16,
+		tabSize: 4,
+		tabSpaces: true,
+		detectTab: true,
+		eventOrder: 1,
+		assetOrder23: Custom,
+		extensionAPIOrder: 1,
+		tooltipDelay: 350,
+		tooltipKeyboardDelay: 0,
+		tooltipKind: Custom,
+		linterPrefs: {},
+		customizedKeybinds: {},
+	};
+}
+typedef PrefDataImpl = {
 	theme:String,
 	fileSessionTime:Float,
 	projectSessionTime:Float,
@@ -40,6 +80,7 @@ typedef PrefData = {
 	ctrlWheelFontSize:Bool,
 	//
 	eventOrder:Int,
+	assetOrder23:PrefAssetOrder23,
 	extensionAPIOrder:Int,
 	backupCount:DynamicAccess<Int>,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
@@ -49,6 +90,11 @@ typedef PrefData = {
 	
 	/** section -> commandName -> keybinds */
 	customizedKeybinds:DynamicAccess<DynamicAccess<Array<String>>>,
+}
+enum abstract PrefAssetOrder23(Int) from Int to Int {
+	var Custom = 0;
+	var Ascending = 1;
+	var Descending = 2;
 }
 enum abstract PrefMatchMode(Int) from Int to Int {
 	/// GMS1 style
