@@ -1168,8 +1168,13 @@ class GmlLinter {
 		//
 		if (skipIf(peek() == KSemico)) {
 			// OK!
-		} else if (optRequireSemico && mainKind.needSemico() && !flags.has(NoSemico) && q.peek(-1) != ";".code) {
-			addWarning("Expected a semicolon after a statement (" + mainKind.getName() + ")");
+		} else if (optRequireSemico && mainKind.needSemico() && !flags.has(NoSemico)) {
+			switch (q.peek( -1)) {
+				case ";".code, "}".code: {}; // allowed
+				default: {
+					addWarning('Expected a semicolon after a statement (${mainKind.getName()})');
+				};
+			}
 		}
 		//
 		discardBlockScopes(newDepth);

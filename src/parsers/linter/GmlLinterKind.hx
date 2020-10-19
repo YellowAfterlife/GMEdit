@@ -176,7 +176,7 @@ enum abstract GmlLinterKind(Int) {
 	static var __noSemico = new GmlLinterKindSet([
 		KCubOpen,
 		KIf, KFor, KWhile, KDo, KRepeat, KSwitch, KWith,
-		KArgs, KMFuncDecl, KMacro, KEnum,
+		KArgs, KMFuncDecl, KMacro, KEnum, KFunction,
 	]);
 	public inline function needSemico() return !__noSemico[this];
 	
