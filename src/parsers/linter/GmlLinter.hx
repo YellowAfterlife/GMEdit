@@ -6,6 +6,7 @@ import editors.EditCode;
 import parsers.linter.GmlLinterKind;
 import gml.GmlVersion;
 import ace.extern.*;
+import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
 using tools.NativeArray;
@@ -91,6 +92,7 @@ class GmlLinter {
 	var optRequireFunctions:Bool;
 	var optCheckHasReturn:Bool;
 	var optBlockScopedCase:Bool;
+	var optCheckScriptArgumentCounts:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
@@ -100,6 +102,7 @@ class GmlLinter {
 		optBlockScopedCase = getOption((q) -> q.blockScopedCase);
 		optRequireFunctions = getOption((q) -> q.requireFunctions);
 		optCheckHasReturn = getOption((q) -> q.checkHasReturn);
+		optCheckScriptArgumentCounts = getOption((q) -> q.checkScriptArgumentCounts);
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 	}
 	//{
@@ -597,11 +600,9 @@ class GmlLinter {
 	}
 	
 	function checkCallArgs(currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
-		var doc:GmlFuncDoc = tools.JsTools.orx(
-			GmlAPI.gmlDoc[currName],
-			GmlAPI.extDoc[currName],
-			GmlAPI.stdDoc[currName]
-		);
+		var doc:GmlFuncDoc = JsTools.or(GmlAPI.gmlDoc[currName], GmlAPI.extDoc[currName]);
+		var isUserFunc = doc != null;
+		if (!isUserFunc) doc = GmlAPI.stdDoc[currName];
 		if (doc == null) {
 			var lm = editor.lambdas[context];
 			if (lm != null) doc = lm.docs[currName];
@@ -617,6 +618,9 @@ class GmlLinter {
 			if (doc.isConstructor) {
 				if (!isNew) addWarning('`$currName` is a constructor, but is not used via `new`');
 			} else {
+				if (isNew) {
+					addWarning('`$currName` is not a constructor, but is being used via `new`');
+				}
 				if (isExpr && optCheckHasReturn && doc.hasReturn == false) {
 					addWarning('`$currName` does not return anything, so this is 0');
 				}
@@ -636,7 +640,9 @@ class GmlLinter {
 			} else maxArgs = minArgs;
 		}
 		//
-		if (argc < minArgs) {
+		if (isUserFunc && !optCheckScriptArgumentCounts) {
+			// OK!
+		} else if (argc < minArgs) {
 			if (maxArgs == minArgs) {
 				addError('Not enough arguments for $currName (expected $minArgs, got $argc)');
 			} else if (maxArgs >= 0x7fffffff) {
