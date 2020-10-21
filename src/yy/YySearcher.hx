@@ -62,7 +62,7 @@ class YySearcher {
 								if (gml1 != null && gml1 != code) {
 									pj.writeTextFileSync(gmlPath, gml1);
 								}
-							}
+							} else Main.console.warn(err);
 							next();
 						});
 					}
@@ -81,7 +81,9 @@ class YySearcher {
 								} else addError("Failed to modify " + resName
 									+ ":\n" + YyObject.errorText);
 							}
-						} catch (_:Dynamic) { };
+						} catch (x:Dynamic) {
+							Main.console.warn(x);
+						} else Main.console.warn(err);
 						next();
 					});
 				};
@@ -108,13 +110,15 @@ class YySearcher {
 					var shPath:String;
 					inline function procShader(ext:String, type:String) {
 						shPath = Path.withExtension(resPath, ext);
-						pj.readTextFile(shPath, function(error, code) {
-							if (error == null) {
+						pj.readTextFile(shPath, function(err, code) {
+							if (err == null) {
 								var gml1 = fn(resName + '($type)', shPath, code);
 								if (gml1 != null && gml1 != code) {
-									FileWrap.writeTextFileSync(shPath, gml1);
+									pj.writeTextFileSync(shPath, gml1);
 								}
-							}
+							} catch (x:Dynamic) {
+								Main.console.warn(x);
+							} else Main.console.warn(err);
 							next();
 						});
 					}
@@ -127,18 +131,26 @@ class YySearcher {
 					if (opt.expandLambdas && resName == GmlExtLambda.extensionName) continue;
 					filesLeft += 1;
 					pj.readYyFile(resPath, function(err, ext:YyExtension) {
-						if (err != null) { next(); return; }
-						var extDir = Path.directory(resFull);
+						if (err != null) {
+							Main.console.warn(err);
+							next();
+							return;
+						}
+						var extDir = Path.directory(resPath);
 						for (file in ext.files) {
 							var fileName = file.filename;
 							if (Path.extension(fileName).toLowerCase() != "gml") continue;
 							var filePath = Path.join([extDir, fileName]);
 							filesLeft += 1;
 							pj.readTextFile(filePath, function(err, code) {
-								if (err != null) { next(); return; }
+								if (err != null) {
+									Main.console.warn(err);
+									next();
+									return;
+								}
 								var gml1 = fn(fileName, filePath, code);
 								if (gml1 != null && gml1 != code) {
-									FileWrap.writeTextFileSync(filePath, gml1);
+									pj.writeTextFileSync(filePath, gml1);
 								}
 								next();
 							});
@@ -157,7 +169,7 @@ class YySearcher {
 							if (gml1 != null && gml1 != code) {
 								FileWrap.writeTextFileSync(rccPath, gml1);
 							}
-						}
+						} else Main.console.warn(err);
 						next();
 					});
 				};
