@@ -61,7 +61,7 @@ class YyLoader {
 				folderPath = folderPath.substring(0, folderPath.length - 3);
 			}
 			//
-			var folderDir = TreeView.makeAssetDir(folder.name, folderPath, "mixed");
+			var folderDir = TreeView.makeAssetDir(folder.name, folderPath + "/", "mixed");
 			folderDir.yyOrder = folder.order;
 			folderMap[folderPath] = folderDir;
 			folderPairs.push({
