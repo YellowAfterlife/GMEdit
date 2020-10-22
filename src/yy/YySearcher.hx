@@ -62,7 +62,7 @@ class YySearcher {
 								if (gml1 != null && gml1 != code) {
 									pj.writeTextFileSync(gmlPath, gml1);
 								}
-							} else Main.console.warn(err);
+							} else Main.console.warn(error);
 							next();
 						});
 					}
@@ -83,7 +83,7 @@ class YySearcher {
 							}
 						} catch (x:Dynamic) {
 							Main.console.warn(x);
-						} else Main.console.warn(err);
+						} else Main.console.warn(error);
 						next();
 					});
 				};
@@ -116,8 +116,6 @@ class YySearcher {
 								if (gml1 != null && gml1 != code) {
 									pj.writeTextFileSync(shPath, gml1);
 								}
-							} catch (x:Dynamic) {
-								Main.console.warn(x);
 							} else Main.console.warn(err);
 							next();
 						});
@@ -169,7 +167,7 @@ class YySearcher {
 							if (gml1 != null && gml1 != code) {
 								FileWrap.writeTextFileSync(rccPath, gml1);
 							}
-						} else Main.console.warn(err);
+						} else Main.console.warn(error);
 						next();
 					});
 				};
