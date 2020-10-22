@@ -5,6 +5,7 @@ import ui.treeview.TreeView;
 import gml.GmlAPI;
 import ace.extern.*;
 import haxe.io.Path;
+import yy.YyLoader;
 using tools.NativeString;
 
 /**
@@ -21,11 +22,17 @@ class KYyExtension extends FileKind {
 		if (parentPath.endsWith(".yy")) {
 			parentPath = parentPath.substring(0, parentPath.length - 3);
 		}
-		var parentDir = TreeView.find(false, { rel: parentPath });
+		//
+		var parentDir = @:privateAccess YyLoader.folderMap[parentPath];
+		if (parentDir == null) parentDir = cast TreeView.find(false, { rel: parentPath });
 		if (parentDir == null) return true;
+		//
 		var treePath = parentPath + "/" + ext.name;
 		var treeDir = TreeView.makeAssetDir(ext.name, parentPath, "mixed");
-		TreeView.insertSorted(cast parentDir, treeDir);
+		@:privateAccess YyLoader.itemsToInsert.push({
+			item: treeDir,
+			dir: cast parentDir
+		});
 		//
 		var extDirRel = pj.relPath(path);
 		var full = path;
@@ -36,7 +43,10 @@ class KYyExtension extends FileKind {
 			var filePath = Path.join([extDir, fileName]);
 			var filePathRel = Path.join([extDirRel, fileName]);
 			var fileItem = TreeView.makeAssetItem(fileName, filePathRel, filePath, "file");
-			TreeView.insertSorted(treeDir, fileItem);
+			@:privateAccess YyLoader.itemsToInsert.push({
+				item: fileItem,
+				dir: treeDir
+			});
 			var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
 			for (func in file.functions) {
 				var name = func.name;
