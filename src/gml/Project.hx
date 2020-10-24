@@ -288,7 +288,10 @@ import ui.treeview.TreeView;
 		if (isGMS23) {
 			@:privateAccess YyLoader.folderMap = null;
 			for (pair in @:privateAccess YyLoader.itemsToInsert) {
-				TreeView.insertSorted(pair.dir, pair.item);
+				var el:TreeViewElement = pair.item;
+				TreeView.insertSorted(pair.dir, el);
+				var th = TreeView.thumbMap[el.treeFullPath];
+				if (th != null) TreeView.setThumb(null, th, el);
 			}
 		}
 		// try restoring tabs:
