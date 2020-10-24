@@ -1,4 +1,6 @@
 package yy;
+import haxe.DynamicAccess;
+import haxe.Int64;
 import haxe.Json;
 import haxe.ds.ObjectMap;
 import tools.Dictionary;
@@ -42,12 +44,68 @@ class YyJsonPrinter {
 	}
 	
 	public static var mvcOrder22 = ["configDeltas", "id", "modelName", "mvc", "name"];
-	public static var mvcOrder23 = ["resourceVersion", "name", "tags", "resourceType"];
+	public static var mvcOrder23 = ["resourceVersion", "name", "path", "tags", "resourceType"];
 	public static var orderByModelName:Dictionary<Array<String>> = (function() {
 		var q = new Dictionary();
 		var plain = ["id", "modelName", "mvc"];
 		q["GMExtensionFunction"] = plain.concat([]);
 		q["GMEvent"] = plain.concat(["IsDnD"]);
+		return q;
+	})();
+	public static var metaByResourceType:Dictionary<YyJsonMeta> = (function() {
+		var q = new Dictionary<YyJsonMeta>();
+		var base = ["parent", "resourceVersion", "name", "tags", "resourceType"];
+		//
+		inline function tt(o:Dynamic):Dictionary<String> {return o;}
+		inline function td(o:Dynamic):DynamicAccess<Int> {return o; }
+		function td1(fields:Array<String>):DynamicAccess<Int> {
+			var r = new DynamicAccess();
+			for (f in fields) r[f] = 1;
+			return r;
+		}
+		q["GMRoom"] = {
+			order: [
+				"isDnd", "volume", "parentRoom",
+				"views", "layers", "inheritLayers",
+				"creationCodeFile", "inheritCode",
+				"instanceCreationOrder", "inheritCreationOrder",
+				"sequenceId", "roomSettings", "viewSettings", "physicsSettings",
+			].concat(base),
+			types: tt({
+				views: "GMRoomView",
+				instanceCreationOrder: "GMRoomCreationOrder",
+				roomSettings: "GMRoomSettings",
+				viewSettings: "GMRoomViewSettings",
+				physicsSettings: "GMRoomPhysicsSettings",
+			}),
+			digits: td({ volume: 1 }),
+		};
+		q["GMRoomView"] = {
+			order: ["inherit", "visible", "xview", "yview", "wview", "hview", "xport", "yport", "wport", "hport", "hborder", "vborder", "hspeed", "vspeed", "objectId"]
+		};
+		q["GMRoomCreationOrder"] = {
+			order: ["name", "path"],
+		};
+		q["GMRoomSettings"] = {
+			order: ["inheritRoomSettings", "Width", "Height", "persistent"],
+		};
+		q["GMRoomViewSettings"] = {
+			order: ["inheritViewSettings", "enableViews", "clearViewBackground", "clearDisplayBuffer"],
+		};
+		q["GMRoomPhysicsSettings"] = {
+			order: ["inheritPhysicsSettings", "PhysicsWorld", "PhysicsWorldGravityX", "PhysicsWorldGravityY", "PhysicsWorldPixToMetres"],
+			digits: td1(["PhysicsWorldGravityX", "PhysicsWorldGravityY","PhysicsWorldPixToMetres"]),
+		};
+		//
+		var layerBase = ["visible", "depth", "userdefinedDepth", "inheritLayerDepth", "inheritLayerSettings", "gridX", "gridY", "layers", "hierarchyFrozen"].concat(base);
+		q["GMRInstanceLayer"] = {
+			order: ["instances"].concat(layerBase)
+		};
+		q["GMRBackgroundLayer"] = {
+			order: ["spriteId", "colour", "x", "y", "htiled", "vtiled", "hspeed", "vspeed", "stretch", "animationFPS", "animationSpeedType", "userdefinedAnimFPS"].concat(layerBase),
+			digits: td1(["hspeed", "vspeed", "animationFPS"]),
+		};
+		//
 		return q;
 	})();
 	
@@ -58,7 +116,9 @@ class YyJsonPrinter {
 	}
 	
 	static var indentString:String = "    ";
+	static var nextType:String = null;
 	static function stringify_rec(obj:Dynamic, indent:Int, compact:Bool, ?digits:Int):String {
+		var nt:String = nextType; nextType = null;
 		if (obj == null) { // also hits "undefined"
 			return "null";
 		}
@@ -73,6 +133,7 @@ class YyJsonPrinter {
 			if (len == 0 && wantedCompact) return "[]";
 			var r = "[\r\n" + indentString.repeat(++indent);
 			for (i in 0 ... arr.length) {
+				nextType = nt;
 				if (wantedCompact) {
 					if (i > 0) r += "\r\n" + indentString.repeat(indent);
 					r += stringify_rec(arr[i], indent, true) + ",";
@@ -84,17 +145,34 @@ class YyJsonPrinter {
 			return r + "\r\n" + indentString.repeat(--indent) + "]";
 		}
 		else if (Reflect.isObject(obj)) {
+			if (obj.__int64) return "" + (obj:Int64);
 			var indentString = YyJsonPrinter.indentString;
 			var r = (compact ? "{" : "{\r\n" + indentString.repeat(++indent));
 			var orderedFields = (obj:YyBase).hxOrder;
 			var fieldDigits = (obj:YyBase).hxDigits;
+			var fieldTypes:Dictionary<String> = null;
+			var orderedFieldsFirst = true;
 			var found = 0, sep = false;
-			if (orderedFields == null) {
+			var meta:YyJsonMeta;
+			if (nt != null) {
+				meta = metaByResourceType[nt];
+				if (meta == null) Main.console.warn('Unknown type $nt');
+			} else {
+				nt = (cast obj).resourceType;
+				meta = nt != null ? metaByResourceType[nt] : null;
+			}
+			if (meta != null) {
+				orderedFields = meta.order;
+				fieldTypes = meta.types;
+				fieldDigits = meta.digits;
+			} else if (orderedFields == null) {
 				if (Reflect.hasField(obj, "mvc")) {
-					orderedFields = orderByModelName[Reflect.field(obj, "modelName")];
+					orderedFields = orderByModelName[obj.modelName];
 				}
-				if (orderedFields == null) orderedFields = mvcOrder22;
-			} else found++;
+				if (orderedFields == null) {
+					orderedFields = isExt ? mvcOrder23 : mvcOrder22;
+				}
+			} else if (Reflect.hasField(obj, "mvc") || Reflect.hasField(obj, "resourceType")) found++;
 			//
 			var isOrdered:Dictionary<Bool> = isOrderedCache[orderedFields];
 			if (isOrdered == null) {
@@ -106,33 +184,53 @@ class YyJsonPrinter {
 			}
 			//
 			var tcs = trailingCommas;
-			inline function addField(field:String):Void {
+			var orderedFieldsAfter = isExt;
+			inline function addSep():Void {
 				if (!tcs) {
 					if (sep) r += ",\r\n" + indentString.repeat(indent); else sep = true;
 				} else if (!compact) {
 					if (sep) r += "\r\n" + indentString.repeat(indent); else sep = true;
 				}
+			}
+			inline function addField(field:String):Void {
+				addSep();
 				found++;
-				r += stringify_string(field) + (compact ? ":" : ": ")
-					+ stringify_rec(Reflect.field(obj, field), indent, compact,
-						fieldDigits != null ? fieldDigits[field] : null
-					);
+				r += stringify_string(field) + (compact ? ":" : ": ");
+				nextType = fieldTypes != null ? fieldTypes[field] : null;
+				r += stringify_rec(Reflect.field(obj, field), indent, compact,
+					fieldDigits != null ? fieldDigits[field] : null
+				);
 				if (tcs) r += ",";
 			}
+			//
+			var r0:String, r1:String;
+			if (orderedFieldsAfter) {
+				r0 = r; r = "";
+			} else r0 = null;
 			//
 			for (field in orderedFields) {
 				if (!Reflect.hasField(obj, field)) continue;
 				addField(field);
 			}
 			//
+			if (orderedFieldsAfter) { r1 = r; r = r0; } else r1 = null;
+			//
 			var allFields = Reflect.fields(obj);
 			if (allFields.length > found) {
 				allFields.sort(fieldComparator);
+				if (orderedFieldsAfter) sep = false;
 				for (field in allFields) {
 					if (isOrdered.exists(field)) continue;
 					addField(field);
 				}
+				if (orderedFieldsAfter && r1 != "") {
+					addSep();
+					r += r1;
+				}
+			} else {
+				if (orderedFieldsAfter) r += r1;
 			}
+			//
 			return r + (compact ? "}" : "\r\n" + indentString.repeat(--indent) + "}");
 		}
 		else {
@@ -150,3 +248,13 @@ class YyJsonPrinter {
 		return stringify_rec(obj, 0, false);
 	}
 }
+typedef YyJsonMeta = {
+	?order:Array<String>,
+	/**
+	 * field name -> field resource type
+	 * note: for arrays, sets type for contents
+	 */
+	?types:Dictionary<String>,
+	/** field name -> digits for numeric output */
+	?digits:DynamicAccess<Int>,
+};

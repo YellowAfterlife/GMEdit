@@ -59,4 +59,9 @@ package tools;
 			} else arr.splice(i, 1);
 		}
 	}
+	
+	public static function findFirst<T>(arr:Array<T>, fn:T->Bool):Null<T> {
+		for (v in arr) if (fn(v)) return v;
+		return null;
+	}
 }

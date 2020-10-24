@@ -59,12 +59,13 @@ class TreeViewDnD {
 		var ownType = dropType + "=" + rel.toLowerCase();
 		var ownPrefix = dropPrefix + "=" + prefix;
 		var v2 = Project.current.version.config.projectModeId == 2;
+		var v23 = v2 && !Project.current.yyUsesGUID;
 		if (v2 || rxCanDropTo.test(rel)) {
 			function updateAuto(e:DragEvent) {
 				var y = e.offsetY;
 				var h = el.scrollHeight;
 				var th = dir ? 0.25 : 0.35;
-				if (!hasType(e, ownPrefix)) {
+				if (!v23 && !hasType(e, ownPrefix)) {
 					update(null, 0);
 				} else if (y < h * th) {
 					update(el, -1);
@@ -94,6 +95,7 @@ class TreeViewDnD {
 					par = par.parentElement;
 				}
 				//
+				var project = Project.current;
 				var d = TreeViewItemMenus.getItemData(dst);
 				var d2 = TreeViewItemMenus.getItemData(src);
 				var args:TreeViewItemMove = {
@@ -107,12 +109,16 @@ class TreeViewDnD {
 					srcChain: d2.chain,
 					srcLast: d2.last,
 					srcDir: cast src.parentElement.parentElement,
-					srcRef: src,
+					srcRef: cast src,
 					order: order,
-					pj: Project.current,
+					pj: project,
 				};
-				switch (Project.current.version.config.projectModeId) {
-					case 2: yy.YyManip.move(args);
+				switch (project.version.config.projectModeId) {
+					case 2: {
+						if (project.yyUsesGUID) {
+							yy.v22.YyManipV22.move(args);
+						} else yy.YyManip.move(args);
+					};
 					case 1: gmx.GmxManip.move(args);
 					default:
 				}
@@ -125,6 +131,7 @@ class TreeViewDnD {
 				if (dst.classList.contains("header")) dst = dst.parentElement;
 				TreeViewItemMenus.updatePrefix(dst);
 				var order = currOrder;
+				Main.console.log(order);
 				update(null, 0);
 				if (order > 0 && dst.classList.contains(TreeView.clDir) && dst.classList.contains(TreeView.clOpen)) {
 					var dstItems:Element = (cast dst:TreeViewDir).treeItems;

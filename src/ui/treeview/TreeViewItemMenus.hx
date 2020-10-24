@@ -10,6 +10,8 @@ import ui.treeview.TreeViewMenus.add;
 import ui.treeview.TreeViewMenus.addLink;
 import ui.treeview.TreeViewMenus.target;
 import ui.treeview.TreeView;
+import yy.YyManip;
+import yy.v22.YyManipV22;
 
 /**
  * ...
@@ -192,10 +194,14 @@ class TreeViewItemMenus {
 				return null;
 			}
 		}
-		var vi = Project.current.version.config.projectModeId;
-		switch (vi) {
+		var pj = Project.current;
+		switch (pj.version.config.projectModeId) {
 			case 1: gmx.GmxManip.add(args);
-			case 2: yy.YyManip.add(args);
+			case 2: {
+				if (pj.yyUsesGUID) {
+					YyManipV22.add(args);
+				} else YyManip.add(args);
+			};
 			default: Dialog.showAlert("Can't create an item for this version!"); return null;
 		}
 		return args;
@@ -236,10 +242,15 @@ class TreeViewItemMenus {
 			tvDir: cast target.parentElement.parentElement,
 			tvRef: target,
 		};
-		var vi = Project.current.version.config.projectModeId;
+		var project = Project.current;
+		var vi = project.version.config.projectModeId;
 		switch (vi) {
 			case 1: gmx.GmxManip.remove(args);
-			case 2: yy.YyManip.remove(args);
+			case 2: {
+				if (project.yyUsesGUID) {
+					YyManipV22.remove(args);
+				} else YyManip.remove(args);
+			};
 			default: Dialog.showAlert("Can't remove an item for this version!");
 		}
 	}
@@ -275,10 +286,15 @@ class TreeViewItemMenus {
 				tvRef: target,
 				name: s,
 			};
-			var vi = Project.current.version.config.projectModeId;
+			var project = Project.current;
+			var vi = project.version.config.projectModeId;
 			switch (vi) {
 				case 1: gmx.GmxManip.rename(args);
-				case 2: yy.YyManip.rename(args);
+				case 2: {
+					if (project.yyUsesGUID) {
+						YyManipV22.rename(args);
+					} else YyManip.rename(args);
+				}
 				default: Dialog.showAlert("Can't rename an item for this version!");
 			}
 		});
@@ -386,6 +402,6 @@ typedef TreeViewItemMove = {
 	srcChain:Array<String>,
 	srcLast:String,
 	srcDir:TreeViewDir,
-	srcRef:Element,
+	srcRef:TreeViewElement,
 	order:Int,
 }

@@ -53,7 +53,8 @@ class YyJsonParser {
 			case ' '.code, '\r'.code, '\n'.code, '\t'.code:
 				// loop
 			case '{'.code:
-				var obj = {}, field = null, comma : Null<Bool> = null;
+				var obj = { hxOrder: [] }, field = null, comma : Null<Bool> = null;
+				var hxOrder = obj.hxOrder;
 				while( true ) {
 					var c = nextChar();
 					switch( c ) {
@@ -64,6 +65,7 @@ class YyJsonParser {
 						return obj;
 					case ':'.code:
 						if( field == null ) invalidChar();
+						hxOrder.push(field);
 						if (Reflect.hasField(obj, field)) {
 							Main.console.log('Duplicate field definition: $field');
 						} else {
@@ -266,7 +268,10 @@ class YyJsonParser {
 			return i;
 		} else if (!point && Std.string(f) != numstr) {
 			var i64 = haxe.Int64.parseString(numstr);
-			return Std.string(i64) == numstr ? i64 : f;
+			if (Std.string(i64) == numstr) {
+				(cast i64).__int64 = true;
+				return i64;
+			} else return f;
 		} else return f;
 	}
 

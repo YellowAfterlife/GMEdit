@@ -68,6 +68,12 @@ import js.Syntax;
 		return untyped s.endsWith(q);
 	}
 	
+	public static function trimIfEndsWith(s:String, end:String):String {
+		if (endsWith(s, end)) {
+			return s.substring(0, s.length - end.length);
+		} else return s;
+	}
+	
 	public static inline function contains(s:String, q:String):Bool {
 		return untyped s.includes(q);
 	}

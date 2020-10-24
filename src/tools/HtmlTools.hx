@@ -1,9 +1,11 @@
 package tools;
 import gml.file.GmlFile;
+import js.html.DOMElement;
 import js.html.DOMTokenList;
 import js.html.DivElement;
 import js.html.Document;
 import js.html.Element;
+import js.html.HTMLCollection;
 import js.html.MouseEvent;
 import haxe.extern.EitherType;
 import js.html.Node;
@@ -78,8 +80,33 @@ class HtmlTools {
 		if (el.value == "") el.value = def;
 		el.onchange = e;
 	}
+	
+	public static function colIndexOf(col:HTMLCollection, item:Element, start:Int = 0):Int {
+		var len = col.length;
+		var i = start;
+		if (i < 0) {
+			i += len;
+			if (i < 0) i = 0;
+		}
+		while (i < len) {
+			if (col[i] == item) return i;
+			i += 1;
+		}
+		return -1;
+	}
+	
+	public static inline function getChildrenAs<T:Element>(el:DOMElement):ElementListOf<T> {
+		return cast el.children;
+	}
 }
 extern class ElementList implements ArrayAccess<Element> {
 	public var length(default, never):Int;
 	public function item(index:Int):Element;
+}
+extern class ElementListOf<T:Element> implements ArrayAccess<T> {
+	public var length(default, never):Int;
+	public function item(index:Int):T;
+	public inline function indexOf(item:T, start:Int = 0):Int {
+		return HtmlTools.colIndexOf(cast this, item, start);
+	}
 }

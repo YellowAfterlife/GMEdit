@@ -28,7 +28,7 @@ class YyLoader {
 	/** Only to be used during indexing */
 	static var folderMap:Dictionary<TreeViewDir> = null;
 	
-	static var itemsToInsert:Array<{item:TreeViewItem,dir:TreeViewDir}> = null;
+	static var itemsToInsert:Array<{item:TreeViewElement,dir:TreeViewDir}> = null;
 	
 	public static inline function isV23(yypContent:String) {
 		return yypContent.contains('"resourceType": "GMProject"');
