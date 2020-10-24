@@ -36,6 +36,7 @@ import ui.GlobalSearch;
 import ui.project.ProjectProperties;
 import ui.project.ProjectData;
 import ui.treeview.TreeView;
+import ui.treeview.TreeViewElement;
 
 /**
  * ...

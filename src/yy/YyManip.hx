@@ -14,6 +14,7 @@ import tools.NativeString;
 import ui.ChromeTabs;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
+import ui.treeview.TreeViewElement;
 import yy.YyProject;
 import yy.YyProjectResource;
 import yy.*;

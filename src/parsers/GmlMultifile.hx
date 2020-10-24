@@ -3,6 +3,7 @@ import tools.Dictionary;
 import tools.NativeString;
 import gml.GmlAPI;
 import ui.treeview.TreeView;
+import ui.treeview.TreeViewElement;
 
 /**
  * Parses combined code with `#define` headers into individual name-code pairs.

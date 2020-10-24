@@ -9,6 +9,7 @@ import haxe.io.Path;
 import parsers.GmlSeeker;
 import tools.Aliases;
 import ui.treeview.TreeView;
+import ui.treeview.TreeViewElement;
 using tools.NativeString;
 
 /**
