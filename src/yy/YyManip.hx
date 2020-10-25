@@ -17,6 +17,7 @@ import ui.treeview.TreeViewItemMenus;
 import ui.treeview.TreeViewElement;
 import yy.YyProject;
 import yy.YyProjectResource;
+import yy.YyShader;
 import yy.*;
 using tools.HtmlTools;
 using tools.NativeArray;
@@ -179,6 +180,19 @@ class YyManip {
 						"resourceType": "GMObject",
 					}; yyResource = obj;
 				};
+				case "shader": {
+					var sh:YyShader = {
+						"type": 1,
+						"parent": yyParent,
+						"resourceVersion": "1.0",
+						"name": name,
+						"tags": [],
+						"resourceType": "GMShader",
+					}; yyResource = sh;
+					//
+					pj.writeTextFileSync(pre + ".fsh", YyShaderDefaults.baseFragGLSL);
+					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
+				};
 				default: {
 					Dialog.showError('No idea how to create type=`$kind`, sorry');
 					return false;
@@ -213,7 +227,7 @@ class YyManip {
 		if (args.mkdir) {
 			// OK! It's a folder
 		} else switch (kind) {
-			case "script": {
+			case "script", "object", "shader": {
 				GmlAPI.gmlComp.push(new AceAutoCompleteItem(name, kind));
 				GmlAPI.gmlKind.set(name, "asset." + kind);
 				GmlAPI.gmlLookup.set(name, { path: yyPath, row: 0 });
