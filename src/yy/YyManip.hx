@@ -125,15 +125,16 @@ class YyManip {
 			yyFullPath = pj.fullPath(yyPath);
 			args.npath = yyPath;
 			if (!pj.existsSync(dir)) pj.mkdirSync(dir);
+			var yyParent:YyResourceRef = {
+				"name": parDir.treeLabel,
+				"path": parDir.treeFolderPath23,
+			};
 			switch (kind) {
 				case "script": {
 					var scr:YyScript = {
 						"isDnD": false,
 						"isCompatibility": false,
-						"parent": {
-							"name": parDir.treeLabel,
-							"path": parDir.treeFolderPath23,
-						},
+						"parent": yyParent,
 						"resourceVersion": "1.0",
 						"name": name,
 						"tags": [],
@@ -147,6 +148,36 @@ class YyManip {
 					var gmlPath = pre + ".gml";
 					args.npath = gmlPath;
 					pj.writeTextFileSync(gmlPath, gml);
+				};
+				case "object": {
+					var obj:YyObject = {
+						"spriteId": null,
+						"solid": false,
+						"visible": true,
+						"spriteMaskId": null,
+						"persistent": false,
+						"parentObjectId": null,
+						"physicsObject": false,
+						"physicsSensor": false,
+						"physicsShape": 1,
+						"physicsGroup": 1,
+						"physicsDensity": 0.5,
+						"physicsRestitution": 0.1,
+						"physicsLinearDamping": 0.1,
+						"physicsAngularDamping": 0.1,
+						"physicsFriction": 0.2,
+						"physicsStartAwake": true,
+						"physicsKinematic": false,
+						"physicsShapePoints": [],
+						"eventList": [],
+						"properties": [],
+						"overriddenProperties": [],
+						"parent": yyParent,
+						"resourceVersion": "1.0",
+						"name": name,
+						"tags": [],
+						"resourceType": "GMObject",
+					}; yyResource = obj;
 				};
 				default: {
 					Dialog.showError('No idea how to create type=`$kind`, sorry');
