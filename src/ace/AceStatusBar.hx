@@ -65,7 +65,7 @@ class AceStatusBar {
 		editor.container.parentElement.appendChild(statusBar);
 	}
 	private static var emptyToken:AceToken = { type:"", value:"" };
-	public static var canDocData:Dictionary<Bool> = {
+	public static var canDocData:Dictionary<Bool> = (function() {
 		var d = new Dictionary();
 		for (k in [
 			"asset.script", "function", "extfunction",
@@ -73,7 +73,7 @@ class AceStatusBar {
 			"namespace", "macro"
 		]) d.set(k, true);
 		return d;
-	};
+	})();
 	public static function getDocData(ctx:AceStatusBarDocSearch):Bool {
 		var docs:Dictionary<GmlFuncDoc> = null;
 		var doc:GmlFuncDoc = null;
