@@ -44,7 +44,7 @@ class YyJsonPrinter {
 	}
 	
 	public static var mvcOrder22 = ["configDeltas", "id", "modelName", "mvc", "name"];
-	public static var mvcOrder23 = ["resourceVersion", "name", "path", "tags", "resourceType"];
+	public static var mvcOrder23 = ["parent", "resourceVersion", "name", "path", "tags", "resourceType"];
 	public static var orderByModelName:Dictionary<Array<String>> = (function() {
 		var q = new Dictionary();
 		var plain = ["id", "modelName", "mvc"];
@@ -52,62 +52,7 @@ class YyJsonPrinter {
 		q["GMEvent"] = plain.concat(["IsDnD"]);
 		return q;
 	})();
-	public static var metaByResourceType:Dictionary<YyJsonMeta> = (function() {
-		var q = new Dictionary<YyJsonMeta>();
-		var base = ["parent", "resourceVersion", "name", "tags", "resourceType"];
-		//
-		inline function tt(o:Dynamic):Dictionary<String> {return o;}
-		inline function td(o:Dynamic):DynamicAccess<Int> {return o; }
-		function td1(fields:Array<String>):DynamicAccess<Int> {
-			var r = new DynamicAccess();
-			for (f in fields) r[f] = 1;
-			return r;
-		}
-		q["GMRoom"] = {
-			order: [
-				"isDnd", "volume", "parentRoom",
-				"views", "layers", "inheritLayers",
-				"creationCodeFile", "inheritCode",
-				"instanceCreationOrder", "inheritCreationOrder",
-				"sequenceId", "roomSettings", "viewSettings", "physicsSettings",
-			].concat(base),
-			types: tt({
-				views: "GMRoomView",
-				instanceCreationOrder: "GMRoomCreationOrder",
-				roomSettings: "GMRoomSettings",
-				viewSettings: "GMRoomViewSettings",
-				physicsSettings: "GMRoomPhysicsSettings",
-			}),
-			digits: td({ volume: 1 }),
-		};
-		q["GMRoomView"] = {
-			order: ["inherit", "visible", "xview", "yview", "wview", "hview", "xport", "yport", "wport", "hport", "hborder", "vborder", "hspeed", "vspeed", "objectId"]
-		};
-		q["GMRoomCreationOrder"] = {
-			order: ["name", "path"],
-		};
-		q["GMRoomSettings"] = {
-			order: ["inheritRoomSettings", "Width", "Height", "persistent"],
-		};
-		q["GMRoomViewSettings"] = {
-			order: ["inheritViewSettings", "enableViews", "clearViewBackground", "clearDisplayBuffer"],
-		};
-		q["GMRoomPhysicsSettings"] = {
-			order: ["inheritPhysicsSettings", "PhysicsWorld", "PhysicsWorldGravityX", "PhysicsWorldGravityY", "PhysicsWorldPixToMetres"],
-			digits: td1(["PhysicsWorldGravityX", "PhysicsWorldGravityY","PhysicsWorldPixToMetres"]),
-		};
-		//
-		var layerBase = ["visible", "depth", "userdefinedDepth", "inheritLayerDepth", "inheritLayerSettings", "gridX", "gridY", "layers", "hierarchyFrozen"].concat(base);
-		q["GMRInstanceLayer"] = {
-			order: ["instances"].concat(layerBase)
-		};
-		q["GMRBackgroundLayer"] = {
-			order: ["spriteId", "colour", "x", "y", "htiled", "vtiled", "hspeed", "vspeed", "stretch", "animationFPS", "animationSpeedType", "userdefinedAnimFPS"].concat(layerBase),
-			digits: td1(["hspeed", "vspeed", "animationFPS"]),
-		};
-		//
-		return q;
-	})();
+	public static var metaByResourceType:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByResourceType();
 	
 	static var isOrderedCache:Map<Array<String>, Dictionary<Bool>> = new Map();
 	
@@ -248,13 +193,3 @@ class YyJsonPrinter {
 		return stringify_rec(obj, 0, false);
 	}
 }
-typedef YyJsonMeta = {
-	?order:Array<String>,
-	/**
-	 * field name -> field resource type
-	 * note: for arrays, sets type for contents
-	 */
-	?types:Dictionary<String>,
-	/** field name -> digits for numeric output */
-	?digits:DynamicAccess<Int>,
-};
