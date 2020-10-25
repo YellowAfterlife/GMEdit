@@ -182,7 +182,7 @@ class YyManipV22 {
 				nJson = nyShd;
 			};
 			default: {
-				Dialog.showAlert("No idea how to create type=`" + args.single + "`, sorry");
+				Dialog.showError("No idea how to create type=`" + kind + "`, sorry");
 				return false;
 			}
 		};
@@ -250,10 +250,12 @@ class YyManipV22 {
 					case "shader": null;
 					default: KGmlScript.inst;
 				}
-				var src = kind == "script" ? "" : nJsonStr;
-				if (fk != null) parsers.GmlSeeker.runSync(pj.fullPath(args.npath), src, args.name, fk);
+				var isScript = kind == "script";
+				var src = isScript ? "" : nJsonStr;
+				var fullPath = pj.fullPath(args.npath);
+				if (fk != null) parsers.GmlSeeker.runSync(fullPath, src, args.name, fk);
 				if (args.openFile != false) {
-					gml.file.GmlFile.open(args.name, pj.fullPath(args.npath));
+					gml.file.GmlFile.open(args.name, fullPath);
 				}
 			};
 			default: d.pj.reload();

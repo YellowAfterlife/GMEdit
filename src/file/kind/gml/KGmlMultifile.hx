@@ -86,7 +86,7 @@ class KGmlMultifile extends KGml {
 				GmlSeeker.runSync(itemPath, itemCode, item.name, KGmlScript.inst);
 			} else if (tools.JsTools.rx(~/^\w+$/).test(item.name)) {
 				var dir = file.multidata.tvDir;
-				var args = TreeViewItemMenus.createImplBoth(false, 0, dir, item.name, function(q) {
+				var args = TreeViewItemMenus.createImplBoth("auto", 0, dir, item.name, function(q) {
 					q.openFile = false;
 					return q;
 				});

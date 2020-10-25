@@ -2,6 +2,7 @@ package ui.treeview;
 import js.html.DivElement;
 import tools.HtmlTools;
 import file.FileKind;
+using tools.NativeString;
 
 /**
  * Various shorthands
@@ -13,6 +14,12 @@ extern class TreeViewElement extends DivElement {
 	
 	public inline function asTreeDir():TreeViewDir return cast this;
 	public inline function asTreeItem():TreeViewItem return cast this;
+	
+	/** Indicates whether this is a root element - no parent folders */
+	public var treeIsRoot(get, never):Bool;
+	private inline function get_treeIsRoot():Bool {
+		return parentElement.classList.contains("treeview");
+	}
 	
 	public var treeIsDir(get, never):Bool;
 	private inline function get_treeIsDir():Bool {
@@ -54,7 +61,21 @@ extern class TreeViewDir extends TreeViewElement {
 	private inline function get_treeItemEls():ElementListOf<TreeViewElement> {
 		return HtmlTools.getChildrenAs(treeItems);
 	}
+	
+	/** Shorthand for getting the path for `parent` nodes in resources */
+	public var treeFolderPath23(get, never):String;
+	private inline function get_treeFolderPath23():String {
+		return TreeViewElementTools.getTreeFolderPathV23(this);
+	}
 }
 extern class TreeViewItem extends TreeViewElement {
 	public var yyOpenAs:FileKind;
+}
+private class TreeViewElementTools {
+	public static function getTreeFolderPathV23(el:TreeViewDir) {
+		var rel = el.treeRelPath;
+		if (rel.endsWith("/")) {
+			return rel.substring(0, rel.length - 1) + ".yy";
+		} else return rel;
+	}
 }

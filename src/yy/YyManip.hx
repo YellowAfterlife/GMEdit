@@ -30,19 +30,8 @@ class YyManip {
 	static function prepare(q:TreeViewItemBase) {
 		var pj = Project.current;
 		var py = q.py;
-		if (py == null) {
-			q.py = py = pj.readYyFileSync(pj.name);
-		}
+		if (py == null) py = pj.readYyFileSync(pj.name);
 		return { pj: pj, py: py };
-	}
-	public static function add(args:TreeViewItemCreate) {
-		return false;
-	}
-	public static function remove(q:TreeViewItemBase) {
-		return false;
-	}
-	public static function rename(q:TreeViewItemRename) {
-		return false;
 	}
 	
 	/**
@@ -97,6 +86,126 @@ class YyManip {
 			}
 		}
 		return changed;
+	}
+	
+	public static function add(args:TreeViewItemCreate) {
+		var pdat = prepare(args);
+		var pj = pdat.pj, py = pdat.py;
+		var name = args.name;
+		var parDir = args.tvDir;
+		
+		// create the resource itself:
+		var kind = args.kind;
+		var yypItem:YyProjectFolderOrResource;
+		var ntv:TreeViewElement;
+		var yyResource:YyResource = null;
+		var yyResourceText:String = null;
+		var yyPath:String = null;
+		var yyFullPath:String = null;
+		var indexText:String = null;
+		if (args.mkdir) {
+			var pre = (parDir.treeIsRoot ? "folders/" : parDir.treeRelPath) + name;
+			var folder:YyProjectFolder = {
+				folderPath: pre + ".yy",
+				order: -1,
+				resourceVersion: "1.0",
+				name: name,
+				tags: [],
+				resourceType: "GMFolder",
+			};
+			py.Folders.push(folder);
+			yypItem = folder;
+			ntv = TreeView.makeAssetDir(name, pre + "/", "mixed");
+		}
+		else {
+			var kindRoot = kind + "s";
+			var dir = '$kindRoot/$name';
+			var pre = '$dir/$name';
+			yyPath = pre + ".yy";
+			yyFullPath = pj.fullPath(yyPath);
+			args.npath = yyPath;
+			if (!pj.existsSync(dir)) pj.mkdirSync(dir);
+			switch (kind) {
+				case "script": {
+					var scr:YyScript = {
+						"isDnD": false,
+						"isCompatibility": false,
+						"parent": {
+							"name": parDir.treeLabel,
+							"path": parDir.treeFolderPath23,
+						},
+						"resourceVersion": "1.0",
+						"name": name,
+						"tags": [],
+						"resourceType": "GMScript",
+					};
+					yyResource = scr;
+					//
+					var gml = args.gmlCode;
+					if (gml == null) gml = 'function $name() {}';
+					indexText = gml;
+					var gmlPath = pre + ".gml";
+					args.npath = gmlPath;
+					pj.writeTextFileSync(gmlPath, gml);
+				};
+				default: {
+					Dialog.showError('No idea how to create type=`$kind`, sorry');
+					return false;
+				};
+			}
+			//
+			yyResourceText = YyJson.stringify(yyResource, true);
+			pj.writeTextFileSync(yyPath, yyResourceText);
+			if (indexText == null) indexText = yyResourceText;
+			//
+			var res:YyProjectResource = {
+				id: { name: name, path: pre + ".yy" },
+				order: -1,
+			};
+			py.resources.push(res);
+			yypItem = res;
+			//
+			ntv = TreeView.makeAssetItem(name, yyPath, yyFullPath, kind);
+		}
+		
+		// add the treeview and realign YYP items:
+		TreeViewItemMenus.insertImplTV(parDir, args.tvRef, ntv, args.order);
+		var parItemEls = parDir.treeItemEls;
+		var itemOrder = parItemEls.indexOf(ntv);
+		yypItem.order = itemOrder;
+		offsetTreeItems(py, parItemEls, itemOrder + 1, 1);
+		
+		// Update the YYP:
+		if (args.py == null) pj.writeYyFileSync(pj.name, py);
+		
+		// index the new item:
+		if (args.mkdir) {
+			// OK! It's a folder
+		} else switch (kind) {
+			case "script": {
+				GmlAPI.gmlComp.push(new AceAutoCompleteItem(name, kind));
+				GmlAPI.gmlKind.set(name, "asset." + kind);
+				GmlAPI.gmlLookup.set(name, { path: yyPath, row: 0 });
+				GmlAPI.gmlLookupText += name + "\n";
+				var fk:FileKind = switch (kind) {
+					case "object": KYyEvents.inst;
+					case "shader": null;
+					default: KGmlScript.inst;
+				}
+				var fullPath = pj.fullPath(args.npath);
+				if (fk != null) parsers.GmlSeeker.runSync(fullPath, indexText, name, fk);
+				if (args.openFile != false) {
+					gml.file.GmlFile.open(args.name, fullPath);
+				}
+			};
+		}
+		return true;
+	}
+	public static function remove(q:TreeViewItemBase) {
+		return false;
+	}
+	public static function rename(q:TreeViewItemRename) {
+		return false;
 	}
 	
 	public static function move(q:TreeViewItemMove) {

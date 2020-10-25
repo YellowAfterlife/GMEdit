@@ -5,6 +5,7 @@ import electron.Menu;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import tools.JsTools;
 import ui.treeview.TreeViewMenus.items;
 import ui.treeview.TreeViewMenus.add;
 import ui.treeview.TreeViewMenus.addLink;
@@ -13,6 +14,7 @@ import ui.treeview.TreeView;
 import ui.treeview.TreeViewElement;
 import yy.YyManip;
 import yy.v22.YyManipV22;
+using tools.NativeString;
 
 /**
  * ...
@@ -74,6 +76,13 @@ class TreeViewItemMenus {
 				q.visible = true;
 				q.enabled = supported;
 			}
+			//
+			var v23 = v.config.projectModeId == 2 && !Project.current.yyUsesGUID;
+			for (item in items.manipCreate.submenu.items) {
+				var only23:Bool = (cast item).yyOnlyV23;
+				if (only23 != null) item.visible = only23 == v23;
+			}
+			//
 			var nonRoot = target.getAttribute(TreeView.attrRel).toLowerCase() != prefix;
 			for (q in items.manipNonRoot) q.enabled = supported && nonRoot;
 			for (q in items.manipDirOnly) q.enabled = supported && dir;
@@ -83,22 +92,8 @@ class TreeViewItemMenus {
 		}
 	}
 	//
-	public static function createImplTV(q:TreeViewItemCreate) {
-		var name = q.name;
-		var nrel = q.tvDir.getAttribute(TreeView.attrRel) + name;
-		var ntv:Element;
-		if (q.mkdir) {
-			ntv = TreeView.makeAssetDir(name, nrel + "/", q.kind);
-			ntv.classList.add(TreeView.clOpen);
-		} else {
-			var pj = q.pj;
-			if (pj == null) pj = Project.current;
-			var nfull = pj.fullPath(q.npath);
-			ntv = TreeView.makeAssetItem(name, nrel, nfull, q.kind);
-		}
-		var dir = q.tvDir;
-		var ref = q.tvRef;
-		switch (q.order) {
+	public static function insertImplTV(dir:TreeViewDir, ref:Element, ntv:TreeViewElement, order:Int, ?showInTree:Bool) {
+		switch (order) {
 			case -1: {
 				dir.treeItems.insertBefore(ntv, ref);
 			};
@@ -110,13 +105,28 @@ class TreeViewItemMenus {
 			};
 			case -2: {
 				dir.treeItems.insertBefore(ntv, dir.treeItems.lastElementChild);
-				if (q.showInTree != false) dir.classList.add(TreeView.clOpen);
+				if (showInTree != false) dir.classList.add(TreeView.clOpen);
 			};
 			default: {
 				dir.treeItems.appendChild(ntv);
-				if (q.showInTree != false) dir.classList.add(TreeView.clOpen);
+				if (showInTree != false) dir.classList.add(TreeView.clOpen);
 			};
 		}
+	}
+	public static function createImplTV(q:TreeViewItemCreate):TreeViewElement {
+		var name = q.name;
+		var nrel = q.tvDir.getAttribute(TreeView.attrRel) + name;
+		var ntv:TreeViewElement;
+		if (q.mkdir) {
+			ntv = TreeView.makeAssetDir(name, nrel + "/", q.kind);
+			ntv.classList.add(TreeView.clOpen);
+		} else {
+			var pj = q.pj;
+			if (pj == null) pj = Project.current;
+			var nfull = pj.fullPath(q.npath);
+			ntv = TreeView.makeAssetItem(name, nrel, nfull, q.kind);
+		}
+		insertImplTV(q.tvDir, q.tvRef, ntv, q.order, q.showInTree);
 		return ntv;
 	}
 	//
@@ -148,16 +158,18 @@ class TreeViewItemMenus {
 	}
 	
 	/**
-	 * @param	mkdir	Make a directory (true) or file (false)
+	 * @param	 kind	What to make ("dir", "auto" to detect from dir, otherwise asset kind)
 	 * @param	order	-1: before, 1: after, 0: inside, -2: inside but prefer non-last
 	 * @param	  dir	Treeview directory to work with
 	 * @param	 name	Name of new item
 	 * @return	TVIC if successful, null if not
 	 */
-	public static function createImplBoth(mkdir:Bool, order:Int, dir:Element, name:String, ?preproc:TreeViewItemCreate->TreeViewItemCreate):TreeViewItemCreate {
+	public static function createImplBoth(kind:String, order:Int, dir:Element, name:String, ?preproc:TreeViewItemCreate-> TreeViewItemCreate):TreeViewItemCreate {
+		if (Std.is(kind, Bool)) kind = (cast kind:Bool) ? "dir" : "auto";
 		var s = name;
 		var d = getItemData(dir);
 		//
+		var mkdir = kind == "dir";
 		var tvDir:TreeViewDir = cast (order != 0 ? dir.parentElement.parentElement : dir);
 		if (!validate(s, tvDir, mkdir, d.filter)) return null;
 		//
@@ -170,7 +182,7 @@ class TreeViewItemMenus {
 			chain: d.chain,
 			last: d.last,
 			name: s,
-			kind: d.filter,
+			kind: (kind != "auto" && !mkdir) ? kind : d.filter,
 			order: order,
 			mkdir: mkdir,
 		};
@@ -207,11 +219,11 @@ class TreeViewItemMenus {
 		}
 		return args;
 	}
-	public static function createImpl(mkdir:Bool, order:Int) {
+	public static function createImpl(kind:String, order:Int) {
 		var dir = target;
 		Dialog.showPrompt("Name?", "", function(s) {
 			if (s == "" || s == null) return;
-			createImplBoth(mkdir, order, dir, s);
+			createImplBoth(kind, order, dir, s);
 		});
 	}
 	//
@@ -303,18 +315,52 @@ class TreeViewItemMenus {
 	//
 	static function initCreateMenu() {
 		var createMenu = new Menu();
-		for (kind in 0 ... 2) {
-			var si = kind > 0 ? "group" : "item";
-			if (kind > 0) createMenu.appendSep("sep-" + si);
-			var s = kind > 0 ? "Group" : "Item";
-			items.manipNonRoot.push(addLink(createMenu, si+"-before", s + " before", function() {
-				createImpl(kind > 0, -1);
+		// 2.3 menus:
+		var orders = ["before", "inside", "after"];
+		for (orderInd in 0 ... 3) {
+			var order = orders[orderInd];
+			var submenu = new Menu();
+			for (dat in ["script"]) {
+				var pair = dat.split("|");
+				var kind = pair[0];
+				var label = JsTools.or(pair[1], kind.capitalize());
+				addLink(submenu, "create-" + kind, label, function() {
+					createImpl(kind, orderInd - 1);
+				});
+			}
+			//
+			var subitem = createMenu.appendOpt({
+				id: "sub-" + order,
+				label: "Item " + order,
+				type: Sub,
+				submenu: submenu,
+			});
+			(cast subitem).yyOnlyV23 = true;
+			var arr = (orderInd == 1 ? items.manipDirOnly : items.manipNonRoot);
+			arr.push(subitem);
+		}
+		// non-2.3 menus:
+		var onlyV23:Bool = false;
+		function addLinkV(menu:Menu, id:String, label:String, fn:Void->Void) {
+			var r = addLink(menu, id, label, fn);
+			(cast r).yyOnlyV23 = onlyV23;
+			return r;
+		}
+		for (ind in 0 ... 2) {
+			var gr = ind > 0;
+			var si = gr ? "group" : "item";
+			if (ind > 0) createMenu.appendSep("sep-group");
+			var s = gr ? "Group" : "Item";
+			var kind = gr ? "dir" : "auto";
+			onlyV23 = gr ? null : false;
+			items.manipNonRoot.push(addLinkV(createMenu, si+"-before", s + " before", function() {
+				createImpl(kind, -1);
 			}));
-			items.manipDirOnly.push(addLink(createMenu, si+"-inside", s + " inside", function() {
-				createImpl(kind > 0, 0);
+			items.manipDirOnly.push(addLinkV(createMenu, si+"-inside", s + " inside", function() {
+				createImpl(kind, 0);
 			}));
-			items.manipNonRoot.push(addLink(createMenu, si+"-after", s + " after", function() {
-				createImpl(kind > 0, 1);
+			items.manipNonRoot.push(addLinkV(createMenu, si+"-after", s + " after", function() {
+				createImpl(kind, 1);
 			}));
 		}
 		//
@@ -324,7 +370,7 @@ class TreeViewItemMenus {
 			var d = getItemData(dir);
 			Dialog.showPrompt("Name?", d.last, function(s) {
 				if (s == "" || s == null) return;
-				createImplBoth(false, 1, dir, s, function(c) {
+				createImplBoth("auto", 1, dir, s, function(c) {
 					var fp = dir.getAttribute(TreeView.attrPath);
 					if (Path.extension(fp) == "yy") fp = Path.withExtension(fp, "gml");
 					try {
@@ -366,19 +412,35 @@ class TreeViewItemMenus {
 	}
 }
 typedef TreeViewItemBase = {
+	// the following allow for project traversal and are unused in 2.3:
 	prefix:String,
 	single:String,
 	plural:String,
-	tvDir:TreeViewDir,
+	chain:Array<String>,
+	last:String,
+	
+	/**
+	 * Reference element - the thing we clicked on.
+	 */
 	tvRef:Element,
-	chain:Array<String>, last:String,
+	
+	/**
+	 * Tree view directory to insert into.
+	 * For order=0, this is the tvRef itself.
+	 * For -1/+1, this is the parent of tvRef.
+	 */
+	tvDir:TreeViewDir,
+	
 	/** Project reference, defaults to Project.current */
 	?pj:Project,
-	/** if set, project JSON should be modified instead of reading-flushing */
+	
+	/** [GMS2.2] if set, project JSON should be modified instead of reading-flushing */
 	?py:yy.YyProject,
-	/** if set, new resource is inserted before this one */
+	
+	/** [GMS2.2] if set, new resource is inserted before this one */
 	?pyBefore:yy.YyProjectResource,
-	/** filled out during call */
+	
+	/** [GMS2.2] filled out during call */
 	?outGUID:yy.YyGUID,
 };
 typedef TreeViewItemCreate = {
@@ -386,6 +448,10 @@ typedef TreeViewItemCreate = {
 	name:String,
 	kind:String,
 	order:Int, mkdir:Bool,
+	/**
+	 * A relative path to the newly created item.
+	 * For scripts this is a path to GML, for other resources it is a path to YY.
+	 */
 	?npath:String,
 	/** whether to open the freshly made thing (defaults to true) */
 	?openFile:Bool,

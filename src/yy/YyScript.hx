@@ -5,8 +5,11 @@ package yy;
  * @author YellowAfterlife
  */
 typedef YyScript = {
-	>YyBase,
-	name:String,
-	IsCompatibility:Bool,
-	IsDnD:Bool,
+	>YyResource,
+	// 2.2:
+	?IsDnD:Bool,
+	?IsCompatibility:Bool,
+	// 2.3:
+	?isDnD:Bool,
+	?isCompatibility:Bool,
 }
