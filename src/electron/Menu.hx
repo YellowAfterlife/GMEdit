@@ -22,8 +22,8 @@ using tools.HtmlTools;
 	inline function appendOpt(opt:MenuItemOptions):MenuItem {
 		return MenuFallback.appendOpt(this, opt);
 	}
-	inline function appendSep(?id:String):Void {
-		append(new MenuItem({ type:Sep, id:id }));
+	inline function appendSep(?id:String):MenuItem {
+		return MenuFallback.appendSep(this, id);
 	}
 	function insert(pos:Int, item:MenuItem):Void;
 	var items:Array<MenuItem>;
@@ -65,6 +65,11 @@ using tools.HtmlTools;
 	}
 	public static function appendOpt(menu:Menu, opt:MenuItemOptions):MenuItem {
 		var item = new MenuItem(opt);
+		menu.append(item);
+		return item;
+	}
+	public static function appendSep(menu:Menu, ?id:String):MenuItem {
+		var item = new MenuItem({ type:Sep, id:id });
 		menu.append(item);
 		return item;
 	}
@@ -116,6 +121,7 @@ typedef MenuPopupOptions = {
 	var checked:Bool;
 	var label:String;
 	var click:Function;
+	var submenu:Menu;
 }
 @:keep class MenuItemFallback {
 	public var enabled:Bool;
