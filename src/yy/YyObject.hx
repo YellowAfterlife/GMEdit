@@ -124,8 +124,8 @@ import yy.YyResourceRef;
 				if (sorted) newList.push({ event: oldList[i], code: newMap[oldNames[i]].join("\r\n") });
 			} else {
 				// remove event files that are no longer used
-				var ev = oldList[i];
-				var full = Path.join([dir, YyEvent.toPath(ev.eventtype, ev.enumb, ev.id)]);
+				var rel = oldList[i].unpack().getPath();
+				var full = Path.join([dir, rel]);
 				if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 			}
 		}
