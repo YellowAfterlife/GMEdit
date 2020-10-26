@@ -66,10 +66,11 @@ class YyJsonParser {
 					case ':'.code:
 						if( field == null ) invalidChar();
 						hxOrder.push(field);
+						var val = parseRec();
 						if (Reflect.hasField(obj, field)) {
-							Main.console.log('Duplicate field definition: $field');
+							Main.console.log('Duplicate field definition: $field', val);
 						} else {
-							Reflect.setField(obj, field, parseRec());
+							Reflect.setField(obj, field, val);
 						}
 						field = null;
 						comma = true;
