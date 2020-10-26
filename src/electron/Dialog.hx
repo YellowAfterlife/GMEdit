@@ -279,20 +279,59 @@ private typedef DialogFilterImpl = {name:String, extensions:Array<String>};
 }
 //
 typedef DialogMessageOptions = {
+	/**
+	 * On Windows, "question" displays the same icon as "info", unless you set an icon using the "icon" option.
+	 * On macOS, both "warning" and "error" display the same warning icon.
+	 */
 	?type:DialogMessageType,
+	
+	/**
+	 * Array of texts for buttons.
+	 * On Windows, an empty array will result in one button labeled "OK".
+	 */
 	buttons:Array<String>,
+	
+	/** Content of the message box. */
 	message:String,
+	
+	/** Title of the message box, some platforms will not show it. */
 	?title:String,
+	
+	/** Extra information of the message. */
 	?detail:String,
+	
+	/**  If provided, the message box will include a checkbox with the given label. */
 	?checkboxLabel:String,
+	
+	/** Initial checked state of the checkbox. false by default. */
+	?checkboxChecked:Bool,
+	
+	/**
+	 * The index of the button to be used to cancel the dialog, via the Esc key.
+	 * By default this is assigned to the first button with "cancel" or "no" as the label.
+	 * If no such labeled buttons exist and this option is not set, 0 will be used as the return value.
+	 */
 	?cancelId:Int,
+	
+	/** Index of the button in the buttons array which will be selected by default when the message box opens. */
 	?defaultId:Int,
+	
+	/**
+	 * On Windows Electron will try to figure out which one of the buttons are common buttons (like "Cancel" or "Yes"), and show the others as command links in the dialog.
+	 * This can make the dialog appear in the style of modern Windows apps.
+	 * If you don't like this behavior, you can set noLink to true
+	 */
+	?noLink:Bool,
 };
 @:build(tools.AutoEnum.build("lq"))
 @:enum abstract DialogMessageType(String) from String to String {
 	var None;
+	/** On Windows, "question" displays the same icon as "info" */
 	var Info;
+	/** On macOS, both "warning" and "error" display the same warning icon. */
 	var Error;
+	/** On Windows, "question" displays the same icon as "info" */
 	var Question;
+	/** On macOS, both "warning" and "error" display the same warning icon. */
 	var Warning;
 }

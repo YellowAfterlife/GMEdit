@@ -52,7 +52,7 @@ class KYyEvents extends KGml {
 		//
 		if (ui.Preferences.current.assetThumbs && !allSync) {
 			var spriteId = obj.spriteId;
-			if (!project.yyUsesGUID) {
+			if (project.isGMS23) {
 				if (spriteId != null) {
 					TreeView.setThumbSprite(orig, (cast spriteId:YyResourceRef).name);
 				} else TreeView.resetThumb(orig);

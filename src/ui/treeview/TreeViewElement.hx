@@ -52,6 +52,15 @@ extern class TreeViewElement extends DivElement {
 		setAttribute(TreeView.attrLabel, s);
 		return s;
 	}
+	
+	public var treeIdent(get, set):String;
+	private inline function get_treeIdent():String {
+		return getAttribute(TreeView.attrIdent);
+	}
+	private inline function set_treeIdent(s:String):String {
+		setAttribute(TreeView.attrIdent, s);
+		return s;
+	}
 }
 extern class TreeViewDir extends TreeViewElement {
 	public var treeHeader:DivElement;

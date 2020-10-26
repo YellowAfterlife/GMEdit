@@ -1,5 +1,6 @@
 package ui.treeview;
 import electron.Dialog;
+import electron.Electron;
 import gml.Project;
 import electron.Menu;
 import haxe.io.Path;
@@ -77,7 +78,7 @@ class TreeViewItemMenus {
 				q.enabled = supported;
 			}
 			//
-			var v23 = v.config.projectModeId == 2 && !Project.current.yyUsesGUID;
+			var v23 = Project.current.isGMS23;
 			for (item in items.manipCreate.submenu.items) {
 				var only23:Bool = (cast item).yyOnlyV23;
 				if (only23 != null) item.visible = only23 == v23;
@@ -229,9 +230,29 @@ class TreeViewItemMenus {
 	//
 	static function removeImpl() {
 		var d = getItemData(target);
-		if (!Dialog.showConfirmWarn("Are you sure you want to delete " + d.last + "?"
-			+ "\nThis cannot be undone!"
-		)) return;
+		//
+		var mode:Int = null;
+		var msg = "Are you sure you want to delete " + d.last + "?"
+			+ "\nThis cannot be undone!";
+		if (Project.current.isGMS23 && ( // is an item or contains items
+			target.classList.contains(TreeView.clItem)
+			|| target.querySelector("." + TreeView.clItem) != null
+		)) {
+			var exp = "Cleaning up references is experimental and you should be using backups/source control.";
+			if (Electron != null) {
+				mode = Dialog.showMessageBox({
+					noLink: true,
+					message: msg,
+					detail: exp,
+					buttons: ["Delete", "Delete and clean up references", "Cancel"],
+					cancelId: 2,
+				});
+			} else if (Dialog.showConfirmWarn(msg)) {
+				mode = Dialog.showConfirmWarn("Would you also like to clean up references?\n\n" + exp) ? 1 : 0;
+			} else mode = 2;
+		}
+		if (mode == null) mode = Dialog.showConfirmWarn(msg) ? 0 : 2;
+		if (mode == 2) return;
 		if (d.filter == "file") {
 			try {
 				var path0 = target.getAttribute(TreeView.attrRel);
@@ -246,7 +267,7 @@ class TreeViewItemMenus {
 			}
 			return;
 		}
-		var args:TreeViewItemBase = {
+		var args:TreeViewItemRemove = {
 			prefix: d.prefix,
 			plural: d.plural,
 			single: d.single,
@@ -254,6 +275,7 @@ class TreeViewItemMenus {
 			last: d.last,
 			tvDir: cast target.parentElement.parentElement,
 			tvRef: target,
+			cleanRefs: mode == 1,
 		};
 		var project = Project.current;
 		var vi = project.version.config.projectModeId;
@@ -463,6 +485,10 @@ typedef TreeViewItemCreate = {
 typedef TreeViewItemRename = {
 	>TreeViewItemBase,
 	name:String,
+}
+typedef TreeViewItemRemove = {
+	>TreeViewItemBase,
+	cleanRefs:Bool,
 }
 typedef TreeViewItemMove = {
 	>TreeViewItemBase,

@@ -17,6 +17,7 @@ import parsers.GmlExtLambda;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.Dictionary;
+import tools.NativeObject;
 import tools.NativeString;
 import ui.GlobalSeachData;
 import haxe.extern.EitherType;
@@ -297,9 +298,15 @@ using tools.HtmlTools;
 				} else head += " replaced";
 			} else head += " found";
 			results = head + ":" + results;
+			//
+			if (opt.results != null && NativeString.trimRight(opt.results) != "") {
+				results = opt.results + "\n" + results;
+			}
+			//
 			if (opt.errors != null) {
 				results = "/* Errors:\n" + opt.errors + "\n*/\n" + results;
 			}
+			//
 			var file = new GmlFile(name, null, KGmlSearchResults.inst, results);
 			if (!isRepl) file.searchData = saveData;
 			GmlFile.openTab(file);
@@ -308,8 +315,8 @@ using tools.HtmlTools;
 			});
 		}, opt);
 	}
-	public static function findReferences(id:String) {
-		run({
+	public static function findReferences(id:String, ?extra:GlobalSearchOpt) {
+		var opt:GlobalSearchOpt = {
 			find: id,
 			wholeWord: true,
 			matchCase: true,
@@ -325,7 +332,11 @@ using tools.HtmlTools;
 			checkExtensions: true,
 			expandLambdas: true,
 			checkRefKind: true,
-		});
+		};
+		if (extra != null) {
+			NativeObject.fillDefaults(extra, opt);
+		} else extra = opt;
+		run(extra);
 	}
 	public static function toggle() {
 		if (element.style.display == "none") {
@@ -460,21 +471,22 @@ typedef GlobalSearchOpt = {
 	?lineFilter:String->Bool,
 	?replaceBy:EitherType<String, Function>,
 	?previewReplace:Bool,
-	wholeWord:Bool,
-	matchCase:Bool,
-	checkStrings:Bool,
-	checkObjects:Bool,
-	checkScripts:Bool,
-	checkHeaders:Bool,
-	checkComments:Bool,
-	checkTimelines:Bool,
-	checkMacros:Bool,
-	checkRooms:Bool,
-	checkShaders:Bool,
-	checkExtensions:Bool,
-	expandLambdas:Bool,
+	?wholeWord:Bool,
+	?matchCase:Bool,
+	?checkStrings:Bool,
+	?checkObjects:Bool,
+	?checkScripts:Bool,
+	?checkHeaders:Bool,
+	?checkComments:Bool,
+	?checkTimelines:Bool,
+	?checkMacros:Bool,
+	?checkRooms:Bool,
+	?checkShaders:Bool,
+	?checkExtensions:Bool,
+	?expandLambdas:Bool,
 	?headerFilter:EitherType<RegExp, GlobalSearchCtxFilter>,
 	?checkRefKind:Bool,
 	?errors:String,
+	?results:String,
 };
 typedef GlobalSearchCtxFilter = (ctx:String, path:String)->Bool;

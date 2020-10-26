@@ -696,6 +696,26 @@ import ui.treeview.TreeViewElement;
 			FileSystem.rmdirSync(full);
 		}
 	}
+	/** Recursive directory removal. Not too smart, won't retry */
+	public function rmdirRecSync(path:String):Bool {
+		var ok = true;
+		for (pair in readdirSync(path)) {
+			if (pair.isDirectory) {
+				if (!rmdirRecSync(pair.relPath)) ok = false;
+			} else try {
+				unlinkSync(pair.relPath);
+			} catch (x:Dynamic) {
+				Main.console.warn(x);
+				ok = false;
+			}
+		}
+		if (ok) try {
+			rmdirSync(dir);
+		} catch (x:Dynamic) {
+			Main.console.warn(x);
+		}
+		return ok;
+	}
 	public function readdir(path:String, fn:Error->Array<ProjectDirInfo>->Void):Void {
 		FileSystem.readdir(path, function(e, rels) {
 			var found:Array<ProjectDirInfo>;

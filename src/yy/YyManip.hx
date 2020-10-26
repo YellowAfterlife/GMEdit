@@ -4,8 +4,10 @@ import electron.Dialog;
 import file.FileKind;
 import file.kind.gml.KGmlScript;
 import file.kind.yy.*;
+import file.kind.gml.KGmlSearchResults;
 import gml.GmlAPI;
 import gml.Project;
+import gml.file.GmlFile;
 import haxe.ds.Map;
 import haxe.io.Path;
 import js.lib.RegExp;
@@ -67,12 +69,21 @@ class YyManip {
 		+ '\r?\n    "path":\\s*")(.*?)(")'
 	);
 	
-	static function getProjectItemForTreeEl(py:YyProject, el:TreeViewElement):YyProjectFolderOrResource {
+	static function getProjectFolderForTreeDir(py:YyProject, el:TreeViewDir):YyProjectFolder {
 		var path = el.treeRelPath;
+		path = path.trimIfEndsWith("/") + ".yy";
+		return py.Folders.findFirst((f) -> f.folderPath == path);
+	}
+	static function getProjectResourceForTreeItem(py:YyProject, el:TreeViewItem):YyProjectResource {
+		var path = el.treeRelPath;
+		return py.resources.findFirst((r) -> r.id.path == path);
+	}
+	static function getProjectItemForTreeEl(py:YyProject, el:TreeViewElement):YyProjectFolderOrResource {
 		if (el.treeIsDir) {
-			path = path.trimIfEndsWith("/") + ".yy";
-			return py.Folders.findFirst((f) -> f.folderPath == path);
-		} else return py.resources.findFirst((r) -> r.id.path == path);
+			return getProjectFolderForTreeDir(py, el.asTreeDir());
+		} else {
+			return getProjectResourceForTreeItem(py, el.asTreeItem());
+		}
 	}
 	
 	static function offsetTreeItems(py:YyProject, items:ElementListOf<TreeViewElement>, start:Int, offset:Int):Bool {
@@ -246,8 +257,86 @@ class YyManip {
 		}
 		return true;
 	}
-	public static function remove(q:TreeViewItemBase) {
-		return false;
+	public static function remove(args:TreeViewItemRemove) {
+		var pdat = prepare(args);
+		var pj = pdat.pj, py = pdat.py;
+		Main.console.log(args);
+		var cleanRefs:Bool = args.cleanRefs;
+		var checkRefs:Array<YyResourceRef> = [];
+		var removeRec:TreeViewItem->Void = null;
+		function removeItem(el:TreeViewItem):Void {
+			var pyRes = getProjectResourceForTreeItem(py, el);
+			if (pyRes != null) {
+				py.resources.remove(pyRes);
+				if (cleanRefs) checkRefs.push(pyRes.id);
+				var path = pyRes.id.path;
+				var dir = Path.directory(path);
+				pj.rmdirRecSync(dir);
+			}
+		}
+		function removeRec(el:TreeViewElement):Void {
+			if (el.treeIsDir) {
+				var dir = el.asTreeDir();
+				var pyFolder = getProjectFolderForTreeDir(py, dir);
+				if (pyFolder != null) {
+					py.Folders.remove(pyFolder);
+				}
+				for (ch in dir.treeItemEls) {
+					removeRec(ch);
+				}
+			} else removeItem(el.asTreeItem());
+		}
+		//
+		var el:TreeViewElement = cast args.tvRef;
+		removeRec(el);
+		var order = args.tvDir.treeItemEls.indexOf(el);
+		offsetTreeItems(py, args.tvDir.treeItemEls, order + 1, -1);
+		el.parentElement.removeChild(el);
+		//
+		if (checkRefs.length > 0) {
+			var refsToNull = [];
+			for (ref in checkRefs) {
+				refsToNull.push({
+					rxRef: new RegExp(
+						'(:\\s*){\\s*"name":\\s*"' + ref.name
+						+ '",\\s*"path":\\s*"' + ref.path.escapeRx() + '",?\\s*}'
+					, 'g'),
+					rxDef: new RegExp('("value":\\s*)"' + ref.name + '"', 'g'),
+					name: ref.name
+				});
+			}
+			var log:Array<String> = [];
+			for (res in py.resources) {
+				try {
+					var yyText = pj.readTextFileSync(res.id.path);
+					var changed = false;
+					for (rxp in refsToNull) {
+						yyText = yyText.replaceExt(rxp.rxRef, function(_, pre) {
+							log.push('// Removed a reference to ${rxp.name} from @[${res.id.name}]');
+							changed = true;
+							return pre + "null";
+						});
+						yyText = yyText.replaceExt(rxp.rxDef, function(_, pre) {
+							log.push('// Removed a definition reference to ${rxp.name} from @[${res.id.name}]');
+							changed = true;
+							return pre + '"noone"';
+						});
+					}
+					if (changed) {
+						pj.writeTextFileSync(res.id.path, yyText);
+					}
+				} catch (x:Dynamic) {
+					Main.console.warn(x);
+				}
+			}
+			if (log.length > 0) {
+				var file = new GmlFile("Removal log", null, KGmlSearchResults.inst, log.join("\n"));
+				GmlFile.openTab(file);
+			}
+		}
+		//
+		pj.writeYyFileSync(pj.name, py);
+		return true;
 	}
 	public static function rename(q:TreeViewItemRename) {
 		return false;
