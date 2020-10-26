@@ -24,30 +24,6 @@ import yy.YyResourceRef;
  */
 @:forward abstract YyObject(YyObjectImpl) from YyObjectImpl to YyObjectImpl {
 	public static var errorText:String;
-	static var fieldOrder = [
-		"spriteId",
-		"solid",
-		"visible",
-		"spriteMaskId",
-		"persistent",
-		"parentObjectId",
-		"physicsObject",
-		"physicsSensor",
-		"physicsShape",
-		"physicsGroup",
-		"physicsDensity",
-		"physicsRestitution",
-		"physicsLinearDamping",
-		"physicsAngularDamping",
-		"physicsFriction",
-		"physicsStartAwake",
-		"physicsKinematic",
-		"physicsShapePoints",
-		"eventList",
-		"properties",
-		"overriddenProperties",
-		"parent",
-	].concat(YyJsonPrinter.mvcOrder23);
 	
 	public function getCode(objPath:String, ?extras:Array<GmlFileExtra>):String {
 		var dir = Path.directory(objPath);
@@ -197,12 +173,10 @@ import yy.YyResourceRef;
 		this.eventList = [];
 		for (item in newList) {
 			var ev = item.event;
-			if (!v22) ev.hxOrder = YyObjectEvent.fieldOrder;
 			var full = Path.join([dir, ev.unpack().getPath()]);
 			FileWrap.writeTextFileSync(full, item.code);
 			this.eventList.push(ev);
 		}
-		if (!v22) this.hxOrder = fieldOrder;
 		
 		//
 		return true;

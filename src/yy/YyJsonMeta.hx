@@ -27,6 +27,9 @@ import haxe.DynamicAccess;
 			order: ["spriteId", "solid", "visible", "spriteMaskId", "persistent", "parentObjectId", "physicsObject", "physicsSensor", "physicsShape", "physicsGroup", "physicsDensity", "physicsRestitution", "physicsLinearDamping", "physicsAngularDamping", "physicsFriction", "physicsStartAwake", "physicsKinematic", "physicsShapePoints", "eventList", "properties", "overriddenProperties"].concat(base),
 			digits: td1(["physicsDensity", "physicsRestitution", "physicsLinearDamping", "physicsAngularDamping", "physicsFriction"]),
 		};
+		q["GMEvent"] = {
+			order: ["isDnD", "eventNum", "eventType", "collisionObjectId"].concat(base),
+		};
 		//{ room
 		q["GMRoom"] = {
 			order: [

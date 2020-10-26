@@ -5,13 +5,6 @@ import haxe.extern.EitherType;
  * @author YellowAfterlife
  */
 @:forward abstract YyObjectEvent(YyObjectEventImpl) from YyObjectEventImpl to YyObjectEventImpl {
-	public static var fieldOrder = [
-		"isDnD",
-		"eventNum",
-		"eventType",
-		"collisionObjectId",
-		"parent",
-	].concat(YyJsonPrinter.mvcOrder23);
 	public static function compare(a:YyObjectEvent, b:YyObjectEvent):Int {
 		if (YyTools.isV22(a)) {
 			var at = a.eventtype, bt = b.eventtype;
