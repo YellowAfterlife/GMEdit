@@ -467,13 +467,31 @@ using tools.HtmlTools;
 }
 typedef GlobalSearchOpt = {
 	find:EitherType<String, RegExp>,
-	?findFilter:Function,
-	?lineFilter:String->Bool,
 	?replaceBy:EitherType<String, Function>,
+	/** If `true`, shows pairs of before-after replacement lines but does not modify files. */
 	?previewReplace:Bool,
+	/**
+	 * If provided, is called for each match and returns whether to include/replace it.
+	 */
+	?findFilter:Function,
+	/**
+	 * Is called with matched line (same thing you see in search results).
+	 * Can return false to ignore the line.
+	 */
+	?lineFilter:String->Bool,
+	/**
+	 * Can be a regex to filter context
+	 */
+	?headerFilter:EitherType<RegExp, GlobalSearchCtxFilter>,
+	/** Whole-word match (/\bword\b/) */
 	?wholeWord:Bool,
+	/** Ignore `.word` */
+	?noDotPrefix:Bool,
+	/** Case-sensistive match */
 	?matchCase:Bool,
+	/** Whether to include matches inside strings ("", '') */
 	?checkStrings:Bool,
+	// per-resource filters:
 	?checkObjects:Bool,
 	?checkScripts:Bool,
 	?checkHeaders:Bool,
@@ -483,10 +501,12 @@ typedef GlobalSearchOpt = {
 	?checkRooms:Bool,
 	?checkShaders:Bool,
 	?checkExtensions:Bool,
+	/** Whether to expand pre-2.3 lambdas instead of showing them separately */
 	?expandLambdas:Bool,
-	?headerFilter:EitherType<RegExp, GlobalSearchCtxFilter>,
+	/** Whether to display type of reference (read, write, define, etc.) */
 	?checkRefKind:Bool,
 	?errors:String,
+	/** If set, prepends the given strings before the output */
 	?results:String,
 };
 typedef GlobalSearchCtxFilter = (ctx:String, path:String)->Bool;

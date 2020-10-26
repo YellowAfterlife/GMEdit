@@ -53,6 +53,15 @@ extern class TreeViewElement extends DivElement {
 		return s;
 	}
 	
+	public var treeKind(get, set):String;
+	private inline function get_treeKind():String {
+		return getAttribute(TreeView.attrKind);
+	}
+	private inline function set_treeKind(s:String):String {
+		setAttribute(TreeView.attrKind, s);
+		return s;
+	}
+	
 	public var treeIdent(get, set):String;
 	private inline function get_treeIdent():String {
 		return getAttribute(TreeView.attrIdent);
@@ -60,6 +69,20 @@ extern class TreeViewElement extends DivElement {
 	private inline function set_treeIdent(s:String):String {
 		setAttribute(TreeView.attrIdent, s);
 		return s;
+	}
+	
+	public var treeParentDir(get, never):TreeViewDir;
+	private inline function get_treeParentDir():TreeViewDir {
+		return TreeViewElementTools.getTreeParentDir(this);
+	}
+	
+	/** As seen on the page */
+	public var treeText(get, set):String;
+	private inline function get_treeText():String {
+		return TreeViewElementTools.getTreeText(this);
+	}
+	private inline function set_treeText(s:String):String {
+		return TreeViewElementTools.setTreeText(this, s);
 	}
 }
 extern class TreeViewDir extends TreeViewElement {
@@ -86,5 +109,25 @@ private class TreeViewElementTools {
 		if (rel.endsWith("/")) {
 			return rel.substring(0, rel.length - 1) + ".yy";
 		} else return rel;
+	}
+	public static function getTreeParentDir(el:TreeViewElement):TreeViewDir {
+		var par = el.parentElement;
+		if (par == null || !par.classList.contains("items")) return null;
+		return cast par.parentElement;
+	}
+	public static function getTreeText(el:TreeViewElement):String {
+		var header:DivElement;
+		if (el.treeIsDir) {
+			header = el.asTreeDir().treeHeader;
+		} else header = el;
+		return header.querySelector("span").innerText;
+	}
+	public static function setTreeText(el:TreeViewElement, s:String):String {
+		var header:DivElement;
+		if (el.treeIsDir) {
+			header = el.asTreeDir().treeHeader;
+		} else header = el;
+		header.querySelector("span").innerText = s;
+		return s;
 	}
 }

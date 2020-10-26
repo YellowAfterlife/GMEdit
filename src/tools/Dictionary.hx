@@ -30,6 +30,15 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function exists(k:String):Bool {
 		return Reflect.hasField(this, k);
 	}
+	public function move(k1:String, k2:String):Bool {
+		if (exists(k2)) return false;
+		if (exists(k1)) {
+			var val = get(k1);
+			remove(k1);
+			set(k2, val);
+			return true;
+		} else return false;
+	}
 	//
 	@:arrayAccess public inline function get(k:String):T {
 		return untyped this[k];

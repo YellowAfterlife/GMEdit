@@ -14,6 +14,7 @@ import js.lib.RegExp;
 import js.html.Element;
 import tools.NativeString;
 import ui.ChromeTabs;
+import ui.GlobalSearch;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;
 import ui.treeview.TreeViewElement;
@@ -338,7 +339,132 @@ class YyManip {
 		pj.writeYyFileSync(pj.name, py);
 		return true;
 	}
-	public static function rename(q:TreeViewItemRename) {
+	public static function rename(args:TreeViewItemRename) {
+		var pdat = prepare(args);
+		var pj = pdat.pj, py = pdat.py;
+		/** path is "folders/A/B" */
+		function renameDirRec(dir:TreeViewDir, path:String, ?folder:YyProjectFolder) {
+			var dirName = Path.withoutDirectory(path);
+			var dirPath = path + ".yy";
+			//
+			if (folder == null) folder = getProjectFolderForTreeDir(py, dir);
+			if (folder != null) folder.folderPath = dirPath;
+			//
+			var dirPrefix = path + "/";
+			dir.treeRelPath = dirPrefix;
+			for (el in dir.treeItemEls) {
+				var elPath = el.treeRelPath;
+				if (el.treeIsDir) {
+					renameDirRec(el.asTreeDir(), dirPrefix + el.treeLabel);
+				} else {
+					changeParent(pj, el.treeRelPath, dirName, dirPath);
+				}
+			}
+		}
+		var el:TreeViewElement = cast args.tvRef;
+		if (el.treeIsDir) {
+			var dir = el.asTreeDir();
+			var folder = getProjectFolderForTreeDir(py, dir);
+			var newName = args.name;
+			folder.name = newName;
+			dir.treeLabel = newName;
+			dir.treeText = newName;
+			var newPath = Path.directory(folder.folderPath) + "/" + args.name;
+			renameDirRec(dir, newPath);
+		}
+		else {
+			var item = el.asTreeItem();
+			//
+			var pyRes = getProjectResourceForTreeItem(py, item);
+			var curName = pyRes.id.name;
+			var curPath = pyRes.id.path;
+			var curDir = Path.directory(curPath);
+			//
+			var newName = args.name;
+			var newDir = Path.directory(curDir) + "/" + newName;
+			var newPath = newDir + "/" + newName + ".yy";
+			//
+			item.treeIdent = newName;
+			item.treeText = newName;
+			item.treeRelPath = newPath;
+			item.treeFullPath = pj.fullPath(newPath);
+			//
+			var log = [];
+			//
+			var rxRef = new RegExp(
+				'(:\\s*{\\s*"name":\\s*")' + curName
+				+ '(",\\s*"path":\\s*")' + curPath.escapeRx() + '(",?\\s*})'
+			, 'g');
+			var rxDef = new RegExp('("value":\\s*")' + curName + '(")', 'g');
+			function updateResource(res:YyProjectResource) {
+				var yyPath = res.id.path;
+				var yyText = pj.readTextFileSync(yyPath);
+				var changed = false;
+				if (res == pyRes) {
+					var rxName = new RegExp('^(  "name":\\s+")$curName(")', 'gm');
+					var rxPath = new RegExp('"' + curPath.escapeRx() + '"', 'g');
+					yyText = yyText.replaceExt(rxName, function(_, s1, s2) {
+						changed = true;
+						return s1 + newName + s2;
+					});
+					yyText = yyText.replaceExt(rxPath, function(_) {
+						changed = true;
+						return '"' + newPath + '"';
+					});
+					pyRes.id.name = newName;
+					pyRes.id.path = newPath;
+				}
+				yyText = yyText.replaceExt(rxRef, function(_, s1, s2, s3) {
+					log.push('// Updated a reference to ${newName} in @[${res.id.name}]');
+					changed = true;
+					return s1 + newName + s2 + newPath + s3;
+				});
+				yyText = yyText.replaceExt(rxDef, function(_, s1, s2) {
+					log.push('// Updated a definition reference to ${newName} in @[${res.id.name}]');
+					changed = true;
+					return s1 + newName + s2;
+				});
+				if (changed) pj.writeTextFileSync(yyPath, yyText);
+			}
+			function updateResourceSafe(res:YyProjectResource) {
+				try {
+					updateResource(res);
+				} catch (x:Dynamic) {
+					Main.console.warn(x);
+				}
+			}
+			if (args.patchRefs) {
+				for (res in py.resources) updateResourceSafe(res);
+			} else updateResourceSafe(pyRes);
+			//
+			pj.renameSync(curPath, curDir + "/" + newName + ".yy");
+			pj.renameSync(curDir, newDir);
+			//
+			var comp = GmlAPI.gmlComp.findFirst((c) -> c.name == curName);
+			if (comp != null) comp.name = newName;
+			GmlAPI.gmlKind.move(curName, newName);
+			var lookup = GmlAPI.gmlLookup[curName];
+			if (lookup != null) {
+				lookup.path = newPath;
+				GmlAPI.gmlLookup.move(curName, newName);
+				var rxLookup = new RegExp('^$curName$', 'm');
+				GmlAPI.gmlLookupText = GmlAPI.gmlLookupText.replaceExt(rxLookup, newName);
+			}
+			if (args.kind == "sprite") pj.spriteURLs.move(curName, newName);
+			//
+			if (args.patchCode) {
+				GlobalSearch.findReferences(curName, {
+					find: null,
+					replaceBy: newName,
+					results: log.length > 0 ? log.join("\n") : null,
+					noDotPrefix: true,
+				});
+			} else if (log.length > 0) {
+				var file = new GmlFile("Update log", null, KGmlSearchResults.inst, log.join("\n"));
+				GmlFile.openTab(file);
+			}
+		}
+		pj.writeYyFileSync(pj.name, py);
 		return false;
 	}
 	
@@ -352,8 +478,8 @@ class YyManip {
 			// update YYP item:
 			var curPath = dirEl.treeRelPath;
 			var curYyPath = curPath.trimIfEndsWith("/") + ".yy";
-			var yyItem = py.Folders.findFirst((f) -> f.folderPath == curYyPath);
-			if (yyItem != null) yyItem.folderPath = dirPath;
+			var folder = getProjectFolderForTreeDir(py, dirEl);
+			if (folder != null) folder.folderPath = dirPath;
 			//
 			var dirPrefix = path + "/";
 			dirEl.treeRelPath = dirPrefix;

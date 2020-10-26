@@ -241,7 +241,7 @@ class TreeViewItemMenus {
 			var exp = "Cleaning up references is experimental and you should be using backups/source control.";
 			if (Electron != null) {
 				mode = Dialog.showMessageBox({
-					noLink: true,
+					//noLink: true,
 					message: msg,
 					detail: exp,
 					buttons: ["Delete", "Delete and clean up references", "Cancel"],
@@ -297,12 +297,12 @@ class TreeViewItemMenus {
 		var d = getItemData(target);
 		Dialog.showPrompt("New name?", d.last, function(s:String) {
 			if (s == d.last || s == "" || s == null) return;
-			var dir = target.classList.contains(TreeView.clDir);
-			var tvDir:TreeViewDir = cast target.parentElement.parentElement;
-			if (!validate(s, tvDir, dir, d.filter)) return;
+			var el:TreeViewElement = cast target;
+			var tvDir:TreeViewDir = el.treeParentDir;
+			if (!validate(s, tvDir, d.isDir, d.filter)) return;
 			if (d.filter == "file") {
 				try {
-					var path0 = target.getAttribute(TreeView.attrRel);
+					var path0 = el.treeRelPath;
 					var path1 = Path.join([Path.directory(path0), s]);
 					Project.current.renameSync(path0, path1);
 					if (d.isDir) Project.current.reload();
@@ -311,6 +311,36 @@ class TreeViewItemMenus {
 				}
 				return;
 			}
+			var kind = el.treeIsDir ? "dir" : el.treeKind;
+			var mode:Int = 2;
+			var dlgMode:Int = 0;
+			var wantExtras = false;
+			if (Project.current.isGMS23) switch (kind) {
+				case "notes", "extension": dlgMode = 1;
+				default: dlgMode = 2;
+			}
+			//Main.console.log(kind, dlgMode);
+			if (dlgMode > 0) {
+				var msg = "Would you like to rename references as well?";
+				var exp = "(experimental, make sure to have backups/version control)";
+				if (Electron != null) {
+					var buttons = [
+						"Rename, update references",
+						"Rename, update references and code",
+						"Just rename",
+					];
+					if (dlgMode == 1) buttons.splice(1, 1);
+					mode = Dialog.showMessageBox({
+						message: msg,
+						detail: exp,
+						buttons: buttons,
+						cancelId: 2,
+					});
+					if (mode == 1 && dlgMode == 1) mode = 2;
+				} else {
+					mode = Dialog.showConfirm('$msg\n$exp') ? 0 : 2;
+				}
+			}
 			var args:TreeViewItemRename = {
 				prefix: d.prefix,
 				plural: d.plural,
@@ -318,8 +348,11 @@ class TreeViewItemMenus {
 				chain: d.chain,
 				last: d.last,
 				tvDir: tvDir,
-				tvRef: target,
+				tvRef: el,
 				name: s,
+				kind: kind,
+				patchRefs: mode < 2,
+				patchCode: mode == 1,
 			};
 			var project = Project.current;
 			var vi = project.version.config.projectModeId;
@@ -414,7 +447,7 @@ class TreeViewItemMenus {
 		});
 		var removeItem = new MenuItem({
 			id: "remove",
-			label: "Remove",
+			label: "Delete",
 			click: removeImpl
 		});
 		var renameItem = new MenuItem({
@@ -485,6 +518,9 @@ typedef TreeViewItemCreate = {
 typedef TreeViewItemRename = {
 	>TreeViewItemBase,
 	name:String,
+	kind:String,
+	patchRefs:Bool,
+	patchCode:Bool,
 }
 typedef TreeViewItemRemove = {
 	>TreeViewItemBase,
