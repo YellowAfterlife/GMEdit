@@ -69,7 +69,7 @@ class KYyExtension extends FileKind {
 				}
 			}
 			for (mcr in file.constants) {
-				var name = mcr.constantName;
+				var name = mcr.name;
 				GmlAPI.extKind.set(name, "extmacro");
 				if (!mcr.hidden) {
 					var expr = mcr.value;

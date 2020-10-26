@@ -30,7 +30,12 @@ typedef YyExtensionFunc = {
 }
 typedef YyExtensionMacro = {
 	>YyBase,
-	constantName:String,
+	/** ≤2.2.5 */
+	?constantName:String,
+	/** ≥2.3 */
+	?name:String,
+	/** Ideally hidden from the user, but base IDE doesn't always care */
 	hidden:Bool,
+	/** Token-wise a more or less literal replacement */
 	value:String,
 }
