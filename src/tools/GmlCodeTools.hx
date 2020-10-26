@@ -83,6 +83,19 @@ class GmlCodeTools {
 		return 0;
 	}
 	
+	/** `a.¦b` -> true */
+	public static function isDotAccessBacktrack(src:GmlCode, pos:StringPos):Bool {
+		while (--pos >= 0) {
+			var c:CharCode = src.fastCodeAt(pos);
+			switch (c) {
+				case ".".code: return true;
+				case _ if (c.isSpace1()): {};
+				default: return false;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * `if (_) ¦` -> true, `if (a || ¦b)` -> false, etc.
 	 * @param isInline whether the source string represents an inline expression

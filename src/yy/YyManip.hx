@@ -458,6 +458,7 @@ class YyManip {
 					replaceBy: newName,
 					results: log.length > 0 ? log.join("\n") : null,
 					noDotPrefix: true,
+					checkRefKind: false,
 				});
 			} else if (log.length > 0) {
 				var file = new GmlFile("Update log", null, KGmlSearchResults.inst, log.join("\n"));

@@ -17,6 +17,7 @@ import parsers.GmlExtLambda;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.Dictionary;
+import tools.GmlCodeTools;
 import tools.NativeObject;
 import tools.NativeString;
 import ui.GlobalSeachData;
@@ -107,6 +108,7 @@ using tools.HtmlTools;
 		var ctxFilter = opt.headerFilter;
 		var ctxFilterFn:GlobalSearchCtxFilter = Syntax.typeof(ctxFilter) == "function" ? ctxFilter : null;
 		var ctxFilterRx:RegExp = Std.is(ctxFilter, RegExp) ? ctxFilter : null;
+		var allowDotPrefix:Bool = !opt.noDotPrefix;
 		var isRepl = repl != null;
 		var isReplFn = Syntax.typeof(repl) == "function";
 		var isPrev = opt.previewReplace;
@@ -164,7 +166,8 @@ using tools.HtmlTools;
 					if (isRepl || ctxLink != ctxLast) {
 						// todo: show multiple changes on the same line combined
 						var curr:Dynamic = mt.length > 1 ? mt : mt[0];
-						if ((filterFn == null || filterFn(curr))
+						if ((allowDotPrefix || !GmlCodeTools.isDotAccessBacktrack(code, ofs))
+							&& (filterFn == null || filterFn(curr))
 							&& (lineFilter == null || lineFilter(line))
 						) {
 							saveItem = { row: pos.row, code: line, next: null };
