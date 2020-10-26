@@ -140,7 +140,7 @@ import yy.YyResourceRef;
 			if (ev != null) {
 				// OK!
 			}
-			else if (YyTools.isV22(this)) {
+			else if (v22) {
 				ev = {
 					id: new YyGUID(),
 					modelName: "GMEvent",
@@ -162,7 +162,7 @@ import yy.YyResourceRef;
 					parent: { name: this.name, path: 'objects/${this.name}/${this.name}.yy' },
 					eventType: idat.type,
 					eventNum: idat.numb != null ? idat.numb : 0,
-					name: null,
+					name: "",
 					tags: [],
 				};
 			}
