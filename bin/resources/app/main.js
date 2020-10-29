@@ -58,17 +58,16 @@ function createWindow () {
 	if (process.platform === 'darwin' && openArg < args.length && args[openArg].startsWith("-psn")) openArg += 1
 	
 	//
-	if (openArg < args.length && args[openArg] == "--liveweb") {
-		openArg += 1
+	if (args.includes("--liveweb")) {
 		index_url = url.format({
 			pathname: path.join(__dirname, "index-live.html"),
 			protocol: 'file:',
 			slashes: true
 		})
 	}
+	let openArgs = args.slice(1).filter((arg) => !arg.startsWith("--"))
+	if (openArgs.length > 0) index_url += "?open=" + encodeURIComponent(openArgs[0])
 	
-	
-	if (openArg < args.length) index_url += "?open=" + encodeURIComponent(args[openArg])
 	mainWindow.loadURL(index_url)
 
 	// Open the DevTools.
