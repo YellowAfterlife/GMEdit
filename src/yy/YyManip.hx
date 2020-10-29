@@ -388,6 +388,7 @@ class YyManip {
 			item.treeText = newName;
 			item.treeRelPath = newPath;
 			item.treeFullPath = pj.fullPath(newPath);
+			if (args.kind == "script") item.treeFullPath = Path.withExtension(item.treeFullPath, "gml");
 			//
 			var log = [];
 			//
@@ -439,6 +440,7 @@ class YyManip {
 			//
 			pj.renameSync(curPath, curDir + "/" + newName + ".yy");
 			pj.renameSync(curDir, newDir);
+			if (args.kind == "script") pj.renameSync('$newDir/$curName.gml', '$newDir/$newName.gml');
 			//
 			var comp = GmlAPI.gmlComp.findFirst((c) -> c.name == curName);
 			if (comp != null) comp.name = newName;
