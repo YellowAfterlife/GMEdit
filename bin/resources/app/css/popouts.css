@@ -146,13 +146,9 @@
 .popout-window label.error {
 	color: rgb(250, 50, 50);
 }
-
-.popout-window div.plugin-info {
-	margin-top: 0.5em;
-}
-.popout-window .plugin-info > .plugin-description {
-	margin-top: 0em;
-	margin-left: 0.5em;
+.plugin-description:empty,
+.plugin-settings:empty {
+	margin: 0;
 }
 /* */
 .ace_closeButton {

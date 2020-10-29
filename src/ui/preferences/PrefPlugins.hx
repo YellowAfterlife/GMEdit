@@ -15,9 +15,10 @@ using tools.HtmlTools;
  */
 class PrefPlugins {
 	static function makePluginItem(out:Element, p:PluginState) {
-		var el = document.createElement("div");
-		el.classList.add("plugin-info");
-		out.appendChild(el);
+		var group = addGroup(out, "");
+		var el:Element = group.querySelectorAuto("legend");
+		group.classList.add("plugin-info");
+		group.setAttribute("for", p.name);
 		var syncLabelState:Void->Void = null;
 		//
 		var p_label = document.createLabelElement();
@@ -27,9 +28,11 @@ class PrefPlugins {
 		el.appendChild(document.createTextNode(" ("));
 		el.append(createShellAnchor(p.dir, "open"));
 		//
+		var p_conf:Element = null;
 		var p_reload = document.createSpanElement(); {
 			p_reload.appendChild(document.createTextNode("; "));
 			p_reload.appendChild(createFuncAnchor("reload", function(_) {
+				p_conf.clearInner();
 				p.destroy();
 				PluginManager.load(p.name, function(e) {
 					p = PluginManager.pluginMap[p.name];
@@ -40,20 +43,26 @@ class PrefPlugins {
 		};
 		//
 		el.appendChild(document.createTextNode(")"));
+		//
 		var p_desc = document.createDivElement();
 		p_desc.classList.add("plugin-description");
-		el.appendChild(p_desc);
+		group.appendChild(p_desc);
+		//
+		p_conf = document.createDivElement();
+		p_conf.classList.add("plugin-settings");
+		p_conf.setAttribute("for", p.name);
+		group.appendChild(p_conf);
 		//
 		syncLabelState = function syncLabelState() {
 			p_label.classList.setTokenFlag("error", p.error != null);
 			if (p.error != null) {
+				p_label.style.pointerEvents = "";
 				p_label.title = Std.string(p.error);
-			} else p_label.title = "OK!";
+			} else p_label.style.pointerEvents = "none";
 			p_reload.setDisplayFlag(p.data == null || p.data.cleanup != null);
 			//
 			var desc = p.config.description;
 			if (desc != null && NativeString.trimBoth(desc) == "") desc = null;
-			p_desc.setDisplayFlag(desc != null);
 			if (desc != null) p_desc.setInnerText(desc);
 		}
 		syncLabelState();
