@@ -10,6 +10,7 @@
 		} else el.removeAttribute(attr);
 	}
 	//
+	var Preferences = $gmedit["ui.Preferences"];
 	var popout = false; // show a popout instead of a sidebar
 	var currOnly = false; // original idea (only show the current file)
 	var showAtTop = true;
@@ -319,7 +320,7 @@
 		if (currOnly) {
 			var nextEl = file.outlineView;
 			if (currEl != nextEl) {
-				if (currEl) currEl.parentElement.removeChild(currEl);
+				treeview.innerHTML = "";
 				treeview.appendChild(nextEl);
 				currEl = nextEl;
 			}
@@ -358,6 +359,14 @@
 	}
 	//
 	var visible = false;
+	var toggleCheckbox = null;
+	function toggle_sync() {
+		if (!currOnly) {
+			syncAll();
+			changeTo_post(currFile());
+			onUpdate_schedule();
+		} else changeTo(currFile());
+	}
 	function toggle() {
 		visible = !visible;
 		function sete(obj, event, listener, on) {
@@ -373,17 +382,14 @@
 		sete(aceEditor, "changeStatus", onUpdate_schedule, visible);
 		sete(aceEditor, "changeSelection", onUpdate_schedule, visible);
 		sete(aceEditor, "keyboardActivity", onUpdate_schedule, visible);
+		if (toggleCheckbox) toggleCheckbox.checked = !visible;
 		if (visible) {
 			if (!popout) {
 				GMEdit.sidebar.add("Outline View", outer);
 				GMEdit.sidebar.set("Outline View");
 			} else document.body.insertBefore(outer, document.querySelector("#preferences-window"));
 			//
-			if (!currOnly) {
-				syncAll();
-				changeTo_post(currFile());
-				onUpdate_schedule();
-			} else changeTo(currFile());
+			toggle_sync();
 		} else {
 			if (!popout) {
 				GMEdit.sidebar.remove("Outline View", outer);
@@ -404,7 +410,38 @@
 			exec: "toggleOutlineView",
 			title: ""
 		});
-		if (localStorage.getItem("outline-view-hide") != "true") toggle();
+		//
+		var currPrefs = Preferences.current;
+		var legacyHide = localStorage.getItem("outline-view-hide");
+		if (legacyHide != null) {
+			localStorage.removeItem("outline-view-hide");
+			currPrefs.outlineView = { hide: legacyHide == "true" };
+			Preferences.save();
+		}
+		var currOV = currPrefs.outlineView;
+		if (!(currOV && currOV.hide)) toggle();
+		currOnly = currOV && currOV.currOnly;
+		//
+		GMEdit.on("preferencesBuilt", function(e) {
+			var out = e.target.querySelector('.plugin-settings[for="outline-view"]');
+			var currOV = Preferences.current.outlineView;
+			var hideCtr = Preferences.addCheckbox(out, "Hide", currOV && currOV.hide, function(val) {
+				toggle();
+				var currOV = Preferences.current.outlineView;
+				if (!currOV) currOV = Preferences.current.outlineView = {};
+				currOV.hide = !visible;
+				Preferences.save();
+			});
+			toggleCheckbox = hideCtr.querySelector("input");
+			Preferences.addCheckbox(out, "Only show the currently active file", currOV && currOV.currOnly, function(val) {
+				var currOV = Preferences.current.outlineView;
+				if (!currOV) currOV = Preferences.current.outlineView = {};
+				currOnly = currOV.currOnly = val;
+				currEl = null;
+				Preferences.save();
+				toggle_sync();
+			});
+		});
 	}
 	GMEdit.register("outline-view", {
 		init: init,
