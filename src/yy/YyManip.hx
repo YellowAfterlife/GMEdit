@@ -132,6 +132,7 @@ class YyManip {
 		}
 		else {
 			var kindRoot = kind + "s";
+			if (!pj.existsSync(kindRoot)) pj.mkdirSync(kindRoot);
 			var dir = '$kindRoot/$name';
 			var pre = '$dir/$name';
 			yyPath = pre + ".yy";
