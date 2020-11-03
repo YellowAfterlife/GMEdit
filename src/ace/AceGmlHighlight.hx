@@ -206,7 +206,7 @@ using tools.NativeArray;
 		function mtField(_, field:String) {
 			return ["punctuation.operator", "text", getGlobalType(field, "field")];
 		}
-		function mtEventHead(def, name, col, kind, label) {
+		function mtEventHead(def, _, name, col, kind, label) {
 			var kindToken:String;
 			if (kind != null) {
 				var kc = StringTools.fastCodeAt(kind, 0);
