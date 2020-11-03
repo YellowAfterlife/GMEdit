@@ -326,7 +326,9 @@ using tools.PathTools;
 				}
 			}
 		}
-		dir.treeItems.insertBefore(item, children[i]);
+		if (children.length > 0) {
+			dir.treeItems.insertBefore(item, children[i]);
+		} else dir.treeItems.appendChild(item);
 	}
 	//
 	public static function openProject(el:Element) {
