@@ -1,4 +1,5 @@
 package file.kind.yy;
+import js.lib.RegExp;
 import yy.YyExtension;
 import yy.YyJson;
 import ui.treeview.TreeView;
@@ -14,6 +15,7 @@ using tools.NativeString;
  */
 class KYyExtension extends FileKind {
 	public static var inst:KYyExtension = new KYyExtension();
+	static var rxValidName:RegExp = new RegExp("^\\w+$");
 	override public function index(path:String, content:String, main:String):Bool {
 		var ext:YyExtension = YyJson.parse(content);
 		var pj = gml.Project.current;
@@ -50,6 +52,7 @@ class KYyExtension extends FileKind {
 			var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
 			for (func in file.functions) {
 				var name = func.name;
+				if (!rxValidName.test(name)) continue;
 				var help = func.help;
 				GmlAPI.extKind.set(name, "extfunction");
 				GmlAPI.extArgc[name] = func.argCount < 0 ? func.argCount : func.args.length;
@@ -70,6 +73,7 @@ class KYyExtension extends FileKind {
 			}
 			for (mcr in file.constants) {
 				var name = mcr.name;
+				if (!rxValidName.test(name)) continue;
 				GmlAPI.extKind.set(name, "extmacro");
 				if (!mcr.hidden) {
 					var expr = mcr.value;

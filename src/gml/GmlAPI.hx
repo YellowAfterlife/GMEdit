@@ -49,6 +49,18 @@ class GmlAPI {
 		+ "|enum|var|globalvar"
 		).split("|"), true
 	);
+	
+	public static var kwCompStat:AceAutoCompleteItems = (function() {
+		var items = new AceAutoCompleteItems();
+		for (kw in [
+			"if", "else",
+			"for", "while", "do", "until", "repeat", "with", "break", "continue",
+			"switch", "case", "default",
+			"exit", "return",
+			"var", "globalvar",
+		]) items.push(new AceAutoCompleteItem(kw, "keyword"));
+		return items;
+	})();
 	//
 	public static var scopeResetRx = new js.lib.RegExp('^(?:#define|#event|#moment|#target|function)[ \t]+([\\w:]+)', '');
 	//

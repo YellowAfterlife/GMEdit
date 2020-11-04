@@ -1,10 +1,19 @@
 package ace;
+import ace.AceWrapCompleter;
+import ace.extern.AceAutoCompleteCb;
+import ace.extern.AceAutoCompleteItems;
+import ace.extern.AcePos;
+import ace.extern.AceSession;
+import ace.extern.AceToken;
+import ace.extern.AceTokenType;
 import electron.FileSystem;
 import electron.FileWrap;
 import haxe.DynamicAccess;
+import haxe.extern.EitherType;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.AceAutoCompleter;
+using tools.NativeString;
 
 /**
  * ...
@@ -63,6 +72,34 @@ class AceSnippets {
 			});
 		}
 		completer = langTools.snippetCompleter;
+	}
+}
+class AceSnippetCompleterProxy extends AceWrapCompleter {
+	public var completer:AceAutoCompleter;
+	
+	public function new(
+		completer:AceAutoCompleter,
+		tokenFilterDictOrArray:EitherType<Dictionary<Bool>, Array<AceTokenType>>, not:Bool,
+		modeFilter:AceSession->Bool
+	) {
+		this.completer = completer;
+		super([], tokenFilterDictOrArray, not, modeFilter);
+	}
+	
+	override public function getCompletions(
+		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
+	):Void {
+		if (!ui.Preferences.current.compFilterSnippets || !modeFilter(session)) { // non-GML
+			completer.getCompletions(editor, session, pos, prefix, callback);
+			return;
+		}
+		//
+		var tk:AceToken = session.getTokenAtPos(pos);
+		var tkf:Bool = tokenFilter.exists(tk.type);
+		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
+		if (tkf != tokenFilterNot) {
+			completer.getCompletions(editor, session, pos, prefix, callback);
+		} else callback(null, AceWrapCompleter.noItems);
 	}
 }
 extern class AceLanguageTools {

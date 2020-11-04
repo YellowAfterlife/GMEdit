@@ -62,7 +62,10 @@ class Preferences {
 	public static function addGroupToggle(fs:FieldSetElement) {
 		var lg:LegendElement = fs.querySelectorAuto("legend");
 		lg.addEventListener("click", function(e:MouseEvent) {
-			if (e.target == lg) fs.classList.toggle("collapsed");
+			if (e.target == lg) {
+				fs.classList.toggle("collapsed");
+				e.preventDefault();
+			}
 		});
 		/*var cb = document.createInputElement();
 		cb.type = "checkbox";

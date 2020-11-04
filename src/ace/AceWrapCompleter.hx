@@ -1,4 +1,5 @@
 package ace;
+import ace.AceGmlTools;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.extern.AceCommandManager;
@@ -8,6 +9,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlScopes;
 import gml.file.GmlFile;
+import haxe.extern.EitherType;
 import js.lib.RegExp;
 import parsers.GmlKeycode;
 import parsers.GmlEvent;
@@ -35,16 +37,19 @@ using tools.NativeString;
 	public var identifierRegexps:Array<RegExp>;
 	
 	public function new(
-		items:AceAutoCompleteItems, filters:Array<String>, not:Bool,
-		modeFilter:AceSession->Bool
+		items:AceAutoCompleteItems,
+		tokenFilterDictOrArray:EitherType<Dictionary<Bool>, Array<AceTokenType>>, not:Bool,
+		modeFilterFunc:AceSession->Bool
 	) {
 		items.autoSort();
 		identifierRegexps = [new RegExp("[_"+"a-z"+"A-Z"+"0-9"+"\\u00A2-\\uFFFF]")];
 		this.items = items;
-		this.tokenFilter = Dictionary.fromKeys(filters, true);
-		this.tokenFilterComment = tokenFilter["comment"];
-		this.tokenFilterNot = not;
-		this.modeFilter = modeFilter;
+		if (Std.is(tokenFilterDictOrArray, Array)) { // legacy format
+			tokenFilter = Dictionary.fromKeys(tokenFilterDictOrArray, true);
+		} else tokenFilter = tokenFilterDictOrArray;
+		tokenFilterComment = tokenFilter["comment"];
+		tokenFilterNot = not;
+		modeFilter = modeFilterFunc;
 	}
 	
 	public static function checkColon(iter:AceTokenIterator) {
@@ -76,6 +81,15 @@ using tools.NativeString;
 		}
 		return true;
 	}
+	
+	inline function procMinLength():Int {
+		switch (minLength) {
+			case AceWrapCompleterMinLength.Default: {
+				return ui.Preferences.current.compMatchMode == SectionStart ? 1 : 2;
+			};
+			default: return minLength;
+		}
+	}
 	// interface AceAutoCompleter
 	public function getCompletions(
 		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb
@@ -83,12 +97,7 @@ using tools.NativeString;
 		inline function proc(show:Bool) {
 			callback(null, show ? items : noItems);
 		}
-		var ml = minLength;
-		switch (ml) {
-			case AceWrapCompleterMinLength.Default: {
-				ml = ui.Preferences.current.compMatchMode == SectionStart ? 1 : 2;
-			};
-		}
+		var ml = procMinLength();
 		if (prefix.length < ml || !modeFilter(session)) {
 			proc(false);
 			return;
@@ -211,6 +220,36 @@ using tools.NativeString;
 		return item.doc;
 	}
 }
+class AceWrapCompleterCustom extends AceWrapCompleter {
+	public var func:AceWrapCompleterCustomFunc;
+	public function new(
+		items:AceAutoCompleteItems,
+		tokenFilterDictOrArray:EitherType<Dictionary<Bool>, Array<AceTokenType>>, not:Bool,
+		modeFilter:AceSession->Bool, fn:AceWrapCompleterCustomFunc
+	) {
+		func = fn;
+		super(items, tokenFilterDictOrArray, not, modeFilter);
+	}
+	
+	override public function getCompletions(editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb):Void {
+		var ml = procMinLength();
+		if (prefix.length < ml || !modeFilter(session)) {
+			callback(null, AceWrapCompleter.noItems);
+			return;
+		}
+		//
+		var tk:AceToken = session.getTokenAtPos(pos);
+		var tkf:Bool = tokenFilter.exists(tk.type);
+		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
+		if (tkf != tokenFilterNot) {
+			var r = func(this, editor, session, pos, prefix, callback);
+			if (r != null) {
+				callback(null, r ? items : AceWrapCompleter.noItems);
+			}
+		} else callback(null, AceWrapCompleter.noItems);
+	}
+}
+typedef AceWrapCompleterCustomFunc = (completer:AceWrapCompleterCustom, editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb)->Bool;
 abstract AceWrapCompleterMinLength(Int) from Int to Int {
 	/// 2 normally, 1 in section match mode
 	public static inline var Default = -4;

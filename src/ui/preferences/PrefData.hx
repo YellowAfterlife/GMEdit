@@ -9,7 +9,9 @@ import haxe.DynamicAccess;
 	public static function defValue():PrefData return {
 		theme: "dark",
 		ukSpelling: false,
-		compMatchMode: PrefMatchMode.StartsWith,
+		compMatchMode: PrefMatchMode.AceSmart,
+		compKeywords: true,
+		compFilterSnippets: true,
 		argsMagic: true,
 		argsFormat: "",
 		argsStrict: false,
@@ -70,6 +72,9 @@ typedef PrefDataImpl = {
 	ukSpelling:Bool,
 	?compExactMatch:Bool, // deprecated
 	compMatchMode:PrefMatchMode,
+	compKeywords:Bool,
+	compFilterSnippets:Bool,
+	
 	detectTab:Bool,
 	tabSize:Int,
 	tabSpaces:Bool,
