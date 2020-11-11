@@ -736,6 +736,7 @@ class GmlLinter {
 				} else while (q.loop) {
 					switch (next()) {
 						case KIdent, KString: { };
+						case KCubClose: break;
 						default: return readExpect("a field name");
 					}
 					rc(readCheckSkip(KColon, "a `:` between key-value pair in {}"));
