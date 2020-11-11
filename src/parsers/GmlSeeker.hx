@@ -377,6 +377,18 @@ class GmlSeeker {
 					} else lastHint.merge(hint);
 				}
 			}
+			function addInstVar(s:String):Void {
+				if (out.instFieldMap[s] == null) {
+					var fd = GmlAPI.gmlInstFieldMap[s];
+					if (fd == null) {
+						fd = new GmlField(s, "variable");
+						GmlAPI.gmlInstFieldMap.set(s, fd);
+					}
+					out.instFieldList.push(fd);
+					out.instFieldMap.set(s, fd);
+					out.instFieldComp.push(fd.comp);
+				}
+			}
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
 				if (main == null) continue; // don't parse JSDoc if we don't know where to put it
 				
@@ -468,6 +480,10 @@ class GmlSeeker {
 					// early exit if it's a `x = function()` or a function-in-function
 					if (isFunc && (!isDefine || fname == null)) {
 						if (cubDepth > 0 || !funcsAreGlobal) {
+							if (!funcsAreGlobal && cubDepth == 0 && fname != null) {
+								// function name() in events
+								addInstVar(fname);
+							}
 							subLocalDepth = cubDepth;
 							localKind = "sublocal";
 						}
@@ -786,20 +802,25 @@ class GmlSeeker {
 					while (i < q.length) switch (q.get(i++)) {
 						case " ".code, "\t".code, "\r".code, "\n".code: { };
 						case "=".code: skip = q.get(i) == "=".code; break;
+						case ":".code: {
+							var k = q.pos;
+							skip = true;
+							while (k > 0) {
+								var c = q.get(k - 1);
+								if (c.isIdent1()) k--; else break;
+							}
+							while (--k >= 0) switch (q.get(k)) {
+								case " ".code, "\t".code, "\r".code, "\n".code: { };
+								case ",".code, "{".code: skip = false; break;
+								default: break;
+							}
+							break;
+						};
 						default: skip = true; break;
 					}
 					if (skip) continue;
 					// that's an instance variable then
-					if (addInstField && out.instFieldMap[s] == null) {
-						var fd = GmlAPI.gmlInstFieldMap[s];
-						if (fd == null) {
-							fd = new GmlField(s, "variable");
-							GmlAPI.gmlInstFieldMap.set(s, fd);
-						}
-						out.instFieldList.push(fd);
-						out.instFieldMap.set(s, fd);
-						out.instFieldComp.push(fd.comp);
-					}
+					if (addInstField) addInstVar(s);
 					//
 					if (isConstructorField) {
 						var oldPos = q.pos;
