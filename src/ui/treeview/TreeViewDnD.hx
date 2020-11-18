@@ -1,12 +1,13 @@
 package ui.treeview;
 import gml.Project;
+import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.DragEvent;
 import js.html.Element;
-import tools.NativeString;
 import ui.treeview.TreeViewItemMenus;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewElement;
+using tools.NativeString;
 
 /**
  * ...
@@ -38,6 +39,7 @@ class TreeViewDnD {
 	}
 	//
 	static inline var dropType = "text/gmedit-rel-path";
+	static inline var dropFull = "text/gmedit-full-path";
 	static inline var dropPrefix = "text/gmedit-rel-prefix";
 	static inline var rsCanDrop = "^scripts[\\\\/]";
 	static var rxCanDropTo = new RegExp(rsCanDrop, "i");
@@ -54,7 +56,7 @@ class TreeViewDnD {
 			? dtTypes.indexOf(t) >= 0
 			: dtTypes.contains(t);
 	}
-	public static function bind(el:Element, rel:String) {
+	public static function bind(el:Element, rel:String, ?full:String) {
 		var dir = el.classList.contains("header");
 		var prefix = prefixOf(rel).toLowerCase();
 		var ownType = dropType + "=" + rel.toLowerCase();
@@ -84,9 +86,23 @@ class TreeViewDnD {
 			el.addEventListener("dragleave", (e:DragEvent) -> {
 				update(null, 0);
 			});
-			function dropRel(dst:Element, rel:String, order:Int) {
+			function dropRel(dst:Element, rel:String, full:String, order:Int) {
 				var src = TreeView.find(!NativeString.endsWith(rel, '/'), {rel:rel});
-				if (src == null) return;
+				if (src == null) {
+					if (full == null || !rel.startsWith("scripts")) return;
+					if (order == 0 && !(cast dst:TreeViewElement).treeIsDir) order = 1;
+					var p = new Path(full);
+					p.ext = "gml";
+					var gml = electron.FileWrap.readTextFileSync(p.toString());
+					p.dir = null;
+					p.ext = null;
+					var name = p.toString();
+					TreeViewItemMenus.createImplBoth("script", order, dst, name, function(tvc:TreeViewItemCreate) {
+						tvc.gmlCode = gml;
+						return tvc;
+					});
+					return;
+				}
 				if (src.classList.contains("header")) src = src.parentElement;
 				// verify that we're not moving something into itself:
 				var root = TreeView.element;
@@ -145,8 +161,9 @@ class TreeViewDnD {
 					return;
 				}
 				var rel = e.dataTransfer.getData(dropType);
+				var full = e.dataTransfer.getData(dropFull);
 				if (rel != null) {
-					dropRel(dst, rel, order);
+					dropRel(dst, rel, full, order);
 					return;
 				}
 			});
@@ -155,6 +172,7 @@ class TreeViewDnD {
 			el.setAttribute("draggable", "true");
 			el.addEventListener("dragstart", (e:DragEvent) -> {
 				e.dataTransfer.setData(dropType, rel);
+				if (full != null) e.dataTransfer.setData(dropFull, full);
 				e.dataTransfer.setData(ownType, "");
 				e.dataTransfer.setData(dropPrefix, prefix);
 				e.dataTransfer.setData(ownPrefix, "");

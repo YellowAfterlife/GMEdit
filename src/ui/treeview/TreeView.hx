@@ -290,7 +290,7 @@ using tools.PathTools;
 		rel = rel.ptNoBS();
 		var r = makeItemShared(name, path, kind);
 		r.setAttribute(attrRel, rel);
-		TreeViewDnD.bind(r, rel);
+		TreeViewDnD.bind(r, rel, path);
 		var th = thumbMap[path];
 		if (th != null) r.setAttribute(attrThumb, th);
 		r.addEventListener(Preferences.current.singleClickOpen ? "click" : "dblclick", handleItemClick);
