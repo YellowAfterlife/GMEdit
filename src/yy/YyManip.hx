@@ -143,8 +143,12 @@ class YyManip {
 				"name": parDir.treeLabel,
 				"path": parDir.treeFolderPath23,
 			};
+			var itemRelPath:String = yyPath;
+			var itemFullPath:String = yyFullPath;
 			switch (kind) {
 				case "script": {
+					itemRelPath = Path.withExtension(itemRelPath, "gml");
+					itemFullPath = Path.withExtension(itemFullPath, "gml");
 					var scr:YyScript = {
 						"isDnD": false,
 						"isCompatibility": false,
@@ -223,7 +227,7 @@ class YyManip {
 			py.resources.push(res);
 			yypItem = res;
 			//
-			ntv = TreeView.makeAssetItem(name, yyPath, yyFullPath, kind);
+			ntv = TreeView.makeAssetItem(name, itemRelPath, itemFullPath, kind);
 		}
 		
 		// add the treeview and realign YYP items:
