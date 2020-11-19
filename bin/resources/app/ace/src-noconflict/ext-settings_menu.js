@@ -425,6 +425,7 @@ var modes = modelist.modes.map(function(x){
 
 var optionGroups = {
     Main: {
+        // -y: Mode, Theme
         "Keybinding": {
             type: "buttonBar",
             path: "keyboardHandler",
@@ -435,7 +436,7 @@ var optionGroups = {
                 { caption : "Sublime", value : "ace/keyboard/sublime" }
             ]
         },
-		"Font Famliy": {
+        "Font Family": { // +y
             path: "fontFamily",
             type: "text",
             defaultValue: "monospace"
@@ -532,6 +533,7 @@ var optionGroups = {
         "Relative Line Numbers": {
             path: "relativeLineNumbers"
         },
+        // -y: Fixed Gutter Width
         "Show Print Margin": [{
             path: "showPrintMargin"
         }, {
@@ -572,7 +574,11 @@ var optionGroups = {
         },
         "Live Autocompletion": {
             path: "enableLiveAutocompletion"
-        }
+        },
+        "Autocompletion delay (ms)": {
+            type: "number",
+            path: "liveAutocompletionDelay"
+        },
     }
 };
 

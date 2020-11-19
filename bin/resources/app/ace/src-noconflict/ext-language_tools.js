@@ -1929,24 +1929,41 @@ var loadSnippetFile = function(id) {
     });
 };
 
-var doLiveAutocomplete = function(e) {
-    var editor = e.editor;
-    var hasCompleter = editor.completer && editor.completer.activated;
-    if (e.command.name === "backspace") {
-        if (hasCompleter && !util.getCompletionPrefix(editor))
-            editor.completer.detach();
-    }
-    else if (e.command.name === "insertstring") {
-        var prefix = util.getCompletionPrefix(editor);
-        if (prefix && !hasCompleter) {
-            if (!editor.completer) {
-                editor.completer = new Autocomplete();
-            }
-            editor.completer.autoInsert = false;
-            editor.completer.showPopup(editor);
-        }
-    }
-};
+//{ +y
+var doLiveAutocomplete = (function() {
+	//{ orig
+	var doLiveAutocomplete = function(e) {
+		var editor = e.editor;
+		var hasCompleter = editor.completer && editor.completer.activated;
+		if (e.command.name === "backspace") {
+			if (hasCompleter && !util.getCompletionPrefix(editor))
+				editor.completer.detach();
+		}
+		else if (e.command.name === "insertstring") {
+			var prefix = util.getCompletionPrefix(editor);
+			if (prefix && !hasCompleter) {
+				if (!editor.completer) {
+					editor.completer = new Autocomplete();
+				}
+				editor.completer.autoInsert = false;
+				editor.completer.showPopup(editor);
+			}
+		}
+	};
+	//}
+	var timeout = null;
+	return function(e) {
+		var delay = e.editor.$liveAutocompletionDelay;
+		if (delay) {
+			if (timeout != null) clearTimeout(timeout);
+			timeout = setTimeout(function() {
+				timeout = null;
+				doLiveAutocomplete(e);
+			}, delay);
+		} else doLiveAutocomplete(e);
+	}
+})();
+//}
 
 var Editor = require("../editor").Editor;
 require("../config").defineOptions(Editor.prototype, "editor", {
@@ -1974,6 +1991,7 @@ require("../config").defineOptions(Editor.prototype, "editor", {
         },
         value: false
     },
+    liveAutocompletionDelay: { value: 0 },
     enableSnippets: {
         set: function(val) {
             if (val) {
