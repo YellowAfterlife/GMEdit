@@ -1,4 +1,6 @@
 package gml;
+import electron.Dialog;
+import haxe.io.Path;
 import js.lib.RegExp;
 import tools.Dictionary;
 import tools.NativeObject;
@@ -49,7 +51,34 @@ class GmlVersion {
 			config.additionalKeywords = ["in"];
 			#else
 			if (Electron.isAvailable()) {
-				config = FileSystem.readJsonFileSync(dir + "/config.json");
+				var path = dir + "/config.json";
+				try {
+					config = FileSystem.readJsonFileSync(path);
+				} catch (x:Dynamic) {
+					config = GmlVersionConfigDefaults.get(true);
+					switch (Dialog.showMessageBox({
+						type: "error",
+						message: [
+							'Failed to load config.json for API `$name` from `$path`!',
+							'Consider fixing or removing it.',
+							Std.string(x),
+						].join("\n"),
+						buttons: [
+							"Show in directory",
+							"Rename to disable",
+							"Do nothing",
+						],
+					})) {
+						case 0: FileWrap.showItemInFolder(path);
+						case 1: {
+							try {
+								FileSystem.renameSync(path, Path.withExtension(path, "json.disabled"));
+							} catch (x:Dynamic) {
+								Dialog.showError("Failed to rename!");
+							}
+						};
+					}
+				}
 			} else {
 				config = GmlVersionConfigDefaults.get(name == "v2");
 			}
