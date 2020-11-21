@@ -348,6 +348,40 @@ class GmlSeeker {
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
+		function addFieldHint(namespace:String, isInst:Bool, field:String, args:String, info:String) {
+			if (namespace == null && doc != null) namespace = doc.name;
+				
+			var hintDoc:GmlFuncDoc = null;
+			if (args != null) {
+				args = StringTools.replace(args, "->", "➜");
+				var fa = field + args;
+				hintDoc = GmlFuncDoc.parse(fa);
+				hintDoc.trimArgs();
+				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
+			}
+			var comp = new AceAutoCompleteItem(field, "field", info);
+			
+			if (namespace != null) {
+				var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc);
+				var lastHint = out.hintMap[hint.key];
+				if (lastHint == null) {
+					out.hintList.push(hint);
+					out.hintMap[hint.key] = hint;
+				} else lastHint.merge(hint);
+			}
+		}
+		function addInstVar(s:String):Void {
+			if (out.instFieldMap[s] == null) {
+				var fd = GmlAPI.gmlInstFieldMap[s];
+				if (fd == null) {
+					fd = new GmlField(s, "variable");
+					GmlAPI.gmlInstFieldMap.set(s, fd);
+				}
+				out.instFieldList.push(fd);
+				out.instFieldMap.set(s, fd);
+				out.instFieldComp.push(fd.comp);
+			}
+		}
 		function doLoop(?exitAtCubDepth:Int) while (q.loop) {
 			var p:Int, flags:Int;
 			var c:CharCode, mt:RegExpMatch;
@@ -355,40 +389,6 @@ class GmlSeeker {
 			if (exitAtCubDepth != null || funcsAreGlobal) flags |= Cub1;
 			s = find(flags);
 			if (s == null) continue;
-			function addFieldHint(namespace:String, isInst:Bool, field:String, args:String, info:String) {
-				if (namespace == null && doc != null) namespace = doc.name;
-					
-				var hintDoc:GmlFuncDoc = null;
-				if (args != null) {
-					args = StringTools.replace(args, "->", "➜");
-					var fa = field + args;
-					hintDoc = GmlFuncDoc.parse(fa);
-					hintDoc.trimArgs();
-					info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
-				}
-				var comp = new AceAutoCompleteItem(field, "field", info);
-				
-				if (namespace != null) {
-					var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc);
-					var lastHint = out.hintMap[hint.key];
-					if (lastHint == null) {
-						out.hintList.push(hint);
-						out.hintMap[hint.key] = hint;
-					} else lastHint.merge(hint);
-				}
-			}
-			function addInstVar(s:String):Void {
-				if (out.instFieldMap[s] == null) {
-					var fd = GmlAPI.gmlInstFieldMap[s];
-					if (fd == null) {
-						fd = new GmlField(s, "variable");
-						GmlAPI.gmlInstFieldMap.set(s, fd);
-					}
-					out.instFieldList.push(fd);
-					out.instFieldMap.set(s, fd);
-					out.instFieldComp.push(fd.comp);
-				}
-			}
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
 				if (main == null) continue; // don't parse JSDoc if we don't know where to put it
 				
