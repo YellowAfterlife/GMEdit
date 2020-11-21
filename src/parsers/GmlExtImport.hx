@@ -590,6 +590,7 @@ class GmlExtImport {
 		var p1 = reader.pos; // `Type.field¦`
 		var one:String = dot != -1 ? reader.substring(p0, dot) : null;
 		var peeker = post_procIdent_peeker;
+		var onePrefix = "";
 		
 		// `new Type` -> `Type.create`:
 		if (full == "new") {
@@ -600,6 +601,7 @@ class GmlExtImport {
 			if (typeFirst.isIdent0()) { // `new T¦ype`
 				peeker.skipIdent1();
 				one = peeker.substring(typePos, peeker.pos); // -> "Type"
+				onePrefix = peeker.substring(p0, typePos);
 				reader.setTo(peeker);
 				full = one + ".create";
 				dot = reader.pos;
@@ -668,7 +670,7 @@ class GmlExtImport {
 			id = imp.longen[one];
 			if (id != null) {
 				post_procIdent_p1 = dot;
-				return id;
+				return onePrefix + id;
 			}
 		}
 		return null;
