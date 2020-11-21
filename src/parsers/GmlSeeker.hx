@@ -488,6 +488,7 @@ class GmlSeeker {
 							localKind = "sublocal";
 						}
 						procFuncLiteralArgs();
+						jsDocArgs = null; // discard any collected JSDoc
 						continue;
 					}
 					
