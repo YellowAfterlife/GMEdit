@@ -1,4 +1,5 @@
 package gml;
+import gml.GmlFuncDoc;
 import tools.Dictionary;
 import ace.extern.*;
 
@@ -8,26 +9,29 @@ import ace.extern.*;
  * @author YellowAfterlife
  */
 class GmlNamespace {
+	public var name:String;
 	public var kind:Dictionary<AceTokenType> = new Dictionary();
 	
 	/** static (`Buffer.ptr`) completions */
 	public var compStaticList:AceAutoCompleteItems = [];
 	public var compStaticMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	public var docStaticMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	
 	/** instance (`var b; b.ptr`) completions */
 	public var compInstList:AceAutoCompleteItems = [];
 	public var compInstMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	public var docInstMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	
-	
-	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
-	
-	public function new() {
-		//
+	public function new(name:String) {
+		this.name = name;
 	}
 	
 	public function addFieldHint(field:String, isInst:Bool, comp:AceAutoCompleteItem, doc:GmlFuncDoc) {
 		kind[field] = doc != null ? "asset.script" : "field";
-		if (doc != null && isInst) docs[field] = doc;
+		if (doc != null) {
+			var docs = isInst ? docInstMap : docStaticMap;
+			docs[field] = doc;
+		}
 		if (comp != null) {
 			var compList = isInst ? compInstList : compStaticList;
 			var compMap = isInst ? compInstMap : compStaticMap;
@@ -42,7 +46,8 @@ class GmlNamespace {
 	
 	public function removeFieldHint(field:String, isInst:Bool) {
 		kind.remove(field);
-		if (isInst) docs.remove(field);
+		var docs = isInst ? docInstMap : docStaticMap;
+		docs.remove(field);
 		
 		var compList = isInst ? compInstList : compStaticList;
 		var compMap = isInst ? compInstMap : compStaticMap;

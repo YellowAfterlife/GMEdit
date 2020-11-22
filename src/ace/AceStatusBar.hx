@@ -15,6 +15,7 @@ import Main.document;
 import parsers.GmlExtLambda;
 import shaders.ShaderAPI;
 import tools.Dictionary;
+import tools.JsTools;
 using tools.NativeString;
 
 /**
@@ -101,7 +102,7 @@ class AceStatusBar {
 					iter.stepForward();
 				} else iter.stepForward();
 				if (tk != null && tk.value == "new") {
-					doc = ns.docs["create"];
+					doc = ns.docStaticMap["create"];
 				}
 				ctx.doc = doc;
 				ctx.tk = tk;
@@ -134,15 +135,26 @@ class AceStatusBar {
 			if (tk != null && tk.value == ".") {
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
+				var td:GmlFuncDoc;
 				if (tk.type == "namespace") {
-					name = tk.value + "." + name;
-					doc = AceMacro.jsOr(imports.docs[name], doc);
+					var nsName = tk.value;
+					td = imports.docs[nsName + "." + name];
+					if (td == null) {
+						var nsLocal = imports.namespaces[nsName];
+						if (nsLocal != null) td = nsLocal.docStaticMap[name];
+						
+						if (td == null) {
+							var nsGlobal = GmlAPI.gmlNamespaces[nsName];
+							if (nsGlobal != null) td = nsGlobal.docStaticMap[name];
+						}
+					}
+					if (td != null) doc = td;
 				} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
 					var lt = imports.localTypes[tk.value];
 					var ns = imports.namespaces[lt];
-					var td:GmlFuncDoc = null;
+					td = null;
 					if (ns != null) {
-						td = ns.docs[name];
+						td = ns.docInstMap[name];
 						if (td != null) {
 							doc = td;
 							if (ns.longen.exists(name)) argStart = 1;
@@ -151,7 +163,7 @@ class AceStatusBar {
 					if (td == null) {
 						var ns2 = GmlAPI.gmlNamespaces[lt];
 						if (ns2 != null) {
-							td = ns2.docs[name];
+							td = ns2.docInstMap[name];
 							if (td != null) doc = td;
 						}
 					}
@@ -159,6 +171,17 @@ class AceStatusBar {
 			} else {
 				doc = AceMacro.jsOr(imports.docs[name], doc);
 				tk = iter.stepForward();
+			}
+		} else if (!GmlAPI.gmlNamespaces.isEmpty()) {
+			var name = tk.value;
+			tk = iter.stepBackward();
+			if (tk != null && tk.value == ".") {
+				iter.stepBackward();
+				tk = iter.getCurrentToken();
+				if (tk.type == "namespace") {
+					var nsGlobal = GmlAPI.gmlNamespaces[tk.value];
+					if (nsGlobal != null) doc = JsTools.or(nsGlobal.docStaticMap[name], doc);
+				}
 			}
 		}
 		ctx.tk = tk;

@@ -7,6 +7,7 @@ import file.kind.misc.KGLSL;
 import file.kind.misc.KHLSL;
 import gml.GmlAPI;
 import gml.GmlImports;
+import gml.GmlNamespace;
 import gml.GmlScopes;
 import gml.file.GmlFile;
 import haxe.extern.EitherType;
@@ -150,8 +151,13 @@ using tools.NativeString;
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
 						var imp = GmlFile.current.codeEditor.imports[scope];
-						if (imp == null) continue;
-						var ns = (dotKindMeta ? GmlAPI.gmlNamespaces : imp.namespaces)[tk.value];
+						var ns:GmlNamespace;
+						if (dotKindMeta) {
+							ns = GmlAPI.gmlNamespaces[tk.value];
+						} else {
+							if (imp == null) continue;
+							ns = imp.namespaces[tk.value];
+						}
 						if (ns == null) continue;
 						callback(null, ns.compStaticList);
 						return;

@@ -228,6 +228,7 @@ class AceWrapCommonCompleters {
 		namespaceAltCompleter.minLength = 0;
 		namespaceAltCompleter.dotKind = DKNamespace;
 		namespaceAltCompleter.dotKindMeta = true;
+		completers.push(namespaceAltCompleter);
 		//
 		namespaceTypeCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
 		namespaceTypeCompleter.minLength = 0;

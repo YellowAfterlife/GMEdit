@@ -200,7 +200,7 @@ class GmlSeekData {
 		for (hint in next.hintList) {
 			var ns = GmlAPI.gmlNamespaces[hint.namespace];
 			if (ns == null) {
-				ns = new GmlNamespace();
+				ns = new GmlNamespace(hint.namespace);
 				GmlAPI.gmlNamespaces[hint.namespace] = ns;
 			}
 			ns.addFieldHint(hint.field, hint.isInst, hint.comp, hint.doc);

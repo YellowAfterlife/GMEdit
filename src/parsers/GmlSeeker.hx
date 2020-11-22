@@ -96,7 +96,7 @@ class GmlSeeker {
 		+ "\\s*(\\w+)?" // namespace (opt.) -> $1
 		+ "\\s*([:.])" // separator -> $2
 		+ "\\s*(\\w+)" // field -> $3
-		+ "\\s*(\\(.*?\\))?" // args -> $4
+		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $4
 		+ "\\s*(.*)" // text -> $5
 	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");

@@ -2,6 +2,7 @@ package tools;
 
 import haxe.iterators.DynamicAccessIterator;
 import haxe.iterators.DynamicAccessKeyValueIterator;
+import tools.NativeObject;
 
 /**
  * This is _almost_ like haxe.DynamicAccess, but with some JS-specific tricks.
@@ -27,6 +28,9 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	}
 	public inline function destroy():Void { }
 	//
+	public inline function isEmpty():Bool {
+		return !NativeObject.hasFields(this);
+	}
 	public inline function exists(k:String):Bool {
 		return Reflect.hasField(this, k);
 	}

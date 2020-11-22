@@ -51,7 +51,7 @@ class GmlImports {
 	public function ensureNamespace(space:String):GmlImportNamespace {
 		var ns = namespaces[space];
 		if (ns != null) return ns;
-		ns = new GmlImportNamespace();
+		ns = new GmlImportNamespace(space);
 		var origKind = this.kind[space];
 		this.kind[space] = "namespace";
 		namespaceComp.push(new AceAutoCompleteItem(space, "namespace"));
@@ -142,7 +142,10 @@ class GmlImports {
 				compMap.set(short, nc);
 				compList.push(nc);
 			}
-			if (doc != null) ns.docs.set(short, doc);
+			if (doc != null) {
+				if (!spaceOnly) ns.docStaticMap[short] = doc;
+				ns.docInstMap[short] = doc;
+			}
 			short = space + "." + short;
 			if (spaceOnly) return;
 		} else {
