@@ -13,7 +13,7 @@ import ace.extern.*;
 class GmlImports {
 	public static var defaultMap:Dictionary<GmlImports> = new Dictionary();
 	//
-	public var comp:AceAutoCompleteItems = [];
+	public var compList:AceAutoCompleteItems = [];
 	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	
 	public var kind:Dictionary<String> = new Dictionary();
@@ -175,14 +175,14 @@ class GmlImports {
 							cache.enumComps = comps;
 							if (ns != null) cache.enumNsComps = nsComps;
 						}
-						for (comp in comps) this.comp.push(comp);
+						for (comp in comps) compList.push(comp);
 						if (ns != null) for (comp in nsComps) {
 							ns.compStaticList.push(comp);
 							ns.compInstList.push(comp);
 							// TODO: need to fill out maps too?
 						}
 					} else for (comp in en.compList) {
-						this.comp.push(enumCompToFullComp(comp, short));
+						compList.push(enumCompToFullComp(comp, short));
 						if (ns != null) {
 							var c = enumCompToNsComp(comp);
 							ns.compStaticList.push(c);
@@ -212,7 +212,7 @@ class GmlImports {
 		if (comp != null) {
 			// same - remove existing comp of same name (if any)
 			nc = compMap[short];
-			if (nc != null) this.comp.remove(nc);
+			if (nc != null) compList.remove(nc);
 			//
 			if (cache != null) {
 				nc = cache.comp;
@@ -221,8 +221,8 @@ class GmlImports {
 					cache.comp = nc;
 				}
 			} else makeAliasComp();
-			this.compMap.set(short, nc);
-			this.comp.push(nc);
+			compMap.set(short, nc);
+			compList.push(nc);
 		}
 	}
 	public function addFieldHint(
@@ -237,7 +237,7 @@ class GmlImports {
 			if (!compMap.exists(space)) {
 				var nc = new AceAutoCompleteItem(space, "namespace", "type");
 				compMap.set(space, nc);
-				this.comp.push(nc);
+				compList.push(nc);
 			}
 		}
 	}

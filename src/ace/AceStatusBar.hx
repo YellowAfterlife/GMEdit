@@ -6,6 +6,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlLocals;
 import gml.GmlFuncDoc;
+import gml.GmlNamespace;
 import gml.file.GmlFile;
 import js.html.DivElement;
 import js.html.Element;
@@ -71,7 +72,7 @@ class AceStatusBar {
 		for (k in [
 			"asset.script", "function", "extfunction",
 			"glsl.function", "hlsl.function",
-			"namespace", "macro"
+			"namespace", "macro", "local",
 		]) d.set(k, true);
 		return d;
 	})();
@@ -92,22 +93,46 @@ class AceStatusBar {
 			case "hlsl.function": return flushDocs(ShaderAPI.hlslDoc);
 			case "lambda.function": return flushDocs(ctx.lambdas.docs);
 			case "extfunction": return flushDocs(GmlAPI.extDoc);
-			case "namespace": { // `new Type`?
-				if (ctx.imports == null) return false;
-				var ns = ctx.imports.namespaces[tk.value];
-				tk = iter.stepBackward();
-				if (tk != null && tk.type == "text") {
+			case "namespace": { // `new Type` or `Type()`
+				var name = tk.value;
+				var ns:GmlNamespace;
+				if (ctx.imports != null) {
+					ns = ctx.imports.namespaces[name];
+					// map new?:
 					tk = iter.stepBackward();
-					iter.stepForward();
-					iter.stepForward();
-				} else iter.stepForward();
-				if (tk != null && tk.value == "new") {
-					doc = ns.docStaticMap["create"];
+					if (tk != null && tk.type == "text") {
+						tk = iter.stepBackward();
+						iter.stepForward();
+						iter.stepForward();
+					} else iter.stepForward();
+					if (tk != null && tk.value == "new") {
+						doc = ns.docStaticMap["create"];
+					}
+					if (doc != null) {
+						ctx.doc = doc;
+						ctx.tk = tk;
+						return true;
+					}
 				}
-				ctx.doc = doc;
-				ctx.tk = tk;
-				return doc != null;
+				//
+				return flushDocs(GmlAPI.gmlDoc);
 			}
+			case "local": { // localVar() can show args from `/// @hint Type:()`
+				var imp = ctx.imports;
+				if (imp == null) return false;
+				var localType = imp.localTypes[tk.value];
+				if (localType == null) return false;
+				for (iter in 0 ... 2) {
+					var ns = iter > 0 ? GmlAPI.gmlNamespaces[localType] : imp.namespaces[localType];
+					if (ns == null) continue;
+					doc = ns.docInstMap[""];
+					if (doc != null) {
+						ctx.doc = doc;
+						return true;
+					}
+				}
+				return false;
+			};
 			case "macro": { // macro->function resolution
 				var m = GmlAPI.gmlMacros[tk.value];
 				if (m != null) {
@@ -386,7 +411,7 @@ class AceStatusBar {
 		//
 		var imports = codeEditor != null ? codeEditor.imports[scope] : null;
 		editor.gmlCompleters.importCompleter.items = imports != null
-			? imports.comp : AceWrapCompleter.noItems;
+			? imports.compList : AceWrapCompleter.noItems;
 		//
 		var lambdas = codeEditor != null ? codeEditor.lambdas[scope] : null;
 		editor.gmlCompleters.lambdaCompleter.items = lambdas != null

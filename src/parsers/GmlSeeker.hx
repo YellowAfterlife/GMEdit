@@ -19,6 +19,7 @@ import parsers.GmlSeekData;
 import tools.CharCode;
 import tools.Dictionary;
 import tools.Aliases;
+import tools.JsTools;
 import tools.RegExpCache;
 import ui.Preferences;
 import ui.treeview.TreeView;
@@ -94,8 +95,10 @@ class GmlSeeker {
 	private static var jsDoc_hint = new RegExp("^///\\s*"
 		+ "@hint\\b"
 		+ "\\s*(\\w+)?" // namespace (opt.) -> $1
-		+ "\\s*([:.])" // separator -> $2
-		+ "\\s*(\\w+)" // field -> $3
+		+ "(?:"
+			+ "\\s*([:.])" // separator -> $2
+			+ "\\s*(\\w+)?" // field -> $3
+		+ ")?"
 		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $4
 		+ "\\s*(.*)" // text -> $5
 	);
@@ -349,25 +352,48 @@ class GmlSeeker {
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
 		function addFieldHint(namespace:String, isInst:Bool, field:String, args:String, info:String) {
-			if (namespace == null && doc != null) namespace = doc.name;
+			if (namespace == null && doc != null) {
+				namespace = doc.name;
+				if (namespace == null) return;
+			}
+			field = JsTools.or(field, "");
 				
+			var isField = (field != "");
+			var name = isField ? field : namespace;
+			
 			var hintDoc:GmlFuncDoc = null;
 			if (args != null) {
 				args = StringTools.replace(args, "->", "➜");
-				var fa = field + args;
+				var fa = name + args;
 				hintDoc = GmlFuncDoc.parse(fa);
 				hintDoc.trimArgs();
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
-			var comp = new AceAutoCompleteItem(field, "field", info);
 			
-			if (namespace != null) {
-				var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc);
-				var lastHint = out.hintMap[hint.key];
-				if (lastHint == null) {
-					out.hintList.push(hint);
-					out.hintMap[hint.key] = hint;
-				} else lastHint.merge(hint);
+			var comp = new AceAutoCompleteItem(name, isField ? "field" : "namespace", info);
+			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc);
+			
+			var lastHint = out.hintMap[hint.key];
+			if (lastHint == null) {
+				out.hintList.push(hint);
+				out.hintMap[hint.key] = hint;
+			} else lastHint.merge(hint);
+			
+			if (isField) {
+				//
+			} else if (!isInst) {
+				var oldComp = out.compMap[name];
+				if (oldComp != null) out.compList.remove(oldComp);
+				out.compList.push(comp);
+				out.compMap[name] = comp;
+				//
+				if (!out.kindMap.exists(name)) out.kindList.push(name);
+				out.kindMap[name] = "namespace";
+				//
+				var oldDoc = out.docMap[name];
+				if (oldDoc != null) out.docList.remove(oldDoc);
+				out.docList.push(hintDoc);
+				out.docMap[name] = hintDoc;
 			}
 		}
 		function addInstVar(s:String):Void {
