@@ -92,7 +92,8 @@ class YyJsonPrinter {
 		else if (Reflect.isObject(obj)) {
 			if (obj.__int64) return "" + (obj:Int64);
 			var indentString = YyJsonPrinter.indentString;
-			var r = (compact ? "{" : "{\r\n" + indentString.repeat(++indent));
+			indent += 1;
+			var r = (compact ? "{" : "{\r\n" + indentString.repeat(indent));
 			var orderedFields = (obj:YyBase).hxOrder;
 			var fieldDigits = (obj:YyBase).hxDigits;
 			var fieldTypes:Dictionary<String> = null;
@@ -176,7 +177,8 @@ class YyJsonPrinter {
 				if (orderedFieldsAfter) r += r1;
 			}
 			//
-			return r + (compact ? "}" : "\r\n" + indentString.repeat(--indent) + "}");
+			indent -= 1;
+			return r + (compact ? "}" : "\r\n" + indentString.repeat(indent) + "}");
 		}
 		else {
 			if (digits != null && Std.is(obj, Int)) {
