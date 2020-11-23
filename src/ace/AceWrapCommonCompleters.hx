@@ -308,9 +308,10 @@ class AceWrapCommonCompleters {
 		if (token == null) return;
 		var open = switch (token.type) {
 			case "namespace", "enum": true;
-			case "local": {
-				var scope = editor.session.gmlScopes.get(lead.row);
-				var imp = editor.session.gmlEditor.imports[scope];
+			case "local", "sublocal": {
+				var session = editor.session;
+				var scope = session.gmlScopes.get(lead.row);
+				var imp = session.gmlEditor.imports[scope];
 				(imp != null ? imp.localTypes[token.value] != null : false);
 			};
 			default: token.value == "global";

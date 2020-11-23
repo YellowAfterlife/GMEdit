@@ -179,7 +179,7 @@ class OpenDeclaration {
 						if (next != null) term = next;
 						break;
 					};
-					case "local": {
+					case "local", "sublocal": {
 						var t = imp.localTypes[tk.value];
 						if (t == null) break;
 						ns = imp.namespaces[t];

@@ -72,7 +72,7 @@ class AceStatusBar {
 		for (k in [
 			"asset.script", "function", "extfunction",
 			"glsl.function", "hlsl.function",
-			"namespace", "macro", "local",
+			"namespace", "macro", "local", "sublocal",
 		]) d.set(k, true);
 		return d;
 	})();
@@ -117,7 +117,7 @@ class AceStatusBar {
 				//
 				return flushDocs(GmlAPI.gmlDoc);
 			}
-			case "local": { // localVar() can show args from `/// @hint Type:()`
+			case "local", "sublocal": { // localVar() can show args from `/// @hint Type:()`
 				var imp = ctx.imports;
 				if (imp == null) return false;
 				var localType = imp.localTypes[tk.value];
@@ -174,7 +174,7 @@ class AceStatusBar {
 						}
 					}
 					if (td != null) doc = td;
-				} else if (tk.type == "local" && imports.localTypes.exists(tk.value)) {
+				} else if ((tk.type == "local" || tk.type == "sublocal") && imports.localTypes.exists(tk.value)) {
 					var lt = imports.localTypes[tk.value];
 					var ns = imports.namespaces[lt];
 					td = null;

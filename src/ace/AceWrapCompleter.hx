@@ -163,7 +163,10 @@ using tools.NativeString;
 						return;
 					};
 					case DKLocalType: { // local.instField
-						if (tk.type != "local") continue;
+						switch (tk.type) {
+							case "local", "sublocal": {};
+							default: continue;
+						};
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
 						var imp = GmlFile.current.codeEditor.imports[scope];
