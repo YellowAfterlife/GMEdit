@@ -105,7 +105,7 @@ class AceStatusBar {
 						iter.stepForward();
 						iter.stepForward();
 					} else iter.stepForward();
-					if (tk != null && tk.value == "new") {
+					if (tk != null && tk.value == "new" && ns != null) {
 						doc = ns.docStaticMap["create"];
 					}
 					if (doc != null) {
