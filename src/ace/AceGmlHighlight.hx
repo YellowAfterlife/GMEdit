@@ -628,6 +628,8 @@ using tools.NativeArray;
 				rulePairs([
 					"@hint\\b", "comment.meta",
 					"\\s*", "text",
+					"(?:new\\b)?", "keyword",
+					"\\s*", "text",
 					"\\w*", "namespace", 
 					"[.:]?", "punctuation.operator",
 					"\\w*", "field",

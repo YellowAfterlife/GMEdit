@@ -93,14 +93,15 @@ class GmlSeeker {
 		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value` -> $1
 	);
 	private static var jsDoc_hint = new RegExp("^///\\s*"
-		+ "@hint\\b"
-		+ "\\s*(\\w+)?" // namespace (opt.) -> $1
+		+ "@hint\\b\\s*"
+		+ "(new\\b\\s*)?" // constructor mark -> $1
+		+ "(\\w+)?" // namespace (opt.) -> $2
 		+ "(?:"
-			+ "\\s*([:.])" // separator -> $2
-			+ "\\s*(\\w+)?" // field -> $3
+			+ "\\s*([:.])" // separator -> $3
+			+ "\\s*(\\w+)?" // field -> $4
 		+ ")?"
-		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $4
-		+ "\\s*(.*)" // text -> $5
+		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $5
+		+ "\\s*(.*)" // text -> $6
 	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
@@ -272,8 +273,10 @@ class GmlSeeker {
 		var jsDocRest:Bool = false;
 		/**  */
 		inline function linkDoc():Void {
-			out.docList.push(doc);
-			out.docMap.set(main, doc);
+			if (doc != null) {
+				out.docList.push(doc);
+				out.docMap.set(main, doc);
+			}
 		}
 		function flushDoc():Void {
 			var updateComp = false;
@@ -351,7 +354,7 @@ class GmlSeeker {
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
-		function addFieldHint(namespace:String, isInst:Bool, field:String, args:String, info:String) {
+		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String) {
 			if (namespace == null && doc != null) {
 				namespace = doc.name;
 				if (namespace == null) return;
@@ -367,6 +370,7 @@ class GmlSeeker {
 				var fa = name + args;
 				hintDoc = GmlFuncDoc.parse(fa);
 				hintDoc.trimArgs();
+				hintDoc.isConstructor = isConstructor;
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
 			
@@ -432,7 +436,7 @@ class GmlSeeker {
 				
 				mt = jsDoc_hint.exec(s);
 				if (mt != null) {
-					addFieldHint(mt[1], mt[2] == ":", mt[3], mt[4], mt[5]);
+					addFieldHint(mt[1] != null, mt[2], mt[3] == ":", mt[4], mt[5], mt[6]);
 					continue; // found!
 				}
 				
@@ -854,6 +858,7 @@ class GmlSeeker {
 						q.pos = i;
 						q.skipSpaces1();
 						var args:String = null;
+						var isConstructor = false;
 						do {
 							if (!q.peek().isIdent0_ni()) continue;
 							var start = q.pos;
@@ -870,8 +875,15 @@ class GmlSeeker {
 							if (q.read() != "(".code) continue;
 							while (q.read() != ")".code) {}
 							args = q.substring(start, q.pos);
+							// constructor?:
+							q.skipSpaces1();
+							if (q.peek() == "c".code) {
+								var ctStart = q.pos;
+								q.skipIdent1();
+								isConstructor = q.substring(ctStart, q.pos) == "constructor";
+							}
 						} while (false);
-						addFieldHint(null, true, s, args, null);
+						addFieldHint(isConstructor, null, true, s, args, null);
 						q.pos = oldPos;
 					}
 				};
