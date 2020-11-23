@@ -297,6 +297,8 @@ typedef YyObjectProperty = YyBase & {
 	rangeMin:Float,
 	/** 2.2? */
 	?resourceFilter:Int,
+	/** 2.3 */
+	?filters:Array<String>,
 	/** if multi-select: `"A", "B"` */
 	value:String,
 	varType:Int,
@@ -304,6 +306,4 @@ typedef YyObjectProperty = YyBase & {
 	?varName:String,
 	/** 2.3 */
 	?name:String,
-	/** 2.3 */
-	?filters:Array<Dynamic>
 };

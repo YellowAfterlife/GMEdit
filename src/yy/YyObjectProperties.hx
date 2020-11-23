@@ -3,6 +3,7 @@ import haxe.DynamicAccess;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
 import parsers.GmlObjectProperties;
+import tools.JsTools;
 import tools.NativeString;
 import yy.YyJson;
 import yy.YyObject;
@@ -44,11 +45,35 @@ class YyObjectProperties {
 		new YyObjectPropertiesAssetFlag(256, "object"),
 		new YyObjectPropertiesAssetFlag(512, "room"),
 	];
-	public static var assetTypeMap:Dictionary<Int> = {
+	public static var assetTypeMap:Dictionary<Int> = (function() {
 		var dict = new Dictionary<Int>();
 		for (pair in assetTypes) dict.set(pair.name, pair.flag);
-		dict;
-	};
+		return dict;
+	})();
+	static var allAssetTypes23:Array<String>;
+	static var assetTypeMap23:Dictionary<String> = (function() {
+		var dict = new Dictionary<String>();
+		var all = [];
+		function add(a:String, b:String):Void {
+			all.push(a);
+			dict[a] = b;
+			dict[b] = a;
+		}
+		add("GMAnimCurve", "anim_curve");
+		add("GMFont", "font");
+		add("GMObject", "object");
+		add("GMPath", "path");
+		add("GMRoom", "room");
+		add("GMScript", "script");
+		add("GMSequence", "sequence");
+		add("GMShader", "shader");
+		add("GMSound", "sound");
+		add("GMSprite", "sprite");
+		add("GMTileSet", "tileset");
+		add("GMTimeline", "timeline");
+		allAssetTypes23 = all;
+		return dict;
+	})();
 	//
 	private static var rxLString = new RegExp("^(?:@'[^']*?'|@\"[^\"]*?\")$");
 	private static var rxJSONish = new RegExp("^[-\\d.\"]");
@@ -141,25 +166,43 @@ class YyObjectProperties {
 				case 3: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
 				case 4: out += 'expr = ' + printExpr(prop.value);
 				case 5: {
-					var flags = prop.resourceFilter;
 					out += 'asset';
-					if (flags != 1023) {
-						out += '<';
-						var count = 0;
-						//
-						for (pair in assetTypes) {
-							if (flags & pair.flag != 0) {
-								flags &= ~pair.flag;
-								if (count++ > 0) out += ', ';
-								out += pair.name;
+					if (v22) {
+						var flags = prop.resourceFilter;
+						if (flags != 1023) {
+							out += '<';
+							var count = 0;
+							//
+							for (pair in assetTypes) {
+								if (flags & pair.flag != 0) {
+									flags &= ~pair.flag;
+									if (count++ > 0) out += ', ';
+									out += pair.name;
+								}
 							}
+							//
+							if (flags != 0 || count == 0) {
+								if (count++ > 0) out += ', ';
+								out += flags;
+							}
+							out += '>';
 						}
-						//
-						if (flags != 0 || count == 0) {
-							if (count++ > 0) out += ', ';
-							out += flags;
+					} else {
+						var filters:Array<String> = prop.filters;
+						for (i => v in filters) filters[i] = NativeString.trimBoth(v);
+						var allTypes = allAssetTypes23;
+						var isAll = (filters.length == allTypes.length
+							&& filters.filter((s) -> (allTypes.indexOf(s) < 0)).length == 0
+						);
+						var atm = assetTypeMap23;
+						if (!isAll) {
+							out += "<";
+							for (i => t in filters) {
+								if (i > 0) out += ", ";
+								out += atm.defget(t, t);
+							}
+							out += ">";
 						}
-						out += '>';
 					}
 					out += ' = ' + prop.value;
 				};
@@ -372,33 +415,57 @@ class YyObjectProperties {
 						});
 					};
 					case "asset": {
-						var flags = 0x0;
-						if (params != null) {
-							for (param in params) switch (param) {
-								case Number(f): flags |= Std.int(f);
-								case Ident(s): {
-									var flag = assetTypeMap[s];
-									if (flag == null) throw '$s is not a known asset type';
-									flags |= flag;
-								};
-								default: throw 'Expected an asset type, got $param';
-							}
-						} else flags = 1023;
 						var asset = switch (value) {
 							case Ident(s): s;
 							case Number(f): Json.stringify(f);
 							default: throw 'Expected an asset, got $value';
 						};
-						addProp({
-							listItems: null,
-							multiselect: false,
-							rangeEnabled: false,
-							rangeMax: 10,
-							rangeMin: 0,
-							resourceFilter: flags,
-							value: asset,
-							varType: 5,
-						});
+						if (v22) {
+							var flags = 0x0;
+							if (params != null) {
+								for (param in params) switch (param) {
+									case Number(f): flags |= Std.int(f);
+									case Ident(s): {
+										var flag = assetTypeMap[s];
+										if (flag == null) throw '$s is not a known asset type';
+										flags |= flag;
+									};
+									default: throw 'Expected an asset type, got $param';
+								}
+							} else flags = 1023;
+							addProp({
+								listItems: null,
+								multiselect: false,
+								rangeEnabled: false,
+								rangeMax: 10,
+								rangeMin: 0,
+								resourceFilter: flags,
+								value: asset,
+								varType: 5,
+							});
+						} else {
+							var filters:Array<String>;
+							if (params != null) {
+								filters = [];
+								for (param in params) switch (param) {
+									case Ident(s): filters.push(assetTypeMap23.defget(s, s));
+									default: throw 'Expected an asset type, got $param';
+								}
+							} else filters = allAssetTypes23.copy();
+							// replicating 2.3.0/2.3.1 bugs:
+							for (i => v in filters) if (i > 0) filters[i] = " " + v;
+							//
+							addProp({
+								listItems: null,
+								multiselect: false,
+								rangeEnabled: false,
+								rangeMax: 10,
+								rangeMin: 0,
+								filters: filters,
+								value: asset,
+								varType: 5,
+							});
+						}
 					};
 					case "bool": {
 						if (params != null) throw "String has no params";
