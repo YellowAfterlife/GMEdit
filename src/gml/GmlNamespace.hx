@@ -32,7 +32,7 @@ class GmlNamespace {
 			var docs = isInst ? docInstMap : docStaticMap;
 			docs[field] = doc;
 		}
-		if (comp != null) {
+		if (comp != null && field != "") {
 			var compList = isInst ? compInstList : compStaticList;
 			var compMap = isInst ? compInstMap : compStaticMap;
 			// remove existing completion item if replacing
