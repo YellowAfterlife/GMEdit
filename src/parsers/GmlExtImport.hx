@@ -539,6 +539,8 @@ class GmlExtImport {
 											case "*".code: q.skip(); q.skipComment();
 											default:
 										};
+										case "{".code: cubDepth++;
+										case "}".code: cubDepth--;
 										case '"'.code, "'".code, "`".code, "@".code: {
 											q.skipStringAuto(c, version);
 										};
