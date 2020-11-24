@@ -45,14 +45,21 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 	public static function runSync(orig:String, src:String, allSync:Bool) {
 		var obj:YyObject = YyJson.parse(src);
 		var dir = Path.directory(orig);
-		//
 		var project = Project.current;
-		var parentName = project.yyObjectNames[obj.parentObjectId];
+		var v23 = project.isGMS23;
+		//
+		var parentName:String;
+		var par = obj.parentObjectId;
+		if (v23) {
+			parentName = JsTools.nca(par, (par:YyResourceRef).name);
+		} else {
+			parentName = JsTools.nca(par, project.yyObjectNames[(par:YyGUID)]);
+		}
 		if (parentName != null) GmlSeeker.addObjectChild(parentName, obj.name);
 		//
 		if (ui.Preferences.current.assetThumbs && !allSync) {
 			var spriteId = obj.spriteId;
-			if (project.isGMS23) {
+			if (v23) {
 				if (spriteId != null) {
 					TreeView.setThumbSprite(orig, (cast spriteId:YyResourceRef).name);
 				} else TreeView.resetThumb(orig);

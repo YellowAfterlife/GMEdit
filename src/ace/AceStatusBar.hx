@@ -169,7 +169,7 @@ class AceStatusBar {
 					for (iter in 0 ... 2) {
 						var ns = (iter > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
 						if (ns == null) continue;
-						var td = ns.docInstMap[name];
+						var td = ns.getInstDoc(name);
 						if (td != null) {
 							doc = td;
 							if (iter == 0

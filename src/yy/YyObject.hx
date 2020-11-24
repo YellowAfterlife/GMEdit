@@ -263,7 +263,7 @@ typedef YyObjectImpl = {
 	/** newer */
 	?spriteMaskId:YyGUID,
 	eventList:Array<YyObjectEvent>,
-	parentObjectId:YyGUID,
+	parentObjectId:EitherType<YyResourceRef, YyGUID>,
 	solid:Bool,
 	visible:Bool,
 	persistent:Bool,

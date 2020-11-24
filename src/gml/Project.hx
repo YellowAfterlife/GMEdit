@@ -93,6 +93,8 @@ import ui.treeview.TreeViewElement;
 	/** name -> URL */
 	public var spriteURLs:Dictionary<String> = new Dictionary();
 	
+	/** object name -> object parent name */
+	public var objectParents:Dictionary<String>;
 	/** object name -> [...child names] */
 	public var objectChildren:Dictionary<Array<String>>;
 	//
@@ -381,6 +383,7 @@ import ui.treeview.TreeViewElement;
 		nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
 			objectChildren = new Dictionary();
+			objectParents = new Dictionary();
 			if (version.name == "v2" && first) {
 				var yypContent = readTextFileSync(name);
 				if (YyLoader.isV23(yypContent)) {

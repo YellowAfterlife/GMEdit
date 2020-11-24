@@ -198,10 +198,19 @@ class GmlSeekData {
 			ns.removeFieldHint(hint.field, hint.isInst);
 		}
 		for (hint in next.hintList) {
-			var ns = GmlAPI.gmlNamespaces[hint.namespace];
+			var hns = hint.namespace;
+			var ns = GmlAPI.gmlNamespaces[hns];
 			if (ns == null) {
 				ns = new GmlNamespace(hint.namespace);
 				GmlAPI.gmlNamespaces[hint.namespace] = ns;
+			}
+			if (hint.parentSpace != null && (ns.parent == null || ns.parent.name != hint.parentSpace)) {
+				var pns = GmlAPI.gmlNamespaces[hint.parentSpace];
+				if (pns == null) {
+					pns = new GmlNamespace(hint.parentSpace);
+					GmlAPI.gmlNamespaces[hint.parentSpace] = pns;
+				}
+				ns.parent = pns;
 			}
 			ns.addFieldHint(hint.field, hint.isInst, hint.comp, hint.doc);
 		}
@@ -227,13 +236,15 @@ class GmlSeekData {
 }
 class GmlSeekDataHint {
 	public var namespace:String;
+	public var parentSpace:String;
 	public var field:String;
 	public var isInst:Bool;
 	public var key:String;
 	public var comp:AceAutoCompleteItem;
 	public var doc:GmlFuncDoc;
-	public function new(namespace:String, isInst:Bool, field:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc) {
+	public function new(namespace:String, isInst:Bool, field:String, comp:AceAutoCompleteItem, doc:GmlFuncDoc, parentSpace:String) {
 		this.namespace = namespace;
+		this.parentSpace = parentSpace;
 		this.field = field;
 		this.isInst = isInst;
 		this.doc = doc;

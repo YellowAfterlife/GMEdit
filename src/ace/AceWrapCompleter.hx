@@ -197,13 +197,13 @@ using tools.NativeString;
 						if (dotKindMeta) {
 							var ns = GmlAPI.gmlNamespaces[type];
 							if (ns != null) {
-								callback(null, ns.compInstList);
+								callback(null, ns.getInstComp());
 								return;
 							}
 						} else {
 							var ns = JsTools.nca(imp, imp.namespaces[type]);
 							if (ns != null) {
-								callback(null, ns.compInstList);
+								callback(null, ns.getInstComp());
 								return;
 							} else {
 								var en = GmlAPI.gmlEnums[type];

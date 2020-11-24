@@ -263,7 +263,7 @@ class YyObjectProperties {
 	static var digitCount23:DynamicAccess<Int> = { "rangeMin": 1, "rangeMax": 1 };
 	public static function set(o:YyObject, code:String) {
 		var v22 = YyTools.isV22(o);
-		function id(v:GmlObjectPropertiesValue, t:String):EitherType<YyGUID, YyResourceRef> {
+		function id(v:GmlObjectPropertiesValue, t:String):EitherType<YyResourceRef, YyGUID> {
 			var id:YyGUID, res:YyProjectResource;
 			inline function checkResourceType():Void {
 				if (res == null) return;

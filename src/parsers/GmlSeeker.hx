@@ -357,6 +357,7 @@ class GmlSeeker {
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
 		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String) {
+			var parentSpace:String = null;
 			if (namespace == null) {
 				if (isCreateEvent) {
 					if (objectName == null) {
@@ -367,8 +368,10 @@ class GmlSeeker {
 						} else objectName = p.file;
 					}
 					namespace = objectName;
+					parentSpace = project.objectParents[objectName];
 				} else if (doc != null) {
 					namespace = doc.name;
+					parentSpace = doc.parentName;
 					if (namespace == null) return;
 				} else return;
 			}
@@ -388,7 +391,7 @@ class GmlSeeker {
 			}
 			
 			var comp = new AceAutoCompleteItem(name, isField ? "field" : "namespace", info);
-			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc);
+			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace);
 			
 			var lastHint = out.hintMap[hint.key];
 			if (lastHint == null) {
@@ -593,6 +596,12 @@ class GmlSeeker {
 								linkDoc();
 							}
 							doc.isConstructor = true;
+							if (s == ":") {
+								s = find(Line | Cub0 | Ident);
+								if (s != null && (s.fastCodeAt(0):CharCode).isIdent0_ni()) {
+									doc.parentName = s;
+								}
+							}
 						}
 					}
 				};
@@ -917,6 +926,7 @@ class GmlSeeker {
 	}
 	public static function addObjectChild(parentName:String, childName:String) {
 		var pj = Project.current;
+		pj.objectParents[childName] = parentName;
 		var parChildren = pj.objectChildren[parentName];
 		if (parChildren == null) {
 			parChildren = [];
