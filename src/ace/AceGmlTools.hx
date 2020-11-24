@@ -77,6 +77,22 @@ class AceGmlTools {
 		}
 		return Statement;
 	}
+	
+	public static function getSelfType(ctx:AceGmlTools_getSelfType):String {
+		var gmlFile = ctx.session.gmlFile;
+		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
+			return gmlFile.name;
+		} else {
+			var scopeDoc = gml.GmlAPI.gmlDoc[ctx.scope];
+			if (scopeDoc != null && scopeDoc.isConstructor) {
+				return ctx.scope;
+			} else return null;
+		}
+	}
+}
+typedef AceGmlTools_getSelfType = {
+	session: AceSession,
+	scope: String,
 }
 enum abstract AceGmlContextKind(Int) {
 	var Unknown = 0;

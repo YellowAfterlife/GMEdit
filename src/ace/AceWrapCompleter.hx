@@ -5,6 +5,7 @@ import ace.extern.*;
 import ace.extern.AceCommandManager;
 import file.kind.misc.KGLSL;
 import file.kind.misc.KHLSL;
+import file.kind.gml.*;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlNamespace;
@@ -177,11 +178,16 @@ using tools.NativeString;
 						if (scope == null) continue;
 						//
 						var type:String;
-						var imp = GmlFile.current.codeEditor.imports[scope];
+						var file = GmlFile.current;
+						var imp = file.codeEditor.imports[scope];
 						if (isSelf) {
-							var doc = GmlAPI.gmlDoc[scope];
-							if (doc == null || !doc.isConstructor) continue;
-							type = scope;
+							if ((file.kind is KGmlEvents)) {
+								type = file.name;
+							} else {
+								var doc = GmlAPI.gmlDoc[scope];
+								if (doc == null || !doc.isConstructor) continue;
+								type = scope;
+							}
 						} else {
 							if (imp == null) continue;
 							type = imp.localTypes[tk.value];

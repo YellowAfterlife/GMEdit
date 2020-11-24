@@ -11,6 +11,7 @@ class GmlLocals {
 	public static var defaultMap:Dictionary<GmlLocals> = new Dictionary();
 	//public static var currentMap:Dictionary<GmlLocals> = defaultMap;
 	//
+	public var name:String;
 	public var comp:AceAutoCompleteItems = [];
 	public var kind:Dictionary<String> = new Dictionary();
 	/** T of `var v:T` in type magic */
@@ -30,7 +31,7 @@ class GmlLocals {
 			type.set(name, locals.type[name]);
 		}
 	}
-	public function new() {
-		
+	public function new(name:String = "") {
+		this.name = name;
 	}
 }

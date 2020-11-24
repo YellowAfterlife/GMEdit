@@ -19,7 +19,7 @@ import tools.JsTools;
  * ...
  * @author YellowAfterlife
  */
-class KYyEvents extends KGml {
+class KYyEvents extends file.kind.gml.KGmlEvents {
 	public static var inst:KYyEvents = new KYyEvents();
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		if (data == null) data = YyJson.parse(super.loadCode(editor, data));
@@ -79,7 +79,7 @@ class KYyEvents extends KGml {
 			});
 		}
 		{ // hack: use locals for properties-specific variables
-			var locals = new GmlLocals();
+			var locals = new GmlLocals("properties");
 			out.locals.set("properties", locals);
 			for (prop in YyObjectProperties.propertyList) {
 				locals.add(prop, "property.variable", "(object property)");
@@ -99,7 +99,7 @@ class KYyEvents extends KGml {
 			if (!allSync) {
 				function procEvent(err, code) {
 					if (err == null) try {
-						var locals = new GmlLocals();
+						var locals = new GmlLocals(name);
 						out.locals.set(name, locals);
 						GmlSeeker.runSyncImpl(orig, code, null, out, locals, KYyEvents.inst);
 					} catch (_:Dynamic) {
@@ -113,7 +113,7 @@ class KYyEvents extends KGml {
 				FileWrap.readTextFile(full, procEvent);
 			} else try {
 				var code = FileWrap.readTextFileSync(full);
-				var locals = new GmlLocals();
+				var locals = new GmlLocals(name);
 				out.locals.set(name, locals);
 				GmlSeeker.runSyncImpl(orig, code, null, out, locals, KYyEvents.inst);
 			} catch (_:Dynamic) {

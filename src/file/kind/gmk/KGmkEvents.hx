@@ -19,7 +19,7 @@ import ui.treeview.TreeView;
  * ...
  * @author YellowAfterlife
  */
-class KGmkEvents extends KGml {
+class KGmkEvents extends file.kind.gml.KGmlEvents {
 	public static var inst:KGmkEvents = new KGmkEvents();
 	
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
@@ -67,7 +67,7 @@ class KGmkEvents extends KGml {
 			var event = FileWrap.readGmxFileSync(entry.relPath);
 			var name = GmkEvent.toStringGmk(event);
 			if (GmkEvent.isEmpty(event)) continue;
-			var locals = new GmlLocals();
+			var locals = new GmlLocals(name);
 			var code = GmkEvent.getCode(event);
 			out.locals.set(name, locals);
 			if (code != null) {

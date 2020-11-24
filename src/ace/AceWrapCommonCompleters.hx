@@ -314,7 +314,12 @@ class AceWrapCommonCompleters {
 				var imp = session.gmlEditor.imports[scope];
 				(imp != null ? imp.localTypes[token.value] != null : false);
 			};
-			default: token.value == "global";
+			default: {
+				switch (token.value) {
+					case "global", "self": true;
+					default: false;
+				}
+			}
 		};
 		if (open) openAC(editor);
 	}

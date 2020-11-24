@@ -9,6 +9,8 @@ import ace.extern.*;
  * @author YellowAfterlife
  */
 class GmlNamespace {
+	public static var blank(default, null):GmlNamespace = new GmlNamespace("");
+	
 	public var name:String;
 	public var kind:Dictionary<AceTokenType> = new Dictionary();
 	

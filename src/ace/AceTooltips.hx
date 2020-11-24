@@ -48,10 +48,11 @@ class AceTooltips {
 			var scope = session.gmlScopes.get(pos.row);
 			var codeEditor = gml.file.GmlFile.current.codeEditor;
 			var ctx:AceStatusBarDocSearch = {
-				iter: new AceTokenIterator(session, pos.row, pos.column),
-				tk: token, doc: null, docs: null,
+				session: session, scope: scope,
 				imports: codeEditor.imports[scope],
 				lambdas: codeEditor.lambdas[scope],
+				tk: token, doc: null, docs: null,
+				iter: new AceTokenIterator(session, pos.row, pos.column),
 			};
 			if (AceStatusBar.getDocData(ctx)) {
 				doc = ctx.doc;

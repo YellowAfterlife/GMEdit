@@ -15,7 +15,7 @@ import gml.GmlLocals;
  * ...
  * @author YellowAfterlife
  */
-class KGmxEvents extends KGml {
+class KGmxEvents extends file.kind.gml.KGmlEvents {
 	public static var inst:KGmxEvents = new KGmxEvents();
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		var root = SfGmx.parse(super.loadCode(editor, data));
@@ -59,7 +59,7 @@ class KGmxEvents extends KGml {
 			var ename = event.get("ename");
 			var enumb:Int = ename == null ? Std.parseInt(event.get("enumb")) : null;
 			var name = GmxEvent.toString(etype, enumb, ename);
-			var locals = new GmlLocals();
+			var locals = new GmlLocals(name);
 			out.locals.set(name, locals);
 			for (action in event.findAll("action")) {
 				var code = GmxAction.getCode(action);
@@ -70,7 +70,7 @@ class KGmxEvents extends KGml {
 		}
 		//
 		{ // hack: use locals for properties-specific variables
-			var locals = new GmlLocals();
+			var locals = new GmlLocals("properties");
 			out.locals.set("properties", locals);
 			for (prop in GmxObjectProperties.propertyList) {
 				locals.add(prop, "property.variable", "(object property)");

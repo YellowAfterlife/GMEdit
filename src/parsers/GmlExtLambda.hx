@@ -779,7 +779,7 @@ class GmlExtLambda {
 		for (s in setList) pj.lambdaMap.set(s, true);
 		for (s in indexList) {
 			var lgml = data.map1[s];
-			var locals = new GmlLocals();
+			var locals = new GmlLocals(s);
 			seekData.locals.set(s, locals);
 			GmlSeeker.runSyncImpl(isScripts ? pj.fullPath('scripts/$s/$s.gml') : seekPath,
 				lgml, s, seekData, locals, KGmlLambdas.inst);

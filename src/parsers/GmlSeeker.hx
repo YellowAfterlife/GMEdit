@@ -135,6 +135,8 @@ class GmlSeeker {
 			kws != null && kws.contains("function");
 		};
 		var funcsAreGlobal:Bool = Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
+		var isCreateEvent = Std.is(kind, KGmlEvents) && locals.name == "create";
+		var objectName:String = null;
 		var localKind = notLam ? "local" : "sublocal";
 		var subLocalDepth:Null<Int> = null;
 		if (project.properties.lambdaMode == Scripts) {
@@ -327,7 +329,7 @@ class GmlSeeker {
 				var d = GmlSeekData.map[full];
 				if (d == null) {
 					Main.console.warn("We just asked to index a lambda script and it's not there..?");
-					lfLocals = new GmlLocals();
+					lfLocals = new GmlLocals(s);
 				} else lfLocals = d.locals[""];
 				seekData.locals.set(s, lfLocals);
 			}
@@ -355,9 +357,20 @@ class GmlSeeker {
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
 		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String) {
-			if (namespace == null && doc != null) {
-				namespace = doc.name;
-				if (namespace == null) return;
+			if (namespace == null) {
+				if (isCreateEvent) {
+					if (objectName == null) {
+						var p = new Path(orig);
+						p.dir = null;
+						if (p.ext.toLowerCase() == "gmx") { // .object.gmx
+							objectName = Path.withoutExtension(p.file);
+						} else objectName = p.file;
+					}
+					namespace = objectName;
+				} else if (doc != null) {
+					namespace = doc.name;
+					if (namespace == null) return;
+				} else return;
 			}
 			field = JsTools.or(field, "");
 				
@@ -532,7 +545,7 @@ class GmlSeeker {
 					sub = main;
 					row = 0;
 					setLookup(main, true);
-					locals = new GmlLocals();
+					locals = new GmlLocals(main);
 					out.locals.set(main, locals);
 					if (isFunc || isDefine && v.hasScriptArgs()) { // `#define name(...args)`
 						s = find(isFunc ? Par0 : Line | Par0);
@@ -817,12 +830,14 @@ class GmlSeeker {
 						procLambdaIdent(s, locals);
 						continue;
 					}
-					var isConstructorField = (cubDepth == 1
-						&& doc != null && doc.isConstructor
-						&& (privateFieldRegex == null || !privateFieldRegex.test(s))
-					);
 					if (GmlAPI.gmlKind[s] != null) continue;
 					if (GmlAPI.extKind[s] != null) continue;
+					//
+					var isConstructorField = ((isCreateEvent
+							? cubDepth == 0
+							: (cubDepth == 1 && doc != null && doc.isConstructor)
+						) && (privateFieldRegex == null || !privateFieldRegex.test(s))
+					);
 					//
 					var kind = GmlAPI.stdKind[s];
 					var addInstField = (kind == null);

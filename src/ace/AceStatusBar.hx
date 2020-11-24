@@ -133,6 +133,10 @@ class AceStatusBar {
 				}
 				return false;
 			};
+			case "field": { // it might be self.field
+				ctx.docs = GmlNamespace.blank;
+				return true;
+			};
 			case "macro": { // macro->function resolution
 				var m = GmlAPI.gmlMacros[tk.value];
 				if (m != null) {
@@ -160,10 +164,28 @@ class AceStatusBar {
 			if (tk != null && tk.value == ".") {
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
-				var td:GmlFuncDoc;
-				if (tk.type == "namespace") {
+				//
+				inline function procType(type:String):Void {
+					for (iter in 0 ... 2) {
+						var ns = (iter > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
+						if (ns == null) continue;
+						var td = ns.docInstMap[name];
+						if (td != null) {
+							doc = td;
+							if (iter == 0
+								&& (cast ns:GmlImportNamespace).longen.exists(name)
+							) argStart = 1;
+							break;
+						}
+					}
+				}
+				//
+				if (tk.value == "self") {
+					var selfType = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
+					if (selfType != null) procType(selfType);
+				} else if (tk.type == "namespace") {
 					var nsName = tk.value;
-					td = imports.docs[nsName + "." + name];
+					var td = imports.docs[nsName + "." + name];
 					if (td == null) {
 						var nsLocal = imports.namespaces[nsName];
 						if (nsLocal != null) td = nsLocal.docStaticMap[name];
@@ -176,22 +198,7 @@ class AceStatusBar {
 					if (td != null) doc = td;
 				} else if ((tk.type == "local" || tk.type == "sublocal") && imports.localTypes.exists(tk.value)) {
 					var lt = imports.localTypes[tk.value];
-					var ns = imports.namespaces[lt];
-					td = null;
-					if (ns != null) {
-						td = ns.docInstMap[name];
-						if (td != null) {
-							doc = td;
-							if (ns.longen.exists(name)) argStart = 1;
-						}
-					}
-					if (td == null) {
-						var ns2 = GmlAPI.gmlNamespaces[lt];
-						if (ns2 != null) {
-							td = ns2.docInstMap[name];
-							if (td != null) doc = td;
-						}
-					}
+					if (lt != null) procType(lt);
 				} else iter.stepForward();
 			} else {
 				doc = AceMacro.jsOr(imports.docs[name], doc);
@@ -213,10 +220,11 @@ class AceStatusBar {
 		ctx.doc = doc;
 		return argStart;
 	}
-	private function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda) {
+	private function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda, scope:String) {
 		statusHint.innerHTML = "";
 		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
 		var sctx:AceStatusBarDocSearch = {
+			session: editor.session, scope: scope,
 			iter: iter, imports: imports, lambdas: lambdas,
 			docs: null, doc: null, tk: null
 		};
@@ -417,7 +425,7 @@ class AceStatusBar {
 		editor.gmlCompleters.lambdaCompleter.items = lambdas != null
 			? lambdas.comp : AceWrapCompleter.noItems;
 		//
-		updateComp(editor, pos.row, pos.column, imports, lambdas);
+		updateComp(editor, pos.row, pos.column, imports, lambdas, scope);
 	}
 }
 typedef AceStatusBarDocSearch = {
@@ -425,6 +433,8 @@ typedef AceStatusBarDocSearch = {
 	docs:Dictionary<GmlFuncDoc>,
 	doc:GmlFuncDoc,
 	tk:AceToken,
+	session:AceSession,
+	scope:String,
 	imports:GmlImports,
 	lambdas:GmlExtLambda,
 }
