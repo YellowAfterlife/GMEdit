@@ -16,6 +16,7 @@ import parsers.GmlKeycode;
 import parsers.GmlEvent;
 import shaders.ShaderAPI;
 import tools.Dictionary;
+import tools.JsTools;
 using tools.NativeString;
 
 /**
@@ -163,29 +164,43 @@ using tools.NativeString;
 						return;
 					};
 					case DKLocalType: { // local.instField
+						var isSelf:Bool = false;
 						switch (tk.type) {
 							case "local", "sublocal": {};
-							default: continue;
+							default: switch (tk.value) {
+								case "self": isSelf = true;
+								default: continue;
+							}
 						};
+						//
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
+						//
+						var type:String;
 						var imp = GmlFile.current.codeEditor.imports[scope];
-						if (imp == null) continue;
-						var t = imp.localTypes[tk.value];
-						if (t == null) continue;
+						if (isSelf) {
+							var doc = GmlAPI.gmlDoc[scope];
+							if (doc == null || !doc.isConstructor) continue;
+							type = scope;
+						} else {
+							if (imp == null) continue;
+							type = imp.localTypes[tk.value];
+						}
+						if (type == null) continue;
+						//
 						if (dotKindMeta) {
-							var ns = GmlAPI.gmlNamespaces[t];
+							var ns = GmlAPI.gmlNamespaces[type];
 							if (ns != null) {
 								callback(null, ns.compInstList);
 								return;
 							}
 						} else {
-							var ns = imp.namespaces[t];
+							var ns = JsTools.nca(imp, imp.namespaces[type]);
 							if (ns != null) {
 								callback(null, ns.compInstList);
 								return;
 							} else {
-								var en = GmlAPI.gmlEnums[t];
+								var en = GmlAPI.gmlEnums[type];
 								if (en == null) continue;
 								callback(null, en.fieldComp);
 								return;
