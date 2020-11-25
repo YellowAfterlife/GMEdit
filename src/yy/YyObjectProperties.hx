@@ -565,7 +565,7 @@ class YyObjectProperties {
 							case CString(s): s;
 							default: throw "Expected a data string";
 						}
-						var pts = sv.split(";");
+						var pts = sv != "" ? sv.split(";") : [];
 						var orig = o.physicsShapePoints;
 						var next = [];
 						var proto = orig[0];
