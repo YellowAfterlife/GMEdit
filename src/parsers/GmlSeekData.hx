@@ -3,6 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 import gml.GmlAPI;
 import gml.*;
+import tools.ArrayMap;
 import tools.Dictionary;
 using tools.NativeString;
 
@@ -63,6 +64,8 @@ class GmlSeekData {
 	public var hintList:Array<GmlSeekDataHint> = [];
 	public var hintMap:Dictionary<GmlSeekDataHint> = new Dictionary();
 	
+	public var namespaceHints:ArrayMap<GmlSeekDataNamespaceHint> = new ArrayMap();
+	
 	// features
 	public var imports:Dictionary<GmlImports> = null;
 	public var hasCoroutines:Bool = false;
@@ -72,6 +75,12 @@ class GmlSeekData {
 	public function new() {
 		
 	}
+	
+	public function addObjectHint(name:String, parentName:String) {
+		var nhs = new GmlSeekDataNamespaceHint(name, parentName, true);
+		namespaceHints.set(name, nhs);
+	}
+	
 	public static function add(path:String) {
 		if (map.exists(path)) return;
 		var next = new GmlSeekData();
@@ -192,14 +201,29 @@ class GmlSeekData {
 		}
 		
 		// hints (not very smart):
+		for (nsh in next.namespaceHints) {
+			var ns = GmlAPI.gmlNamespaces[nsh.namespace];
+			if (ns == null) {
+				ns = new GmlNamespace(nsh.namespace);
+				GmlAPI.gmlNamespaces[nsh.namespace] = ns;
+			}
+			if (nsh.parentSpace != null && (ns.parent == null || ns.parent.name != nsh.parentSpace)) {
+				var pns = GmlAPI.gmlNamespaces[nsh.parentSpace];
+				if (pns == null) {
+					pns = new GmlNamespace(nsh.parentSpace);
+					GmlAPI.gmlNamespaces[nsh.parentSpace] = pns;
+				}
+				ns.parent = pns;
+			}
+			ns.isObject = nsh.isObject;
+		}
 		for (hint in prev.hintList) {
 			var ns = GmlAPI.gmlNamespaces[hint.namespace];
 			if (ns == null) continue;
 			ns.removeFieldHint(hint.field, hint.isInst);
 		}
 		for (hint in next.hintList) {
-			var hns = hint.namespace;
-			var ns = GmlAPI.gmlNamespaces[hns];
+			var ns = GmlAPI.gmlNamespaces[hint.namespace];
 			if (ns == null) {
 				ns = new GmlNamespace(hint.namespace);
 				GmlAPI.gmlNamespaces[hint.namespace] = ns;
@@ -232,6 +256,16 @@ class GmlSeekData {
 		}
 		
 		// (locals don't have to be added/removed)
+	}
+}
+class GmlSeekDataNamespaceHint {
+	public var namespace:String;
+	public var parentSpace:String;
+	public var isObject:Bool;
+	public function new(namespace:String, parentSpace:String, isObject:Bool) {
+		this.namespace = namespace;
+		this.parentSpace = parentSpace;
+		this.isObject = isObject;
 	}
 }
 class GmlSeekDataHint {

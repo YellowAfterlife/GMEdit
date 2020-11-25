@@ -102,6 +102,8 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 			GmlSeeker.finish(orig, out);
 			return true;
 		}
+		//
+		out.addObjectHint(obj.name, parentName);
 		for (file in eventFiles) (function(name, full) {
 			if (!allSync) {
 				function procEvent(err, code) {
@@ -128,6 +130,7 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 			}
 		})(file.name, file.full);
 		if (allSync) GmlSeeker.finish(orig, out);
+		//
 		return false;
 	}
 }

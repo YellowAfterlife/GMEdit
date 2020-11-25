@@ -161,7 +161,7 @@ using tools.NativeString;
 							ns = imp.namespaces[tk.value];
 						}
 						if (ns == null) continue;
-						callback(null, ns.compStaticList);
+						callback(null, ns.compStatic.array);
 						return;
 					};
 					case DKLocalType: { // local.instField

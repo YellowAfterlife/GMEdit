@@ -1,5 +1,8 @@
 package gml;
+import gml.GmlAPI;
 import gml.GmlFuncDoc;
+import tools.ArrayMap;
+import tools.ArrayMapSync;
 import tools.Dictionary;
 import ace.extern.*;
 
@@ -14,12 +17,12 @@ class GmlNamespace {
 	
 	public var name:String;
 	public var parent:GmlNamespace = null;
+	public var isObject:Bool = false;
 	
 	public var kind:Dictionary<AceTokenType> = new Dictionary();
 	
 	/** static (`Buffer.ptr`) completions */
-	public var compStaticList:AceAutoCompleteItems = [];
-	public var compStaticMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	public var compStatic:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
 	
 	public var docStaticMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	public function getStaticDoc(name:String):GmlFuncDoc {
@@ -33,28 +36,47 @@ class GmlNamespace {
 	}
 	
 	/** instance (`var b; b.ptr`) completions */
-	public var compInstList:AceAutoCompleteItems = [];
-	public var compInstMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
+	public var compInst:ArrayMapSync<AceAutoCompleteItem> = new ArrayMapSync();
+	private var compInstCache:AceAutoCompleteItems = new AceAutoCompleteItems();
+	private var compInstCacheID:Int = 0;
 	public function getInstComp():AceAutoCompleteItems {
-		var list = compInstList;
-		if (parent != null) {
-			// TODO: consider whether anyone can have enough variables for this to become a performance culprit
-			list = list.copy();
-			var found = new Dictionary();
-			for (c in list) found[c.name] = true;
-			var q = parent, n = 0;
-			while (q != null && ++n <= maxDepth) {
-				var ql = q.compInstList;
-				var qi = ql.length;
-				while (--qi >= 0) {
-					var qc = ql[qi];
-					if (found.exists(qc.name)) continue;
-					found[qc.name] = true;
-					list.unshift(qc);
-				}
-				q = q.parent;
-			}
+		// if this is not an object and there is no parent, the completion array is what we want:
+		if (parent == null && !isObject) return compInst.array;
+		
+		// if completions cache is up to date, return it:
+		var maxID = compInst.changeID;
+		var par = parent, n = 0;
+		while (par != null && ++n <= maxDepth) {
+			var parID = par.compInst.changeID;
+			if (parID > maxID) maxID = parID;
+			par = par.parent;
 		}
+		if (maxID == compInstCacheID) return compInstCache;
+		
+		// re-generate completions:
+		var list = compInst.array.copy();
+		compInstCacheID = maxID;
+		compInstCache = list;
+		
+		var found = new Dictionary();
+		for (c in list) found[c.name] = true;
+		
+		// fill out missing fields from parents:
+		par = parent; n = 0;
+		while (par != null && ++n < maxDepth) {
+			var ql = par.compInst.array;
+			var qi = ql.length;
+			while (--qi >= 0) {
+				var qc = ql[qi];
+				if (found.exists(qc.name)) continue;
+				found[qc.name] = true;
+				list.unshift(qc);
+			}
+			par = par.parent;
+		}
+		// if this is an object, add built-in variables at the end of the list:
+		if (isObject) for (c in GmlAPI.stdInstComp) list.push(c);
+		//
 		return list;
 	}
 	
@@ -80,14 +102,8 @@ class GmlNamespace {
 			docs[field] = doc;
 		}
 		if (comp != null && field != "") {
-			var compList = isInst ? compInstList : compStaticList;
-			var compMap = isInst ? compInstMap : compStaticMap;
-			// remove existing completion item if replacing
-			var cc = compMap[field];
-			if (cc != null) compList.remove(cc);
-			// add the new one:
-			compMap[field] = comp;
-			compList.push(comp);
+			var comps:ArrayMap<AceAutoCompleteItem> = isInst ? compInst : compStatic;
+			comps[field] = comp;
 		}
 	}
 	
@@ -96,12 +112,13 @@ class GmlNamespace {
 		var docs = isInst ? docInstMap : docStaticMap;
 		docs.remove(field);
 		
-		var compList = isInst ? compInstList : compStaticList;
-		var compMap = isInst ? compInstMap : compStaticMap;
-		var cc = compMap[field];
-		if (cc != null) {
-			compMap.remove(field);
-			compList.remove(cc);
+		var comps:ArrayMap<AceAutoCompleteItem> = isInst ? compInst : compStatic;
+		comps.remove(field);
+	}
+	
+	public function addStdInstComp() {
+		for (item in GmlAPI.stdInstComp) {
+			compInst[item.name] = item;
 		}
 	}
 }

@@ -7,6 +7,7 @@ import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
 import tools.NativeString;
+using tools.NativeString;
 using tools.ERegTools;
 
 /**
@@ -24,6 +25,7 @@ class GmlParseAPI {
 		?ukSpelling:Bool,
 		?version:GmlVersion,
 		?kindPrefix:String,
+		?instComp:AceAutoCompleteItems,
 		#if lwedit
 		?lwArg0:Dictionary<Int>,
 		?lwArg1:Dictionary<Int>,
@@ -38,6 +40,7 @@ class GmlParseAPI {
 		var ukSpelling = data.ukSpelling;
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
+		var instComp = data.instComp;
 		#if lwedit
 		var lwArg0 = data.lwArg0;
 		var lwArg1 = data.lwArg1;
@@ -120,11 +123,21 @@ class GmlParseAPI {
 		~/^((\w+)(\[[^\]]*\])?([~\*\$£#@&]*))(?::\w+)?;?[ \t]*$/gm.each(src, function(rx:EReg) {
 			var comp = rx.matched(1);
 			var name = rx.matched(2);
+			var range = rx.matched(3);
 			var flags = rx.matched(4);
 			if (NativeString.contains(flags, "&")) return;
 			//
 			var isConst:Bool = flags.indexOf("#") >= 0;
 			var kind:String = isConst ? "constant" : "variable";
+			//
+			if (instComp != null
+				&& NativeString.contains(flags, "@")
+			) {
+				var doc = "built-in";
+				if (flags.contains("*")) doc += "\nread-only";
+				if (range != null) doc += "\narray" + range;
+				instComp.push(new AceAutoCompleteItem(name, "variable", doc));
+			}
 			//
 			var orig = name;
 			if (version.config.docMode == "gms1") {
@@ -142,7 +155,7 @@ class GmlParseAPI {
 			if (lwFlags != null) {
 				var lwBits = 0x0;
 				if (NativeString.contains(flags, "*")) lwBits |= 1;
-				if (rx.matched(3) != null) lwBits |= 2;
+				if (range != null) lwBits |= 2;
 				if (NativeString.contains(flags, "@")) lwBits |= 4;
 				lwFlags.set(name, lwBits);
 				if (orig != name) lwFlags.set(orig, lwBits);

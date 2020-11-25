@@ -390,7 +390,8 @@ class GmlSeeker {
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
 			
-			var comp = new AceAutoCompleteItem(name, isField ? "field" : "namespace", info);
+			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
+			var comp = new AceAutoCompleteItem(name, compMeta, info);
 			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace);
 			
 			var lastHint = out.hintMap[hint.key];
@@ -833,24 +834,33 @@ class GmlSeeker {
 					}
 				};
 				default: { // maybe an instance field assignment
-					// skip if it's a local/built-in/project/extension identifier:
+					// skip if it's a local/project/extension identifier:
 					if (locals.kind[s] != null) continue;
 					if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
 						procLambdaIdent(s, locals);
 						continue;
 					}
-					if (GmlAPI.gmlKind[s] != null) continue;
-					if (GmlAPI.extKind[s] != null) continue;
-					//
+					if (GmlAPI.gmlKind[s] != null || GmlAPI.extKind[s] != null) continue;
+					
+					// we'll hint top-level variable assignments in constructors and Create events:
 					var isConstructorField = ((isCreateEvent
 							? cubDepth == 0
 							: (cubDepth == 1 && doc != null && doc.isConstructor)
 						) && (privateFieldRegex == null || !privateFieldRegex.test(s))
 					);
-					//
+					
+					// skip if we don't have anything to do:
 					var kind = GmlAPI.stdKind[s];
-					var addInstField = (kind == null);
-					if (!addInstField && (kind != "variable" || !isConstructorField)) continue;
+					var addInstField = (kind == null); // don't add built-ins to variable list
+					if (!addInstField && (
+						// create events shouldn't hint built-ins since we'll auto-include them:
+						isCreateEvent
+						// other code also shouldn't hint built-ins:
+						|| !isConstructorField
+						// structs are allowed to override built-in variables specifically:
+						|| kind != "variable"
+					)) continue;
+					
 					// skip unless it's `some =` (and no `some ==`)
 					var skip = false;
 					var i = q.pos;
@@ -874,8 +884,10 @@ class GmlSeeker {
 						default: skip = true; break;
 					}
 					if (skip) continue;
+					
 					// that's an instance variable then
 					if (addInstField) addInstVar(s);
+					
 					//
 					if (isConstructorField) {
 						var oldPos = q.pos;

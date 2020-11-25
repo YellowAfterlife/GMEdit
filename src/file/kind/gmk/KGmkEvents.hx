@@ -48,9 +48,9 @@ class KGmkEvents extends file.kind.gml.KGmlEvents {
 		var obj = SfGmx.parse(content);
 		var out = new GmlSeekData();
 		//
+		var objectName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(path)));
 		var parentName = obj.findText("parent");
 		if (parentName != null) {
-			var objectName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(path)));
 			GmlSeeker.addObjectChild(parentName, objectName);
 		}
 		//
@@ -62,6 +62,7 @@ class KGmkEvents extends file.kind.gml.KGmlEvents {
 			}
 		}
 		//
+		out.addObjectHint(objectName, parentName);
 		var dir = Path.withExtension(path, "events");
 		if (FileWrap.existsSync(dir)) for (entry in FileWrap.readdirSync(dir)) {
 			var event = FileWrap.readGmxFileSync(entry.relPath);

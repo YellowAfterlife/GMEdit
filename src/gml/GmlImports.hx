@@ -68,9 +68,8 @@ class GmlImports {
 			ns.isStruct = true;
 			for (comp in en.compList) {
 				var c = enumCompToNsComp(comp);
-				ns.compStaticList.push(c);
-				ns.compInstList.push(c);
-				// TODO: need to fill out maps too?
+				ns.compStatic.addn(c);
+				ns.compInst.addn(c);
 			}
 			for (name in en.names) {
 				var full = enLong + "." + name;
@@ -126,12 +125,6 @@ class GmlImports {
 				ns.longen.set(short, long);
 			}
 			if (comp != null) for (iter in 0 ... 2) {
-				var compList = iter > 0 ? ns.compInstList : ns.compStaticList;
-				var compMap = iter > 0 ? ns.compInstMap : ns.compStaticMap;
-				// remove existing completion item if replacing
-				nc = compMap[short];
-				if (nc != null) compList.remove(nc);
-				// add the new one:
 				if (cache != null) {
 					nc = cache.nsComp;
 					if (nc == null) {
@@ -139,8 +132,8 @@ class GmlImports {
 						cache.nsComp = nc;
 					}
 				} else makeAliasComp();
-				compMap.set(short, nc);
-				compList.push(nc);
+				var comps = iter > 0 ? ns.compInst : ns.compStatic;
+				comps[short] = nc;
 			}
 			if (doc != null) {
 				if (!spaceOnly) ns.docStaticMap[short] = doc;
@@ -177,17 +170,15 @@ class GmlImports {
 						}
 						for (comp in comps) compList.push(comp);
 						if (ns != null) for (comp in nsComps) {
-							ns.compStaticList.push(comp);
-							ns.compInstList.push(comp);
-							// TODO: need to fill out maps too?
+							ns.compInst.addn(comp);
+							ns.compStatic.addn(comp);
 						}
 					} else for (comp in en.compList) {
 						compList.push(enumCompToFullComp(comp, short));
 						if (ns != null) {
 							var c = enumCompToNsComp(comp);
-							ns.compStaticList.push(c);
-							ns.compInstList.push(c);
-							// TODO: need to fill out maps too?
+							ns.compInst.addn(c);
+							ns.compStatic.addn(c);
 						}
 					}
 					if (ns != null) for (name in en.names) {

@@ -72,10 +72,12 @@ class GmlAPI {
 	//
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
+	public static var stdInstComp:AceAutoCompleteItems = [];
 	public static var stdKind:Dictionary<String> = new Dictionary();
 	public static function stdClear() {
 		stdDoc = new Dictionary();
 		stdComp.clear();
+		stdInstComp.clear();
 		var sk = new Dictionary();
 		inline function add(s:String) {
 			sk.set(s, "keyword");
@@ -269,6 +271,7 @@ class GmlAPI {
 			kind: stdKind,
 			doc: stdDoc,
 			comp: stdComp,
+			instComp: stdInstComp,
 			ukSpelling: ukSpelling,
 			version: version,
 			#if lwedit
