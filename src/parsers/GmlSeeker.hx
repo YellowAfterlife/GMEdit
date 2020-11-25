@@ -944,11 +944,13 @@ class GmlSeeker {
 							}
 							start = q.pos;
 							if (q.read() != "(".code) continue;
-							while (q.read() != ")".code) {}
+							while (q.loop && q.read() != ")".code) {}
 							args = q.substring(start, q.pos);
 							// constructor?:
 							q.skipSpaces1();
-							if (q.peek() == "c".code) {
+							if (q.peek() == ":".code) {
+								isConstructor = true;
+							} else if (q.peek() == "c".code) {
 								var ctStart = q.pos;
 								q.skipIdent1();
 								isConstructor = q.substring(ctStart, q.pos) == "constructor";
