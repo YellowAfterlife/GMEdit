@@ -640,6 +640,8 @@ class GmlSeeker {
 									doc.parentName = s;
 								}
 							}
+							var nsh = new GmlSeekDataNamespaceHint(main, doc.parentName, false);
+							out.namespaceHints.addn(nsh);
 						}
 					}
 				};
