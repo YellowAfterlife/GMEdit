@@ -13,23 +13,23 @@ import ace.extern.*;
  */
 class GmlNamespace {
 	public static var blank(default, null):GmlNamespace = new GmlNamespace("");
-	static inline var maxDepth = 128;
+	public static inline var maxDepth = 128;
 	
 	public var name:String;
 	public var parent:GmlNamespace = null;
 	public var isObject:Bool = false;
 	
-	public var kind:Dictionary<AceTokenType> = new Dictionary();
-	
+	public var staticKind:Dictionary<AceTokenType> = new Dictionary();
 	/** static (`Buffer.ptr`) completions */
 	public var compStatic:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
-	
 	public var docStaticMap:Dictionary<GmlFuncDoc> = new Dictionary();
-	public function getStaticDoc(name:String):GmlFuncDoc {
+	
+	public var instKind:Dictionary<AceTokenType> = new Dictionary();
+	public function getInstKind(field:String):AceTokenType {
 		var q = this, n = 0;
 		while (q != null && ++n <= maxDepth) {
-			var d = q.docStaticMap[name];
-			if (d != null) return d;
+			var t = q.instKind[field];
+			if (t != null) return t;
 			q = q.parent;
 		}
 		return null;
@@ -110,6 +110,7 @@ class GmlNamespace {
 	}
 	
 	public function addFieldHint(field:String, isInst:Bool, comp:AceAutoCompleteItem, doc:GmlFuncDoc) {
+		var kind = isInst ? instKind : staticKind;
 		kind[field] = doc != null ? "asset.script" : "field";
 		if (doc != null) {
 			var docs = isInst ? docInstMap : docStaticMap;
@@ -122,6 +123,7 @@ class GmlNamespace {
 	}
 	
 	public function removeFieldHint(field:String, isInst:Bool) {
+		var kind = isInst ? instKind : staticKind;
 		kind.remove(field);
 		var docs = isInst ? docInstMap : docStaticMap;
 		docs.remove(field);

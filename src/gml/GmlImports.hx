@@ -75,7 +75,7 @@ class GmlImports {
 				var full = enLong + "." + name;
 				ns.longen.set(name, full);
 				ns.shorten.set(full, name);
-				ns.kind.set(name, "enumfield");
+				ns.instKind.set(name, "enumfield");
 			}
 		}
 		return ns;
@@ -117,7 +117,8 @@ class GmlImports {
 		//
 		if (space != null) {
 			ns = ensureNamespace(space);
-			ns.kind.set(short, kind);
+			if (!spaceOnly) ns.staticKind[short] = kind;
+			ns.instKind[short] = kind;
 			if (!isGlobal) {
 				var c = ns.longen[short];
 				if (c != null) ns.shorten.remove(c);
@@ -187,7 +188,7 @@ class GmlImports {
 						if (c != null) ns.shorten.remove(c);
 						ns.longen.set(name, full);
 						ns.shorten.set(full, name);
-						ns.kind.set(name, "enumfield");
+						ns.instKind.set(name, "enumfield");
 					}
 				}
 				longenEnum.set(short, long);

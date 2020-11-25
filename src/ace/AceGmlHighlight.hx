@@ -21,6 +21,7 @@ import ace.AceMacro.jsThis;
 import ace.raw.*;
 import haxe.extern.EitherType;
 import tools.HighlightTools.*;
+import tools.JsTools;
 using tools.NativeString;
 using tools.NativeArray;
 
@@ -115,6 +116,8 @@ using tools.NativeArray;
 				var object = values[1];
 				var field = values[5];
 				var objType:String, fdType:String;
+				// we could be giving self/other contextual highlighting, but that would
+				// lead to false positives inside with-blocks, which is undesirable.
 				if (object == "global") {
 					objType = "keyword";
 					fdType = "globalfield";
@@ -122,67 +125,69 @@ using tools.NativeArray;
 					objType = null;
 					fdType = null;
 					var en:GmlEnum;
-					if (row != null) {
-						var scope = editor.session.gmlScopes.get(row);
-						if (scope != null) {
-							var imp:GmlImports = editor.imports[scope], ns:GmlNamespace;
-							for (step in (imp != null ? 0 : 1) ... 2) {
-								ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
-								//
-								var e1:String;
-								inline function checkEnum(error:String) {
-									if (step != 0) return;
-									e1 = imp.longenEnum[object];
-									if (e1 == null) return;
-									en = GmlAPI.gmlEnums[e1];
-									if (en == null) return;
-									fdType = en.items[field] ? "enumfield" : error;
-								}
-								//
-								if (ns != null) {
-									objType = ns.isObject ? "asset.object" : "namespace";
-									fdType = ns.kind[field];
-									if (fdType != null) break;
-									fdType = "identifier";
-									checkEnum("identifier");
-								} else checkEnum("enumerror");
-								if (fdType != null) break;
+					var scope = JsTools.nca(row != null, editor.session.gmlScopes.get(row));
+					if (scope != null) {
+						var imp:GmlImports = editor.imports[scope], ns:GmlNamespace;
+						// perhaps a NameSpace.staticField?:
+						for (step in (imp != null ? 0 : 1) ... 2) {
+							ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
+							var e1:String;
+							inline function checkEnum(error:String) {
+								if (step != 0) return;
+								e1 = imp.longenEnum[object];
+								if (e1 == null) return;
+								en = GmlAPI.gmlEnums[e1];
+								if (en == null) return;
+								fdType = en.items[field] ? "enumfield" : error;
 							}
-							if (objType == null) {
-								objType = getLocalType_1(object, scope, !mf);
-								if ((objType == "local" || objType == "sublocal") && imp != null) {
-									var lt = imp.localTypes[object];
-									ns = imp.namespaces[lt];
-									var ns2 = GmlAPI.gmlNamespaces[lt];
-									if (ns != null) {
-										fdType = ns.kind[field];
-										if (fdType == null) {
-											if (ns2 != null) {
-												fdType = jsOrx(ns2.kind[field], "typeerror");
-											} else fdType = "typeerror";
-										}
-									} else if (ns2 != null) {
-										fdType = jsOrx(ns2.kind[field], "typeerror");
-									} else {
-										en = GmlAPI.gmlEnums[lt];
-										if (en != null) {
-											fdType = en.items[field] ? "enumfield" : "enumerror";
-										} else fdType = getGlobalType(field, "field");
+							//
+							if (ns != null) {
+								objType = ns.isObject ? "asset.object" : "namespace";
+								fdType = ns.staticKind[field];
+								if (fdType != null) break;
+								fdType = "identifier";
+								checkEnum("identifier");
+							} else checkEnum("enumerror");
+							if (fdType != null) break;
+						}
+						// evidently that wasn't a namespace, perhaps a local variable?
+						if (objType == null) {
+							objType = getLocalType_1(object, scope, !mf);
+							if ((objType == "local" || objType == "sublocal") && imp != null) {
+								var lt = imp.localTypes[object];
+								ns = imp.namespaces[lt];
+								var ns2 = GmlAPI.gmlNamespaces[lt];
+								if (ns != null) {
+									fdType = ns.getInstKind(field);
+									if (fdType == null) {
+										if (ns2 != null) {
+											fdType = jsOrx(ns2.getInstKind(field), "typeerror");
+										} else fdType = "typeerror";
+									}
+								} else if (ns2 != null) {
+									fdType = jsOrx(ns2.getInstKind(field), "typeerror");
+								} else {
+									en = GmlAPI.gmlEnums[lt];
+									if (en != null) {
+										fdType = en.items[field] ? "enumfield" : "enumerror";
+									} else { // local.something
+										fdType = getGlobalType(field, "field");
 									}
 								}
 							}
 						}
-					}
+					} // has scope
 					if (objType == null) {
+						// well that sucks, maybe an enum?:
 						en = GmlAPI.gmlEnums[object];
 						if (en != null) {
 							objType = "enum";
 							fdType = en.items[field] ? "enumfield" : "enumerror";
-						} else {
+						} else { // that's just built-ins then:
 							objType = getGlobalType(object, def);
 							fdType = getGlobalType(field, "field");
 						}
-					} else if (fdType == null) {
+					} else if (fdType == null) { // found type, but no field (and not an error)
 						fdType = getGlobalType(field, "field");
 					}
 				}
