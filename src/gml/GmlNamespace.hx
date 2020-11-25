@@ -39,6 +39,7 @@ class GmlNamespace {
 	public var compInst:ArrayMapSync<AceAutoCompleteItem> = new ArrayMapSync();
 	private var compInstCache:AceAutoCompleteItems = new AceAutoCompleteItems();
 	private var compInstCacheID:Int = 0;
+	private var compInstCacheChain:Array<String> = [];
 	public function getInstComp():AceAutoCompleteItems {
 		// if this is not an object and there is no parent, the completion array is what we want:
 		if (parent == null && !isObject) return compInst.array;
@@ -46,12 +47,25 @@ class GmlNamespace {
 		// if completions cache is up to date, return it:
 		var maxID = compInst.changeID;
 		var par = parent, n = 0;
+		var chainInd = 0;
+		var forceUpdate = false;
 		while (par != null && ++n <= maxDepth) {
+			// force-update if parent chain changes:
+			if (compInstCacheChain[chainInd] != par.name) {
+				compInstCacheChain[chainInd] = par.name;
+				forceUpdate = true;
+			}
+			chainInd += 1;
+			//
 			var parID = par.compInst.changeID;
 			if (parID > maxID) maxID = parID;
 			par = par.parent;
 		}
-		if (maxID == compInstCacheID) return compInstCache;
+		if (chainInd < compInstCacheChain.length) {
+			forceUpdate = true;
+			compInstCacheChain.resize(chainInd);
+		}
+		if (maxID == compInstCacheID && !forceUpdate) return compInstCache;
 		
 		// re-generate completions:
 		var list = compInst.array.copy();
