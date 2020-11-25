@@ -19,7 +19,7 @@ from Array<AceAutoCompleteItem> to Array<AceAutoCompleteItem> {
 		this = [];
 	}
 	public inline function clear() {
-		untyped this.length = 0;
+		this.resize(0);
 	}
 	public inline function autoSort() {
 		this.sort(function(a, b) {

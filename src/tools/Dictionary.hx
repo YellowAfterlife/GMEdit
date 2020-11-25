@@ -27,6 +27,9 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 		return out;
 	}
 	public inline function destroy():Void { }
+	public inline function clear():Void {
+		NativeObject.forField(this, function(s) remove(s));
+	}
 	//
 	public inline function isEmpty():Bool {
 		return !NativeObject.hasFields(this);
