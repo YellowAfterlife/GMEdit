@@ -456,7 +456,17 @@ class GmlSeeker {
 				out.instFieldComp.push(fd.comp);
 			}
 		}
-		function doLoop(?exitAtCubDepth:Int) while (q.loop) {
+		function doLoop(?exitAtCubDepth:Int) {
+			//var oldPos = q.pos, oldSource = q.source;
+		while (q.loop) {
+			/*//
+			if (q.pos < oldPos && debug) {
+				Main.console.warn("old", oldPos, oldSource.length);
+				Main.console.warn("new", q.pos, q.source.length, q.source == oldSource);
+			}
+			oldPos = q.pos;
+			oldSource = q.source;
+			//*/
 			var p:Int, flags:Int;
 			var c:CharCode, mt:RegExpMatch;
 			flags = Ident | Doc | Define | Macro;
@@ -890,18 +900,18 @@ class GmlSeeker {
 					
 					// skip unless it's `some =` (and no `some ==`)
 					var skip = false;
-					var i = q.pos;
-					while (i < q.length) switch (q.get(i++)) {
+					q_store();
+					while (q.loop) switch (q.read()) {
 						case " ".code, "\t".code, "\r".code, "\n".code: { };
-						case "=".code: skip = q.get(i) == "=".code; break;
+						case "=".code: skip = q.peek() == "=".code; break;
 						case ":".code: {
-							var k = q.pos;
+							var k = q_swap.pos;
 							skip = true;
 							while (k > 0) {
-								var c = q.get(k - 1);
+								var c = q_swap.get(k - 1);
 								if (c.isIdent1()) k--; else break;
 							}
-							while (--k >= 0) switch (q.get(k)) {
+							while (--k >= 0) switch (q_swap.get(k)) {
 								case " ".code, "\t".code, "\r".code, "\n".code: { };
 								case ",".code, "{".code: skip = false; break;
 								default: break;
@@ -910,15 +920,13 @@ class GmlSeeker {
 						};
 						default: skip = true; break;
 					}
-					if (skip) continue;
+					if (skip) { q_restore(); continue; }
 					
 					// that's an instance variable then
 					if (addInstField) addInstVar(s);
 					
 					//
 					if (isConstructorField) {
-						var oldPos = q.pos;
-						q.pos = i;
 						q.skipSpaces1();
 						var args:String = null;
 						var isConstructor = false;
@@ -947,11 +955,12 @@ class GmlSeeker {
 							}
 						} while (false);
 						addFieldHint(isConstructor, null, true, s, args, null);
-						q.pos = oldPos;
 					}
+					q_restore();
 				};
 			} // switch (s)
 		} // while in doLoop, can continue
+		} // doLoop
 		doLoop();
 		flushDoc();
 		//
