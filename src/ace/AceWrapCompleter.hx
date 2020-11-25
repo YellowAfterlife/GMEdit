@@ -167,6 +167,7 @@ using tools.NativeString;
 					case DKLocalType: { // local.instField
 						var contextKind = switch (tk.type) {
 							case "local", "sublocal": 0;
+							case "asset.object": 3;
 							default: switch (tk.value) {
 								case "self": 1;
 								case "other": 2;
@@ -187,6 +188,7 @@ using tools.NativeString;
 							case 2: {
 								type = inline AceGmlTools.getOtherType({session:session, scope:scope});
 							};
+							case 3: type = tk.value;
 							default: {
 								if (imp == null) continue;
 								type = imp.localTypes[tk.value];

@@ -140,7 +140,7 @@ using tools.NativeArray;
 								}
 								//
 								if (ns != null) {
-									objType = "namespace";
+									objType = ns.isObject ? "asset.object" : "namespace";
 									fdType = ns.kind[field];
 									if (fdType != null) break;
 									fdType = "identifier";

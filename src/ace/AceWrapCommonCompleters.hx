@@ -314,6 +314,7 @@ class AceWrapCommonCompleters {
 				var imp = session.gmlEditor.imports[scope];
 				(imp != null ? imp.localTypes[token.value] != null : false);
 			};
+			case "asset.object": true;
 			default: {
 				switch (token.value) {
 					case "global", "self", "other": true;

@@ -166,7 +166,9 @@ class AceStatusBar {
 				tk = iter.getCurrentToken();
 				//
 				var type:String = null;
-				if (tk.value == "other") {
+				if (tk.type == "asset.object") {
+					type = tk.value;
+				} else if (tk.value == "other") {
 					type = AceGmlTools.getOtherType({ session: ctx.session, scope: ctx.scope });
 				} else if (tk.value == "self") {
 					type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
