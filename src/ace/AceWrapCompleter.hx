@@ -110,7 +110,7 @@ using tools.NativeString;
 		}
 		var tk:AceToken = session.getTokenAtPos(pos);
 		if (colKind != CKNone) {
-			if (tk.type == "punctuation.operator" && tk.value.contains(":")) do { // once
+			if (tk != null && tk.type == "punctuation.operator" && tk.value.contains(":")) do { // once
 				var iter = new AceTokenIterator(session, pos.row, pos.column);
 				if (checkColon(iter)) switch (colKind) {
 					case CKNamespaces: {
@@ -130,6 +130,7 @@ using tools.NativeString;
 		}
 		else if (dotKind != DKNone) {
 			do { // once
+				if (tk == null) continue;
 				var iter:AceTokenIterator = null;
 				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) {
 					if (dotKind == DKEnum) {
@@ -244,7 +245,7 @@ using tools.NativeString;
 			return;
 		}
 		//
-		var tkf:Bool = tokenFilter.exists(tk.type);
+		var tkf:Bool = tokenFilter.exists(JsTools.nca(tk, tk.type));
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
 		proc(tkf != tokenFilterNot);
 	}

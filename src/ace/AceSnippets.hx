@@ -13,6 +13,7 @@ import haxe.extern.EitherType;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.AceAutoCompleter;
+import tools.JsTools;
 using tools.NativeString;
 
 /**
@@ -95,7 +96,7 @@ class AceSnippetCompleterProxy extends AceWrapCompleter {
 		}
 		//
 		var tk:AceToken = session.getTokenAtPos(pos);
-		var tkf:Bool = tokenFilter.exists(tk.type);
+		var tkf:Bool = tokenFilter.exists(JsTools.nca(tk, tk.type));
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
 		if (tkf != tokenFilterNot) {
 			completer.getCompletions(editor, session, pos, prefix, callback);
