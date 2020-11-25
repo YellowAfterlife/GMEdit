@@ -12,7 +12,7 @@ using tools.NativeString;
  * ...
  * @author YellowAfterlife
  */
-class AceGmlTools {
+@:keep class AceGmlTools {
 	public static function isBlank(tokenType:AceTokenType):Bool {
 		var tt:String = tokenType;
 		switch (tt) {
@@ -78,7 +78,7 @@ class AceGmlTools {
 		return Statement;
 	}
 	
-	public static function getSelfType(ctx:AceGmlTools_getSelfType):String {
+	public static inline function getSelfType(ctx:AceGmlTools_getSelfType):String {
 		var gmlFile = ctx.session.gmlFile;
 		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
 			return gmlFile.name;
@@ -88,6 +88,12 @@ class AceGmlTools {
 				return ctx.scope;
 			} else return null;
 		}
+	}
+	
+	public static inline function getOtherType(ctx:AceGmlTools_getSelfType):String {
+		if (ctx.scope.startsWith("collision:")) {
+			return ctx.scope.substring("collision:".length);
+		} else return null;
 	}
 }
 typedef AceGmlTools_getSelfType = {

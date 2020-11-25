@@ -165,24 +165,11 @@ class AceStatusBar {
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
 				//
-				inline function procType(type:String):Void {
-					for (iter in 0 ... 2) {
-						var ns = (iter > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
-						if (ns == null) continue;
-						var td = ns.getInstDoc(name);
-						if (td != null) {
-							doc = td;
-							if (iter == 0
-								&& (cast ns:GmlImportNamespace).longen.exists(name)
-							) argStart = 1;
-							break;
-						}
-					}
-				}
-				//
-				if (tk.value == "self") {
-					var selfType = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
-					if (selfType != null) procType(selfType);
+				var type:String = null;
+				if (tk.value == "other") {
+					type = AceGmlTools.getOtherType({ session: ctx.session, scope: ctx.scope });
+				} else if (tk.value == "self") {
+					type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
 				} else if (tk.type == "namespace") {
 					var nsName = tk.value;
 					var td = imports.docs[nsName + "." + name];
@@ -197,9 +184,23 @@ class AceStatusBar {
 					}
 					if (td != null) doc = td;
 				} else if ((tk.type == "local" || tk.type == "sublocal") && imports.localTypes.exists(tk.value)) {
-					var lt = imports.localTypes[tk.value];
-					if (lt != null) procType(lt);
+					type = imports.localTypes[tk.value];
 				} else iter.stepForward();
+				//
+				if (type != null) {
+					for (iter in 0 ... 2) {
+						var ns = (iter > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
+						if (ns == null) continue;
+						var td = ns.getInstDoc(name);
+						if (td != null) {
+							doc = td;
+							if (iter == 0
+								&& (cast ns:GmlImportNamespace).longen.exists(name)
+							) argStart = 1;
+							break;
+						}
+					}
+				}
 			} else {
 				doc = AceMacro.jsOr(imports.docs[name], doc);
 				tk = iter.stepForward();

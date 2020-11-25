@@ -165,11 +165,11 @@ using tools.NativeString;
 						return;
 					};
 					case DKLocalType: { // local.instField
-						var isSelf:Bool = false;
-						switch (tk.type) {
-							case "local", "sublocal": {};
+						var contextKind = switch (tk.type) {
+							case "local", "sublocal": 0;
 							default: switch (tk.value) {
-								case "self": isSelf = true;
+								case "self": 1;
+								case "other": 2;
 								default: continue;
 							}
 						};
@@ -180,17 +180,17 @@ using tools.NativeString;
 						var type:String;
 						var file = GmlFile.current;
 						var imp = file.codeEditor.imports[scope];
-						if (isSelf) {
-							if ((file.kind is KGmlEvents)) {
-								type = file.name;
-							} else {
-								var doc = GmlAPI.gmlDoc[scope];
-								if (doc == null || !doc.isConstructor) continue;
-								type = scope;
-							}
-						} else {
-							if (imp == null) continue;
-							type = imp.localTypes[tk.value];
+						switch (contextKind) {
+							case 1: {
+								type = inline AceGmlTools.getSelfType({session:session, scope:scope});
+							};
+							case 2: {
+								type = inline AceGmlTools.getOtherType({session:session, scope:scope});
+							};
+							default: {
+								if (imp == null) continue;
+								type = imp.localTypes[tk.value];
+							};
 						}
 						if (type == null) continue;
 						//

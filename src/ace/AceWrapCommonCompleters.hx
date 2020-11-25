@@ -316,7 +316,7 @@ class AceWrapCommonCompleters {
 			};
 			default: {
 				switch (token.value) {
-					case "global", "self": true;
+					case "global", "self", "other": true;
 					default: false;
 				}
 			}
