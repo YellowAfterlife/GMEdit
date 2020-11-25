@@ -136,9 +136,10 @@ textarea#source {
 #app .ace-tm .ace_sublocal {
 	color: #764;
 }
-/*#app .ace-tm .ace_enumerror {
-	color: red;
-}*/
+#app .ace-tm .ace_enumerror,
+#app .ace-tm .ace_typeerror {
+	color: #888;
+}
 #app .ace-tm .ace_asset {
 	color: rgb(0, 128, 160);
 }

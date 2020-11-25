@@ -175,6 +175,10 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #app .ace-tm .ace_field {
 	color: #CC9FFF;
 }
+#app .ace-tm .ace_typeerror,
+#app .ace-tm .ace_enumerror {
+	color: inherit;
+}
 #app .ace-tm .ace_asset,
 #app .ace-tm .ace_macro,
 #app .ace-tm .ace_configname,
