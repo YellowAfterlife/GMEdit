@@ -247,6 +247,12 @@ class GmlSeeker {
 							}
 						}
 					};
+					case "$".code: { // hex literal
+						while (q.loopLocal) {
+							c = q.peek();
+							if (c.isHex()) q.skip();  else break;
+						}
+					};
 					default: {
 						if (c.isIdent0()) {
 							q.skipIdent1();
@@ -261,6 +267,27 @@ class GmlSeeker {
 							if (hasFunctionLiterals && flags.has(Define) && id == "function") return id;
 							if (flags.has(Static) && id == "static") return id;
 							if (flags.has(Ident)) return id;
+						} else if (c.isDigit()) {
+							if (q.peek() == "x".code) {
+								q.skip();
+								while (q.loopLocal) {
+									c = q.peek();
+									if (c.isHex()) q.skip();  else break;
+								}
+							} else {
+								var seenDot = false;
+								while (q.loopLocal) {
+									c = q.peek();
+									if (c == ".".code) {
+										if (!seenDot) {
+											seenDot = true;
+											q.skip();
+										} else break;
+									} else if (c.isDigit()) {
+										q.skip();
+									} else break;
+								}
+							}
 						}
 					};
 				}
