@@ -107,6 +107,10 @@ class GmlSeeker {
 		+ "@(?:self|this)\\b\\s*"
 		+ "(\\w+)"
 	);
+	private static var jsDoc_return = new RegExp("^///\\s*"
+		+ "@return(?:s)?\\b\\s*"
+		+ "{(.*?)}"
+	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
@@ -305,6 +309,7 @@ class GmlSeeker {
 		var jsDocArgs:Array<String> = null;
 		var jsDocRest:Bool = false;
 		var jsDocSelf:String = null;
+		var jsDocReturn:String = null;
 		/**  */
 		inline function linkDoc():Void {
 			if (doc != null) {
@@ -316,6 +321,7 @@ class GmlSeeker {
 			jsDocArgs = null;
 			jsDocRest = null;
 			jsDocSelf = null;
+			jsDocReturn = null;
 		}
 		function flushDoc():Void {
 			var updateComp = false;
@@ -342,6 +348,7 @@ class GmlSeeker {
 				}
 				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
 				doc.selfType = jsDocSelf;
+				if (jsDocReturn != null) doc.post = ")➜" + jsDocReturn;
 			}
 			doc = null;
 			docIsAutoFunc = false;
@@ -507,6 +514,12 @@ class GmlSeeker {
 				mt = jsDoc_self.exec(s);
 				if (mt != null) {
 					jsDocSelf = mt[1];
+					continue;
+				}
+				
+				mt = jsDoc_return.exec(s);
+				if (mt != null) {
+					jsDocReturn = mt[1];
 					continue;
 				}
 				
