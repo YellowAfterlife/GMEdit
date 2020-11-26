@@ -103,6 +103,10 @@ class GmlSeeker {
 		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $5
 		+ "\\s*(.*)" // text -> $6
 	);
+	private static var jsDoc_self = new RegExp("^///\\s*"
+		+ "@(?:self|this)\\b\\s*"
+		+ "(\\w+)"
+	);
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
@@ -300,12 +304,18 @@ class GmlSeeker {
 		var docIsAutoFunc = false;
 		var jsDocArgs:Array<String> = null;
 		var jsDocRest:Bool = false;
+		var jsDocSelf:String = null;
 		/**  */
 		inline function linkDoc():Void {
 			if (doc != null) {
 				out.docList.push(doc);
 				out.docMap.set(main, doc);
 			}
+		}
+		inline function resetDoc():Void {
+			jsDocArgs = null;
+			jsDocRest = null;
+			jsDocSelf = null;
 		}
 		function flushDoc():Void {
 			var updateComp = false;
@@ -331,11 +341,11 @@ class GmlSeeker {
 					updateComp = true;
 				}
 				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
+				doc.selfType = jsDocSelf;
 			}
 			doc = null;
 			docIsAutoFunc = false;
-			jsDocArgs = null;
-			jsDocRest = null;
+			resetDoc();
 		}
 		function procLambdaIdent(s:GmlName, locals:GmlLocals):Void {
 			var seekData = GmlExtLambda.seekData;
@@ -494,6 +504,12 @@ class GmlSeeker {
 					continue; // found!
 				}
 				
+				mt = jsDoc_self.exec(s);
+				if (mt != null) {
+					jsDocSelf = mt[1];
+					continue;
+				}
+				
 				// Classic JSDoc (`/// func(arg1, arg2)`) ?:
 				mt = jsDoc_full.exec(s);
 				if (mt != null) {
@@ -572,7 +588,7 @@ class GmlSeeker {
 							localKind = "sublocal";
 						}
 						procFuncLiteralArgs();
-						jsDocArgs = null; // discard any collected JSDoc
+						resetDoc(); // discard any collected JSDoc
 						continue;
 					}
 					

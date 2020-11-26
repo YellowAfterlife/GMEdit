@@ -84,8 +84,10 @@ using tools.NativeString;
 			return gmlFile.name;
 		} else {
 			var scopeDoc = gml.GmlAPI.gmlDoc[ctx.scope];
-			if (scopeDoc != null && scopeDoc.isConstructor) {
-				return ctx.scope;
+			if (scopeDoc != null) {
+				if (scopeDoc.isConstructor) {
+					return ctx.scope;
+				} else return scopeDoc.selfType;
 			} else return null;
 		}
 	}

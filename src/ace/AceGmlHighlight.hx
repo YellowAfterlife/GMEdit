@@ -301,6 +301,10 @@ using tools.NativeArray;
 			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
 				return "comment.doc.line.startswith_" + s;
 			}, ~/\/\/\/(\S+)(?:(?!@\[).)*$/),
+			rxPush(function(prefix, meta, sp, type) {
+				commentDocLineType = "comment.doc.line";
+				return ["comment.doc.line", "comment.meta", "text", getGlobalType(type, "typeerror")];
+			}, ~/(\/\/\/\s*)(@(?:self|this))(\b\s*)(\w*)/, "gml.comment.doc.line"),
 			rxPush(function(s) { // a doc-line starting with X
 				commentDocLineType = "comment.doc.line.startswith_" + s;
 				return commentDocLineType;

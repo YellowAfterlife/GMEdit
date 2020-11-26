@@ -35,6 +35,9 @@ class GmlFuncDoc {
 	/** If this is a 2.3 constructor and it inherits from another, this is the name of that */
 	public var parentName:String = null;
 	
+	/** Type of `self` set via `/// @self` */
+	public var selfType:String = null;
+	
 	var minArgsCache:Null<Int> = null;
 	
 	static var rxIsOpt:RegExp = new RegExp("^\\s*(?:"
