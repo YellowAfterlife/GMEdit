@@ -6,6 +6,7 @@ import gml.*;
 import tools.ArrayMap;
 import tools.Dictionary;
 using tools.NativeString;
+using tools.NativeArray;
 
 /**
  * Represents processed state of a file,
@@ -65,6 +66,9 @@ class GmlSeekData {
 	public var hintMap:Dictionary<GmlSeekDataHint> = new Dictionary();
 	
 	public var namespaceHints:ArrayMap<GmlSeekDataNamespaceHint> = new ArrayMap();
+	
+	/** namespace -> implements-list */
+	public var namespaceImplements:Dictionary<Array<String>> = new ArrayMap();
 	
 	// features
 	public var imports:Dictionary<GmlImports> = null;
@@ -215,8 +219,36 @@ class GmlSeekData {
 				}
 				ns.parent = pns;
 			}
-			ns.isObject = nsh.isObject;
+			if (nsh.isObject != null) ns.isObject = nsh.isObject;
 		}
+		
+		for (nsName => arr0 in prev.namespaceImplements) {
+			var ns = GmlAPI.gmlNamespaces[nsName];
+			if (ns == null) continue;
+			var arr1 = next.namespaceImplements[nsName];
+			for (impName in arr0) {
+				if (arr1 != null && arr1.contains(impName)) continue;
+				ns.interfaces.remove(impName);
+			}
+		}
+		for (nsName => arr1 in next.namespaceImplements) {
+			var ns = GmlAPI.gmlNamespaces[nsName];
+			if (ns == null) {
+				ns = new GmlNamespace(nsName);
+				GmlAPI.gmlNamespaces[nsName] = ns;
+			}
+			var arr0 = prev.namespaceImplements[nsName];
+			for (impName in arr1) {
+				if (arr0 != null && arr0.contains(impName)) continue;
+				var impSpace = GmlAPI.gmlNamespaces[impName];
+				if (impSpace == null) {
+					impSpace = new GmlNamespace(impName);
+					GmlAPI.gmlNamespaces[impName] = impSpace;
+				}
+				ns.interfaces.addn(impSpace);
+			}
+		}
+		
 		for (hint in prev.hintList) {
 			var ns = GmlAPI.gmlNamespaces[hint.namespace];
 			if (ns == null) continue;
@@ -258,6 +290,7 @@ class GmlSeekData {
 		// (locals don't have to be added/removed)
 	}
 }
+typedef GmlSeekData_implement = { namespace:String, interfSpace:String };
 class GmlSeekDataNamespaceHint {
 	public var namespace:String;
 	public var parentSpace:String;

@@ -2,7 +2,8 @@ package tools;
 import haxe.iterators.ArrayKeyValueIterator;
 
 /**
- * ...
+ * A paired structure containing an (ordered) list of items
+ * and a dictionary to quickly look up these items by a string key
  * @author YellowAfterlife
  */
 @:forward abstract ArrayMap<T>(ArrayMapImpl<T>)

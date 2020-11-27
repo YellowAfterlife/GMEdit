@@ -16,8 +16,22 @@ class GmlNamespace {
 	public static inline var maxDepth = 128;
 	
 	public var name:String;
-	public var parent:GmlNamespace = null;
+	
+	/**
+	 * Whether this namespace represents an object
+	 * (and will have built-ins highlighted/shown in auto-completion)
+	 */
 	public var isObject:Bool = false;
+	
+	/**
+	 * Parent namespace, if any
+	 */
+	public var parent:GmlNamespace = null;
+	
+	/**
+	 * Interfaces that this namespace implements.
+	 */
+	public var interfaces:ArrayMap<GmlNamespace> = new ArrayMap();
 	
 	public var staticKind:Dictionary<AceTokenType> = new Dictionary();
 	/** static (`Buffer.ptr`) completions */
@@ -25,11 +39,15 @@ class GmlNamespace {
 	public var docStaticMap:Dictionary<GmlFuncDoc> = new Dictionary();
 	
 	public var instKind:Dictionary<AceTokenType> = new Dictionary();
-	public function getInstKind(field:String):AceTokenType {
-		var q = this, n = 0;
+	public function getInstKind(field:String, depth:Int = 0):AceTokenType {
+		var q = this, n = depth;
 		while (q != null && ++n <= maxDepth) {
 			var t = q.instKind[field];
 			if (t != null) return t;
+			for (qi in q.interfaces.array) {
+				t = qi.getInstKind(field, n);
+				if (t != null) return t;
+			}
 			q = q.parent;
 		}
 		return null;
@@ -39,57 +57,83 @@ class GmlNamespace {
 	public var compInst:ArrayMapSync<AceAutoCompleteItem> = new ArrayMapSync();
 	private var compInstCache:AceAutoCompleteItems = new AceAutoCompleteItems();
 	private var compInstCacheID:Int = 0;
-	private var compInstCacheChain:Array<String> = [];
-	public function getInstComp():AceAutoCompleteItems {
-		// if this is not an object and there is no parent, the completion array is what we want:
-		if (parent == null && !isObject) return compInst.array;
+	private var compInstCacheParent:String = null;
+	private var compInstCacheInterfaces:Array<String> = [];
+	public function getInstComp(depth:Int = 0, includeBuiltins:Bool = true):AceAutoCompleteItems {
+		if (++depth > maxDepth) return [];
+		// early exit if there are no dependencies
+		if (parent == null && !isObject && interfaces.length == 0) {
+			compInstCacheID = compInst.changeID;
+			return compInst.array;
+		}
 		
-		// if completions cache is up to date, return it:
-		var maxID = compInst.changeID;
-		var par = parent, n = 0;
-		var chainInd = 0;
+		//
 		var forceUpdate = false;
-		while (par != null && ++n <= maxDepth) {
-			// force-update if parent chain changes:
-			if (compInstCacheChain[chainInd] != par.name) {
-				compInstCacheChain[chainInd] = par.name;
+		var maxID = compInst.changeID;
+		inline function updateMaxID(nid:Int):Void {
+			maxID = cast Math.max(maxID, nid);
+		}
+		
+		var parItems:AceAutoCompleteItems;
+		if (parent != null) {
+			parItems = parent.getInstComp(depth, false);
+			updateMaxID(parent.compInstCacheID);
+			if (compInstCacheParent != parent.name) {
+				compInstCacheParent = parent.name;
 				forceUpdate = true;
 			}
-			chainInd += 1;
-			//
-			var parID = par.compInst.changeID;
-			if (parID > maxID) maxID = parID;
-			par = par.parent;
+		} else {
+			parItems = null;
+			compInstCacheParent = null;
 		}
-		if (chainInd < compInstCacheChain.length) {
+		
+		var itfItems:Array<AceAutoCompleteItems> = interfaces.length > 0 ? [] : null;
+		for (i => itf in interfaces) {
+			itfItems.push(itf.getInstComp(depth, false));
+			updateMaxID(itf.compInstCacheID);
+			if (compInstCacheInterfaces[i] != itf.name) {
+				compInstCacheInterfaces[i] = itf.name;
+				forceUpdate = true;
+			}
+		}
+		if (compInstCacheInterfaces.length != interfaces.length) {
+			compInstCacheInterfaces.resize(interfaces.length);
 			forceUpdate = true;
-			compInstCacheChain.resize(chainInd);
 		}
+		
+		// no changes?:
 		if (maxID == compInstCacheID && !forceUpdate) return compInstCache;
 		
-		// re-generate completions:
+		//Main.console.log('Updating $name...');
 		var list = compInst.array.copy();
 		compInstCacheID = maxID;
 		compInstCache = list;
 		
+		// avoid duplicates:
 		var found = new Dictionary();
 		for (c in list) found[c.name] = true;
 		
-		// fill out missing fields from parents:
-		par = parent; n = 0;
-		while (par != null && ++n < maxDepth) {
-			var ql = par.compInst.array;
-			var qi = ql.length;
-			while (--qi >= 0) {
-				var qc = ql[qi];
-				if (found.exists(qc.name)) continue;
-				found[qc.name] = true;
-				list.unshift(qc);
-			}
-			par = par.parent;
+		// add interfaces after own items:
+		if (itfItems != null) for (items in itfItems) for (c in items) {
+			if (found[c.name]) continue;
+			found[c.name] = true;
+			list.push(c);
 		}
+		
+		// add inherited items before own items:
+		if (parItems != null) {
+			var i = parItems.length;
+			while (--i >= 0) {
+				var c = parItems[i];
+				if (found[c.name]) continue;
+				found[c.name] = true;
+				list.unshift(c);
+			}
+		}
+		
 		// if this is an object, add built-in variables at the end of the list:
-		if (isObject) for (c in GmlAPI.stdInstComp) list.push(c);
+		if (isObject && includeBuiltins) for (c in GmlAPI.stdInstComp) list.push(c);
+		
 		//
 		return list;
 	}

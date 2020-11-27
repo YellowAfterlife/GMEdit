@@ -1,4 +1,5 @@
 package parsers;
+import ace.AceGmlTools;
 import ace.extern.*;
 import electron.FileSystem;
 import electron.FileWrap;
@@ -111,6 +112,12 @@ class GmlSeeker {
 		+ "@return(?:s)?\\b\\s*"
 		+ "{(.*?)}"
 	);
+	private static var jsDoc_implements = new RegExp("^///\\s*"
+		+ "@implement(?:s)?\\b\\s*"
+		+ "(\\w+)"
+	);
+	private static var jsDoc_interface = new RegExp("^///\\s*@interface\\b\\s*(\\w+)");
+	
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
 	private static var parseConst_rx16 = new RegExp("^(?:0x|\\$)([0-9a-fA-F]+)$");
@@ -143,8 +150,19 @@ class GmlSeeker {
 			kws != null && kws.contains("function");
 		};
 		var funcsAreGlobal:Bool = Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
-		var isCreateEvent = Std.is(kind, KGmlEvents) && locals.name == "create";
-		var objectName:String = null;
+		var isObject = Std.is(kind, KGmlEvents);
+		var isCreateEvent = isObject && locals.name == "create";
+		var __objectName:String = null;
+		function getObjectName():String {
+			if (__objectName == null) {
+				var p = new Path(orig);
+				p.dir = null;
+				if (p.ext.toLowerCase() == "gmx") { // .object.gmx
+					__objectName = Path.withoutExtension(p.file);
+				} else __objectName = p.file;
+			}
+			return __objectName;
+		}
 		var localKind = notLam ? "local" : "sublocal";
 		var subLocalDepth:Null<Int> = null;
 		if (project.properties.lambdaMode == Scripts) {
@@ -310,6 +328,7 @@ class GmlSeeker {
 		var jsDocRest:Bool = false;
 		var jsDocSelf:String = null;
 		var jsDocReturn:String = null;
+		var jsDocInterface:String = null;
 		/**  */
 		inline function linkDoc():Void {
 			if (doc != null) {
@@ -322,6 +341,7 @@ class GmlSeeker {
 			jsDocRest = null;
 			jsDocSelf = null;
 			jsDocReturn = null;
+			jsDocInterface = null;
 		}
 		function flushDoc():Void {
 			var updateComp = false;
@@ -404,15 +424,8 @@ class GmlSeeker {
 			var parentSpace:String = null;
 			if (namespace == null) {
 				if (isCreateEvent) {
-					if (objectName == null) {
-						var p = new Path(orig);
-						p.dir = null;
-						if (p.ext.toLowerCase() == "gmx") { // .object.gmx
-							objectName = Path.withoutExtension(p.file);
-						} else objectName = p.file;
-					}
-					namespace = objectName;
-					parentSpace = project.objectParents[objectName];
+					namespace = getObjectName();
+					parentSpace = project.objectParents[namespace];
 				} else if (doc != null) {
 					namespace = doc.name;
 					parentSpace = doc.parentName;
@@ -491,6 +504,23 @@ class GmlSeeker {
 			s = find(flags);
 			if (s == null) continue;
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
+				
+				mt = jsDoc_implements.exec(s);
+				if (mt != null) {
+					var ownType:String;
+					if (isObject) {
+						ownType = getObjectName();
+					} else {
+						if (main == null) continue;
+						ownType = main;
+					}
+					var arr = out.namespaceImplements[ownType];
+					if (arr == null) { arr = []; out.namespaceImplements[ownType] = arr; }
+					var nsi = mt[1];
+					if (arr.indexOf(nsi) < 0) arr.push(nsi);
+					continue;
+				}
+				
 				if (main == null) continue; // don't parse JSDoc if we don't know where to put it
 				
 				// GMS2+ JSDoc (`/// @param name`) ?:
@@ -514,6 +544,21 @@ class GmlSeeker {
 				mt = jsDoc_self.exec(s);
 				if (mt != null) {
 					jsDocSelf = mt[1];
+					continue;
+				}
+				
+				mt = jsDoc_interface.exec(s);
+				if (mt != null) {
+					jsDocInterface = mt[1];
+					if (jsDocInterface == null) {
+						if (isObject) {
+							jsDocInterface = getObjectName();
+						} else {
+							if (main == null) continue;
+							jsDocInterface = main;
+						}
+					}
+					out.namespaceHints.addn(new GmlSeekDataNamespaceHint(jsDocInterface, null, null));
 					continue;
 				}
 				
@@ -911,11 +956,18 @@ class GmlSeeker {
 					if (GmlAPI.gmlKind[s] != null || GmlAPI.extKind[s] != null) continue;
 					
 					// we'll hint top-level variable assignments in constructors and Create events:
-					var isConstructorField = ((isCreateEvent
-							? cubDepth == 0
-							: (cubDepth == 1 && doc != null && doc.isConstructor)
-						) && (privateFieldRegex == null || !privateFieldRegex.test(s))
-					);
+					var isConstructorField:Bool;
+					if (jsDocInterface != null) {
+						var wantDepth = hasFunctionLiterals && funcsAreGlobal ? 1 : 0;
+						isConstructorField = (cubDepth == wantDepth);
+					} else if (isCreateEvent) {
+						isConstructorField = cubDepth == 0;
+					} else {
+						isConstructorField = cubDepth == 1 && doc != null && doc.isConstructor;
+					}
+					if (isConstructorField && privateFieldRegex != null && privateFieldRegex.test(s)) {
+						isConstructorField = false;
+					}
 					
 					// skip if we don't have anything to do:
 					var kind = GmlAPI.stdKind[s];
@@ -987,7 +1039,7 @@ class GmlSeeker {
 								isConstructor = q.substring(ctStart, q.pos) == "constructor";
 							}
 						} while (false);
-						addFieldHint(isConstructor, null, true, s, args, null);
+						addFieldHint(isConstructor, jsDocInterface, true, s, args, null);
 					}
 					q_restore();
 				};
