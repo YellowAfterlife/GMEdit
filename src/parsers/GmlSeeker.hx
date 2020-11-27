@@ -366,9 +366,14 @@ class GmlSeeker {
 					doc.fromCode(src, start, q.pos);
 					updateComp = true;
 				}
-				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
+				if (jsDocReturn != null) {
+					doc.post = ")➜" + jsDocReturn;
+					updateComp = true;
+				}
 				doc.selfType = jsDocSelf;
-				if (jsDocReturn != null) doc.post = ")➜" + jsDocReturn;
+				
+				//
+				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
 			}
 			doc = null;
 			docIsAutoFunc = false;
