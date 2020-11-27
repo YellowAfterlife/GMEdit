@@ -528,9 +528,11 @@ class GmlSeeker {
 					mt = jsDoc_param.exec(s);
 					if (mt != null) {
 						if (jsDocArgs == null) jsDocArgs = [];
-						var arg = mt[1];
-						jsDocArgs.push(arg);
-						if (arg.contains("...")) jsDocRest = true;
+						var argText = mt[1];
+						for (arg in argText.split(",")) {
+							jsDocArgs.push(arg);
+							if (arg.contains("...")) jsDocRest = true;
+						}
 						continue; // found!
 					}
 				}
