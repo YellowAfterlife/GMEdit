@@ -300,15 +300,15 @@ using tools.NativeArray;
 			rxRule("comment.doc.line", ~/\/\/\/$/), // a blank doc-line
 			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
 				return "comment.doc.line.startswith_" + s;
-			}, ~/\/\/\/(\S+)(?:(?!@\[).)*$/),
-			rxPush(function(prefix, meta, sp, type) {
-				commentDocLineType = "comment.doc.line";
-				return ["comment.doc.line", "comment.meta", "text", getGlobalType(type, "typeerror")];
-			}, ~/(\/\/\/\s*)(@(?:self|this))(\b\s*)(\w*)/, "gml.comment.doc.line"),
+			}, ~/\/\/\/([^\s@]+)(?:(?!@\[).)*$/),
 			rxPush(function(s) { // a doc-line starting with X
 				commentDocLineType = "comment.doc.line.startswith_" + s;
 				return commentDocLineType;
-			}, ~/\/\/\/(\S+)/, "gml.comment.doc.line"),
+			}, ~/\/\/\/([^\s@]+)/, "gml.comment.doc.line"),
+			rxRule(function(prefix, meta, sp, type) { // meta-type doc-lines
+				var t = getGlobalType(type, "typeerror");
+				return ["comment.doc.line", "comment.meta", "text", t, "gml.comment.doc.line"];
+			}, ~/(\/\/\/\s*)(@(?:self|this|interface|implements?))(\b\s*)(\w*)(.*)/),
 			rxPush(function(_) { // a regular doc-line
 				commentDocLineType = "comment.doc.line";
 				return "comment.doc.line";

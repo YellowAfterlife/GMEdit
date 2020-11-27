@@ -68,7 +68,7 @@ class GmlSeekData {
 	public var namespaceHints:ArrayMap<GmlSeekDataNamespaceHint> = new ArrayMap();
 	
 	/** namespace -> implements-list */
-	public var namespaceImplements:Dictionary<Array<String>> = new ArrayMap();
+	public var namespaceImplements:Dictionary<Array<String>> = new Dictionary();
 	
 	// features
 	public var imports:Dictionary<GmlImports> = null;
