@@ -73,9 +73,13 @@ class KYyUnknown extends FileKind {
 				: {
 					GmlAPI.gmlKind.set(name, "asset." + kind);
 					GmlAPI.gmlLookupText += name + "\n";
-					var next = new AceAutoCompleteItem(name, kind);
-					GmlAPI.gmlComp.push(next);
-					GmlAPI.gmlAssetComp.set(name, next);
+					if (resType != "GMScript") {
+						// since 2.3 scripts contain function definitions,
+						// why would we care about the script resource itself?
+						var next = new AceAutoCompleteItem(name, kind);
+						GmlAPI.gmlComp.push(next);
+						GmlAPI.gmlAssetComp.set(name, next);
+					}
 				};
 			}
 			switch (resType) {
