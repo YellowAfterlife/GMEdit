@@ -116,7 +116,7 @@ class GmlSeeker {
 		+ "@implement(?:s)?\\b\\s*"
 		+ "(\\w+)"
 	);
-	private static var jsDoc_interface = new RegExp("^///\\s*@interface\\b\\s*(\\w+)");
+	private static var jsDoc_interface = new RegExp("^///\\s*@interface\\b\\s*(\\w+)?");
 	
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
