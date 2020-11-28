@@ -106,17 +106,20 @@ class GmlSeeker {
 	);
 	private static var jsDoc_self = new RegExp("^///\\s*"
 		+ "@(?:self|this)\\b\\s*"
-		+ "(\\w+)"
+		+ "\\{(\\w+)\\}"
 	);
 	private static var jsDoc_return = new RegExp("^///\\s*"
 		+ "@return(?:s)?\\b\\s*"
-		+ "{(.*?)}"
+		+ "\\{(.*?)\\}"
 	);
 	private static var jsDoc_implements = new RegExp("^///\\s*"
 		+ "@implement(?:s)?\\b\\s*"
-		+ "(\\w+)"
+		+ "\\{(\\w+)\\}"
 	);
-	private static var jsDoc_interface = new RegExp("^///\\s*@interface\\b\\s*(\\w+)?");
+	private static var jsDoc_interface = new RegExp("^///\\s*"
+		+ "@interface\\b\\s*"
+		+ "(?:\\{(\\w+)\\})?"
+	);
 	
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
@@ -526,22 +529,6 @@ class GmlSeeker {
 					continue;
 				}
 				
-				if (main == null) continue; // don't parse JSDoc if we don't know where to put it
-				
-				// GMS2+ JSDoc (`/// @param name`) ?:
-				if (v.hasJSDoc()) {
-					mt = jsDoc_param.exec(s);
-					if (mt != null) {
-						if (jsDocArgs == null) jsDocArgs = [];
-						var argText = mt[1];
-						for (arg in argText.split(",")) {
-							jsDocArgs.push(arg);
-							if (arg.contains("...")) jsDocRest = true;
-						}
-						continue; // found!
-					}
-				}
-				
 				mt = jsDoc_hint.exec(s);
 				if (mt != null) {
 					addFieldHint(mt[1] != null, mt[2], mt[3] == ":", mt[4], mt[5], mt[6]);
@@ -551,6 +538,12 @@ class GmlSeeker {
 				mt = jsDoc_self.exec(s);
 				if (mt != null) {
 					jsDocSelf = mt[1];
+					continue;
+				}
+				
+				mt = jsDoc_return.exec(s);
+				if (mt != null) {
+					jsDocReturn = mt[1];
 					continue;
 				}
 				
@@ -569,11 +562,22 @@ class GmlSeeker {
 					continue;
 				}
 				
-				mt = jsDoc_return.exec(s);
-				if (mt != null) {
-					jsDocReturn = mt[1];
-					continue;
+				// GMS2+ JSDoc (`/// @param name`) ?:
+				if (v.hasJSDoc()) {
+					mt = jsDoc_param.exec(s);
+					if (mt != null) {
+						if (jsDocArgs == null) jsDocArgs = [];
+						var argText = mt[1];
+						for (arg in argText.split(",")) {
+							jsDocArgs.push(arg);
+							if (arg.contains("...")) jsDocRest = true;
+						}
+						continue; // found!
+					}
 				}
+				
+				// tags from hereafter have no meaning outside of a script/function
+				if (main == null) continue;
 				
 				// Classic JSDoc (`/// func(arg1, arg2)`) ?:
 				mt = jsDoc_full.exec(s);

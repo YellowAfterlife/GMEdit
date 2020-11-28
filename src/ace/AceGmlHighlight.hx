@@ -306,9 +306,18 @@ using tools.NativeArray;
 				return commentDocLineType;
 			}, ~/\/\/\/([^\s@]+)/, "gml.comment.doc.line"),
 			rxRule(function(prefix, meta, sp, type) { // meta-type doc-lines
-				var t = getGlobalType(type, "typeerror");
-				return ["comment.doc.line", "comment.meta", "text", t, "gml.comment.doc.line"];
-			}, ~/(\/\/\/\s*)(@(?:self|this|interface|implements?))(\b\s*)(\w*)(.*)/),
+				var t:String;
+				if (meta != "@interface") {
+					var ns = GmlAPI.gmlNamespaces[type];
+					t = JsTools.orx(
+						JsTools.nca(ns, "namespace"),
+						GmlAPI.gmlKind[type],
+						"text"
+					);
+				} else t = "namespace";
+				var doc = "comment.doc.line";
+				return [doc, "comment.meta", doc, t, doc];
+			}, ~/(\/\/\/\s*)(@(?:self|this|interface|implements?|returns?))(\b\s*\{)(\w*)(.*)/),
 			rxPush(function(_) { // a regular doc-line
 				commentDocLineType = "comment.doc.line";
 				return "comment.doc.line";
