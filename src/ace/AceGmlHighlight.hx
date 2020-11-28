@@ -115,9 +115,8 @@ using tools.NativeArray;
 				var values:Array<String> = jsThis.splitRegex.exec(value);
 				var object = values[1];
 				var field = values[5];
-				var objType:String, fdType:String;
-				// we could be giving self/other contextual highlighting, but that would
-				// lead to false positives inside with-blocks, which is undesirable.
+				var objType:AceTokenType, fdType:AceTokenType;
+				//
 				if (object == "global") {
 					objType = "keyword";
 					fdType = "globalfield";
@@ -128,8 +127,26 @@ using tools.NativeArray;
 					var scope = JsTools.nca(row != null, editor.session.gmlScopes.get(row));
 					if (scope != null) {
 						var imp:GmlImports = editor.imports[scope], ns:GmlNamespace;
+						// save some trouble:
+						var localType:String;
+						var checkStatics = false;
+						if (object == "self") {
+							objType = "keyword";
+							localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
+						} else if (object == "other") {
+							objType = "keyword";
+							localType = null;
+							// we could, but we would be consistently wrong inside with(){} blocks
+							//localType = AceGmlTools.getOtherType({session:editor.session, scope:scope});
+						} else if (GmlAPI.gmlKind[object] == "asset.object") {
+							objType = "asset.object";
+							localType = object;
+						} else {
+							localType = null;
+							checkStatics = true;
+						}
 						// perhaps a NameSpace.staticField?:
-						for (step in (imp != null ? 0 : 1) ... 2) {
+						if (checkStatics) for (step in (imp != null ? 0 : 1) ... 2) {
 							ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
 							var e1:String;
 							inline function checkEnum(error:String) {
@@ -151,12 +168,14 @@ using tools.NativeArray;
 							if (fdType != null) break;
 						}
 						// evidently that wasn't a namespace, perhaps a local variable?
-						if (objType == null) {
-							objType = getLocalType_1(object, scope, !mf);
-							if ((objType == "local" || objType == "sublocal") && imp != null) {
-								var lt = imp.localTypes[object];
-								ns = imp.namespaces[lt];
-								var ns2 = GmlAPI.gmlNamespaces[lt];
+						if (!checkStatics || objType == null) {
+							if (objType == null) {
+								objType = getLocalType_1(object, scope, !mf);
+								localType = JsTools.nca(imp, imp.localTypes[object]);
+							}
+							if (localType != null) {
+								ns = JsTools.nca(imp, imp.namespaces[localType]);
+								var ns2 = GmlAPI.gmlNamespaces[localType];
 								if (ns != null) {
 									fdType = ns.getInstKind(field);
 									if (fdType == null) {
@@ -167,7 +186,7 @@ using tools.NativeArray;
 								} else if (ns2 != null) {
 									fdType = jsOrx(ns2.getInstKind(field), "typeerror");
 								} else {
-									en = GmlAPI.gmlEnums[lt];
+									en = GmlAPI.gmlEnums[localType];
 									if (en != null) {
 										fdType = en.items[field] ? "enumfield" : "enumerror";
 									} else { // local.something
