@@ -454,6 +454,7 @@ class GmlSeeker {
 				hintDoc.isConstructor = isConstructor;
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
+			info = NativeString.nzcct(info, "\n", 'from $namespace');
 			
 			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
 			var comp = new AceAutoCompleteItem(name, compMeta, info);
