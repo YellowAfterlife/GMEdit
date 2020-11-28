@@ -139,11 +139,15 @@ class GmlNamespace {
 	}
 	
 	public var docInstMap:Dictionary<GmlFuncDoc> = new Dictionary();
-	public function getInstDoc(name:String):GmlFuncDoc {
-		var q = this, n = 0;
+	public function getInstDoc(field:String, depth:Int = 0):GmlFuncDoc {
+		var q = this, n = depth;
 		while (q != null && ++n <= maxDepth) {
-			var d = q.docInstMap[name];
+			var d = q.docInstMap[field];
 			if (d != null) return d;
+			for (qi in q.interfaces.array) {
+				d = qi.getInstDoc(field, n);
+				if (d != null) return d;
+			}
 			q = q.parent;
 		}
 		return null;
