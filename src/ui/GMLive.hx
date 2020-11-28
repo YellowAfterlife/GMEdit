@@ -1,9 +1,11 @@
 package ui;
+import gml.Project;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import parsers.GmlSeeker;
 import ui.treeview.TreeView;
 using tools.HtmlTools;
+using tools.NativeArray;
 
 /**
  * Shows little "live" icons on treeview items in projects that have GMLive
@@ -46,7 +48,13 @@ class GMLive {
 	}
 	public static function update(path:String, has:Bool) {
 		var item = TreeView.find(true, { path: path });
-		if (item == null) return;
+		if (item == null) {
+			if (Project.current.isGMS23) {
+				var pair = @:privateAccess yy.YyLoader.itemsToInsert.findFirst((q) -> q.item.treeFullPath == path);
+				if (pair == null) return;
+				item = pair.item;
+			} else return;
+		}
 		if (has == item.hasAttribute(attr)) return;
 		if (has) {
 			item.setAttribute(attr, "");

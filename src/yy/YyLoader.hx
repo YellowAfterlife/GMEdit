@@ -49,6 +49,7 @@ class YyLoader {
 			yy.v22.YyLoaderV22.run(project, YyJson.parse(yyProjectTxt));
 			return;
 		}
+		project.hasGMLive = yyProjectTxt.contains('"path":"scripts/GMLive/GMLive.yy"');
 		var yyProject:YyProject = YyJsonParser.parse(yyProjectTxt);
 		//
 		var folderMap = new Dictionary<TreeViewDir>();
