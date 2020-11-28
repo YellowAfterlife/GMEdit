@@ -329,7 +329,7 @@ using tools.NativeArray;
 				if (meta != "@interface") {
 					var ns = GmlAPI.gmlNamespaces[type];
 					t = JsTools.orx(
-						JsTools.nca(ns, "namespace"),
+						JsTools.nca(ns, ns.isObject ? "asset.object" : "namespace"),
 						GmlAPI.gmlKind[type],
 						"text"
 					);
