@@ -172,6 +172,7 @@ class GmlAPI {
 			ns = new GmlNamespace(name);
 			gmlNamespaces[name] = ns;
 			gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
+			if (!gmlKind.exists(name)) gmlKind[name] = "namespace";
 		}
 		return ns;
 	}

@@ -324,23 +324,11 @@ using tools.NativeArray;
 				commentDocLineType = "comment.doc.line.startswith_" + s;
 				return commentDocLineType;
 			}, ~/\/\/\/([^\s@]+)/, "gml.comment.doc.line"),
-			rxRule(function(prefix, meta, sp, type) { // meta-type doc-lines
-				var t:String;
-				if (meta != "@interface") {
-					var ns = GmlAPI.gmlNamespaces[type];
-					t = JsTools.orx(
-						JsTools.nca(ns, ns.isObject ? "asset.object" : "namespace"),
-						GmlAPI.gmlKind[type],
-						"text"
-					);
-				} else t = "namespace";
-				var doc = "comment.doc.line";
-				return [doc, "comment.meta", doc, t, doc];
-			}, ~/(\/\/\/\s*)(@(?:self|this|interface|implements?|returns?))(\b\s*\{)(\w*)(.*)/),
 			rxPush(function(_) { // a regular doc-line
 				commentDocLineType = "comment.doc.line";
 				return "comment.doc.line";
 			}, ~/\/\/\//, "gml.comment.doc.line"),
+			//
 			rxRule("comment.line", ~/\/\/$/),
 			rxPush("comment.line", ~/\/\//, "gml.comment.line"),
 			rGmlComment,
@@ -670,6 +658,13 @@ using tools.NativeArray;
 				rdef("comment.line"),
 			]), //}
 			"gml.comment.doc.line": rComment.concat([ //{
+				rxRule(function(meta, sp, type) { // meta-type doc-lines
+					var t:String;
+					if (meta != "@interface") {
+						t = getNamespaceType(type);
+					} else t = "namespace";
+					return ["comment.meta", commentDocLineType, t];
+				}, ~/(@(?:self|this|interface|implements|returns?))(\b\s*\{)(\w*)/),
 				rxRule(function(meta, _, type1, _, keyword, _, type2) {
 					var t1 = getNamespaceType(type1);
 					var t2 = getNamespaceType(type2);
