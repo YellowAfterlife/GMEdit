@@ -206,20 +206,14 @@ class GmlSeekData {
 		
 		// hints (not very smart):
 		for (nsh in next.namespaceHints) {
-			var ns = GmlAPI.gmlNamespaces[nsh.namespace];
-			if (ns == null) {
-				ns = new GmlNamespace(nsh.namespace);
-				GmlAPI.gmlNamespaces[nsh.namespace] = ns;
-			}
+			var ns = GmlAPI.ensureNamespace(nsh.namespace);
 			if (nsh.parentSpace != null && (ns.parent == null || ns.parent.name != nsh.parentSpace)) {
-				var pns = GmlAPI.gmlNamespaces[nsh.parentSpace];
-				if (pns == null) {
-					pns = new GmlNamespace(nsh.parentSpace);
-					GmlAPI.gmlNamespaces[nsh.parentSpace] = pns;
-				}
-				ns.parent = pns;
+				ns.parent = GmlAPI.ensureNamespace(nsh.parentSpace);
 			}
-			if (nsh.isObject != null) ns.isObject = nsh.isObject;
+			if (nsh.isObject != null) {
+				ns.isObject = nsh.isObject;
+				GmlAPI.gmlNamespaceComp[nsh.namespace].meta = nsh.isObject ? "object" : "namespace";
+			}
 		}
 		
 		for (nsName => arr0 in prev.namespaceImplements) {
@@ -232,19 +226,11 @@ class GmlSeekData {
 			}
 		}
 		for (nsName => arr1 in next.namespaceImplements) {
-			var ns = GmlAPI.gmlNamespaces[nsName];
-			if (ns == null) {
-				ns = new GmlNamespace(nsName);
-				GmlAPI.gmlNamespaces[nsName] = ns;
-			}
+			var ns = GmlAPI.ensureNamespace(nsName);
 			var arr0 = prev.namespaceImplements[nsName];
 			for (impName in arr1) {
 				if (arr0 != null && arr0.contains(impName)) continue;
-				var impSpace = GmlAPI.gmlNamespaces[impName];
-				if (impSpace == null) {
-					impSpace = new GmlNamespace(impName);
-					GmlAPI.gmlNamespaces[impName] = impSpace;
-				}
+				var impSpace = GmlAPI.ensureNamespace(impName);
 				ns.interfaces.addn(impSpace);
 			}
 		}
@@ -255,18 +241,9 @@ class GmlSeekData {
 			ns.removeFieldHint(hint.field, hint.isInst);
 		}
 		for (hint in next.hintList) {
-			var ns = GmlAPI.gmlNamespaces[hint.namespace];
-			if (ns == null) {
-				ns = new GmlNamespace(hint.namespace);
-				GmlAPI.gmlNamespaces[hint.namespace] = ns;
-			}
+			var ns = GmlAPI.ensureNamespace(hint.namespace);
 			if (hint.parentSpace != null && (ns.parent == null || ns.parent.name != hint.parentSpace)) {
-				var pns = GmlAPI.gmlNamespaces[hint.parentSpace];
-				if (pns == null) {
-					pns = new GmlNamespace(hint.parentSpace);
-					GmlAPI.gmlNamespaces[hint.parentSpace] = pns;
-				}
-				ns.parent = pns;
+				ns.parent = GmlAPI.ensureNamespace(hint.parentSpace);
 			}
 			ns.addFieldHint(hint.field, hint.isInst, hint.comp, hint.doc);
 		}

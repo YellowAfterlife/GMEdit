@@ -57,7 +57,10 @@ class AceWrapCommonCompleters {
 	public var namespaceCompleter:AceWrapCompleter;
 	/** completes from global namespaces */
 	public var namespaceAltCompleter:AceWrapCompleter;
+	/** completes local namespace names */
 	public var namespaceTypeCompleter:AceWrapCompleter;
+	/** completes global namespace names */
+	public var namespaceTypeAltCompleter:AceWrapCompleter;
 	public var enumTypeCompleter:AceWrapCompleter;
 	public var lambdaCompleter:AceWrapCompleter;
 	/** completes from file's imports */
@@ -248,6 +251,12 @@ class AceWrapCommonCompleters {
 		namespaceTypeCompleter.minLength = 0;
 		namespaceTypeCompleter.colKind = CKNamespaces;
 		completers.push(namespaceTypeCompleter);
+		//
+		namespaceTypeAltCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
+		namespaceTypeAltCompleter.minLength = 0;
+		namespaceTypeAltCompleter.colKind = CKNamespaces;
+		namespaceTypeAltCompleter.dotKindMeta = true;
+		completers.push(namespaceTypeAltCompleter);
 		//
 		enumTypeCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
 		enumTypeCompleter.minLength = 0;

@@ -116,9 +116,13 @@ using tools.NativeString;
 					case CKNamespaces: {
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) break;
-						var imp = GmlFile.current.codeEditor.imports[scope];
-						if (imp == null) break;
-						callback(null, imp.namespaceComp);
+						if (dotKindMeta) {
+							callback(null, GmlAPI.gmlNamespaceComp.array);
+						} else {
+							var imp = GmlFile.current.codeEditor.imports[scope];
+							if (imp == null) break;
+							callback(null, imp.namespaceComp);
+						}
 					};
 					case CKEnums: callback(null, GmlAPI.gmlEnumTypeComp);
 					default: continue;

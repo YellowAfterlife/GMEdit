@@ -5,6 +5,7 @@ import haxe.io.Path;
 import js.lib.RegExp;
 import parsers.GmlParseAPI;
 import parsers.GmlExtMFunc;
+import tools.ArrayMap;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
@@ -163,6 +164,18 @@ class GmlAPI {
 	/** @hint and other namespaces collected across the code */
 	public static var gmlNamespaces:Dictionary<GmlNamespace> = new Dictionary();
 	
+	public static var gmlNamespaceComp:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
+	
+	public static function ensureNamespace(name:String):GmlNamespace {
+		var ns = gmlNamespaces[name];
+		if (ns == null) {
+			ns = new GmlNamespace(name);
+			gmlNamespaces[name] = ns;
+			gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
+		}
+		return ns;
+	}
+	
 	#if lwedit
 	/** Function name -> min. argument count */
 	public static var lwArg0:Dictionary<Int> = new Dictionary();
@@ -199,6 +212,7 @@ class GmlAPI {
 		gmlLookup = new Dictionary();
 		gmlLookupText = "";
 		gmlNamespaces = new Dictionary();
+		gmlNamespaceComp.clear();
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
