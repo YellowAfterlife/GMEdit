@@ -75,7 +75,10 @@ import haxe.iterators.ArrayKeyValueIterator;
 	}
 	/** No type constraint but goes on assumption that T has name:String */
 	public function addn(val:T):Void {
-		set((cast val).name, val);
+		var name:String = (cast val).name;
+		if (name == null) {
+			Main.console.error("Trying to assign a value into a null-field", this, val);
+		} else set(name, val);
 	}
 	/*public function addNamed<K:{name:String} & T>(val:K) {
 		set(val.name, val);

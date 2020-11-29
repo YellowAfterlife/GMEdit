@@ -536,6 +536,14 @@ using tools.NativeArray;
 				~/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
 			),
 		];
+		function getNamespaceType(name:String) {
+			var ns = GmlAPI.gmlNamespaces[name];
+			return JsTools.orx(
+				JsTools.nca(ns, ns.isObject ? "asset.object" : "namespace"),
+				GmlAPI.gmlKind[name],
+				"text"
+			);
+		}
 		//}
 		//{ string-based
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
@@ -662,6 +670,12 @@ using tools.NativeArray;
 				rdef("comment.line"),
 			]), //}
 			"gml.comment.doc.line": rComment.concat([ //{
+				rxRule(function(meta, _, type1, _, keyword, _, type2) {
+					var t1 = getNamespaceType(type1);
+					var t2 = getNamespaceType(type2);
+					var dt = commentDocLineType;
+					return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
+				}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
 				rulePairs([
 					"@hint\\b", "comment.meta",
 					"\\s*", "text",
