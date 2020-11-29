@@ -40,9 +40,8 @@ class KGmxEvents extends file.kind.gml.KGmlEvents {
 		//
 		var objectName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(path)));
 		var parentName = obj.findText("parentName");
-		if (parentName != "<undefined>") {
-			GmlSeeker.addObjectChild(parentName, objectName);
-		}
+		if (parentName == "<undefined>") parentName = null;
+		if (parentName != null) GmlSeeker.addObjectChild(parentName, objectName);
 		//
 		if (Preferences.current.assetThumbs) {
 			var sprite = obj.findText("spriteName");
