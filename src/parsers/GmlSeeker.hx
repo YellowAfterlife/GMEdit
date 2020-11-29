@@ -113,9 +113,10 @@ class GmlSeeker {
 		+ "\\{(.*?)\\}"
 	);
 	private static var jsDoc_implements = new RegExp("^///\\s*"
-		+ "@implement(?:s)?\\b\\s*"
-		+ "\\{(\\w+)\\}"
+		+ "@implement(?:s)?"
+		+ "(?:\\b\\s*\\{(\\w+)\\})?"
 	);
+	private static var jsDoc_implements_line = new RegExp("^\\s*(\\w+)");
 	private static var jsDoc_interface = new RegExp("^///\\s*"
 		+ "@interface\\b\\s*"
 		+ "(?:\\{(\\w+)\\})?"
@@ -331,7 +332,9 @@ class GmlSeeker {
 		var jsDocRest:Bool = false;
 		var jsDocSelf:String = null;
 		var jsDocReturn:String = null;
-		var jsDocInterface:String = null;
+		var jsDocInterface:Bool = false;
+		var jsDocInterfaceName:String = null;
+		var jsDocImplements:Array<String> = null;
 		/**  */
 		inline function linkDoc():Void {
 			if (doc != null) {
@@ -344,7 +347,9 @@ class GmlSeeker {
 			jsDocRest = null;
 			jsDocSelf = null;
 			jsDocReturn = null;
-			jsDocInterface = null;
+			jsDocInterface = false;
+			jsDocInterfaceName = null;
+			jsDocImplements = null;
 		}
 		function flushDoc():Void {
 			var updateComp = false;
@@ -373,10 +378,29 @@ class GmlSeeker {
 					doc.post = ")➜" + jsDocReturn;
 					updateComp = true;
 				}
+				if (jsDocInterface) {
+					if (jsDocInterfaceName == null) jsDocInterfaceName = main;
+					out.namespaceHints.addn(new GmlSeekDataNamespaceHint(jsDocInterfaceName, null, null));
+				}
 				doc.selfType = jsDocSelf;
 				
 				//
 				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
+			}
+			if (jsDocImplements != null) {
+				var ownType:String;
+				if (isObject) {
+					ownType = getObjectName();
+				} else ownType = main;
+				//
+				var arr = out.namespaceImplements[ownType];
+				if (arr == null) { arr = []; out.namespaceImplements[ownType] = arr; }
+				//
+				if (ownType == null) {
+					Main.console.warn("Trying to add @implements without a known self-type", arr);
+				} else for (nsi in jsDocImplements) {
+					if (arr.indexOf(nsi) < 0) arr.push(nsi);
+				}
 			}
 			doc = null;
 			docIsAutoFunc = false;
@@ -513,20 +537,27 @@ class GmlSeeker {
 			s = find(flags);
 			if (s == null) continue;
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
-				
+				/*
+				 * A thing to remember! Suppose you have the following:
+				 * ```
+				 * function a() {}
+				 * /// hello!
+				 * function b() {}
+				 * ```
+				 * for that comment, `main` would not be `b` since we didn't get to `b` yet
+				 */
 				mt = jsDoc_implements.exec(s);
 				if (mt != null) {
-					var ownType:String;
-					if (isObject) {
-						ownType = getObjectName();
-					} else {
-						if (main == null) continue;
-						ownType = main;
-					}
-					var arr = out.namespaceImplements[ownType];
-					if (arr == null) { arr = []; out.namespaceImplements[ownType] = arr; }
 					var nsi = mt[1];
-					if (arr.indexOf(nsi) < 0) arr.push(nsi);
+					if (nsi == null) {
+						var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
+						var lineText = q.source.substring(lineStart, q.pos);
+						var lineMatch = jsDoc_implements_line.exec(lineText);
+						if (lineMatch == null) continue;
+						nsi = lineMatch[1];
+					}
+					if (jsDocImplements == null) jsDocImplements = [];
+					jsDocImplements.push(nsi);
 					continue;
 				}
 				
@@ -550,16 +581,11 @@ class GmlSeeker {
 				
 				mt = jsDoc_interface.exec(s);
 				if (mt != null) {
-					jsDocInterface = mt[1];
-					if (jsDocInterface == null) {
-						if (isObject) {
-							jsDocInterface = getObjectName();
-						} else {
-							if (main == null) continue;
-							jsDocInterface = main;
-						}
+					jsDocInterface = true;
+					jsDocInterfaceName = mt[1];
+					if (jsDocInterfaceName == null && isObject) {
+						jsDocInterfaceName = getObjectName();
 					}
-					out.namespaceHints.addn(new GmlSeekDataNamespaceHint(jsDocInterface, null, null));
 					continue;
 				}
 				
@@ -668,6 +694,9 @@ class GmlSeeker {
 						docIsAutoFunc = false;
 					} else flushDoc();
 					main = fname;
+					if (jsDocInterface && jsDocInterfaceName == null) {
+						jsDocInterfaceName = main;
+					}
 					start = q.pos;
 					sub = main;
 					row = 0;
@@ -1051,7 +1080,7 @@ class GmlSeeker {
 								isConstructor = q.substring(ctStart, q.pos) == "constructor";
 							}
 						} while (false);
-						addFieldHint(isConstructor, jsDocInterface, true, s, args, null);
+						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null);
 					}
 					q_restore();
 				};
