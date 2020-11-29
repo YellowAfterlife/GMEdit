@@ -675,7 +675,7 @@ using tools.NativeArray;
 					"\\)?", "paren.rparen",
 					"(?:->)?", "punctuation.operator",
 				]),
-				rule("comment.meta", "@\\w+"),
+				rule("comment.meta", "@(?:\\w+|$)"),
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),
 			]), //}

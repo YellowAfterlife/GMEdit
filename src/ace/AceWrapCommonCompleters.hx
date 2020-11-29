@@ -76,6 +76,7 @@ class AceWrapCommonCompleters {
 	public var keywordCompleterExpr:AceWrapCompleter;
 	public var keywordCompleterGMS23_function:AceWrapCompleter;
 	public var hashtagCompleters:Array<AceWrapCompleter>;
+	public var jsDocCompleter:AceWrapCompleter;
 	
 	/** These have their items updated by AceStatusBar on context navigation */
 	function initLocal() {
@@ -112,6 +113,19 @@ class AceWrapCommonCompleters {
 			}
 		});
 		completers.push(keywordCompleterGMS23_function);
+		
+		var jsk = "keyword";
+		var jsDocItems:Array<AceAutoCompleteItem> = [
+			new AceAutoCompleteItem("param", jsk, "@param [{Type}] name [description]\nMark a script argument"),
+			new AceAutoCompleteItem("returns", jsk, "@returns {Type} [description]\nSets return type"),
+			new AceAutoCompleteItem("self", jsk, "@self {Type}\nSets the type of `self`"),
+			new AceAutoCompleteItem("interface", jsk, "@interface [{Name}]\nMark a script as an interface"),
+			new AceAutoCompleteItem("implements", jsk, "@implements [{Name}]\nImplement an interface"),
+		];
+		jsDocCompleter = new AceWrapCompleter([], ["comment.meta"], false, gmlOnly);
+		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case
+		jsDocCompleter.minLength = 0;
+		completers.push(jsDocCompleter);
 	}
 	
 	function initHashtag() {
@@ -344,12 +358,21 @@ class AceWrapCommonCompleters {
 		if (token == null) return;
 		if (token.type == "preproc.event") openAC(editor);
 	}
+	
+	function onAtSign(editor:AceWrap) {
+		var session = editor.session;
+		var lead = session.selection.lead;
+		var token = session.getTokenAtPos(lead);
+		if (token == null) return;
+		if (token.type == "comment.meta") openAC(editor);
+	}
 	function onAfterExec(e:AfterExecArgs) {
 		if (e.command.name == "insertstring") {
 			switch (e.args) {
 				case ".": onDot(e.editor);
 				case ":": onColon(e.editor);
 				case " ": onSpace(e.editor);
+				case "@": onAtSign(e.editor);
 			}
 		}
 	}
