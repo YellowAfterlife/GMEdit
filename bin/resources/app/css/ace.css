@@ -87,18 +87,18 @@ textarea#source {
 #main .ace_active-line {
 	background: rgba(255, 253, 205, 0.5);
 }
-#main .ace-tm .ace_comment,
-#main .ace-tm .ace_eventtext {
+#app .ace-tm .ace_comment,
+#app .ace-tm .ace_eventtext {
 	color: #008000;
 	/*font-style: italic;*/
 }
-#main .ace-tm .ace_comment.ace_link {
+#app .ace-tm .ace_comment.ace_link {
 	color: #0000FF;
 }
-#main .ace-tm .ace_comment.ace_link.ace_url {
+#app .ace-tm .ace_comment.ace_link.ace_url {
 	text-decoration: underline;
 }
-#main .ace-tm .ace_comment.ace_meta {
+#app .ace-tm .ace_comment.ace_meta {
 	color: #914BAF;
 }
 /*#main .ace-tm .ace_comment.ace_doc,
@@ -140,7 +140,9 @@ textarea#source {
 #app .ace-tm .ace_typeerror {
 	color: #888;
 }
-#app .ace-tm .ace_asset {
+#app .ace-tm .ace_asset,
+#app .ace_autocomplete .ace_asset,
+#app .ace_autocomplete .ace_object {
 	color: rgb(0, 128, 160);
 }
 #app .ace-tm .ace_script {

@@ -180,6 +180,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	color: inherit;
 }
 #app .ace-tm .ace_asset,
+#app .ace_autocomplete .ace_asset,
+#app .ace_autocomplete .ace_object,
 #app .ace-tm .ace_macro,
 #app .ace-tm .ace_configname,
 #app .ace-tm .ace_macroname,
