@@ -124,6 +124,7 @@ class AceWrapCommonCompleters {
 			new AceAutoCompleteItem("self", jsk, "@self {Type}\nSets the type of `self`"),
 			new AceAutoCompleteItem("interface", jsk, "@interface [{Name}]\nMark a script as an interface"),
 			new AceAutoCompleteItem("implements", jsk, "@implements [{Name}]\nImplement an interface"),
+			new AceAutoCompleteItem("hint", jsk, "(see wiki)\nHint types/variables/methods"),
 		];
 		jsDocCompleter = new AceWrapCompleter([], ["comment.meta"], false, gmlOnly);
 		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case
