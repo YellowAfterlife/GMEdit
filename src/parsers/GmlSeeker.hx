@@ -607,6 +607,8 @@ class GmlSeeker {
 					jsDocInterfaceName = mt[1];
 					if (jsDocInterfaceName == null && isObject) {
 						jsDocInterfaceName = getObjectName();
+					} else if (!hasFunctionLiterals) {
+						jsDocInterfaceName = main;
 					}
 					continue;
 				}
@@ -1019,7 +1021,7 @@ class GmlSeeker {
 					
 					// we'll hint top-level variable assignments in constructors and Create events:
 					var isConstructorField:Bool;
-					if (jsDocInterface != null) {
+					if (jsDocInterface) {
 						var wantDepth = hasFunctionLiterals && funcsAreGlobal ? 1 : 0;
 						isConstructorField = (cubDepth == wantDepth);
 					} else if (isCreateEvent) {
