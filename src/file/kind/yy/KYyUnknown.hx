@@ -3,6 +3,7 @@ import ace.extern.AceAutoCompleteItem;
 import gml.GmlAPI;
 import gml.Project;
 import gml.file.GmlFile;
+import haxe.io.Path;
 import js.html.DivElement;
 import js.lib.RegExp;
 import ui.treeview.TreeView;
@@ -84,8 +85,13 @@ class KYyUnknown extends FileKind {
 			}
 			switch (resType) {
 				case "GMScript": {
-					full = haxe.io.Path.withoutExtension(full) + ".gml";
+					full = Path.withExtension(full, "gml");
 					content = electron.FileWrap.readTextFileSync(full);
+				};
+				case "GMNotes": {
+					full = Path.withExtension(full, "txt");
+					content = electron.FileWrap.readTextFileSync(full);
+					detect.kind = file.kind.misc.KPlain.inst;
 				};
 				case "GMExtension": makeEl = false;
 			}
