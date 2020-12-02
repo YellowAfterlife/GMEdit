@@ -80,6 +80,7 @@ enum abstract GmlLinterKind(Int) {
 	var KQMark; // `?`
 	var KColon; // `:`
 	var KAtSign; // `@`
+	var KDollar; // `$`
 	
 	// branching:
 	var KIf;

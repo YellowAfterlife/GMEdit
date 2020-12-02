@@ -319,12 +319,15 @@ class GmlLinter {
 							};
 							default: q.pos = p; return retv(KHash, "#");
 						}
-					} else return retv(KHash, "#");
+					}
+					else return retv(KHash, "#");
 				};
 				case "$".code: {
 					start();
-					q.skipHex();
-					return ret(KNumber);
+					if (q.peek().isHex()) {
+						q.skipHex();
+						return ret(KNumber);
+					} else return retv(KDollar, "$");
 				};
 				case ";".code: return retv(KSemico, ";");
 				case ",".code: return retv(KComma, ",");
@@ -804,22 +807,22 @@ class GmlLinter {
 				case KSqbOpen: { // x[i], x[?i], etc.
 					skip();
 					switch (peek()) {
-						case KQMark, KOr: {
+						case KQMark, KOr, KDollar: { // map[?k], list[|i], struct[$k]
 							skip();
 							rc(readExpr(newDepth));
 						};
-						case KHash: {
+						case KHash: { // grid[#x, y]
 							skip();
 							rc(readExpr(newDepth));
 							rc(readCheckSkip(KComma, "a comma before second index"));
 							rc(readExpr(newDepth));
 						};
-						case KAtSign: {
+						case KAtSign: { // array[@i] or array[@i, k]
 							skip();
 							rc(readExpr(newDepth));
 							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
 						};
-						default: {
+						default: { // array[i] or array[i, k]
 							rc(readExpr(newDepth));
 							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
 						};
