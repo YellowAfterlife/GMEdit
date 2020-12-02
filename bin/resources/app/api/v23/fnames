@@ -12,7 +12,7 @@
 // % = property
 // ? = struct variable
 
-argument_relative*
+argument_relative&
 argument
 argument0
 argument1
@@ -96,6 +96,7 @@ variable_struct_get(struct,name)
 variable_struct_set(struct,name,val)
 variable_struct_get_names(struct)
 variable_struct_names_count(struct)
+variable_struct_remove(struct,name) 
 array_length(variable)
 array_length_1d(variable)&
 array_length_2d(variable, index)&
@@ -106,6 +107,11 @@ array_copy(dest,dest_index,src,src_index,length)
 array_resize(variable,newsize)
 array_get(variable,index)
 array_set(variable,index,val)
+array_push(array,val,...)
+array_pop(array)
+array_insert(array,index,val,...)
+array_delete(array,index,number)
+array_sort(array,sortType_or_function)
 random(x)
 random_range(x1,x2)
 irandom(x)
@@ -165,6 +171,10 @@ point_distance(x1,y1,x2,y2)
 point_direction(x1,y1,x2,y2)
 lengthdir_x(len,dir)
 lengthdir_y(len,dir)
+
+weak_ref_create(thing_to_track)
+weak_ref_alive(weak_ref)
+weak_ref_any_alive(array,[index],[length])
 
 // section 2.3
 
@@ -1442,6 +1452,7 @@ path_shift(ind,xshift,yshift)
 // section 9.6
 
 script_execute(ind,arg0,arg1,...)
+script_execute_ext(ind,array,[offset=0],[num_args=array_length(array)-offset],...)
 
 // section 9.8
 
@@ -2250,6 +2261,8 @@ http_get_request_crossorigin()
 http_set_request_crossorigin(crossorigin_type)
 json_encode(ds_map)
 json_decode(string)
+json_stringify(val)
+json_parse(json)
 zip_unzip(file, destPath)
 
 load_csv(filename)
@@ -2625,13 +2638,14 @@ network_config_connect_timeout#
 network_config_use_non_blocking_socket#
 network_config_enable_reliable_udp#
 network_config_disable_reliable_udp#
+network_config_avoid_time_wait#
 
 buffer_create(size, buffer_type, alignment)
 buffer_write(buffer, type, value)
 buffer_read(buffer, type)
 buffer_seek(buffer, base, offset)
-buffer_get_surface(buffer, surface, mode, offset, modulo)
-buffer_set_surface(buffer, surface, mode, offset, modulo)
+buffer_get_surface(buffer, surface, offset)
+buffer_set_surface(buffer, surface, offset)
 buffer_delete(buffer)
 buffer_exists(buffer)
 buffer_get_type(buffer)
@@ -2684,7 +2698,7 @@ buffer_f64#
 buffer_bool#
 buffer_text#
 buffer_string#
-buffer_surface_copy#
+buffer_surface_copy&
 buffer_seek_start#
 buffer_seek_relative#
 buffer_seek_end#
@@ -3027,6 +3041,7 @@ skeleton_get_num_bounds()!
 skeleton_get_bounds(index)!
 skeleton_animation_get_frame(track)!
 skeleton_animation_set_frame(track,index)!
+skeleton_animation_get_event_frames(anim_name,event_name)!
 
 // Instance independent!
 draw_skeleton(sprite,animname,skinname,frame,x,y,xscale,yscale,rot,col,alpha)!
@@ -3409,6 +3424,9 @@ layer_sequence_destroy(sequence_element_id)
 layer_sequence_exists(layer_id,sequence_element_id)
 layer_sequence_x(sequence_element_id,pos_x)
 layer_sequence_y(sequence_element_id,pos_y)
+layer_sequence_angle(sequence_element_id,angle)
+layer_sequence_xscale(sequence_element_id,xscale)
+layer_sequence_yscale(sequence_element_id,yscale)
 layer_sequence_headpos(sequence_element_id,position)
 layer_sequence_headdir(sequence_element_id,direction)
 layer_sequence_pause(sequence_element_id)
@@ -3417,6 +3435,9 @@ layer_sequence_speedscale(sequence_element_id,speedscale)
 
 layer_sequence_get_x(sequence_element_id)
 layer_sequence_get_y(sequence_element_id)
+layer_sequence_get_angle(sequence_element_id)
+layer_sequence_get_xscale(sequence_element_id)
+layer_sequence_get_yscale(sequence_element_id)
 layer_sequence_get_headpos(sequence_element_id)
 layer_sequence_get_headdir(sequence_element_id)
 layer_sequence_get_sequence(sequence_element_id)
@@ -3431,6 +3452,7 @@ sequence_exists(sequence_struct_id)
 // Animation Curves
 animcurve_get(curve_id)
 animcurve_get_channel(curve_struct_or_id,channel_name_or_index)
+animcurve_get_channel_index(curve_struct_or_id,channel_name)
 animcurve_channel_evaluate(channel,posx)
 
 // Sequence resource creation functions
@@ -3656,6 +3678,8 @@ gc_collect()
 gc_enable(enable)
 gc_is_enabled()
 gc_get_stats()
+gc_target_frame_time(time)
+gc_get_target_frame_time()
 
 // Garbage collection stats structure members
 ??GCStats
