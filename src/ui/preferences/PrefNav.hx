@@ -3,6 +3,7 @@ import electron.Electron;
 import js.html.Element;
 import ui.Preferences.*;
 import gml.GmlAPI;
+import gml.Project;
 
 /**
  * ...
@@ -19,13 +20,13 @@ class PrefNav {
 		addCheckbox(out, "Open assets with single click", current.singleClickOpen, function(z) {
 			current.singleClickOpen = z;
 			save();
-			gml.Project.current.reload();
+			Project.current.reload();
 		}).title = "Allows to open treeview items with single click";
 		//
 		addCheckbox(out, "Show asset thumbnails", current.assetThumbs, function(z) {
 			current.assetThumbs = z;
 			save();
-			gml.Project.current.reload();
+			Project.current.reload();
 		}).title = (
 			"Loads and displays the assigned sprites as object thumbnails in resource tree."
 			+ " Disabling this can improve memory use."
@@ -42,7 +43,7 @@ class PrefNav {
 		addCheckbox(out, "Show taskbar overlays", current.taskbarOverlays, function(z) {
 			current.taskbarOverlays = z;
 			save();
-			gml.Project.current.reload();
+			Project.current.reload();
 		}).title = "Shows GM version icon"
 			+ " (or `<project path>.taskbar-overlay.png`, if available)"
 			+ " over the GMEdit icon (Windows-only?)";
@@ -64,6 +65,7 @@ class PrefNav {
 		addDropdown(out, "GMS2.3 asset order", assetOrder23[current.assetOrder23], assetOrder23, function(s:String) {
 			current.assetOrder23 = assetOrder23.indexOf(s);
 			save();
+			Project.current.reload();
 		});
 		//
 		var apiOrder = [
