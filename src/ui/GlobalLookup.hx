@@ -159,6 +159,9 @@ class GlobalLookup {
 		update();
 		var kc = e.keyCode, i:Int;
 		switch (kc) {
+			case KeyboardEvent.DOM_VK_TAB: {
+				e.preventDefault();
+			};
 			case KeyboardEvent.DOM_VK_UP: {
 				e.preventDefault();
 				i = (list.selectedIndex - 1) % list.children.length;
