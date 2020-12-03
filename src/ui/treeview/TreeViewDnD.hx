@@ -148,7 +148,6 @@ class TreeViewDnD {
 				if (dst.classList.contains("header")) dst = dst.parentElement;
 				TreeViewItemMenus.updatePrefix(dst);
 				var order = currOrder;
-				Main.console.log(order);
 				update(null, 0);
 				if (order > 0 && dst.classList.contains(TreeView.clDir) && dst.classList.contains(TreeView.clOpen)) {
 					var dstItems:Element = (cast dst:TreeViewDir).treeItems;

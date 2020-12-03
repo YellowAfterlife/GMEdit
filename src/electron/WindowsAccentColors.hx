@@ -22,7 +22,7 @@ class WindowsAccentColors {
 				impl = require(jsPath);
 			};
 		} catch (x:Dynamic) {
-			Main.console.log("Error initializing accent colors: ", x);
+			Main.console.error("Error initializing accent colors: ", x);
 		}
 	}
 	public static function updateFocus(active:Bool) {

@@ -308,7 +308,7 @@ class YyManipV22 {
 							pj.unlinkSync(path);
 						} catch (_:Dynamic) {}
 					} catch (x:Dynamic) {
-						Main.console.log(x);
+						Main.console.warn(x);
 					}
 				};
 				case "GMScript", "GMObject", "GMSprite", "GMShader": {
