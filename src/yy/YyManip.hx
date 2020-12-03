@@ -147,7 +147,6 @@ class YyManip {
 			var itemFullPath:String = yyFullPath;
 			switch (kind) {
 				case "script": {
-					itemRelPath = Path.withExtension(itemRelPath, "gml");
 					itemFullPath = Path.withExtension(itemFullPath, "gml");
 					var scr:YyScript = {
 						"isDnD": false,
