@@ -7,6 +7,7 @@ import ace.AceWrap;
 import ace.extern.AceTokenIterator;
 import ace.extern.AceTooltip;
 import ace.AceStatusBar;
+import file.kind.gml.KGmlScript;
 import gml.GmlAPI;
 import gml.GmlEnum;
 import gml.GmlFuncDoc;
@@ -16,6 +17,7 @@ import gml.GmlLocals;
 import gml.Project;
 import parsers.GmlExtLambda;
 import tools.Dictionary;
+import tools.JsTools;
 import ui.Preferences;
 using tools.NativeString;
 
@@ -65,7 +67,9 @@ class AceTooltips {
 		inline function calcRow(row:Int) {
 			var showRow = row;
 			var startRow = row + 1;
-			var checkRx = GmlAPI.scopeResetRx;
+			var file = session.gmlFile;
+			var isScript = JsTools.nca(file, (file.kind is KGmlScript));
+			var checkRx = isScript ? GmlAPI.scopeResetRx : GmlAPI.scopeResetRxNF;
 			if (GmlExternAPI.gmlResetOnDefine) while (--startRow >= 0) {
 				if (checkRx.test(session.getLine(startRow))) {
 					showRow -= startRow + 1;

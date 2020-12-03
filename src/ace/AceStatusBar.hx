@@ -2,6 +2,7 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import editors.EditCode;
+import file.kind.gml.KGmlScript;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlLocals;
@@ -362,7 +363,8 @@ class AceStatusBar {
 		var pos = sel.lead;
 		//
 		var showRow = pos.row;
-		var checkRx = GmlAPI.scopeResetRx;
+		var isScript = JsTools.nca(file, (file.kind is KGmlScript));
+		var checkRx = isScript ? GmlAPI.scopeResetRx : GmlAPI.scopeResetRxNF;
 		var startRow = showRow + 1;
 		var session = editor.getSession();
 		var resetOnDefine:Bool = GmlExternAPI.gmlResetOnDefine;

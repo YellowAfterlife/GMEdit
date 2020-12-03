@@ -1,6 +1,7 @@
 package gml;
 import ace.AceWrap;
 import ace.extern.AceSession;
+import js.lib.RegExp;
 import tools.Dictionary;
 using tools.NativeArray;
 
@@ -22,9 +23,17 @@ class GmlScopes {
 	public var length:Int = 0;
 	
 	public var session:AceSession;
+	public var isScript:Bool = null;
 	
 	public function new(session:AceSession) {
 		this.session = session;
+	}
+	
+	function getScopeResetRx():RegExp {
+		if (isScript == null && session.gmlFile != null) {
+			isScript = Std.is(session.gmlFile.kind, file.kind.gml.KGmlScript);
+		}
+		return isScript ? GmlAPI.scopeResetRx : GmlAPI.scopeResetRxNF;
 	}
 	
 	public function get(row:Int):String {
@@ -35,7 +44,7 @@ class GmlScopes {
 			scopes.clearResize(len);
 		}
 		//
-		var rx = GmlAPI.scopeResetRx;
+		var rx = getScopeResetRx();
 		var scope = null;
 		var i = row;
 		while (i >= 0) {
@@ -44,7 +53,8 @@ class GmlScopes {
 			// find definition on that line:
 			var def = defs[i];
 			if (def == null) {
-				var res = rx.exec(session.getLine(i));
+				var line = session.getLine(i);
+				var res = rx.exec(line);
 				def = res != null ? res[1] : "";
 				defs[i] = def;
 			}
@@ -66,11 +76,12 @@ class GmlScopes {
 	
 	/** Go over the current cache and update items in case something was moved/renamed */
 	public function updateOnSave():Void {
-		var rx = GmlAPI.scopeResetRx;
+		var rx = getScopeResetRx();
 		var currScope:String = "";
 		var updateScope = false;
 		for (i in 0 ... scopes.length) {
-			var mt = rx.exec(session.getLine(i));
+			var line = session.getLine(i);
+			var mt = rx.exec(line);
 			if (mt != null) {
 				currScope = mt[1];
 				if (defs[i] != currScope) { // renamed or added a scope

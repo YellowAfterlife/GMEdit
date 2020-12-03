@@ -1,6 +1,7 @@
 package gml;
 import electron.FileSystem;
 import gml.GmlEnum;
+import gml.file.GmlFile;
 import haxe.io.Path;
 import js.lib.RegExp;
 import parsers.GmlParseAPI;
@@ -63,7 +64,8 @@ class GmlAPI {
 		return items;
 	})();
 	//
-	public static var scopeResetRx = new js.lib.RegExp('^(?:#define|#event|#moment|#target|function)[ \t]+([\\w:]+)', '');
+	public static var scopeResetRx = new RegExp('^(?:#define|#event|#moment|#target|function)[ \t]+([\\w:]+)', '');
+	public static var scopeResetRxNF = new RegExp('^(?:#define|#event|#moment|#target)[ \t]+([\\w:]+)', '');
 	//
 	public static var helpLookup:Dictionary<String> = null;
 	public static var helpURL:String = null;
