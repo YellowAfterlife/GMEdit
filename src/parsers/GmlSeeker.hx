@@ -605,10 +605,12 @@ class GmlSeeker {
 				if (mt != null) {
 					jsDocInterface = true;
 					jsDocInterfaceName = mt[1];
-					if (jsDocInterfaceName == null && isObject) {
-						jsDocInterfaceName = getObjectName();
-					} else if (!hasFunctionLiterals) {
-						jsDocInterfaceName = main;
+					if (jsDocInterfaceName == null) {
+						if (isObject) {
+							jsDocInterfaceName = getObjectName();
+						} else if (!hasFunctionLiterals) {
+							jsDocInterfaceName = main;
+						}
 					}
 					continue;
 				}
