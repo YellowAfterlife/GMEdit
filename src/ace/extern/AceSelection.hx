@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.extern.AceRange;
 
 /**
  * ...
@@ -13,6 +14,7 @@ extern class AceSelection {
 	public var anchor:AcePos;
 	public var lead:AcePos;
 	public var rangeCount:Int;
+	public function getAllRanges():Array<AceRange>;
 	public function toJSON():Dynamic;
 	public function fromJSON(q:Dynamic):Void;
 }

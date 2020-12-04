@@ -1,4 +1,5 @@
 package ace.extern;
+import js.lib.Function;
 
 /**
  * ...
@@ -6,10 +7,21 @@ package ace.extern;
  */
 @:native("AceAutocomplete") extern class AceAutocomplete {
 	function new();
+	function detach():Void;
+	var completions:AceAutocompleteCompletions;
 	var exactMatch:Bool;
 	var autoInsert:Bool;
 	var activated:Bool;
+	function showPopup(editor:AceWrap):Void;
+	function insertMatch(data:Any, options:Any):Bool;
+	var popup:AcePopup;
 	/// non-standard
 	var shouldSort:Bool;
-	function showPopup(editor:AceWrap):Void;
+	var eraseSelfDot:Bool;
+	var insertMatch_base:Function;
+	var detach_base:Function;
+	var isShowPopup:Bool;
+}
+extern class AceAutocompleteCompletions {
+	public var filterText:String;
 }

@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.extern.AceRange;
 import haxe.extern.EitherType;
 
 /**
@@ -26,6 +27,7 @@ import haxe.extern.EitherType;
 	//
 	public function getValue():String;
 	public function setValue(v:String):Void;
+	public function remove(range:AceRange):Void;
 	//
 	public function setMode(s:String):Void;
 	@:native("$modeId") private var modeIdRaw(default, never):String;

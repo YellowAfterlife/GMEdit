@@ -17,6 +17,7 @@ import parsers.GmlKeycode;
 import shaders.ShaderAPI;
 import tools.Dictionary;
 import file.kind.misc.*;
+import tools.JsTools;
 import ui.Preferences;
 using tools.NativeString;
 
@@ -314,12 +315,52 @@ class AceWrapCommonCompleters {
 		initSnippets();
 	}
 	
-	function openAC(editor:AceWrap) {
-		if (editor.completer == null) {
-			editor.completer = new AceAutocomplete();
+	function openAC(editor:AceWrap, ?eraseSelfDot:Bool) {
+		var ac = editor.completer;
+		if (ac == null) {
+			editor.completer = ac = new AceAutocomplete();
 		}
+		//
+		ac.eraseSelfDot = eraseSelfDot;
+		if (eraseSelfDot && ac.insertMatch_base == null) {
+			ac.detach_base = (cast ac).detach;
+			function detach_hook() {
+				var ac:AceAutocomplete = AceMacro.jsThis;
+				if (!ac.isShowPopup) ac.eraseSelfDot = false;
+				ac.detach_base.apply(ac, AceMacro.jsArgs);
+			}
+			(cast ac).detach = detach_hook;
+			//
+			ac.insertMatch_base = (cast ac).insertMatch;
+			function insertMatch_hook(data, options) {
+				var ac:AceAutocomplete = AceMacro.jsThis;
+				var rangesToRemove:Array<AceRange> = [];
+				if (data == null) data = ac.popup.getData(ac.popup.getRow());
+				if (data != null && ac.eraseSelfDot) {
+					var ranges = editor.selection.getAllRanges();
+					var ft = ac.completions.filterText;
+					var ftl = ft != null ? ft.length : 0;
+					for (range in ranges) {
+						var s = range.start;
+						var line = editor.session.getLine(s.row);
+						s.column -= ftl;
+						if (line.charCodeAt(s.column - 1) != ".".code) continue;
+						var sub = new AceRange(s.column - 1, s.row, s.column, s.row);
+						rangesToRemove.push(sub);
+					}
+				}
+				var result = ac.insertMatch_base.apply(ac, AceMacro.jsArgs);
+				for (range in rangesToRemove) editor.session.remove(range);
+				return result;
+			}
+			(cast ac).insertMatch = insertMatch_hook;
+		}
+		//
 		editor.completer.autoInsert = false;
+		var wasShowPopup = editor.completer.isShowPopup;
+		editor.completer.isShowPopup = true;
 		editor.completer.showPopup(editor);
+		editor.completer.isShowPopup = wasShowPopup;
 	}
 	
 	/**
@@ -330,6 +371,7 @@ class AceWrapCommonCompleters {
 		var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 		var token = iter.stepBackward();
 		if (token == null) return;
+		var eraseSelfDot = false;
 		var open = switch (token.type) {
 			case "namespace", "enum": true;
 			case "local", "sublocal": {
@@ -339,14 +381,21 @@ class AceWrapCommonCompleters {
 				(imp != null ? imp.localTypes[token.value] != null : false);
 			};
 			case "asset.object": true;
+			case "punctuation.operator": eraseSelfDot = token.value != ".";
+			case "set.operator", "text": eraseSelfDot = true;
 			default: {
 				switch (token.value) {
 					case "global", "self", "other": true;
+					case "{", "[", "(": eraseSelfDot = true;
 					default: false;
 				}
 			}
 		};
-		if (open) openAC(editor);
+		if (!open && iter.getCurrentTokenRow() != lead.row) {
+			open = true;
+			eraseSelfDot = true;
+		}
+		if (open) openAC(editor, eraseSelfDot);
 	}
 	
 	function onColon(editor:AceWrap) {
@@ -378,6 +427,7 @@ class AceWrapCommonCompleters {
 	}
 	function onAfterExec(e:AfterExecArgs) {
 		if (e.command.name == "insertstring") {
+			var c = e.editor.completer;
 			switch (e.args) {
 				case ".": onDot(e.editor);
 				case ":": onColon(e.editor);

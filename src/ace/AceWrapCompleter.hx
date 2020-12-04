@@ -150,8 +150,12 @@ using tools.NativeString;
 					}
 				}
 				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) continue;
-				if (iter == null) iter = new AceTokenIterator(session, pos.row, pos.column);
-				tk = iter.stepBackward();
+				if (editor.completer.eraseSelfDot) {
+					tk = { type: "keyword", value: "self" };
+				} else {
+					if (iter == null) iter = new AceTokenIterator(session, pos.row, pos.column);
+					tk = iter.stepBackward();
+				}
 				switch (dotKind) {
 					case DKNamespace: { // NameSpace.staticField
 						if (tk.type != "namespace") continue;
