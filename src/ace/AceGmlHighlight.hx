@@ -455,8 +455,8 @@ using tools.NativeArray;
 		//}
 		var rParOpen:AceLangRule;
 		rBase = rBase.concat([ //{
-			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]*\b/), // $c0ffee
-			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?\b/), // 42.5 (GML has no E# suffixes)
+			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]*/), // $c0ffee
+			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxPush(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "gml.enum"),
 			rxRule(function(goto, _, label) {
