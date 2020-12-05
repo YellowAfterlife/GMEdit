@@ -138,6 +138,9 @@ class KeyboardShortcuts {
 		addCommand("commandPalette", '$lookupPre-shift-t', function() {
 			GlobalLookup.toggle(">");
 		});
+		addCommand("reloadGMEdit", "", function() {
+			Main.document.location.reload();
+		});
 		//
 		addCommand("switchToLastTab", "mod-9", function() {
 			var tabs = document.querySelectorEls(".chrome-tab");
