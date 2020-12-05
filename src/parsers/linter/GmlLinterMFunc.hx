@@ -1,4 +1,5 @@
 package parsers.linter;
+import synext.GmlExtMFunc;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;

@@ -4,10 +4,13 @@ import editors.EditCode;
 import editors.Editor;
 import electron.Dialog;
 import js.lib.RegExp;
-import parsers.GmlExtHyper;
-import parsers.GmlExtImport;
-import parsers.GmlExtLambda;
+import synext.GmlExtHyper;
+import synext.GmlExtImport;
+import synext.GmlExtLambda;
 import parsers.*;
+import synext.GmlExtCoroutines;
+import synext.GmlExtMFunc;
+import synext.GmlExtTemplateStrings;
 import tools.NativeString;
 
 /**

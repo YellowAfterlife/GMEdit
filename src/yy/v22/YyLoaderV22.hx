@@ -5,7 +5,7 @@ import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
 import js.lib.RegExp;
-import parsers.GmlExtLambda;
+import synext.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
 import js.html.Element;
@@ -223,7 +223,7 @@ class YyLoaderV22 {
 							extEl.setAttribute(TreeView.attrPath, full);
 							extEl.setAttribute(TreeView.attrIdent, ext.name);
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
-							var lm = lz && ext.name.toLowerCase() == parsers.GmlExtLambda.extensionName ? project.lambdaMap : null;
+							var lm = lz && ext.name.toLowerCase() == synext.GmlExtLambda.extensionName ? project.lambdaMap : null;
 							if (lm != null) project.lambdaExt = full;
 							for (file in ext.files) {
 								var fileName = file.filename;
@@ -237,7 +237,7 @@ class YyLoaderV22 {
 								if (isGmlFile) {
 									if (lm != null) {
 										project.lambdaGml = filePath;
-										parsers.GmlExtLambda.readDefs(filePath);
+										synext.GmlExtLambda.readDefs(filePath);
 									} else {
 										GmlSeeker.run(filePath, "", KGmlExtension.inst);
 									}

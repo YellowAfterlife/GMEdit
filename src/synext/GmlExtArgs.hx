@@ -1,4 +1,4 @@
-package parsers;
+package synext;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;

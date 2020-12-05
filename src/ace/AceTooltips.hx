@@ -15,7 +15,7 @@ import gml.GmlGlobalVar;
 import gml.GmlImports;
 import gml.GmlLocals;
 import gml.Project;
-import parsers.GmlExtLambda;
+import synext.GmlExtLambda;
 import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;

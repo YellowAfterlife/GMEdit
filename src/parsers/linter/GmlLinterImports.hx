@@ -1,5 +1,5 @@
 package parsers.linter;
-import parsers.GmlExtImport;
+import synext.GmlExtImport;
 import gml.GmlImports;
 import tools.CharCode;
 
@@ -9,7 +9,7 @@ import tools.CharCode;
  * @author YellowAfterlife
  */
 @:access(parsers.linter.GmlLinter)
-@:access(parsers.GmlExtImport)
+@:access(synext.GmlExtImport)
 class GmlLinterImports {
 	public static function proc(self:GmlLinter, q:GmlReaderExt, dotStart:Int, imp:GmlImports, nv:String):Null<Bool> {
 		var dotPos = -1;

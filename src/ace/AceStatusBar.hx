@@ -14,7 +14,7 @@ import js.html.Element;
 import js.html.MouseEvent;
 import js.html.SpanElement;
 import Main.document;
-import parsers.GmlExtLambda;
+import synext.GmlExtLambda;
 import shaders.ShaderAPI;
 import tools.Dictionary;
 import tools.JsTools;

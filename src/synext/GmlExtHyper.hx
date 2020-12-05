@@ -1,6 +1,7 @@
-package parsers;
+package synext;
 import ui.Preferences;
 import gml.GmlAPI;
+import parsers.GmlReader;
 
 /**
  * ...

@@ -10,7 +10,7 @@ import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
 import ace.extern.*;
-import parsers.GmlExtLambda;
+import synext.GmlExtLambda;
 import parsers.GmlSeeker;
 import tools.Dictionary;
 import tools.NativeString;
@@ -160,7 +160,7 @@ class GmxLoader {
 					if (isGmlFile) {
 						if (lm != null) {
 							project.lambdaGml = extFileFull;
-							parsers.GmlExtLambda.readDefs(extFileFull);
+							synext.GmlExtLambda.readDefs(extFileFull);
 						} else GmlSeeker.run(extFileFull, "", KGmlExtension.inst);
 					}
 					//

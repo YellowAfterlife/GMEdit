@@ -1,10 +1,11 @@
-package parsers;
+package synext;
 import ace.AceWrap;
 import gml.GmlAPI;
 import js.lib.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
 import ace.extern.*;
+import parsers.GmlReader;
 using StringTools;
 
 /**

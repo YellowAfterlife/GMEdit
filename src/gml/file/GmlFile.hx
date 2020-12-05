@@ -23,6 +23,7 @@ import parsers.GmlSeeker;
 import plugins.PluginEvents;
 import shaders.ShaderHighlight;
 import shaders.ShaderKind;
+import synext.GmlExtCoroutines;
 import tools.Dictionary;
 import tools.NativeString;
 import tools.StringBuilder;

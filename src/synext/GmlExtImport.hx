@@ -1,4 +1,4 @@
-package parsers;
+package synext;
 import ace.AceMacro;
 import ace.extern.*;
 import electron.FileWrap;
@@ -12,6 +12,9 @@ import haxe.io.Path;
 import js.lib.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
+import parsers.GmlSeekData;
+import parsers.GmlReader;
+import parsers.GmlReaderExt;
 import parsers.GmlReader.SkipVarsData;
 using tools.NativeString;
 using tools.NativeObject;

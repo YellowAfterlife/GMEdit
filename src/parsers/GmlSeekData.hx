@@ -3,6 +3,8 @@ import ace.AceWrap;
 import ace.extern.*;
 import gml.GmlAPI;
 import gml.*;
+import synext.GmlExtCoroutines;
+import synext.GmlExtMFunc;
 import tools.ArrayMap;
 import tools.Dictionary;
 using tools.NativeString;

@@ -4,7 +4,7 @@ import electron.FileWrap;
 import gml.Project;
 import haxe.io.Path;
 import js.lib.Error;
-import parsers.GmlExtLambda;
+import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.NativeString;
 import ui.GlobalSearch;

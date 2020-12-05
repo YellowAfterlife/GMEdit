@@ -4,6 +4,7 @@ import gml.Project;
 import haxe.io.Path;
 import js.lib.Error;
 import parsers.GmlReader;
+import synext.GmlExtLambda;
 import tools.StringBuilder;
 import ui.GlobalSearch;
 
@@ -101,7 +102,7 @@ class GmxSearcher {
 		if (opt.checkExtensions) {
 			for (q in pjGmx.findAll("NewExtensions")) for (extNode in q.findAll("extension")) {
 				var extPath = extNode.text + ".extension.gmx";
-				if (opt.expandLambdas && extNode.text == parsers.GmlExtLambda.extensionName) continue;
+				if (opt.expandLambdas && extNode.text == synext.GmlExtLambda.extensionName) continue;
 				filesLeft += 1;
 				pj.readGmxFile(extPath, function(extError, extGmx:SfGmx) {
 					if (extError == null) {

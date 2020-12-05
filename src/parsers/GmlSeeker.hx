@@ -17,6 +17,8 @@ import js.lib.Error;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import parsers.GmlSeekData;
+import synext.GmlExtLambda;
+import synext.GmlExtMFunc;
 import tools.CharCode;
 import tools.Dictionary;
 import tools.Aliases;

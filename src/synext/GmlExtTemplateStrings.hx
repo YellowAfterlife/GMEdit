@@ -1,8 +1,9 @@
-package parsers;
+package synext;
 import js.lib.RegExp;
 import tools.Aliases;
 import gml.GmlAPI;
 import gml.Project;
+import parsers.GmlReader;
 using StringTools;
 
 /**

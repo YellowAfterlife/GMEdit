@@ -1,9 +1,10 @@
-package parsers;
+package synext;
 import ace.AceWrap;
 import ace.extern.*;
 import gml.Project;
 import gml.file.GmlFile;
 import js.lib.RegExp;
+import synext.GmlExtArgs;
 import tools.NativeArray;
 using StringTools;
 

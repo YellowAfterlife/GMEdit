@@ -1,4 +1,4 @@
-package parsers;
+package synext;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.AceMacro.jsRx;
@@ -14,11 +14,15 @@ import gml.file.GmlFile;
 import gmx.SfGmx;
 import haxe.DynamicAccess;
 import js.lib.RegExp;
+import synext.GmlExtArgs;
 import tools.Dictionary;
 import tools.Aliases;
 import ui.Preferences;
 import yy.YyExtension;
 import yy.YyGUID;
+import parsers.GmlSeekData;
+import parsers.GmlReader;
+import parsers.GmlSeeker;
 using tools.NativeString;
 using StringTools;
 

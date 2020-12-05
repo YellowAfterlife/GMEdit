@@ -5,7 +5,7 @@ import gml.file.GmlFile;
 import haxe.io.Path;
 import js.lib.RegExp;
 import parsers.GmlParseAPI;
-import parsers.GmlExtMFunc;
+import synext.GmlExtMFunc;
 import tools.ArrayMap;
 import tools.Dictionary;
 import ace.AceWrap;

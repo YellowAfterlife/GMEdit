@@ -3,6 +3,11 @@ import parsers.*;
 import editors.EditCode;
 import editors.Editor;
 import electron.Dialog;
+import synext.GmlExtArgs;
+import synext.GmlExtArgsDoc;
+import synext.GmlExtCoroutines;
+import synext.GmlExtHyper;
+import synext.GmlExtLambda;
 import ui.Preferences;
 
 /**

@@ -3,7 +3,7 @@ import editors.EditCode;
 import electron.Dialog;
 import electron.FileWrap;
 import gml.file.GmlFileExtra;
-import parsers.GmlExtArgs;
+import synext.GmlExtArgs;
 import parsers.GmlMultifile;
 import parsers.GmlSeeker;
 import tools.Dictionary;

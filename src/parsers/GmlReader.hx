@@ -2,6 +2,7 @@ package parsers;
 
 import ace.extern.*;
 import gml.GmlVersion;
+import synext.GmlExtImport;
 import tools.CharCode;
 import tools.StringReader;
 using tools.NativeString;

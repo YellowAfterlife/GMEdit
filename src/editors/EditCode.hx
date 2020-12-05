@@ -19,6 +19,8 @@ import electron.FileSystem;
 import parsers.*;
 import js.lib.RegExp;
 import js.html.Element;
+import synext.GmlExtImport;
+import synext.GmlExtLambda;
 import ui.Preferences;
 import gmx.*;
 import yy.*;

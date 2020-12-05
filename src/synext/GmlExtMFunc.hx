@@ -1,4 +1,4 @@
-package parsers;
+package synext;
 import haxe.Json;
 import haxe.ds.Vector;
 import tools.Aliases;
@@ -8,6 +8,7 @@ using tools.NativeString;
 import ui.Preferences;
 import gml.GmlAPI;
 import ace.extern.AceAutoCompleteItem;
+import parsers.GmlReader;
 
 /**
  * This handles

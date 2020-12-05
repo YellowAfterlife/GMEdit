@@ -8,10 +8,11 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
 import file.FileKind;
-import parsers.GmlExtCoroutines;
+import synext.GmlExtCoroutines;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
 import js.lib.RegExp;
+import synext.GmlExtMFunc;
 import tools.Dictionary;
 import ace.AceMacro.rxRule;
 import ace.AceMacro.rxPush;
@@ -53,7 +54,7 @@ using tools.NativeArray;
 				GmlAPI.gmlKind[name],
 				GmlAPI.extKind[name],
 				GmlAPI.stdKind[name],
-				parsers.GmlExtCoroutines.keywordMap[name],
+				synext.GmlExtCoroutines.keywordMap[name],
 				fallback
 			);
 		}
@@ -616,7 +617,7 @@ using tools.NativeArray;
 		//
 		var rMFunc = [
 			rMFuncEOL,
-			rule(["operator", "constant"], parsers.GmlExtMFunc.magicRegex),
+			rule(["operator", "constant"], synext.GmlExtMFunc.magicRegex),
 		].concat(rBase);
 		rMFunc.replaceOne(rIdentLocal, rIdentLocalMF);
 		rMFunc.replaceOne(rIdentPair, rIdentPairMF);
