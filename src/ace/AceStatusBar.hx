@@ -138,6 +138,12 @@ class AceStatusBar {
 				ctx.docs = GmlNamespace.blank;
 				return true;
 			};
+			case "localfield": { // field()?
+				if (AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope }) != null) {
+					ctx.docs = GmlNamespace.blank;
+					return true;
+				} else return false;
+			};
 			case "macro": { // macro->function resolution
 				var m = GmlAPI.gmlMacros[tk.value];
 				if (m != null) {
@@ -155,18 +161,20 @@ class AceStatusBar {
 	}
 	public static function procDocImport(ctx:AceStatusBarDocSearch):Int {
 		var tk = ctx.tk;
+		var fnType = tk.type;
 		var doc = ctx.docs[tk.value];
 		var iter = ctx.iter;
 		var imports = ctx.imports;
 		var argStart = 0;
+		var name = tk.value;
+		var type:String;
 		if (imports != null) {
-			var name = tk.value;
+			type = null;
 			tk = iter.stepBackward();
 			if (tk != null && tk.value == ".") {
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
 				//
-				var type:String = null;
 				if (tk.type == "asset.object") {
 					type = tk.value;
 				} else if (tk.value == "other") {
@@ -189,36 +197,54 @@ class AceStatusBar {
 				} else if ((tk.type == "local" || tk.type == "sublocal") && imports.localTypes.exists(tk.value)) {
 					type = imports.localTypes[tk.value];
 				} else iter.stepForward();
-				//
-				if (type != null) {
-					for (iter in 0 ... 2) {
-						var ns = (iter > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
-						if (ns == null) continue;
-						var td = ns.getInstDoc(name);
-						if (td != null) {
-							doc = td;
-							if (iter == 0
-								&& (cast ns:GmlImportNamespace).longen.exists(name)
-							) argStart = 1;
-							break;
-						}
-					}
-				}
 			} else {
+				if (fnType == "localfield") {
+					type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
+				}
 				doc = AceMacro.jsOr(imports.docs[name], doc);
 				tk = iter.stepForward();
 			}
+			if (type != null) {
+				for (iter in 0 ... 2) {
+					var ns = (iter > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
+					if (ns == null) continue;
+					var td = ns.getInstDoc(name);
+					if (td != null) {
+						doc = td;
+						if (iter == 0
+							&& (cast ns:GmlImportNamespace).longen.exists(name)
+						) argStart = 1;
+						break;
+					}
+				}
+			}
 		} else if (!GmlAPI.gmlNamespaces.isEmpty()) {
-			var name = tk.value;
+			type = null;
 			tk = iter.stepBackward();
 			if (tk != null && tk.value == ".") {
 				iter.stepBackward();
 				tk = iter.getCurrentToken();
-				if (tk.type == "namespace") {
+				if (tk.type == "asset.object") {
+					type = tk.value;
+				} else if (tk.value == "other") {
+					type = AceGmlTools.getOtherType({ session: ctx.session, scope: ctx.scope });
+				} else if (tk.value == "self") {
+					type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
+				} else if (tk.type == "namespace") {
 					var nsGlobal = GmlAPI.gmlNamespaces[tk.value];
 					if (nsGlobal != null) doc = JsTools.or(nsGlobal.docStaticMap[name], doc);
 				}
+			} else {
+				if (fnType == "localfield") {
+					type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
+				}
 			}
+			if (type != null) do {
+				var ns = GmlAPI.gmlNamespaces[type];
+				if (ns == null) continue;
+				var td = ns.getInstDoc(name);
+				if (td != null) doc = td;
+			} while (false);
 		}
 		ctx.tk = tk;
 		ctx.doc = doc;
