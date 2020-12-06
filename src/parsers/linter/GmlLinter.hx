@@ -630,7 +630,7 @@ class GmlLinter {
 					addWarning('`$currName` is not a constructor, but is being used via `new`');
 				}
 				if (isExpr && optCheckHasReturn && doc.hasReturn == false) {
-					addWarning('`$currName` does not return anything, so this is 0');
+					addWarning('`$currName` does not return anything, the result is unspecified');
 				}
 			}
 		} else {

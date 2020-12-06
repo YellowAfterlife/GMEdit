@@ -7,6 +7,7 @@ import js.lib.RegExp;
 import parsers.GmlParseAPI;
 import synext.GmlExtMFunc;
 import tools.ArrayMap;
+import tools.ChainCall;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
@@ -308,11 +309,47 @@ class GmlAPI {
 			});
 		} else {
 			var raw:String = "";
-			function fin_inst(s:String) {
+			var cx = new ChainCall();
+			cx.call(getContent, dir + "/fnames", function(s:String){
+				if (s != null) {
+					raw = s;
+				} else {
+					Main.window.alert("Couldn't find fnames in " + dir);
+					cx.stop();
+				}
+			}).call(getContent, dir + "/extra.gml", function(s:String) {
+				// whatever missing in fnames
+				if (s != null && s != "") raw += "\n" + s;
+				#if lwedit
+				raw += "\ntrace(...)";
+				#end
+			}).call(getContent, dir + "/replace.gml", function(s:String) {
+				// various corrections instead of editing fnames by hand
+				if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
+					var name = rx.matched(1);
+					var code = rx.matched(0);
+					raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
+						return code;
+					});
+				});
+			}).call(getContent, dir + '/exclude.gml', function(s:String) {
+				// deprecated and/or forbidden
+				if (s != null) ~/^(\w+)(\*?)$/gm.each(s, function(rx:EReg) {
+					var name = rx.matched(1);
+					if (rx.matched(2) != "") {
+						raw = new EReg('^$name.*$', "gm").replace(raw, "");
+					} else {
+						raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
+					}
+				});
+			}).call(getContent, dir + '/inst.gml', function(s:String) {
+				// mark functions that need self-context
 				if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
 					var name = rx.matched(1);
 					raw = new EReg('^$name\\b', "gm").replace(raw, ":" + name);
 				});
+			}).call(getContent, dir + '/noret.gml', function(s:String) {
+				// concat customizations:
 				#if !lwedit
 				if (FileSystem.canSync) {
 					var xdir = FileWrap.userPath + "/api/" + version.getName();
@@ -328,55 +365,28 @@ class GmlAPI {
 				}
 				#end
 				GmlParseAPI.loadStd(raw, data);
+				
+				// patch non-returning functions:
+				if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
+					var name = rx.matched(1);
+					var doc = GmlAPI.stdDoc[name];
+					if (doc != null) doc.hasReturn = false;
+				});
+				
+				// give GMLive a copy of data
 				#if lwedit
-				if (lwArg0 != null) { // give GMLive a copy of data
+				if (lwArg0 != null) {
 					var cb = Reflect.field(Main.window, "lwSetAPI");
 					if (cb != null) cb(data);
 					Main.window.setTimeout(function() {
 						LiveWeb.readyUp();
 					});
 				}
-				// so that the welcome page highlights correctly:
+				
+				// force [re-]tokenization so that the welcome page highlights correctly:
 				Main.aceEditor.session.bgTokenizer.start(0);
 				#end
-			}
-			function fin_exclude(s:String) {
-				if (s != null) ~/^(\w+)(\*?)$/gm.each(s, function(rx:EReg) {
-					var name = rx.matched(1);
-					if (rx.matched(2) != "") {
-						raw = new EReg('^$name.*$', "gm").replace(raw, "");
-					} else {
-						raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
-					}
-				});
-				getContent(dir + "/inst.gml", fin_inst);
-			}
-			function fin_replace(s:String) {
-				if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
-					var name = rx.matched(1);
-					var code = rx.matched(0);
-					raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
-						return code;
-					});
-				});
-				getContent(dir + '/exclude.gml', fin_exclude);
-			}
-			function fin_extra(s:String) {
-				if (s != null && s != "") raw += "\n" + s;
-				#if lwedit
-				raw += "\ntrace(...)";
-				#end
-				getContent(dir + "/replace.gml", fin_replace);
-			}
-			function fin_fnames(s:String) {
-				if (s != null) {
-					raw = s;
-					getContent(dir + "/extra.gml", fin_extra);
-				} else {
-					Main.window.alert("Couldn't find fnames in " + dir);
-				}
-			}
-			getContent(dir + "/fnames", fin_fnames);
+			});
 		}
 		//}); // getContent conf
 	}

@@ -70,7 +70,8 @@ class PrefLinter {
 		addf("Warn about single `=` comparisons", opt.noSingleEquals);
 		addf("Warn about conditions without ()", opt.requireParentheses);
 		addf("Warn about missing functions", opt.requireFunctions);
-		addf("Warn about trying to use result of a script with no returned values", opt.checkHasReturn);
+		el = addf("Warn about trying to use result of a script/function with no returned values", opt.checkHasReturn);
+		el.title = "For functions, the list of functions without return values can be found in resources/app/api/<version>/noret.gml";
 		addf("Warn about mismatched argument counts on user-defined scripts/functions", opt.checkScriptArgumentCounts);
 		el = addf("Treat `var` as block-scoped", opt.blockScopedVar);
 		el.title = "You can also use `#macro const var` and `#macro let var`";
