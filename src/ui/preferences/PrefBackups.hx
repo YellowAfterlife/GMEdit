@@ -17,6 +17,9 @@ class PrefBackups {
 		addText(out, "Values are numbers of backup copies per file.");
 		for (v in GmlVersion.list) {
 			var s = v.name;
+			switch (s) { // there's a different mechanism for backing up in gmlive.js
+				case "gmlivejs-v1", "gmlivejs-v2", "gmlivejs-v23": continue;
+			}
 			addIntInput(out, 'for `${v.label}` projects', current.backupCount[s], function(n) {
 				current.backupCount[s] = n; save();
 			});
