@@ -394,7 +394,7 @@ class GmlFuncDoc {
 	 * A cheaper version of procCode that just figures out hasReturn and whether arguments might be optional.
 	 * 
 	 */
-	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int, ?isAuto:Bool) {
+	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int, ?isAuto:Bool, ?autoArgs:Array<String>) {
 		var start = from;
 		var till:Int = _till != null ? _till : gml.length;
 		var q = new GmlReader(gml);
@@ -403,6 +403,25 @@ class GmlFuncDoc {
 		var seekHasRet = true;
 		var seekArg = isAuto && args.length > 0 && !rest;
 		var hasArgRx = procHasReturn_rxHasArgArray;
+		//
+		var autoRxs:Array<RegExp> = null;
+		if (autoArgs != null) try {
+			autoRxs = [];
+			for (arg in autoArgs) autoRxs.push(new RegExp('\\b$arg\\s*[!=]=\\s*undefined'));
+		} catch (_:Dynamic) autoRxs = null;
+		inline function checkAutoRxs() {
+			if (autoRxs == null) return;
+			var m = minArgsCache;
+			if (m == 0) return;
+			var n = m != null ? m : autoRxs.length;
+			var i = -1; while (++i < n) {
+				if (autoRxs[i].test(chunk)) {
+					minArgsCache = i;
+					break;
+				}
+			}
+		}
+		//
 		q.pos = from;
 		while (q.pos < till) {
 			var p = q.pos, n;
@@ -423,6 +442,7 @@ class GmlFuncDoc {
 					rest = true;
 					if (!seekHasRet) return;
 				}
+				checkAutoRxs();
 				start = q.pos;
 			} else q.skip();
 		}
@@ -441,6 +461,7 @@ class GmlFuncDoc {
 			minArgsCache = 0;
 			rest = true;
 		}
+		checkAutoRxs();
 	}
 	
 	static var autogen_argi = [for (i in 0 ... 16) new RegExp('\\bargument$i\\b')];

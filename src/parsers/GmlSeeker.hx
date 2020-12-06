@@ -379,7 +379,7 @@ class GmlSeeker {
 					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
 				} else if (doc.args.length != 0) {
 					// have some arguments and no JSDoc
-					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
+					doc.procHasReturn(src, start, q.pos, docIsAutoFunc, doc.args);
 				} else { // no JSDoc, try indexing
 					doc.fromCode(src, start, q.pos);
 					updateComp = true;
