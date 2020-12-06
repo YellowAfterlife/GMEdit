@@ -246,7 +246,12 @@ class GmlLinter {
 					return ret(KString);
 				};
 				//
-				case "?".code: return retv(KQMark, "?");
+				case "?".code: {
+					if (q.peek() == "?".code && q.peek(1) == "=".code) {
+						q.skip(2);
+						return retv(KSet, "??=");
+					} else return retv(KQMark, "?");
+				};
 				case ":".code: {
 					if (q.peek() == "=".code) {
 						q.skip();

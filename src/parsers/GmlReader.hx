@@ -396,6 +396,7 @@ class GmlReader extends StringReader {
 		} else return true;
 	}
 	
+	/** Skips comments and strings. Returns >= 0 if something was skipped, -1 otherwise. */
 	public function skipCommon_inline():Int {
 		switch (peek()) {
 			case "/".code: switch (peek(1)) {

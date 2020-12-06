@@ -4,13 +4,8 @@ import editors.EditCode;
 import editors.Editor;
 import electron.Dialog;
 import js.lib.RegExp;
-import synext.GmlExtHyper;
-import synext.GmlExtImport;
-import synext.GmlExtLambda;
 import parsers.*;
-import synext.GmlExtCoroutines;
-import synext.GmlExtMFunc;
-import synext.GmlExtTemplateStrings;
+import synext.*;
 import tools.NativeString;
 
 /**
@@ -30,6 +25,9 @@ class KGml extends KCode {
 	
 	/// Whether `..${expr}..` magic is supported for this kind
 	public var canTemplateString:Bool = true;
+	
+	/** Whether `a ??= b` is supported for this kind */
+	public var canNullCoalescingAssignment:Bool = true;
 	
 	/// Whether #mfunc magic is supported for this kind
 	public var canMFunc:Bool = true;
@@ -58,6 +56,7 @@ class KGml extends KCode {
 		if (canMFunc) code = GmlExtMFunc.pre(editor, code);
 		if (onDisk && canImport) code = GmlExtImport.pre(code, editor.file.path);
 		if (canTemplateString) code = GmlExtTemplateStrings.pre(code);
+		if (canNullCoalescingAssignment) code = GmlNullCoalescingAssignment.pre(code);
 		if (canHyper) code = GmlExtHyper.pre(code);
 		return code;
 	}
@@ -66,6 +65,7 @@ class KGml extends KCode {
 		saveSessionChanged = false;
 		var onDisk = editor.file.path != null;
 		if (canHyper) code = GmlExtHyper.post(code);
+		if (canNullCoalescingAssignment) code = GmlNullCoalescingAssignment.post(code);
 		if (canTemplateString) code = GmlExtTemplateStrings.post(code);
 		if (onDisk && canImport) {
 			var pair = editor.postpImport(code);
