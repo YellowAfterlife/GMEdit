@@ -12,6 +12,7 @@ import haxe.DynamicAccess;
 		compMatchMode: PrefMatchMode.AceSmart,
 		compKeywords: true,
 		compFilterSnippets: true,
+		
 		argsMagic: true,
 		argsFormat: "",
 		argsStrict: false,
@@ -21,6 +22,8 @@ import haxe.DynamicAccess;
 		lambdaMagic: true,
 		hyperMagic: true,
 		mfuncMagic: true,
+		nullCoalescingAssignment: true,
+		
 		fileSessionTime: 7,
 		projectSessionTime: 14,
 		singleClickOpen: false,
@@ -51,6 +54,7 @@ typedef PrefDataImpl = {
 	theme:String,
 	fileSessionTime:Float,
 	projectSessionTime:Float,
+	
 	argsMagic:Bool,
 	argsFormat:String,
 	argsStrict:Bool,
@@ -60,6 +64,8 @@ typedef PrefDataImpl = {
 	lambdaMagic:Bool,
 	hyperMagic:Bool,
 	mfuncMagic:Bool,
+	nullCoalescingAssignment:Bool,
+	
 	assetThumbs:Bool,
 	clearAssetThumbsOnRefresh:Bool,
 	singleClickOpen:Bool,

@@ -14,6 +14,7 @@ class PrefMagic {
 		out = addGroup(out, "Syntax extensions");
 		out.id = "pref-magic";
 		var el:Element, gr:Element;
+		
 		//
 		gr = addGroup(out, "#args magic"); {
 			addWiki(gr, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23args-magic");
@@ -40,6 +41,7 @@ class PrefMagic {
 			});
 			el.title = "Doesn't collapse arguments unless the format is binary identical.";
 		};
+		
 		//
 		el = addCheckbox(out, "Use `#import` magic", current.importMagic, function(z) {
 			current.importMagic = z;
@@ -47,12 +49,14 @@ class PrefMagic {
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23import-magic");
 		el.title = "Allows setting up rules for shortening names per-script.";
+		
 		//
 		addCheckbox(out, "Allow undo-ing `#import`", current.allowImportUndo, function(z) {
 			current.allowImportUndo = z;
 			save();
 		}).title = "Allows undoing name changes made after changing #import rules."
 			+ "\nMakes it easier to break code, so be careful.";
+		
 		//
 		el = addCheckbox(out, "Use `#mfunc` magic", current.mfuncMagic, function(z) {
 			current.mfuncMagic = z;
@@ -60,24 +64,36 @@ class PrefMagic {
 		});
 		el.title = "Allows C-style macros with arguments";
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23mfunc-magic");
+		
 		//
 		el = addCheckbox(out, "Use coroutine magic", current.coroutineMagic, function(z) {
 			current.coroutineMagic = z;
 			save();
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23gmcr-magic");
+		
 		//
 		el = addCheckbox(out, "Use lambda magic", current.lambdaMagic, function(z) {
 			current.lambdaMagic = z;
 			save();
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23lambda-magic");
-		//
+		
+		/*// Soon (tm)
 		el = addCheckbox(out, "Use GMHyper magic", current.hyperMagic, function(z) {
 			current.hyperMagic = z;
 			save();
 		});
-		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GMHyper-in-GMEdit");
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GMHyper-in-GMEdit");*/
+		
+		//
+		el = addCheckbox(out, "Use ??= operator", current.lambdaMagic, function(z) {
+			current.nullCoalescingAssignment = z;
+			save();
+		});
+		el.title = "Allows to write `a ??= b` instead of `if (a == undefined) a = b`";
+		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%3F%3F=-operator");
+		
 		//
 		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];

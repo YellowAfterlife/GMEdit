@@ -5,6 +5,7 @@ import parsers.GmlReader;
 import tools.Aliases;
 import tools.GmlCodeTools;
 import tools.JsTools;
+import ui.Preferences;
 using tools.RegExpTools;
 
 /**
@@ -32,6 +33,7 @@ class GmlNullCoalescingAssignment {
 		+ "="
 	, "g");
 	public static function pre(code:GmlCode):GmlCode {
+		if (!Preferences.current.nullCoalescingAssignment) return code;
 		var q = new GmlReader(code);
 		var version = gml.GmlAPI.version;
 		var out = "";
@@ -104,6 +106,7 @@ class GmlNullCoalescingAssignment {
 		return out;
 	}
 	public static function post(code:GmlCode):GmlCode {
+		if (!Preferences.current.nullCoalescingAssignment) return code;
 		var q = new GmlReader(code);
 		var version = gml.GmlAPI.version;
 		var out = "";
