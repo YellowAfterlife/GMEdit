@@ -635,7 +635,7 @@ class GmlExtLambda {
 				pj: pj,
 				py: py,
 			};
-			yy.YyManip.add(md);
+			yy.v22.YyManipV22.add(md);
 			pj.lambdaView = "views\\" + md.outGUID + ".yy";
 			saveProject = true;
 		}
@@ -693,7 +693,7 @@ class GmlExtLambda {
 				openFile: false,
 				showInTree: false,
 			};
-			yy.YyManip.add(md);
+			yy.v22.YyManipV22.add(md);
 			saveProject = true;
 		}
 		// modify:
@@ -877,6 +877,7 @@ class GmlExtLambda {
 	}
 	public static function post(edit:EditCode, code:GmlCode):GmlCode {
 		if (!Preferences.current.lambdaMagic) return code;
+		if (!Project.current.canLambda()) return code;
 		var hasLambda = hasHashLambda(code);
 		if (!hasLambda && edit.lambdaList.length == 0) return code;
 		var data = postInit(edit.file.name, Project.current, edit.lambdaList, edit.lambdaMap);

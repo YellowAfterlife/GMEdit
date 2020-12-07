@@ -111,7 +111,9 @@ import ui.treeview.TreeViewElement;
 	/** lambdas view if in scripts mode */
 	public var lambdaView:RelPath = null;
 	public inline function canLambda():Bool {
-		return ui.Preferences.current.lambdaMagic && (lambdaGml != null || properties.lambdaMode == Scripts);
+		return !isGMS23
+			&& Preferences.current.lambdaMagic
+			&& (lambdaGml != null || properties.lambdaMode == Scripts);
 	}
 	
 	private var frameRate:Null<Int> = null;
