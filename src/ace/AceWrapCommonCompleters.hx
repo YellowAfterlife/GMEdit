@@ -157,7 +157,10 @@ class AceWrapCommonCompleters {
 		}
 		
 		var htMacro = new AceWrapCompleterCustom([
-			new AceAutoCompleteItem("macro", "preproc"),
+			new AceAutoCompleteItem("macro", "preproc", [
+				"#macro name expr",
+				"#macro Config:name expr",
+			].join("\n")),
 		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
 			if (!hashLineStartsWith(ssn, pos, prefix, "#m")) return false;
 			var file:GmlFile = ssn.gmlFile;
@@ -165,6 +168,20 @@ class AceWrapCommonCompleters {
 				|| file != null && Std.is(file.kind, KGmxMacros);
 		});
 		hashtagCompleters.push(htMacro);
+		
+		var htMFunc = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("mfunc", "preproc", [
+				"#mfunc name(args) expr",
+				'#mfunc name(args) as "type" expr',
+				"GMEdit-specific"
+			].join("\n")),
+		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!Preferences.current.mfuncMagic) return false;
+			if (!hashLineStartsWith(ssn, pos, prefix, "#m")) return false;
+			var file:GmlFile = ssn.gmlFile;
+			return Project.current.version.config.indexingMode != GMS1;
+		});
+		hashtagCompleters.push(htMFunc);
 		
 		var htDefine = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("define", "preproc"),
