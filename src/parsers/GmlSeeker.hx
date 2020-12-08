@@ -450,7 +450,7 @@ class GmlSeeker {
 		inline function q_restore():Void {
 			q.setTo(q_swap);
 		}
-		inline function procFuncLiteralArgs() {
+		function procFuncLiteralArgs() {
 			if (find(Par0) == "(") {
 				while (q.loop) {
 					var s = find(Ident | Par1);
@@ -711,7 +711,14 @@ class GmlSeeker {
 							subLocalDepth = cubDepth;
 							localKind = "sublocal";
 						}
-						procFuncLiteralArgs();
+						if (isCreateEvent && cubDepth == 0 && fname != null) {
+							var argsStart = q.pos;
+							procFuncLiteralArgs();
+							var args = q.substring(argsStart, q.pos).trimBoth();
+							s = find(Line | Cub0 | Ident | Colon);
+							var isConstructor = (s == ":" || s == "constructor");
+							addFieldHint(isConstructor, getObjectName(), true, fname, args, null);
+						} else procFuncLiteralArgs();
 						resetDoc(); // discard any collected JSDoc
 						continue;
 					}
