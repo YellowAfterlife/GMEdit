@@ -14,11 +14,27 @@
 	var popout = false; // show a popout instead of a sidebar
 	var currOnly = false; // original idea (only show the current file)
 	var showAtTop = true;
+	var showFuncArgs = false;
+	var tailSep = " ➜ "; // narrow space, arrow, narrow space
 	//
 	var escapeProp = $gmedit["tools.NativeString"].escapeProp;
 	var modeMap = {
 		"ace/mode/gml": (function() {
-			var rxDef = /^(?:(#event)|#define|#moment|#section|#roomcc|function)\b\s*(\w+(?::\w+)?)(.*)$/;
+			var rxDef = /^((#event)|#define|#moment|#section|#roomcc)\b\s*(\w+(?::\w+)?)(.*)$/;
+			var rxFunc = new RegExp("^function"
+				+ "\\s+(\\w+)" // name
+				+ "\\s*(\\(.*?\\))" // args
+				+ "(?:.*?\\/\\/(.*))?" // post-comment
+			);
+			var rxSubFunc = new RegExp("^\\s+"
+				+ "("
+					+ "(?:static\\s+)?(\\w+)\\s*=\\s*function"
+					+ "|"
+					+ "function\\s+(\\w+)"
+				+ ")"
+				+ "\\s*(\\(.*?\\))" // args
+				+ "(?:.*?\\/\\/(.*))?" // post-comment
+			);
 			var rxPush = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
 			var rxPop = /^\s*(?:#endregion|\/\/#endregion)\b/;
 			var rxMark = /^\s*((?:\/\/#mark|#section)\b\s*(.*))$/;
@@ -29,9 +45,21 @@
 				var doc = file.codeEditor.session.doc;
 				for (; row >= 0; row--) {
 					var rowText = doc.getLine(row), mt;
-					if (mt = rxDef.exec(rowText)) { def = mt[2]; break; }
-					if (!ctx && (mt = rxCtx.exec(rowText))) {
+					if (mt = rxDef.exec(rowText)) {
+						def = mt[3];
+						break;
+					}
+					if (mt = rxFunc.exec(rowText)) {
+						def = mt[1];
+						break;
+					}
+					if (ctx) continue;
+					if (mt = rxCtx.exec(rowText)) {
 						ctx = mt[1];
+						ctxRow = row;
+						if (def != null) break;
+					} else if (mt = rxSubFunc.exec(rowText)) {
+						ctx = (mt[2] || mt[3]);
 						ctxRow = row;
 						if (def != null) break;
 					}
@@ -43,24 +71,64 @@
 			function reindex(file, ctx) {
 				var doc = file.codeEditor.session.doc;
 				var n = doc.getLength();
-				var def = null, mt, nav;
+				var def = null;
 				for (var i = 0; i < n; i++) {
-					var line = doc.getLine(i);
-					if (mt = rxDef.exec(line)) {
-						def = mt[2];
-						var txt = def;
-						if (def != "properties") {
-							var tail = mt[3].trim();
-							if (tail) txt += " ➜ " + tail; // narrow space, arrow, narrow space
+					var line = doc.getLine(i), mt;
+					if (mt = rxDef.exec(line)) { // #define, #event, etc.
+						def = mt[3];
+						var label = def, title = mt[1] + " " + def;
+						
+						var tail = (mt[4] || "").trim();
+						if (tail && def != "properties") {
+							label += tailSep + tail;
+							title += "\n" + tail;
 						}
-						nav = { def: def,ctxAfter:true,showAtTop:showAtTop };
+						
+						var nav = { def: def, ctxAfter: true, showAtTop: showAtTop };
+						
+						// if this is an event, we set an attribute so that we can have different icons for them
 						if (mt[1]) nav.outlineViewData = "gml_" + def;
-						ctx.flush(txt, txt, nav);
-						continue;
+						
+						ctx.flush(label, title, nav);
+					} else if (mt = rxFunc.exec(line)) { // 2.3 top-level functions
+						def = mt[1];
+						var label = def, title = "function " + def;
+						
+						if (showFuncArgs) label += mt[2];
+						title += mt[2];
+						
+						var tail = (mt[3] || "").trim();
+						if (tail) {
+							label += tailSep + tail;
+							title += "\n" + tail;
+						}
+						
+						var nav = { def: def, ctxAfter: true, showAtTop: showAtTop };
+						ctx.flush(label, title, nav);
+					} else if (mt = rxSubFunc.exec(line)) {
+						var name = mt[2] || mt[3];
+						var label = name, title = mt[1];
+						
+						if (showFuncArgs) label += mt[4];
+						title += mt[4];
+						
+						var tail = (mt[5] || "").trim();
+						if (tail) {
+							label += tailSep + tail;
+							title += "\n" + tail;
+						}
+						
+						var nav = { def: def, ctx: name, ctxAfter: true, showAtTop: showAtTop };
+						ctx.mark(label, title, nav);
+					} else if (mt = rxPush.exec(line)) {
+						var nav = { def: def, ctx: mt[1], ctxAfter: true, showAtTop: showAtTop };
+						ctx.push(mt[2], mt[0], nav);
+					} else if (mt = rxPop.exec(line)) {
+						ctx.pop();
+					} else if (mt = rxMark.exec(line)) {
+						var nav = { def: def, ctx: mt[1], ctxAfter: true, showAtTop: showAtTop };
+						ctx.mark(mt[2], mt[0], nav);
 					}
-					else if (mt = rxPush.exec(line)) ctx.push(mt[2], mt[2], {def:def,ctx:mt[1],ctxAfter:true,showAtTop:showAtTop});
-					else if (mt = rxPop.exec(line)) ctx.pop();
-					else if (mt = rxMark.exec(line)) ctx.mark(mt[2], mt[2], {def:def,ctx:mt[1],ctxAfter:true,showAtTop:showAtTop});
 				}
 			}
 			return {
@@ -174,7 +242,7 @@
 			}
 		}
 		seta(r, "outline-data", nav && nav.outlineViewData)
-		seta(r, "title", title);
+		seta(r.treeHeader, "title", title);
 		seta(r, "outline-def", nav && nav.def);
 		seta(r, "outline-ctx", nav && nav.ctx);
 		return r;
@@ -332,6 +400,21 @@
 		}
 		changeTo_post(file);
 	}
+	function forceRefresh() {
+		var tabEls = $gmedit["ui.ChromeTabs"].impl.tabEls;
+		for (var i = 0; i < tabEls.length; i++) {
+			var tabEl = tabEls[i];
+			var file = tabEl.gmlFile;
+			if (!file) continue;
+			file.outlineView = null;
+		}
+		treeview.innerHTML = "";
+		if (!currOnly) {
+			syncAll();
+		} else {
+			changeTo(currFile());
+		}
+	}
 	//
 	function onFileChange(e) {
 		changeTo(e.file);
@@ -419,8 +502,15 @@
 			Preferences.save();
 		}
 		var currOV = currPrefs.outlineView;
+		function opt(ov, name, def) {
+			if (!ov) return def;
+			var val = ov[name];
+			return val !== undefined ? val : def;
+		}
 		if (!(currOV && currOV.hide)) toggle();
-		currOnly = currOV && currOV.currOnly;
+		currOnly = opt(currOV, "currOnly", false);
+		showAtTop = opt(currOV, "showAtTop", true);
+		showFuncArgs = opt(currOV, "showFuncArgs", true);
 		//
 		GMEdit.on("preferencesBuilt", function(e) {
 			var out = e.target.querySelector('.plugin-settings[for="outline-view"]');
@@ -433,13 +523,29 @@
 				Preferences.save();
 			});
 			toggleCheckbox = hideCtr.querySelector("input");
-			Preferences.addCheckbox(out, "Only show the currently active file", currOV && currOV.currOnly, function(val) {
+			Preferences.addCheckbox(out, "Only show the currently active file", opt(currOV, "currOnly", false), function(val) {
 				var currOV = Preferences.current.outlineView;
 				if (!currOV) currOV = Preferences.current.outlineView = {};
 				currOnly = currOV.currOnly = val;
 				currEl = null;
 				Preferences.save();
 				toggle_sync();
+			});
+			Preferences.addCheckbox(out, "Show 2.3 function arguments", opt(currOV, "showFuncArgs", true), function(val) {
+				var currOV = Preferences.current.outlineView;
+				if (!currOV) currOV = Preferences.current.outlineView = {};
+				showFuncArgs = currOV.showFuncArgs = val;
+				currEl = null;
+				Preferences.save();
+				forceRefresh();
+			});
+			Preferences.addCheckbox(out, "Scroll to top upon navigation", opt(currOV, "showAtTop", true), function(val) {
+				var currOV = Preferences.current.outlineView;
+				if (!currOV) currOV = Preferences.current.outlineView = {};
+				showAtTop = currOV.showAtTop = val;
+				currEl = null;
+				Preferences.save();
+				forceRefresh();
 			});
 		});
 	}
