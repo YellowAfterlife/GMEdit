@@ -184,7 +184,7 @@ class GmlCodeTools {
 			case "-".code: if (code.fastCodeAt(--p0) == "-".code) return true; else break;
 			case "[".code: return false;
 			default: {
-				isStat = isStatementBacktrack(code, p0, false);
+				isStat = isStatementBacktrack(code, p0 + 1, false);
 				break;
 			}
 		}
