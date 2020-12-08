@@ -22,13 +22,9 @@ class Theme {
 		setDarkTabs(false);
 	}
 	private static function setDarkTabs(z:Bool) {
-		var c = "chrome-tabs-dark-theme";
 		var els = [for (q in document.querySelectorEls(".chrome-tabs")) q];
 		els.push(document.querySelectorAuto("#main"));
-		for (el in els) {
-			var cl = el.classList;
-			if (z) cl.add(c); else cl.remove(c);
-		}
+		for (el in els) el.classList.setTokenFlag("chrome-tabs-dark-theme", z);
 	}
 	private static function add(name:String):Void {
 		var dir = Path.join([Main.modulePath, path, name]);
@@ -68,6 +64,7 @@ class Theme {
 	public static var current(default, set):String = "default";
 	private static function set_current(name:String):String {
 		if (current == name) return name;
+		document.documentElement.setAttribute("data-theme", name);
 		current = name;
 		reset();
 		ace.AceGmlHighlight.useBracketDepth = false;
