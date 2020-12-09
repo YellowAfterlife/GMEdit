@@ -21,9 +21,11 @@ import haxe.extern.EitherType;
 	public var foldWidgets:Array<String>;
 	public function getFoldWidget(row:Int):String;
 	public function getFoldAt(row:Int, col:Int):Dynamic;
+	public function getFoldWidgetRange(row:Int):AceRange;
 	@:native("$toggleFoldWidget")
 	public function toggleFoldWidgetRaw(row:Int, opt:Dynamic):AceRange;
 	public function getAllFolds():Array<AceFold>;
+	public function addFold(label:String, range:AceRange):AceFold;
 	//
 	public function getValue():String;
 	public function setValue(v:String):Void;

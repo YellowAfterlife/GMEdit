@@ -168,6 +168,41 @@ using StringTools;
 		#else
 		bind(wm("Ctrl-Enter", "Command-Enter"), "toggleFoldWidget");
 		#end
+		//{
+		var rxFoldRegion = new RegExp("^\\s*(?://)?#region\\b");
+		function foldSubRegions(session:AceSession, startRow:Int, endRow:Int, depth:Int = 0):Void {
+			var foldWidgets = session.foldWidgets;
+			var row = startRow - 1;
+			while (++row < endRow) {
+				if (foldWidgets[row] == null) foldWidgets[row] = session.getFoldWidget(row);
+				if (foldWidgets[row] != "start") continue;
+				if (!rxFoldRegion.test(session.getLine(row))) continue;
+				var range = session.getFoldWidgetRange(row);
+				if (range != null && range.isMultiLine()
+					&& range.end.row <= endRow
+					&& range.start.row >= startRow
+				) {
+					row = range.end.row;
+					if (depth < 128) foldSubRegions(session, range.start.row + 1, range.end.row, depth + 1);
+					try {
+						session.addFold("...", range);
+					} catch (_) {}
+				}
+			}
+		}
+		add({
+			name: "foldallregions",
+			bindKey: wm("Ctrl-Shift-M", "Command-Shift-M"),
+			exec: function(editor:AceWrap) {
+				var session = editor.session;
+				var foldWidgets = session.foldWidgets;
+				if (foldWidgets == null) return;
+				var startRow = 0;
+				var endRow = session.getLength();
+				foldSubRegions(session, startRow, endRow);
+			}
+		}, "Fold Regions");
+		//}
 		bind(wm("Ctrl-M", "Command-M"), "foldall", "Fold All");
 		bind(wm("Ctrl-U", "Command-U"), "unfoldall", "Unfold All");
 		bind(wm("Ctrl-Alt-Up", "Command-Alt-Up"), "movelinesup");

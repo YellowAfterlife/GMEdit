@@ -20,4 +20,5 @@ package ace.extern;
 	public var end:AcePos;
 	public function new(startRow:Int, startCol:Int, endRow:Int, endCol:Int):Void;
 	public function extend(row:Int, col:Int):AceRange;
+	public function isMultiLine():Bool;
 }
