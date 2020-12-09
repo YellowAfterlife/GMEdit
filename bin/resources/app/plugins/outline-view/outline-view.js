@@ -253,8 +253,15 @@
 		var session = file.codeEditor.session;
 		var conf = modeMap[session.$modeId];
 		if (!conf) return;
+		var row = session.selection.lead.row;
+		
+		// if the cursor is inside JSDoc line immediately before a function, highlight the function instead
+		var rxJSDoc = /^\s*\/\/\/\s*@.*/;
+		var rows = session.getLength();
+		while (row < rows && rxJSDoc.test(session.getLine(row))) row++;
+		
 		var pos = {
-			row: session.selection.lead.row,
+			row: row,
 			def: null,
 			ctx: null,
 		}
