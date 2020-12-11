@@ -27,6 +27,8 @@ typedef AceCommandImpl = {
 	name:String,
 	/** A descriptive name for settings */
 	?title:String,
+	/** Shown as mouseover in settings */
+	?description:String,
 	?readOnly:Bool,
 	?scrollIntoView:String,
 	?multiSelectAction:String,

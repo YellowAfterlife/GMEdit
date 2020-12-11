@@ -358,6 +358,36 @@ using tools.PathTools;
 		r.addEventListener("contextmenu", handleItemCtxMenu);
 		return r;
 	}
+	
+	public static function showElement(item:Element, flash:Bool) {
+		if (flash) {
+			var flashStep = 0;
+			var flashInt = 0;
+			function flashFunc() {
+				if (flashStep % 2 == 0) {
+					item.classList.add("show-in-treeview-flash");
+				} else item.classList.remove("show-in-treeview-flash");
+				if (++flashStep >= 6) Main.window.clearInterval(flashInt);
+			}
+			flashInt = Main.window.setInterval(flashFunc, 300);
+		}
+		
+		//
+		var par = item, check = false;
+		do {
+			if (par.classList.contains(TreeView.clDir) && !par.classList.contains(TreeView.clOpen)) {
+				par.classList.add(TreeView.clOpen);
+				check = true;
+			}
+			par = par.parentElement;
+		} while (par != null && !par.classList.contains("treeview"));
+		
+		if (check && par != null) TreeView.ensureThumbs(par);
+		
+		if ((cast item).scrollIntoViewIfNeeded) {
+			(cast item).scrollIntoViewIfNeeded();
+		}
+	}
 	//
 	public static var openPaths:Array<String> = [];
 	public static function saveOpen() {

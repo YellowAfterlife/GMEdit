@@ -119,6 +119,7 @@ class EditKeybindings extends Editor {
 					JsTools.rx(~/([a-z])([A-Z0-9])/g),
 					(_, a, b) -> a + " " + b.toUpperCase());
 			}
+			if (cmd.description != null) td.title = cmd.description;
 			td.innerText = title;
 			tr.appendChild(td);
 			

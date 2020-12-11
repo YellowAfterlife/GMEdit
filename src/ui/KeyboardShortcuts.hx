@@ -52,20 +52,25 @@ class KeyboardShortcuts {
 				};
 			} else return key;
 		}
-		function addCommand(name:String, keys:EitherType<String, Array<String>>, exec:Void->Void):Void {
+		//
+		var lcmd:AceCommand = null;
+		function addCommand(name:String, keys:EitherType<String, Array<String>>, exec:Void->Void):AceCommand {
 			var multikey = Std.is(keys, Array);
 			var key = multikey ? keys[0] : keys;
-			hh.addCommand({
+			var cmd:AceCommand = {
 				bindKey: keyToCommandKey(key),
 				name: name,
 				exec: cast exec,
-			});
+			};
+			hh.addCommand(cmd);
 			if (multikey) {
 				var keys:Array<String> = keys;
 				for (i in 1 ... keys.length) {
 					hh.bindKey(keyToCommandKey(keys[i]), name);
 				}
 			}
+			lcmd = cmd;
+			return cmd;
 		}
 		addCommand("previousTab", ["mod-shift-tab", "mod-pageup"], function() {
 			var tab = document.querySelector(".chrome-tab-current");
@@ -85,6 +90,7 @@ class KeyboardShortcuts {
 			if (Electron == null) return;
 			Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
 		});
+		lcmd.description = "Only works in standalone version.";
 		//
 		#if !lwedit
 		addCommand("reloadProject", "mod-r", function() {
@@ -103,11 +109,9 @@ class KeyboardShortcuts {
 			}
 		});
 		addCommand("closeOtherTabs", "mod-shift-w", function() {
-			for (q in document.querySelectorAll(
+			for (q in document.querySelectorEls(
 				".chrome-tab:not(.chrome-tab-current) .chrome-tab-close"
-			)) {
-				var qe:Element = cast q; qe.click();
-			}
+			)) q.click();
 		});
 		//
 		addCommand("saveTab", "mod-s", function() {
@@ -123,14 +127,31 @@ class KeyboardShortcuts {
 			ui.liveweb.LiveWebState.save();
 			#end
 		});
-		//
+		
+		//{
 		addCommand("localSearch", "mod-f", function() {
-			// maybe later
+			// maybe later (but Ace will handle it for code editors)
 		});
+		lcmd.description = "Note: Code Editor has a separate shortcut for this below.";
+		
 		addCommand("globalSearch", "mod-shift-f", function() {
 			GlobalSearch.toggle();
 		});
-		//
+		addCommand("findReferencesToHere", "alt-f1", function() {
+			var file = GmlFile.current;
+			if (file == null) return;
+			GlobalSearch.findReferences(file.name);
+		});
+		#if !lwedit
+		addCommand("showInResourceTree", "alt-g", function() {
+			var file = GmlFile.current;
+			if (file == null) return;
+			var item = ui.treeview.TreeView.find(true, { path: file.path });
+			if (item != null) ui.treeview.TreeView.showElement(item, true);
+		});
+		#end
+		//}
+		
 		var lookupPre = Electron != null ? "mod" : "alt";
 		addCommand("globalLookup", '$lookupPre-t', function() {
 			GlobalLookup.toggle();
@@ -142,11 +163,6 @@ class KeyboardShortcuts {
 			Main.document.location.reload();
 		});
 		//
-		addCommand("switchToLastTab", "mod-9", function() {
-			var tabs = document.querySelectorEls(".chrome-tab");
-			var tabEl:Element = tabs[tabs.length - 1];
-			if (tabEl != null) tabEl.click();
-		});
 		for (i in 1 ... 9) {
 			addCommand('switchToTab$i', 'mod-$i', function() {
 				var tabs = document.querySelectorEls(".chrome-tab");
@@ -154,6 +170,11 @@ class KeyboardShortcuts {
 				if (tabEl != null) tabEl.click();
 			});
 		}
+		addCommand("switchToLastTab", "mod-9", function() {
+			var tabs = document.querySelectorEls(".chrome-tab");
+			var tabEl:Element = tabs[tabs.length - 1];
+			if (tabEl != null) tabEl.click();
+		});
 	}
 	
 	static function handleKey(e:KeyboardEvent, hashId:Int, keyCode:Int) {

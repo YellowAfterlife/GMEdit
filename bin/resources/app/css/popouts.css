@@ -216,3 +216,6 @@ html #ace_settingsmenu {
 	font-size: 125%;
 	border-bottom: 1px solid currentColor;
 }
+#keybindings-editor td[title] {
+	text-decoration: underline dotted;
+}

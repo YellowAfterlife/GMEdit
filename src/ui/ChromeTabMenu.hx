@@ -115,32 +115,8 @@ class ChromeTabMenu {
 			id: "show-in-tree",
 			label: "Show in tree",
 			click: function() {
-				var tree = TreeView.element;
-				var path = target.gmlFile.path;
-				var epath = tools.NativeString.escapeProp(path);
-				var item = tree.querySelector('.item[${TreeView.attrPath}="$epath"]');
-				if (item == null) return;
-				//
-				var flashStep = 0;
-				var flashInt = 0;
-				function flashFunc() {
-					if (flashStep % 2 == 0) {
-						item.classList.add("show-in-treeview-flash");
-					} else item.classList.remove("show-in-treeview-flash");
-					if (++flashStep >= 6) Main.window.clearInterval(flashInt);
-				}
-				flashInt = Main.window.setInterval(flashFunc, 300);
-				//
-				var par = item, check = false;
-				do {
-					if (par.classList.contains(TreeView.clDir) && !par.classList.contains(TreeView.clOpen)) {
-						par.classList.add(TreeView.clOpen);
-						check = true;
-					}
-					par = par.parentElement;
-				} while (par != null && !par.classList.contains("treeview"));
-				if (check && par != null) TreeView.ensureThumbs(par);
-				untyped item.scrollIntoViewIfNeeded();
+				var item = TreeView.find(true, { path: target.gmlFile.path });
+				if (item != null) TreeView.showElement(item, true);
 			}
 		}));
 		menu.append(findReferences = new MenuItem({
