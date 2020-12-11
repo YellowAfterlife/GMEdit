@@ -4,6 +4,7 @@ import haxe.Int64;
 import haxe.Json;
 import haxe.ds.ObjectMap;
 import tools.Dictionary;
+import tools.JsTools;
 using tools.NativeString;
 
 /**
@@ -52,6 +53,7 @@ class YyJsonPrinter {
 		q["GMEvent"] = plain.concat(["IsDnD"]);
 		return q;
 	})();
+	public static var metaByModelName:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByModelName();
 	public static var metaByResourceType:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByResourceType();
 	
 	static var isOrderedCache:Map<Array<String>, Dictionary<Bool>> = new Map();
@@ -99,13 +101,17 @@ class YyJsonPrinter {
 			var fieldTypes:Dictionary<String> = null;
 			var orderedFieldsFirst = true;
 			var found = 0, sep = false;
+			// where available, use 
 			var meta:YyJsonMeta;
 			if (nt != null) {
-				meta = metaByResourceType[nt];
+				meta = isExt ? metaByResourceType[nt] : metaByModelName[nt];
 				if (meta == null) Main.console.warn('Unknown type $nt');
+			} else if (isExt) {
+				nt = obj.resourceType;
+				meta = JsTools.nca(nt, metaByResourceType[nt]);
 			} else {
-				nt = (cast obj).resourceType;
-				meta = nt != null ? metaByResourceType[nt] : null;
+				nt = obj.modelName;
+				meta = JsTools.nca(nt, metaByModelName[nt]);
 			}
 			if (meta != null) {
 				orderedFields = meta.order;

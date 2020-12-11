@@ -7,7 +7,7 @@ import haxe.macro.Context;
  * @author YellowAfterlife
  */
 class JsTools {
-	/** null-conditional AND */
+	/** null-conditional AND (a && b) */
 	public static inline function nca<T>(a:Any, b:T):Null<T> {
 		#if !macro
 		return js.Syntax.code("(({0}) && ({1}))", a, b);

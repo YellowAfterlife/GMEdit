@@ -7,12 +7,42 @@ import haxe.DynamicAccess;
  * @author YellowAfterlife
  */
 @:forward abstract YyJsonMeta(YyJsonMetaImpl) from YyJsonMetaImpl {
+	static function initByModelName():Dictionary<YyJsonMeta> {
+		var q = new Dictionary<YyJsonMeta>();
+		var base = ["configDeltas", "id", "modelName", "mvc", "name"];
+		//
+		inline function tt(o:Dynamic):Dictionary<String> { return o; }
+		inline function td(o:Dynamic):DynamicAccess<Int> { return o; }
+		//
+		q["GMProject"] = {
+			order: base.concat(["IsDnDProject", "configs", "option_ecma", "parentProject", "resources", "script_order", "tutorial"]),
+			types: tt({
+				resources: "GMProjectResourcePair",
+			}),
+		};
+		q["GMProjectParent"] = {
+			order: base.concat(["alteredResources", "hiddenResources", "projectPath"]),
+			types: tt({
+				alteredResources: "GMProjectResourcePair",
+				hiddenResources: "GMProjectResourcePair",
+			}),
+		};
+		q["GMProjectResourcePair"] = {
+			order: base.concat(["Key", "Value"]),
+			types: tt({ Value: "GMProjectResource" }),
+		};
+		q["GMProjectResource"] = {
+			order: base.concat(["resourcePath", "resourceType"]),
+		}
+		//
+		return q;
+	}
 	static function initByResourceType():Dictionary<YyJsonMeta> {
 		var q = new Dictionary<YyJsonMeta>();
 		var base = ["parent", "resourceVersion", "name", "tags", "resourceType"];
 		//
-		inline function tt(o:Dynamic):Dictionary<String> {return o;}
-		inline function td(o:Dynamic):DynamicAccess<Int> {return o; }
+		inline function tt(o:Dynamic):Dictionary<String> { return o; }
+		inline function td(o:Dynamic):DynamicAccess<Int> { return o; }
 		function td1(fields:Array<String>):DynamicAccess<Int> {
 			var r = new DynamicAccess();
 			for (f in fields) r[f] = 1;
