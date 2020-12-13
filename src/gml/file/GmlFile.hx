@@ -238,11 +238,11 @@ class GmlFile {
 		var data = GmlSeekData.map[path];
 		if (data != null) {
 			var comp = Main.aceEditor.gmlCompleters;
-			comp.gmlCompleter.items = data.compList;
-			GmlAPI.gmlComp = data.compList;
+			comp.gmlCompleter.items = data.comps.array;
+			GmlAPI.gmlComp = data.comps.array;
 			GmlAPI.gmlKind = data.kindMap;
 			GmlAPI.gmlEnums = data.enumMap;
-			GmlAPI.gmlDoc = data.docMap;
+			GmlAPI.gmlDoc = data.docs.map;
 			comp.globalFullCompleter.items = data.globalFullComp;
 			GmlAPI.gmlGlobalFullComp = data.globalFullComp;
 			GmlAPI.gmlGlobalFullMap = data.globalFullMap;

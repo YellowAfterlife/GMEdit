@@ -57,11 +57,8 @@ class GmlSeekData {
 	public var kindList:Array<String> = [];
 	public var kindMap:Dictionary<String> = new Dictionary();
 	
-	public var compList:AceAutoCompleteItems = [];
-	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
-	
-	public var docList:Array<GmlFuncDoc> = [];
-	public var docMap:Dictionary<GmlFuncDoc> = new Dictionary();
+	public var comps:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
+	public var docs:ArrayMap<GmlFuncDoc> = new ArrayMap();
 	
 	// namespace hints
 	public var hintList:Array<GmlSeekDataHint> = [];
@@ -121,12 +118,12 @@ class GmlSeekData {
 		// todo: it might be <a bit> faster to merge changes instead
 		
 		// doc:
-		for (d in prev.docList) {
-			if (!next.docMap.exists(d.name)) {
+		for (d in prev.docs) {
+			if (!next.docs.exists(d.name)) {
 				GmlAPI.gmlDoc.remove(d.name);
 			}
 		}
-		for (d in next.docList) {
+		for (d in next.docs) {
 			GmlAPI.gmlDoc.set(d.name, d);
 		}
 		
@@ -137,10 +134,10 @@ class GmlSeekData {
 		for (k in next.kindList) GmlAPI.gmlKind.set(k, next.kindMap[k]);
 		
 		// comp:
-		for (c in prev.compList) {
+		for (c in prev.comps) {
 			GmlAPI.gmlComp.remove(c);
 		}
-		for (c1 in next.compList) {
+		for (c1 in next.comps) {
 			GmlAPI.gmlComp.push(c1);
 		}
 		

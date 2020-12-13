@@ -73,6 +73,7 @@ import haxe.iterators.ArrayKeyValueIterator;
 	public function remove(key:String):Bool {
 		return removeImpl(key);
 	}
+	
 	/** No type constraint but goes on assumption that T has name:String */
 	public function addn(val:T):Void {
 		var name:String = (cast val).name;
@@ -88,6 +89,13 @@ import haxe.iterators.ArrayKeyValueIterator;
 			set(item.name, item);
 			//setImpl(item.name, item);
 		}
+	}
+	
+	/** Similarly goes on assumption that items have var name:String */
+	public function nameSort():Void {
+		array.sort(function(a, b) {
+			return untyped (cast a).name < (cast b).name ? -1 : 1;
+		});
 	}
 }
 class ArrayKeyValueReverseIterator<T> {

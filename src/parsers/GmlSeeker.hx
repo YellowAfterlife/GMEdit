@@ -87,8 +87,13 @@ class GmlSeeker {
 	}
 	
 	private static var jsDoc_full:RegExp = new RegExp("^///\\s*" // start
-		//+ "(?:@desc(?:ription)?\\s+)?" // opt: `@desc `
 		+ "\\w*[ \t]*(\\(.+)" // `func(...`
+	);
+	/** 2.3 only! */
+	private static var jsDoc_func:RegExp = new RegExp("^///\\s*" // start
+		+ "@func\\s+"
+		+ "(\\w+)\\s*" // name -> $1
+		+ "\\(" + "(.*)" + "(\\).*)" // args -> $2 (greedy)
 	);
 	private static var jsDoc_param = new RegExp("^///\\s*"
 		+ "@(?:arg|param|argument)\\s+"
@@ -245,14 +250,12 @@ class GmlSeeker {
 									setLookup(name);
 									out.mfuncList.push(mf);
 									out.mfuncMap.set(name, mf);
-									out.compList.push(mf.comp);
-									out.compMap.set(name, mf.comp);
+									out.comps[name] = mf.comp;
 									out.kindList.push(name);
 									var tokenType = ace.AceMacro.jsOrx(json.token, "macro.function");
 									out.kindMap.set(name, tokenType);
 									var mfd = new GmlFuncDoc(name, name + "(", ")", mf.args, false);
-									out.docList.push(mfd);
-									out.docMap.set(name, mfd);
+									out.docs[name] = mfd;
 								} while (false);
 							}
 							else if (flags.has(Doc) && q.get(start + 2) == "/".code) {
@@ -347,10 +350,7 @@ class GmlSeeker {
 		var jsDocImplements:Array<String> = null;
 		/**  */
 		inline function linkDoc():Void {
-			if (doc != null) {
-				out.docList.push(doc);
-				out.docMap.set(main, doc);
-			}
+			if (doc != null) out.docs[main] = doc;
 		}
 		inline function resetDoc():Void {
 			jsDocArgs = null;
@@ -365,7 +365,7 @@ class GmlSeeker {
 			var updateComp = false;
 			if (doc == null && (main != null && main != "")) {
 				// no doc yet, but there should be, so let's scrap what we may
-				doc = out.docMap[main];
+				doc = out.docs[main];
 				if (doc == null) {
 					doc = GmlFuncDoc.create(main);
 					linkDoc();
@@ -503,18 +503,11 @@ class GmlSeeker {
 			if (isField) {
 				//
 			} else if (!isInst) {
-				var oldComp = out.compMap[name];
-				if (oldComp != null) out.compList.remove(oldComp);
-				out.compList.push(comp);
-				out.compMap[name] = comp;
+				out.comps[name] = comp;
 				//
 				if (!out.kindMap.exists(name)) out.kindList.push(name);
 				out.kindMap[name] = "namespace";
-				//
-				var oldDoc = out.docMap[name];
-				if (oldDoc != null) out.docList.remove(oldDoc);
-				out.docList.push(hintDoc);
-				out.docMap[name] = hintDoc;
+				out.docs[name] = hintDoc;
 			}
 		}
 		function addInstVar(s:String):Void {
@@ -631,13 +624,33 @@ class GmlSeeker {
 					}
 				}
 				
+				if (hasFunctionLiterals) {
+					mt = jsDoc_func.exec(s);
+					if (mt != null) { // 2.3 @func
+						var fn = mt[1];
+						var fa = mt[2];
+						var pre = fn + "(";
+						var post = mt[3];
+						var rest = fa.contains("...");
+						var jsd = new GmlFuncDoc(fn, pre, post, fa.split(","), rest);
+						out.docs[fn] = jsd;
+						out.comps[fn] = new AceAutoCompleteItem(fn, pre + fa + post);
+						if (!out.kindMap.exists(fn)) {
+							out.kindMap[fn] = "asset.script";
+							out.kindList.push(fn);
+						}
+						setLookup(fn);
+						continue;
+					}
+				}
+				
 				// tags from hereafter have no meaning outside of a script/function
 				if (main == null) continue;
 				
 				// Classic JSDoc (`/// func(arg1, arg2)`) ?:
 				mt = jsDoc_full.exec(s);
 				if (mt != null) {
-					if (!out.docMap.exists(main)) {
+					if (!out.docs.exists(main)) {
 						doc = GmlFuncDoc.parse(main + mt[1]);
 						linkDoc();
 						if (mainComp != null && mainComp.doc == null) {
@@ -651,7 +664,7 @@ class GmlSeeker {
 				if (v.hasScriptArgs()) {
 					// `#define func(a, b)\n/// does things` -> `func(a, b) does things`
 					s = s.substring(3).trimLeft();
-					doc = out.docMap[main];
+					doc = out.docs[main];
 					if (doc == null) {
 						if (gmlDoc_full.test(s)) {
 							doc = GmlFuncDoc.parse(s);
@@ -734,7 +747,7 @@ class GmlSeeker {
 					}
 					start = q.pos;
 					sub = main;
-					row = 0;
+					row = isFunc ? -1 : 0;
 					setLookup(main, true);
 					locals = new GmlLocals(main);
 					out.locals.set(main, locals);
@@ -770,8 +783,7 @@ class GmlSeeker {
 							? doc.getAcText()
 							: (q.pos > start ? main + q.substring(start, q.pos) : null)
 						);
-						out.compList.push(mainComp);
-						out.compMap.set(main, mainComp);
+						out.comps[main] = mainComp;
 						out.kindList.push(main);
 						out.kindMap.set(main, "asset.script");
 					}
@@ -831,7 +843,7 @@ class GmlSeeker {
 						var m = new GmlMacro(name, orig, s, cfg);
 						var old = out.macroMap[name];
 						if (old != null) {
-							out.compList.remove(out.compMap[name]);
+							out.comps.remove(name);
 							out.macroList.remove(old);
 						} else {
 							out.kindList.push(name);
@@ -845,8 +857,7 @@ class GmlSeeker {
 						//
 						var i = name.indexOf("_mf");
 						if (i < 0 || !out.mfuncMap.exists(name.substring(0, i))) {
-							out.compList.push(m.comp);
-							out.compMap.set(name, m.comp);
+							out.comps[name] = m.comp;
 							setLookup(name, true);
 						} else {
 							// adjust for mfunc rows being hidden
@@ -864,8 +875,7 @@ class GmlSeeker {
 						var g = new GmlGlobalVar(s, orig);
 						out.globalVarList.push(g);
 						out.globalVarMap.set(s, g);
-						out.compList.push(g.comp);
-						out.compMap.set(s, g.comp);
+						out.comps[s] = g.comp;
 						out.kindList.push(s);
 						out.kindMap.set(s, "globalvar");
 						setLookup(s);
@@ -968,7 +978,7 @@ class GmlSeeker {
 					var en = new GmlEnum(name, orig);
 					out.enumList.push(en);
 					out.enumMap.set(name, en);
-					out.compList.push(new AceAutoCompleteItem(name, "enum"));
+					out.comps[name] = new AceAutoCompleteItem(name, "enum");
 					setLookup(name);
 					var nextVal:Null<Int> = 0;
 					while (q.loop) {
@@ -1130,7 +1140,7 @@ class GmlSeeker {
 	public static function finish(orig:String, out:GmlSeekData):Void {
 		GmlSeekData.apply(orig, GmlSeekData.map[orig], out);
 		GmlSeekData.map.set(orig, out);
-		out.compList.autoSort();
+		out.comps.nameSort();
 	}
 	public static function addObjectChild(parentName:String, childName:String) {
 		var pj = Project.current;
