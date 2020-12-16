@@ -225,6 +225,13 @@ class YyManip {
 			};
 			py.resources.push(res);
 			yypItem = res;
+			// same trouble as in YyLoader
+			pj.yyResources[name] = res;
+			pj.yyResourceGUIDs[name] = cast name;
+			if (kind == "object") {
+				pj.yyObjectNames[name] = name;
+				pj.yyObjectGUIDs[name] = cast name;
+			}
 			//
 			ntv = TreeView.makeAssetItem(name, itemRelPath, itemFullPath, kind);
 		}
