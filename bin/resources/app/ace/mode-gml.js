@@ -329,9 +329,9 @@ function syncGutterState(gutter) {
 			GmlSeekData = $gmedit["parsers.GmlSeekData"];
 		}
 		var sd = GmlSeekData.map[file.path];
-		if (sd && sd.mfuncList.length) {
+		if (sd && sd.mfuncs.array.length) {
 			gutter.gmlHasMFunc = true;
-			gutter.gmlMFuncMap = sd.mfuncMap;
+			gutter.gmlMFuncMap = sd.mfuncs.map;
 		}
 	} while (false);
 }

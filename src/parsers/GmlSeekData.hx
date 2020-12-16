@@ -23,8 +23,7 @@ class GmlSeekData {
 	public var main:String;
 	
 	// enums declared in this file
-	public var enumList:Array<GmlEnum> = [];
-	public var enumMap:Dictionary<GmlEnum> = new Dictionary();
+	public var enums:ArrayMap<GmlEnum> = new ArrayMap();
 	
 	// globalvars declared in this file
 	public var globalVarList:Array<GmlGlobalVar> = [];
@@ -44,18 +43,16 @@ class GmlSeekData {
 	public var instFieldComp:AceAutoCompleteItems = [];
 	
 	// macros declared in this file
-	public var macroList:Array<GmlMacro> = [];
-	public var macroMap:Dictionary<GmlMacro> = new Dictionary();
+	public var macros:ArrayMap<GmlMacro> = new ArrayMap();
 	
 	// macro functions in this file
-	public var mfuncList:Array<GmlExtMFunc> = [];
-	public var mfuncMap:Dictionary<GmlExtMFunc> = new Dictionary();
+	public var mfuncs:ArrayMap<GmlExtMFunc> = new ArrayMap();
 	
 	/** scope name -> local variables */
 	public var locals:Dictionary<GmlLocals> = new Dictionary();
 	
 	public var kindList:Array<String> = [];
-	public var kindMap:Dictionary<String> = new Dictionary();
+	public var kindMap:Dictionary<AceTokenType> = new Dictionary();
 	
 	public var comps:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
 	public var docs:ArrayMap<GmlFuncDoc> = new ArrayMap();
@@ -142,13 +139,13 @@ class GmlSeekData {
 		}
 		
 		// enums:
-		for (e in prev.enumList) {
+		for (e in prev.enums) {
 			for (comp in e.compList) GmlAPI.gmlComp.remove(comp);
 			GmlAPI.gmlKind.remove(e.name);
 			GmlAPI.gmlEnums.remove(e.name);
 			GmlAPI.gmlEnumTypeComp.remove(e.typeComp);
 		}
-		for (e in next.enumList) {
+		for (e in next.enums) {
 			for (comp in e.compList) GmlAPI.gmlComp.push(comp);
 			GmlAPI.gmlEnums.set(e.name, e);
 			GmlAPI.gmlKind.set(e.name, "enum");
@@ -156,16 +153,16 @@ class GmlSeekData {
 		}
 		
 		// macros:
-		for (m in prev.macroList) {
-			if (!next.macroMap.exists(m.name)) GmlAPI.gmlMacros.remove(m.name);
+		for (m in prev.macros) {
+			if (!next.macros.exists(m.name)) GmlAPI.gmlMacros.remove(m.name);
 		}
-		for (m in next.macroList) GmlAPI.gmlMacros.set(m.name, m);
+		for (m in next.macros) GmlAPI.gmlMacros.set(m.name, m);
 		
 		// mfuncs:
-		for (m in prev.mfuncList) {
-			if (!next.mfuncMap.exists(m.name)) GmlAPI.gmlMFuncs.remove(m.name);
+		for (m in prev.mfuncs) {
+			if (!next.mfuncs.exists(m.name)) GmlAPI.gmlMFuncs.remove(m.name);
 		}
-		for (m in next.mfuncList) GmlAPI.gmlMFuncs.set(m.name, m);
+		for (m in next.mfuncs) GmlAPI.gmlMFuncs.set(m.name, m);
 		
 		// global fields (delta)
 		for (g in prev.globalFieldList) {

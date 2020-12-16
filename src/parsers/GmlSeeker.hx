@@ -248,8 +248,7 @@ class GmlSeeker {
 									} catch (_:Dynamic) break;
 									var mf = new GmlExtMFunc(name, json);
 									setLookup(name);
-									out.mfuncList.push(mf);
-									out.mfuncMap.set(name, mf);
+									out.mfuncs[name] = mf;
 									out.comps[name] = mf.comp;
 									out.kindList.push(name);
 									var tokenType = ace.AceMacro.jsOrx(json.token, "macro.function");
@@ -300,7 +299,7 @@ class GmlSeeker {
 						if (c.isIdent0()) {
 							q.skipIdent1();
 							var id = q.substring(start, q.pos);
-							var m = ace.AceMacro.jsOrx(out.macroMap[id], GmlAPI.gmlMacros[id]);
+							var m = ace.AceMacro.jsOrx(out.macros[id], GmlAPI.gmlMacros[id]);
 							if (m != null) {
 								if (q.depth < 16) {
 									q.pushSource(m.expr);
@@ -841,22 +840,20 @@ class GmlSeeker {
 					// we don't currently support configuration nesting
 					if (cfg == null || cfg == project.config) {
 						var m = new GmlMacro(name, orig, s, cfg);
-						var old = out.macroMap[name];
-						if (old != null) {
+						if (out.macros.exists(name)) {
 							out.comps.remove(name);
-							out.macroList.remove(old);
 						} else {
 							out.kindList.push(name);
 							if (GmlAPI.stdKind[m.expr] == "keyword") {
 								// keyword forwarding
-								out.kindMap.set(name, "keyword");
+								out.kindMap[name] = "keyword";
 							} else {
-								out.kindMap.set(name, "macro");
+								out.kindMap[name] = "macro";
 							}
 						}
 						//
 						var i = name.indexOf("_mf");
-						if (i < 0 || !out.mfuncMap.exists(name.substring(0, i))) {
+						if (i < 0 || !out.mfuncs.exists(name.substring(0, i))) {
 							out.comps[name] = m.comp;
 							setLookup(name, true);
 						} else {
@@ -864,8 +861,7 @@ class GmlSeeker {
 							row -= 1;
 						}
 						//
-						out.macroList.push(m);
-						out.macroMap.set(name, m);
+						out.macros[name] = m;
 					}
 				};
 				case "globalvar": {
@@ -976,8 +972,7 @@ class GmlSeeker {
 					if (name == null) continue;
 					if (find(Cub0) == null) continue;
 					var en = new GmlEnum(name, orig);
-					out.enumList.push(en);
-					out.enumMap.set(name, en);
+					out.enums[name] = en;
 					out.comps[name] = new AceAutoCompleteItem(name, "enum");
 					setLookup(name);
 					var nextVal:Null<Int> = 0;

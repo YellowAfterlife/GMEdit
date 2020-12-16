@@ -241,7 +241,7 @@ class GmlFile {
 			comp.gmlCompleter.items = data.comps.array;
 			GmlAPI.gmlComp = data.comps.array;
 			GmlAPI.gmlKind = data.kindMap;
-			GmlAPI.gmlEnums = data.enumMap;
+			GmlAPI.gmlEnums = data.enums.map;
 			GmlAPI.gmlDoc = data.docs.map;
 			comp.globalFullCompleter.items = data.globalFullComp;
 			GmlAPI.gmlGlobalFullComp = data.globalFullComp;

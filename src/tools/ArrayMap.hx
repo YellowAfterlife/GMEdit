@@ -1,4 +1,5 @@
 package tools;
+import haxe.iterators.ArrayIterator;
 import haxe.iterators.ArrayKeyValueIterator;
 
 /**
@@ -24,7 +25,7 @@ import haxe.iterators.ArrayKeyValueIterator;
 		this.set(key, val);
 		return val;
 	}
-	public inline function iterator():Iterator<T> {
+	public inline function iterator():ArrayIterator<T> {
 		return this.array.iterator();
 	}
 	public inline function keyValueIterator():ArrayKeyValueIterator<T> {
