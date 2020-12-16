@@ -7,12 +7,15 @@ import gml.file.GmlFile;
 import gml.*;
 import parsers.*;
 import haxe.Json;
+import js.html.KeyboardEvent;
 import js.html.SelectElement;
 import js.html.TextAreaElement;
+import js.lib.RegExp;
 import tools.Base64;
 import tools.Dictionary;
 import ui.ChromeTabs;
 import ui.liveweb.KLiveWeb;
+import ui.liveweb.LiveWebAPI;
 import ui.liveweb.LiveWebState;
 using tools.HtmlTools;
 import Main.document;
@@ -27,6 +30,7 @@ class LiveWeb {
 	//
 	public static var modeEl:SelectElement = document.querySelectorAuto("#mode");
 	public static var verEl:SelectElement = document.querySelectorAuto("#runtime-ver");
+	public static var api:LiveWebAPI;
 	
 	//
 	static var isReady = false;
@@ -34,7 +38,7 @@ class LiveWeb {
 		LiveWebState.finish();
 		if (isReady) return;
 		isReady = true;
-		Reflect.field(window, "lwRunBlank")();
+		api.run({}, function(_, _){});
 	}
 	
 	public static function addTab(name:String, code:String) {
@@ -59,16 +63,37 @@ class LiveWeb {
 	//
 	public static function init() {
 		#if lwedit
-		Reflect.setField(window, "aceGetPairs", LiveWebState.getPairs);
-		Reflect.setField(window, "aceSetPairs", LiveWebState.setPairs);
-		Reflect.setField(window, "aceTabFlush", function() {
+		var init:LiveWebInit = {};
+		init.aceEditor = Main.aceEditor;
+		init.isElectron = electron.Electron.isAvailable();
+		init.gameFrame = cast document.getElementById("game");
+		api = Reflect.field(window, "LiveWebAPI");
+		api.init(init);
+		//
+		function updateVersion() {
+			var v2 = verEl.value == "GMS2";
+			var ver = v2 ? GmlVersion.v2 : GmlVersion.v1;
+			GmlAPI.version = ver;
+			Project.current.version = ver;
+			api.setVersion(v2 ? 20 : 14, modeEl.value);
+			api.resyncAPI();
+			api.run({}, function(e, js) {});
+		}
+		modeEl.onchange = function(_) {
+			if (modeEl.value != "") updateVersion();
+		};
+		verEl.onchange = function(_) {
+			if (verEl.value != "") updateVersion();
+		};
+		//
+		var rxFirstLine = new RegExp("^//(.+)");
+		function run(reload:Bool) {
 			for (tab in ChromeTabs.impl.tabEls) {
 				var file = tab.gmlFile;
 				file.save();
 			}
 			LiveWebState.save();
-		});
-		Reflect.setField(window, "aceClearErrors", function() {
+			//
 			for (tab in ChromeTabs.impl.tabEls) {
 				var es = tab.gmlFile.getAceSession();
 				if (es == null) continue;
@@ -78,68 +103,71 @@ class LiveWeb {
 				es.gmlErrorMarker = null;
 				es.clearAnnotations();
 			}
-		});
-		Reflect.setField(window, "aceHintText", function(msg:String) {
-			var statusBar = Main.aceEditor.statusBar;
-			statusBar.setText(msg);
-			statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
-			for (tab in ChromeTabs.impl.tabEls) {
-				var es = tab.gmlFile.getAceSession();
-				if (es == null) continue;
-				es.clearAnnotations();
-			}
-		});
-		Reflect.setField(window, "aceHintError", function(path:String, pos:AcePos, msg:String) {
-			var col = pos.column;
-			var row = pos.row;
 			//
-			var hint = Main.aceEditor.statusBar.statusHint;
-			hint.setInnerText(msg);
-			hint.classList.add("active");
-			hint.onclick = function(_) {
-				if (GmlFile.current.path != path) {
+			api.run({
+				reload: reload,
+				sources: LiveWebState.getPairs(true),
+			}, function(e:LiveWebError, js:String) {
+				if (e == null) {
+					var mt = rxFirstLine.exec(js);
+					var msg = mt != null ? mt[0] : "Compiled";
+					var statusBar = Main.aceEditor.statusBar;
+					statusBar.setText(msg);
+					statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
+					for (tab in ChromeTabs.impl.tabEls) {
+						var es = tab.gmlFile.getAceSession();
+						if (es == null) continue;
+						es.clearAnnotations();
+					}
+				} else {
+					var path = e.file;
+					var col = e.column;
+					var row = e.row;
+					var msg = e.text;
+					//
+					var hint = Main.aceEditor.statusBar.statusHint;
+					hint.setInnerText(msg);
+					hint.classList.add("active");
+					hint.onclick = function(_) {
+						if (GmlFile.current.path != path) {
+							for (tab in ChromeTabs.impl.tabEls) {
+								if (tab.gmlFile.path != path) continue;
+								tab.click();
+								break;
+							}
+							window.setTimeout(function() {
+								Main.aceEditor.gotoLine0(row, col);
+							});
+						} else Main.aceEditor.gotoLine0(row, col);
+					};
+					var statusBar = Main.aceEditor.statusBar;
+					statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
+					//
 					for (tab in ChromeTabs.impl.tabEls) {
 						if (tab.gmlFile.path != path) continue;
-						tab.click();
+						var session = tab.gmlFile.getAceSession();
+						if (session == null) continue;
+						var range = new AceRange(0, row, session.getLine(row).length, row);
+						session.gmlErrorMarker = session.addMarker(range, "ace_error-line", "fullLine");
+						session.setAnnotations([{
+							row: row, column: col, type: "error", text: msg
+						}]);
 						break;
 					}
-					window.setTimeout(function() {
-						Main.aceEditor.gotoLine0(row, col);
-					});
-				} else Main.aceEditor.gotoLine0(row, col);
-			};
-			var statusBar = Main.aceEditor.statusBar;
-			statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
-			//
-			for (tab in ChromeTabs.impl.tabEls) {
-				if (tab.gmlFile.path != path) continue;
-				var session = tab.gmlFile.getAceSession();
-				if (session == null) continue;
-				var range = new AceRange(0, row, session.getLine(row).length, row);
-				session.gmlErrorMarker = session.addMarker(range, "ace_error-line", "fullLine");
-				session.setAnnotations([{
-					row: row, column: col, type: "error", text: msg
-				}]);
-				break;
+				}
+			});
+		}
+		//
+		document.getElementById("refresh").onclick = function(_) run(false);
+		document.getElementById("reload").onclick = function(_) run(true);
+		document.getElementById("stop").onclick = function(_) api.stop();
+		window.addEventListener("keydown", function(e:KeyboardEvent) {
+			if (e.keyCode == 116 || (e.keyCode == 13 && e.ctrlKey)) {
+				run(false);
+				e.preventDefault();
+				e.stopPropagation();
 			}
 		});
-		//
-		modeEl.onchange = function(_) {
-			if (modeEl.value != "") {
-				Reflect.field(window, "lwModeChanged")();
-			}
-		};
-		//
-		verEl.onchange = function(_) {
-			if (verEl.value != "") {
-				var v2 = verEl.value == "GMS2";
-				var ver = v2 ? GmlVersion.v2 : GmlVersion.v1;
-				GmlAPI.version = ver;
-				Project.current.version = ver;
-				Reflect.field(window, "lwSetVersion")(v2);
-			}
-		};
-		//
 		document.getElementById("share").onclick = function() {
 			var params = ["mode=" + modeEl.value, "ver=" + verEl.value];
 			//

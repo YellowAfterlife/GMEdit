@@ -376,8 +376,31 @@ class GmlAPI {
 				// give GMLive a copy of data
 				#if lwedit
 				if (lwArg0 != null) {
-					var cb = Reflect.field(Main.window, "lwSetAPI");
-					if (cb != null) cb(data);
+					if (LiveWeb.api != null) {
+						#if 1
+						var arr = [];
+						for (k => v in lwArg0) {
+							arr.push(k + ":" + v + ":" + lwArg1[k]);
+						}
+						var init = '{\nlwArgs:"' + arr.join("|") + '",\n';
+						//
+						arr = [];
+						for (k => f in lwFlags) arr.push(k + ":" + f);
+						init += 'lwFlags:"' + arr.join("|") + '",\n';
+						//
+						arr = [];
+						for (k => _ in lwConst) arr.push(k);
+						init += 'lwConst:"' + arr.join("|") + '",\n';
+						//
+						arr = [];
+						for (k => _ in lwInst) arr.push(k);
+						init += 'lwInst:"' + arr.join("|") + '"\n';
+						//
+						init += "}";
+						Main.console.log(init);
+						#end
+						LiveWeb.api.setAPI(data);
+					}
 					Main.window.setTimeout(function() {
 						LiveWeb.readyUp();
 					});

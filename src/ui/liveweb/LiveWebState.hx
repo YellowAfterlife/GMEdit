@@ -147,7 +147,7 @@ class LiveWebState {
 		}
 		//
 		var v2 = verEl.value == "GMS2";
-		Reflect.field(Main.window, "lwSetVersion")(v2);
+		LiveWeb.api.setVersion(v2 ? 20 : 14, LiveWeb.modeEl.value);
 		GmlAPI.version = v2 ? GmlVersion.v2 : GmlVersion.v1;
 	}
 }
