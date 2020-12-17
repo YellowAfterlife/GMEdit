@@ -37,6 +37,7 @@ class GmlCodeTools {
 	 */
 	public static function skipDotExprBackwards(src:GmlCode, pos:StringPos):StringPos {
 		var depth = 0;
+		var len = src.length;
 		while (--pos >= 0) {
 			var till = pos + 1;
 			var c:CharCode = src.fastCodeAt(pos);
@@ -48,6 +49,7 @@ class GmlCodeTools {
 							if (src.fastCodeAt(pos - 1) != "\\".code) break;
 						}
 					}
+					if (depth == 0) return pos;
 				};
 				/*case VitGML.commentEOL: {
 					if (depth <= 0) return till;
@@ -57,8 +59,11 @@ class GmlCodeTools {
 						) pos--;
 					}
 				};*/
-				case "(".code, "[".code, "{".code: depth++;
-				case ")".code, "]".code, "}".code: depth--;
+				case ")".code, "]".code, "}".code: depth++;
+				case "[".code: depth--;
+				case "(".code, "{".code: if (--depth <= 0) {
+					return pos;
+				};
 				case _ if (c.isIdent1()): {
 					while (pos > 0) {
 						c = src.fastCodeAt(pos - 1);
@@ -77,7 +82,15 @@ class GmlCodeTools {
 					} else if (depth == 0) {
 						return pos;
 					}
-				}
+				};
+				case _ if (c.isSpace1()): {};
+				case _ if (depth == 0): {
+					while (till < len) {
+						c = src.fastCodeAt(till);
+						if (c.isSpace0()) till++; else break;
+					}
+					return till;
+				};
 			}
 		}
 		return 0;

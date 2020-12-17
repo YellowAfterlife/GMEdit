@@ -247,9 +247,14 @@ class GmlLinter {
 				};
 				//
 				case "?".code: {
-					if (q.peek() == "?".code && q.peek(1) == "=".code) {
-						q.skip(2);
-						return retv(KSet, "??=");
+					if (q.peek() == "?".code) {
+						if (q.peek(1) == "=".code) {
+							q.skip(2);
+							return retv(KSet, "??=");
+						} else {
+							q.skip(1);
+							return retv(KNullCoalesce, "??");
+						}
 					} else return retv(KQMark, "?");
 				};
 				case ":".code: {
@@ -859,6 +864,12 @@ class GmlLinter {
 					rc(readCheckSkip(KColon, "a colon in a ?: operator"));
 					rc(readExpr(newDepth));
 					currKind = KQMark;
+				};
+				case KNullCoalesce: { // x ?? y
+					if (hasFlag(NoOps)) break;
+					skip();
+					rc(readExpr(newDepth));
+					currKind = KNullCoalesce;
 				};
 				default: {
 					if (nk.isSetOp()) {

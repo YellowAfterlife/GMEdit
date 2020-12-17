@@ -272,6 +272,10 @@ class GmlReader extends StringReader {
 		}
 	}
 	
+	public inline function canContextName(p:Int) {
+		return p == 0 || get(p - 1) == "\n".code;
+	}
+	
 	/** ("obj_some") this"#¦event step" -> "obj_some(step)" this"#event step¦" */
 	public function readContextName(name:String) {
 		var p = pos;
