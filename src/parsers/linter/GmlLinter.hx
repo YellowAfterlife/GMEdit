@@ -257,8 +257,8 @@ class GmlLinter {
 								return retv(KNullCoalesce, "??");
 							}
 						};
-						case ".".code: q.skip(); return retv(KDot, "?.");
-						case "[".code: q.skip(); return retv(KSqbOpen, "?[");
+						case ".".code: q.skip(); return retv(KNullDot, "?.");
+						case "[".code: q.skip(); return retv(KNullSqb, "?[");
 						default: return retv(KQMark, "?");
 					}
 				};
@@ -700,9 +700,17 @@ class GmlLinter {
 		var currKind = nk;
 		var currName = nk == KIdent ? nextVal : null;
 		//
-		inline function checkConst():Void {
-			if (currKind == KIdent && localKinds[currName] == KConst) {
-				addWarning('Assigning to a `const` local `$currName`');
+		function checkConst():Void {
+			switch (currKind) {
+				case KIdent: {
+					if (localKinds[currName] == KConst) {
+						addWarning('Assigning to a `const` local `$currName`');
+					}
+				};
+				case KNullField, KNullArray: {
+					addError("Null-conditional values cannot be assigned to");
+				};
+				default:
 			}
 		}
 		//
@@ -814,12 +822,12 @@ class GmlLinter {
 					skip();
 					statKind = currKind = nk;
 				};
-				case KDot: { // x.y
+				case KDot, KNullDot: { // x.y
 					skip();
 					rc(readCheckSkip(KIdent, "field name after `.`"));
-					currKind = KField;
+					currKind = nk == KDot ? KField : KNullField;
 				};
-				case KSqbOpen: { // x[i], x[?i], etc.
+				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					skip();
 					switch (peek()) {
 						case KQMark, KOr, KDollar: { // map[?k], list[|i], struct[$k]
@@ -843,7 +851,7 @@ class GmlLinter {
 						};
 					}
 					rc(readCheckSkip(KSqbClose, "a closing `]` in array access"));
-					currKind = KArray;
+					currKind = nk == KSqbOpen ? KArray : KNullArray;
 				};
 				case KLiveIn: { // field in object
 					if (hasFlag(NoOps)) break;

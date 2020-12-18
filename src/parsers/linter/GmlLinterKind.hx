@@ -71,6 +71,8 @@ enum abstract GmlLinterKind(Int) {
 	var KCall; // ()
 	var KField; // a.b
 	var KArray; // a[..]
+	var KNullField; // a?.b
+	var KNullArray; // a?[..]
 	
 	// misc. operators:
 	var KSemico; // `;`
@@ -82,6 +84,8 @@ enum abstract GmlLinterKind(Int) {
 	var KAtSign; // `@`
 	var KDollar; // `$`
 	var KNullCoalesce; // `??`
+	var KNullDot; // `?.`
+	var KNullSqb; // `?[`
 	
 	// branching:
 	var KIf;
