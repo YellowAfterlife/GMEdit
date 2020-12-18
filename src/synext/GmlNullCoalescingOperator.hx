@@ -136,6 +136,14 @@ class GmlNullCoalescingOperator {
 							case "[".code: {
 								var parStart = q.pos;
 								if (!q.skipBalancedParenExpr()) continue;
+								var np = q.pos, isTernary = false;
+								while (np < q.length) {
+									var nc = q.get(np++);
+									if (nc.isSpace1()) continue;
+									isTernary = nc == ":".code;
+									break;
+								}
+								if (isTernary) continue;
 								fdSuffix = q.substring(parStart, q.pos);
 							};
 							default: fdSuffix = null;

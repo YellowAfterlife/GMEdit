@@ -257,7 +257,13 @@ class GmlLinter {
 								return retv(KNullCoalesce, "??");
 							}
 						};
-						case ".".code: q.skip(); return retv(KNullDot, "?.");
+						case ".".code: {
+							c = q.peek(1);
+							if (!c.isDigit()) {
+								q.skip();
+								return retv(KNullDot, "?.");
+							} else return retv(KQMark, "?");
+						};
 						case "[".code: q.skip(); return retv(KNullSqb, "?[");
 						default: return retv(KQMark, "?");
 					}
@@ -829,6 +835,9 @@ class GmlLinter {
 				};
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					skip();
+					var isNull = nk == KNullSqb;
+					var isArray = false;
+					var isLiteral = false;
 					switch (peek()) {
 						case KQMark, KOr, KDollar: { // map[?k], list[|i], struct[$k]
 							skip();
@@ -846,12 +855,27 @@ class GmlLinter {
 							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
 						};
 						default: { // array[i] or array[i, k]
+							isArray = true;
 							rc(readExpr(newDepth));
 							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
+							if (isNull && skipIf(peek() == KComma)) { // whoops, a?[b,c,d]
+								readArgs(newDepth, true);
+								isLiteral = true;
+							}
 						};
 					}
-					rc(readCheckSkip(KSqbClose, "a closing `]` in array access"));
-					currKind = nk == KSqbOpen ? KArray : KNullArray;
+					if (!isLiteral) rc(readCheckSkip(KSqbClose, "a closing `]` in array access"));
+					if (isLiteral) {
+						rc(readCheckSkip(KColon, "a colon in a ?: operator"));
+						rc(readExpr(newDepth));
+						currKind = KQMark;
+					} else if (isNull && isArray && peek() == KColon) { // whoops, a?[b]:c
+						skip();
+						rc(readExpr(newDepth));
+						currKind = KQMark;
+					} else {
+						currKind = isNull ? KNullArray : KArray;
+					}
 				};
 				case KLiveIn: { // field in object
 					if (hasFlag(NoOps)) break;
