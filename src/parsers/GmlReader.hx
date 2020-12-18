@@ -411,7 +411,8 @@ class GmlReader extends StringReader {
 	
 	/** Skips comments and strings. Returns >= 0 if something was skipped, -1 otherwise. */
 	public function skipCommon_inline():Int {
-		switch (peek()) {
+		var c = peek();
+		switch (c) {
 			case "/".code: switch (peek(1)) {
 				case "/".code: pos += 2; skipLine(); return 0;
 				case "*".code: pos += 2; return skipComment();
@@ -419,13 +420,33 @@ class GmlReader extends StringReader {
 			};
 			case '"'.code, "'".code, "`".code, "@".code: {
 				pos += 1;
-				return skipStringAuto(peek(-1), version);
+				return skipStringAuto(c, version);
 			};
 			default: return -1;
 		}
 	}
 	public function skipCommon():Int {
 		return skipCommon_inline();
+	}
+	
+	/** `fn(¦a, b);` -> true, `fn(a, b)¦;` */
+	public function skipBalancedParenExpr():Bool {
+		var depth = 0;
+		while (loop) {
+			var c = read();
+			switch (c) {
+				case "/".code: switch (peek()) {
+					case "/".code: skipLine();
+					case "*".code: skip(); skipComment();
+					default:
+				};
+				case '"'.code, "'".code, "`".code, "@".code: skipStringAuto(c, version);
+				case "(".code, "[".code, "{".code: depth++;
+				case ")".code, "]".code, "}".code: if (--depth < 0) return true;
+				default: 
+			}
+		}
+		return false;
 	}
 	
 	private static var rxVarType = new js.lib.RegExp("^" + GmlExtImport.rsLocalType + "$");

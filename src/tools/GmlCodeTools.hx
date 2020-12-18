@@ -60,9 +60,19 @@ class GmlCodeTools {
 					}
 				};*/
 				case ")".code, "]".code, "}".code: depth++;
-				case "[".code: depth--;
-				case "(".code, "{".code: if (--depth <= 0) {
-					return pos;
+				case "[".code: {
+					depth--;
+					if (pos > 0 && src.fastCodeAt(pos - 1) == "?".code) pos--; // ?[
+				}
+				case "{".code: if (--depth <= 0) return pos;
+				case "(".code: {
+					if (--depth <= 0) {
+						var np = pos;
+						while (--np >= 0) {
+							c = src.fastCodeAt(np);
+							if (!c.isSpace0()) break;
+						}
+					};
 				};
 				case _ if (c.isIdent1()): {
 					while (pos > 0) {

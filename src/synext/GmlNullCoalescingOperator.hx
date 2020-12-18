@@ -42,21 +42,7 @@ class GmlNullCoalescingOperator {
 					if (id != "nc_set") continue;
 					if (q.read() != "(".code) continue;
 					var exprStart = q.pos;
-					var depth = 0;
-					while (q.loop) {
-						c = q.read();
-						switch (c) {
-							case "/".code: switch (q.peek()) {
-								case "/".code: q.skipLine();
-								case "*".code: q.skip(); q.skipComment();
-								default:
-							};
-							case '"'.code, "'".code, "@".code: q.skipStringAuto(c, version);
-							case "(".code, "[".code, "{".code: depth++;
-							case ")".code, "]".code, "}".code: if (--depth < 0) break;
-						}
-					}
-					if (depth >= 0) continue;
+					if (!q.skipBalancedParenExpr()) continue;
 					var expr = q.substring(exprStart, q.pos - 1);
 					//
 					var spaceStr:String = {
@@ -75,13 +61,19 @@ class GmlNullCoalescingOperator {
 					if (skipValSpace()) continue;
 					if (q.readIdent() != ncVal) continue;
 					
-					if (q.peek() == ".".code) { // nc_set(a) ? nc_val¦.b : c
+					var c1 = q.peek();
+					if (c1 == ".".code || c1 == "[".code) { // nc_set(a) ? nc_val¦.b : c
 						q.skip(); // nc_val.¦b
 						
 						var fdStart = q.pos;
-						q.skipSpaces0(); // optional spacing before field name
-						if (q.readIdent() == null) continue;
-						var fdSuffix = q.substring(fdStart, q.pos); // nc_val.b¦
+						var fdSuffix:String;
+						if (c1 == "[".code) {
+							if (!q.skipBalancedParenExpr()) continue;
+						} else {
+							q.skipSpaces0(); // optional spacing before field name
+							if (q.readIdent() == null) continue;
+						}
+						fdSuffix = q.substring(fdStart, q.pos); // nc_val.b¦
 						
 						if (skipValSpace()) continue;
 						if (q.read() != ":".code) continue;
@@ -92,7 +84,8 @@ class GmlNullCoalescingOperator {
 						//
 						if (q.get(p - 1) != "(".code) continue;
 						flush(p - 1);
-						out += pre(expr) + spaceStr + "?." + fdSuffix;
+						var op = c1 == "[".code ? "?[" : "?.";
+						out += pre(expr) + spaceStr + op + fdSuffix;
 					} else {
 						if (skipValSpace()) continue;
 						if (q.read() != ":".code) continue;
@@ -128,17 +121,25 @@ class GmlNullCoalescingOperator {
 				};
 				case "?".code: {
 					var c1 = q.peek();
-					if (c1 == "?".code || c1 == ".".code) {
+					if (c1 == "?".code || c1 == ".".code || c1 == "[".code) {
 						q.skip();
 						//
 						var fdSuffix:String;
-						if (c1 == ".".code) {
-							var fdStart = q.pos;
-							q.skipSpaces0();
-							if (!q.peek().isIdent0()) continue; // don't convert `z?.1:.2`
-							q.skipIdent1();
-							fdSuffix = q.substring(fdStart, q.pos);
-						} else fdSuffix = null;
+						switch (c1) {
+							case ".".code: {
+								var fdStart = q.pos;
+								q.skipSpaces0();
+								if (!q.peek().isIdent0()) continue; // don't convert `z?.1:.2`
+								q.skipIdent1();
+								fdSuffix = q.substring(fdStart, q.pos);
+							};
+							case "[".code: {
+								var parStart = q.pos;
+								if (!q.skipBalancedParenExpr()) continue;
+								fdSuffix = q.substring(parStart, q.pos);
+							};
+							default: fdSuffix = null;
+						}
 						//
 						var exprEnd = p;
 						while (exprEnd > 0) {
@@ -150,6 +151,7 @@ class GmlNullCoalescingOperator {
 						//
 						var sp = code.substring(exprEnd, p);
 						segments.push({
+							full: code.substring(exprStart, q.pos),
 							start: exprStart,
 							end: q.pos,
 							expr: expr,
@@ -188,15 +190,24 @@ class GmlNullCoalescingOperator {
 			var sp = seg.space;
 			var expr = seg.expr;
 			if (seg.recurse) expr = post(expr);
-			if (seg.kind == ".".code) {
-				out += '(nc_set($expr)'
-					+ sp + "?"
-					+ sp + "nc_val." + seg.fdSuffix
-					+ sp + ":"
-					+ sp + "undefined"
-				+ ')';
-			} else {
-				out += 'nc_set($expr)${sp}?${sp}nc_val${sp}:';
+			switch (seg.kind) {
+				case ".".code: {
+					out += '(nc_set($expr)'
+						+ sp + "?"
+						+ sp + "nc_val." + seg.fdSuffix
+						+ sp + ":"
+						+ sp + "undefined"
+					+ ')';
+				};
+				case "[".code: {
+					out += '(nc_set($expr)'
+						+ sp + "?"
+						+ sp + "nc_val[" + seg.fdSuffix
+						+ sp + ":"
+						+ sp + "undefined"
+					+ ')';
+				};
+				default: out += 'nc_set($expr)${sp}?${sp}nc_val${sp}:';
 			}
 			start = seg.end;
 		}

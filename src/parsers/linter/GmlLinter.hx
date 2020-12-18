@@ -258,6 +258,7 @@ class GmlLinter {
 							}
 						};
 						case ".".code: q.skip(); return retv(KDot, "?.");
+						case "[".code: q.skip(); return retv(KSqbOpen, "?[");
 						default: return retv(KQMark, "?");
 					}
 				};
