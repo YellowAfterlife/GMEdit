@@ -1,5 +1,6 @@
 package synext;
 import gml.GmlAPI;
+import gml.Project;
 import js.lib.RegExp;
 import js.lib.RegExp.RegExpMatch;
 import parsers.GmlReader;
@@ -19,9 +20,9 @@ class GmlNullCoalescingOperator {
 		var version = GmlAPI.version;
 		var out = "";
 		var start = 0;
-		var ncSet = "nc_set";
-		var ncVal = "nc_val";
-		var ncValLen = ncVal.length;
+		var ncSet = Project.current.properties.nullConditionalSet;
+		var ncVal = Project.current.properties.nullConditionalVal;
+		if (ncSet == null || ncVal == null) return code;
 		inline function flush(till:StringPos):Void {
 			out += code.substring(start, till);
 		}
@@ -39,7 +40,7 @@ class GmlNullCoalescingOperator {
 				case _ if (c.isIdent0()): {
 					q.skipIdent1();
 					var id = q.substring(p, q.pos);
-					if (id != "nc_set") continue;
+					if (id != ncSet) continue;
 					if (q.read() != "(".code) continue;
 					var exprStart = q.pos;
 					if (!q.skipBalancedParenExpr()) continue;
@@ -103,6 +104,9 @@ class GmlNullCoalescingOperator {
 		return out;
 	}
 	public static function post(code:GmlCode):GmlCode {
+		var ncSet = Project.current.properties.nullConditionalSet;
+		var ncVal = Project.current.properties.nullConditionalVal;
+		if (ncSet == null || ncVal == null) return code;
 		var q = new GmlReader(code);
 		var version = GmlAPI.version;
 		var segments = [];
@@ -200,9 +204,9 @@ class GmlNullCoalescingOperator {
 			if (seg.recurse) expr = post(expr);
 			switch (seg.kind) {
 				case ".".code: {
-					out += '(nc_set($expr)'
+					out += '($ncSet($expr)'
 						+ sp + "?"
-						+ sp + "nc_val." + seg.fdSuffix
+						+ sp + ncVal + "." + seg.fdSuffix
 						+ sp + ":"
 						+ sp + "undefined"
 					+ ')';
@@ -210,12 +214,12 @@ class GmlNullCoalescingOperator {
 				case "[".code: {
 					out += '(nc_set($expr)'
 						+ sp + "?"
-						+ sp + "nc_val[" + seg.fdSuffix
+						+ sp + ncVal + "[" + seg.fdSuffix
 						+ sp + ":"
 						+ sp + "undefined"
 					+ ')';
 				};
-				default: out += 'nc_set($expr)${sp}?${sp}nc_val${sp}:';
+				default: out += '$ncSet($expr)${sp}?${sp}$ncVal${sp}:';
 			}
 			start = seg.end;
 		}

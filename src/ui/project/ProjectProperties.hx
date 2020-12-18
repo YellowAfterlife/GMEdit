@@ -8,12 +8,14 @@ import file.kind.misc.KProjectProperties;
 import js.html.FieldSetElement;
 import js.html.InputElement;
 import js.lib.RegExp;
+import tools.Aliases.GmlName;
 import tools.Dictionary;
 import tools.NativeObject;
 import tools.JsTools.or;
 import tools.JsTools.orx;
 import electron.FileWrap;
 import tools.NativeString;
+import ui.Preferences;
 using tools.HtmlTools;
 
 /**
@@ -73,6 +75,34 @@ class ProjectProperties {
 		});
 	}
 	
+	static function addGmlNameInput(out:Element, legend:String, curr:GmlName, fn:GmlName->Void) {
+		var input:InputElement = null;
+		var rx = new RegExp("^[a-zA-Z_]\\w*$");
+		var el = Preferences.addInput(out, legend, or(curr, ""), function(s) {
+			s = NativeString.trimBoth(s);
+			if (s == "") {
+				s = null;
+			} else if (!rx.test(s)) {
+				input.classList.add("error");
+				input.title = "Incorrect name format - expected a globalvar/macro/script name";
+				return;
+			}
+			fn(s);
+			if (s != null && GmlAPI.gmlKind[s] == null) {
+				input.classList.add("error");
+				input.title = "Couldn't find script `" + s + "`.";
+			} else {
+				input.classList.remove("error");
+				input.title = "";
+			}
+		});
+		input = el.querySelectorAuto("input");
+		if (curr != null && GmlAPI.gmlKind[curr] == null) {
+			input.classList.add("error");
+		}
+		return el;
+	}
+	
 	static function buildSyntax(project:Project, out:DivElement) {
 		var d = project.properties;
 		var fs = Preferences.addGroup(out, "Syntax extensions");
@@ -124,29 +154,24 @@ class ProjectProperties {
 		privateFieldRegexInput = el.querySelectorAuto("input");
 		
 		//
-		var templateStringInput:InputElement = null;
-		el = Preferences.addInput(fs,
-			"Template string script name",
-			or(d.templateStringScript, ""),
-		function(s) {
-			s = NativeString.trimBoth(s);
-			if (s == "") s = null;
+		el = addGmlNameInput(fs, "Template string script name", d.templateStringScript, function(s) {
 			d.templateStringScript = s;
-			if (s != null && GmlAPI.gmlKind[s] == null) {
-				templateStringInput.classList.add("error");
-				templateStringInput.title = "Couldn't find script `" + s + "`.";
-			} else {
-				templateStringInput.classList.remove("error");
-				templateStringInput.title = "";
-			}
 			GmlAPI.forceTemplateStrings = s != null;
 			save(project, d);
 		});
 		Preferences.addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-template-strings");
-		templateStringInput = el.querySelectorAuto("input");
-		if (d.templateStringScript != null && GmlAPI.gmlKind[d.templateStringScript] == null) {
-			templateStringInput.classList.add("error");
-		}
+		
+		//
+		var ncGroup = Preferences.addGroup(fs, "Null-conditional operators");
+		Preferences.addWiki(ncGroup, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-null-conditional-operators");
+		addGmlNameInput(ncGroup, "Setter script/function name", d.nullConditionalSet, function(s) {
+			d.nullConditionalSet = s;
+			save(project, d);
+		});
+		addGmlNameInput(ncGroup, "Value globalvar/macro name", d.nullConditionalVal, function(s) {
+			d.nullConditionalVal = s;
+			save(project, d);
+		});
 	}
 	
 	public static function build(project:Project, out:DivElement) {
