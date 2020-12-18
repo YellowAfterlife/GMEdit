@@ -248,11 +248,7 @@ class GmlReader extends StringReader {
 	}
 	
 	public function skipIdent() {
-		if (peek().isIdent0()) while (loopLocal) {
-			if (peek().isIdent1()) {
-				skip();
-			} else break;
-		}
+		if (peek().isIdent0()) inline skipIdent1();
 	}
 	
 	public function skipIdent1() {
@@ -261,6 +257,19 @@ class GmlReader extends StringReader {
 				skip();
 			} else break;
 		}
+	}
+	
+	/**
+	 * Reads a word and returns it.
+	 * Returns null if the cursor was not at a word.
+	 * `+ ¦a;` -> "a", `+ a¦;`
+	 * `+¦ a;` -> null, `+¦ a;`
+	 */
+	public function readIdent():String {
+		if (!peek().isIdent0()) return null;
+		var start = pos;
+		inline skipIdent1();
+		return substring(start, pos);
 	}
 	
 	public function skipEventName() {

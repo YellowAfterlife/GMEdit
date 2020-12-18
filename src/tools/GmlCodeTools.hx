@@ -78,6 +78,8 @@ class GmlCodeTools {
 						if (!c.isSpace0()) break;
 					}
 					if (src.fastCodeAt(np) == ".".code) {
+						// `?.` is only used in null coalesce but I don't want to add flags right now
+						if (src.fastCodeAt(np - 1) == "?".code) np--;
 						pos = np;
 					} else if (depth == 0) {
 						return pos;
