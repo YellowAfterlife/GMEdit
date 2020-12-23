@@ -418,7 +418,7 @@ class GmlLinter {
 				case "^".code: {
 					switch (q.peek()) {
 						case "=".code: q.skip(); return retv(KSetOp, "^=");
-						case "&".code: q.skip(); return retv(KBoolXor, "^^");
+						case "^".code: q.skip(); return retv(KBoolXor, "^^");
 						default: return retv(KXor, "^");
 					}
 				};
