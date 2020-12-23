@@ -377,7 +377,7 @@ class GmlAPI {
 				#if lwedit
 				if (lwArg0 != null) {
 					if (LiveWeb.api != null) {
-						#if 1
+						#if 0
 						var arr = [];
 						for (k => v in lwArg0) {
 							arr.push(k + ":" + v + ":" + lwArg1[k]);
