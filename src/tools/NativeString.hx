@@ -10,9 +10,6 @@ import js.Syntax;
  * @author YellowAfterlife
  */
 @:keep class NativeString {
-	public static inline function splitReg(s:String, d:RegExp):Array<String> {
-		return s.split(cast d);
-	}
 	
 	public static inline function replaceExt(
 		s:String, what:EitherType<String, RegExp>, by:EitherType<String, Function>
@@ -26,6 +23,10 @@ import js.Syntax;
 	
 	public static inline function matchRx(s:String, rx:RegExp):Array<String> {
 		return untyped s.match(rx);
+	}
+	
+	public static function splitNonEmpty(s:String, del:String):Array<String> {
+		return s != null && trimBoth(s) != "" ? s.split(del) : [];
 	}
 	
 	public static function capitalize(s:String):String {

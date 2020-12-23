@@ -631,7 +631,7 @@ class GmlSeeker {
 						var pre = fn + "(";
 						var post = mt[3];
 						var rest = fa.contains("...");
-						var jsd = new GmlFuncDoc(fn, pre, post, fa.split(","), rest);
+						var jsd = new GmlFuncDoc(fn, pre, post, fa.splitNonEmpty(","), rest);
 						out.docs[fn] = jsd;
 						out.comps[fn] = new AceAutoCompleteItem(fn, pre + fa + post);
 						if (!out.kindMap.exists(fn)) {

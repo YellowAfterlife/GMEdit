@@ -126,7 +126,7 @@ class GmlFuncDoc {
 			pre = s.substring(0, p0 + 1);
 			post = s.substring(p1);
 			if (sw != "") {
-				args = sw.splitReg(js.Syntax.code("/,\\s*/g"));
+				args = sw.splitRx(js.Syntax.code("/,\\s*/g"));
 			} else args = [];
 			rest = sw.contains("...");
 		} else {
