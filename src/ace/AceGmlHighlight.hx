@@ -228,7 +228,7 @@ using tools.NativeArray;
 		var rIdentPair = genIdentPair(false);
 		var rIdentPairMF = genIdentPair(true);
 		//}
-		function mtField(_, field:String) {
+		function mtField(_, _, field:String) {
 			return ["punctuation.operator", "text", getGlobalType(field, "field")];
 		}
 		function mtEventHead(def, _, name, col, kind, label) {
@@ -468,7 +468,7 @@ using tools.NativeArray;
 			rPragma_call,
 			rIdentPair,
 			rIdentLocal,
-			rxRule(mtField, ~/(\.)(\s+)([a-zA-Z_][a-zA-Z0-9_]*)/),
+			rxRule(mtField, ~/(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
 			rxRule(mtIdent, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
 			rxRule("operator", ~/==/),
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
