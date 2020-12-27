@@ -1,5 +1,8 @@
 package file.kind.yy;
+import file.kind.gml.KGmlExtension;
 import js.lib.RegExp;
+import parsers.GmlSeeker;
+import parsers.GmlSeekData;
 import yy.YyExtension;
 import yy.YyJson;
 import ui.treeview.TreeView;
@@ -16,9 +19,11 @@ using tools.NativeString;
 class KYyExtension extends FileKind {
 	public static var inst:KYyExtension = new KYyExtension();
 	static var rxValidName:RegExp = new RegExp("^\\w+$");
-	override public function index(path:String, content:String, main:String):Bool {
+	override public function index(full:String, content:String, main:String):Bool {
 		var ext:YyExtension = YyJson.parse(content);
 		var pj = gml.Project.current;
+		var extDirRel = pj.relPath(full);
+		var extDir = Path.directory(full);
 		//
 		var parentPath = ext.parent.path;
 		if (parentPath.endsWith(".yy")) {
@@ -30,15 +35,14 @@ class KYyExtension extends FileKind {
 		if (parentDir == null) return true;
 		//
 		var treePath = parentPath + "/" + ext.name;
-		var treeDir = TreeView.makeAssetDir(ext.name, parentPath, "mixed");
+		var treeDir = TreeView.makeAssetDir(ext.name, treePath, "extension");
+		treeDir.setAttribute(TreeView.attrPath, full);
+		treeDir.setAttribute(TreeView.attrIdent, ext.name);
 		@:privateAccess YyLoader.itemsToInsert.push({
 			item: treeDir,
 			dir: cast parentDir
 		});
 		//
-		var extDirRel = pj.relPath(path);
-		var full = path;
-		var extDir = Path.directory(full);
 		for (file in ext.files) {
 			// todo: this is too alike with V22 and I don't like that
 			var fileName = file.filename;
@@ -69,6 +73,7 @@ class KYyExtension extends FileKind {
 						sub: name,
 						row: 0,
 					});
+					GmlSeeker.run(filePath, "", KGmlExtension.inst);
 				}
 			}
 			for (mcr in file.constants) {

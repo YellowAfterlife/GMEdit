@@ -176,7 +176,9 @@ class TreeViewMenus {
 		var isFileDir = target.getAttribute(TreeView.attrFilter) == "file";
 		items.openExternally.visible = isFileDir;
 		items.openDirectory.visible = isFileDir;
-		items.showAPI.visible = switch (Project.current.version.config.projectModeId) {
+		if (Project.current.isGMS23) {
+			items.showAPI.visible = el.getAttribute(TreeView.attrFilter) == "extension";
+		} else items.showAPI.visible = switch (Project.current.version.config.projectModeId) {
 			case 1, 2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
 			default: false;
 		}

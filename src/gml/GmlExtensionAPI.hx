@@ -8,6 +8,7 @@ import gml.file.GmlFile;
 import file.FileKind;
 import file.kind.gmx.KGmxExtensionAPI;
 import file.kind.yy.KYyExtensionAPI;
+import tools.JsTools.or;
 using tools.NativeString;
 
 /**
@@ -127,8 +128,9 @@ class GmlExtensionAPI {
 					fn.name, fn.externalName, fn.help, args, fn.hidden));
 			}
 			for (mc in file.constants) {
+				var name = or(mc.constantName, mc.name);
 				(mc.hidden ? linesHide : linesShow).push(procMc(
-					mc.constantName, mc.value, mc.hidden));
+					name, mc.value, mc.hidden));
 			}
 			//
 			procSortAuto(linesShow);
