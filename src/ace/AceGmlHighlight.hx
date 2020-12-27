@@ -316,7 +316,7 @@ using tools.NativeArray;
 		);
 		var rBase:Array<AceLangRule> = [ //{ comments and preprocessors
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
-				~/(\/\/)(#(?:end)?region[ \t]*)(.*)$/),
+				~/(\/\/)(#(?:region|endregion|mark)\b)(.*)$/),
 			rxRule("comment.doc.line", ~/\/\/\/$/), // a blank doc-line
 			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
 				return "comment.doc.line.startswith_" + s;
