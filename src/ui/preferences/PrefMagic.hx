@@ -87,7 +87,7 @@ class PrefMagic {
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GMHyper-in-GMEdit");*/
 		
 		//
-		el = addCheckbox(out, "Use ??= operator", current.lambdaMagic, function(z) {
+		el = addCheckbox(out, "Use ??= operator", current.nullCoalescingAssignment, function(z) {
 			current.nullCoalescingAssignment = z;
 			save();
 		});
