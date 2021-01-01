@@ -11,7 +11,9 @@ import haxe.io.Path;
 import js.html.Element;
 import tools.Dictionary;
 import tools.ExecQueue;
+import tools.JsTools;
 using tools.NativeString;
+using tools.NativeArray;
 import yy.YyProject;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewElement;
@@ -97,15 +99,28 @@ class YyLoader {
 			}
 			TreeView.insertSorted(parentDir, pair.dir);
 		}
+		if (true) {
+			var ccs = TreeView.makeAssetItem("roomCreationCodes",
+				project.name, project.path, "roomccs");
+			ccs.removeAttribute(TreeView.attrThumb);
+			ccs.yyOpenAs = KYyRoomCCs.inst;
+			ccs.yyOrder = -1;
+			var ccsPar:TreeViewDir = JsTools.orx(
+				folderMap["folders/Rooms"],
+				folderMap["folders/rooms"],
+				topLevel
+			);
+			ccsPar.treeItems.appendChild(ccs);
+		}
 		if (project.existsSync("#import")) {
 			var idir = TreeView.makeAssetDir("Imports", "#import/", "file");
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "#import");
-			TreeView.element.appendChild(idir);
+			topLevel.treeItems.appendChild(idir);
 		}
 		if (project.existsSync("datafiles")) {
 			var idir = TreeView.makeAssetDir("Included Files", "datafiles/", "file");
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "datafiles");
-			TreeView.element.appendChild(idir);
+			topLevel.treeItems.appendChild(idir);
 		}
 		// restoreOpen runs in Project:reload
 		project.yyObjectNames = new Dictionary();

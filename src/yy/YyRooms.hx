@@ -2,6 +2,7 @@ package yy;
 import ace.AceMacro;
 import electron.FileSystem;
 import electron.FileWrap;
+import gml.Project;
 import gml.file.GmlFileExtra;
 import haxe.Json;
 import js.lib.RegExp;
@@ -20,7 +21,23 @@ class YyRooms {
 	public static function getCCs(pjPath:String, pjd:YyProject, extraFiles:Array<GmlFileExtra>):String {
 		var pjDir:String = pjPath.ptDir();
 		var out:String = "";
-		for (pair in pjd.resources) {
+		var pj = Project.current;
+		var v23 = pj.isGMS23;
+		if (v23) for (pair in pjd.resources) {
+			if (!pair.id.path.startsWith("rooms/")) continue;
+			try {
+				var rccPath = pair.id.path.ptDir() + "/RoomCreationCode.gml";
+				if (!pj.existsSync(rccPath)) continue;
+				var rcc = pj.readTextFileSync(rccPath);
+				if (rcc.trimBoth() == "") continue;
+				if (out != "") out += "\n\n";
+				out += "#target " + pair.id.name + "\n" + rcc;
+				extraFiles.push(new GmlFileExtra(pj.fullPath(rccPath)));
+			} catch (x:Dynamic) {
+				Main.console.error('Error reading RCC from room ${pair.id.name}: ', x);
+			}
+		}
+		else for (pair in pjd.resources) {
 			var res = pair.Value;
 			if (res.resourceType != "GMRoom") continue;
 			try {
@@ -98,10 +115,14 @@ class YyRooms {
 		return {map:map,pairs:pairs};
 	}
 	public static function setCCs(pjPath:String, code:String, extraFiles:Array<GmlFileExtra>):Bool {
-		var pjDir:String = pjPath.ptDir();
-		var pjd:YyProject = FileWrap.readYyFileSync(pjPath);
 		var data = parse(code);
 		if (data == null) return false;
+		
+		var pj = Project.current;
+		var v23 = pj.isGMS23;
+		var pjDir:String = pjPath.ptDir();
+		var pjd:YyProject = FileWrap.readYyFileSync(pjPath);
+		
 		// remove:
 		var xi = extraFiles.length;
 		var xmap = new Dictionary();
@@ -113,12 +134,14 @@ class YyRooms {
 			xmap.set(name, true);
 			if (data.map.exists(name)) continue;
 			try {
-				var rmFull = dir.ptJoin(name + ".yy");
-				var rmTxt = FileWrap.readTextFileSync(rmFull);
-				rmTxt = NativeString.replaceExt(rmTxt,
-					new RegExp('("creationCodeFile":\\s*")' + xrel.escapeRx() + '"', 'g'),
-					'$1"');
-				FileWrap.writeTextFileSync(rmFull, rmTxt);
+				if (!v23) {
+					var rmFull = dir.ptJoin(name + ".yy");
+					var rmTxt = FileWrap.readTextFileSync(rmFull);
+					rmTxt = NativeString.replaceExt(rmTxt,
+						new RegExp('("creationCodeFile":\\s*")' + xrel.escapeRx() + '"', 'g'),
+						'$1"');
+					FileWrap.writeTextFileSync(rmFull, rmTxt);
+				}
 				FileWrap.unlinkSync(xf.path);
 			} catch (x:Dynamic) {
 				Main.console.error("Error removing creation code for " + name + ":", x);
@@ -135,7 +158,7 @@ class YyRooms {
 					errorText = 'Room $name doesn\'t exist!';
 					return false;
 				}
-				try {
+				if (!v23) try {
 					var rmTxt = FileWrap.readTextFileSync(rmFull);
 					rmTxt = rmTxt.replaceExt(
 						AceMacro.jsRx(~/("creationCodeFile":\\s*")[^"]*"/g),

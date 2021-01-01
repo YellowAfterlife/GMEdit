@@ -5,6 +5,7 @@ import file.kind.KGml;
 import haxe.Json;
 import parsers.GmlSeeker;
 import tools.NativeArray;
+import yy.YyJson;
 import yy.YyRooms;
 
 /**
@@ -17,7 +18,7 @@ class KYyRoomCCs extends KGml {
 		super();
 	}
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
-		if (data == null) data = Json.parse(super.loadCode(editor, data));
+		if (data == null) data = YyJson.parse(super.loadCode(editor, data));
 		var file = editor.file;
 		NativeArray.clear(file.extraFiles);
 		var code = YyRooms.getCCs(file.path, data, file.extraFiles);
