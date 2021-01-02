@@ -225,6 +225,7 @@ using tools.PathTools;
 		r.appendChild(header);
 		//
 		var span = document.createSpanElement();
+		span.classList.add("label");
 		span.appendChild(document.createTextNode(name));
 		header.appendChild(span);
 		//
