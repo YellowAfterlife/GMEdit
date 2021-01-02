@@ -25,6 +25,9 @@ class KYyUnknown extends FileKind {
 	static var rxName = new RegExp('\n  "name": "([^"]+)');
 	static var rxResourceType = new RegExp('\n  "resourceType": "([^"]+)');
 	override public function index(path:String, content:String, main:String):Bool {
+		var project = Project.current;
+		var full = project.fullPath(path);
+		//
 		var mtParentPath = rxParentPath.exec(content);
 		var resource:YyResource = null;
 		var parentPath:String = {
@@ -58,12 +61,11 @@ class KYyUnknown extends FileKind {
 				name = resource.name;
 			} else name = mt[1];
 		} else name = resource.name;
-		Project.current.yyResourceTypes[name] = resType;
+		project.yyResourceTypes[name] = resType;
 		//
 		var dir = @:privateAccess YyLoader.folderMap[parentPath];
 		if (dir == null) dir = cast TreeView.find(false, { rel: parentPath });
 		//
-		var full = Project.current.fullPath(path);
 		if (dir != null) {
 			var makeEl = true;
 			var kind = resType.substring(2).toLowerCase();
@@ -103,6 +105,8 @@ class KYyUnknown extends FileKind {
 					item: item,
 					dir: dir
 				});
+				var relPath = project.relPath(path);
+				YyLoader.applyAssetColour(item, relPath);
 				//TreeView.insertSorted(dir, item);
 				switch (resType) {
 					case "GMSprite": TreeView.setThumbSprite(full, name, item);

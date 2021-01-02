@@ -1,6 +1,8 @@
 package ui;
 import ace.AceWrap;
+import electron.AppTools;
 import electron.Dialog;
+import electron.Electron;
 import electron.FileSystem;
 import electron.FileWrap;
 import electron.Menu;
@@ -40,6 +42,10 @@ class Preferences {
 	public static var element:Element;
 	public static var subMenu:Element;
 	public static var menuMain:Element;
+	
+	/** For GMS2, these are the paths of user folders where project metadata might reside */
+	public static var userPaths:Array<String> = [];
+	
 	/**
 	 * Changes the active sub-menu
 	 */
@@ -357,7 +363,7 @@ class Preferences {
 	}
 	public static function init() {
 		var isMac:Bool, isUnix:Bool;
-		var ep = untyped window.process;
+		var ep:Dynamic = untyped window.process;
 		if (ep == null) {
 			var np = Main.window.navigator.platform;
 			np = np != null ? np.toLowerCase() : "";
@@ -369,6 +375,32 @@ class Preferences {
 		}
 		FileWrap.isMac = isMac;
 		FileWrap.isUnix = isUnix;
+		//
+		if (ep != null) {
+			var appBase = (isUnix
+				? "/Users/" + ep.env.LOGNAME + "/.config"
+				: AppTools.getPath('appData')
+			);
+			for (sfx in ["", "-Beta", "-EA"]) try {
+				var appDir = appBase + "/GameMakerStudio2" + sfx;
+				if (!FileSystem.existsSync(appDir)) continue;
+				
+				var umPath = '$appDir/um.json';
+				if (!FileSystem.existsSync(umPath)) continue;
+				var um:Dynamic = FileSystem.readYyFileSync(umPath);
+				
+				var username:String = um.username;
+				var sep = username.indexOf("@");
+				if (sep >= 0) username = username.substring(0, sep);
+				
+				var userDir = appDir + "/" + username + "_" + um.userID;
+				if (!FileSystem.existsSync(userDir)) continue;
+				userPaths.push(userDir);
+			} catch (x:Dynamic) {
+				Console.error('Failed to index /GameMakerStudio2$sfx:', x);
+			}
+		}
+		//
 		load();
 	}
 	public static function hookSetOption(obj:Dynamic):Void {

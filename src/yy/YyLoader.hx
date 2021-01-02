@@ -12,6 +12,8 @@ import js.html.Element;
 import tools.Dictionary;
 import tools.ExecQueue;
 import tools.JsTools;
+import ui.Preferences;
+using StringTools;
 using tools.NativeString;
 using tools.NativeArray;
 import yy.YyProject;
@@ -20,6 +22,7 @@ import ui.treeview.TreeViewElement;
 import file.kind.gml.*;
 import file.kind.yy.*;
 import file.kind.misc.*;
+using tools.PathTools;
 
 /**
  * ...
@@ -36,6 +39,19 @@ class YyLoader {
 	public static inline function isV23(yypContent:String) {
 		return yypContent.contains('"resourceType": "GMProject"');
 	}
+	static var assetColours:Dictionary<Array<String>> = new Dictionary();
+	public static function applyAssetColour(el:TreeViewElement, path:String) {
+		var colors = assetColours[path.ptNoBS()];
+		if (colors != null) {
+			el.style.setProperty("--data-color", colors[0]);
+			el.setAttribute("data-color", colors[0]);
+			if (el.treeIsDir) {
+				var items = el.asTreeDir().treeItems;
+				items.style.setProperty("--data-color", colors[1]);
+				items.setAttribute("data-color", colors[1]);
+			}
+		}
+	}
 	public static function run(project:Project):Void {
 		var yyProjectTxt:String;
 		if (nextYypContent != null) {
@@ -48,11 +64,26 @@ class YyLoader {
 			project.yyUsesGUID = false;
 			project.isGMS23 = true;
 		} else {
+			assetColours = new Dictionary();
 			yy.v22.YyLoaderV22.run(project, YyJson.parse(yyProjectTxt));
 			return;
 		}
 		project.hasGMLive = yyProjectTxt.contains('"path":"scripts/GMLive/GMLive.yy"');
 		var yyProject:YyProject = YyJsonParser.parse(yyProjectTxt);
+		//
+		assetColours = new Dictionary();
+		var pjName = Path.withoutExtension(project.name);
+		for (dir in Preferences.userPaths) try {
+			var abPath = '$dir/Layouts/$pjName/$pjName/asset_browser.json';
+			if (!FileSystem.existsSync(abPath)) continue;
+			var ab:YyAssetBrowserData = FileSystem.readYyFileSync(abPath);
+			var abc = ab.AssetColours;
+			if (abc != null) for (pair in abc) {
+				var c = pair.Value;
+				var colors = [c.toCSS(), c.toAlphaCSS(0.5)];
+				assetColours[pair.Key.path.replace("\\", "/")] = colors;
+			}
+		} catch (x:Dynamic) Console.error(x);
 		//
 		var folderMap = new Dictionary<TreeViewDir>();
 		itemsToInsert = [];
@@ -60,7 +91,8 @@ class YyLoader {
 		var folderPairs = [];
 		for (folder in yyProject.Folders) {
 			//
-			var folderPath = folder.folderPath;
+			var folderPathYY = folder.folderPath;
+			var folderPath = folderPathYY;
 			if (folderPath.endsWith(".yy")) {
 				folderPath = folderPath.substring(0, folderPath.length - 3);
 			}
@@ -72,6 +104,7 @@ class YyLoader {
 				dir: folderDir,
 				path: folderPath,
 			});
+			applyAssetColour(folderDir, folderPathYY);
 		}
 		//
 		TreeView.saveOpen();

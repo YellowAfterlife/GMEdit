@@ -35,7 +35,11 @@
 /* */
 .treeview {
 	background: #222222;
+	--treeview-background-color: #222222;
 	color: #D0D0D0;
+}
+.treeview div[data-color] {
+	color: white;
 }
 .treeview .header:not(:active):hover, .treeview .header:not(:active):hover > span,
 .treeview .item:not(:active):hover, .treeview .item:not(:active):hover > span {
