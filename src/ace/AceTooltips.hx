@@ -46,7 +46,7 @@ class AceTooltips {
 		var doc:GmlFuncDoc = null;
 		var iter:AceTokenIterator;
 		//
-		if (AceStatusBar.canDocData[t]) {
+		if (AceStatusBar.canDocData.exists(t)) {
 			var scope = session.gmlScopes.get(pos.row);
 			var codeEditor = gml.file.GmlFile.current.codeEditor;
 			var ctx:AceStatusBarDocSearch = {
