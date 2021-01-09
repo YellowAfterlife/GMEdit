@@ -56,7 +56,7 @@
 		<div class="bottom gml">
 			<div class="tabview">
 				<div id="ace_container" class="ace_container">
-					<textarea id="source"></textarea>
+					<textarea id="source" class="ace_editor ace-tm"></textarea>
 				</div>
 			</div>
 			<div width="5" id="misc-splitter-td" class="splitter-td"
@@ -144,12 +144,26 @@
 <div id="preferences-window" class="popout-window" style="display:none"></div>
 <input type="color" id="color-picker" style="display:none"/>
 <!-- -->
-<script type="text/javascript" src="./formatter.js"></script>
-<script type="text/javascript" src="./misc/splitter.js"></script>
-<script type="text/javascript" src="./ace/src-noconflict/ace.js" charset="utf-8"></script>
-<script type="text/javascript" src="./ace/src-noconflict/ext-language_tools.js"></script>
-<script type="text/javascript" src="./ace/mode-gml.js"></script>
-<script type="text/javascript" src="./misc/pako_inflate.min.js"></script>
-<script type="text/javascript" src="./app.js"></script>
-<script type="text/javascript" src="./misc/gmcr.js" async></script>
+<script type="text/javascript" id="gmcr_script" async></script>
+<script type="text/javascript">window.__starterFiles = [
+	"./ace/src-noconflict/ace.js",
+	"./ace/src-noconflict/ext-language_tools.js",
+	"./misc/pako_inflate.min.js",
+	"./misc/splitter.js",
+	"./ace/mode-gml.js",
+	"./formatter.js",
+	"./app.js"
+];</script>
+<script type="text/javascript" src="./app-starter.js" id="starter_script"></script>
+<script type="text/javascript">(function() {
+	var files = window.__starterFiles;
+	if (files == null) return;
+	for (var i = 0; i < files.length; i++) {
+		document.writeln('<scr' + 'ipt'
+			+ ' type="text/javascript"'
+			+ ' src="' + files[i] + '"'
+			+ ' charset="utf-8"'
+		+ '></scr' + 'ipt>');
+	}
+})()</script>
 </body>

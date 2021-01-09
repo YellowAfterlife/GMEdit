@@ -32,7 +32,7 @@ class AceSnippets {
 		var r:String = null;
 		if (FileSystem.canSync) try {
 			return FileSystem.readTextFileSync(FileWrap.userPath + "/snippets/" + mode + ".snippets");
-		} catch (_:Dynamic) {}
+		} catch (_:Dynamic) return "";
 		var r = Main.window.localStorage.getItem(getPath(mode));
 		return r != null ? r : "";
 	}

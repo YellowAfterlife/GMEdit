@@ -243,6 +243,7 @@ textarea#source {
 /** autocomplete tweaks */
 .ace_editor.ace_autocomplete {
 	font-family: sans-serif;
+	overflow: visible;
 }
 .ace_editor.ace_autocomplete .ace_text-layer {
 	margin-left: 0!important;
@@ -269,4 +270,24 @@ textarea#source {
 	content: "";
 	position: absolute;
 	top: 0; bottom: 0; left: 0; right: 0;
+}
+
+.ace_editor.ace_autocomplete[data-self-type]::after {
+	content: attr(data-self-type);
+	background: #fefefe;
+	color: #111;
+	border: 1px lightgray solid;
+	top: 100%;
+	position: absolute;
+	padding: 0 4px;
+	box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	right: -1px;
+}
+
+
+.ace_editor .debugShowToken {
+	position: absolute;
+	margin: -1px 0 0 -1px;
+	border: 1px solid #f0c;
+	background: #ff00cc10;
 }

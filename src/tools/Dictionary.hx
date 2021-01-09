@@ -53,6 +53,9 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public function defget(k:String, def:T):T {
 		return exists(k) ? get(k) : def;
 	}
+	public inline function nc(k:String):T {
+		return JsTools.nca(this, untyped this[k]);
+	}
 	//
 	public inline function set(k:String, v:T):Void {
 		untyped this[k] = v;

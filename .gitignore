@@ -11,3 +11,5 @@
 /bin/resources/app/lw-app.js
 /bin/resources/app/lw
 /bin/resources/app/livejs*
+/bin/resources/app/app-starter.js
+/src/dump/decoding_error.txt

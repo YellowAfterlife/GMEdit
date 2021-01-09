@@ -1,5 +1,7 @@
 package ui.liveweb;
 import editors.EditCode;
+import electron.FileSystem;
+import electron.FileWrap;
 import gml.GmlAPI;
 import gml.GmlVersion;
 import gml.file.GmlFile;
@@ -82,9 +84,18 @@ class LiveWebState {
 	}
 	
 	public static function save() {
-		Main.window.localStorage.setItem(lsPairs, Json.stringify(getPairs()));
-		Main.window.localStorage.setItem(lsMode, LiveWeb.modeEl.value);
-		Main.window.localStorage.setItem(lsVersion, LiveWeb.verEl.value);
+		if (FileSystem.canSync) {
+			var json:LiveWebStateImpl = {
+				pairs: getPairs(),
+				mode: LiveWeb.modeEl.value,
+				version: LiveWeb.verEl.value
+			};
+			FileWrap.writeConfigSync("session", "liveweb", json);
+		} else {
+			Main.window.localStorage.setItem(lsPairs, Json.stringify(getPairs()));
+			Main.window.localStorage.setItem(lsMode, LiveWeb.modeEl.value);
+			Main.window.localStorage.setItem(lsVersion, LiveWeb.verEl.value);
+		}
 	}
 	
 	static function postfixColors(s:String):String {
@@ -120,16 +131,24 @@ class LiveWebState {
 			tabPairs = [{ name: "main", code: postfixColors(s) }];
 		} else {
 			isDefault = true;
-			var ls = Main.window.localStorage;
-			var pairsText = ls.getItem(lsPairs);
-			if (pairsText == null || pairsText == "") {
-				tabPairs = null;
-			} else try {
-				tabPairs = Json.parse(pairsText);
-				modeEl.setSelectValueWithoutOnChange(ls.getItem(lsMode), "2d");
-				verEl.setSelectValueWithoutOnChange(ls.getItem(lsVersion), "GMS1");
-			} catch (x:Dynamic) {
-				tabPairs = null;
+			if (FileSystem.canSync) {
+				try {
+					var json:LiveWebStateImpl = FileWrap.readConfigSync("session", "liveweb");
+				} catch (x:Dynamic) {
+					tabPairs = null;
+				}
+			} else {
+				var ls = Main.window.localStorage;
+				var pairsText = ls.getItem(lsPairs);
+				if (pairsText == null || pairsText == "") {
+					tabPairs = null;
+				} else try {
+					tabPairs = Json.parse(pairsText);
+					modeEl.setSelectValueWithoutOnChange(ls.getItem(lsMode), "2d");
+					verEl.setSelectValueWithoutOnChange(ls.getItem(lsVersion), "GMS1");
+				} catch (x:Dynamic) {
+					tabPairs = null;
+				}
 			}
 			if (tabPairs == null) {
 				modeEl.setSelectValueWithoutOnChange(ls.getItem(lsMode), "2d");
@@ -156,4 +175,9 @@ class LiveWebState {
 	public static function decompressFromEncodedURIComponent(s:String):String;
 }
 typedef LiveWebTab = { name:String, code:String };
+typedef LiveWebStateImpl = {
+	pairs:Array<LiveWebStateImpl>,
+	mode:String,
+	version:String
+}
 #end

@@ -2,6 +2,13 @@
 var ls = window.localStorage;
 var mainEl = document.getElementById("main");
 var splitters = [];
+var electron, fs, configPath;
+if (window.require) {
+	electron = require("electron");
+	fs = require("fs");
+	configPath = electron.remote.app.getPath("userData") + "/GMEdit/config/splitter.json";
+}
+
 function syncMain() {
 	var mainWidth = window.innerWidth;
 	for (var i = 0; i < splitters.length; i++) {
@@ -26,7 +33,18 @@ function Splitter(sizer) {
 	this.parentEl = target.parentElement;
 	this.lsKey = sizer.getAttribute("splitter-lskey");
 	target.style.setProperty("flex-grow", "inherit");
-	if (ls) this.setWidth(Math.max(0|(ls.getItem(this.lsKey) || sizer.getAttribute("splitter-default-width")), this.minWidth));
+	if (ls) {
+		var w;
+		if (configPath && fs.existsSync(configPath)) try {
+			w = JSON.parse(fs.readFileSync(configPath, "utf8")).width;
+		} catch (_) {
+			w = null;
+		} else if (ls) {
+			w = ls.getItem(this.lsKey);
+			if (configPath) fs.writeFileSync(configPath, JSON.stringify({ width: w }, null, "\t"));
+		}
+		this.setWidth(Math.max(0|(w || sizer.getAttribute("splitter-default-width")), this.minWidth));
+	}
 	var sp_mousemove, sp_mouseup, sp_x, sp_y;
 	sp_mousemove = function(e) {
 		var nx = e.pageX, dx = nx - sp_x; sp_x = nx;
@@ -40,7 +58,10 @@ function Splitter(sizer) {
 		document.removeEventListener("mousemove", sp_mousemove);
 		document.removeEventListener("mouseup", sp_mouseup);
 		mainEl.classList.remove("resizing");
-		if (ls) ls.setItem(q.lsKey, "" + parseFloat(q.target.style.width));
+		var w = parseFloat(q.target.style.width);
+		if (configPath) {
+			fs.writeFileSync(configPath, JSON.stringify({ width: w }, null, "\t"));
+		} else if (ls) ls.setItem(q.lsKey, "" + w);
 	};
 	sizer.addEventListener("mousedown", function(e) {
 		sp_x = e.pageX; sp_y = e.pageY;

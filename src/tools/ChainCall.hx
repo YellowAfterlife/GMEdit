@@ -14,7 +14,7 @@ class ChainCall {
 	function next() {
 		var item = queue.shift();
 		if (item != null) {
-			isRunning = false;
+			isRunning = true;
 			item.fn.apply(null, item.args);
 		} else isRunning = false;
 	}

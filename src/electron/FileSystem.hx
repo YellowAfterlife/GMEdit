@@ -1,4 +1,5 @@
 package electron;
+#if !starter
 import gmx.SfGmx;
 import haxe.Json;
 import js.lib.Error;
@@ -81,6 +82,8 @@ import haxe.extern.EitherType;
 	}
 	//
 	public static function statSync(path:String):FileSystemStat;
+	
+	/** Returns last-change time for a file, or null if operation fails */
 	public static inline function mtimeSync(path:String):Null<Float> {
 		return FileSystemImpl.mtimeSync(path);
 	}
@@ -123,3 +126,4 @@ extern class FileSystemStat {
 	public var mtimeMs:Float;
 	public var size:Int;
 }
+#end

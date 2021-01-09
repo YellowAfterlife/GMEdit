@@ -1,6 +1,7 @@
 package synext;
 import ace.AceWrap;
 import gml.GmlAPI;
+import js.html.ScriptElement;
 import js.lib.RegExp;
 import tools.Dictionary;
 import ui.Preferences;
@@ -21,6 +22,12 @@ class GmlExtCoroutines {
 	public static inline function update(enable:Bool) {
 		enabled = enable;
 		keywordMap = enable ? keywordMap1 : keywordMap0;
+	}
+	public static function ensureScript() {
+		var scr:ScriptElement = cast Main.document.getElementById("gmcr_script");
+		if (scr.src == null || scr.src == "") {
+			scr.src = "./misc/gmcr.js";
+		}
 	}
 	//
 	private static inline var prefix = "/*//!#gmcr";
@@ -125,7 +132,8 @@ class GmlExtCoroutines {
 		flush(q.pos);
 		var proc:String->Dynamic->GmlExtCoroutinesProc = untyped window.gmcr_proc;
 		if (proc == null) {
-			errorText = "GMCR is not available. Did you copy it from pre-built binary or it's itch.io download?";
+			errorText = "GMCR is unavailable or didn't load up yet.\n"
+				+ "If you are compiling GMEdit from source code, you'll want to copy it from an itch.io release";
 			return null;
 		}
 		//trace(out);

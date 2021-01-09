@@ -11,6 +11,7 @@
 	}
 	//
 	var Preferences = $gmedit["ui.Preferences"];
+	var FileWrap = $gmedit["electron.FileWrap"];
 	var popout = false; // show a popout instead of a sidebar
 	var currOnly = false; // original idea (only show the current file)
 	var showAtTop = true;
@@ -492,7 +493,13 @@
 			//bindKey: "Ctrl-Shift-O", // if you'd like
 			exec: function(editor) {
 				toggle();
-				localStorage.setItem("outline-view-hide", !visible);
+				var currPrefs = FileWrap.readConfigSync("config", Preferences.path);
+				if (currPrefs) {
+					var currOV = currPrefs.outlineView;
+					if (currOV == null) currOV = currPrefs.outlineView = {};
+					currOV.hide = !visible;
+					FileWrap.writeConfigSync("config", Preferences.path, currPrefs);
+				}
 			}
 		});
 		AceCommands.addToPalette({
@@ -502,12 +509,6 @@
 		});
 		//
 		var currPrefs = Preferences.current;
-		var legacyHide = localStorage.getItem("outline-view-hide");
-		if (legacyHide != null) {
-			localStorage.removeItem("outline-view-hide");
-			currPrefs.outlineView = { hide: legacyHide == "true" };
-			Preferences.save();
-		}
 		var currOV = currPrefs.outlineView;
 		function opt(ov, name, def) {
 			if (!ov) return def;

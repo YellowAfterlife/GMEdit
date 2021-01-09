@@ -68,6 +68,7 @@ class PrefMagic {
 		//
 		el = addCheckbox(out, "Use coroutine magic", current.coroutineMagic, function(z) {
 			current.coroutineMagic = z;
+			if (z) synext.GmlExtCoroutines.ensureScript();
 			save();
 		});
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23gmcr-magic");

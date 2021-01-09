@@ -1,4 +1,5 @@
 package ui;
+#if !starter
 import ace.AceWrap;
 import electron.AppTools;
 import electron.Dialog;
@@ -31,13 +32,15 @@ import ui.treeview.TreeView;
 import ui.preferences.PrefData;
 import ui.preferences.*;
 using tools.HtmlTools;
+#end
 
 /**
  * User preferences are managed here!
  * @author YellowAfterlife
  */
 class Preferences {
-	public static var path:String = "user-preferences";
+	@:keep public static inline var path:String = "user-preferences";
+	#if !starter
 	public static var current:PrefData;
 	public static var element:Element;
 	public static var subMenu:Element;
@@ -359,6 +362,7 @@ class Preferences {
 		if (doSave) save();
 		//
 		if (pref.theme != null) Theme.current = pref.theme;
+		if (pref.coroutineMagic) synext.GmlExtCoroutines.ensureScript();
 		GmlAPI.ukSpelling = pref.ukSpelling;
 	}
 	public static function init() {
@@ -447,4 +451,5 @@ class Preferences {
 			editor.setOption("fontFamily", font);
 		}
 	}
+	#end
 }

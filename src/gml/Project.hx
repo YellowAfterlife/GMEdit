@@ -2,6 +2,8 @@ package gml;
 import ace.extern.*;
 import electron.FileSystem;
 import electron.Electron;
+import electron.FileWrap;
+import gml.project.ProjectStateManager;
 import haxe.DynamicAccess;
 import haxe.Json;
 import haxe.io.Path;
@@ -260,6 +262,7 @@ import ui.treeview.TreeViewElement;
 		current = new Project(path);
 		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
 	}
+	
 	public function close() {
 		if (version != GmlVersion.none) {
 			PluginEvents.projectClose({project:current});
@@ -282,8 +285,7 @@ import ui.treeview.TreeViewElement;
 			activeTab: activeTab,
 		};
 		PluginEvents.projectStateSave({project:this, state:data});
-		window.localStorage.setItem("project:" + path, Json.stringify(data));
-		window.localStorage.setItem("@project:" + path, "" + Date.now().getTime());
+		ProjectStateManager.set(path, data);
 	}
 	public var firstLoadState:ProjectState = null;
 	public function finishedIndexing() {
@@ -335,33 +337,7 @@ import ui.treeview.TreeViewElement;
 			"directory": RawSearcher.run,
 		};
 		//
-		var ls = window.localStorage;
-		var renList:Array<String> = [];
-		var remList:Array<String> = [];
-		var remTime:Float = Date.now().getTime()
-			- (1000 * 60 * 60 * 24 * ui.Preferences.current.projectSessionTime);
-		for (i in 0 ... ls.length) {
-			var k = ls.key(i);
-			if (NativeString.startsWith(k, "@project:")) {
-				if (k.indexOf("\x5c") >= 0) {
-					renList.push(k);
-				}
-				else if (Std.parseFloat(ls.getItem(k)) < remTime) {
-					remList.push(k);
-					remList.push(k.substring(1));
-				}
-			}
-		}
-		for (remKey in remList) ls.removeItem(remKey);
-		for (renKey in renList) {
-			var renKey1 = renKey.substring(1);
-			var v0 = ls.getItem(renKey);
-			var v1 = ls.getItem(renKey1);
-			ls.removeItem(renKey);
-			ls.removeItem(renKey1);
-			ls.setItem(renKey.ptNoBS(), v0);
-			ls.setItem(renKey1.ptNoBS(), v1);
-		}
+		ProjectStateManager.init();
 		//
 		#if !lwedit
 		var path = moduleArgs["open"];
@@ -399,10 +375,7 @@ import ui.treeview.TreeViewElement;
 				properties = ProjectProperties.load(this);
 				GmlAPI.forceTemplateStrings = properties.templateStringScript != null;
 				GmlSeekData.map = new Dictionary();
-				try {
-					var stateText = window.localStorage.getItem("project:" + path);
-					state = Json.parse(stateText);
-				} catch (_:Dynamic) { }
+				state = ProjectStateManager.get(path);
 			} else {
 				TreeView.saveOpen();
 				if (Preferences.current.clearAssetThumbsOnRefresh) {
@@ -770,6 +743,7 @@ typedef ProjectState = {
 	treeviewOpenNodes:Array<String>,
 	tabPaths:Array<String>,
 	?activeTab:Int,
+	?mtime:Float,
 }
 typedef ProjectDirInfo = {
 	fileName:String,

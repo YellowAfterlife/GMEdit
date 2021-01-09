@@ -1,4 +1,8 @@
 package electron;
+import js.Browser.document;
+#if starter
+import ui.Starter.ElectronMin in Electron;
+#end
 /**
  * ...
  * @author YellowAfterlife
@@ -22,12 +26,12 @@ class WindowsAccentColors {
 				impl = require(jsPath);
 			};
 		} catch (x:Dynamic) {
-			Main.console.error("Error initializing accent colors: ", x);
+			Console.error("Error initializing accent colors: ", x);
 		}
 	}
 	public static function updateFocus(active:Bool) {
 		if (impl == null) return;
-		var html = Main.document.documentElement;
+		var html = document.documentElement;
 		var style = html.style;
 		var pre = active ? "active" : "inactive";
 		html.setAttribute("titlebar-foreground-is-light",
@@ -37,7 +41,7 @@ class WindowsAccentColors {
 		style.setProperty("--titlebar-foreground-color",
 			style.getPropertyValue('--$pre-titlebar-foreground-color'));
 	}
-	public static function update() {
+	public static function update(?focus:Bool) {
 		if (impl == null) {
 			init();
 		} else impl.reload();
@@ -45,7 +49,7 @@ class WindowsAccentColors {
 		if (!impl.isDetectable) return;
 		var fc0 = impl.inactiveTitlebarTextColor;
 		var fc1 = impl.titlebarTextColor;
-		var html = Main.document.documentElement;
+		var html = document.documentElement;
 		//Main.console.log(fc0, fc1);
 		html.setAttribute("hasAccentColors", "");
 		html.setAttribute("active-titlebar-foreground-is-light", "" + (fc1 == "#ffffff"));
@@ -57,7 +61,8 @@ class WindowsAccentColors {
 		style.setProperty("--inactive-titlebar-background-color", impl.inactiveTitlebarColor);
 		style.setProperty("--inactive-titlebar-foreground-color", fc0);
 		
-		updateFocus(Main.document.documentElement.hasAttribute("hasFocus"));
+		if (focus == null) focus = document.documentElement.hasAttribute("hasFocus");
+		updateFocus(focus);
 	}
 }
 extern class WindowsAccentColorsImpl {
