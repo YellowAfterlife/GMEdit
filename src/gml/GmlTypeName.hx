@@ -1,4 +1,6 @@
 package gml;
+import ace.AceGmlTools;
+import gml.GmlFuncDoc;
 import js.lib.RegExp;
 import tools.JsTools;
 
@@ -62,4 +64,8 @@ abstract GmlTypeName(String) to String {
 		return JsTools.nca(mt, GmlTypeName.fromString(mt[1]));
 	}
 	private static var __unwrapParam:RegExp = new RegExp("^\\S+<\\s*(.+)\\s*>$");
+	
+	public function getSelfCallDoc(imp:GmlImports):GmlFuncDoc {
+		return JsTools.nca(this, AceGmlTools.findSelfCallDoc(cast this, imp));
+	}
 }

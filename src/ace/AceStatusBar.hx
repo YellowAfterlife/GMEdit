@@ -73,7 +73,12 @@ class AceStatusBar {
 	public static var canDocData:Dictionary<AceStatusBarDocSearch->Bool> = @:privateAccess AceStatusBarResolver.initCanDocData();
 	@:keep public static inline function getDocData(ctx:AceStatusBarDocSearch):Bool {
 		var f = canDocData[ctx.tk.type];
-		return f != null ? f(ctx) : false;
+		if (f != null) {
+			return f(ctx);
+		} else if (Std.is(ctx.session.gmlFile.kind, file.kind.KGml)) {
+			ctx.docs = GmlNamespace.blank;
+			return true;
+		} else return false;
 	}
 	@:keep public static inline function procDocImport(ctx:AceStatusBarDocSearch):Int {
 		return AceStatusBarImports.procDocImport(ctx);
@@ -164,10 +169,11 @@ class AceStatusBar {
 		// go forward to verify that cursor token is inside that call:
 		depth = -1;
 		var argCurr = 0;
+		tk = iter.stepForward(); // we should now be at `(`
 		while (tk != null) {
 			switch (tk.type) {
-				case "paren.lparen", "square.paren.lparen": depth += tk.value.length;
-				case "paren.rparen", "square.paren.rparen": depth -= tk.value.length;
+				case "paren.lparen", "square.paren.lparen", "curly.paren.lparen": depth += tk.value.length;
+				case "paren.rparen", "square.paren.rparen", "curly.paren.rparen": depth -= tk.value.length;
 				case "punctuation.operator" if (tk.value.contains(",") && depth == 0): argCurr += 1;
 			}
 			if (tk == ctk) break;

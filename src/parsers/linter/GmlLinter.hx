@@ -7,6 +7,7 @@ import gml.GmlNamespace;
 import gml.GmlTypeName;
 import gml.Project;
 import parsers.linter.GmlLinterInit;
+import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;
@@ -66,6 +67,9 @@ class GmlLinter {
 	var editor:EditCode;
 	
 	var context:String = "";
+	inline function getImports():GmlImports {
+		return editor.imports[context];
+	}
 	
 	/** depth -> null<variables that should be freed after this depth> */
 	var localNamesPerDepth:Array<Array<String>> = [];
@@ -282,14 +286,12 @@ class GmlLinter {
 	}
 	var readArgs_itemType:GmlTypeName;
 	
-	function checkCallArgs(currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
-		var doc:GmlFuncDoc = JsTools.or(GmlAPI.gmlDoc[currName], GmlAPI.extDoc[currName]);
-		var isUserFunc = doc != null;
-		if (!isUserFunc) doc = GmlAPI.stdDoc[currName];
-		if (doc == null) {
-			var lm = editor.lambdas[context];
-			if (lm != null) doc = lm.docs[currName];
-		}
+	function checkCallArgs(doc:GmlFuncDoc, currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
+		var isUserFunc:Bool;
+		if (currName == null) {
+			isUserFunc = true;
+			currName = "an anonymous function";
+		} else isUserFunc = !GmlAPI.stdDoc.exists(currName);
 		
 		// figure out min/max argument counts:
 		var minArgs:Int, maxArgs:Int;
@@ -346,6 +348,20 @@ class GmlLinter {
 	var readExpr_currName:GmlName;
 	var readExpr_currType:GmlTypeName;
 	var readExpr_currFunc:GmlFuncDoc;
+	function readExpr_checkConst(currName:GmlName, currKind:GmlLinterKind) {
+		switch (currKind) {
+			case KIdent: {
+				if (localKinds[currName] == KConst) {
+					addWarning('Assigning to a `const` local `$currName`');
+				}
+			};
+			case KNullField, KNullArray: {
+				addError("Null-conditional values cannot be assigned to");
+			};
+			default:
+		}
+	}
+		
 	function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind):FoundError {
 		var newDepth = oldDepth + 1;
 		var q = reader;
@@ -370,18 +386,8 @@ class GmlLinter {
 		var currType:GmlTypeName = null;
 		var currFunc:GmlFuncDoc = null;
 		//
-		function checkConst():Void {
-			switch (currKind) {
-				case KIdent: {
-					if (localKinds[currName] == KConst) {
-						addWarning('Assigning to a `const` local `$currName`');
-					}
-				};
-				case KNullField, KNullArray: {
-					addError("Null-conditional values cannot be assigned to");
-				};
-				default:
-			}
+		inline function checkConst():Void {
+			readExpr_checkConst(currName, currKind);
 		}
 		//
 		switch (nk) {
@@ -393,11 +399,12 @@ class GmlLinter {
 				if (localKinds[currName] == KGhostVar) {
 					addWarning('Trying to access a variable `$currName` outside of its scope');
 				}
+				// linting #properties:
 				if (isProperties && isStat()) {
 					if (skipIf(peek() == KColon)) { // name:type
 						rc(readCheckSkip(KIdent, "variable type"));
 						if (skipIf(peek() == KLT)) {
-							// we know that it's valid or you wouldn't make it here
+							// we know that it's valid or else GmlObjectProperties would prevent you from saving
 							var depth = 1;
 							while (q.loop) {
 								switch (next()) {
@@ -409,15 +416,16 @@ class GmlLinter {
 						}
 					}
 				}
-				var locals:GmlLocals, ns:GmlNamespace, imp:GmlImports;
+				// figure out what this is:
+				var locals:GmlLocals, ns:GmlNamespace, imp:GmlImports, lam:GmlExtLambda;
 				if (currName == "self") {
 					currType = inline AceGmlTools.getSelfType({session:editor.session, scope:context});
-					currFunc = AceGmlTools.findSelfCallDoc(currType, editor.imports[context]);
+					currFunc = currType.getSelfCallDoc(getImports());
 				} else if (currName == "other") {
 					currType = inline AceGmlTools.getOtherType({session:editor.session, scope:context});
-					currFunc = AceGmlTools.findSelfCallDoc(currType, editor.imports[context]);
+					currFunc = currType.getSelfCallDoc(getImports());
 				} else if (JsTools.nca(locals = editor.locals[context], locals.kind.exists(currName))) {
-					imp = editor.imports[context];
+					imp = getImports();
 					if (imp != null) {
 						currType = GmlTypeName.fromString(imp.localTypes[currName]);
 						if (currType != null) {
@@ -426,9 +434,11 @@ class GmlLinter {
 							});
 						}
 					}
+				} else if (JsTools.nca(lam = editor.lambdas[context], lam.kind.exists(currName))) {
+					currFunc = lam.docs[currName];
 				} else if (GmlAPI.gmlKind[currName] == "asset.object") {
 					currType = GmlTypeName.fromString(currName);
-				} else if (JsTools.nca(imp = editor.imports[context], ns = imp.namespaces[currName]) != null) {
+				} else if (JsTools.nca(imp = getImports(), ns = imp.namespaces[currName]) != null) {
 					currType = GmlTypeName.type(GmlTypeName.fromString(currName));
 					currFunc = ns.docStaticMap[""];
 				} else if ((ns = GmlAPI.gmlNamespaces[currName]) != null) {
@@ -442,10 +452,12 @@ class GmlLinter {
 				rc(readExpr(newDepth));
 				if (next() != KParClose) return readExpect("a `)`");
 				currType = readExpr_currType;
+				currFunc = readExpr_currFunc;
 			};
 			case KNew: {
 				rc(readExpr(newDepth, IsNew));
 				currType = GmlTypeName.fromString(readExpr_currName);
+				currFunc = currType.getSelfCallDoc(getImports());
 			};
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
@@ -460,8 +472,8 @@ class GmlLinter {
 				currType = readArgs_itemType;
 				currType = JsTools.nca(currType, GmlTypeName.array(currType));
 			};
-			case KLambda: rc(readLambda(newDepth));
-			case KFunction: rc(readLambda(newDepth, true));
+			case KLambda: rc(readLambda(newDepth, false)); currFunc = readLambda_doc;
+			case KFunction: rc(readLambda(newDepth, true)); currFunc = readLambda_doc;
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
 				if (skipIf(peek() == KCubClose)) {
 					// empty!
@@ -519,13 +531,12 @@ class GmlLinter {
 					skip();
 					var argc = readArgs(newDepth, false);
 					rc(argc < 0);
-					if (currKind == KIdent && currName != null) {
-						checkCallArgs(currName, argc, !isStat(), hasFlag(IsNew));
+					if (currFunc != null) {
+						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
 					}
 					statKind = currKind = KCall;
 					currType = JsTools.nca(currFunc, currFunc.returnType);
-					var imp = editor.imports[context];
-					currFunc = JsTools.nca(currType, AceGmlTools.findSelfCallDoc(currType, imp));
+					currFunc = currType.getSelfCallDoc(getImports());
 				};
 				case KInc, KDec: { // x++, x--
 					if (hasFlag(NoSfx)) break;
@@ -533,14 +544,14 @@ class GmlLinter {
 					checkConst();
 					skip();
 					statKind = currKind = nk;
+					currType = GmlTypeName.number;
 				};
 				case KDot, KNullDot: { // x.y
 					skip();
 					rc(readCheckSkip(KIdent, "field name after `.`"));
 					currKind = nk == KDot ? KField : KNullField;
 					if (currType != null) {
-						var imp = editor.imports[context];
-						AceGmlTools.findNamespace(currType, imp, function(ns) {
+						AceGmlTools.findNamespace(currType, getImports(), function(ns) {
 							currType = null;
 							currFunc = ns.docInstMap[nextVal];
 							return currType != null || currFunc != null;
@@ -749,14 +760,29 @@ class GmlLinter {
 		}
 		return readSeqStartError("Unclosed {}");
 	}
-	function readLambda(oldDepth:Int, isFunc:Bool = false):FoundError {
-		skipIf(peek() == KIdent);
+	
+	static var readLambda_doc:GmlFuncDoc;
+	function readLambda(oldDepth:Int, isFunc:Bool):FoundError {
+		var name = "function";
+		if (peek() == KIdent) {
+			skip();
+			name = nextVal;
+		}
+		var doc = new GmlFuncDoc(name, "(", ")", [], false);
 		if (skipIf(peek() == KParOpen)) { // (...args)
 			var depth = 1;
+			var awaitArgName = true;
 			while (reader.loop) {
 				switch (next()) {
 					case KParOpen: depth++;
 					case KParClose: if (--depth <= 0) break;
+					case KIdent: {
+						if (awaitArgName) {
+							awaitArgName = false;
+							doc.args.push(nextVal);
+						}
+					};
+					case KComma: if (depth == 1) awaitArgName = true;
 					default:
 				}
 			}
@@ -778,6 +804,7 @@ class GmlLinter {
 		rc(readStat(0));
 		localNamesPerDepth = oldLocalNames;
 		localKinds = oldLocalKinds;
+		readLambda_doc = doc;
 		return false;
 	}
 	
@@ -947,7 +974,7 @@ class GmlLinter {
 				}
 			};
 			//
-			case KLamDef: rc(readLambda(newDepth));
+			case KLamDef: rc(readLambda(newDepth, false));
 			default: {
 				rc(readExpr(newDepth, flags.with(AsStat), nk));
 			};
@@ -1070,10 +1097,10 @@ class GmlLinter {
 		q.runPre(expr, editor, Project.current.version);
 		var ok = !q.readExpr(0);
 		q.runPost();
-		Console.log(expr, JsTools.nca(ok, q.readExpr_currType), JsTools.nca(ok, q.readExpr_currFunc));
+		//Console.log(expr, q.readExpr_currType, q.readExpr_currFunc);
 		return {
-			type: JsTools.nca(ok, q.readExpr_currType),
-			doc:  JsTools.nca(ok, q.readExpr_currFunc),
+			type: ok ? q.readExpr_currType : null,
+			doc:  ok ? q.readExpr_currFunc : null,
 		}
 	}
 }
