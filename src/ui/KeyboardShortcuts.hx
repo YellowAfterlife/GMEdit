@@ -335,10 +335,19 @@ class KeyboardShortcuts {
 			} while (false);
 		});
 		(editor:Dynamic).debugShowToken = function() {
+			var mki:AceMarker = null;
 			editor.on("mousemove", function(ev:Dynamic) {
 				var pos:AcePos = ev.getDocumentPosition();
+				pos.column++;
+				if (mki != null) {
+					editor.session.removeMarker(mki);
+					mki = null;
+				}
 				var tk = editor.session.getTokenAtPos(pos);
 				if (tk == null) return;
+				pos.column = tk.start;
+				mki = editor.session.addMarker(AceRange.fromTokenPos(tk, pos), "debugShowToken", "text");
+				//
 				var sb = editor.statusBar;
 				if (sb == null) return;
 				sb.setText(haxe.Json.stringify(tk));
