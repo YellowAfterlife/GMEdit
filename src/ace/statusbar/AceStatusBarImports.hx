@@ -1,7 +1,9 @@
 package ace.statusbar;
 import ace.AceStatusBar;
+import ace.extern.AceRange;
 import gml.GmlAPI;
 import gml.GmlImports;
+import parsers.linter.GmlLinter;
 import tools.JsTools;
 
 /**
@@ -56,7 +58,7 @@ class AceStatusBarImports {
 				type = imports.localTypes[tk.value];
 			} else {
 				iter.stepForward();
-				iter.stepForward();
+				tk = iter.stepForward();
 			}
 		} else {
 			if (fnType == "localfield") {
@@ -84,6 +86,11 @@ class AceStatusBarImports {
 					break;
 				}
 			}
+		} else {
+			var from = AceGmlTools.skipDotExprBackwards(ctx.session, ctx.funcEnd);
+			var snip = ctx.session.getTextRange(AceRange.fromPair(from, ctx.funcEnd));
+			var inf = GmlLinter.getType(snip, ctx.session.gmlEditor, ctx.scope);
+			doc = inf.doc;
 		}
 		//
 		ctx.tk = tk;

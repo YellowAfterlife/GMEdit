@@ -34,6 +34,7 @@ class GmlCodeTools {
 	
 	/**
 	 * `if (_) obj¦.fd = 1;` -> `if (_) ¦obj.fd = 1;`
+	 * This is a char-based version of AceGmlTools.skipDotExprBackwards
 	 */
 	public static function skipDotExprBackwards(src:GmlCode, pos:StringPos):StringPos {
 		var depth = 0;

@@ -276,7 +276,7 @@ class GmlExtImport {
 			//
 			var doc:GmlFuncDoc = null;
 			if (args != null) {
-				args = StringTools.replace(args, "->", "➜");
+				args = GmlFuncDoc.patchArrow(args);
 				var fa = field + args;
 				doc = GmlFuncDoc.parse(fa);
 				info = NativeString.nzcct(fa, "\n", info);

@@ -1,4 +1,5 @@
 package tools;
+import js.lib.RegExp;
 
 /**
  * ...

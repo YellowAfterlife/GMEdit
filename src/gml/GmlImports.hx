@@ -2,6 +2,7 @@ package gml;
 import gml.GmlFuncDoc;
 import gml.GmlNamespace;
 import tools.Dictionary;
+import tools.Aliases;
 using tools.NativeString;
 import ace.AceWrap;
 import ace.extern.*;
@@ -41,7 +42,7 @@ class GmlImports {
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	
 	/** "v" -> "Some" for `var v:Some` */
-	public var localTypes:Dictionary<String> = new Dictionary();
+	public var localTypes:Dictionary<GmlTypeName> = new Dictionary();
 	
 	//
 	public function new() {
@@ -125,7 +126,7 @@ class GmlImports {
 				ns.shorten.set(long, short);
 				ns.longen.set(short, long);
 			}
-			if (comp != null) for (iter in 0 ... 2) {
+			if (comp != null) for (iter in (spaceOnly ? 1 : 0) ... 2) {
 				if (cache != null) {
 					nc = cache.nsComp;
 					if (nc == null) {

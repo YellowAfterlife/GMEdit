@@ -82,11 +82,12 @@ class AceStatusBar {
 	private static var emptyToken:AceToken = { type:"", value:"" };
 	private function updateComp(editor:AceWrap, row:Int, col:Int, imports:GmlImports, lambdas:GmlExtLambda, scope:String) {
 		statusHint.innerHTML = "";
-		var iter:AceTokenIterator = new AceTokenIterator(editor.session, row, col);
+		var session = editor.session;
+		var iter:AceTokenIterator = new AceTokenIterator(session, row, col);
 		var sctx:AceStatusBarDocSearch = {
 			session: editor.session, scope: scope,
 			iter: iter, imports: imports, lambdas: lambdas,
-			docs: null, doc: null, tk: null
+			docs: null, doc: null, tk: null, funcEnd: null
 		};
 		var ctk:AceToken = iter.getCurrentToken(); // cursor token
 		var parEmpty = false;
@@ -134,10 +135,12 @@ class AceStatusBar {
 					if (depth < minDepth) {
 						minDepth = depth;
 						parOpen = tk;
+						var pos = iter.getCurrentTokenPosition();
 						tk = iter.stepBackward();
 						if (tk != null) {
 							sctx.tk = tk;
 							if (getDocData(sctx)) {
+								sctx.funcEnd = pos;
 								tk = sctx.tk;
 								docs = sctx.docs;
 								doc = sctx.doc;
@@ -298,4 +301,5 @@ typedef AceStatusBarDocSearch = {
 	scope:String,
 	imports:GmlImports,
 	lambdas:GmlExtLambda,
+	funcEnd:AcePos,
 }

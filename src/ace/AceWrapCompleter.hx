@@ -15,7 +15,9 @@ import haxe.extern.EitherType;
 import js.lib.RegExp;
 import parsers.GmlKeycode;
 import parsers.GmlEvent;
+import parsers.linter.GmlLinter;
 import shaders.ShaderAPI;
+import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
 using tools.NativeString;
@@ -136,26 +138,37 @@ using tools.NativeString;
 			do { // once
 				if (tk == null) continue;
 				var iter:AceTokenIterator = null;
+				inline function initIter():AceTokenIterator {
+					return new AceTokenIterator(session, pos.row, pos.column);
+				}
 				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) {
 					if (dotKind == DKEnum) {
 						if (tk.type == "enumerror") {
-							iter = new AceTokenIterator(session, pos.row, pos.column);
+							iter = initIter();
 							tk = iter.stepBackward();
 						}
 					} else if (dotKind == DKGlobal) {
 						if (tk.type == "globalfield") {
-							iter = new AceTokenIterator(session, pos.row, pos.column);
+							iter = initIter();
 							tk = iter.stepBackward();
 						}
 					}
 				}
 				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) continue;
+				
+				var dotPos:AcePos;
+				if (dotKind == DKSmart) {
+					if (iter == null) iter = initIter();
+					dotPos = iter.getCurrentTokenPosition();
+				} else dotPos = null;
+				
 				if (editor.completer.eraseSelfDot) {
 					tk = { type: "keyword", value: "self" };
 				} else {
-					if (iter == null) iter = new AceTokenIterator(session, pos.row, pos.column);
+					if (iter == null) iter = initIter();
 					tk = iter.stepBackward();
 				}
+				
 				switch (dotKind) {
 					case DKNamespace: { // NameSpace.staticField
 						if (tk.type != "namespace") continue;
@@ -173,55 +186,46 @@ using tools.NativeString;
 						callback(null, ns.compStatic.array);
 						return;
 					};
-					case DKLocalType: { // local.instField
-						var contextKind = switch (tk.type) {
-							case "local", "sublocal": 0;
-							case "asset.object": 3;
-							default: switch (tk.value) {
-								case "self": 1;
-								case "other": 2;
-								default: continue;
-							}
-						};
-						//
+					case DKSmart: {
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
-						//
-						var type:String;
-						var file = GmlFile.current;
-						var imp = file.codeEditor.imports[scope];
-						switch (contextKind) {
-							case 1: {
-								type = inline AceGmlTools.getSelfType({session:session, scope:scope});
+						
+						// some special cases where we know that we don't have to parse anything:
+						var snip:GmlCode;
+						switch (tk.type) {
+							case "local", "sublocal", "asset.object", "namespace", "enum": {
+								snip = tk.value;
 							};
-							case 2: {
-								type = inline AceGmlTools.getOtherType({session:session, scope:scope});
-							};
-							case 3: type = tk.value;
+							case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
 							default: {
-								if (imp == null) continue;
-								type = imp.localTypes[tk.value];
-							};
+								var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
+								snip = session.getTextRange(AceRange.fromPair(from, dotPos));
+							}
 						}
+						
+						var type = GmlLinter.getType(snip, session.gmlEditor, scope).type;
 						if (type == null) continue;
-						//
-						if (dotKindMeta) {
-							var ns = GmlAPI.gmlNamespaces[type];
-							if (ns != null) {
-								callback(null, ns.getInstComp());
-								return;
-							}
-						} else {
-							var ns = JsTools.nca(imp, imp.namespaces[type]);
-							if (ns != null) {
-								callback(null, ns.getInstComp());
-								return;
-							} else {
-								var en = GmlAPI.gmlEnums[type];
-								if (en == null) continue;
-								callback(null, en.fieldComp);
-								return;
-							}
+						var isGlobal = dotKindMeta;
+						if (isGlobal) editor.completer.getPopup().container.setAttribute("data-self-type", type);
+						
+						var isStatic = type.isType;
+						if (isStatic) type = type.unwrapParam();
+						
+						var imp:GmlImports;
+						if (!isGlobal) {
+							imp = GmlFile.current.codeEditor.imports[scope];
+							if (imp == null) continue;
+						} else imp = null;
+						
+						var ns = dotKindMeta ? GmlAPI.gmlNamespaces[type] : imp.namespaces[type];
+						if (ns != null) {
+							callback(null, isStatic ? ns.compStatic.array : ns.getInstComp());
+							return;
+						} else if (!isGlobal) {
+							var en = GmlAPI.gmlEnums[type];
+							if (en == null) continue;
+							callback(null, isStatic ? en.compList : en.fieldComp);
+							return;
 						}
 					};
 					case DKGlobal: { // global.variable
@@ -300,7 +304,8 @@ enum abstract AceWrapCompleterDotKind(Int) {
 	var DKGlobal = 1;
 	var DKNamespace = 2;
 	var DKEnum = 3;
-	var DKLocalType = 4;
+	//var DKLocalType = 4;
+	var DKSmart = 5;
 }
 enum abstract AceWrapCompletionColKind(Int) {
 	var CKNone = 0;

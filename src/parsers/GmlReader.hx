@@ -1,8 +1,10 @@
 package parsers;
 
 import ace.extern.*;
+import gml.GmlTypeName;
 import gml.GmlVersion;
 import synext.GmlExtImport;
+import tools.Aliases;
 import tools.CharCode;
 import tools.StringReader;
 using tools.NativeString;
@@ -484,13 +486,13 @@ class GmlReader extends StringReader {
 				skipIdent1();
 				if (pos > p1) {
 					if (peek() == "<".code) skipTypeParams(till);
-					d.type = substring(p1, pos);
+					d.type = GmlTypeName.fromString(substring(p1, pos));
 				} else d.type = null;
 			} else if (peek() == "/".code && peek(1) == "*".code) {
 				p = pos;
 				skip(2); skipComment();
 				var mt = rxVarType.exec(substring(p, pos));
-				d.type = mt != null ? mt[1] : null;
+				d.type = mt != null ? GmlTypeName.fromString(mt[1]) : null;
 			} else d.type = null;
 			d.type1 = pos;
 			// see if there's `= value`:
@@ -536,6 +538,6 @@ class GmlReader extends StringReader {
 }
 typedef SkipVarsData = {
 	name:String, name0:Int, name1:Int,
-	type:String, type0:Int, type1:Int,
+	type:GmlTypeName, type0:Int, type1:Int,
 	expr0:Int, expr1:Int, opt:Bool,
 };

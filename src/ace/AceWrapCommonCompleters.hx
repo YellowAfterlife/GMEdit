@@ -26,6 +26,7 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class AceWrapCommonCompleters {
+	/** Places where you are generally not supposed to show code completions */
 	public var excludeTokens:Dictionary<Bool> = Dictionary.fromKeys([
 		"comment", "comment.doc", "comment.line", "comment.doc.line",
 		"string", "string.quasi", "string.importpath", "numeric",
@@ -48,38 +49,71 @@ class AceWrapCommonCompleters {
 	}
 	
 	public var completers:Array<AceAutoCompleter> = [];
+	
+	/** Suggests built-ins */
 	public var stdCompleter:AceWrapCompleter;
+	/** Suggests project-wide items (scripts, assets, macros, etc.) */
 	public var gmlCompleter:AceWrapCompleter;
+	/** Suggests extension items (functions and macros) */
 	public var extCompleter:AceWrapCompleter;
+	
+	/** Suggests #event names */
 	public var eventCompleter:AceWrapCompleter;
-	public var localCompleter:AceWrapCompleter;
-	public var importCompleter:AceWrapCompleter;
-	/** completes from file's imports */
-	public var namespaceCompleter:AceWrapCompleter;
-	/** completes from global namespaces */
-	public var namespaceAltCompleter:AceWrapCompleter;
-	/** completes local namespace names */
-	public var namespaceTypeCompleter:AceWrapCompleter;
-	/** completes global namespace names */
-	public var namespaceTypeAltCompleter:AceWrapCompleter;
-	public var enumTypeCompleter:AceWrapCompleter;
-	public var lambdaCompleter:AceWrapCompleter;
-	/** completes from file's imports */
-	public var localTypeCompleter:AceWrapCompleter;
-	/** completes from global namespaces */
-	public var localTypeAltCompleter:AceWrapCompleter;
-	public var enumCompleter:AceWrapCompleter;
-	public var globalCompleter:AceWrapCompleter;
-	public var globalFullCompleter:AceWrapCompleter;
-	public var instCompleter:AceWrapCompleter;
+	/** Suggests key names for keyboard #events */
 	public var keynameCompleter:AceWrapCompleter;
+	
+	/** Suggests local variables */
+	public var localCompleter:AceWrapCompleter;
+	/** Suggests #import-ed identifiers */
+	public var importCompleter:AceWrapCompleter;
+	/** Suggests #lambda function names */
+	public var lambdaCompleter:AceWrapCompleter;
+	
+	/** Suggests local namespaces when typing `var v:` */
+	public var namespaceTypeCompleter:AceWrapCompleter;
+	/** Suggests global namespaces when typing `var v:` */
+	public var namespaceTypeAltCompleter:AceWrapCompleter;
+	/** Suggests enums when typing `var v:` */
+	public var enumTypeCompleter:AceWrapCompleter;
+	
+	/** Suggests contextual items from local namespaces */
+	public var smartCompleter:AceWrapCompleter;
+	/** Suggests contextual items from global namespaces */
+	public var smartAltCompleter:AceWrapCompleter;
+	
+	/** Suggests enum constructs when typing `Enum.` */
+	public var enumCompleter:AceWrapCompleter;
+	
+	/** Suggests global variables when typing `global.` */
+	public var globalCompleter:AceWrapCompleter;
+	/** Suggests global variables in section-match mode, allowing `Gmv` for `global.my_var` */
+	public var globalFullCompleter:AceWrapCompleter;
+	
+	/** Suggests instance variables that were collected across the project */
+	public var instCompleter:AceWrapCompleter;
+	
+	/** Suggests GLSL-specific completions */
 	public var glslCompleter:AceWrapCompleter;
+	
+	/** Suggests HLSL-specific completions */
 	public var hlslCompleter:AceWrapCompleter;
+	
+	/** Suggests saved Ace snippets */
 	public var snippetCompleter:AceAutoCompleter;
+	
+	/** Suggests statement/expression keywords (`self`, `global`, etc.) */
+	public var keywordCompleterExprStat:AceWrapCompleter;
+	
+	/** Suggests statement-only keywords (`if`, `for`, etc.) */
 	public var keywordCompleterStat:AceWrapCompleter;
-	public var keywordCompleterExpr:AceWrapCompleter;
+	
+	/** Suggests the 2.3 `function` keyword quite so specifically */
 	public var keywordCompleterGMS23_function:AceWrapCompleter;
+	
+	/** A mishmash of completers for various `#keyword`s, each with their own conditions */
 	public var hashtagCompleters:Array<AceWrapCompleter>;
+	
+	/** Suggests `@meta`s inside JSDocs */
 	public var jsDocCompleter:AceWrapCompleter;
 	
 	/** These have their items updated by AceStatusBar on context navigation */
@@ -97,26 +131,34 @@ class AceWrapCommonCompleters {
 	/** The following work on premise that they will execute in a row */
 	function initKeywords() {
 		var ctxKind:AceGmlContextKind = null;
-		keywordCompleterStat = new AceWrapCompleterCustom(GmlAPI.kwCompStat, excludeTokens, true,
-		gmlOnly, function(cc, editor, session, pos, prefix, callback) {
-			if (!Preferences.current.compKeywords) return false;
-			ctxKind = AceGmlTools.getContextKind(session, pos);
-			return ctxKind == Statement || ctxKind == AfterExpr;
-		});
-		completers.push(keywordCompleterStat);
 		
 		keywordCompleterGMS23_function = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("function", "keyword")
 		], excludeTokens, true, gmlOnly, function(cc, editor, session, pos, prefix:String, callback) {
 			if (!Preferences.current.compKeywords) return false;
+			
+			// NB! ctxKind is used in subsequent completers from this block
+			ctxKind = AceGmlTools.getContextKind(session, pos);
+			
 			if (!prefix.startsWith("fu")) return false;
 			if (!Project.current.isGMS23) return false;
-			switch (ctxKind) {
-				case Statement, AfterExpr, Expr: return true;
-				default: return false;
-			}
+			return ctxKind == Expr || ctxKind == Statement || ctxKind == AfterExpr;
 		});
 		completers.push(keywordCompleterGMS23_function);
+		
+		keywordCompleterExprStat = new AceWrapCompleterCustom(GmlAPI.kwCompExprStat,
+		excludeTokens, true, gmlOnly, function(cc, editor, session, pos, prefix:String, callback) {
+			if (!Preferences.current.compKeywords) return false;
+			return ctxKind == Expr || ctxKind == Statement || ctxKind == AfterExpr;
+		});
+		completers.push(keywordCompleterExprStat);
+		
+		keywordCompleterStat = new AceWrapCompleterCustom(GmlAPI.kwCompStat,
+		excludeTokens, true, gmlOnly, function(cc, editor, session, pos, prefix, callback) {
+			if (!Preferences.current.compKeywords) return false;
+			return ctxKind == Statement || ctxKind == AfterExpr;
+		});
+		completers.push(keywordCompleterStat);
 		
 		var jsk = "keyword";
 		var jsDocItems:Array<AceAutoCompleteItem> = [
@@ -255,17 +297,6 @@ class AceWrapCommonCompleters {
 	}
 	
 	function initNamespace() {
-		namespaceCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
-		namespaceCompleter.minLength = 0;
-		namespaceCompleter.dotKind = DKNamespace;
-		completers.push(namespaceCompleter);
-		//
-		namespaceAltCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
-		namespaceAltCompleter.minLength = 0;
-		namespaceAltCompleter.dotKind = DKNamespace;
-		namespaceAltCompleter.dotKindMeta = true;
-		completers.push(namespaceAltCompleter);
-		//
 		namespaceTypeCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
 		namespaceTypeCompleter.minLength = 0;
 		namespaceTypeCompleter.colKind = CKNamespaces;
@@ -282,16 +313,16 @@ class AceWrapCommonCompleters {
 		enumTypeCompleter.colKind = CKEnums;
 		completers.push(enumTypeCompleter);
 		//
-		localTypeCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
-		localTypeCompleter.minLength = 0;
-		localTypeCompleter.dotKind = DKLocalType;
-		completers.push(localTypeCompleter);
+		smartCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
+		smartCompleter.minLength = 0;
+		smartCompleter.dotKind = DKSmart;
+		completers.push(smartCompleter);
 		//
-		localTypeAltCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
-		localTypeAltCompleter.minLength = 0;
-		localTypeAltCompleter.dotKind = DKLocalType;
-		localTypeAltCompleter.dotKindMeta = true;
-		completers.push(localTypeAltCompleter);
+		smartAltCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
+		smartAltCompleter.minLength = 0;
+		smartAltCompleter.dotKind = DKSmart;
+		smartAltCompleter.dotKindMeta = true;
+		completers.push(smartAltCompleter);
 	}
 	
 	function initEnum() {
@@ -320,6 +351,14 @@ class AceWrapCommonCompleters {
 	}
 	
 	public function new() {
+		completers.push(new AceWrapCompleterCustom([], [], true, (_) -> true,
+		function(cc, editor, session, pos, prefix, callback) {
+			// resets self-type meta shown in bottom-right of auto-completion list
+			var popup = editor.completer.popup;
+			if (popup != null) popup.container.removeAttribute("data-self-type");
+			return false;
+		}));
+		//
 		initLocal();
 		initKeywords();
 		initHashtag();
@@ -403,6 +442,7 @@ class AceWrapCommonCompleters {
 			default: {
 				switch (token.value) {
 					case "global", "self", "other": true;
+					case "}", "]", ")": true;
 					case "{", "[", "(": eraseSelfDot = true;
 					default: false;
 				}

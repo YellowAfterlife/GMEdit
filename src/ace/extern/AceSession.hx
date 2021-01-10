@@ -11,6 +11,8 @@ import haxe.extern.EitherType;
 	//
 	/** Returns the total number of lines */
 	public function getLength():Int;
+	
+	public function getTextRange(?range:AceRange):String;
 	//
 	public function getScrollLeft():Float;
 	public function setScrollLeft(left:Float):Void;

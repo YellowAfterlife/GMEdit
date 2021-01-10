@@ -1,5 +1,12 @@
 package parsers.linter;
+import ace.AceGmlTools;
 import gml.GmlFuncDoc;
+import gml.GmlImports;
+import gml.GmlLocals;
+import gml.GmlNamespace;
+import gml.GmlTypeName;
+import gml.Project;
+import parsers.linter.GmlLinterInit;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;
@@ -63,7 +70,6 @@ class GmlLinter {
 	/** depth -> null<variables that should be freed after this depth> */
 	var localNamesPerDepth:Array<Array<String>> = [];
 	var localKinds:Dictionary<GmlLinterKind> = new Dictionary();
-	
 	
 	var isProperties:Bool = false;
 	
@@ -146,364 +152,13 @@ class GmlLinter {
 	//
 	var keywords:Dictionary<GmlLinterKind>;
 	function initKeywords() {
-		var q = new Dictionary<GmlLinterKind>();
-		q["var"] = KVar;
-		q["globalvar"] = KGlobalVar;
-		q["enum"] = KEnum;
-		//
-		q["undefined"] = KUndefined;
-		//
-		q["not"] = KNot;
-		q["and"] = KBoolAnd;
-		q["or"] = KBoolOr;
-		q["xor"] = KBoolXor;
-		//
-		q["div"] = KIntDiv;
-		q["mod"] = KMod;
-		//
-		//
-		q["begin"] = KCubOpen;
-		q["end"] = KCubClose;
-		q["if"] = KIf;
-		q["then"] = KThen;
-		q["else"] = KElse;
-		q["return"] = KReturn;
-		q["exit"] = KExit;
-		//
-		q["for"] = KFor;
-		q["while"] = KWhile;
-		q["do"] = KDo;
-		q["until"] = KUntil;
-		q["repeat"] = KRepeat;
-		q["with"] = KWith;
-		q["break"] = KBreak;
-		q["continue"] = KContinue;
-		//
-		q["switch"] = KSwitch;
-		q["case"] = KCase;
-		q["default"] = KDefault;
-		//
-		q["try"] = KTry;
-		q["catch"] = KCatch;
-		q["finally"] = KFinally;
-		q["throw"] = KThrow;
-		//
-		var kws = version.config.additionalKeywords;
-		if (kws != null) {
-			inline function addOpt(name:String, k:GmlLinterKind) {
-				if (kws.indexOf(name) >= 0) q[name] = k;
-			}
-			addOpt("in", KLiveIn);
-			addOpt("wait", KLiveWait);
-			addOpt("new", KNew);
-			addOpt("delete", KDelete);
-			addOpt("function", KFunction);
-			addOpt("static", KStatic);
-		}
-		//
-		keywords = q;
+		keywords = GmlLinterInit.keywords(this);
 	}
 	
 	//
 	var __next_isPeek = false;
-	function __next(q:GmlReaderExt):GmlLinterKind {
-		var nk:GmlLinterKind;
-		var nv:String;
-		//
-		var _src:String;
-		inline function start():Void {
-			_src = q.source;
-		}
-		//
-		while (q.loop) {
-			var p = q.pos;
-			var c = q.read();
-			inline function ret(nk:GmlLinterKind):GmlLinterKind {
-				return __next_ret(nk, _src, p, q.pos);
-			}
-			inline function retv(nk:GmlLinterKind, nv:String):GmlLinterKind {
-				return __next_retv(nk, nv);
-			}
-			switch (c) {
-				case "\n".code: q.markLine();
-				case "/".code: switch (q.peek()) {
-					case "/".code: q.skipLine();
-					case "*".code: q.skip(); q.skipComment();
-					default: {
-						if (q.peek() == "=".code) {
-							q.skip();
-							return retv(KSetOp, "/=");
-						} else return retv(KDiv, "/");
-					};
-				};
-				case '"'.code, "'".code, "`".code: {
-					start();
-					var rows = q.skipStringAuto(c, version);
-					if (rows > 0) {
-						q.row += rows;
-						q.rowStart = q.source.lastIndexOf("\n", q.pos) + 1;
-					}
-					return ret(KString);
-				};
-				//
-				case "?".code: {
-					switch (q.peek()) {
-						case "?".code: {
-							if (q.peek(1) == "=".code) {
-								q.skip(2);
-								return retv(KSet, "??=");
-							} else {
-								q.skip(1);
-								return retv(KNullCoalesce, "??");
-							}
-						};
-						case ".".code: {
-							c = q.peek(1);
-							if (!c.isDigit()) {
-								q.skip();
-								return retv(KNullDot, "?.");
-							} else return retv(KQMark, "?");
-						};
-						case "[".code: q.skip(); return retv(KNullSqb, "?[");
-						default: return retv(KQMark, "?");
-					}
-				};
-				case ":".code: {
-					if (q.peek() == "=".code) {
-						q.skip();
-						return retv(KSet, ":=");
-					} else return retv(KColon, ":");
-				};
-				case "@".code: {
-					if (version.hasLiteralStrings()) {
-						c = q.peek();
-						if (c == '"'.code || c == "'".code) {
-							start();
-							q.skip();
-							q.skipString1(c);
-							return ret(KString);
-						}
-					}
-					return retv(KAtSign, "@");
-				};
-				case "#".code: {
-					c = q.peek();
-					if (c.isIdent0()) {
-						p++;
-						q.skipIdent1();
-						nv = q.substring(p, q.pos);
-						switch (nv) {
-							case "mfunc", "macro": {
-								start();
-								while (q.loopLocal) {
-									q.skipLine();
-									if (q.peek( -1) != "\\".code) break;
-									q.skipLineEnd();
-									q.markLine();
-								}
-								return ret(nv == "macro" ? KMacro : KMFuncDecl);
-							};
-							case "args": {
-								q.skipLine();
-								return retv(KArgs, "#args");
-							};
-							case "lambda": return retv(KLambda, "#lambda");
-							case "lamdef": return retv(KLamDef, "#lamdef");
-							case "import", "hyper": {
-								q.skipLine();
-							};
-							case "define", "event", "moment", "target", "action": {
-								if (p - 2 <= 0 || q.get(p - 2) == "\n".code) {
-									//q.row = 0;
-									//q.pos = p;
-									q.pos = p;
-									if (nv != "action") {
-										context = q.readContextName(null);
-										localNamesPerDepth = [];
-										localKinds = new Dictionary();
-										isProperties = nv == "event" && context == "properties";
-									}
-									q.skipLine();
-								} else {
-									q.pos = p; return retv(KHash, "#");
-								}
-							};
-							case "gmcr": {
-								if (keywords["yield"] == null) {
-									keywords["yield"] = KYield;
-									keywords["label"] = KLabel;
-									keywords["goto"] = KGoto;
-								}
-							};
-							case "region", "endregion", "section": {
-								q.skipLine();
-							};
-							default: q.pos = p; return retv(KHash, "#");
-						}
-					}
-					else return retv(KHash, "#");
-				};
-				case "$".code: {
-					start();
-					if (q.peek().isHex()) {
-						q.skipHex();
-						return ret(KNumber);
-					} else return retv(KDollar, "$");
-				};
-				case ";".code: return retv(KSemico, ";");
-				case ",".code: return retv(KComma, ",");
-				//
-				case "(".code: return retv(KParOpen, "(");
-				case ")".code: return retv(KParClose, ")");
-				case "[".code: return retv(KSqbOpen, "[");
-				case "]".code: return retv(KSqbClose, "]");
-				case "{".code: return retv(KCubOpen, "{");
-				case "}".code: return retv(KCubClose, "}");
-				//
-				case "=".code: {
-					if (q.peek() == "=".code) {
-						q.skip();
-						return retv(KEQ, "==");
-					} else return retv(KSet, "=");
-				};
-				case "!".code: {
-					if (q.peek() == "=".code) {
-						q.skip();
-						return retv(KNE, "!=");
-					} else return retv(KNot, "!");
-				};
-				//
-				case "+".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "+=");
-						case "+".code: q.skip(); return retv(KInc, "++");
-						default: return retv(KAdd, "+");
-					}
-				};
-				case "-".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "-=");
-						case "-".code: q.skip(); return retv(KDec, "--");
-						default: return retv(KSub, "-");
-					}
-				};
-				//
-				case "*".code: {
-					if (q.peek() == "=".code) {
-						q.skip();
-						return retv(KSetOp, "*=");
-					} else return retv(KMul, "*");
-				};
-				case "%".code: {
-					if (q.peek() == "=".code) {
-						q.skip();
-						return retv(KSetOp, "%=");
-					} else return retv(KMod, "%");
-				};
-				//
-				case "|".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "|=");
-						case "|".code: q.skip(); return retv(KBoolOr, "||");
-						default: return retv(KOr, "|");
-					}
-				};
-				case "&".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "&=");
-						case "&".code: q.skip(); return retv(KBoolAnd, "&&");
-						default: return retv(KAnd, "&");
-					}
-				};
-				case "^".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "^=");
-						case "^".code: q.skip(); return retv(KBoolXor, "^^");
-						default: return retv(KXor, "^");
-					}
-				};
-				case "~".code: return retv(KBitNot, "~");
-				//
-				case ">".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KGE, ">=");
-						case ">".code: q.skip(); return retv(KShr, ">>");
-						default: return retv(KGT, ">");
-					}
-				};
-				case "<".code: {
-					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KLE, "<=");
-						case "<".code: q.skip(); return retv(KShl, "<<");
-						case ">".code: q.skip(); return retv(KNE, "<>");
-						default: return retv(KLT, "<");
-					}
-				};
-				//
-				case ".".code: {
-					c = q.peek();
-					if (c.isDigit()) {
-						start();
-						q.skipNumber(false);
-						return ret(KNumber);
-					} else return retv(KDot, ".");
-				};
-				default: {
-					if (c.isIdent0()) {
-						q.skipIdent1();
-						nv = q.substring(p, q.pos);
-						do {
-							//
-							if (nv != "var") {
-								var imp = editor.imports[context];
-								if (imp != null) {
-									var ir = GmlLinterImports.proc(this, q, p, imp, nv);
-									if (ir) return KEOF;
-									if (ir != null) return __next(q);
-								}
-							}
-							//
-							var mf = GmlAPI.gmlMFuncs[nv];
-							if (mf != null) {
-								if (GmlLinterMFunc.read(this, q, nv)) return KEOF;
-								break;
-							}
-							// expand macros:
-							var mcr = GmlAPI.gmlMacros[nv];
-							if (mcr != null) {
-								if (q.depth > 128) {
-									setError("Macro stack overflow");
-									return KEOF;
-								}
-								if (mcr.expr == "var") switch (mcr.name) {
-									case "const": return retv(KConst, nv);
-									case "let": return retv(KLet, nv);
-								}
-								q.pushSource(mcr.expr, mcr.name);
-								break;
-							}
-							return retv(keywords.defget(nv, KIdent), nv);
-						} while (false);
-					}
-					else if (c.isDigit()) {
-						start();
-						if (q.peek() == "x".code) {
-							q.skip();
-							q.skipHex();
-						} else {
-							q.skipNumber();
-						}
-						return ret(KNumber);
-					}
-					else if (c.code > 32) {
-						setError("Can't parse `" + String.fromCharCode(c) + "`");
-						return KEOF;
-					}
-				};
-			}
-		}
-		start();
-		return __next_retv(KEOF, "");
+	inline function __next(q:GmlReaderExt):GmlLinterKind {
+		return GmlLinterParser.next(this, q);
 	}
 	//
 	inline function next():GmlLinterKind {
@@ -586,6 +241,7 @@ class GmlLinter {
 		var seenComma = true;
 		var closed = false;
 		var argc = 0;
+		var itemType:GmlTypeName = null;
 		while (q.loop) {
 			switch (peek()) {
 				case KParClose: {
@@ -609,6 +265,7 @@ class GmlLinter {
 					if (seenComma) {
 						seenComma = false;
 						if (readExpr(newDepth)) return -1;
+						if (itemType == null) itemType = readExpr_currType;
 						argc++;
 					} else {
 						readExpect("a comma in values list");
@@ -617,11 +274,13 @@ class GmlLinter {
 				};
 			}
 		}
+		readArgs_itemType = itemType;
 		if (!closed) {
 			readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
 			return -1;
 		} else return argc;
 	}
+	var readArgs_itemType:GmlTypeName;
 	
 	function checkCallArgs(currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
 		var doc:GmlFuncDoc = JsTools.or(GmlAPI.gmlDoc[currName], GmlAPI.extDoc[currName]);
@@ -684,6 +343,9 @@ class GmlLinter {
 	}
 	
 	var readExpr_currKind:GmlLinterKind;
+	var readExpr_currName:GmlName;
+	var readExpr_currType:GmlTypeName;
+	var readExpr_currFunc:GmlFuncDoc;
 	function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind):FoundError {
 		var newDepth = oldDepth + 1;
 		var q = reader;
@@ -705,6 +367,8 @@ class GmlLinter {
 		var statKind = nk;
 		var currKind = nk;
 		var currName = nk == KIdent ? nextVal : null;
+		var currType:GmlTypeName = null;
+		var currFunc:GmlFuncDoc = null;
 		//
 		function checkConst():Void {
 			switch (currKind) {
@@ -721,9 +385,9 @@ class GmlLinter {
 		}
 		//
 		switch (nk) {
-			case KNumber, KString, KUndefined: {
-				
-			};
+			case KNumber: currType = GmlTypeName.number;
+			case KString: currType = GmlTypeName.string;
+			case KUndefined: // OK!
 			case KIdent: {
 				if (hasFlag(HasPrefix)) checkConst();
 				if (localKinds[currName] == KGhostVar) {
@@ -745,21 +409,57 @@ class GmlLinter {
 						}
 					}
 				}
+				var locals:GmlLocals, ns:GmlNamespace, imp:GmlImports;
+				if (currName == "self") {
+					currType = inline AceGmlTools.getSelfType({session:editor.session, scope:context});
+					currFunc = AceGmlTools.findSelfCallDoc(currType, editor.imports[context]);
+				} else if (currName == "other") {
+					currType = inline AceGmlTools.getOtherType({session:editor.session, scope:context});
+					currFunc = AceGmlTools.findSelfCallDoc(currType, editor.imports[context]);
+				} else if (JsTools.nca(locals = editor.locals[context], locals.kind.exists(currName))) {
+					imp = editor.imports[context];
+					if (imp != null) {
+						currType = GmlTypeName.fromString(imp.localTypes[currName]);
+						if (currType != null) {
+							currFunc = AceGmlTools.findNamespace(currType, imp, function(ns) {
+								return ns.docInstMap[""];
+							});
+						}
+					}
+				} else if (GmlAPI.gmlKind[currName] == "asset.object") {
+					currType = GmlTypeName.fromString(currName);
+				} else if (JsTools.nca(imp = editor.imports[context], ns = imp.namespaces[currName]) != null) {
+					currType = GmlTypeName.type(GmlTypeName.fromString(currName));
+					currFunc = ns.docStaticMap[""];
+				} else if ((ns = GmlAPI.gmlNamespaces[currName]) != null) {
+					currType = GmlTypeName.type(GmlTypeName.fromString(currName));
+					currFunc = ns.docStaticMap[""];
+				} else {
+					currFunc = AceGmlTools.findGlobalFuncDoc(currName);
+				}
 			};
 			case KParOpen: {
 				rc(readExpr(newDepth));
 				if (next() != KParClose) return readExpect("a `)`");
+				currType = readExpr_currType;
 			};
 			case KNew: {
 				rc(readExpr(newDepth, IsNew));
+				currType = GmlTypeName.fromString(readExpr_currName);
 			};
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
+				currType = nk == KNot ? GmlTypeName.bool : GmlTypeName.number;
 			};
 			case KInc, KDec: {
 				rc(readExpr(newDepth, HasPrefix));
+				currType = GmlTypeName.number;
 			};
-			case KSqbOpen: rc(readArgs(newDepth, true) < 0);
+			case KSqbOpen: {
+				rc(readArgs(newDepth, true) < 0);
+				currType = readArgs_itemType;
+				currType = JsTools.nca(currType, GmlTypeName.array(currType));
+			};
 			case KLambda: rc(readLambda(newDepth));
 			case KFunction: rc(readLambda(newDepth, true));
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
@@ -781,8 +481,9 @@ class GmlLinter {
 				}
 			};
 			default: {
-				if (nk.isUnOp()) {
+				if (nk.isUnOp()) { // +v or -v
 					rc(readExpr(newDepth));
+					currType = GmlTypeName.number;
 				}
 				else return invalid();
 			};
@@ -798,6 +499,7 @@ class GmlLinter {
 						flags.remove(AsStat);
 						statKind = KSet;
 						rc(readExpr(newDepth));
+						currType = null;
 					} else {
 						if (hasFlag(NoOps)) break;
 						if (optNoSingleEqu) {
@@ -806,6 +508,7 @@ class GmlLinter {
 						skip();
 						rc(readOps(newDepth));
 						flags.add(NoSfx);
+						currType = GmlTypeName.bool;
 					}
 				};
 				case KParOpen: { // fn(...)
@@ -820,6 +523,9 @@ class GmlLinter {
 						checkCallArgs(currName, argc, !isStat(), hasFlag(IsNew));
 					}
 					statKind = currKind = KCall;
+					currType = JsTools.nca(currFunc, currFunc.returnType);
+					var imp = editor.imports[context];
+					currFunc = JsTools.nca(currType, AceGmlTools.findSelfCallDoc(currType, imp));
 				};
 				case KInc, KDec: { // x++, x--
 					if (hasFlag(NoSfx)) break;
@@ -832,6 +538,14 @@ class GmlLinter {
 					skip();
 					rc(readCheckSkip(KIdent, "field name after `.`"));
 					currKind = nk == KDot ? KField : KNullField;
+					if (currType != null) {
+						var imp = editor.imports[context];
+						AceGmlTools.findNamespace(currType, imp, function(ns) {
+							currType = null;
+							currFunc = ns.docInstMap[nextVal];
+							return currType != null || currFunc != null;
+						});
+					}
 				};
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					skip();
@@ -853,6 +567,9 @@ class GmlLinter {
 							skip();
 							rc(readExpr(newDepth));
 							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
+							if (JsTools.nca(currType, currType.isArray)) {
+								currType = currType.unwrapParam();
+							}
 						};
 						default: { // array[i] or array[i, k]
 							isArray = true;
@@ -861,6 +578,10 @@ class GmlLinter {
 							if (isNull && skipIf(peek() == KComma)) { // whoops, a?[b,c,d]
 								readArgs(newDepth, true);
 								isLiteral = true;
+							} else {
+								if (JsTools.nca(currType, currType.isArray)) {
+									currType = currType.unwrapParam();
+								}
 							}
 						};
 					}
@@ -933,7 +654,10 @@ class GmlLinter {
 			nextVal = "";
 			return readExpect("a statement");
 		}
+		readExpr_currName = currKind == KIdent ? currName : null;
 		readExpr_currKind = currKind;
+		readExpr_currType = currType;
+		readExpr_currFunc = currFunc;
 		return false;
 	}
 	
@@ -1245,17 +969,27 @@ class GmlLinter {
 		return false;
 	}
 	
-	/**
-	 * 
-	 * @return Whether there was a syntax error, among other things
-	 */
-	public function run(source:GmlCode, editor:EditCode, version:GmlVersion):FoundError {
+	public function runPre(source:GmlCode, editor:EditCode, version:GmlVersion) {
 		this.version = version;
 		initKeywords();
 		var q = reader = new GmlReaderExt(source.trimRight());
 		this.name = q.name = editor.file.name;
 		this.editor = editor;
 		errorText = null;
+	}
+	public function runPost() {
+		reader.clear();
+		seqStart.clear();
+		__peekReader.clear();
+	}
+	
+	/**
+	 * 
+	 * @return Whether there was a syntax error, among other things
+	 */
+	public function run(source:GmlCode, editor:EditCode, version:GmlVersion):FoundError {
+		runPre(source, editor, version);
+		var q = reader;
 		var ohno = false;
 		while (q.loop) {
 			var nk = next();
@@ -1266,10 +1000,7 @@ class GmlLinter {
 				break;
 			}
 		}
-		//
-		reader.clear();
-		seqStart.clear();
-		__peekReader.clear();
+		runPost();
 		return ohno;
 	}
 	
@@ -1332,7 +1063,24 @@ class GmlLinter {
 		session.setAnnotations(annotations);
 		return ohno;
 	}
+	
+	public static function getType(expr:String, editor:EditCode, context:String):GmlLinterTypeInfo {
+		var q = new GmlLinter();
+		q.context = context;
+		q.runPre(expr, editor, Project.current.version);
+		var ok = !q.readExpr(0);
+		q.runPost();
+		Console.log(expr, JsTools.nca(ok, q.readExpr_currType), JsTools.nca(ok, q.readExpr_currFunc));
+		return {
+			type: JsTools.nca(ok, q.readExpr_currType),
+			doc:  JsTools.nca(ok, q.readExpr_currFunc),
+		}
+	}
 }
+typedef GmlLinterTypeInfo = {
+	type: GmlTypeName,
+	doc: GmlFuncDoc,
+};
 
 class GmlLinterProblem {
 	public var text:String;

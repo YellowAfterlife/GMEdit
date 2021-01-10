@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.extern.AcePopup;
 import js.lib.Function;
 
 /**
@@ -12,6 +13,7 @@ import js.lib.Function;
 	var exactMatch:Bool;
 	var autoInsert:Bool;
 	var activated:Bool;
+	function getPopup():AcePopup;
 	function showPopup(editor:AceWrap):Void;
 	function insertMatch(data:Any, options:Any):Bool;
 	var popup:AcePopup;

@@ -1,10 +1,12 @@
 package ace.extern;
+import js.html.Element;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 extern class AcePopup {
-	public function getRow():Int;
-	public function getData(row:Int):Dynamic;
+	function getRow():Int;
+	function getData(row:Int):Dynamic;
+	var container:Element;
 }

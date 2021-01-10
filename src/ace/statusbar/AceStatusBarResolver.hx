@@ -1,4 +1,5 @@
 package ace.statusbar;
+import ace.AceGmlTools;
 import ace.AceStatusBar;
 import gml.GmlAPI;
 import gml.GmlNamespace;
@@ -47,16 +48,11 @@ class AceStatusBarResolver {
 			if (imp == null) return false;
 			var localType = imp.localTypes[ctx.tk.value];
 			if (localType == null) return false;
-			for (iter in 0 ... 2) {
-				var ns = iter > 0 ? GmlAPI.gmlNamespaces[localType] : imp.namespaces[localType];
-				if (ns == null) continue;
-				var doc = ns.docInstMap[""];
-				if (doc != null) {
-					ctx.doc = doc;
-					return true;
-				}
-			}
-			return false;
+			var doc = AceGmlTools.findSelfCallDoc(localType, imp);
+			if (doc != null) {
+				ctx.doc = doc;
+				return true;
+			} else return false;
 		}
 		d["field"] = function(ctx:AceStatusBarDocSearch) { // might be self.field
 			ctx.docs = GmlNamespace.blank;
@@ -72,7 +68,7 @@ class AceStatusBarResolver {
 			var m = GmlAPI.gmlMacros[ctx.tk.value];
 			if (m != null) {
 				var mx = m.expr;
-				var doc = AceMacro.jsOrx(GmlAPI.gmlDoc[mx], GmlAPI.extDoc[mx], GmlAPI.stdDoc[mx]);
+				var doc = AceGmlTools.findGlobalFuncDoc(mx);
 				if (doc != null) {
 					ctx.doc = doc;
 					return true;

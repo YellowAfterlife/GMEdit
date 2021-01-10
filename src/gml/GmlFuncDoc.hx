@@ -3,6 +3,7 @@ import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
 import tools.Aliases;
+import tools.JsTools;
 import tools.RegExpCache;
 using StringTools;
 using tools.NativeString;
@@ -12,6 +13,11 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class GmlFuncDoc {
+	
+	public static inline var retArrow:String = "➜";
+	public static inline function patchArrow(s:String):String {
+		return StringTools.replace(s, "->", retArrow);
+	}
 	
 	public var name:String;
 	
@@ -36,7 +42,7 @@ class GmlFuncDoc {
 	public var parentName:String = null;
 	
 	/** Type of `self` set via `/// @self` */
-	public var selfType:String = null;
+	public var selfType:GmlTypeName = null;
 	
 	var minArgsCache:Null<Int> = null;
 	
@@ -70,6 +76,20 @@ class GmlFuncDoc {
 		minArgsCache = argi;
 		return minArgsCache;
 	}
+	
+	/** Return type based on `->type` or `@return` for post-string */
+	public var returnType(get, never):GmlTypeName;
+	private function get_returnType():GmlTypeName {
+		if (post == __returnType_cache_post) return __returnType_cache_type;
+		var mt = __returnType_rx.exec(post);
+		var type = GmlTypeName.fromString(JsTools.nca(mt, mt[1]));
+		__returnType_cache_post = post;
+		__returnType_cache_type = type;
+		return type;
+	}
+	var __returnType_cache_post:String;
+	var __returnType_cache_type:GmlTypeName;
+	static var __returnType_rx:RegExp = new RegExp('^\\)$retArrow(\\S+)');
 	
 	public var maxArgs(get, never):Int;
 	private function get_maxArgs():Int {
@@ -384,7 +404,7 @@ class GmlFuncDoc {
 		//
 		post = ")";
 		if (rest) post = "..." + post;
-		if (hasRet) post += "➜";
+		if (hasRet) post += retArrow;
 		hasReturn = hasRet;
 		if (!hasOpt && hasVarArg) minArgsCache = 0;
 	}
@@ -431,7 +451,7 @@ class GmlFuncDoc {
 				if (seekHasRet && hasRetRx.test(chunk)) {
 					seekHasRet = false;
 					hasReturn = true;
-					if (post == ")") post = ")➜";
+					if (post == ")") post = ")" + retArrow;
 					if (!seekArg) return;
 				}
 				if (seekArg && hasArgRx.test(chunk)) {
@@ -451,9 +471,9 @@ class GmlFuncDoc {
 		if (seekHasRet) {
 			var hasRet = hasRetRx.test(chunk);
 			if (hasRet) {
-				if (post == ")") post = ")➜";
+				if (post == ")") post = ")" + retArrow;
 			} else {
-				if (post == ")➜") post = ")";
+				if (post == ")" + retArrow) post = ")";
 			}
 			hasReturn = hasRet;
 		}

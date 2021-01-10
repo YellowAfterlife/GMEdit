@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.extern.AceToken;
 
 /**
  * ...
@@ -13,6 +14,12 @@ package ace.extern;
 	}
 	public static function fromPos(pos:AcePos):AceRange {
 		return new AceRange(pos.column, pos.row, pos.column, pos.row);
+	}
+	public static function fromPosLen(pos:AcePos, len:Int):AceRange {
+		return new AceRange(pos.column, pos.row, pos.column + len, pos.row);
+	}
+	public static function fromTokenPos(tk:AceToken, pos:AcePos):AceRange {
+		return new AceRange(pos.column, pos.row, pos.column + tk.value.length, pos.row);
 	}
 }
 @:native("AceRange") private extern class AceRangeImpl {

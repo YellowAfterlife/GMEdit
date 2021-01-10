@@ -267,6 +267,12 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 .ace_editor.ace_autocomplete .ace_completion-highlight {
 	color: #69f;
 }
+.ace_editor.ace_autocomplete[data-self-type]::after {
+	background: #1f1f1f;
+	color: #c0c0c0;
+	border-color: #495057;
+}
+
 #main .ace_search {
 	background: #505050;
 	color: #d0d0d0;

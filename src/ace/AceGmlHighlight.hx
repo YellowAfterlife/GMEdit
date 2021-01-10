@@ -36,7 +36,9 @@ using tools.NativeArray;
 @:keep class AceGmlHighlight extends AceHighlight {
 	static inline var depthSep:String = "-depth=";
 	static inline var depthSepLen:Int = 7; // "-depth=".length;
-	public static var useBracketDepth:Bool = false;
+	public static var useBracketDepth:Bool = (function() {
+		return Main.document.documentElement.getAttribute("data-theme-uses-bracket-depth") == "true";
+	})();
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
 		var rules:AceHighlightRuleset = null;

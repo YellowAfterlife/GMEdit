@@ -384,14 +384,14 @@ class GmlSeeker {
 					updateComp = true;
 				}
 				if (jsDocReturn != null) {
-					doc.post = ")➜" + jsDocReturn;
+					doc.post = ")" + GmlFuncDoc.retArrow + jsDocReturn;
 					updateComp = true;
 				}
 				if (jsDocInterface) {
 					if (jsDocInterfaceName == null) jsDocInterfaceName = main;
 					out.namespaceHints[jsDocInterfaceName] = new GmlSeekDataNamespaceHint(jsDocInterfaceName, null, null);
 				}
-				doc.selfType = jsDocSelf;
+				doc.selfType = GmlTypeName.fromString(jsDocSelf);
 				
 				//
 				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
@@ -480,8 +480,7 @@ class GmlSeeker {
 			
 			var hintDoc:GmlFuncDoc = null;
 			if (args != null) {
-				args = StringTools.replace(args, "->", "➜");
-				var fa = name + args;
+				var fa = name + GmlFuncDoc.patchArrow(args);
 				hintDoc = GmlFuncDoc.parse(fa);
 				hintDoc.trimArgs();
 				hintDoc.isConstructor = isConstructor;
@@ -726,9 +725,19 @@ class GmlSeeker {
 						if (isCreateEvent && cubDepth == 0 && fname != null) {
 							var argsStart = q.pos;
 							procFuncLiteralArgs();
-							var args = q.substring(argsStart, q.pos).trimBoth();
+							var args:String = q.substring(argsStart, q.pos).trimBoth();
+							if (jsDocArgs != null) {
+								args = "(" + jsDocArgs.join(", ") + ")";
+								jsDocArgs = null;
+							}
+							if (jsDocReturn != null) {
+								args += GmlFuncDoc.retArrow + jsDocReturn;
+								jsDocReturn = null;
+							}
+							//
 							s = find(Line | Cub0 | Ident | Colon);
 							var isConstructor = (s == ":" || s == "constructor");
+							//
 							addFieldHint(isConstructor, getObjectName(), true, fname, args, null);
 						} else procFuncLiteralArgs();
 						resetDoc(); // discard any collected JSDoc
@@ -763,17 +772,16 @@ class GmlSeeker {
 								foundArg = true;
 							}
 							if (isDefine && jsDocArgs != null) {
+								// `@param` override the parsed arguments
 								doc = GmlFuncDoc.create(main, jsDocArgs, jsDocRest);
 								jsDocArgs = null;
 								jsDocRest = false;
-								docIsAutoFunc = isFunc;
-								linkDoc();
-							} else if (!isFunc || foundArg) {
+							} else {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 								doc.trimArgs();
-								docIsAutoFunc = isFunc;
-								linkDoc();
 							}
+							docIsAutoFunc = isFunc;
+							linkDoc();
 						}
 					}
 					//
@@ -1105,10 +1113,20 @@ class GmlSeeker {
 								q.skipIdent1();
 								q.skipSpaces1();
 							}
+							
 							start = q.pos;
 							if (q.read() != "(".code) continue;
 							while (q.loop && q.read() != ")".code) {}
-							args = q.substring(start, q.pos);
+							if (jsDocArgs != null) {
+								args = "(" + jsDocArgs.join(", ") + ")";
+								jsDocArgs = null;
+							} else args = q.substring(start, q.pos);
+							
+							if (jsDocReturn != null) {
+								args += GmlFuncDoc.retArrow + jsDocReturn;
+								jsDocReturn = null;
+							}
+							
 							// constructor?:
 							q.skipSpaces1();
 							if (q.peek() == ":".code) {

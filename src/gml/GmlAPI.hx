@@ -53,6 +53,13 @@ class GmlAPI {
 		).split("|"), true
 	);
 	
+	public static var kwCompExprStat:AceAutoCompleteItems = (function() {
+		var items = new AceAutoCompleteItems();
+		for (kw in [
+			"self", "other", "global", "noone"
+		]) items.push(new AceAutoCompleteItem(kw, "keyword"));
+		return items;
+	})();
 	public static var kwCompStat:AceAutoCompleteItems = (function() {
 		var items = new AceAutoCompleteItems();
 		for (kw in [

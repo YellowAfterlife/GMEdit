@@ -43,4 +43,10 @@ class AceTokenIteratorTools {
 		} while (tk != null && tk.type == "text");
 		return tk;
 	}
+	public static function setTo(it:AceTokenIterator, to:AceTokenIterator):Void {
+		it.__session = to.__session;
+		it.__row = to.__row;
+		it.__rowTokens = to.__rowTokens;
+		it.__tokenIndex = to.__tokenIndex;
+	}
 }
