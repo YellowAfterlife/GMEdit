@@ -423,15 +423,16 @@ class AceWrapCommonCompleters {
 	 * Automatically open completion when typing things like "global.|"
 	 */
 	function onDot(editor:AceWrap) {
-		var lead = editor.session.selection.lead;
-		var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
+		var session = editor.session;
+		if (!gmlOnly(editor.session)) return;
+		var lead = session.selection.lead;
+		var iter = new AceTokenIterator(session, lead.row, lead.column);
 		var token = iter.stepBackward();
 		if (token == null) return;
 		var eraseSelfDot = false;
 		var open = switch (token.type) {
 			case "namespace", "enum": true;
 			case "local", "sublocal": {
-				var session = editor.session;
 				var scope = session.gmlScopes.get(lead.row);
 				var imp = session.gmlEditor.imports[scope];
 				(imp != null ? imp.localTypes[token.value] != null : false);
@@ -444,7 +445,7 @@ class AceWrapCommonCompleters {
 					case "global", "self", "other": true;
 					case "}", "]", ")": true;
 					case "{", "[", "(": eraseSelfDot = true;
-					default: false;
+					default: token.isIdent();
 				}
 			}
 		};

@@ -1,4 +1,5 @@
 package parsers.linter;
+import ace.AceGmlContextResolver;
 import ace.AceGmlTools;
 import gml.GmlFuncDoc;
 import gml.GmlImports;
@@ -69,6 +70,20 @@ class GmlLinter {
 	var context:String = "";
 	inline function getImports():GmlImports {
 		return editor.imports[context];
+	}
+	
+	var __selfType_set = false;
+	var __selfType_type:GmlTypeName = null;
+	function getSelfType() {
+		if (__selfType_set) return __selfType_type;
+		return AceGmlTools.getSelfType({ session: editor.session, scope: context });
+	}
+	
+	var __otherType_set = false;
+	var __otherType_type:GmlTypeName = null;
+	function getOtherType() {
+		if (__otherType_set) return __otherType_type;
+		return AceGmlTools.getOtherType({ session: editor.session, scope: context });
 	}
 	
 	/** depth -> null<variables that should be freed after this depth> */
@@ -419,10 +434,10 @@ class GmlLinter {
 				// figure out what this is:
 				var locals:GmlLocals, ns:GmlNamespace, imp:GmlImports, lam:GmlExtLambda;
 				if (currName == "self") {
-					currType = inline AceGmlTools.getSelfType({session:editor.session, scope:context});
+					currType = getSelfType();
 					currFunc = currType.getSelfCallDoc(getImports());
 				} else if (currName == "other") {
-					currType = inline AceGmlTools.getOtherType({session:editor.session, scope:context});
+					currType = getOtherType();
 					currFunc = currType.getSelfCallDoc(getImports());
 				} else if (JsTools.nca(locals = editor.locals[context], locals.kind.exists(currName))) {
 					imp = getImports();
@@ -446,6 +461,16 @@ class GmlLinter {
 					currFunc = ns.docStaticMap[""];
 				} else {
 					currFunc = AceGmlTools.findGlobalFuncDoc(currName);
+					if (currFunc == null) {
+						var t = getSelfType();
+						if (t != null) AceGmlTools.findNamespace(t, getImports(), function(ns:GmlNamespace) {
+							if (ns.instKind.exists(currName)) {
+								currType = ns.getInstType(currName);
+								currFunc = ns.getInstDoc(currName);
+								return true;
+							} else return false;
+						});
+					}
 				}
 			};
 			case KParOpen: {
@@ -551,9 +576,16 @@ class GmlLinter {
 					rc(readCheckSkip(KIdent, "field name after `.`"));
 					currKind = nk == KDot ? KField : KNullField;
 					if (currType != null) {
+						var isStatic = currType.isType;
+						var nsType = isStatic ? currType.unwrapParam() : currType;
 						AceGmlTools.findNamespace(currType, getImports(), function(ns) {
-							currType = null;
-							currFunc = ns.docInstMap[nextVal];
+							if (isStatic) {
+								currType = ns.staticTypes[nextVal];
+								currFunc = ns.docStaticMap[nextVal];
+							} else {
+								currType = ns.getInstType(nextVal);
+								currFunc = ns.getInstDoc(nextVal);
+							}
 							return currType != null || currFunc != null;
 						});
 					}
@@ -1091,13 +1123,21 @@ class GmlLinter {
 		return ohno;
 	}
 	
-	public static function getType(expr:String, editor:EditCode, context:String):GmlLinterTypeInfo {
+	public static function getType(expr:String, editor:EditCode, context:String, pos:AcePos):GmlLinterTypeInfo {
 		var q = new GmlLinter();
 		q.context = context;
 		q.runPre(expr, editor, Project.current.version);
+		if (pos != null) {
+			var types = AceGmlContextResolver.run(editor.session, pos);
+			Console.log(types);
+			q.__selfType_set = true;
+			q.__selfType_type = types.self;
+			q.__otherType_set = true;
+			q.__otherType_type = types.other;
+		}
 		var ok = !q.readExpr(0);
 		q.runPost();
-		//Console.log(expr, q.readExpr_currType, q.readExpr_currFunc);
+		Console.log(expr, q.readExpr_currType, q.readExpr_currFunc);
 		return {
 			type: ok ? q.readExpr_currType : null,
 			doc:  ok ? q.readExpr_currFunc : null,

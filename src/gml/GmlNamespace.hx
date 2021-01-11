@@ -1,6 +1,7 @@
 package gml;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
+import gml.GmlTypeName;
 import tools.ArrayMap;
 import tools.ArrayMapSync;
 import tools.Dictionary;
@@ -34,6 +35,7 @@ class GmlNamespace {
 	public var interfaces:ArrayMap<GmlNamespace> = new ArrayMap();
 	
 	public var staticKind:Dictionary<AceTokenType> = new Dictionary();
+	public var staticTypes:Dictionary<GmlTypeName> = new Dictionary();
 	/** static (`Buffer.ptr`) completions */
 	public var compStatic:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
 	public var docStaticMap:Dictionary<GmlFuncDoc> = new Dictionary();
@@ -46,6 +48,21 @@ class GmlNamespace {
 			if (t != null) return t;
 			for (qi in q.interfaces.array) {
 				t = qi.getInstKind(field, n);
+				if (t != null) return t;
+			}
+			q = q.parent;
+		}
+		return null;
+	}
+	
+	public var instTypes:Dictionary<GmlTypeName> = new Dictionary();
+	public function getInstType(field:String, depth:Int = 0):GmlTypeName {
+		var q = this, n = depth;
+		while (q != null && ++n <= maxDepth) {
+			var t = q.instTypes[field];
+			if (t != null) return t;
+			for (qi in q.interfaces.array) {
+				t = qi.getInstType(field, n);
 				if (t != null) return t;
 			}
 			q = q.parent;
@@ -157,13 +174,20 @@ class GmlNamespace {
 		this.name = name;
 	}
 	
-	public function addFieldHint(field:String, isInst:Bool, comp:AceAutoCompleteItem, doc:GmlFuncDoc) {
+	public function addFieldHint(field:String, isInst:Bool, comp:AceAutoCompleteItem, doc:GmlFuncDoc, type:GmlTypeName) {
 		var kind = isInst ? instKind : staticKind;
 		kind[field] = doc != null ? "asset.script" : "field";
+		
+		if (type != null) {
+			var types = isInst ? instTypes : staticTypes;
+			types[field] = type;
+		}
+		
 		if (doc != null) {
 			var docs = isInst ? docInstMap : docStaticMap;
 			docs[field] = doc;
 		}
+		
 		if (comp != null && field != "") {
 			var comps:ArrayMap<AceAutoCompleteItem> = isInst ? compInst : compStatic;
 			comps[field] = comp;

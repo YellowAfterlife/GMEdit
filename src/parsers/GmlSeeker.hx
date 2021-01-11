@@ -102,14 +102,15 @@ class GmlSeeker {
 	);
 	private static var jsDoc_hint = new RegExp("^///\\s*"
 		+ "@hint\\b\\s*"
-		+ "(new\\b\\s*)?" // constructor mark -> $1
-		+ "(\\w+)?" // namespace (opt.) -> $2
+		+ "(?:\\{(.+)?\\}\\s*)?" // type -> $1
+		+ "(new\\b\\s*)?" // constructor mark -> $2
+		+ "(\\w+)?" // namespace (opt.) -> $3
 		+ "(?:"
-			+ "\\s*([:.])" // separator -> $3
-			+ "\\s*(\\w+)?" // field -> $4
+			+ "\\s*([:.])" // separator -> $4
+			+ "\\s*(\\w+)?" // field -> $5
 		+ ")?"
-		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $5
-		+ "\\s*(.*)" // text -> $6
+		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $6
+		+ "\\s*(.*)" // text -> $7
 	);
 	private static var jsDoc_hint_extimpl = new RegExp("^///\\s*"
 		+ "@hint\\b\\s*"
@@ -127,15 +128,27 @@ class GmlSeeker {
 		+ "@return(?:s)?\\b\\s*"
 		+ "\\{(.*?)\\}"
 	);
+	
 	private static var jsDoc_implements = new RegExp("^///\\s*"
 		+ "@implement(?:s)?"
 		+ "(?:\\b\\s*\\{(\\w+)\\})?"
 	);
 	private static var jsDoc_implements_line = new RegExp("^\\s*(\\w+)");
+	
+	private static var jsDoc_is = new RegExp("^///\\s*"
+		+ "@is(?:s)?"
+		+ "\\b\\s*\\{(.+?)\\}"
+	);
+	private static var jsDoc_is_line = new RegExp("^\\s*"
+		+ "(global\\s*\\.)?"
+		+ "\\s*\\b(\\w+)"
+	+ "\\s*=");
+	
 	private static var jsDoc_interface = new RegExp("^///\\s*"
 		+ "@interface\\b\\s*"
 		+ "(?:\\{(\\w+)\\})?"
 	);
+	
 	
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
@@ -461,7 +474,7 @@ class GmlSeeker {
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
-		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String) {
+		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String, ?type:GmlTypeName) {
 			var parentSpace:String = null;
 			if (namespace == null) {
 				if (isCreateEvent) {
@@ -487,10 +500,11 @@ class GmlSeeker {
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
 			info = NativeString.nzcct(info, "\n", 'from $namespace');
+			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type);
 			
 			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
 			var comp = new AceAutoCompleteItem(name, compMeta, info);
-			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace);
+			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace, type);
 			
 			var lastHint = out.hintMap[hint.key];
 			if (lastHint == null) {
@@ -562,6 +576,32 @@ class GmlSeeker {
 					continue;
 				}
 				
+				mt = jsDoc_is.exec(s);
+				if (mt != null) {
+					var type = mt[1];
+					var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
+					var lineText = q.source.substring(lineStart, q.pos);
+					var lineMatch = jsDoc_is_line.exec(lineText);
+					if (lineMatch == null) continue;
+					var kind = lineMatch[1];
+					var name = lineMatch[2];
+					if (kind == null) {
+						var namespace:String;
+						if (isCreateEvent) {
+							namespace = getObjectName();
+						} else if (doc != null) {
+							namespace = doc.name;
+							if (namespace == null) continue;
+						} else continue;
+						var hint = out.hintMap[namespace + ":" + name];
+						if (hint != null) {
+							hint.type = GmlTypeName.fromString(type);
+							hint.comp.doc = NativeString.nzcct(hint.comp.doc, "\n", "type " + type);
+						}
+					}
+					continue;
+				}
+				
 				mt = jsDoc_hint_extimpl.exec(s);
 				if (mt != null) {
 					var name = mt[1];
@@ -578,7 +618,7 @@ class GmlSeeker {
 				
 				mt = jsDoc_hint.exec(s);
 				if (mt != null) {
-					addFieldHint(mt[1] != null, mt[2], mt[3] == ":", mt[4], mt[5], mt[6]);
+					addFieldHint(mt[2] != null, mt[3], mt[4] == ":", mt[5], mt[6], mt[7], GmlTypeName.fromString(mt[1]));
 					continue; // found!
 				}
 				

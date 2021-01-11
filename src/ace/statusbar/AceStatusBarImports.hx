@@ -89,7 +89,7 @@ class AceStatusBarImports {
 		} else {
 			var from = AceGmlTools.skipDotExprBackwards(ctx.session, ctx.funcEnd);
 			var snip = ctx.session.getTextRange(AceRange.fromPair(from, ctx.funcEnd));
-			var inf = GmlLinter.getType(snip, ctx.session.gmlEditor, ctx.scope);
+			var inf = GmlLinter.getType(snip, ctx.session.gmlEditor, ctx.scope, ctx.iter.getCurrentTokenPosition());
 			doc = inf.doc;
 		}
 		//

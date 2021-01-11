@@ -223,7 +223,7 @@ class GmlImports {
 		space:String, isInst:Bool, cache:GmlImportsCache
 	) {
 		var ns:GmlImportNamespace = ensureNamespace(space);
-		ns.addFieldHint(field, isInst, comp, doc);
+		ns.addFieldHint(field, isInst, comp, doc, null);
 		if (!isInst) { // static-specific
 			if (doc != null) docs.set(space + "." + field, doc);
 			

@@ -21,6 +21,9 @@ using StringTools;
 	
 	public var showOnStack:Bool = true;
 	
+	/** May return the next line for consumption */
+	public var onEOF:GmlReaderExt->String = null;
+	
 	/** Increments row, sets row offset to current position */
 	public function markLine():Void {
 		row++;
@@ -93,6 +96,17 @@ using StringTools;
 			name = oldName.pop();
 			showOnStack = oldShowOnStack.pop();
 			if (pos < length) return true;
+		}
+		if (onEOF != null) {
+			var s = onEOF(this);
+			if (s != null) {
+				source = s;
+				length = s.length;
+				pos = 0;
+				rowStart = 0;
+				row++;
+				return true;
+			}
 		}
 		return false;
 	}

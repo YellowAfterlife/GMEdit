@@ -9,6 +9,8 @@ import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.GmlNamespace;
 import gml.GmlTypeName;
+import parsers.GmlReaderExt;
+import parsers.linter.GmlLinter;
 import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
@@ -90,7 +92,7 @@ using StringTools;
 		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
 			return GmlTypeName.fromString(gmlFile.name);
 		} else {
-			var scopeDoc = gml.GmlAPI.gmlDoc[ctx.scope];
+			var scopeDoc = GmlAPI.gmlDoc[ctx.scope];
 			if (scopeDoc != null) {
 				if (scopeDoc.isConstructor) {
 					return GmlTypeName.fromString(ctx.scope);
@@ -152,9 +154,14 @@ using StringTools;
 					if (depth <= 0) break;
 				}
 				case _ if (tk.isIdent()): {
-					if (depth == 0 && tkType == "keyword") { // that's no good!
-						iter.stepForwardNonText();
-						break;
+					if (depth == 0 && tkType == "keyword") {
+						switch (tk.value) {
+							case "self", "other": {}
+							default: { // that's no good!
+								iter.stepForwardNonText();
+								break;
+							}
+						}
 					}
 					tmpi.setTo(iter);
 					tk = tmpi.stepBackwardNonText();

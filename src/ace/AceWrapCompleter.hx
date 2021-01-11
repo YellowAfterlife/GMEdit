@@ -10,6 +10,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlNamespace;
 import gml.GmlScopes;
+import gml.GmlTypeName;
 import gml.file.GmlFile;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
@@ -189,24 +190,31 @@ using tools.NativeString;
 					case DKSmart: {
 						var scope = session.gmlScopes.get(pos.row);
 						if (scope == null) continue;
-						
-						// some special cases where we know that we don't have to parse anything:
-						var snip:GmlCode;
-						switch (tk.type) {
-							case "local", "sublocal", "asset.object", "namespace", "enum": {
-								snip = tk.value;
-							};
-							case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
-							default: {
-								var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
-								snip = session.getTextRange(AceRange.fromPair(from, dotPos));
-							}
-						}
-						
-						var type = GmlLinter.getType(snip, session.gmlEditor, scope).type;
-						if (type == null) continue;
 						var isGlobal = dotKindMeta;
-						if (isGlobal) editor.completer.getPopup().container.setAttribute("data-self-type", type);
+						
+						var type:GmlTypeName;
+						if (!isGlobal) {
+							// some special cases where we know that we don't have to parse anything:
+							var snip:GmlCode;
+							switch (tk.type) {
+								case "local", "sublocal", "asset.object", "namespace", "enum": {
+									snip = tk.value;
+								};
+								case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
+								default: {
+									var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
+									snip = session.getTextRange(AceRange.fromPair(from, dotPos));
+								}
+							}
+							
+							type = GmlLinter.getType(snip, session.gmlEditor, scope, dotPos).type;
+							dkSmart_type = type;
+							
+							var ctr = editor.completer.getPopup().container;
+							if (type != null) ctr.setAttribute("data-self-type", type);
+						} else type = dkSmart_type;
+						
+						if (type == null) continue;
 						
 						var isStatic = type.isType;
 						if (isStatic) type = type.unwrapParam();
@@ -261,6 +269,7 @@ using tools.NativeString;
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
 		proc(tkf != tokenFilterNot);
 	}
+	static var dkSmart_type:GmlTypeName;
 	public function getDocTooltip(item:AceAutoCompleteItem):String {
 		return item.doc;
 	}
