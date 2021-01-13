@@ -376,7 +376,7 @@ class GmlLinter {
 			default:
 		}
 	}
-		
+	
 	function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind):FoundError {
 		var newDepth = oldDepth + 1;
 		var q = reader;
@@ -432,46 +432,49 @@ class GmlLinter {
 					}
 				}
 				// figure out what this is:
-				var locals:GmlLocals, ns:GmlNamespace, imp:GmlImports, lam:GmlExtLambda;
-				if (currName == "self") {
-					currType = getSelfType();
-					currFunc = currType.getSelfCallDoc(getImports());
-				} else if (currName == "other") {
-					currType = getOtherType();
-					currFunc = currType.getSelfCallDoc(getImports());
-				} else if (JsTools.nca(locals = editor.locals[context], locals.kind.exists(currName))) {
-					imp = getImports();
-					if (imp != null) {
+				do {
+					if (currName == "self") {
+						currType = getSelfType();
+						currFunc = currType.getSelfCallDoc(getImports());
+						break;
+					} else if (currName == "other") {
+						currType = getOtherType();
+						currFunc = currType.getSelfCallDoc(getImports());
+						break;
+					}
+					
+					var imp:GmlImports = getImports();
+					var locals = editor.locals[context];
+					if (imp != null && locals.kind.exists(currName)) {
 						currType = GmlTypeName.fromString(imp.localTypes[currName]);
-						if (currType != null) {
-							currFunc = AceGmlTools.findNamespace(currType, imp, function(ns) {
-								return ns.docInstMap[""];
-							});
-						}
+						currFunc = currType.getSelfCallDoc(imp);
+						break;
 					}
-				} else if (JsTools.nca(lam = editor.lambdas[context], lam.kind.exists(currName))) {
-					currFunc = lam.docs[currName];
-				} else if (GmlAPI.gmlKind[currName] == "asset.object") {
-					currType = GmlTypeName.fromString(currName);
-				} else if (JsTools.nca(imp = getImports(), ns = imp.namespaces[currName]) != null) {
-					currType = GmlTypeName.type(GmlTypeName.fromString(currName));
-					currFunc = ns.docStaticMap[""];
-				} else if ((ns = GmlAPI.gmlNamespaces[currName]) != null) {
-					currType = GmlTypeName.type(GmlTypeName.fromString(currName));
-					currFunc = ns.docStaticMap[""];
-				} else {
+					
+					var lam = editor.lambdas[context];
+					if (lam != null && lam.kind.exists(currName)) {
+						currFunc = lam.docs[currName];
+						break;
+					}
+					
+					if (AceGmlTools.findNamespace(GmlTypeName.fromString(currName), imp, function(ns:GmlNamespace) {
+						currType = GmlTypeName.type(GmlTypeName.fromString(currName));
+						currFunc = ns.docStaticMap[""];
+						return true;
+					})) break;
+					
 					currFunc = AceGmlTools.findGlobalFuncDoc(currName);
-					if (currFunc == null) {
-						var t = getSelfType();
-						if (t != null) AceGmlTools.findNamespace(t, getImports(), function(ns:GmlNamespace) {
-							if (ns.instKind.exists(currName)) {
-								currType = ns.getInstType(currName);
-								currFunc = ns.getInstDoc(currName);
-								return true;
-							} else return false;
-						});
-					}
-				}
+					if (currFunc != null) break;
+					
+					var t = getSelfType();
+					if (t != null) AceGmlTools.findNamespace(t, imp, function(ns:GmlNamespace) {
+						if (ns.instKind.exists(currName)) {
+							currType = ns.getInstType(currName);
+							currFunc = ns.getInstDoc(currName);
+							return true;
+						} else return false;
+					});
+				} while (false);
 			};
 			case KParOpen: {
 				rc(readExpr(newDepth));
