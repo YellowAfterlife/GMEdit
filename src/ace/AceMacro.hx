@@ -87,7 +87,7 @@ class AceMacro {
 			case EField(e, field): {
 				return macro js.Syntax.delete($e, $v{field});
 			};
-			default: throw Context.error("Expected a regexp literal", e.pos);
+			default: throw Context.error("Expected a x.y expression", e.pos);
 		}
 	}
 }

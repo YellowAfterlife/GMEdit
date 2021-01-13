@@ -7,14 +7,42 @@ import js.lib.RegExp;
  * @author YellowAfterlife
  */
 typedef AceLangRule = {
-	?token: EitherType<EitherType<String, Array<String>>, String->String>,
-	regex:EitherType<String, RegExp>,
+	?token: EitherType<EitherType<AceTokenType, Array<AceTokenType>>, String->String>,
+	?regex:EitherType<String, RegExp>,
 	?onMatch:AceLangRuleMatch,
-	?next:EitherType<String, AceLangRuleNext>,
-	?nextState: String,
-	?push:EitherType<String, Array<AceLangRule>>,
+	?next:AceLangRuleNextInit,
+	?nextState: AceLangRuleState,
+	?push:AceLangRuleNextInit,
 	?consumeLineEnd:Bool,
 	?splitRegex:RegExp,
 };
-typedef AceLangRuleMatch = (value:String, currentState:String, stack:Array<String>, line:String, row:Int)->EitherType<String, Array<AceToken>>;
-typedef AceLangRuleNext = (currentState:String, stack:Array<String>)->String;
+typedef AceLangRuleState = String;
+typedef AceLangRuleMatch = (value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->EitherType<AceTokenType, Array<AceToken>>;
+
+/**
+push: "name" and next: "pop" rule fields work like this:
+```
+var pushState = function(currentState, stack) {
+	if (currentState != "start" || stack.length)
+		stack.unshift(this.nextState, currentState);
+	return this.nextState;
+};
+var popState = function(currentState, stack) {
+	stack.shift();
+	return stack.shift() || "start";
+};
+```
+So, the top-level state is "start";
+When you push a state over it, it replaces the state, but doesn't push to the stack;
+When you push *another* state, it pushes the original state and itself to the stack;
+Popping a state discards the new state name and uses the original state,
+or uses "start" once the stack has been emptied.
+
+state: "start", stack: []
+push:"one" -> state: "one", stack: []
+push:"two" -> state: "two", stack: ["two", "one"]
+next:"pop" -> state: "one", stack: []
+next:"pop" -> state: "start", stack: []
+**/
+typedef AceLangRuleNext = (currentState:AceLangRuleState, stack:Array<String>)->String;
+typedef AceLangRuleNextInit = EitherType<AceLangRuleState, EitherType<Array<AceLangRuleState>, AceLangRuleNext>>;

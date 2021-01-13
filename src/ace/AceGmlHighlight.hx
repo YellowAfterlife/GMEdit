@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import ace.extern.*;
+import ace.gml.AceGmlDocHint;
 import editors.EditCode;
 import file.kind.gml.KGmlSearchResults;
 import file.kind.misc.KMarkdown;
@@ -19,6 +20,7 @@ import ace.AceMacro.rxPush;
 import ace.AceMacro.jsOr;
 import ace.AceMacro.jsOrx;
 import ace.AceMacro.jsThis;
+import ace.extern.AceLangRule;
 import ace.raw.*;
 import haxe.extern.EitherType;
 import tools.HighlightTools.*;
@@ -320,6 +322,10 @@ using tools.NativeArray;
 			rxRule(["comment", "comment.preproc.region", "comment.regionname"],
 				~/(\/\/)(#(?:region|endregion|mark)\b)(.*)$/),
 			rxRule("comment.doc.line", ~/\/\/\/$/), // a blank doc-line
+			
+			rxPush(["comment.doc.line", "comment.meta"], ~/(\/\/\/\s*)(@hint)$/),
+			rxPush(["comment.doc.line", "comment.meta"], ~/(\/\/\/\s*)(@hint)/, "gml.comment.doc.hint"),
+			
 			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
 				return "comment.doc.line.startswith_" + s;
 			}, ~/\/\/\/([^\s@]+)(?:(?!@\[).)*$/),
@@ -625,6 +631,11 @@ using tools.NativeArray;
 		rMFunc.replaceOne(rIdentPair, rIdentPairMF);
 		//}
 		//
+		function pop2(c:AceLangRuleState, st:Array<AceLangRuleState>) {
+			st.shift();
+			st.shift();
+			return JsTools.or(st.shift(), "start");
+		}
 		rules = {
 			"start": rBase,
 			"gml.enum": rEnum,
@@ -654,6 +665,10 @@ using tools.NativeArray;
 				rxPush("curly.paren.lparen", ~/\{/, "gml.tpl"),
 				rxRule("curly.paren.rparen", ~/\}/, "pop")
 			].concat(rBase),
+			"gml.type.params": [ // Type<param>
+				rxPush("operator", ~/</, "gml.type.params"),
+				rxRule("operator", ~/>/, "pop")
+			].concat(rBase),
 			"gml.mfunc.decl": rMFunc_decl,
 			"gml.mfunc": rMFunc,
 			"gml.comment.line": rComment.concat([ //{
@@ -674,23 +689,25 @@ using tools.NativeArray;
 					var dt = commentDocLineType;
 					return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
 				}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
-				rulePairs([
-					"@hint\\b", "comment.meta",
-					"\\s*", "text",
-					"(?:new\\b)?", "keyword",
-					"\\s*", "text",
-					"\\w*", "namespace", 
-					"[.:]?", "punctuation.operator",
-					"\\w*", "field",
-					"\\(?", "paren.lparen",
-					"[^)]*", "comment.doc.line",
-					"\\)?", "paren.rparen",
-					"(?:->)?", "punctuation.operator",
-				]),
+				rxPush("curly.paren.lparen", ~/\{$/),
+				rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
+				rxRule(["comment.meta", "text"], ~/@hint\b\s*/, AceGmlDocHint.sBase),
 				rule("comment.meta", "@(?:\\w+|$)"),
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),
 			]), //}
+			"gml.comment.doc.curly": [
+				rxRule(function(id) {
+					if (GmlAPI.gmlNamespaces.exists(id)) return "namespace";
+					return JsTools.or(GmlTypeName.kindMap[id], "identifier");
+				}, ~/\w+/),
+				rxRule("punctuation.operator", ~/,/),
+				rxRule("operator", ~/[<>]/),
+				rxRule("curly.paren.rparen", ~/\}$/, pop2),
+				rxRule("curly.paren.rparen", ~/\}/, "pop"),
+				rxRule("text", ~/$/, pop2),
+				rdef("text"),
+			],
 			"gml.comment": rComment.concat(rCommentPop).concat([ //{
 				rxRule("comment", ~/.*?\*\//, "pop"),
 				rxRule("comment", ~/.+/)
@@ -703,6 +720,7 @@ using tools.NativeArray;
 				rxRule("comment", ~/.*?\*\//, "pop"),
 			]).concat(rBase),
 		};
+		AceGmlDocHint.add(rules, rComment);
 		//
 		if (ui.Preferences.current.codeLiterals && (version.hasLiteralStrings() || version.hasSingleQuoteStrings())) {
 			function addShaderBlock(substart:String, subset:AceHighlightRuleset) {

@@ -1,7 +1,9 @@
 package gml;
 import ace.AceGmlTools;
+import ace.extern.AceTokenType;
 import gml.GmlFuncDoc;
 import js.lib.RegExp;
+import tools.Dictionary;
 import tools.JsTools;
 
 /**
@@ -12,6 +14,11 @@ abstract GmlTypeName(String) to String {
 	public static inline var number:GmlTypeName = fromString("number");
 	public static inline var bool:GmlTypeName = fromString("bool");
 	public static inline var string:GmlTypeName = fromString("string");
+	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys([
+		"number", "string", "bool", // primitives
+		"array", "list", "map", "grid", "type",
+		"Array", "List", "Map", "Grid", "Type",
+	], "namespace");
 	public static inline function array(elemType:GmlTypeName):GmlTypeName {
 		return fromString("array<" + elemType + ">");
 	}
