@@ -1,4 +1,5 @@
 package ui;
+import electron.Dialog;
 import js.lib.RegExp;
 import js.html.Element;
 import js.html.InputElement;
@@ -23,21 +24,28 @@ class GlobalLookup {
 	private static var pool:Array<Element> = [];
 	private static var updateTimer:Int = null;
 	private static var current:String = "";
-	private static function updateImpl() {
+	
+	public static var useFilters:InputElement;
+	private static var kindFiltersArr:Array<String> = null;
+	private static var kindFiltersStr:String = "";
+	
+	private static function updateImpl(?force:Bool) {
 		updateTimer = null;
 		var filter = field.value;
 		var i:Int, el:Element;
-		if (filter == current) return;
+		if (!force && filter == current) return;
 		current = filter;
 		//
 		var isCmd = NativeString.startsWith(filter, ">");
 		if (isCmd) filter = filter.substring(1);
-		var kindFilter:String = null;
+		var kindFilters:Array<String> = null;
 		if (!isCmd) {
 			var pos = filter.indexOf(":");
 			if (pos >= 0) {
-				kindFilter = filter.substring(pos + 1);
+				kindFilters = [filter.substring(pos + 1)];
 				filter = filter.substring(0, pos);
+			} else {
+				kindFilters = kindFiltersArr;
 			}
 		}
 		//
@@ -64,10 +72,16 @@ class GlobalLookup {
 					} else {
 						hint = tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
 					}
-					if (kindFilter != null) {
-						if (hint == null || !NativeString.contains(hint, kindFilter)) {
-							return;
+					if (kindFilters != null) {
+						if (hint == null) return;
+						var skip = true;
+						for (kindFilter in kindFilters) {
+							if (NativeString.contains(hint, kindFilter)) {
+								skip = false;
+								break;
+							}
 						}
+						if (skip) return;
 					}
 					title = null;
 				}
@@ -184,9 +198,37 @@ class GlobalLookup {
 		}
 	}
 	public static function init() {
-		element = document.querySelector("#global-lookup");
-		field = element.querySelectorAuto("input");
+		element = document.createFormElement();
+		element.id = "global-lookup";
+		element.classList.add("popout-window");
+		element.style.display = "none";
+		element.innerHTML = '
+			<div>
+				<input name="name" type="text" />
+				<input name="filter" type="checkbox" title="Click to set default filters"/>
+			</div>
+			<select name="comp" size="5"></select>
+		';
+		document.querySelectorAuto("#main", Element).insertAfterSelf(element);
+		//
+		field = element.querySelectorAuto('input[name="name"]');
 		field.placeholder = "Resource `name[:type]` or `>command`";
+		useFilters = element.querySelectorAuto('input[name="filter"]');
+		useFilters.onchange = function() {
+			if (useFilters.checked) {
+				element.style.display = "none";
+				Dialog.showPrompt("New default filters? e.g. `scr|obj`", kindFiltersStr, function(s) {
+					kindFiltersStr = s;
+					kindFiltersArr = NativeString.splitNonEmpty(s, "|");
+					if (kindFiltersArr.length == 0) kindFiltersArr = null;
+					element.style.display = "";
+					updateImpl(true);
+				});
+			} else {
+				kindFiltersArr = null;
+				updateImpl(true);
+			}
+		}
 		list = element.querySelectorAuto("select");
 		list.onclick = function(_) {
 			window.setTimeout(function() {

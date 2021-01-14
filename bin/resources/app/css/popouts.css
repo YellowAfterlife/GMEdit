@@ -22,10 +22,15 @@
 	display: flex;
 	flex-direction: column;
 }
-#global-lookup input {
+#global-lookup > div {
 	margin-bottom: 4px;
+	display: flex;
 }
-#global-lookup select {
+#global-lookup > div > input[type="checkbox"] {
+	height: 100%;
+	margin-left: 6px;
+}
+#global-lookup > select {
 	flex-grow: 1;
 	overflow-y: auto;
 }
