@@ -10,7 +10,7 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlNamespace;
 import gml.GmlScopes;
-import gml.GmlTypeName;
+import gml.type.GmlType;
 import gml.file.GmlFile;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
@@ -192,7 +192,7 @@ using tools.NativeString;
 						if (scope == null) continue;
 						var isGlobal = dotKindMeta;
 						
-						var type:GmlTypeName;
+						var type:GmlType;
 						if (!isGlobal) {
 							// some special cases where we know that we don't have to parse anything:
 							var snip:GmlCode;
@@ -211,12 +211,12 @@ using tools.NativeString;
 							dkSmart_type = type;
 							
 							var ctr = editor.completer.getPopup().container;
-							if (type != null) ctr.setAttribute("data-self-type", type);
+							if (type != null) ctr.setAttribute("data-self-type", type.toString());
 						} else type = dkSmart_type;
 						
 						if (type == null) continue;
 						
-						var isStatic = type.isType;
+						var isStatic = type.isType();
 						if (isStatic) type = type.unwrapParam();
 						
 						var imp:GmlImports;
@@ -225,12 +225,13 @@ using tools.NativeString;
 							if (imp == null) continue;
 						} else imp = null;
 						
-						var ns = dotKindMeta ? GmlAPI.gmlNamespaces[type] : imp.namespaces[type];
+						var tn = type.getNamespace();
+						var ns = dotKindMeta ? GmlAPI.gmlNamespaces[tn] : imp.namespaces[tn];
 						if (ns != null) {
 							callback(null, isStatic ? ns.compStatic.array : ns.getInstComp());
 							return;
 						} else if (!isGlobal) {
-							var en = GmlAPI.gmlEnums[type];
+							var en = GmlAPI.gmlEnums[tn];
 							if (en == null) continue;
 							callback(null, isStatic ? en.compList : en.fieldComp);
 							return;
@@ -269,7 +270,7 @@ using tools.NativeString;
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
 		proc(tkf != tokenFilterNot);
 	}
-	static var dkSmart_type:GmlTypeName;
+	static var dkSmart_type:GmlType;
 	public function getDocTooltip(item:AceAutoCompleteItem):String {
 		return item.doc;
 	}

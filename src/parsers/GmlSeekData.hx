@@ -3,6 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 import gml.GmlAPI;
 import gml.*;
+import gml.type.GmlType;
 import synext.GmlExtCoroutines;
 import synext.GmlExtMFunc;
 import tools.ArrayMap;
@@ -282,9 +283,9 @@ class GmlSeekDataHint {
 	public var key:String;
 	public var comp:AceAutoCompleteItem;
 	public var doc:GmlFuncDoc;
-	public var type:GmlTypeName;
+	public var type:GmlType;
 	public function new(namespace:String, isInst:Bool, field:String,
-		comp:AceAutoCompleteItem, doc:GmlFuncDoc, parentSpace:String, type:GmlTypeName
+		comp:AceAutoCompleteItem, doc:GmlFuncDoc, parentSpace:String, type:GmlType
 	) {
 		this.namespace = namespace;
 		this.parentSpace = parentSpace;

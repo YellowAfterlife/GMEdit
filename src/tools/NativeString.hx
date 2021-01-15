@@ -37,36 +37,37 @@ import js.Syntax;
 		return Syntax.code("{0}.substr({1},{2})", s, start, len);
 	}
 	
-	public static inline function trimRight(s:String):String {
-		return untyped s.trimRight();
+	public static inline function repeat(s:String, count:Int):String {
+		return (cast s).repeat(count);
 	}
 	
-	private static var trimTrailBreak_1 = new RegExp("^([\\s\\S]*?)(\r?\n)?$", "g");
+	public static inline function trimRight(s:String):String {
+		return (cast s).trimRight();
+	}
+	
+	/** Trims a trailing \n or \r\n */
 	public static function trimTrailRn(str:String, count:Int = 1):String {
 		while (--count >= 0) {
 			str = replaceExt(str, trimTrailBreak_1, "$1");
 		}
 		return str;
 	}
-	
-	public static inline function repeat(s:String, count:Int):String {
-		return untyped s.repeat(count);
-	}
+	private static var trimTrailBreak_1 = new RegExp("^([\\s\\S]*?)(\r?\n)?$", "g");
 	
 	public static inline function trimLeft(s:String):String {
-		return untyped s.trimLeft();
+		return (cast s).trimLeft();
 	}
 	
 	public static inline function trimBoth(s:String):String {
-		return untyped s.trim();
+		return (cast s).trim();
 	}
 	
 	public static inline function startsWith(s:String, q:String):Bool {
-		return untyped s.startsWith(q);
+		return (cast s).startsWith(q);
 	}
 	
 	public static inline function endsWith(s:String, q:String):Bool {
-		return untyped s.endsWith(q);
+		return (cast s).endsWith(q);
 	}
 	
 	public static function trimIfEndsWith(s:String, end:String):String {

@@ -1,8 +1,9 @@
 package parsers;
 
 import ace.extern.*;
-import gml.GmlTypeName;
+import gml.type.GmlType;
 import gml.GmlVersion;
+import gml.type.GmlTypeDef;
 import synext.GmlExtImport;
 import tools.Aliases;
 import tools.CharCode;
@@ -221,6 +222,16 @@ class GmlReader extends StringReader {
 		}
 	}
 	
+	public function skipSpaces0_local() {
+		while (loopLocal) {
+			switch (peek()) {
+				case " ".code, "\t".code: {
+					skip(); continue;
+				};
+			}; break;
+		}
+	}
+	
 	/** Skips spaces, tabs, `\r`, `\n` */
 	public function skipSpaces1() {
 		while (loop) {
@@ -411,6 +422,49 @@ class GmlReader extends StringReader {
 		} else return true;
 	}
 	
+	public function skipType(?till:Int):FoundError {
+		// also see GmlTypeParser.parseRec, GmlLinter.readTypeName
+		if (till == null) till = length;
+		var start = pos;
+		inline function rewind():FoundError {
+			pos = start;
+			return true;
+		}
+		skipSpaces1x(till);
+		var c = read();
+		switch (c) {
+			case "(".code:
+				if (skipType(till)) return rewind();
+				skipSpaces1x(till);
+				if (read() != ")".code) return rewind();
+			case _ if (c.isIdent0()):
+				skipIdent1();
+				start = pos;
+				skipSpaces1x(till);
+				if (peek() == "<".code) {
+					skip();
+					if (!skipTypeParams(till)) return rewind();
+				} else pos = start;
+			default: return rewind();
+		}
+		//
+		start = pos;
+		while (loop) {
+			skipSpaces1x(till);
+			switch (peek()) {
+				case "[".code if (peek(1) == "]".code): skip(2);
+				case "?".code: skip();
+				case "|".code:
+					skip();
+					if (skipType(till)) return rewind();
+				default: break;
+			}
+			start = pos;
+		}
+		pos = start;
+		return false;
+	}
+	
 	/** Skips comments and strings. Returns >= 0 if something was skipped, -1 otherwise. */
 	public function skipCommon_inline():Int {
 		var c = peek();
@@ -454,9 +508,9 @@ class GmlReader extends StringReader {
 	private static var rxVarType = new js.lib.RegExp("^" + GmlExtImport.rsLocalType + "$");
 	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool):Int {
 		var n = 0;
-		var d:SkipVarsData = {
+		var d:SkipVarsData = { // NB! this is getting reused
 			name: null, name0: 0, name1: 0,
-			type: null, type0: 0, type1: 0,
+			type: null, type0: 0, type1: 0, typeStr: null,
 			expr0: 0, expr1: 0, opt: false,
 		};
 		skipNops();
@@ -481,19 +535,34 @@ class GmlReader extends StringReader {
 			d.type0 = pos;
 			var type = null;
 			if (peek() == ":".code) {
-				skip(); skipSpaces1x(till);
+				skip();
 				var p1 = pos;
-				skipIdent1();
+				skipType();
 				if (pos > p1) {
-					if (peek() == "<".code) skipTypeParams(till);
-					d.type = GmlTypeName.fromString(substring(p1, pos));
+					d.typeStr = substring(p1, pos);
+					d.type = GmlTypeDef.parse(d.typeStr);
 				} else d.type = null;
-			} else if (peek() == "/".code && peek(1) == "*".code) {
-				p = pos;
-				skip(2); skipComment();
-				var mt = rxVarType.exec(substring(p, pos));
-				d.type = mt != null ? GmlTypeName.fromString(mt[1]) : null;
-			} else d.type = null;
+			} else if (peek() == "/".code && peek(1) == "*".code && peek(2) == ":".code) {
+				skip(3);
+				var cmtStart = pos;
+				skipComment();
+				var cmtEnd = pos;
+				pos = cmtStart;
+				skipType();
+				skipSpaces1x(cmtEnd);
+				if (pos == cmtEnd - 2) {
+					d.typeStr = substring(cmtStart, cmtEnd - 2);
+					d.type = GmlTypeDef.parse(d.typeStr);
+				} else {
+					d.type0 = cmtEnd;
+					d.typeStr = null;
+					d.type = null;
+				}
+				pos = cmtEnd;
+			} else {
+				d.typeStr = null;
+				d.type = null;
+			}
 			d.type1 = pos;
 			// see if there's `= value`:
 			skipSpaces1x(till);
@@ -538,6 +607,6 @@ class GmlReader extends StringReader {
 }
 typedef SkipVarsData = {
 	name:String, name0:Int, name1:Int,
-	type:GmlTypeName, type0:Int, type1:Int,
+	type:GmlType, type0:Int, type1:Int, typeStr:String,
 	expr0:Int, expr1:Int, opt:Bool,
 };

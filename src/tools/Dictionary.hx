@@ -70,6 +70,13 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function keys():Array<String> {
 		return Reflect.fields(this);
 	}
+	public function size():Int {
+		var n = 0;
+		NativeObject.forField(this, function(_) {
+			n += 1;
+		});
+		return n;
+	}
 	//
 	public inline function keyValueIterator():DynamicAccessKeyValueIterator<T> {
 		return new DynamicAccessKeyValueIterator(this);

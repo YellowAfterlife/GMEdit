@@ -181,8 +181,9 @@ class OpenDeclaration {
 					};
 					case "local", "sublocal": {
 						var t = imp.localTypes[tk.value];
-						if (t == null) break;
-						ns = imp.namespaces[t];
+						var tn = t.getNamespace();
+						if (tn == null) break;
+						ns = imp.namespaces[tn];
 						if (ns == null) break;
 						next = ns.longen[term];
 						if (next != null) term = next;

@@ -12,6 +12,8 @@ import gml.GmlAPI;
 import gmx.*;
 import yy.*;
 import gml.*;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
 import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
@@ -97,7 +99,7 @@ class GmlSeeker {
 	);
 	private static var jsDoc_param = new RegExp("^///\\s*"
 		+ "@(?:arg|param|argument)\\s+"
-		+ "(?:\\{.*?\\}\\s*)?" // {type}?
+		+ "(?:\\{(.*?)\\}\\s*)?" // {type}?
 		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value` -> $1
 	);
 	private static var jsDoc_hint = new RegExp("^///\\s*"
@@ -354,6 +356,7 @@ class GmlSeeker {
 		var doc:GmlFuncDoc = null;
 		var docIsAutoFunc = false;
 		var jsDocArgs:Array<String> = null;
+		var jsDocTypes:Array<GmlType> = null;
 		var jsDocRest:Bool = false;
 		var jsDocSelf:String = null;
 		var jsDocReturn:String = null;
@@ -366,6 +369,7 @@ class GmlSeeker {
 		}
 		inline function resetDoc():Void {
 			jsDocArgs = null;
+			jsDocTypes = null;
 			jsDocRest = null;
 			jsDocSelf = null;
 			jsDocReturn = null;
@@ -387,6 +391,7 @@ class GmlSeeker {
 			if (doc != null) {
 				if (jsDocArgs != null) {
 					doc.args = jsDocArgs;
+					doc.argTypes = jsDocTypes;
 					if (jsDocRest) doc.rest = jsDocRest;
 					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
 				} else if (doc.args.length != 0) {
@@ -404,7 +409,7 @@ class GmlSeeker {
 					if (jsDocInterfaceName == null) jsDocInterfaceName = main;
 					out.namespaceHints[jsDocInterfaceName] = new GmlSeekDataNamespaceHint(jsDocInterfaceName, null, null);
 				}
-				doc.selfType = GmlTypeName.fromString(jsDocSelf);
+				doc.selfType = GmlTypeDef.parse(jsDocSelf);
 				
 				//
 				if (updateComp && mainComp != null) mainComp.doc = doc.getAcText();
@@ -474,7 +479,7 @@ class GmlSeeker {
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
-		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String, ?type:GmlTypeName) {
+		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String, type:GmlType, argTypes:Array<GmlType>) {
 			var parentSpace:String = null;
 			if (namespace == null) {
 				if (isCreateEvent) {
@@ -497,6 +502,7 @@ class GmlSeeker {
 				hintDoc = GmlFuncDoc.parse(fa);
 				hintDoc.trimArgs();
 				hintDoc.isConstructor = isConstructor;
+				if (argTypes != null) hintDoc.argTypes = argTypes;
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
 			info = NativeString.nzcct(info, "\n", 'from $namespace');
@@ -595,7 +601,7 @@ class GmlSeeker {
 						} else continue;
 						var hint = out.hintMap[namespace + ":" + name];
 						if (hint != null) {
-							hint.type = GmlTypeName.fromString(type);
+							hint.type = GmlTypeDef.parse(type);
 							hint.comp.doc = NativeString.nzcct(hint.comp.doc, "\n", "type " + type);
 						}
 					}
@@ -618,7 +624,7 @@ class GmlSeeker {
 				
 				mt = jsDoc_hint.exec(s);
 				if (mt != null) {
-					addFieldHint(mt[2] != null, mt[3], mt[4] == ":", mt[5], mt[6], mt[7], GmlTypeName.fromString(mt[1]));
+					addFieldHint(mt[2] != null, mt[3], mt[4] == ":", mt[5], mt[6], mt[7], GmlTypeDef.parse(mt[1]), null);
 					continue; // found!
 				}
 				
@@ -652,10 +658,15 @@ class GmlSeeker {
 				if (v.hasJSDoc()) {
 					mt = jsDoc_param.exec(s);
 					if (mt != null) {
-						if (jsDocArgs == null) jsDocArgs = [];
-						var argText = mt[1];
+						if (jsDocArgs == null) {
+							jsDocArgs = [];
+							jsDocTypes = [];
+						}
+						var argText = mt[2];
+						var argType = JsTools.nca(mt[1], GmlTypeDef.parse(mt[1]));
 						for (arg in argText.split(",")) {
 							jsDocArgs.push(arg);
+							jsDocTypes.push(argType);
 							if (arg.contains("...")) jsDocRest = true;
 						}
 						continue; // found!
@@ -766,9 +777,12 @@ class GmlSeeker {
 							var argsStart = q.pos;
 							procFuncLiteralArgs();
 							var args:String = q.substring(argsStart, q.pos).trimBoth();
+							var argTypes = null;
 							if (jsDocArgs != null) {
 								args = "(" + jsDocArgs.join(", ") + ")";
+								argTypes = jsDocTypes;
 								jsDocArgs = null;
+								jsDocTypes = null;
 							}
 							if (jsDocReturn != null) {
 								args += GmlFuncDoc.retArrow + jsDocReturn;
@@ -778,7 +792,7 @@ class GmlSeeker {
 							s = find(Line | Cub0 | Ident | Colon);
 							var isConstructor = (s == ":" || s == "constructor");
 							//
-							addFieldHint(isConstructor, getObjectName(), true, fname, args, null);
+							addFieldHint(isConstructor, getObjectName(), true, fname, args, null, null, argTypes);
 						} else procFuncLiteralArgs();
 						resetDoc(); // discard any collected JSDoc
 						continue;
@@ -814,7 +828,9 @@ class GmlSeeker {
 							if (isDefine && jsDocArgs != null) {
 								// `@param` override the parsed arguments
 								doc = GmlFuncDoc.create(main, jsDocArgs, jsDocRest);
+								doc.argTypes = jsDocTypes;
 								jsDocArgs = null;
+								jsDocTypes = null;
 								jsDocRest = false;
 							} else {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
@@ -1140,6 +1156,7 @@ class GmlSeeker {
 					if (isConstructorField) {
 						q.skipSpaces1();
 						var args:String = null;
+						var argTypes:Array<GmlType> = null;
 						var isConstructor = false;
 						do {
 							if (!q.peek().isIdent0_ni()) continue;
@@ -1159,7 +1176,9 @@ class GmlSeeker {
 							while (q.loop && q.read() != ")".code) {}
 							if (jsDocArgs != null) {
 								args = "(" + jsDocArgs.join(", ") + ")";
+								argTypes = jsDocTypes;
 								jsDocArgs = null;
+								jsDocTypes = null;
 							} else args = q.substring(start, q.pos);
 							
 							if (jsDocReturn != null) {
@@ -1177,7 +1196,7 @@ class GmlSeeker {
 								isConstructor = q.substring(ctStart, q.pos) == "constructor";
 							}
 						} while (false);
-						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null);
+						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null, null, argTypes);
 					}
 					q_restore();
 				};

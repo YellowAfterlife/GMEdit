@@ -9,6 +9,9 @@ import gml.GmlAPI;
 import gml.GmlImports;
 import gml.*;
 import file.FileKind;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
+import gml.type.GmlTypeTools;
 import synext.GmlExtCoroutines;
 import parsers.GmlKeycode;
 import gml.GmlVersion;
@@ -133,7 +136,7 @@ using tools.NativeArray;
 					if (scope != null) {
 						var imp:GmlImports = editor.imports[scope], ns:GmlNamespace;
 						// save some trouble:
-						var localType:String;
+						var localType:GmlType;
 						var checkStatics = false;
 						if (object == "self") {
 							objType = "keyword";
@@ -145,7 +148,7 @@ using tools.NativeArray;
 							//localType = AceGmlTools.getOtherType({session:editor.session, scope:scope});
 						} else if (GmlAPI.gmlKind[object] == "asset.object") {
 							objType = "asset.object";
-							localType = object;
+							localType = GmlTypeDef.object(object);
 						} else {
 							localType = null;
 							checkStatics = true;
@@ -178,9 +181,10 @@ using tools.NativeArray;
 								objType = getLocalType_1(object, scope, !mf);
 								localType = JsTools.nca(imp, imp.localTypes[object]);
 							}
-							if (localType != null) {
-								ns = JsTools.nca(imp, imp.namespaces[localType]);
-								var ns2 = GmlAPI.gmlNamespaces[localType];
+							var localTypeNS = JsTools.nca(localType, localType.getNamespace());
+							if (localTypeNS != null) {
+								ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
+								var ns2 = GmlAPI.gmlNamespaces[localTypeNS];
 								if (ns != null) {
 									fdType = ns.getInstKind(field);
 									if (fdType == null) {
@@ -191,7 +195,7 @@ using tools.NativeArray;
 								} else if (ns2 != null) {
 									fdType = jsOrx(ns2.getInstKind(field), "typeerror");
 								} else {
-									en = GmlAPI.gmlEnums[localType];
+									en = GmlAPI.gmlEnums[localTypeNS];
 									if (en != null) {
 										fdType = en.items[field] ? "enumfield" : "enumerror";
 									} else { // local.something
@@ -699,7 +703,7 @@ using tools.NativeArray;
 			"gml.comment.doc.curly": [
 				rxRule(function(id) {
 					if (GmlAPI.gmlNamespaces.exists(id)) return "namespace";
-					return JsTools.or(GmlTypeName.kindMap[id], "identifier");
+					return JsTools.or(GmlTypeTools.kindMap[id], "identifier");
 				}, ~/\w+/),
 				rxRule("punctuation.operator", ~/,/),
 				rxRule("operator", ~/[<>]/),

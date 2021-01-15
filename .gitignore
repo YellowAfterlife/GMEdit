@@ -13,3 +13,4 @@
 /bin/resources/app/livejs*
 /bin/resources/app/app-starter.js
 /src/dump/decoding_error.txt
+/bin/resources/app/app.js.map

@@ -5,6 +5,10 @@ package tools;
  * @author YellowAfterlife
  */
 @:keep class NativeArray {
+	public static inline function create<T>(size:Int):Array<T> {
+		return js.Syntax.code("new Array")(size);
+	}
+	
 	public static inline function clear<T>(arr:Array<T>):Void {
 		untyped arr.length = 0;
 	}

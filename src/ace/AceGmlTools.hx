@@ -8,7 +8,8 @@ import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.GmlNamespace;
-import gml.GmlTypeName;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
 import parsers.GmlReaderExt;
 import parsers.linter.GmlLinter;
 import tools.Aliases;
@@ -87,23 +88,23 @@ using StringTools;
 		return Statement;
 	}
 	
-	public static inline function getSelfType(ctx:AceGmlTools_getSelfType):GmlTypeName {
+	public static inline function getSelfType(ctx:AceGmlTools_getSelfType):GmlType {
 		var gmlFile = ctx.session.gmlFile;
 		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
-			return GmlTypeName.fromString(gmlFile.name);
+			return GmlTypeDef.parse(gmlFile.name);
 		} else {
 			var scopeDoc = GmlAPI.gmlDoc[ctx.scope];
 			if (scopeDoc != null) {
 				if (scopeDoc.isConstructor) {
-					return GmlTypeName.fromString(ctx.scope);
+					return GmlTypeDef.parse(ctx.scope);
 				} else return scopeDoc.selfType;
 			} else return null;
 		}
 	}
 	
-	public static inline function getOtherType(ctx:AceGmlTools_getSelfType):GmlTypeName {
+	public static inline function getOtherType(ctx:AceGmlTools_getSelfType):GmlType {
 		if (ctx.scope.startsWith("collision:")) {
-			return GmlTypeName.fromString(ctx.scope.substring("collision:".length));
+			return GmlTypeDef.object(ctx.scope.substring("collision:".length));
 		} else return null;
 	}
 	
@@ -180,7 +181,7 @@ using StringTools;
 		return iter.getCurrentTokenPosition();
 	}
 	
-	public static inline function findNamespace<T>(name:GmlTypeName, imp:GmlImports, fn:GmlNamespace->T):T {
+	public static inline function findNamespace<T>(name:String, imp:GmlImports, fn:GmlNamespace->T):T {
 		var step = imp != null ? -1 : 0;
 		var result:T = null;
 		while (++step < 2) {
@@ -192,9 +193,11 @@ using StringTools;
 	}
 	
 	/** Given a "Type", returns the argument info to be used when doing `var v:Type; v(` */
-	public static function findSelfCallDoc(type:GmlTypeName, imp:GmlImports):GmlFuncDoc {
+	public static function findSelfCallDoc(type:GmlType, imp:GmlImports):GmlFuncDoc {
 		if (type == null) return null;
-		return findNamespace(type, imp, function(ns) {
+		var ns = type.getNamespace();
+		if (ns == null) return null;
+		return findNamespace(ns, imp, function(ns) {
 			return ns.docInstMap[""];
 		});
 	}

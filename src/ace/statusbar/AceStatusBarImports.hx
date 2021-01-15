@@ -3,6 +3,8 @@ import ace.AceStatusBar;
 import ace.extern.AceRange;
 import gml.GmlAPI;
 import gml.GmlImports;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
 import parsers.linter.GmlLinter;
 import tools.JsTools;
 
@@ -18,7 +20,7 @@ class AceStatusBarImports {
 		if (imports == null && !hasGlobalNamespaces) return 0;
 		var tk = ctx.tk;
 		var fnType = tk.type;
-		var type:String = null;
+		var type:GmlType = null;
 		var iter = ctx.iter;
 		var name = tk.value;
 		var doc = ctx.docs[name];
@@ -28,7 +30,7 @@ class AceStatusBarImports {
 		if (tk != null && tk.value == ".") {
 			tk = iter.stepBackward();
 			if (tk.type == "asset.object") {
-				type = tk.value;
+				type = GmlTypeDef.object(tk.value);
 			} else if (tk.value == "other") {
 				type = AceGmlTools.getOtherType({ session: ctx.session, scope: ctx.scope });
 			} else if (tk.value == "self") {
@@ -73,8 +75,9 @@ class AceStatusBarImports {
 		if (type != null) {
 			var step = (imports != null ? -1 : 0);
 			var till = hasGlobalNamespaces ? 2 : 1;
-			while (++step < till) {
-				var ns = (step > 0 ? GmlAPI.gmlNamespaces[type] : imports.namespaces[type]);
+			var tn = type.getNamespace();
+			if (tn != null) while (++step < till) {
+				var ns = (step > 0 ? GmlAPI.gmlNamespaces[tn] : imports.namespaces[tn]);
 				if (ns == null) continue;
 				
 				var td = ns.getInstDoc(name);

@@ -1,6 +1,7 @@
 package gml;
 import gml.GmlFuncDoc;
 import gml.GmlNamespace;
+import gml.type.GmlType;
 import tools.Dictionary;
 import tools.Aliases;
 using tools.NativeString;
@@ -42,7 +43,7 @@ class GmlImports {
 	public var docs:Dictionary<GmlFuncDoc> = new Dictionary();
 	
 	/** "v" -> "Some" for `var v:Some` */
-	public var localTypes:Dictionary<GmlTypeName> = new Dictionary();
+	public var localTypes:Dictionary<GmlType> = new Dictionary();
 	
 	//
 	public function new() {

@@ -5,8 +5,9 @@ import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.GmlLocals;
 import gml.GmlNamespace;
-import gml.GmlTypeName;
+import gml.type.GmlType;
 import gml.Project;
+import gml.type.GmlTypeDef;
 import parsers.linter.GmlLinterInit;
 import synext.GmlExtLambda;
 import tools.Aliases;
@@ -73,14 +74,14 @@ class GmlLinter {
 	}
 	
 	var __selfType_set = false;
-	var __selfType_type:GmlTypeName = null;
+	var __selfType_type:GmlType = null;
 	function getSelfType() {
 		if (__selfType_set) return __selfType_type;
 		return AceGmlTools.getSelfType({ session: editor.session, scope: context });
 	}
 	
 	var __otherType_set = false;
-	var __otherType_type:GmlTypeName = null;
+	var __otherType_type:GmlType = null;
 	function getOtherType() {
 		if (__otherType_set) return __otherType_type;
 		return AceGmlTools.getOtherType({ session: editor.session, scope: context });
@@ -253,14 +254,16 @@ class GmlLinter {
 	 * @param	sqb Whether this is a [...args]
 	 * @return	number of arguments read, -1 on error
 	 */
-	function readArgs(oldDepth:Int, sqb:Bool):Int {
+	function readArgs(oldDepth:Int, sqb:Bool, ?doc:GmlFuncDoc):Int {
 		var newDepth = oldDepth + 1;
 		var q = reader;
 		seqStart.setTo(reader);
 		var seenComma = true;
 		var closed = false;
 		var argc = 0;
-		var itemType:GmlTypeName = null;
+		var argTypes = JsTools.nca(doc, doc.argTypes);
+		var argTypeLast = JsTools.nca(argTypes, argTypes.length);
+		var itemType:GmlType = null;
 		while (q.loop) {
 			switch (peek()) {
 				case KParClose: {
@@ -284,7 +287,18 @@ class GmlLinter {
 					if (seenComma) {
 						seenComma = false;
 						if (readExpr(newDepth)) return -1;
-						if (itemType == null) itemType = readExpr_currType;
+						if (sqb) {
+							if (itemType == null) itemType = readExpr_currType;
+						} else if (argTypes != null && readExpr_currType != null) {
+							var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
+							var argType = argTypes[argTypeInd];
+							if (argType != null && !readExpr_currType.canCastTo(argType)) {
+								addWarning("Can't cast " + readExpr_currType.toString()
+									+ " to " + argType.toString()
+									+ ' for ' + doc.args[argc] + "#" + argc
+								);
+							}
+						}
 						argc++;
 					} else {
 						readExpect("a comma in values list");
@@ -299,7 +313,7 @@ class GmlLinter {
 			return -1;
 		} else return argc;
 	}
-	var readArgs_itemType:GmlTypeName;
+	static var readArgs_itemType:GmlType;
 	
 	function checkCallArgs(doc:GmlFuncDoc, currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
 		var isUserFunc:Bool;
@@ -361,7 +375,7 @@ class GmlLinter {
 	
 	var readExpr_currKind:GmlLinterKind;
 	var readExpr_currName:GmlName;
-	var readExpr_currType:GmlTypeName;
+	var readExpr_currType:GmlType;
 	var readExpr_currFunc:GmlFuncDoc;
 	function readExpr_checkConst(currName:GmlName, currKind:GmlLinterKind) {
 		switch (currKind) {
@@ -398,7 +412,7 @@ class GmlLinter {
 		var statKind = nk;
 		var currKind = nk;
 		var currName = nk == KIdent ? nextVal : null;
-		var currType:GmlTypeName = null;
+		var currType:GmlType = null;
 		var currFunc:GmlFuncDoc = null;
 		//
 		inline function checkConst():Void {
@@ -406,8 +420,8 @@ class GmlLinter {
 		}
 		//
 		switch (nk) {
-			case KNumber: currType = GmlTypeName.number;
-			case KString: currType = GmlTypeName.string;
+			case KNumber: currType = GmlTypeDef.number;
+			case KString: currType = GmlTypeDef.string;
 			case KUndefined: // OK!
 			case KIdent: {
 				if (hasFlag(HasPrefix)) checkConst();
@@ -433,7 +447,10 @@ class GmlLinter {
 				}
 				// figure out what this is:
 				do {
-					if (currName == "self") {
+					if (currName == "undefined") {
+						currType = GmlTypeDef.undefined;
+						break;
+					} else if (currName == "self") {
 						currType = getSelfType();
 						currFunc = currType.getSelfCallDoc(getImports());
 						break;
@@ -446,7 +463,7 @@ class GmlLinter {
 					var imp:GmlImports = getImports();
 					var locals = editor.locals[context];
 					if (imp != null && locals.kind.exists(currName)) {
-						currType = GmlTypeName.fromString(imp.localTypes[currName]);
+						currType = imp.localTypes[currName];
 						currFunc = currType.getSelfCallDoc(imp);
 						break;
 					}
@@ -457,9 +474,9 @@ class GmlLinter {
 						break;
 					}
 					
-					if (AceGmlTools.findNamespace(GmlTypeName.fromString(currName), imp, function(ns:GmlNamespace) {
-						currType = GmlTypeName.type(GmlTypeName.fromString(currName));
-						currFunc = ns.docStaticMap[""];
+					if (AceGmlTools.findNamespace(currName, imp, function(ns:GmlNamespace) {
+						currType = GmlTypeDef.type(currName);
+						currFunc = JsTools.or(ns.docStaticMap[""], AceGmlTools.findGlobalFuncDoc(currName));
 						return true;
 					})) break;
 					
@@ -467,7 +484,8 @@ class GmlLinter {
 					if (currFunc != null) break;
 					
 					var t = getSelfType();
-					if (t != null) AceGmlTools.findNamespace(t, imp, function(ns:GmlNamespace) {
+					var tn = t.getNamespace();
+					if (tn != null) AceGmlTools.findNamespace(tn, imp, function(ns:GmlNamespace) {
 						if (ns.instKind.exists(currName)) {
 							currType = ns.getInstType(currName);
 							currFunc = ns.getInstDoc(currName);
@@ -484,46 +502,60 @@ class GmlLinter {
 			};
 			case KNew: {
 				rc(readExpr(newDepth, IsNew));
-				currType = GmlTypeName.fromString(readExpr_currName);
+				currType = GmlTypeDef.simple(readExpr_currName);
 				currFunc = currType.getSelfCallDoc(getImports());
 			};
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
-				currType = nk == KNot ? GmlTypeName.bool : GmlTypeName.number;
+				currType = nk == KNot ? GmlTypeDef.bool : GmlTypeDef.number;
 			};
 			case KInc, KDec: {
 				rc(readExpr(newDepth, HasPrefix));
-				currType = GmlTypeName.number;
+				currType = GmlTypeDef.number;
 			};
 			case KSqbOpen: {
 				rc(readArgs(newDepth, true) < 0);
 				currType = readArgs_itemType;
-				currType = JsTools.nca(currType, GmlTypeName.array(currType));
+				currType = GmlTypeDef.array(currType);
 			};
-			case KLambda: rc(readLambda(newDepth, false)); currFunc = readLambda_doc;
-			case KFunction: rc(readLambda(newDepth, true)); currFunc = readLambda_doc;
+			case KLambda: rc(readLambda(newDepth, false, isStat())); currFunc = readLambda_doc;
+			case KFunction: rc(readLambda(newDepth, true, isStat())); currFunc = readLambda_doc;
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
+				var anon = new GmlTypeAnon();
+				var anonFields = anon.fields;
 				if (skipIf(peek() == KCubClose)) {
 					// empty!
 				} else while (q.loop) {
+					var key:String;
 					switch (next()) {
-						case KIdent, KString: { };
+						case KIdent: key = nextVal;
+						case KString:
+							try {
+								key = haxe.Json.parse(nextVal);
+							} catch (x:Dynamic) {
+								key = null;
+								addWarning("Invalid string for key name");
+							}
 						case KCubClose: break;
 						default: return readExpect("a field name");
 					}
 					rc(readCheckSkip(KColon, "a `:` between key-value pair in {}"));
 					rc(readExpr(newDepth));
+					if (key != null) {
+						anonFields[key] = new GmlTypeAnonField(readExpr_currType, readExpr_currFunc);
+					}
 					switch (peek()) {
 						case KCubClose: skip(); break;
 						case KComma: skip();
 						default: return readExpect("a `,` or a `}` after a key-value pair in {}");
 					}
 				}
+				currType = GmlType.TAnon(anon);
 			};
 			default: {
 				if (nk.isUnOp()) { // +v or -v
 					rc(readExpr(newDepth));
-					currType = GmlTypeName.number;
+					currType = GmlTypeDef.number;
 				}
 				else return invalid();
 			};
@@ -539,6 +571,7 @@ class GmlLinter {
 						flags.remove(AsStat);
 						statKind = KSet;
 						rc(readExpr(newDepth));
+						checkTypeSet(currType, readExpr_currType);
 						currType = null;
 					} else {
 						if (hasFlag(NoOps)) break;
@@ -548,7 +581,7 @@ class GmlLinter {
 						skip();
 						rc(readOps(newDepth));
 						flags.add(NoSfx);
-						currType = GmlTypeName.bool;
+						currType = GmlTypeDef.bool;
 					}
 				};
 				case KParOpen: { // fn(...)
@@ -557,7 +590,7 @@ class GmlLinter {
 					}
 					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
-					var argc = readArgs(newDepth, false);
+					var argc = readArgs(newDepth, false, currFunc);
 					rc(argc < 0);
 					if (currFunc != null) {
 						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
@@ -572,16 +605,17 @@ class GmlLinter {
 					checkConst();
 					skip();
 					statKind = currKind = nk;
-					currType = GmlTypeName.number;
+					currType = GmlTypeDef.number;
 				};
 				case KDot, KNullDot: { // x.y
 					skip();
 					rc(readCheckSkip(KIdent, "field name after `.`"));
 					currKind = nk == KDot ? KField : KNullField;
-					if (currType != null) {
-						var isStatic = currType.isType;
+					var ctn = currType.getNamespace();
+					if (ctn != null) {
+						var isStatic = currType.isType();
 						var nsType = isStatic ? currType.unwrapParam() : currType;
-						AceGmlTools.findNamespace(currType, getImports(), function(ns) {
+						AceGmlTools.findNamespace(ctn, getImports(), function(ns) {
 							if (isStatic) {
 								currType = ns.staticTypes[nextVal];
 								currFunc = ns.docStaticMap[nextVal];
@@ -613,7 +647,7 @@ class GmlLinter {
 							skip();
 							rc(readExpr(newDepth));
 							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
-							if (JsTools.nca(currType, currType.isArray)) {
+							if (JsTools.nca(currType, currType.isArray())) {
 								currType = currType.unwrapParam();
 							}
 						};
@@ -625,7 +659,7 @@ class GmlLinter {
 								readArgs(newDepth, true);
 								isLiteral = true;
 							} else {
-								if (JsTools.nca(currType, currType.isArray)) {
+								if (JsTools.nca(currType, currType.isArray())) {
 									currType = currType.unwrapParam();
 								}
 							}
@@ -729,6 +763,60 @@ class GmlLinter {
 		return result;
 	}
 	
+	static var readTypeName_type:GmlType;
+	function readTypeName():FoundError {
+		// also see: GmlTypeParser, GmlReader.skipType
+		var start = reader.pos;
+		switch (next()) {
+			case KParOpen:
+				seqStart.setTo(reader);
+				rc(readTypeName());
+				if (next() != KParClose) return readSeqStartError("Unclosed type ()");
+			case KIdent:
+				if (skipIf(peek() == KLT)) {
+					var depth = 1;
+					seqStart.setTo(reader);
+					while (reader.loop) {
+						switch (next()) {
+							case KLT: depth += 1;
+							case KGT: 
+								depth -= 1;
+								if (depth <= 0) break;
+							default:
+						}
+					}
+					if (depth > 0) return readSeqStartError("Unclosed type parameters");
+				}
+			default: return readExpect("a type name");
+		}
+		while (reader.loopLocal) {
+			switch (peek()) {
+				case KSqbOpen:
+					skip();
+					readCheckSkip(KSqbClose, "a closing `]`");
+				case KQMark:
+					skip();
+				case KOr:
+					skip();
+					rc(readTypeName());
+				default: break;
+			}
+		}
+		// todo: maybe just form the type name here too
+		readTypeName_type = GmlTypeDef.parse(reader.substring(start, reader.pos));
+		return false;
+	}
+	
+	function checkTypeSet(target:GmlType, source:GmlType):FoundError {
+		if (!source.canCastTo(target)) addWarning('Can\'t assign ${source.toString()} to ' + target.toString());
+		return false;
+	}
+	
+	function checkTypeCast(target:GmlType, source:GmlType):FoundError {
+		if (!source.canCastTo(target)) addWarning('Can\'t cast ${source.toString()} to ' + target.toString());
+		return false;
+	}
+	
 	function readSwitch(oldDepth:Int):FoundError {
 		var newDepth = oldDepth + 1;
 		rc(readCheckSkip(KCubOpen, "an opening `{` for switch-block"));
@@ -797,11 +885,12 @@ class GmlLinter {
 	}
 	
 	static var readLambda_doc:GmlFuncDoc;
-	function readLambda(oldDepth:Int, isFunc:Bool):FoundError {
+	function readLambda(oldDepth:Int, isFunc:Bool, isStat:Bool):FoundError {
 		var name = "function";
 		if (peek() == KIdent) {
 			skip();
 			name = nextVal;
+			if (isFunc && isStat && oldDepth == 2) context = name;
 		}
 		var doc = new GmlFuncDoc(name, "(", ")", [], false);
 		if (skipIf(peek() == KParOpen)) { // (...args)
@@ -823,7 +912,7 @@ class GmlLinter {
 			}
 		} else if (isFunc) return readExpect("function literal arguments");
 		//
-		if (isFunc && skipIf(peek() == KColon)) { // : 
+		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
 			readCheckSkip(KIdent, "a parent type name");
 			readCheckSkip(KParOpen, "opening bracket");
 			rc(readArgs(oldDepth + 1, false) < 0);
@@ -889,15 +978,17 @@ class GmlLinter {
 					found++;
 					//
 					nk = peek();
+					var vt:GmlType;
 					if (nk == KColon) { // `name:type`
 						skip();
+						rc(readTypeName());
+						vt = readTypeName_type;
 						nk = peek();
-						rc(readCheckSkip(nk, "a type name"));
-						nk = peek();
-					}
+					} else vt = null;
 					if (nk == KSet) { // `name = val`
 						skip();
 						rc(readExpr(newDepth));
+						if (vt != null) checkTypeSet(vt, readExpr_currType);
 					}
 					if (!skipIf(peek() == KComma)) break;
 				}
@@ -1009,7 +1100,7 @@ class GmlLinter {
 				}
 			};
 			//
-			case KLamDef: rc(readLambda(newDepth, false));
+			case KLamDef: rc(readLambda(newDepth, false, true));
 			default: {
 				rc(readExpr(newDepth, flags.with(AsStat), nk));
 			};
@@ -1148,7 +1239,7 @@ class GmlLinter {
 	}
 }
 typedef GmlLinterTypeInfo = {
-	type: GmlTypeName,
+	type: GmlType,
 	doc: GmlFuncDoc,
 };
 

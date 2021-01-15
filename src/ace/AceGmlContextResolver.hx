@@ -4,7 +4,7 @@ import ace.extern.AceSession;
 import ace.extern.AceToken;
 import ace.extern.AceTokenIterator;
 import gml.GmlAPI;
-import gml.GmlTypeName;
+import gml.type.GmlType;
 import parsers.linter.GmlLinter;
 import parsers.GmlReaderExt;
 
@@ -100,6 +100,6 @@ class AceGmlContextResolver {
 	}
 }
 typedef AceGmlContextResolver_result = {
-	self: GmlTypeName,
-	other: GmlTypeName
+	self: GmlType,
+	other: GmlType
 }

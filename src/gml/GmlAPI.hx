@@ -2,6 +2,7 @@ package gml;
 import electron.FileSystem;
 import gml.GmlEnum;
 import gml.file.GmlFile;
+import gml.type.GmlTypeTools;
 import haxe.io.Path;
 import js.lib.RegExp;
 import parsers.GmlParseAPI;
@@ -227,6 +228,7 @@ class GmlAPI {
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
+		gml.type.GmlTypeParser.clear();
 	}
 	//
 	public static function init() {

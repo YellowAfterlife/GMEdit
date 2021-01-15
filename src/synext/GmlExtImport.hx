@@ -8,6 +8,7 @@ import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.GmlLocals;
 import gml.Project;
+import gml.type.GmlType;
 import haxe.io.Path;
 import js.lib.RegExp;
 import tools.Dictionary;
@@ -55,10 +56,20 @@ class GmlExtImport {
 	static var rxHasHint = new RegExp("///\\s+@hint");
 	
 	/** `var a:T`, `#args a:T`, `var a, b:T` */
-	private static var rxHasTypePost = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+:/);
+	private static var rxHasTypePost = new RegExp("(?:" + [
+		"var\\s+",
+		"#args\\s+",
+		",\\s*",
+	].join("|") + ")\\w+:");
 	
 	/** Ditto but accounting for `/*:Type` */
-	private static var rxHasTypePre = AceMacro.jsRx(~/(?:var\s+|#args\s+|,\s*)\w+(?:\/\*)?:/);
+	private static var rxHasTypePre = new RegExp("(?:" + [
+		"var\\s+",
+		"#args\\s+", // shouldn't be needed tbh
+		",\\s*",
+	].join("|") + ")\\w+"
+		+ "(?:/\\*)?" // opt: comment start
+	+ ":");
 	
 	public static var errorText:String;
 	//
@@ -343,8 +354,9 @@ class GmlExtImport {
 		var next:String = null;
 		var t = imp.localTypes[ident];
 		var p1:Int = q.pos;
-		if (t != null) {
-			next = pre_mapIdent_local(q, imp, ident, t, p0);
+		var tn = t.getNamespace();
+		if (tn != null) {
+			next = pre_mapIdent_local(q, imp, ident, tn, p0);
 			if (next == null) q.pos = p1;
 		} else if (ident != "global") {
 			next = imp.shorten[ident];
@@ -385,7 +397,9 @@ class GmlExtImport {
 					//
 					return tools.JsTools.or(imp.shorten[selfEnumName], selfEnumName) + "()";
 				}
-				var selfNs = imp.namespaces[selfType];
+				var stn = selfType.getNamespace();
+				if (stn == null) break;
+				var selfNs = imp.namespaces[stn];
 				if (selfNs == null) break;
 				var selfFunc = selfNs.shorten[ident];
 				if (selfFunc == null) break;
@@ -522,13 +536,14 @@ class GmlExtImport {
 							q.skipVars(function(d:SkipVarsData) {
 								var p = q.pos;
 								flush(d.type0);
-								if (d.type != null) {
+								if (d.typeStr != null) {
 									imp.localTypes.set(d.name, d.type);
-									if (imp.kind[d.type] == "enum") {
+									var tn = d.type.getNamespace();
+									if (imp.kind[tn] == "enum") {
 										// convert enum to namespace if used as one
-										imp.ensureNamespace(d.type);
+										imp.ensureNamespace(tn);
 									}
-									out += ":" + d.type;
+									out += ":" + d.typeStr;
 								}
 								out += q.substring(d.type1, d.expr0);
 								q.pos = d.expr0;
@@ -617,15 +632,16 @@ class GmlExtImport {
 		// `typedVar.method(...)` -> `func(typedVar, ...)`,
 		// `typedVar.field` -> `typedVar[fieldId]`:
 		var type = dot != -1 ? imp.localTypes[one] : null;
-		if (type != null) {
-			var ns = imp.namespaces[type], en:GmlEnum;
+		var tn = type.getNamespace();
+		if (tn != null) {
+			var ns = imp.namespaces[tn], en:GmlEnum;
 			var ind:String = null;
 			var fd = reader.substring(dot + 1, p1);
 			if (ns != null) {
 				ind = ns.longen[fd];
 				en = null;
 			} else {
-				en = GmlAPI.gmlEnums[type];
+				en = GmlAPI.gmlEnums[tn];
 				if (en != null && en.items.exists(fd)) ind = type + '.' + fd;
 			}
 			//
@@ -784,8 +800,8 @@ class GmlExtImport {
 							q.skipVars(function(d:SkipVarsData) {
 								var p = q.pos;
 								flush(d.type0);
-								if (d.type != null) {
-									out += isVar ? "/*:" + d.type + "*/" : ":" + d.type;
+								if (d.typeStr != null) {
+									out += isVar ? "/*:" + d.typeStr + "*/" : ":" + d.typeStr;
 									impc += 1;
 								}
 								out += q.substring(d.type1, d.expr0);
