@@ -69,7 +69,16 @@ class GmlTypeParser {
 						if (c != ",".code) return parseError("Expected a `,` or a `>` in `<>`", q);
 					}
 				}
-				result = TInst(name, params, kind);
+				result = null;
+				if (kind == KCustom
+					&& name == "TN"
+					&& params.length == 1
+				) switch (params[0]) {
+					case TInst(tn, [], KCustom) if (StringTools.fastCodeAt(tn, 0) == "T".code):
+						result = TTemplate(Std.parseInt(tn.substring(1)));
+					default:
+				}
+				if (result == null) result = TInst(name, params, kind);
 			default:
 				return parseError("Expected a type name", q);
 		}

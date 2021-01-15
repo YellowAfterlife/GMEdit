@@ -90,6 +90,15 @@ import js.Syntax;
 		return replaceExt(s, escapeProp_1, "\\$1");
 	}
 	
+	public static function getWholeWordRegex(s:String, ?flags:String):RegExp {
+		var r:String;
+		if (JsTools.rx(~/^\b/).test(s)) {
+			r = "\\b" + escapeRx(s);
+		} else r = escapeRx(s);
+		if (JsTools.rx(~/\b$/).test(s)) r += "\\b";
+		return new RegExp(r, flags);
+	}
+	
 	/**
 	 * Returns a string with a substring inserted at a position.
 	 */

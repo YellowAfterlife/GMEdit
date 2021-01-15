@@ -3,12 +3,17 @@ package parsers;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.GmlVersion;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
+import js.RegExp.RegExpMatch;
+import js.lib.RegExp;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
 import tools.NativeString;
 using tools.NativeString;
 using tools.ERegTools;
+using tools.RegExpTools;
 
 /**
  * ...
@@ -22,6 +27,7 @@ class GmlParseAPI {
 		kind:Dictionary<String>,
 		doc:Dictionary<GmlFuncDoc>,
 		comp:AceAutoCompleteItems,
+		?types:Dictionary<GmlType>,
 		?ukSpelling:Bool,
 		?version:GmlVersion,
 		?kindPrefix:String,
@@ -37,6 +43,7 @@ class GmlParseAPI {
 		var stdKind = data.kind;
 		var stdComp = data.comp;
 		var stdDoc = data.doc;
+		var stdTypes = data.types;
 		var ukSpelling = data.ukSpelling;
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
@@ -48,12 +55,24 @@ class GmlParseAPI {
 		var lwConst = data.lwConst;
 		var lwFlags = data.lwFlags;
 		#end
-		//  : 1func (2args ) 3flags
-		~/^(:*(\w+)\((.*?)\))([ ~\$#*@&£!:]*);?/gm.each(src, function(rx:EReg) {
-			var comp = rx.matched(1);
-			var name = rx.matched(2);
-			var args = rx.matched(3);
-			var flags:String = rx.matched(4);
+		
+		// functions!
+		var rxFunc:RegExp = new RegExp("^"
+			+ "(" // $1 -> general signature
+				+ ":*" // instance variable marker
+				+ "(\\w+)" // $2 -> name
+				+ "(?:<.*?>)?" // type params
+				+ "\\(" + "(.*?)" + "\\)" // $3 -> args
+				+ "(?:->" + "(\\S+)" + ")?" // $4 -> retType
+			+ ")"
+			+ "([ ~\\$#*@&£!:]*)" // $5 -> flags
+		+ "", "gm");
+		rxFunc.each(src, function(mt:RegExpMatch) {
+			var comp = mt[1];
+			var name = mt[2];
+			var args = mt[3];
+			var ret = mt[4];
+			var flags:String = mt[5];
 			if (NativeString.contains(flags, "&")) return;
 			//
 			var orig = name;
@@ -119,13 +138,26 @@ class GmlParseAPI {
 			});
 			stdDoc.set(name, doc);
 		});
-		// 1name 2array       3flags         type
-		~/^((\w+)(\[[^\]]*\])?([~\*\$£#@&]*))(?::\w+)?;?[ \t]*$/gm.each(src, function(rx:EReg) {
-			var comp = rx.matched(1);
-			var name = rx.matched(2);
-			var range = rx.matched(3);
-			var flags = rx.matched(4);
+		
+		// variables!
+		var rxVar = new RegExp("^"
+			+ "(" // 1 -> comp
+				+ "(\\w+)" // 2 -> name
+				+ "(" + "\\[.*?\\]" + ")?" // 3 -> array data
+				+ "([~\\*\\$£#@&]*)" // 4 -> flags
+			+ ")"
+			+ "(:(\\S+))?" // 5 -> type annotation
+		+ "", "g");
+		rxVar.each(src, function(mt:RegExpMatch) {
+			var comp =  mt[1];
+			var name =  mt[2];
+			var range = mt[3];
+			var flags = mt[4];
+			var type =  mt[5];
 			if (NativeString.contains(flags, "&")) return;
+			if (type != null && stdTypes != null) {
+				stdTypes[name] = GmlTypeDef.parse(type);
+			}
 			//
 			var isConst:Bool = flags.indexOf("#") >= 0;
 			var kind:String = isConst ? "constant" : "variable";

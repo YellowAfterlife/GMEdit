@@ -2,6 +2,7 @@ package gml;
 import electron.FileSystem;
 import gml.GmlEnum;
 import gml.file.GmlFile;
+import gml.type.GmlType;
 import gml.type.GmlTypeTools;
 import haxe.io.Path;
 import js.lib.RegExp;
@@ -86,8 +87,13 @@ class GmlAPI {
 	public static var stdComp:AceAutoCompleteItems = [];
 	public static var stdInstComp:AceAutoCompleteItems = [];
 	public static var stdKind:Dictionary<String> = new Dictionary();
+	
+	/** Types per built-in variable */
+	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
+	
 	public static function stdClear() {
 		stdDoc = new Dictionary();
+		stdTypes = new Dictionary();
 		stdComp.clear();
 		stdInstComp.clear();
 		var sk = new Dictionary();
@@ -229,6 +235,7 @@ class GmlAPI {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
 		gml.type.GmlTypeParser.clear();
+		ensureNamespace("number");
 	}
 	//
 	public static function init() {
@@ -298,6 +305,7 @@ class GmlAPI {
 			kind: stdKind,
 			doc: stdDoc,
 			comp: stdComp,
+			types: stdTypes,
 			instComp: stdInstComp,
 			ukSpelling: ukSpelling,
 			version: version,

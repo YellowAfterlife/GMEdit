@@ -261,8 +261,18 @@ class GmlLinter {
 		var seenComma = true;
 		var closed = false;
 		var argc = 0;
-		var argTypes = JsTools.nca(doc, doc.argTypes);
-		var argTypeLast = JsTools.nca(argTypes, argTypes.length);
+		var argTypes:Array<GmlType>, argTypeLast:Int;
+		var templateTypes:Array<GmlType> = null;
+		if (doc != null) {
+			argTypes = doc.argTypes;
+			argTypeLast = doc.rest ? argTypes.length - 1 : 0x7fffffff;
+			if (doc.templateNames != null) {
+				templateTypes = NativeArray.create(doc.templateNames.length);
+			}
+		} else {
+			argTypes = null;
+			argTypeLast = 0;
+		}
 		var itemType:GmlType = null;
 		while (q.loop) {
 			switch (peek()) {
@@ -292,10 +302,11 @@ class GmlLinter {
 						} else if (argTypes != null && readExpr_currType != null) {
 							var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
 							var argType = argTypes[argTypeInd];
-							if (argType != null && !readExpr_currType.canCastTo(argType)) {
-								addWarning("Can't cast " + readExpr_currType.toString()
-									+ " to " + argType.toString()
-									+ ' for ' + doc.args[argc] + "#" + argc
+							if (argType != null && !readExpr_currType.canCastTo(argType, templateTypes)) {
+								var argName = JsTools.or(doc.args[argTypeInd], "?");
+								addWarning("Can't cast " + readExpr_currType.toString(templateTypes)
+									+ " to " + argType.toString(templateTypes)
+									+ ' for ' + argName + "#" + argc
 								);
 							}
 						}
@@ -307,13 +318,17 @@ class GmlLinter {
 				};
 			}
 		}
-		readArgs_itemType = itemType;
+		if (sqb) {
+			readArgs_outType = itemType;
+		} else {
+			readArgs_outType = doc != null ? doc.returnType.mapTemplateTypes(templateTypes) : null;
+		}
 		if (!closed) {
 			readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
 			return -1;
 		} else return argc;
 	}
-	static var readArgs_itemType:GmlType;
+	static var readArgs_outType:GmlType;
 	
 	function checkCallArgs(doc:GmlFuncDoc, currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
 		var isUserFunc:Bool;
@@ -515,7 +530,7 @@ class GmlLinter {
 			};
 			case KSqbOpen: {
 				rc(readArgs(newDepth, true) < 0);
-				currType = readArgs_itemType;
+				currType = readArgs_outType;
 				currType = GmlTypeDef.array(currType);
 			};
 			case KLambda: rc(readLambda(newDepth, false, isStat())); currFunc = readLambda_doc;
@@ -596,7 +611,7 @@ class GmlLinter {
 						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
 					}
 					statKind = currKind = KCall;
-					currType = JsTools.nca(currFunc, currFunc.returnType);
+					currType = readArgs_outType;
 					currFunc = currType.getSelfCallDoc(getImports());
 				};
 				case KInc, KDec: { // x++, x--

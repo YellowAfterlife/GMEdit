@@ -18,6 +18,11 @@ enum GmlType {
 	
 	/** A {} literal */
 	TAnon(inf:GmlTypeAnon);
+	
+	/**
+	 * fn<T>(m:array<T>):T is processed as fn(m:array<TN<T0>>):TN<T0>
+	 */
+	TTemplate(ind:Int);
 }
 class GmlTypeAnon {
 	public var fields:Dictionary<GmlTypeAnonField> = new Dictionary();

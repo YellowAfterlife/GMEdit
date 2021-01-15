@@ -1,6 +1,7 @@
 package gml;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
+import gml.type.GmlTypeTools;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
@@ -87,7 +88,14 @@ class GmlFuncDoc {
 	private function get_returnType():GmlType {
 		if (post == __returnType_cache_post) return __returnType_cache_type;
 		var mt = __returnType_rx.exec(post);
-		var type = GmlTypeDef.parse(JsTools.nca(mt, mt[1]));
+		var str = JsTools.nca(mt, mt[1]);
+		var type:GmlType;
+		if (str != null) {
+			if (templateNames != null) {
+				str = GmlTypeTools.patchTemplateNames(str, templateNames);
+			}
+			type = GmlTypeDef.parse(str);
+		} else type = null;
 		__returnType_cache_post = post;
 		__returnType_cache_type = type;
 		return type;
@@ -95,6 +103,8 @@ class GmlFuncDoc {
 	var __returnType_cache_post:String;
 	var __returnType_cache_type:GmlType;
 	static var __returnType_rx:RegExp = new RegExp('^\\)$retArrow(\\S+)');
+	
+	public var templateNames:Array<String> = null;
 	
 	public var maxArgs(get, never):Int;
 	private function get_maxArgs():Int {
@@ -142,23 +152,35 @@ class GmlFuncDoc {
 	
 	/** ("func(a, b)") -> { pre:"func(", args:["a","b"], post:")" } */
 	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
+		s = patchArrow(s);
 		var p0 = s.indexOf("(");
 		var p1 = s.indexOf(")", p0);
 		var name:String, pre:String, post:String, args:Array<String>, rest:Bool;
 		var argTypes:Array<GmlType> = null;
+		var templateNames:Array<String> = null;
 		if (p0 >= 0 && p1 >= 0) {
-			name = s.substring(0, p0);
+			name = s.substring(0, p0); {
+				var mt = parse_rxTemplate.exec(name);
+				if (mt != null) {
+					name = mt[1];
+					templateNames = mt[2].splitRx(JsTools.rx(~/,\s*/g));
+				}
+			}
 			var sw = s.substring(p0 + 1, p1).trimBoth();
 			pre = s.substring(0, p0 + 1);
 			post = s.substring(p1);
 			if (sw != "") {
-				args = sw.splitRx(js.Syntax.code("/,\\s*/g"));
+				args = sw.splitRx(JsTools.rx(~/,\s*/g));
 				var rxt = JsTools.rx(~/:([^=]+)/);
 				for (i => a in args) {
 					var mt = rxt.exec(a);
 					if (mt != null) {
 						if (argTypes == null) argTypes = NativeArray.create(args.length);
-						argTypes[i] = GmlTypeDef.parse(mt[1]);
+						var typeStr = mt[1];
+						if (templateNames != null) {
+							typeStr = GmlTypeTools.patchTemplateNames(typeStr, templateNames);
+						}
+						argTypes[i] = GmlTypeDef.parse(typeStr);
 					}
 				}
 			} else args = [];
@@ -177,14 +199,14 @@ class GmlFuncDoc {
 			out.post = post;
 			out.args = args;
 			out.rest = rest;
-			out.argTypes = argTypes;
-			return out;
 		} else {
 			out = new GmlFuncDoc(name, pre, post, args, rest);
-			out.argTypes = argTypes;
-			return out;
 		}
+		out.argTypes = argTypes;
+		out.templateNames = templateNames;
+		return out;
 	}
+	static var parse_rxTemplate = new RegExp("^(.*)" + "<(.+?)>");
 	
 	static var fromCode_rx:RegExp = new RegExp("\\bargument(?:"
 		+ "(\\d+)" // argument0
