@@ -24,6 +24,9 @@ import haxe.DynamicAccess;
 	@:native("$tokenIndex") var __tokenIndex:Int;
 }
 class AceTokenIteratorTools {
+	public static function isEOL(it:AceTokenIterator):Bool {
+		return it.__tokenIndex >= it.__rowTokens.length;
+	}
 	public static function copy(it:AceTokenIterator):AceTokenIterator {
 		var ci = new AceTokenIterator(it.__session, it.__row, 0);
 		ci.__tokenIndex = it.__tokenIndex;

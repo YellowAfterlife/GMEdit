@@ -117,7 +117,7 @@ using StringTools;
 		var tmpi = iter.copy();
 		var depth = 0;
 		var tk:AceToken;
-		iter.stepForward();
+		if (!iter.isEOL()) iter.stepForward();
 		while ((tk = iter.stepBackward()) != null) {
 			var tkType = tk.type;
 			switch (tkType) {
