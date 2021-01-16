@@ -437,7 +437,7 @@ class GmlLinter {
 		switch (nk) {
 			case KNumber: currType = GmlTypeDef.number;
 			case KString: currType = GmlTypeDef.string;
-			case KUndefined: // OK!
+			case KUndefined: currType = GmlTypeDef.undefined;
 			case KIdent: {
 				if (hasFlag(HasPrefix)) checkConst();
 				if (localKinds[currName] == KGhostVar) {
@@ -462,10 +462,7 @@ class GmlLinter {
 				}
 				// figure out what this is:
 				do {
-					if (currName == "undefined") {
-						currType = GmlTypeDef.undefined;
-						break;
-					} else if (currName == "self") {
+					if (currName == "self") {
 						currType = getSelfType();
 						currFunc = currType.getSelfCallDoc(getImports());
 						break;
