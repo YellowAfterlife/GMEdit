@@ -235,8 +235,12 @@ class GmlAPI {
 		for (type in gmx.GmxLoader.assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
+		for (k in GmlTypeTools.builtinTypes) {
+			ensureNamespace(k);
+			//sk[k] = "namespace";
+			//stdComp.push(new AceAutoCompleteItem(k, "namespace", "type\nbuilt-in"));
+		}
 		gml.type.GmlTypeParser.clear();
-		ensureNamespace("number");
 	}
 	//
 	public static function init() {

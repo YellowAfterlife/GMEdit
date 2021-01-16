@@ -11,6 +11,7 @@ import gml.GmlLocals;
 import gml.GmlFuncDoc;
 import gml.GmlNamespace;
 import gml.file.GmlFile;
+import gml.type.GmlType;
 import js.html.DivElement;
 import js.html.Element;
 import js.html.MouseEvent;
@@ -302,10 +303,12 @@ typedef AceStatusBarDocSearch = {
 	iter:AceTokenIterator,
 	docs:Dictionary<GmlFuncDoc>,
 	doc:GmlFuncDoc,
+	?type:GmlType,
 	tk:AceToken,
 	session:AceSession,
 	scope:String,
 	imports:GmlImports,
 	lambdas:GmlExtLambda,
 	funcEnd:AcePos,
+	?exprStart:AcePos
 }

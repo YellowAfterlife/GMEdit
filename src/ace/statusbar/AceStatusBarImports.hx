@@ -73,6 +73,7 @@ class AceStatusBarImports {
 		}
 		//
 		if (type != null) {
+			ctx.type = type;
 			var step = (imports != null ? -1 : 0);
 			var till = hasGlobalNamespaces ? 2 : 1;
 			var tn = type.getNamespace();
@@ -91,9 +92,11 @@ class AceStatusBarImports {
 			}
 		} else {
 			var from = AceGmlTools.skipDotExprBackwards(ctx.session, ctx.funcEnd);
+			ctx.exprStart = from;
 			var snip = ctx.session.getTextRange(AceRange.fromPair(from, ctx.funcEnd));
 			var inf = GmlLinter.getType(snip, ctx.session.gmlEditor, ctx.scope, ctx.iter.getCurrentTokenPosition());
 			doc = inf.doc;
+			ctx.type = inf.type;
 		}
 		//
 		ctx.tk = tk;

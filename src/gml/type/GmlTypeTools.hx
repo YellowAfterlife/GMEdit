@@ -13,12 +13,15 @@ import ace.extern.AceTokenType;
  * @author YellowAfterlife
  */
 @:keep class GmlTypeTools {
-	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys([
-		"Any", "any", "undefined",
-		"number", "string", "bool", // primitives
-		"array", "type", "Array", "Type",
+	public static var builtinTypes:Array<String> = [
+		"any", "Any",
+		"bool", "int", "number", "string", 
+		"array", "Array",
+		"type", "Type",
 		"ds_list", "ds_map", "ds_grid",
-	], "namespace");
+		"sprite", "background", "tileset", "sound", "path", "script", "shader", "font", "timeline", "object", "room"
+	];
+	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys(builtinTypes, "namespace");
 	
 	public static function getNamespace(t:GmlType):String {
 		return switch (t) {
@@ -46,6 +49,14 @@ import ace.extern.AceTokenType;
 	
 	public static inline function isArray(t:GmlType):Bool {
 		return getKind(t) == KArray;
+	}
+	
+	public static function isAny(t:GmlType):Bool {
+		return switch (t) {
+			case null: true;
+			case TInst(_, _, KAny): true;
+			default: false;
+		}
 	}
 	
 	public static function unwrapParam(t:GmlType):GmlType {
@@ -109,7 +120,7 @@ import ace.extern.AceTokenType;
 			default:
 		}
 		switch (a) {
-			case null: return b == null;
+			case null, TInst(_, _, KAny): return inline isAny(b);
 			case TInst(n1, tp1, k1):
 				switch (b) {
 					case null: return false;
@@ -162,10 +173,15 @@ import ace.extern.AceTokenType;
 	}
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>):Bool {
-		if (from == null || to == null) return true;
 		if (from == to) return true;
+		if (isAny(from) || isAny(to)) return true;
 		if (from.equals(to, tpl)) return true;
-		if (to.isNullable() && !from.isNullable() && from.canCastTo(to.unwrapParam(), tpl)) return true;
+		if (to.isNullable()) {
+			// undefined -> number?
+			if (from.getKind() == KUndefined) return true;
+			// number -> number?
+			if (!from.isNullable() && from.canCastTo(to.unwrapParam(), tpl)) return true;
+		}
 		
 		switch ([from, to]) {
 			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to
@@ -191,16 +207,17 @@ import ace.extern.AceTokenType;
 		return false;
 	}
 	
-	public static function toString(type:GmlType, ?templateTypes:Array<GmlType>):String {
+	public static function toString(type:GmlType, ?tpl:Array<GmlType>):String {
 		switch (type) {
 			case null: return "?";
+			case TInst(_, [p], KNullable): return toString(p, tpl) + "?";
 			case TInst(name, params, kind): {
 				var s:String = name;
 				if (params.length > 0) {
 					s += "<";
 					for (i => tp in params) {
 						if (i > 0) s += ", ";
-						s += toString(tp);
+						s += toString(tp, tpl);
 					}
 					s += ">";
 				}
@@ -210,7 +227,7 @@ import ace.extern.AceTokenType;
 				var s = "(";
 				for (i => tp in types) {
 					if (i > 0) s += "|";
-					s += toString(tp);
+					s += toString(tp, tpl);
 				}
 				return s + ")";
 			};
@@ -219,13 +236,13 @@ import ace.extern.AceTokenType;
 				var sep = false;
 				anon.fields.forEach(function(k, fd) {
 					if (sep) s += ", "; else sep = true;
-					s += k + ": " + toString(fd.type);
+					s += k + ": " + toString(fd.type, tpl);
 				});
 				if (sep) s += " ";
 				return s + "}";
 			};
 		case TTemplate(ind):
-			var tt = JsTools.nca(templateTypes, templateTypes[ind]);
+			var tt = JsTools.nca(tpl, tpl[ind]);
 			return tt != null ? toString(tt) : 'TN<$ind>';
 		}
 	}
