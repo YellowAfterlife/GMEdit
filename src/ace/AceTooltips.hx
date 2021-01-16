@@ -1,6 +1,8 @@
 package ace;
 import ace.extern.AceDelayedCall;
+import ace.extern.AceMarker;
 import ace.extern.AcePos;
+import ace.extern.AceRange;
 import ace.extern.AceSession;
 import ace.extern.AceToken;
 import ace.AceWrap;
@@ -31,6 +33,8 @@ class AceTooltips {
 	var token:AceToken = null;
 	var timeout:Int = null;
 	var kbdc:AceDelayedCall;
+	var marker:AceMarker = null;
+	var markerSession:AceSession = null;
 	//
 	static var spriteThumbs:Dictionary<String> = new Dictionary();
 	public static function resetCache():Void {
@@ -41,18 +45,22 @@ class AceTooltips {
 		var t = token.type;
 		var v = token.value;
 		var r:String = null;
+		var extra:String = null;
 		var z:Bool = false;
 		//
 		var doc:GmlFuncDoc = null;
 		var iter:AceTokenIterator;
 		//
-		if (AceStatusBar.canDocData.exists(t)) {
+		if (AceStatusBar.canDocData.exists(t) || Std.is(session.gmlFile.kind, file.kind.KGml)) {
 			var scope = session.gmlScopes.get(pos.row);
 			var codeEditor = gml.file.GmlFile.current.codeEditor;
 			var iter = new AceTokenIterator(session, pos.row, pos.column);
 			//
 			var feit = new AceTokenIterator(session, pos.row, pos.column);
-			feit.stepForward();
+			var funcEnd:AcePos;
+			if (feit.stepForward() == null) {
+				funcEnd = session.getEOF();
+			} else funcEnd = feit.getCurrentTokenPosition();
 			//
 			var ctx:AceStatusBarDocSearch = {
 				session: session, scope: scope,
@@ -60,7 +68,8 @@ class AceTooltips {
 				lambdas: codeEditor.lambdas[scope],
 				tk: token, doc: null, docs: null,
 				iter: iter,
-				funcEnd: feit.getCurrentTokenPosition(),
+				exprStart: iter.getCurrentTokenPosition(),
+				funcEnd: funcEnd,
 			};
 			if (AceStatusBar.getDocData(ctx)) {
 				doc = ctx.doc;
@@ -68,6 +77,17 @@ class AceTooltips {
 					AceStatusBar.procDocImport(ctx);
 					doc = ctx.doc;
 				}
+			}
+			//
+			if (ctx.type != null) extra = "type " + ctx.type.toString();
+			if (false) { // doesn't work quite right
+				if (marker != null) markerSession.removeMarker(marker);
+				var to = ctx.funcEnd;
+				var from = ctx.exprStart;
+				//to = to.add(1, 0);
+				//Console.log(from, to);
+				marker = session.addMarker(AceRange.fromPair(from, to), "debugShowToken", "text");
+				markerSession = session;
 			}
 		}
 		inline function calcRow(row:Int) {
@@ -205,10 +225,12 @@ class AceTooltips {
 			};
 			default: //r = t;
 		}
+		//
 		if (doc != null) r = doc.getAcText();
 		switch (t) {
 			case "globalvar": r = (r == null) ? "[globalvar]" : "[globalvar] " + r;
 		}
+		r = r.nzcct("\n", extra);
 		if (r == "") r = null;
 		if (text != r) {
 			text = r;
@@ -223,6 +245,12 @@ class AceTooltips {
 		}
 		inline function hide():Void {
 			ttip.hide();
+			if (marker != null) {
+				markerSession.removeMarker(marker);
+				markerSession = null;
+				marker = null;
+				Console.log("hid");
+			}
 		}
 		inline function stop():Void {
 			if (timeout != null) { Main.window.clearTimeout(timeout); timeout = null; }
@@ -259,6 +287,7 @@ class AceTooltips {
 			if (pc.tooltipKind == None) return;
 			var t = pc.tooltipDelay;
 			var pos:AcePos = ev.getDocumentPosition();
+			pos.column++; // I wonder what's this all about
 			if (t > 0) {
 				//hide();
 				stop();
