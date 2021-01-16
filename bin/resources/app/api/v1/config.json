@@ -8,6 +8,16 @@
 	"loadingMode": "gms1",
 	"searchMode": "gms1",
 	
+	"apiFiles": [
+		"default",
+		"../shared/types.gml",
+		"../shared/types-v1.gml"
+	],
+	"patchFiles": [
+		"../shared/replace.gml",
+		"../shared/replace-v1.gml"
+	],
+	
 	"hasEventSections": true,
 	"hasEventActions": true,
 	

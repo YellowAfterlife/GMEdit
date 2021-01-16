@@ -91,14 +91,17 @@ typedef GmlVersionConfig = {
 	 * If not specified, uses the built-in schema
 	 * ("api.gml" + "replace.gml" + "exclude.gml" + "extra.gml")
 	 */
-	var apiFiles:Array<String>;
+	var ?apiFiles:Array<String>;
+	
+	/** Additional replace files over above */
+	var ?patchFiles:Array<String>;
 	
 	/**
 	 * Files to load asset names from.
 	 * This is only needed if your API config has it's own built-ins
 	 * (e.g. is a modding API and thus there are game's base assets)
 	 */
-	var assetFiles:Array<String>;
+	var ?assetFiles:Array<String>;
 	
 	/** Documentation URL, with "$1" to be replaced by search term */
 	var helpURL:String;

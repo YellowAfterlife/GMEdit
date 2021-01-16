@@ -20,6 +20,7 @@ import electron.FileWrap;
 import gml.GmlImports;
 using tools.ERegTools;
 using StringTools;
+using tools.NativeString;
 
 /**
  * Stores current API state and projct-specific data.
@@ -317,118 +318,141 @@ class GmlAPI {
 			lwFlags: lwFlags,
 			#end
 		};
-		if (files != null) for (file in files) {
-			var path = dir + "/" + file;
-			getContent(path, function(raw) {
-				if (raw != null) {
-					GmlParseAPI.loadStd(raw, data);
-				} else Main.console.error("Couldn't load " + path);
-			});
-		} else {
-			var raw:String = "";
-			var cx = new ChainCall();
-			cx.call(getContent, dir + "/fnames", function(s:String){
+		
+		var raw:String = "";
+		var cx = new ChainCall();
+		if (conf.apiFiles == null) conf.apiFiles = ["default"];
+		
+		var useDefault = false;
+		for (file in conf.apiFiles) {
+			if (file == "default") {
+				useDefault = true;
+				file = "fnames";
+			}
+			cx.call(getContent, '$dir/$file', function(s:String) {
 				if (s != null) {
-					raw = s;
-				} else {
+					raw = raw.nzcct("\n", s);
+				} else if (file == "fnames") {
 					Main.window.alert("Couldn't find fnames in " + dir);
-					cx.stop();
 				}
-			}).call(getContent, dir + "/extra.gml", function(s:String) {
-				// whatever missing in fnames
-				if (s != null && s != "") raw += "\n" + s;
-				#if lwedit
-				raw += "\ntrace(...)";
-				#end
-			}).call(getContent, dir + "/replace.gml", function(s:String) {
-				// various corrections instead of editing fnames by hand
-				if (s != null) ~/^(\w+).+$/gm.each(s, function(rx:EReg) {
-					var name = rx.matched(1);
-					var code = rx.matched(0);
-					raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
-						return code;
-					});
-				});
-			}).call(getContent, dir + '/exclude.gml', function(s:String) {
-				// deprecated and/or forbidden
-				if (s != null) ~/^(\w+)(\*?)$/gm.each(s, function(rx:EReg) {
-					var name = rx.matched(1);
-					if (rx.matched(2) != "") {
-						raw = new EReg('^$name.*$', "gm").replace(raw, "");
-					} else {
-						raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
-					}
-				});
-			}).call(getContent, dir + '/inst.gml', function(s:String) {
-				// mark functions that need self-context
-				if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
-					var name = rx.matched(1);
-					raw = new EReg('^$name\\b', "gm").replace(raw, ":" + name);
-				});
-			}).call(getContent, dir + '/noret.gml', function(s:String) {
-				// concat customizations:
-				#if !lwedit
-				if (FileSystem.canSync) {
-					var xdir = FileWrap.userPath + "/api/" + version.getName();
-					if (FileSystem.existsSync(xdir))
-					for (xrel in FileSystem.readdirSync(xdir)) {
-						var xfull = xdir + "/" + xrel;
-						try {
-							raw += "\n" + FileSystem.readTextFileSync(xfull);
-						} catch (x:Dynamic) {
-							Main.console.error("Error loading API from " + xfull, x);
-						}
-					}
-				}
-				#end
-				GmlParseAPI.loadStd(raw, data);
-				
-				// patch non-returning functions:
-				if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
-					var name = rx.matched(1);
-					var doc = GmlAPI.stdDoc[name];
-					if (doc != null) doc.hasReturn = false;
-				});
-				
-				// give GMLive a copy of data
-				#if lwedit
-				if (lwArg0 != null) {
-					if (LiveWeb.api != null) {
-						#if 0
-						var arr = [];
-						for (k => v in lwArg0) {
-							arr.push(k + ":" + v + ":" + lwArg1[k]);
-						}
-						var init = '{\nlwArgs:"' + arr.join("|") + '",\n';
-						//
-						arr = [];
-						for (k => f in lwFlags) arr.push(k + ":" + f);
-						init += 'lwFlags:"' + arr.join("|") + '",\n';
-						//
-						arr = [];
-						for (k => _ in lwConst) arr.push(k);
-						init += 'lwConst:"' + arr.join("|") + '",\n';
-						//
-						arr = [];
-						for (k => _ in lwInst) arr.push(k);
-						init += 'lwInst:"' + arr.join("|") + '"\n';
-						//
-						init += "}";
-						Main.console.log(init);
-						#end
-						LiveWeb.api.setAPI(data);
-					}
-					Main.window.setTimeout(function() {
-						LiveWeb.readyUp();
-					});
-				}
-				
-				// force [re-]tokenization so that the welcome page highlights correctly:
-				Main.aceEditor.session.bgTokenizer.start(0);
-				#end
 			});
 		}
-		//}); // getContent conf
+		
+		if (useDefault) cx.call(getContent, dir + "/extra.gml", function(s:String) {
+			// whatever missing in fnames
+			if (s != null && s != "") raw += "\n" + s;
+			#if lwedit
+			raw += "\ntrace(...)";
+			#end
+		});
+		
+		// various corrections instead of editing fnames by hand
+		function addPatchFile(txt:String) {
+			~/^(\w+).+$/gm.each(txt, function(rx:EReg) {
+				var name = rx.matched(1);
+				var code = rx.matched(0);
+				raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
+					return code;
+				});
+			});
+		}
+		if (useDefault) cx.call(getContent, dir + "/replace.gml", function(s:String) {
+			if (s != null) addPatchFile(s);
+		});
+		if (conf.patchFiles != null) for (rel in conf.patchFiles) {
+			cx.call(getContent, '$dir/$rel', function(s:String) {
+				if (s != null) addPatchFile(s);
+			});
+		}
+		
+		
+		if (useDefault) cx.call(getContent, dir + '/exclude.gml', function(s:String) {
+			// deprecated and/or forbidden
+			if (s != null) ~/^(\w+)(\*?)$/gm.each(s, function(rx:EReg) {
+				var name = rx.matched(1);
+				if (rx.matched(2) != "") {
+					raw = new EReg('^$name.*$', "gm").replace(raw, "");
+				} else {
+					raw = new EReg('^$name\\b.*$', "gm").replace(raw, "");
+				}
+			});
+		});
+		
+		if (useDefault) cx.call(getContent, dir + '/inst.gml', function(s:String) {
+			// mark functions that need self-context
+			if (s != null) ~/^(\w+)$/gm.each(s, function(rx:EReg) {
+				var name = rx.matched(1);
+				raw = new EReg('^$name\\b', "gm").replace(raw, ":" + name);
+			});
+		});
+		
+		var noRet:String = "";
+		if (useDefault) cx.call(getContent, dir + '/noret.gml', function(s:String) {
+			noRet = noRet.nzcct("\n", s);
+		});
+		
+		cx.finish(function() {
+			// concat customizations:
+			#if !lwedit
+			if (FileSystem.canSync) {
+				var xdir = FileWrap.userPath + "/api/" + version.getName();
+				if (FileSystem.existsSync(xdir))
+				for (xrel in FileSystem.readdirSync(xdir)) {
+					var xfull = xdir + "/" + xrel;
+					try {
+						raw += "\n" + FileSystem.readTextFileSync(xfull);
+					} catch (x:Dynamic) {
+						Main.console.error("Error loading API from " + xfull, x);
+					}
+				}
+			}
+			#end
+			GmlParseAPI.loadStd(raw, data);
+			
+			// patch non-returning functions:
+			~/^(\w+)$/gm.each(noRet, function(rx:EReg) {
+				var name = rx.matched(1);
+				var doc = GmlAPI.stdDoc[name];
+				if (doc != null) doc.hasReturn = false;
+			});
+			
+			// give GMLive a copy of data
+			#if lwedit
+			if (lwArg0 != null) {
+				if (LiveWeb.api != null) {
+					#if 0
+					var arr = [];
+					for (k => v in lwArg0) {
+						arr.push(k + ":" + v + ":" + lwArg1[k]);
+					}
+					var init = '{\nlwArgs:"' + arr.join("|") + '",\n';
+					//
+					arr = [];
+					for (k => f in lwFlags) arr.push(k + ":" + f);
+					init += 'lwFlags:"' + arr.join("|") + '",\n';
+					//
+					arr = [];
+					for (k => _ in lwConst) arr.push(k);
+					init += 'lwConst:"' + arr.join("|") + '",\n';
+					//
+					arr = [];
+					for (k => _ in lwInst) arr.push(k);
+					init += 'lwInst:"' + arr.join("|") + '"\n';
+					//
+					init += "}";
+					Main.console.log(init);
+					#end
+					LiveWeb.api.setAPI(data);
+				}
+				Main.window.setTimeout(function() {
+					LiveWeb.readyUp();
+				});
+			}
+			
+			// force [re-]tokenization so that the welcome page highlights correctly:
+			Main.aceEditor.session.bgTokenizer.start(0);
+			#end
+		});
 	}
 }
 @:native("window") extern class GmlExternAPI {

@@ -55,6 +55,19 @@ class GmlParseAPI {
 		var lwConst = data.lwConst;
 		var lwFlags = data.lwFlags;
 		#end
+		//
+		
+		// typedefs!
+		var rxTypedef = new RegExp("^"
+			+ "typedef\\s+"
+			+ "(\\w+)"
+		+ "", "gm");
+		rxTypedef.each(src, function(mt:RegExpMatch) {
+			var name = mt[1];
+			stdKind[name] = "namespace";
+			stdComp.push(new AceAutoCompleteItem(name, "namespace", "type\nbuilt-in"));
+			GmlAPI.ensureNamespace(mt[1]);
+		});
 		
 		// functions!
 		var rxFunc:RegExp = new RegExp("^"
@@ -146,8 +159,8 @@ class GmlParseAPI {
 				+ "(" + "\\[.*?\\]" + ")?" // 3 -> array data
 				+ "([~\\*\\$£#@&]*)" // 4 -> flags
 			+ ")"
-			+ "(:(\\S+))?" // 5 -> type annotation
-		+ "", "g");
+			+ "(?::(\\S+))?" // 5 -> type annotation
+		+ "", "gm");
 		rxVar.each(src, function(mt:RegExpMatch) {
 			var comp =  mt[1];
 			var name =  mt[2];
@@ -194,12 +207,14 @@ class GmlParseAPI {
 			}
 			#end
 			stdKind.set(name, kindPrefix + kind);
+			var doc = comp;
+			if (type != null) doc += "\ntype " + type;
 			stdComp.push({
 				name: name,
 				value: name,
 				score: 0,
 				meta: kind,
-				doc: comp
+				doc: doc
 			});
 		});
 		// name       =      value

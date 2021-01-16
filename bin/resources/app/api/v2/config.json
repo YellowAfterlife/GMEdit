@@ -8,6 +8,16 @@
 	"loadingMode": "gms2",
 	"searchMode": "gms2",
 	
+	"apiFiles": [
+		"default",
+		"../shared/types.gml",
+		"../shared/types-v2.gml"
+	],
+	"patchFiles": [
+		"../shared/replace.gml",
+		"../shared/replace-v2.gml"
+	],
+	
 	"additionalKeywords": [],
 	
 	"projectRegex": "(^.+)\\.yyp$",

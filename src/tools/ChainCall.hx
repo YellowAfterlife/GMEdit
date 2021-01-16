@@ -34,6 +34,13 @@ class ChainCall {
 		if (!isRunning) next();
 		return this;
 	}
+	public function finish(cb:Void->Void) {
+		call(function(_:Any, fn:ChainFn<Any>) {
+			fn(null);
+		}, null, function(_) {
+			cb();
+		});
+	}
 }
 typedef ChainThen = {
 	fn:Function,

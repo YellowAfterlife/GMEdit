@@ -174,6 +174,9 @@ import ace.extern.AceTokenType;
 			}
 			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl);
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
+				// allow bool<->number casts:
+				if (k1 == KBool && k2 == KNumber || k1 == KNumber && k2 == KBool) return true;
+				
 				if (k1 == k2 && n1 == n2) {
 					var i = p1.length;
 					while (--i >= 0) if (p2[i] != null) break;
