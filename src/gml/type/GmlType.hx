@@ -38,10 +38,10 @@ class GmlTypeAnonField {
 }
 
 enum abstract GmlTypeKind(Int) {
-	var KAny = 0x0;
-	var KCustom = 0x1;
-	var KNullable = 0x2; // T?
-	var KType = 0x3; // type<T>
+	var KAny = 0x01;
+	var KCustom = 0x02;
+	var KNullable = 0x03; // T?
+	var KType = 0x04; // type<T>
 	
 	// value types
 	var KUndefined = 0x10;
