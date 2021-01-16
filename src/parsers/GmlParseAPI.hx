@@ -5,6 +5,7 @@ import gml.GmlFuncDoc;
 import gml.GmlVersion;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
+import gml.type.GmlTypeParser;
 import js.RegExp.RegExpMatch;
 import js.lib.RegExp;
 import tools.Dictionary;
@@ -12,6 +13,7 @@ import ace.AceWrap;
 import ace.extern.*;
 import tools.NativeString;
 using tools.NativeString;
+using tools.NativeArray;
 using tools.ERegTools;
 using tools.RegExpTools;
 
@@ -66,8 +68,11 @@ class GmlParseAPI {
 			var name = mt[1];
 			stdKind[name] = "namespace";
 			stdComp.push(new AceAutoCompleteItem(name, "namespace", "type\nbuilt-in"));
-			GmlAPI.ensureNamespace(mt[1]);
 		});
+		
+		var oldTypeWarn = GmlTypeParser.warnAboutMissing;
+		var typeWarn = [];
+		GmlTypeParser.warnAboutMissing = typeWarn;
 		
 		// functions!
 		var rxFunc:RegExp = new RegExp("^"
@@ -91,6 +96,9 @@ class GmlParseAPI {
 			var orig = name;
 			var show = true;
 			var doc = GmlFuncDoc.parse(comp);
+			for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in', mt[0]);
+			typeWarn.clear();
+			//
 			if (version.config.docMode != "gms1") {
 				if (ukSpelling) {
 					if (flags.indexOf("$") >= 0) show = false;
@@ -170,6 +178,8 @@ class GmlParseAPI {
 			if (NativeString.contains(flags, "&")) return;
 			if (type != null && stdTypes != null) {
 				stdTypes[name] = GmlTypeDef.parse(type);
+				for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in', mt[0]);
+				typeWarn.clear();
 			}
 			//
 			var isConst:Bool = flags.indexOf("#") >= 0;
@@ -230,6 +240,8 @@ class GmlParseAPI {
 				doc: expr
 			});
 		});
+		//
+		GmlTypeParser.warnAboutMissing = oldTypeWarn;
 	}
 	
 	public static function loadAssets(src:String, out:{

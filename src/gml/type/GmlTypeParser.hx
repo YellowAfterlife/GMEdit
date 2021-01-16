@@ -34,6 +34,7 @@ class GmlTypeParser {
 		//
 		return r;
 	})();
+	public static var warnAboutMissing:Array<String> = null;
 	static function parseError(s:String, q:GmlReader, ?pos:Int):GmlType {
 		if (pos == null) pos = q.pos - 1;
 		Console.warn("Type parse error in `" + q.source.insert(pos, '¦') + "`: " + s);
@@ -57,6 +58,10 @@ class GmlTypeParser {
 				var name = q.substring(start, q.pos);
 				var kind = JsTools.or(kindMeta[name], KCustom);
 				var params = [];
+				//
+				var typeWarn = warnAboutMissing;
+				var typeWarnSize = JsTools.nca(typeWarn, typeWarn.length);
+				//
 				if (q.peek() == "<".code) {
 					q.skip();
 					while (q.loop) {
@@ -75,10 +80,19 @@ class GmlTypeParser {
 					&& params.length == 1
 				) switch (params[0]) {
 					case TInst(tn, [], KCustom) if (StringTools.fastCodeAt(tn, 0) == "T".code):
+						if (typeWarn != null) typeWarn.splice(typeWarnSize, typeWarn.length - typeWarnSize);
 						result = TTemplate(Std.parseInt(tn.substring(1)));
 					default:
 				}
-				if (result == null) result = TInst(name, params, kind);
+				if (result == null) {
+					if (typeWarn != null
+						&& !GmlAPI.stdKind.exists(name)
+						&& !GmlTypeTools.kindMap.exists(name)
+					) {
+						typeWarn.push(name);
+					}
+					result = TInst(name, params, kind);
+				}
 			default:
 				return parseError("Expected a type name", q);
 		}
