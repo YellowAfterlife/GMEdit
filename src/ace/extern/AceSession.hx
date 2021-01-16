@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.extern.AcePos;
 import ace.extern.AceRange;
 import haxe.extern.EitherType;
 
@@ -6,6 +7,7 @@ import haxe.extern.EitherType;
  * ...
  * @author YellowAfterlife
  */
+@:using(ace.extern.AceSession.AceSessionTools)
 @:native("AceEditSession") extern class AceSession {
 	public function new(context:EitherType<String, AceDocument>, mode:Dynamic);
 	//
@@ -67,4 +69,11 @@ import haxe.extern.EitherType;
 	public var gmlEditor:editors.EditCode;
 	public var gmlErrorMarker:AceMarker;
 	public var gmlErrorMarkers:Array<AceMarker>;
+}
+class AceSessionTools {
+	public static function getEOF(s:AceSession):AcePos {
+		var n = s.getLength() - 1;
+		if (n < 0) return new AcePos(0, 0);
+		return new AcePos(s.getLine(n).length, n);
+	}
 }

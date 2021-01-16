@@ -4,12 +4,17 @@ import haxe.Constraints.Function;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
 import js.Syntax;
+import tools.CharCode;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 @:keep class NativeString {
+	
+	public static inline function fastCodeAt(s:String, index:Int):CharCode {
+		return (cast s).charCodeAt(index);
+	}
 	
 	public static inline function replaceExt(
 		s:String, what:EitherType<String, RegExp>, by:EitherType<String, Function>

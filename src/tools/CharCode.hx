@@ -17,11 +17,13 @@ abstract CharCode(Int) from Int to Int {
 	public inline function isSpace0() {
 		return (this == " ".code || this == "\t".code);
 	}
+	
 	/** Returns whether this is a space/tab/newline character */
 	public inline function isSpace1() {
 		return (this > 8 && this < 14) || this == 32;
 	}
 	public function isSpace1_ni() return isSpace1();
+	
 	/** Returns whether this is a valid first character for an identifier */
 	public inline function isIdent0() {
 		return (this == "_".code
@@ -30,6 +32,7 @@ abstract CharCode(Int) from Int to Int {
 		);
 	}
 	public function isIdent0_ni() return isIdent0();
+	
 	/** Returns whether this is a valid character for an identifier */
 	public inline function isIdent1() {
 		return (this == "_".code
@@ -39,6 +42,7 @@ abstract CharCode(Int) from Int to Int {
 		);
 	}
 	public function isIdent1_ni() return isIdent1();
+	
 	//
 	public inline function isDigit() {
 		return (this >= "0".code && this <= "9".code);

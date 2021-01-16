@@ -5,5 +5,5 @@ package ace.extern;
  * @author YellowAfterlife
  */
 extern class AceMarker {
-	// obviously the best extern
+	// it's actually just an int id
 }
