@@ -486,6 +486,21 @@ class GmlLinter {
 						break;
 					}
 					
+					var kind = GmlAPI.gmlKind[currName];
+					if (kind != null && kind.startsWith("asset.")) {
+						kind = kind.substring(6);
+						if (kind == "object") {
+							currType = GmlTypeDef.object(currName);
+						} else if (kind == "script") {
+							currFunc = GmlAPI.gmlDoc[currName];
+							currType = null;
+						} else {
+							currType = GmlTypeDef.simple(kind);
+						}
+						break;
+					}
+					
+					
 					if (AceGmlTools.findNamespace(currName, imp, function(ns:GmlNamespace) {
 						currType = GmlTypeDef.type(currName);
 						currFunc = JsTools.or(ns.docStaticMap[""], AceGmlTools.findGlobalFuncDoc(currName));
