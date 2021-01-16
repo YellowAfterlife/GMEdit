@@ -59,14 +59,13 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
-	public static function unwrapParam(t:GmlType):GmlType {
+	public static function unwrapParam(t:GmlType, ind:Int = 0):GmlType {
 		return switch (t) {
 			case null: null;
-			case TInst(_, p, _): p[0];
+			case TInst(_, p, _): p[ind];
 			default: null;
 		}
 	}
-	
 	
 	public static function mapArray(arr:ReadOnlyArray<GmlType>, f:GmlType->GmlType):ReadOnlyArray<GmlType> {
 		var out:Array<GmlType> = null;
@@ -108,6 +107,7 @@ import ace.extern.AceTokenType;
 	
 	public static function equals(a:GmlType, b:GmlType, ?tpl:Array<GmlType>):Bool {
 		switch (b) {
+			case null:
 			case TTemplate(i):
 				if (tpl == null) return true;
 				if (tpl[i] != null) {

@@ -412,7 +412,7 @@ class GmlReader extends StringReader {
 				case " ".code, "\t".code: {};
 				case "<".code: depth++;
 				case ">".code: if (--depth <= 0) break;
-				case ",".code: {};
+				case ",".code, ";".code: {};
 				default: if (!c.isIdent1()) break;
 			}
 		}

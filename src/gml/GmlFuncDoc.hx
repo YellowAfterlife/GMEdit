@@ -159,15 +159,15 @@ class GmlFuncDoc {
 		var argTypes:Array<GmlType> = null;
 		var templateNames:Array<String> = null;
 		if (p0 >= 0 && p1 >= 0) {
+			pre = s.substring(0, p0 + 1);
 			name = s.substring(0, p0); {
-				var mt = parse_rxTemplate.exec(name);
+				var mt = parse_rxTemplate.exec(pre);
 				if (mt != null) {
 					name = mt[1];
-					templateNames = mt[2].splitRx(JsTools.rx(~/,\s*/g));
+					templateNames = mt[2].splitRx(JsTools.rx(~/[,;]\s*/g));
 				}
 			}
 			var sw = s.substring(p0 + 1, p1).trimBoth();
-			pre = s.substring(0, p0 + 1);
 			post = s.substring(p1);
 			if (sw != "") {
 				args = sw.splitRx(JsTools.rx(~/,\s*/g));
@@ -206,7 +206,7 @@ class GmlFuncDoc {
 		out.templateNames = templateNames;
 		return out;
 	}
-	static var parse_rxTemplate = new RegExp("^(.*)" + "<(.+?)>");
+	static var parse_rxTemplate = new RegExp("^(.*)" + "<(.+?)>\\(");
 	
 	static var fromCode_rx:RegExp = new RegExp("\\bargument(?:"
 		+ "(\\d+)" // argument0

@@ -11,6 +11,10 @@ class GmlTypeDef {
 	public static var number:GmlType = TInst("number", [], KNumber);
 	public static var bool:GmlType = TInst("bool", [], KBool);
 	public static var string:GmlType = TInst("string", [], KString);
+	public static var ds_map:GmlType = TInst("ds_map", [], KMap);
+	public static var ds_list:GmlType = TInst("ds_list", [], KList);
+	public static var ds_grid:GmlType = TInst("ds_grid", [], KGrid);
+	public static var anyArray:GmlType = TInst("array", [], KArray);
 	public static inline function array(itemType:GmlType):GmlType {
 		return TInst("array", [itemType], KArray);
 	}

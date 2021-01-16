@@ -19,6 +19,8 @@ class GmlTypeParser {
 		r["Type"] = KType;
 		//
 		r["undefined"] = KUndefined;
+		r["int"] = KNumber;
+		r["Int"] = KNumber;
 		r["number"] = KNumber;
 		r["Number"] = KNumber;
 		r["string"] = KString;
@@ -70,8 +72,11 @@ class GmlTypeParser {
 						params.push(t);
 						q.skipSpaces0_local();
 						c = q.read();
-						if (c == ">".code) break;
-						if (c != ",".code) return parseError("Expected a `,` or a `>` in `<>`", q);
+						switch (c) {
+							case ">".code: break;
+							case ",".code, ";".code: // OK!
+							default: return parseError("Expected a `,`/`;` or a `>` in `<>`", q);
+						}
 					}
 				}
 				result = null;

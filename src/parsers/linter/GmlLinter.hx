@@ -598,7 +598,7 @@ class GmlLinter {
 						flags.remove(AsStat);
 						statKind = KSet;
 						rc(readExpr(newDepth));
-						checkTypeSet(currType, readExpr_currType);
+						checkTypeCast(readExpr_currType, currType);
 						currType = null;
 					} else {
 						if (hasFlag(NoOps)) break;
@@ -659,29 +659,76 @@ class GmlLinter {
 					var isNull = nk == KNullSqb;
 					var isArray = false;
 					var isLiteral = false;
+					var arrayType1 = null;
+					var arrayType2 = null;
 					switch (peek()) {
-						case KQMark, KOr, KDollar: { // map[?k], list[|i], struct[$k]
+						case KQMark: { // map[?k]
 							skip();
 							rc(readExpr(newDepth));
+							if (checkTypeCast(currType, GmlTypeDef.ds_map)) {
+								checkTypeCast(readExpr_currType, currType.unwrapParam(0));
+								currType = currType.unwrapParam(1);
+							} else currType = null;
+						};
+						case KOr: { // list[|i]
+							skip();
+							
+							rc(readExpr(newDepth));
+							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							
+							if (checkTypeCast(currType, GmlTypeDef.ds_list)) {
+								currType = currType.unwrapParam(0);
+							} else currType = null;
+						};
+						case KDollar: { // struct[$k]
+							skip();
+							
+							rc(readExpr(newDepth));
+							checkTypeCast(readExpr_currType, GmlTypeDef.string);
+							
+							if (true) { // todo: validate that object is struct-like
+								currType = currType.unwrapParam(0);
+							} else currType = null;
 						};
 						case KHash: { // grid[#x, y]
 							skip();
+							
 							rc(readExpr(newDepth));
+							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							
 							rc(readCheckSkip(KComma, "a comma before second index"));
 							rc(readExpr(newDepth));
+							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							
+							if (checkTypeCast(currType, GmlTypeDef.ds_grid)) {
+								currType = currType.unwrapParam(0);
+							} else currType = null;
 						};
 						case KAtSign: { // array[@i] or array[@i, k]
 							skip();
+							
 							rc(readExpr(newDepth));
-							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
-							if (JsTools.nca(currType, currType.isArray())) {
-								currType = currType.unwrapParam();
+							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							
+							if (skipIf(peek() == KComma)) {
+								rc(readExpr(newDepth));
+								checkTypeCast(readExpr_currType, GmlTypeDef.number);
 							}
+							
+							if (checkTypeCast(currType, GmlTypeDef.anyArray)) {
+								currType = currType.unwrapParam(0);
+							} else currType = null;
 						};
 						default: { // array[i] or array[i, k]
 							isArray = true;
+							
 							rc(readExpr(newDepth));
-							if (skipIf(peek() == KComma)) rc(readExpr(newDepth));
+							arrayType1 = readExpr_currType;
+							
+							if (skipIf(peek() == KComma)) {
+								rc(readExpr(newDepth));
+								arrayType2 = readExpr_currType;
+							}
 							if (isNull && skipIf(peek() == KComma)) { // whoops, a?[b,c,d]
 								readArgs(newDepth, true);
 								isLiteral = true;
@@ -703,6 +750,13 @@ class GmlLinter {
 						currKind = KQMark;
 					} else {
 						currKind = isNull ? KNullArray : KArray;
+						if (isArray) {
+							if (arrayType1 != null) checkTypeCast(arrayType1, GmlTypeDef.number);
+							if (arrayType2 != null) checkTypeCast(arrayType2, GmlTypeDef.number);
+							if (checkTypeCast(currType, GmlTypeDef.anyArray)) {
+								currType = currType.unwrapParam(0);
+							} else currType = null;
+						}
 					}
 				};
 				case KLiveIn: { // field in object
@@ -834,13 +888,9 @@ class GmlLinter {
 		return false;
 	}
 	
-	function checkTypeSet(target:GmlType, source:GmlType):FoundError {
-		if (!source.canCastTo(target)) addWarning('Can\'t assign ${source.toString()} to ' + target.toString());
-		return false;
-	}
-	
-	function checkTypeCast(target:GmlType, source:GmlType):FoundError {
-		if (!source.canCastTo(target)) addWarning('Can\'t cast ${source.toString()} to ' + target.toString());
+	function checkTypeCast(source:GmlType, target:GmlType):Bool {
+		if (source.canCastTo(target)) return true;
+		addWarning('Can\'t cast ${source.toString()} to ' + target.toString());
 		return false;
 	}
 	
@@ -1015,7 +1065,7 @@ class GmlLinter {
 					if (nk == KSet) { // `name = val`
 						skip();
 						rc(readExpr(newDepth));
-						if (vt != null) checkTypeSet(vt, readExpr_currType);
+						if (vt != null) checkTypeCast(readExpr_currType, vt);
 					}
 					if (!skipIf(peek() == KComma)) break;
 				}

@@ -1244,3 +1244,9 @@ audio_get_listener_count()->int
 audio_get_listener_info(index:int)->ds_map<string, any>
 
 audio_system()&->void
+
+// section 11.4 / map
+ds_map_values_to_array<K;V>(map:ds_map<K;V>, K[])->K[]
+ds_map_keys_to_array<K;V>(map:ds_map<K;V>, V[])->V[]
+ds_map_is_map<K;V>(map:ds_map<K;V>,key:K)->bool
+ds_map_is_list<K;V>(map:ds_map<K;V>,key:K)->bool
