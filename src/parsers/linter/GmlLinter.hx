@@ -388,10 +388,30 @@ class GmlLinter {
 		}
 	}
 	
+	/**
+	 * Indicates whatever it is that readExpr just parsed.
+	 * It is the right-most top-level expression, so
+	 * a.b -> KField
+	 * (a.b) -> KParOpen
+	 * (a.b).c -> KField
+	 */
 	var readExpr_currKind:GmlLinterKind;
+	
+	/** If readExpr just parsed something starting with an identifier, this holds that.  */
 	var readExpr_currName:GmlName;
+	
+	/** Resulting type of last parsed expression. Often is null. */
 	var readExpr_currType:GmlType;
+	
+	/** For `<expr>.field`, indicates type of `<expr>` */
+	var readExpr_selfType:GmlType;
+	
+	/** If the resulting expression is a function */
 	var readExpr_currFunc:GmlFuncDoc;
+	
+	/** If processed expression evaluates to a literal, this holds that */
+	var readExpr_currValue:GmlLinterValue;
+	
 	function readExpr_checkConst(currName:GmlName, currKind:GmlLinterKind) {
 		switch (currKind) {
 			case KIdent: {
@@ -427,17 +447,30 @@ class GmlLinter {
 		var statKind = nk;
 		var currKind = nk;
 		var currName = nk == KIdent ? nextVal : null;
+		var selfType:GmlType = null;
 		var currType:GmlType = null;
 		var currFunc:GmlFuncDoc = null;
+		var currValue:GmlLinterValue = null;
 		//
 		inline function checkConst():Void {
 			readExpr_checkConst(currName, currKind);
 		}
 		//
 		switch (nk) {
-			case KNumber: currType = GmlTypeDef.number;
-			case KString: currType = GmlTypeDef.string;
-			case KUndefined: currType = GmlTypeDef.undefined;
+			case KNumber: {
+				currType = GmlTypeDef.number;
+				var nv = nextVal;
+				currValue = VNumber(Std.parseFloat(nv), nv);
+			};
+			case KString: {
+				currType = GmlTypeDef.string;
+				var nv = nextVal;
+				currValue = VString(null, nv); // todo: probably parse string?
+			};
+			case KUndefined: {
+				currType = GmlTypeDef.undefined;
+				currValue = VUndefined;
+			};
 			case KIdent: {
 				if (hasFlag(HasPrefix)) checkConst();
 				if (localKinds[currName] == KGhostVar) {
@@ -487,17 +520,21 @@ class GmlLinter {
 					}
 					
 					var kind = GmlAPI.gmlKind[currName];
-					if (kind != null && kind.startsWith("asset.")) {
-						kind = kind.substring(6);
-						if (kind == "object") {
-							currType = GmlTypeDef.object(currName);
-						} else if (kind == "script") {
-							currFunc = GmlAPI.gmlDoc[currName];
-							currType = null;
-						} else {
-							currType = GmlTypeDef.simple(kind);
+					if (kind != null) {
+						if (kind.startsWith("asset.")) {
+							kind = kind.substring(6);
+							if (kind == "object") {
+								currType = GmlTypeDef.object(currName);
+							} else if (kind == "script") {
+								currFunc = GmlAPI.gmlDoc[currName];
+								currType = null;
+							} else {
+								currType = GmlTypeDef.simple(kind);
+							}
+							break;
+						} else if (kind == "enum") {
+							currType = GmlTypeDef.type(currName);
 						}
-						break;
 					}
 					
 					
@@ -637,22 +674,34 @@ class GmlLinter {
 				case KDot, KNullDot: { // x.y
 					skip();
 					rc(readCheckSkip(KIdent, "field name after `.`"));
+					var field = nextVal;
 					currKind = nk == KDot ? KField : KNullField;
-					var ctn = currType.getNamespace();
+					var isStatic = currType.isType();
+					var nsType = isStatic ? currType.unwrapParam() : currType;
+					var ctn = nsType.getNamespace();
 					if (ctn != null) {
-						var isStatic = currType.isType();
-						var nsType = isStatic ? currType.unwrapParam() : currType;
-						AceGmlTools.findNamespace(ctn, getImports(), function(ns) {
+						selfType = currType;
+						var found = AceGmlTools.findNamespace(ctn, getImports(), function(ns) {
 							if (isStatic) {
-								currType = ns.staticTypes[nextVal];
-								currFunc = ns.docStaticMap[nextVal];
+								currType = ns.staticTypes[field];
+								currFunc = ns.docStaticMap[field];
 							} else {
-								currType = ns.getInstType(nextVal);
-								currFunc = ns.getInstDoc(nextVal);
+								currType = ns.getInstType(field);
+								currFunc = ns.getInstDoc(field);
 							}
 							return currType != null || currFunc != null;
 						});
-					}
+						if (!found) {
+							var en = GmlAPI.gmlEnums[ctn];
+							if (en != null) {
+								if (en.items.exists(field)) {
+									// TODO: come up with some method of indicating that enum
+									// is typed as itself and may not cast to integers
+									currType = GmlTypeDef.int;
+								} else currType = GmlTypeDef.forbidden;
+							} else currType = null;
+						}
+					} else { selfType = null; currFunc = null; }
 				};
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					skip();
@@ -804,6 +853,7 @@ class GmlLinter {
 					else break;
 				};
 			}
+			if (nk != KDot && nk != KNullDot) selfType = null;
 		}
 		//
 		if (wasStat && !statKind.isStat()) {
@@ -814,6 +864,7 @@ class GmlLinter {
 		readExpr_currName = currKind == KIdent ? currName : null;
 		readExpr_currKind = currKind;
 		readExpr_currType = currType;
+		readExpr_selfType = selfType;
 		readExpr_currFunc = currFunc;
 		return false;
 	}
@@ -849,7 +900,7 @@ class GmlLinter {
 				seqStart.setTo(reader);
 				rc(readTypeName());
 				if (next() != KParClose) return readSeqStartError("Unclosed type ()");
-			case KIdent:
+			case KIdent, KUndefined:
 				if (skipIf(peek() == KLT)) {
 					var depth = 1;
 					seqStart.setTo(reader);
@@ -1323,4 +1374,10 @@ class GmlLinterProblem {
 		this.text = text;
 		this.pos = pos;
 	}
+}
+
+enum GmlLinterValue {
+	VUndefined;
+	VNumber(n:Float, gml:String);
+	VString(s:String, gml:String);
 }
