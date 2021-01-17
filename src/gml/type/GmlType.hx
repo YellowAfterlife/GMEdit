@@ -42,6 +42,7 @@ enum abstract GmlTypeKind(Int) {
 	var KCustom = 0x02;
 	var KNullable = 0x03; // T?
 	var KType = 0x04; // type<T>
+	var KVoid = 0x05;
 	
 	// value types
 	var KUndefined = 0x10;

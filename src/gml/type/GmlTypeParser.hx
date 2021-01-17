@@ -17,6 +17,8 @@ class GmlTypeParser {
 		r["Null"] = KNullable;
 		r["type"] = KType;
 		r["Type"] = KType;
+		r["void"] = KVoid;
+		r["Void"] = KVoid;
 		//
 		r["undefined"] = KUndefined;
 		r["int"] = KNumber;

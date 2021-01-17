@@ -15,7 +15,7 @@ import ace.extern.AceTokenType;
  */
 @:keep class GmlTypeTools {
 	public static var builtinTypes:Array<String> = [
-		"any", "Any",
+		"any", "Any", "void", "Void",
 		"bool", "int", "number", "string", 
 		"array", "Array",
 		"type", "Type",
@@ -24,6 +24,7 @@ import ace.extern.AceTokenType;
 	];
 	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys(builtinTypes, "namespace");
 	
+	/** If this might be a namespace, returns the name */
 	public static function getNamespace(t:GmlType):String {
 		return switch (t) {
 			case null: null;
@@ -32,6 +33,7 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
+	/** If this is a TInst, returns the GmlTypeKind */
 	public static function getKind(t:GmlType):Null<GmlTypeKind> {
 		return switch (t) {
 			case null: null;
@@ -52,6 +54,7 @@ import ace.extern.AceTokenType;
 		return getKind(t) == KArray;
 	}
 	
+	/** Distinctly, Any is either null (lack of type info) or KAny */
 	public static function isAny(t:GmlType):Bool {
 		return switch (t) {
 			case null: true;
@@ -60,6 +63,7 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
+	/** Extracts T from A<T> */
 	public static function unwrapParam(t:GmlType, ind:Int = 0):GmlType {
 		return switch (t) {
 			case null: null;
@@ -68,6 +72,10 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
+	/**
+	 * Runs f on each element of array and returns an updated immutable array.
+	 * Unchanged elements will be reused and changing nothing will return back the array.
+	 */
 	public static function mapArray(arr:ReadOnlyArray<GmlType>, f:GmlType->GmlType):ReadOnlyArray<GmlType> {
 		var out:Array<GmlType> = null;
 		for (i => t1 in arr) {
@@ -81,6 +89,11 @@ import ace.extern.AceTokenType;
 		}
 		return out != null ? out : arr;
 	}
+	
+	/**
+	 * Runs f on each sub-type of t and returns the updated immutable type.
+	 * Unchanged elements will be reused and changing nothing will return back the input.
+	 */
 	public static function map(t:GmlType, f:GmlType->GmlType):GmlType {
 		switch (t) {
 			case TInst(n1, tp1, k1): {
@@ -95,6 +108,9 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
+	/**
+	 * (Map<K, V>, [int, string]) -> Map<int, string>
+	 */
 	public static function mapTemplateTypes(t:GmlType, templateTypes:Array<GmlType>):GmlType {
 		function f(t:GmlType):GmlType {
 			return switch (t) {
@@ -174,14 +190,20 @@ import ace.extern.AceTokenType;
 	}
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
+		var kfrom = getKind(from), kto = getKind(to);
+		if (kfrom == KVoid || kto == KVoid) return false;
+		
 		if (from == to) return true;
-		if (isAny(from) || isAny(to)) return true;
-		if (from.equals(to, tpl)) return true;
-		if (to.isNullable()) {
+		if (from == null || to == null) return true;
+		if (kfrom == KAny || kto == KAny) return true;
+		
+		if (kfrom == kto && from.equals(to, tpl)) return true;
+		
+		if (kto == KNullable) {
 			// undefined -> number?
-			if (from.getKind() == KUndefined) return true;
+			if (kfrom == KUndefined) return true;
 			// number -> number?
-			if (!from.isNullable() && from.canCastTo(to.unwrapParam(), tpl)) return true;
+			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl)) return true;
 		}
 		
 		switch ([from, to]) {
@@ -194,9 +216,11 @@ import ace.extern.AceTokenType;
 				// allow bool<->number casts:
 				if (k1 == KBool && k2 == KNumber || k1 == KNumber && k2 == KBool) return true;
 				
+				if (k2 == KArray && p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;
+				
 				if (k1 == k2 && (k1 != KCustom || n1 == n2)) {
 					var i = p1.length;
-					while (--i >= 0) if (p2[i] != null) break;
+					while (--i >= 0) if (!isAny(p2[i])) break;
 					if (i < 0) return true; // allow Array<T>->Array or Array<T>->Array<?>
 				}
 				
