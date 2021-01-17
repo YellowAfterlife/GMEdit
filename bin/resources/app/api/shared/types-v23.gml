@@ -23,7 +23,20 @@ typedef particle
 typedef particle_system
 typedef particle_emitter
 typedef virtual_key
-typedef shader_sampler_index
+typedef physics_fixture
+typedef physics_joint
+typedef physics_particle
+typedef physics_particle_group
+typedef network_socket
+typedef network_server
+typedef vertex_buffer
+typedef steam_id
+typedef steam_ugc
+typedef steam_ugc_query
+typedef shader_sampler
+typedef shader_uniform
+typedef vertex_format
+typedef vertex_buffer
 
 // Dumb types, only used as function arguments, can't be created
 typedef timezone_type
@@ -68,3 +81,29 @@ typedef achievement_leaderboard_filter
 typedef achievement_challenge_type
 typedef achievement_async_id
 typedef achievement_show_type
+typedef iap_system_status
+typedef iap_order_status
+typedef iap_async_id
+typedef iap_async_storeload
+typedef gamepad_button
+typedef physics_debug_flag : int
+typedef physics_joint_value
+typedef physics_particle_flag : int
+typedef physics_particle_data_flag : int
+typedef physics_particle_group_flag : int
+typedef network_type
+typedef network_config
+typedef network_async_id
+typedef buffer_seek_base
+typedef steam_overlay_page
+typedef steam_leaderboard_sort_type
+typedef steam_leaderboard_display_type
+typedef steam_ugc_type
+typedef steam_ugc_async_result
+typedef steam_ugc_visibility
+typedef steam_ugc_query_type
+typedef steam_ugc_query_list_type
+typedef steam_ugc_query_match_type
+typedef steam_ugc_query_sort_order
+typedef vertex_type
+typedef vertex_usage
