@@ -541,9 +541,9 @@ class GmlLinter {
 				currType = GmlTypeDef.number;
 			};
 			case KSqbOpen: {
-				rc(readArgs(newDepth, true) < 0);
-				currType = readArgs_outType;
-				currType = GmlTypeDef.array(currType);
+				var found = readArgs(newDepth, true);
+				rc(found < 0);
+				currType = found > 0 ? GmlTypeDef.array(readArgs_outType) : GmlTypeDef.anyArray;
 			};
 			case KLambda: rc(readLambda(newDepth, false, isStat())); currFunc = readLambda_doc;
 			case KFunction: rc(readLambda(newDepth, true, isStat())); currFunc = readLambda_doc;
