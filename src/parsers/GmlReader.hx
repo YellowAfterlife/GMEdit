@@ -1,6 +1,8 @@
 package parsers;
 
 import ace.extern.*;
+import file.FileKind;
+import file.kind.gml.KGmlScript;
 import gml.type.GmlType;
 import gml.GmlVersion;
 import gml.type.GmlTypeDef;
@@ -331,6 +333,40 @@ class GmlReader extends StringReader {
 			};
 			default: return null;
 		}
+	}
+	
+	public function canHaveTopLevelFunctions(kind:FileKind) {
+		var pj = gml.Project.current;
+		if (version == pj.version) {
+			if (!pj.isGMS23) return false;
+		} else {
+			if (!version.config.additionalKeywords.contains("function")) return false;
+		}
+		if (!Std.is(kind, KGmlScript)) return false;
+		return (cast kind:KGmlScript).isScript;
+	}
+	
+	public function readSolFunctionName():String {
+		if (pos > 0 && peek(-1) != "\n".code) return null;
+		return inline readFunctionName();
+	}
+	
+	/**
+	 * `¦function name() {}` -> "name", `function name¦() {}`
+	 * `¦function() {}` -> null, `¦function() {}`
+	 */
+	public function readFunctionName():String {
+		var start = pos;
+		if (peek() != "f".code) return null;
+		if (peek(7) != "n".code) return null;
+		var c = peek(8); if (c.isIdent1()) return null;
+		if (substr(pos, 8) != "function") return null;
+		skip(8);
+		skipSpaces0_local();
+		c = peek(); if (!c.isIdent0()) { pos = start; return null; }
+		start = pos;
+		skipIdent1();
+		return substring(start, pos);
 	}
 	
 	/** Skips comments and whitespace */

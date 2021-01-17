@@ -1,5 +1,6 @@
 package tools;
 using StringTools;
+using tools.NativeString;
 
 /**
  * In a good case scenario, inlines completely.
@@ -46,6 +47,6 @@ class StringReader {
 		return source.substring(start, till);
 	}
 	public inline function substr(start:Int, length:Int):String {
-		return source.substr(start, length);
+		return source.fastSub(start, length);
 	}
 }

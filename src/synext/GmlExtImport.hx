@@ -12,6 +12,7 @@ import gml.type.GmlType;
 import haxe.io.Path;
 import js.lib.RegExp;
 import tools.Dictionary;
+import tools.JsTools;
 import ui.Preferences;
 import parsers.GmlSeekData;
 import parsers.GmlReader;
@@ -642,7 +643,7 @@ class GmlExtImport {
 				en = null;
 			} else {
 				en = GmlAPI.gmlEnums[tn];
-				if (en != null && en.items.exists(fd)) ind = type + '.' + fd;
+				if (en != null && en.items.exists(fd)) ind = tn + '.' + fd;
 			}
 			//
 			if (ind != null) {
@@ -663,7 +664,7 @@ class GmlExtImport {
 				if (errorText != "") errorText += "\n";
 				errorText += reader.getPos(dot + 1).toString() + ' Could not find field $fd in '
 					+ (ns != null ? 'namespace' : en != null ? 'enum' : 'unknown type')
-					+ ' ' + type + '.';
+					+ ' ' + tn + '.';
 				return null;
 			}
 		}
@@ -716,6 +717,7 @@ class GmlExtImport {
 		var impc = 0;
 		var mayHaveType = imps != null || rxHasTypePost.test(code);
 		if (imp == null && mayHaveType) imp = new GmlImports();
+		var cubDepth = 0;
 		//
 		while (q.loop) {
 			var p = q.pos;
@@ -738,6 +740,8 @@ class GmlExtImport {
 				case '"'.code, "'".code, "`".code, "@".code: {
 					q.skipStringAuto(c, version);
 				};
+				case "{".code: cubDepth++;
+				case "}".code: cubDepth--;
 				case "#".code: {
 					if (q.substr(p + 1, 6) == "import") {
 						q.skipLine();
@@ -757,7 +761,12 @@ class GmlExtImport {
 					};
 				};
 				default: {
-					if (c.isIdent0() && imp != null) {
+					var ctx = cubDepth != null ? q.readFunctionName() : null;
+					if (ctx != null) {
+						imp = imps != null ? imps[ctx] : null;
+						if (imp == null && mayHaveType) imp = new GmlImports();
+					}
+					else if (c.isIdent0() && imp != null) {
 						//
 						var dotStart:Int, dotPos:Int, dotFull:String;
 						inline function readDotPair() {
