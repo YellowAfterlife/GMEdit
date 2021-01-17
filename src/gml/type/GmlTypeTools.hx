@@ -1,5 +1,6 @@
 package gml.type;
 import ace.AceGmlTools;
+import gml.GmlNamespace;
 import gml.type.GmlType;
 import haxe.ds.ReadOnlyArray;
 import parsers.GmlReader;
@@ -172,7 +173,7 @@ import ace.extern.AceTokenType;
 		return false;
 	}
 	
-	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>):Bool {
+	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		if (from == to) return true;
 		if (isAny(from) || isAny(to)) return true;
 		if (from.equals(to, tpl)) return true;
@@ -193,11 +194,21 @@ import ace.extern.AceTokenType;
 				// allow bool<->number casts:
 				if (k1 == KBool && k2 == KNumber || k1 == KNumber && k2 == KBool) return true;
 				
-				if (k1 == k2 && n1 == n2) {
+				if (k1 == k2 && (k1 != KCustom || n1 == n2)) {
 					var i = p1.length;
 					while (--i >= 0) if (p2[i] != null) break;
 					if (i < 0) return true; // allow Array<T>->Array or Array<T>->Array<?>
 				}
+				
+				if (AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
+					var depth = 0;
+					while (ns != null && ++depth < GmlNamespace.maxDepth) {
+						if (ns.name == n2) return true;
+						for (itf in ns.interfaces) if (ns.name == n2) return true;
+						ns = ns.parent;
+					}
+					return false;
+				})) return true;
 			};
 			case [TAnon(a1), TInst(n2, [], KCustom)]: {
 				// todo: see if anon can be unified

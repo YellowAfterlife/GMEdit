@@ -302,7 +302,7 @@ class GmlLinter {
 						} else if (argTypes != null && readExpr_currType != null) {
 							var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
 							var argType = argTypes[argTypeInd];
-							if (argType != null && !readExpr_currType.canCastTo(argType, templateTypes)) {
+							if (argType != null && !readExpr_currType.canCastTo(argType, templateTypes, getImports())) {
 								var argName = JsTools.or(doc.args[argTypeInd], "?");
 								addWarning("Can't cast " + readExpr_currType.toString(templateTypes)
 									+ " to " + argType.toString(templateTypes)
@@ -732,10 +732,6 @@ class GmlLinter {
 							if (isNull && skipIf(peek() == KComma)) { // whoops, a?[b,c,d]
 								readArgs(newDepth, true);
 								isLiteral = true;
-							} else {
-								if (JsTools.nca(currType, currType.isArray())) {
-									currType = currType.unwrapParam();
-								}
 							}
 						};
 					}
@@ -889,7 +885,7 @@ class GmlLinter {
 	}
 	
 	function checkTypeCast(source:GmlType, target:GmlType):Bool {
-		if (source.canCastTo(target)) return true;
+		if (source.canCastTo(target, null, getImports())) return true;
 		addWarning('Can\'t cast ${source.toString()} to ' + target.toString());
 		return false;
 	}
