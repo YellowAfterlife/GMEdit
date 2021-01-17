@@ -1948,26 +1948,26 @@ gpu_set_colourwriteenable(red_or_array:bool|bool[],?green*:bool,?blue*,?alpha*:b
 gpu_set_alphatestenable(enable:bool)->void
 gpu_set_alphatestref(value:int)->void
 gpu_set_texfilter(linear:bool)->void
-gpu_set_texfilter_ext(sampler_id:shader_sampler_index,linear:bool)->void
+gpu_set_texfilter_ext(sampler_id:shader_sampler,linear:bool)->void
 gpu_set_texrepeat(repeat:bool)->void
-gpu_set_texrepeat_ext(sampler_id:shader_sampler_index,repeat:bool)->void
+gpu_set_texrepeat_ext(sampler_id:shader_sampler,repeat:bool)->void
 gpu_set_tex_filter(linear:bool)->void
-gpu_set_tex_filter_ext(sampler_id:shader_sampler_index,linear:bool)->void
+gpu_set_tex_filter_ext(sampler_id:shader_sampler,linear:bool)->void
 gpu_set_tex_repeat(repeat:bool)->void
-gpu_set_tex_repeat_ext(sampler_id:shader_sampler_index,repeat:bool)->void
+gpu_set_tex_repeat_ext(sampler_id:shader_sampler,repeat:bool)->void
 
 gpu_set_tex_mip_filter(filter:texture_mip_filter)->void
-gpu_set_tex_mip_filter_ext(sampler_id:shader_sampler_index,filter:texture_mip_filter)->void
+gpu_set_tex_mip_filter_ext(sampler_id:shader_sampler,filter:texture_mip_filter)->void
 gpu_set_tex_mip_bias(bias:number)->void
-gpu_set_tex_mip_bias_ext(sampler_id:shader_sampler_index,bias:number)->void
+gpu_set_tex_mip_bias_ext(sampler_id:shader_sampler,bias:number)->void
 gpu_set_tex_min_mip(minmip:int)->void
-gpu_set_tex_min_mip_ext(sampler_id:shader_sampler_index,minmip:int)->void
+gpu_set_tex_min_mip_ext(sampler_id:shader_sampler,minmip:int)->void
 gpu_set_tex_max_mip(maxmip:int)->void
-gpu_set_tex_max_mip_ext(sampler_id:shader_sampler_index,maxmip:int)->void
+gpu_set_tex_max_mip_ext(sampler_id:shader_sampler,maxmip:int)->void
 gpu_set_tex_max_aniso(maxaniso:int)->void
-gpu_set_tex_max_aniso_ext(sampler_id:shader_sampler_index,maxaniso:int)->void
+gpu_set_tex_max_aniso_ext(sampler_id:shader_sampler,maxaniso:int)->void
 gpu_set_tex_mip_enable(setting:texture_mip_state)
-gpu_set_tex_mip_enable_ext(sampler_id:shader_sampler_index,setting:texture_mip_state)
+gpu_set_tex_mip_enable_ext(sampler_id:shader_sampler,setting:texture_mip_state)
 
 gpu_get_blendenable()->bool
 gpu_get_ztestenable()->bool
@@ -1988,26 +1988,26 @@ gpu_get_colourwriteenable()£->bool
 gpu_get_alphatestenable()->bool
 gpu_get_alphatestref()->int
 gpu_get_texfilter()->bool
-gpu_get_texfilter_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_texfilter_ext(sampler_id:shader_sampler)->bool
 gpu_get_texrepeat()->bool
-gpu_get_texrepeat_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_texrepeat_ext(sampler_id:shader_sampler)->bool
 gpu_get_tex_filter()->bool
-gpu_get_tex_filter_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_tex_filter_ext(sampler_id:shader_sampler)->bool
 gpu_get_tex_repeat()->bool
-gpu_get_tex_repeat_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_tex_repeat_ext(sampler_id:shader_sampler)->bool
 
 gpu_get_tex_mip_filter()->texture_mip_filter
-gpu_get_tex_mip_filter_ext(sampler_id:shader_sampler_index)->texture_mip_filter
+gpu_get_tex_mip_filter_ext(sampler_id:shader_sampler)->texture_mip_filter
 gpu_get_tex_mip_bias()->number
-gpu_get_tex_mip_bias_ext(sampler_id:shader_sampler_index)->number
+gpu_get_tex_mip_bias_ext(sampler_id:shader_sampler)->number
 gpu_get_tex_min_mip()->int
-gpu_get_tex_min_mip_ext(sampler_id:shader_sampler_index)->int
+gpu_get_tex_min_mip_ext(sampler_id:shader_sampler)->int
 gpu_get_tex_max_mip()->int
-gpu_get_tex_max_mip_ext(sampler_id:shader_sampler_index)->int
+gpu_get_tex_max_mip_ext(sampler_id:shader_sampler)->int
 gpu_get_tex_max_aniso()->int
-gpu_get_tex_max_aniso_ext(sampler_id:shader_sampler_index)->int
+gpu_get_tex_max_aniso_ext(sampler_id:shader_sampler)->int
 gpu_get_tex_mip_enable()->texture_mip_state
-gpu_get_tex_mip_enable_ext(sampler_id:shader_sampler_index)->texture_mip_state
+gpu_get_tex_mip_enable_ext(sampler_id:shader_sampler)->texture_mip_state
 
 gpu_push_state()->void
 gpu_pop_state()->void
@@ -2097,3 +2097,696 @@ device_mouse_raw_x(device:int)->number
 device_mouse_raw_y(device:int)->number
 device_mouse_x_to_gui(device:int)->number
 device_mouse_y_to_gui(device:int)->number
+
+
+// In-app purchases functionality
+iap_activate(ds_list:ds_list<ds_map<string; any>>)->void
+iap_status()->iap_system_status
+iap_enumerate_products(ds_list:ds_list<ds_map<string; any>>)->void
+iap_restore_all()->void
+iap_acquire(product_id:string, payload:string)->int
+iap_consume(product_id:string)->void
+iap_product_details(product_id:string, ds_map:ds_map<string;any>)->void
+iap_purchase_details(purchase_id:string, ds_map:ds_map<string;any>)->void
+
+iap_data*:iap_async_id
+iap_ev_storeload#:iap_async_id
+iap_ev_product#:iap_async_id
+iap_ev_purchase#:iap_async_id
+iap_ev_consume#:iap_async_id
+iap_ev_restore#:iap_async_id
+
+iap_storeload_ok#:iap_async_storeload
+iap_storeload_failed#:iap_async_storeload
+
+iap_status_uninitialised#:iap_system_status
+iap_status_unavailable#:iap_system_status
+iap_status_loading#:iap_system_status
+iap_status_available#:iap_system_status
+iap_status_processing#:iap_system_status
+iap_status_restoring#:iap_system_status
+
+iap_failed#:iap_order_status
+iap_unavailable#:iap_order_status
+iap_available#:iap_order_status
+iap_purchased#:iap_order_status
+iap_canceled#:iap_order_status
+iap_refunded#:iap_order_status
+
+// Gamepad API
+gamepad_is_supported()->bool
+gamepad_get_device_count()->int
+gamepad_is_connected(device:int)->bool
+gamepad_get_description(device:int)->string
+gamepad_get_button_threshold(device:int)->number
+gamepad_set_button_threshold(device:int, threshold:number)->void
+gamepad_get_axis_deadzone(device:int)->number
+gamepad_set_axis_deadzone(device:int, deadzone:number)->void
+gamepad_button_count(device:int)->int
+gamepad_button_check(device:int, buttonIndex:gamepad_button)->bool
+gamepad_button_check_pressed(device:int, buttonIndex:gamepad_button)->bool
+gamepad_button_check_released(device:int, buttonIndex:gamepad_button)->bool
+gamepad_button_value(device:int, buttonIndex:gamepad_button)->number
+gamepad_axis_count(device:int)->int
+gamepad_axis_value(device:int, axisIndex:gamepad_button)->number
+gamepad_set_vibration(device:int, leftMotorSpeed:number, rightMotorSpeed:number)->void
+gamepad_set_colour(index:int,colour:int)£->void
+gamepad_set_color(index:int,color:int)$->void
+gamepad_hat_count(device:int)->int
+gamepad_hat_value(device:int, hatIndex:int)->number
+gamepad_remove_mapping(device:int)->void
+gamepad_test_mapping(device:int, mapping_string:string)->void
+gamepad_get_mapping(device:int)->string
+gamepad_get_guid(device:int)->string
+gamepad_set_option(gamepad_id:int, option_key:string, option_value:any)->void
+gamepad_get_option(gamepad_id:int, option_key:string)->any
+
+// Check to see if a pause event has come from an OS activity this frame
+os_is_paused()->bool
+window_has_focus()->bool
+code_is_compiled()->bool
+
+// general async commands and related functionality
+http_get(url:string)->int
+http_get_file(url:string, dest:string)->int
+http_post_string(url:string, string:string)->int
+http_request(url:string, method:string, header_map:ds_map<string;string>, body:string)->int
+http_get_request_crossorigin()->string
+http_set_request_crossorigin(crossorigin_type:string)->void
+json_encode(ds_map:ds_map<string;any>)->string
+json_decode(string:string)->ds_map<string,any>
+json_stringify<T>(val:T)->string // where T:struct
+json_parse(json:string)->any // where any:struct
+zip_unzip(file:string, destPath:string)->int
+
+load_csv(filename:string)->ds_grid<string>
+
+base64_encode(string:string)->string
+base64_decode(string:string)->string
+md5_string_unicode(string:string)->string
+md5_string_utf8(string:string)->string
+md5_file(fname:string)->string
+os_is_network_connected(?attempt_connection:bool)->bool
+sha1_string_unicode(string:string)->string
+sha1_string_utf8(string:string)->string
+sha1_file(fname:string)->string
+os_powersave_enable(enable:bool)->void
+analytics_event(string:string)&->void
+analytics_event_ext(string:string, ...param_values:string|number)&->void
+
+
+// Physics functions
+// World level functions
+physics_world_create(PixelToMetreScale:number)->void
+physics_world_gravity(gx:number, gy:number)->void
+physics_world_update_speed(speed:int)->void
+physics_world_update_iterations(iterations:int)->void
+physics_world_draw_debug(draw_flags:physics_debug_flag)->void
+
+// Pause
+physics_pause_enable(pause:bool)->void
+
+// Fixture related functions
+physics_fixture_create()->physics_fixture
+physics_fixture_set_kinematic(fixture:physics_fixture)->void
+physics_fixture_set_density(fixture:physics_fixture, density:number)->void
+physics_fixture_set_awake(fixture:physics_fixture, awake:bool)->void
+physics_fixture_set_restitution(fixture:physics_fixture, restitution:number)->void
+physics_fixture_set_friction(fixture:physics_fixture,friction:number)->void
+physics_fixture_set_collision_group(fixture:physics_fixture, group:int)->void
+physics_fixture_set_sensor(fixture:physics_fixture, is_sensor:bool)->void
+physics_fixture_set_linear_damping(fixture:physics_fixture, damping:number)->void
+physics_fixture_set_angular_damping(fixture:physics_fixture, damping:number)->void
+physics_fixture_set_circle_shape(fixture:physics_fixture, circleRadius:number)->void
+physics_fixture_set_box_shape(fixture:physics_fixture, halfWidth:number, halfHeight:number)->void
+physics_fixture_set_edge_shape(fixture:physics_fixture, x1:number,y1:number,x2:number,y2:number)->void
+physics_fixture_set_polygon_shape(fixture:physics_fixture)->void
+physics_fixture_set_chain_shape(fixture:physics_fixture, loop:bool)->void
+physics_fixture_add_point(fixture:physics_fixture, local_x:number, local_y:number)->void
+physics_fixture_bind<T>(fixture:physics_fixture, obj:T)->physics_fixture // where T:instance|object
+physics_fixture_bind_ext<T>(fixture:physics_fixture, obj:T, xo:number, yo:number)->physics_fixture // where T:instance|object
+physics_fixture_delete(fixture:physics_fixture)->void
+
+// Physics instance manipulation functions
+physics_apply_force(xpos:number, ypos:number, xforce:number, yforce:number)->void
+physics_apply_impulse(xpos:number, ypos:number, ximpulse:number, yimpulse:number)->void
+physics_apply_angular_impulse(impulse:number)->void
+physics_apply_local_force(xlocal:number, ylocal:number, xforce_local:number, yforce_local:number)->void
+physics_apply_local_impulse(xlocal:number, ylocal:number, ximpulse_local:number, yimpulse_local:number)->void
+physics_apply_torque(torque:number)->void
+physics_mass_properties(mass:number, local_centre_of_mass_x:number, local_centre_of_mass_y:number, inertia:number)->void
+physics_draw_debug()->void
+physics_test_overlap<T>(x:number, y:number, angle:number, obj:T)->bool // where T:instance|object
+physics_remove_fixture<T>(inst:T, id:physics_fixture)->void
+physics_set_friction(fixture:physics_fixture, friction:number)->void
+physics_set_density(fixture:physics_fixture, density:number)->void
+physics_set_restitution(fixture:physics_fixture, restitution:number)->void
+physics_get_friction(fixture:physics_fixture)->number
+physics_get_density(fixture:physics_fixture)->number
+physics_get_restitution(fixture:physics_fixture)->number
+
+// Joints
+physics_joint_distance_create<T0, T1>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_rope_create<T0, T1>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, maxLength:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_revolute_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, lower_angle_limit:number, upper_angle_limit:number, enable_limit:number, max_motor_torque:number, motor_speed:number, enable_motor:bool, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_prismatic_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, axis_x:number, axis_y:number, lower_translation_limit:number, upper_translation_limit:number, enable_limit:bool, max_motor_force:number, motor_speed:number, enable_motor:bool, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_pulley_create<T0, T1>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, local_anchor_1_x:number, local_anchor_1_y:number, local_anchor_2_x:number, local_anchor_2_y:number, ratio:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_wheel_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, axis_x:number, axis_y:number, enableMotor:bool, max_motor_torque:number, motor_speed:number, freq_hz:number, damping_ratio:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_weld_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, ref_angle:number, freq_hz:number, damping_ratio:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_friction_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, max_force:number, max_torque:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
+physics_joint_gear_create<T0, T1>(inst1:T0, inst2:T1, revoluteJoint:physics_joint, prismaticJoint:physics_joint, ratio:number)->physics_joint //where T0:instance,T1:instance
+physics_joint_enable_motor(joint:physics_joint, motorState:bool)->void
+physics_joint_get_value(joint:physics_joint, field:physics_joint_value)->number|bool
+physics_joint_set_value(joint:physics_joint, field:physics_joint_value, value:number|bool)->physics_joint_value
+physics_joint_delete(joint:physics_joint)->void
+
+// Physics particles
+physics_particle_create(typeflags:physics_particle_flag, x:number, y:number, xv:number, yv:number, col:int, alpha:number, category:int)->physics_particle
+physics_particle_delete(ind:physics_particle)->void
+physics_particle_delete_region_circle(x:number, y:number, radius:number)->void
+physics_particle_delete_region_box(x:number, y:number, halfWidth:number, halfHeight:number)->void
+physics_particle_delete_region_poly(pointList:ds_list<number>)->void
+physics_particle_set_flags(ind:physics_particle, typeflags:physics_particle_flag)->void
+physics_particle_set_category_flags(category:int, typeflags:physics_particle_flag)->void
+physics_particle_draw(typemask:physics_particle_flag, category:int, sprite:sprite, subimg:int)->void
+physics_particle_draw_ext(typemask:physics_particle_flag, category:int, sprite:sprite, subimg:int, xscale:number, yscale:number, angle:number, col:int, alpha:number)->void
+physics_particle_count()->int
+physics_particle_get_data(buffer:buffer, dataFlags:physics_particle_data_flag)->void
+physics_particle_get_data_particle(ind:physics_particle, buffer:buffer, dataFlags:physics_particle_data_flag)->void
+
+physics_particle_group_begin(typeflags:physics_particle_flag, groupflags:physics_particle_group_flag, x:number, y:number, ang:number, xv:number, yv:number, angVelocity:number, col:int, alpha:number, strength:number, category:int)->void
+physics_particle_group_circle(radius:number)->void
+physics_particle_group_box(halfWidth:number, halfHeight:number)->void
+physics_particle_group_polygon()->void
+physics_particle_group_add_point(x:number, y:number)->void
+physics_particle_group_end()->physics_particle_group
+physics_particle_group_join(to:physics_particle_group, from:physics_particle_group)->void
+physics_particle_group_delete(ind:physics_particle_group)->void
+physics_particle_group_count(group:physics_particle_group)->int
+physics_particle_group_get_data(group:physics_particle_group, buffer:buffer, dataFlags:physics_particle_data_flag)->void
+physics_particle_group_get_mass(group:physics_particle_group)->number
+physics_particle_group_get_inertia(group:physics_particle_group)->number
+physics_particle_group_get_centre_x(group:physics_particle_group)->number
+physics_particle_group_get_centre_y(group:physics_particle_group)->number
+physics_particle_group_get_vel_x(group:physics_particle_group)->number
+physics_particle_group_get_vel_y(group:physics_particle_group)->number
+physics_particle_group_get_ang_vel(group:physics_particle_group)->number
+physics_particle_group_get_x(group:physics_particle_group)->number
+physics_particle_group_get_y(group:physics_particle_group)->number
+physics_particle_group_get_angle(group:physics_particle_group)->number
+physics_particle_set_group_flags(group:physics_particle_group, groupflags:physics_particle_group_flag)->void
+physics_particle_get_group_flags(group:physics_particle_group)->physics_particle_group_flag
+
+physics_particle_get_max_count()->int
+physics_particle_get_radius()->number
+physics_particle_get_density()->number
+physics_particle_get_damping()->number
+physics_particle_get_gravity_scale()->number
+physics_particle_set_max_count(count:int)->void
+physics_particle_set_radius(radius:number)->void
+physics_particle_set_density(density:number)->void
+physics_particle_set_damping(damping:number)->void
+physics_particle_set_gravity_scale(scale:number)->void
+
+
+// Physics related built in variables (not all can be set)
+phy_rotation@:number?
+phy_position_x@:number?
+phy_position_y@:number?
+phy_angular_velocity@:number?
+phy_linear_velocity_x@:number?
+phy_linear_velocity_y@:number?
+phy_speed_x@:number?
+phy_speed_y@:number?
+phy_speed*@:number?
+phy_angular_damping@:number?
+phy_linear_damping@:number?
+phy_bullet@:bool?
+phy_fixed_rotation@:bool?
+phy_active@:bool?
+phy_mass*@:number?
+phy_inertia*@:number?
+phy_com_x*@:number?
+phy_com_y*@:number?
+phy_dynamic*@:bool?
+phy_kinematic*@:bool?
+phy_sleeping*@:bool?
+phy_collision_points*@:int?
+phy_collision_x*@:number?
+phy_collision_y*@:number?
+phy_col_normal_x*@:number?
+phy_col_normal_y*@:number?
+phy_position_xprevious*@:number?
+phy_position_yprevious*@:number?
+
+phy_joint_anchor_1_x#:physics_joint_value
+phy_joint_anchor_1_y#:physics_joint_value
+phy_joint_anchor_2_x#:physics_joint_value
+phy_joint_anchor_2_y#:physics_joint_value
+phy_joint_reaction_force_x#:physics_joint_value
+phy_joint_reaction_force_y#:physics_joint_value
+phy_joint_reaction_torque#:physics_joint_value
+phy_joint_motor_speed#:physics_joint_value
+phy_joint_angle#:physics_joint_value
+phy_joint_motor_torque#:physics_joint_value
+phy_joint_max_motor_torque#:physics_joint_value
+phy_joint_translation#:physics_joint_value
+phy_joint_speed#:physics_joint_value
+phy_joint_motor_force#:physics_joint_value
+phy_joint_max_motor_force#:physics_joint_value
+phy_joint_length_1#:physics_joint_value
+phy_joint_length_2#:physics_joint_value
+phy_joint_damping_ratio#:physics_joint_value
+phy_joint_frequency#:physics_joint_value
+phy_joint_lower_angle_limit#:physics_joint_value
+phy_joint_upper_angle_limit#:physics_joint_value
+phy_joint_angle_limits#:physics_joint_value
+phy_joint_max_length#:physics_joint_value
+phy_joint_max_torque#:physics_joint_value
+phy_joint_max_force#:physics_joint_value
+
+phy_debug_render_aabb#:physics_debug_flag
+phy_debug_render_collision_pairs#:physics_debug_flag
+phy_debug_render_coms#:physics_debug_flag
+phy_debug_render_core_shapes#:physics_debug_flag
+phy_debug_render_joints#:physics_debug_flag
+phy_debug_render_obb#:physics_debug_flag
+phy_debug_render_shapes#:physics_debug_flag
+
+
+phy_particle_flag_water#:physics_particle_flag
+phy_particle_flag_zombie#:physics_particle_flag
+phy_particle_flag_wall#:physics_particle_flag
+phy_particle_flag_spring#:physics_particle_flag
+phy_particle_flag_elastic#:physics_particle_flag
+phy_particle_flag_viscous#:physics_particle_flag
+phy_particle_flag_powder#:physics_particle_flag
+phy_particle_flag_tensile#:physics_particle_flag
+phy_particle_flag_colourmixing#£:physics_particle_flag
+phy_particle_flag_colormixing#$:physics_particle_flag
+
+phy_particle_group_flag_solid#:physics_particle_group_flag
+phy_particle_group_flag_rigid#:physics_particle_group_flag
+
+phy_particle_data_flag_typeflags#:physics_particle_data_flag
+phy_particle_data_flag_position#:physics_particle_data_flag
+phy_particle_data_flag_velocity#:physics_particle_data_flag
+phy_particle_data_flag_colour#£:physics_particle_data_flag
+phy_particle_data_flag_color#$:physics_particle_data_flag
+phy_particle_data_flag_category#:physics_particle_data_flag
+
+
+achievement_our_info#:achievement_async_id
+achievement_friends_info#:achievement_async_id
+achievement_leaderboard_info#:achievement_async_id
+achievement_achievement_info#:achievement_async_id
+achievement_filter_all_players#:achievement_leaderboard_filter
+achievement_filter_friends_only#:achievement_leaderboard_filter
+achievement_filter_favorites_only#:achievement_leaderboard_filter
+achievement_type_achievement_challenge#:achievement_challenge_type
+achievement_type_score_challenge#:achievement_challenge_type
+achievement_pic_loaded#:achievement_async_id
+
+
+achievement_show_ui#:achievement_show_type
+achievement_show_profile#:achievement_show_type
+achievement_show_leaderboard#:achievement_show_type
+achievement_show_achievement#:achievement_show_type
+achievement_show_bank#:achievement_show_type
+achievement_show_friend_picker#:achievement_show_type
+achievement_show_purchase_prompt#:achievement_show_type
+
+network_create_socket(type:network_type)->network_socket
+network_create_socket_ext(type:network_type, port:int)->network_socket
+network_create_server(type:network_type, port:int, maxclients:int)->network_server
+network_create_server_raw(type:network_type, port:int, maxclients:int)->network_server
+network_connect(socket:network_socket, url:string, port:int)->int
+network_connect_raw(socket:network_socket, url:string, port:int)->int
+network_connect_async(socket:network_socket, url:string, port:int)->int
+network_connect_raw_async(socket:network_socket, url:string, port:int)->int
+network_send_packet(socket:network_socket, bufferid:buffer, size:int)->int
+network_send_raw(socket:network_socket, bufferid:buffer, size:int)->int
+network_send_broadcast(socket:network_socket, port:int, bufferid:buffer, size:int)->int
+network_send_udp(socket:network_socket, URL:string, port:int, bufferid:buffer, size:int)->int
+network_send_udp_raw(socket:network_socket, URL:string, port:int, bufferid:buffer, size:int)->int
+network_set_timeout(socket:network_socket, read:int, write:int)->void
+network_set_config(parameter:network_config, value:network_socket|int|bool)->void
+network_resolve(url:string)->string
+network_destroy(socket:network_socket|network_server)->void
+network_socket_tcp#:network_type
+network_socket_udp#:network_type
+network_socket_ws#:network_type
+network_socket_bluetooth#:network_type
+network_type_connect#:network_async_id
+network_type_disconnect#:network_async_id
+network_type_data#:network_async_id
+network_type_non_blocking_connect#:network_async_id
+
+network_config_connect_timeout#:network_config
+network_config_use_non_blocking_socket#:network_config
+network_config_enable_reliable_udp#:network_config
+network_config_disable_reliable_udp#:network_config
+network_config_avoid_time_wait#:network_config
+
+buffer_create(size:int, buffer_kind:buffer_kind, alignment:int)->buffer
+buffer_write(buffer:buffer, type:buffer_type, value:number|string|bool)->int
+buffer_read(buffer:buffer, type:buffer_type)->number|string|bool
+buffer_seek(buffer:buffer, base:buffer_seek_base, offset:int)->void
+buffer_get_surface(buffer:buffer, surface:surface,offset:int)->void
+buffer_set_surface(buffer:buffer, surface:surface,offset:int)->void
+buffer_delete(buffer:buffer)->void
+buffer_exists(buffer:buffer)->bool
+buffer_get_type(buffer:buffer)->buffer_kind
+buffer_get_alignment(buffer:buffer)->int
+buffer_poke(buffer:buffer, offset:int, type:buffer_type, value:number|string|bool)->void
+buffer_peek(buffer:buffer, offset:int, type:buffer_type)->number|string|bool
+buffer_save(buffer:buffer, filename:string)->void
+buffer_save_ext(buffer:buffer, filename:string, offset:int, size:int)->void
+buffer_load(filename:string)->buffer
+buffer_load_ext(buffer:buffer, filename:string, offset:int)->void
+buffer_load_partial(buffer:buffer, filename:string, src_offset:int, src_len:int, dest_offset:int)->void
+buffer_copy(src_buffer:buffer, src_offset:int, size:int, dest_buffer:buffer, dest_offset:int)->void
+buffer_fill(buffer:buffer, offset:int, type:buffer_type, value:number|string|bool, size:int)->void
+buffer_get_size(buffer:buffer)->int
+buffer_tell(buffer:buffer)->int
+buffer_resize(buffer:buffer, newsize:int)->void
+buffer_md5(buffer:buffer, offset:int, size:int)->string
+buffer_sha1(buffer:buffer, offset:int, size:int)->string
+buffer_crc32(buffer:buffer, offset:int, size:int)->int
+buffer_base64_encode(buffer:buffer, offset:int, size:int)->string
+buffer_base64_decode(string:string)->buffer
+buffer_base64_decode_ext(buffer:buffer, string:string, offset:int)->void
+buffer_sizeof(type:buffer_type)->int
+buffer_get_address(buffer:buffer)->pointer
+buffer_create_from_vertex_buffer(vertex_buffer:vertex_buffer, kind:buffer_kind, alignment:int)->buffer
+buffer_create_from_vertex_buffer_ext(vertex_buffer:vertex_buffer, kind:buffer_kind, alignment:int, start_vertex:int, num_vertices:int)->buffer
+buffer_copy_from_vertex_buffer(vertex_buffer:vertex_buffer, start_vertex:int, num_vertices:int, dest_buffer:buffer, dest_offset:int)->void
+buffer_async_group_begin(groupname:string)->void
+buffer_async_group_option(optionname:string,optionvalue:number|bool|string)->void
+buffer_async_group_end()->int
+buffer_load_async(bufferid:buffer,filename:string,offset:int,size:int)->int
+buffer_save_async(bufferid:buffer,filename:string,offset:int,size:int)->int
+buffer_compress(bufferid:buffer,offset:int,size:int)->buffer
+buffer_decompress(bufferId:buffer)->buffer
+buffer_fixed#:buffer_kind
+buffer_grow#:buffer_kind
+buffer_wrap#:buffer_kind
+buffer_fast#:buffer_kind
+buffer_vbuffer#:buffer_kind
+buffer_u8#:buffer_type
+buffer_s8#:buffer_type
+buffer_u16#:buffer_type
+buffer_s16#:buffer_type
+buffer_u32#:buffer_type
+buffer_s32#:buffer_type
+buffer_u64#:buffer_type
+buffer_f16#:buffer_type
+buffer_f32#:buffer_type
+buffer_f64#:buffer_type
+buffer_bool#:buffer_type
+buffer_text#:buffer_type
+buffer_string#:buffer_type
+buffer_surface_copy&:any
+buffer_seek_start#:buffer_seek_base
+buffer_seek_relative#:buffer_seek_base
+buffer_seek_end#:buffer_seek_base
+
+
+
+
+gp_face1#:gamepad_button
+gp_face2#:gamepad_button
+gp_face3#:gamepad_button
+gp_face4#:gamepad_button
+gp_shoulderl#:gamepad_button
+gp_shoulderr#:gamepad_button
+gp_shoulderlb#:gamepad_button
+gp_shoulderrb#:gamepad_button
+gp_select#:gamepad_button
+gp_start#:gamepad_button
+gp_stickl#:gamepad_button
+gp_stickr#:gamepad_button
+gp_padu#:gamepad_button
+gp_padd#:gamepad_button
+gp_padl#:gamepad_button
+gp_padr#:gamepad_button
+gp_axislh#:gamepad_button
+gp_axislv#:gamepad_button
+gp_axisrh#:gamepad_button
+gp_axisrv#:gamepad_button
+
+gml_release_mode(enable:bool)->void
+gml_pragma(setting:string,...parameters:string)->void
+
+//steam functions
+steam_activate_overlay(overlayIndex:steam_overlay_page)->void
+steam_is_overlay_enabled()->bool
+steam_is_overlay_activated()->bool
+steam_get_persona_name()->string
+steam_initialised()->bool
+steam_is_cloud_enabled_for_app()->bool
+steam_is_cloud_enabled_for_account()->bool
+steam_file_persisted(filename:string)->bool
+steam_get_quota_total()->int
+steam_get_quota_free()->int
+steam_file_write(steam_filename:string,data:string,size:int)->int
+steam_file_write_file(steam_filename:string,local_filename:string)->int
+steam_file_read(filename:string)->string
+steam_file_delete(filename:string)->int
+steam_file_exists(filename:string)->bool
+steam_file_size(filename:string)->int
+steam_file_share(filename:string)->int
+steam_is_screenshot_requested()->bool
+steam_send_screenshot(filename:string,width:int,height:int)->int
+steam_is_user_logged_on()->bool
+steam_get_user_steam_id()->int // gimped steam_id, dont really have a good way to type it. half_steam_id?
+steam_user_owns_dlc(dlc_id:int)->bool
+steam_user_installed_dlc(dlc_id:int)->bool
+steam_set_achievement(ach_name:string)->void
+steam_get_achievement(ach_name:string)->void
+steam_clear_achievement(ach_name:string)->void
+steam_set_stat_int(stat_name:string,value:int)->void
+steam_set_stat_float(stat_name:string,value:number)->void
+steam_set_stat_avg_rate(stat_name:string,session_count:number,session_length:number)->void
+steam_get_stat_int(stat_name:string)->int
+steam_get_stat_float(stat_name:string)->number
+steam_get_stat_avg_rate(stat_name:string)->number
+steam_reset_all_stats()->void
+steam_reset_all_stats_achievements()->void
+steam_stats_ready()->bool
+steam_create_leaderboard(lb_name:string,sort_method:steam_leaderboard_sort_type,display_type:steam_leaderboard_display_type)->int
+steam_upload_score(lb_name:string,score:number)->int
+steam_upload_score_ext(lb_name:string,score:number,forceupdate:bool)->int
+steam_download_scores_around_user(lb_name:string,range_start:int,range_end:int)->int
+steam_download_scores(lb_name:string,start_idx:int,end_idx:int)->int
+steam_download_friends_scores(lb_name:string)->int
+steam_upload_score_buffer(lb_name:string, score:number, buffer_id:buffer )->int
+steam_upload_score_buffer_ext(lb_name:string, score:number, buffer_id:number, forceupdate:bool )->int
+steam_current_game_language()->string
+steam_available_languages()->string
+steam_activate_overlay_browser( url:string )->void
+steam_activate_overlay_user( dialog_name:string, steamid:steam_id )->void
+steam_activate_overlay_store( app_id:int )->void
+steam_get_user_persona_name( steam_id:steam_id )->int
+
+//steam ugc functions
+//helpers
+steam_get_app_id()->int
+steam_get_user_account_id()->steam_id
+steam_ugc_download( ugc_handle:steam_ugc, dest_filename:string )->int
+
+//create, edit content
+steam_ugc_create_item( consumer_app_id:int, file_type:steam_ugc_type )->int
+steam_ugc_start_item_update( consumer_app_id:int, published_file_id:steam_ugc )->int
+steam_ugc_set_item_title( ugc_update_handle:steam_ugc, title:string)->bool
+steam_ugc_set_item_description( ugc_update_handle:steam_ugc, description:string )->bool
+steam_ugc_set_item_visibility(ugc_update_handle:steam_ugc, visibility:steam_ugc_visibility )->bool
+steam_ugc_set_item_tags( ugc_update_handle:steam_ugc, tag_array:string[] )->bool
+steam_ugc_set_item_content( ugc_update_handle:steam_ugc, directory:string )->bool
+steam_ugc_set_item_preview( ugc_update_handle:steam_ugc, image_path:string )->bool
+steam_ugc_submit_item_update( ugc_update_handle:steam_ugc, change_note:string )->int
+steam_ugc_get_item_update_progress( ugc_update_handle:steam_ugc, info_map:ds_map<string;any> )->bool
+
+//consuming content
+steam_ugc_subscribe_item( published_file_id:steam_ugc )->int
+steam_ugc_unsubscribe_item( published_file_id:steam_ugc )->int
+steam_ugc_num_subscribed_items()->int
+steam_ugc_get_subscribed_items( item_list:ds_list<steam_ugc> )->bool
+steam_ugc_get_item_install_info( published_file_id:steam_ugc, info_map:ds_map<string;any> )->bool
+steam_ugc_get_item_update_info( published_file_id:steam_ugc, info_map:ds_map<string;any> )->bool
+steam_ugc_request_item_details( published_file_id:steam_ugc, max_age_seconds:int )->int
+
+//querying content
+steam_ugc_create_query_user( list_type:steam_ugc_query_list_type, match_type:steam_ugc_query_match_type, sort_order:steam_ugc_query_sort_order, page:int )->int
+steam_ugc_create_query_user_ex( list_type:steam_ugc_query_list_type, match_type:steam_ugc_query_match_type, sort_order:steam_ugc_query_sort_order, page:int, account_id:steam_id, creator_app_id:steam_id, consumer_app_id:int )->int
+steam_ugc_create_query_all( query_type:steam_ugc_query_type, match_type:steam_ugc_query_match_type, page:int )->int
+steam_ugc_create_query_all_ex( query_type:steam_ugc_query_type, match_type:steam_ugc_query_match_type, page:int, creator_app_id:steam_id, consumer_app_id:int )->int
+
+steam_ugc_query_set_cloud_filename_filter( ugc_query_handle:steam_ugc_query , match_cloud_filename:bool )->bool
+steam_ugc_query_set_match_any_tag( ugc_query_handle:steam_ugc_query, match_any_tag:bool )->bool
+steam_ugc_query_set_search_text( ugc_query_handle:steam_ugc_query, search_text:string )->bool
+steam_ugc_query_set_ranked_by_trend_days( ugc_query:steam_ugc_query, days:number)->bool
+steam_ugc_query_add_required_tag( ugc_query_handle:steam_ugc_query, tag_name:string )->bool
+steam_ugc_query_add_excluded_tag( ugc_query_handle:steam_ugc_query, tag_name:string )->bool
+steam_ugc_query_set_return_long_description( ugc_query_handle:steam_ugc_query, return_long_desc:bool )->bool
+steam_ugc_query_set_return_total_only( ugc_query_handle:steam_ugc_query, return_total_only:bool )->bool
+steam_ugc_query_set_allow_cached_response( ugc_query_handle:steam_ugc_query, allow_cached_response:bool )->bool
+steam_ugc_send_query( ugc_query_handle:steam_ugc_query )->int
+
+//steam constants
+ov_friends#:steam_overlay_page
+ov_community#:steam_overlay_page
+ov_players#:steam_overlay_page
+ov_settings#:steam_overlay_page
+ov_gamegroup#:steam_overlay_page
+ov_achievements#:steam_overlay_page
+lb_sort_none#:steam_leaderboard_sort_type
+lb_sort_ascending#:steam_leaderboard_sort_type
+lb_sort_descending#:steam_leaderboard_sort_type
+lb_disp_none#:steam_leaderboard_display_type
+lb_disp_numeric#:steam_leaderboard_display_type
+lb_disp_time_sec#:steam_leaderboard_display_type
+lb_disp_time_ms#:steam_leaderboard_display_type
+
+//steam ugc constants
+ugc_result_success#:steam_ugc_async_result
+ugc_filetype_community#:steam_ugc_type
+ugc_filetype_microtrans#:steam_ugc_type
+ugc_visibility_public#:steam_ugc_visibility
+ugc_visibility_friends_only#:steam_ugc_visibility
+ugc_visibility_private#:steam_ugc_visibility
+
+//ugc query_type constants
+ugc_query_RankedByVote#:steam_ugc_query_type
+ugc_query_RankedByPublicationDate#:steam_ugc_query_type
+ugc_query_AcceptedForGameRankedByAcceptanceDate#:steam_ugc_query_type
+ugc_query_RankedByTrend#:steam_ugc_query_type
+ugc_query_FavoritedByFriendsRankedByPublicationDate#:steam_ugc_query_type
+ugc_query_CreatedByFriendsRankedByPublicationDate#:steam_ugc_query_type
+ugc_query_RankedByNumTimesReported#:steam_ugc_query_type
+ugc_query_CreatedByFollowedUsersRankedByPublicationDate#:steam_ugc_query_type
+ugc_query_NotYetRated#:steam_ugc_query_type
+ugc_query_RankedByTotalVotesAsc#:steam_ugc_query_type
+ugc_query_RankedByVotesUp#:steam_ugc_query_type
+ugc_query_RankedByTextSearch#:steam_ugc_query_type
+
+//ugc query sort_type constants
+ugc_sortorder_CreationOrderDesc#:steam_ugc_query_sort_order
+ugc_sortorder_CreationOrderAsc#:steam_ugc_query_sort_order
+ugc_sortorder_TitleAsc#:steam_ugc_query_sort_order
+ugc_sortorder_LastUpdatedDesc#:steam_ugc_query_sort_order
+ugc_sortorder_SubscriptionDateDesc#:steam_ugc_query_sort_order
+ugc_sortorder_VoteScoreDesc#:steam_ugc_query_sort_order
+ugc_sortorder_ForModeration#:steam_ugc_query_sort_order
+
+//ugc query list type constants
+ugc_list_Published#:steam_ugc_query_list_type
+ugc_list_VotedOn#:steam_ugc_query_list_type
+ugc_list_VotedUp#:steam_ugc_query_list_type
+ugc_list_VotedDown#:steam_ugc_query_list_type
+ugc_list_WillVoteLater#:steam_ugc_query_list_type
+ugc_list_Favorited#:steam_ugc_query_list_type
+ugc_list_Subscribed#:steam_ugc_query_list_type
+ugc_list_UsedOrPlayed#:steam_ugc_query_list_type
+ugc_list_Followed#:steam_ugc_query_list_type
+
+//ugc query match_type constants
+ugc_match_Items#:steam_ugc_query_match_type
+ugc_match_Items_Mtx#:steam_ugc_query_match_type
+ugc_match_Items_ReadyToUse#:steam_ugc_query_match_type
+ugc_match_Collections#:steam_ugc_query_match_type
+ugc_match_Artwork#:steam_ugc_query_match_type
+ugc_match_Videos#:steam_ugc_query_match_type
+ugc_match_Screenshots#:steam_ugc_query_match_type
+ugc_match_AllGuides#:steam_ugc_query_match_type
+ugc_match_WebGuides#:steam_ugc_query_match_type
+ugc_match_IntegratedGuides#:steam_ugc_query_match_type
+ugc_match_UsableInGame#:steam_ugc_query_match_type
+ugc_match_ControllerBindings#:steam_ugc_query_match_type
+
+shader_set(shader:shader)->void
+shader_get_name(shader:shader)->string
+shader_reset()->void
+shader_current()->shader
+shader_is_compiled(shader:shader)->bool
+shader_get_sampler_index(shader:shader,uniform_name:string)->shader_sampler
+shader_get_uniform(shader:shader,uniform_name:string)->shader_uniform
+shader_set_uniform_i(uniform_id:shader_uniform,val1:int,?val2:int,?val3:int,?val4:int)->void
+shader_set_uniform_i_array(uniform_id:shader_uniform,array:int[])->void
+shader_set_uniform_f(uniform_id:shader_uniform,val1:number,?val2:number,?val3:number,?val4:number)->void
+shader_set_uniform_f_array(uniform_id:shader_uniform,array:number[])->void
+shader_set_uniform_matrix(uniform_id:shader_uniform)->void
+shader_set_uniform_matrix_array(uniform_id:shader_uniform,array:int[])->void
+shader_enable_corner_id(enable:bool)->void
+texture_set_stage(sampled_id:shader_sampler, texture_id:texture)->void
+texture_get_texel_width(texture_id:texture)->int
+texture_get_texel_height(texture_id:texture)->int
+shaders_are_supported()->bool
+
+vertex_format_begin()->void
+vertex_format_end()->vertex_format
+vertex_format_delete(format_id:vertex_format)->void
+vertex_format_add_position()->void
+vertex_format_add_position_3d()->void
+vertex_format_add_colour()£->void
+vertex_format_add_color()$->void
+vertex_format_add_normal()->void
+vertex_format_add_texcoord()->void
+vertex_format_add_textcoord()&->void
+vertex_format_add_custom(type:vertex_type,usage:vertex_usage)->void
+
+vertex_usage_position#:vertex_usage
+vertex_usage_colour#£:vertex_usage
+vertex_usage_color#$:vertex_usage
+vertex_usage_normal#:vertex_usage
+vertex_usage_texcoord#:vertex_usage
+vertex_usage_textcoord#&:vertex_usage
+vertex_usage_blendweight#:vertex_usage
+vertex_usage_blendindices#:vertex_usage
+vertex_usage_psize#:vertex_usage
+vertex_usage_tangent#:vertex_usage
+vertex_usage_binormal#:vertex_usage
+vertex_usage_fog#:vertex_usage
+vertex_usage_depth#:vertex_usage
+vertex_usage_sample#:vertex_usage
+
+vertex_type_float1#:vertex_type
+vertex_type_float2#:vertex_type
+vertex_type_float3#:vertex_type
+vertex_type_float4#:vertex_type
+vertex_type_colour#£:vertex_type
+vertex_type_color#$:vertex_type
+vertex_type_ubyte4#:vertex_type
+
+
+vertex_create_buffer()->vertex_buffer
+vertex_create_buffer_ext(size:int)->vertex_buffer
+vertex_delete_buffer(vbuff:vertex_buffer)->void
+vertex_begin(vbuff:vertex_buffer,format:vertex_format)->void
+vertex_end(vbuff:vertex_buffer)->void
+vertex_position(vbuff:vertex_buffer,x:number,y:number)->void
+vertex_position_3d(vbuff:vertex_buffer,x:number,y:number,z:number)->void
+vertex_colour(vbuff:vertex_buffer,colour:int,alpha:number)£->void
+vertex_color(vbuff:vertex_buffer,color:int,alpha:number)$->void
+vertex_argb(vbuff:vertex_buffer,argb:int)->void
+vertex_texcoord(vbuff:vertex_buffer,u:number,v:number)->void
+vertex_normal(vbuff:vertex_buffer,nx:number,ny:number,nz:number)->void
+vertex_float1(vbuff:vertex_buffer,f1:number)->void
+vertex_float2(vbuff:vertex_buffer,f1:number,f2:number)->void
+vertex_float3(vbuff:vertex_buffer,f1:number,f2:number,f3:number)->void
+vertex_float4(vbuff:vertex_buffer,f1:number,f2:number,f3:number,f4:number)->void
+vertex_ubyte4(vbuff:vertex_buffer,b1:int,b2:int,b3:int,b4:int)->void
+vertex_submit(vbuff:vertex_buffer,prim:primitive_type,texture:texture)->void
+vertex_freeze(vbuff:vertex_buffer)->void
+vertex_get_number(vbuff:vertex_buffer)->int
+vertex_get_buffer_size(vbuff:vertex_buffer)->int
+vertex_create_buffer_from_buffer(src_buffer:buffer,format:vertex_format)->vertex_buffer
+vertex_create_buffer_from_buffer_ext(src_buffer:buffer,format:vertex_format,src_offset:int,num_vertices:int)->vertex_buffer
+
+// Anton:Pretty sure these are all deprecated
+push_local_notification(fire_time:datetime, title:string, message:string, data:string)->void
+push_get_first_local_notification( ds_map:ds_map<string;string>)->int
+push_get_next_local_notification( ds_map:ds_map<string;string> )->int
+push_cancel_local_notification( id:int )->void
+push_get_application_badge_number()->int
+push_set_application_badge_number( num:int )->void
