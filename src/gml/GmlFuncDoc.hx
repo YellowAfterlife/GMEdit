@@ -176,7 +176,7 @@ class GmlFuncDoc {
 					var mt = rxt.exec(a);
 					if (mt != null) {
 						if (argTypes == null) argTypes = NativeArray.create(args.length);
-						var typeStr = mt[1];
+						var typeStr = mt[1].trimRight();
 						if (templateNames != null) {
 							typeStr = GmlTypeTools.patchTemplateNames(typeStr, templateNames);
 						}
