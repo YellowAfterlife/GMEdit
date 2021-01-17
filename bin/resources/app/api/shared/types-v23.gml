@@ -1,5 +1,5 @@
 
-// Types you generally hold in variables
+// Types that generally have some data attached to them
 typedef datetime
 typedef weak_reference
 typedef pointer
@@ -14,6 +14,11 @@ typedef audio_emitter
 typedef sound_instance
 typedef sound_sync_group
 typedef sound_play_queue
+typedef html_clickable
+typedef html_clickable_tpe
+typedef texture_group
+typedef file_handle
+typedef binary_file_handle
 
 // Dumb types, only used as function arguments
 typedef timezone_type
@@ -37,3 +42,6 @@ typedef display_orientation
 typedef window_cursor
 typedef buffer_kind //buffer_grow etc
 typedef buffer_type //buffer_s8 etc
+typedef sprite_speed_type
+typedef asset_type
+typedef file_attribute : int

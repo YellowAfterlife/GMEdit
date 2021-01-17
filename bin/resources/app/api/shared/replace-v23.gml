@@ -89,29 +89,29 @@ variable_global_set(name:string,val:any)->void
 variable_instance_exists<T>(id:T,name:string)->bool // where T:instance
 variable_instance_get<T>(id:T,name:string)->any // where T:instance
 variable_instance_set<T>(id:T,name:string,val:any)->void // where T:instance
-variable_instance_get_names<T>(id:T)->Array<string> // where T:instance
+variable_instance_get_names<T>(id:T)->string[] // where T:instance
 variable_instance_names_count<T>(id:T)->int // where T:instance
 variable_struct_exists<T>(struct:T,name:string)->bool // where T:struct
 variable_struct_get<T>(struct:T,name:string)->any // where T:struct
 variable_struct_set<T>(struct:T,name:string,val:any)->void // where T:struct
-variable_struct_get_names<T>(struct:T)->Array<string> // where T:struct
+variable_struct_get_names<T>(struct:T)->string[] // where T:struct
 variable_struct_names_count<T>(struct:T)->int // where T:struct
 variable_struct_remove<T>(struct:T,name:string)->void // where T:struct
-array_length<T>(variable:Array<T>)->int
-array_length_1d<T>(variable:Array<T>)&->int
-array_length_2d<T>(variable:Array<T>, index:int)&->int
-array_height_2d<T>(variable:Array<T>)&->int
-array_equals<T0, T1>(var1:Array<T0>,var2:Array<T1>)->bool
+array_length<T>(variable:T[])->int
+array_length_1d<T>(variable:T[])&->int
+array_length_2d<T>(variable:T[], index:int)&->int
+array_height_2d<T>(variable:T[])&->int
+array_equals<T0, T1>(var1:T0[],var2:T1[])->bool
 array_create(size:int, [value]) // TODO
-array_copy<T>(dest:Array<T>,dest_index:int,src:Array<T>,src_index:int,length:int)->void
-array_resize<T>(variable:Array<T>,newsize:int)->void
-array_get<T>(variable:Array<T>,index:int)->any
-array_set<T>(variable:Array<T>,index:int,val:any)->void
-array_push<T>(array:Array<T>,...values:T)->void
-array_pop<T>(array:Array<T>)->T
-array_insert<T>(array:Array<T>,index:int,...values:T)->void
-array_delete<T>(array:Array<T>,index:int,number:int)->void
-array_sort<T>(array:Array<T>,sortType_or_function:bool)->void //TODO function is untyped
+array_copy<T>(dest:T[],dest_index:int,src:T[],src_index:int,length:int)->void
+array_resize<T>(variable:T[],newsize:int)->void
+array_get<T>(variable:T[],index:int)->any
+array_set<T>(variable:T[],index:int,val:any)->void
+array_push<T>(array:T[],...values:T)->void
+array_pop<T>(array:T[])->T
+array_insert<T>(array:T[],index:int,...values:T)->void
+array_delete<T>(array:T[],index:int,number:int)->void
+array_sort<T>(array:T[],sortType_or_function:bool)->void //TODO function is untyped
 random(x:number)->number
 random_range(x1:number,x2:number)->number
 irandom(x:int)->int
@@ -174,7 +174,7 @@ lengthdir_y(len:number,dir:number)->number
 
 weak_ref_create<T>(thing_to_track:T)->weak_reference // where T:struct
 weak_ref_alive(weak_ref:weak_reference)->bool
-weak_ref_any_alive(array:Array<weak_reference>,[index]:int,[length]:int)->bool
+weak_ref_any_alive(array:weak_reference[],[index]:int,[length]:int)->bool
 
 // section 2.3
 
@@ -644,7 +644,7 @@ show_debug_message(str:any)->void
 show_debug_overlay(enable:bool)->void
 debug_mode*:bool
 debug_event(str:string)->void
-debug_get_callstack()->Array<string>
+debug_get_callstack()->string[]
 alarm_get(index:int)->int
 alarm_set(index:int,count:int)->void
 
@@ -788,7 +788,7 @@ bboxkind_diamond#:bbox_kind
 message*@:string
 longMessage*@:string
 script*@:script
-stacktrace*@:Array<string>
+stacktrace*@:string[]
 
 
 // Layer-related built-in variables
@@ -954,13 +954,13 @@ draw_vertex(x:number,y:number)->void
 draw_vertex_colour(x:number,y:number,col:int,alpha:number)£->void
 draw_vertex_color(x:number,y:number,col:int,alpha:number)$->void
 draw_primitive_end()->void
-sprite_get_uvs(spr:sprite,subimg:int)->Array<int>
-font_get_uvs(font:font)->Array<font>
+sprite_get_uvs(spr:sprite,subimg:int)->int[]
+font_get_uvs(font:font)->font[]
 sprite_get_texture(spr:sprite,subimg:int)->texture
 font_get_texture(font:font)->texture
 texture_get_width(texid:texture)->int
 texture_get_height(texid:texture)->int
-texture_get_uvs(texid:texture)->Array<int>
+texture_get_uvs(texid:texture)->int[]
 draw_primitive_begin_texture(kind:primitive_type,texid:texture)->void
 draw_vertex_texture(x:number,y:number,xtex:number,ytex:number)->void
 draw_vertex_texture_colour(x:number,y:number,xtex:number,ytex:number,col:int,alpha:number)£->void
@@ -1044,7 +1044,7 @@ surface_copy(destination:surface,x:number,y:number,source:surface)->void
 surface_copy_part(destination:surface,x:number,y:number,source:surface,xs:number,ys:number,ws:int,hs:int)->void
 
 application_surface_draw_enable(on_off:bool)->void
-application_get_position()->Array<int>
+application_get_position()->int[]
 application_surface_enable(enable:bool)->void
 application_surface_is_enabled()->bool
 
@@ -1073,7 +1073,7 @@ window_set_min_width(minwidth:int)->void
 window_set_max_width(maxwidth:int)->void
 window_set_min_height(minheight:int)->void
 window_set_max_height(maxheight:int)->void
-window_get_visible_rects(startx:int,starty:int,endx:int,endy:int)->Array<int>
+window_get_visible_rects(startx:int,starty:int,endx:int,endy:int)->int[]
 window_get_caption()->string
 window_set_cursor(cursor:window_cursor)->void
 cr_default#:window_cursor
@@ -1112,23 +1112,23 @@ window_mouse_set(x:int,y:int)->void
 
 view_enabled:bool
 view_current*:int
-view_visible[0..7]:Array<int>
+view_visible[0..7]:int[]
 // view_xview[0..7]
 // view_yview[0..7]
 // view_wview[0..7]
 // view_hview[0..7]
-view_xport[0..7]:Array<int>
-view_yport[0..7]:Array<int>
-view_wport[0..7]:Array<int>
-view_hport[0..7]:Array<int>
+view_xport[0..7]:int[]
+view_yport[0..7]:int[]
+view_wport[0..7]:int[]
+view_hport[0..7]:int[]
 // view_angle[0..7]
 // view_hborder[0..7]
 // view_vborder[0..7]
 // view_hspeed[0..7]
 // view_vspeed[0..7]
 // view_object[0..7]
-view_surface_id[0..7]:Array<surface>
-view_camera[0..7]:Array<camera>
+view_surface_id[0..7]:surface[]
+view_camera[0..7]:camera[]
 window_view_mouse_get_x(id:int)->number
 window_view_mouse_get_y(id:int)->number
 window_views_mouse_get_x()->number
@@ -1245,8 +1245,429 @@ audio_get_listener_info(index:int)->ds_map<string, any>
 
 audio_system()&->void
 
-// section 11.4 / map
+
+//////////////
+// Chapter 407
+//////////////
+
+// section 7.2
+
+show_message(str:string)->void
+show_message_async(str:string)->void
+clickable_add(x:number,y:number,spritetpe:html_clickable_tpe,URL:string,target:string,params:string)->html_clickable
+clickable_add_ext(x:number,y:number,spritetpe:html_clickable_tpe,URL:string,target:string,params:string,scale:number,alpha:number)->html_clickable
+clickable_change(buttonid:html_clickable,spritetpe:html_clickable_tpe,x:number,y:number)->void
+clickable_change_ext(buttonid:html_clickable,spritetpe:html_clickable_tpe,x:number,y:number,scale:number,alpha:number)->void
+clickable_delete(buttonid:html_clickable)->void
+clickable_exists(index:html_clickable)->bool
+clickable_set_style(buttonid:html_clickable,map:ds_map<string, string>)->bool
+
+show_question(str:string)->bool
+show_question_async(str:string)->int
+get_integer(str:string,def:number)->number
+get_string(str:string,def:string)->string
+get_integer_async(str:string,def:number)->int
+get_string_async(str:string,def:string)->int
+get_login_async(username:string,password:string)->int
+get_open_filename(filter:string,fname:string)->string
+get_save_filename(filter:string,fname:string)->string
+get_open_filename_ext(filter:string,fname:string,dir:string,title:string)->string
+get_save_filename_ext(filter:string,fname:string,dir:string,title:string)->string
+show_error(str:string,abort:bool)->void
+
+// section 7.3
+
+highscore_clear()->void
+highscore_add(str:string,numb:number)->void
+highscore_value(place:int)->number
+highscore_name(place:int)->string
+draw_highscore(x1:number,y1:number,x2:number,y2:number)->void
+
+
+//////////////
+// Chapter 408
+//////////////
+
+// section 8.1
+
+sprite_exists(ind:sprite)->bool
+sprite_get_name(ind:sprite)->string
+sprite_get_number(ind:sprite)->int
+sprite_get_width(ind:sprite)->int
+sprite_get_height(ind:sprite)->int
+sprite_get_xoffset(ind:sprite)->number
+sprite_get_yoffset(ind:sprite)->number
+sprite_get_bbox_mode(ind:sprite)->bbox_mode
+sprite_get_bbox_left(ind:sprite)->number
+sprite_get_bbox_right(ind:sprite)->number
+sprite_get_bbox_top(ind:sprite)->number
+sprite_get_bbox_bottom(ind:sprite)->number
+
+sprite_set_bbox_mode(ind:sprite,mode:bbox_mode)->void
+sprite_set_bbox(ind:sprite,left:number,top:number,right:number,bottom:number)->void
+
+sprite_save(ind:sprite,subimg:int,fname:string)->void
+sprite_save_strip(ind:sprite,fname:string)->void
+
+sprite_set_cache_size(ind:sprite, max:int)->void
+sprite_set_cache_size_ext(ind:sprite, image:int, max:int)->void
+sprite_get_tpe(index,subindex)->html_clickable_tpe
+
+sprite_prefetch(ind:sprite)->int
+sprite_prefetch_multi(indarray:sprite[])->int
+
+sprite_flush(ind:sprite)->int
+sprite_flush_multi(indarray:sprite[])->int
+
+sprite_set_speed(ind:sprite,speed:number,type:sprite_speed_type)->void
+sprite_get_speed_type(ind:sprite)->sprite_speed_type
+sprite_get_speed(ind:sprite)->number
+
+texture_is_ready(tex_id:texture_group|string)->bool
+texture_prefetch(tex_id_or_groupname:texture_group|string)->void
+texture_flush(tex_id_or_groupname:texture_group|string)->void
+
+texturegroup_get_textures(groupname:string)->texture_group[]
+texturegroup_get_sprites(groupname:string)->sprite[]
+texturegroup_get_fonts(groupname:string)->font[]
+texturegroup_get_tilesets(groupname:string)->tileset[]
+
+texture_debug_messages(debug_level:bool)->void
+
+spritespeed_framespersecond#:sprite_speed_type
+spritespeed_framespergameframe#:sprite_speed_type
+
+// section 8.4
+
+font_exists(ind:font)->bool
+font_get_name(ind:font)->string
+font_get_fontname(ind:font)->string
+font_get_bold(ind:font)->bool
+font_get_italic(ind:font)->bool
+font_get_first(ind:font)->int
+font_get_last(ind:font)->int
+font_get_size(ind:font)->int
+font_set_cache_size(font:font,max:int)->void
+
+// section 8.5
+
+path_exists(ind:path)->bool
+path_get_name(ind:path)->string
+path_get_length(ind:path)->number
+path_get_kind(ind:path)->bool
+path_get_closed(ind:path)->bool
+path_get_precision(ind:path)->int
+path_get_number(ind:path)->int
+path_get_point_x(ind:path,n:int)->number
+path_get_point_y(ind:path,n:int)->number
+path_get_point_speed(ind:path,n:int)->number
+path_get_x(ind:path,pos:number)->number
+path_get_y(ind:path,pos:number)->number
+path_get_speed(ind:path,pos:number)->number
+
+// section 8.6
+
+script_exists(ind:script)->bool
+script_get_name(ind:script)->string
+
+
+timeline_add()!->timeline
+timeline_delete(ind:timeline)!->void
+timeline_clear(ind:timeline)->void
+timeline_exists(ind:timeline)->bool
+timeline_get_name(ind:timeline)->string
+timeline_moment_clear(ind:timeline,step:int)->void
+timeline_moment_add_script(ind:timeline,step:int,script:script)->void
+timeline_size(ind:timeline)->int
+timeline_max_moment(ind:timeline)->int
+
+// section 8.8
+
+object_exists<T>(ind:T)->bool // where T:object
+object_get_name<T>(ind:T)->string // where T:object
+object_get_sprite<T>(ind:T)->sprite // where T:object
+object_get_solid<T>(ind:T)->bool // where T:object
+object_get_visible<T>(ind:T)->bool // where T:object
+object_get_persistent<T>(ind:T)->bool // where T:object
+object_get_mask<T>(ind:T)->sprite // where T:object
+object_get_parent<T>(ind:T)->any // where T:object, any:object
+object_get_physics<T>(ind:T)->bool // where T:object
+object_is_ancestor<T0, T1>(ind_child:T0,ind_parent:T1)->bool // where T0:object, T1:object
+
+// section 8.9
+
+room_exists(ind:room)->bool
+room_get_name(ind:room)->string
+
+//////////////
+// Chapter 409
+//////////////
+
+// section 9.1
+
+sprite_set_offset(ind:sprite,xoff:number,yoff:number)->void
+sprite_duplicate(ind:sprite)!->sprite
+sprite_assign(ind:sprite,source:sprite)->void
+sprite_merge(ind1:sprite,ind2:sprite)->void
+sprite_add(fname:string,imgnumb:number,removeback:bool,smooth:bool,xorig:number,yorig:number)!->sprite
+sprite_replace(ind:sprite,fname:string,imgnumb:number,removeback:bool,smooth:bool,xorig:number,yorig:number)!->void
+sprite_create_from_surface(id:surface,x:int,y:int,w:int,h:int,removeback:bool,smooth:bool,xorig:number,yorig:number)!->sprite
+sprite_add_from_surface(sprite:sprite,surface:surface,x:int,y:int,w:int,h:int,removeback:bool,smooth:bool)!->sprite
+sprite_delete(ind:sprite)!->void
+sprite_set_alpha_from_sprite(ind:sprite,spr:sprite)->void
+sprite_collision_mask(ind:sprite,sepmasks:bool,bboxmode:int,bbleft:number,bbtop:number,bbright:number,bbbottom:number,kind:bbox_kind,tolerance:int)->void
+
+// section 9.4
+
+font_add_enable_aa(enable:bool)->void
+font_add_get_enable_aa()->bool
+font_add(name:string,size:number,bold:bool,italic:bool,first:int,last:int)!->font
+font_add_sprite(spr:sprite,first:int,prop:bool,sep:number)!->font
+font_add_sprite_ext(spr:sprite,mapstring:string,prop:bool,sep:number)!->font
+font_replace(ind:font,name:string,size:number,bold:bool,italic:bool,first:int,last:int)!->void
+font_replace_sprite(ind:font,spr:sprite,first:int,prop:bool,sep:number)!->void
+font_replace_sprite_ext(font:font,spr:sprite,mapstring:string,prop:bool,sep:number)!->void
+font_delete(ind:font)!->void
+
+// section 9.5
+
+path_set_kind(ind:path,kind:bool)->void
+path_set_closed(ind:path,closed:bool)->void
+path_set_precision(ind:path,prec:int)->void
+path_add()!->path
+path_assign(target:path,source:path)->void
+path_duplicate(ind:path)!->path
+path_append(ind:path,path:path)->void
+path_delete(ind:path)->void
+path_add_point(ind:path,x:number,y:number,speed:number)->void
+path_insert_point(ind:path,n:int,x:number,y:number,speed:number)->void
+path_change_point(ind:path,n:int,x:number,y:number,speed:number)->void
+path_delete_point(ind:path,n:int)!->void
+path_clear_points(ind:path)->void
+path_reverse(ind:path)->void
+path_mirror(ind:path)->void
+path_flip(ind:path)->void
+path_rotate(ind:path,angle:number)->void
+path_rescale(ind:path,xscale:number,yscale:number)->void
+path_shift(ind:path,xshift:number,yshift:number)->void
+
+// section 9.6
+
+script_execute(ind:script,...values:any)->any
+script_execute_ext(ind:script,array:any[],[offset=0]:int,[num_args=array_length(array)-offset]:int)->any
+
+// section 9.8
+
+object_set_sprite<T>(ind:T,spr:sprite)->void // where T:object
+object_set_solid<T>(ind:T,solid:bool)->void // where T:object
+object_set_visible<T>(ind:T,vis:bool)->void // where T:object
+object_set_persistent<T>(ind:T,pers:bool)->void // where T:object
+object_set_mask<T>(ind:T,spr:sprite) //->void where T:object
+
+// section 9.9
+
+room_set_width(ind:room,w:number)->void
+room_set_height(ind:room,h:number)->void
+room_set_persistent(ind:room,pers:bool)->void
+room_set_background_colour(ind:room,col:int,show:bool)£&->void
+room_set_background_color(ind:room,col:int,show:bool)$&->void
+// room_set_view(ind,vind,vis,xview,yview,wview,hview,xport,yport,wport,hport,hborder,vborder,hspeed,vspeed,obj)
+room_set_viewport(ind:room,vind:int,vis:bool,xport:number,yport:number,wport:number,hport:number)->void
+room_get_viewport(ind:room,vind:int)->any[]
+room_set_view_enabled(ind:room,val:bool)->void
+room_add()!->room
+room_duplicate(ind:room)!->room
+room_assign(ind:room,source:room)->void
+room_instance_add<T>(ind:room,x:number,y:number,obj:T)->void // where T:object
+room_instance_clear(ind:room)->void
+
+room_get_camera(ind:room,vind:int)->camera
+room_set_camera(ind:room,vind:int,camera:camera)->void
+
+asset_get_index(name:string)->any
+asset_get_type(name:name)->asset_type
+
+asset_object#:asset_type
+asset_unknown#:asset_type
+asset_sprite#:asset_type
+asset_sound#:asset_type
+asset_room#:asset_type
+asset_path#:asset_type
+asset_script#:asset_type
+asset_font#:asset_type
+asset_timeline#:asset_type
+asset_tiles#:asset_type
+asset_shader#:asset_type
+asset_sequence#:asset_type
+asset_animationcurve#:asset_type
+
+//////////////
+// Chapter 410
+//////////////
+
+// section 10.1
+
+file_text_open_from_string(content:string)->file_handle
+file_text_open_read(fname:string)->file_handle
+file_text_open_write(fname:string)->file_handle
+file_text_open_append(fname:string)->file_handle
+file_text_close(file:file_handle)->void
+file_text_write_string(file:file_handle,str:string)->void
+file_text_write_real(file:file_handle,val:number)->void
+file_text_writeln(file:file_handle)->void
+file_text_read_string(file:file_handle)->string
+file_text_read_real(file:file_handle)->number
+file_text_readln(file:file_handle)->string
+file_text_eof(file:file_handle)->bool
+file_text_eoln(file:file_handle)->bool
+file_exists(fname:string)->bool
+file_delete(fname:string)->bool
+file_rename(oldname:string,newname:string)->bool
+file_copy(fname:string,newname:string)->bool
+directory_exists(dname:string)->bool
+directory_create(dname:string)->void
+directory_destroy(dname:string)->void
+file_find_first(mask:string,attr:int|file_attribute)->string
+file_find_next()->string
+file_find_close()->void
+file_attributes(fname:string,attr:int|file_attribute)->bool
+filename_name(fname:string)->string
+filename_path(fname:string)->string
+filename_dir(fname:string)->string
+filename_drive(fname:string)->string
+filename_ext(fname:string)->string
+filename_change_ext(fname:string,newext:string)->string
+file_bin_open(fname:string,mode:int)->binary_file_handle
+file_bin_rewrite(file:binary_file_handle)->void
+file_bin_close(file:binary_file_handle)->void
+file_bin_position(file:binary_file_handle)->int
+file_bin_size(file:binary_file_handle)->int
+file_bin_seek(file:binary_file_handle,pos:int)->void
+file_bin_write_byte(file:binary_file_handle,byte:int)->void
+file_bin_read_byte(file:binary_file_handle)->int
+parameter_count()->int
+parameter_string(n:int)->string
+environment_get_variable(name:string)->string
+fa_readonly#:file_attribute
+fa_hidden#:file_attribute
+fa_sysfile#:file_attribute
+fa_volumeid#:file_attribute
+fa_directory#:file_attribute
+fa_archive#:file_attribute
+game_id*:int
+game_display_name*:string
+game_project_name*:string
+game_save_id*:int
+working_directory*:string
+temp_directory*:string
+program_directory*:string
+
+// section 10.3
+
+ini_open_from_string(content:string)->void
+ini_open(fname:string)->void
+ini_close()->string
+ini_read_string(section:string,key:string,default:string)->string
+ini_read_real(section:string,key:string,default:number)->number
+ini_write_string(section:string,key:string,str:string)->void
+ini_write_real(section:string,key:string,value:number)->void
+ini_key_exists(section:string,key:string)->bool
+ini_section_exists(section:string)->bool
+ini_key_delete(section:string,key:string)->void
+ini_section_delete(section:string)->void
+
+
+//////////////
+// Chapter 411
+//////////////
+
+// section 11.0
+
+// DONE BY YAL
+
+// section 11.1
+
+ds_stack_create()->ds_stack
+ds_stack_destroy<T>(id:ds_stack<T>)->void
+ds_stack_clear<T>(id:ds_stack<T>)->void
+ds_stack_copy<T>(id:ds_stack<T>,source:ds_stack<T>)->void
+ds_stack_size<T>(id:ds_stack<T>)->int
+ds_stack_empty<T>(id:ds_stack<T>)->bool
+ds_stack_push<T>(id:ds_stack<T>,...values:T)->void
+ds_stack_pop<T>(id:ds_stack<T>)->T
+ds_stack_top<T>(id:ds_stack<T>)->T
+ds_stack_write<T>(id:ds_stack<T>)->string
+ds_stack_read<T>(id:ds_stack<T>,str, ?legacy:bool)->void
+
+// section 11.2
+
+ds_queue_create()->ds_queue
+ds_queue_destroy<T>(id:ds_queue<T>)->void
+ds_queue_clear<T>(id:ds_queue<T>)->void
+ds_queue_copy<T>(id:ds_queue<T>,source:ds_queue<T>)->void
+ds_queue_size<T>(id:ds_queue<T>)->int
+ds_queue_empty<T>(id:ds_queue<T>)->bool
+ds_queue_enqueue<T>(id:ds_queue<T>,...values:T)->void
+ds_queue_dequeue<T>(id:ds_queue<T>)->T
+ds_queue_head<T>(id:ds_queue<T>)->T
+ds_queue_tail<T>(id:ds_queue<T>)->T
+ds_queue_write<T>(id:ds_queue<T>)->string
+ds_queue_read<T>(id:ds_queue<T>,str:stringg,?legacy:bool)->void
+
+// section 11.3
+
+// DONE BY YAL
+
+// section 11.4
+
+// DONE BY YAL
+
 ds_map_values_to_array<K;V>(map:ds_map<K;V>, K[])->K[]
 ds_map_keys_to_array<K;V>(map:ds_map<K;V>, V[])->V[]
 ds_map_is_map<K;V>(map:ds_map<K;V>,key:K)->bool
 ds_map_is_list<K;V>(map:ds_map<K;V>,key:K)->bool
+
+// section 11.5
+
+ds_priority_create()->ds_priority
+ds_priority_destroy<T>(id:ds_priority<T>)->void
+ds_priority_clear<T>(id:ds_priority<T>)->void
+ds_priority_copy<T>(id:ds_priority<T>,source:ds_priority<T>)->void
+ds_priority_size<T>(id:ds_priority<T>)->int
+ds_priority_empty<T>(id:ds_priority<T>)->bool
+ds_priority_add<T>(id:ds_priority<T>,value:T,priority:number)->void
+ds_priority_change_priority<T>(id:ds_priority<T>,value:T,priority:number)->void
+ds_priority_find_priority<T>(id:ds_priority<T>,value:T)->number
+ds_priority_delete_value<T>(id:ds_priority<T>,value:T)->void
+ds_priority_delete_min<T>(id:ds_priority<T>)->T
+ds_priority_find_min<T>(id:ds_priority<T>)->T
+ds_priority_delete_max<T>(id:ds_priority<T>)->T
+ds_priority_find_max<T>(id:ds_priority<T>)->T
+ds_priority_write<T>(id:ds_priority<T>)->string
+ds_priority_read<T>(id:ds_priority<T>,str:string,?legacy:bool)->void
+
+// section 11.6
+
+// DONE BY YAL
+
+//////////////
+// Chapter 412
+//////////////
+
+// section 12.1a
+
+effect_create_below(kind:effect_kind,x:number,y:number,size:int,col:int)->void
+effect_create_above(kind:effect_kind,x:number,y:number,size:int,col:int)->void
+effect_clear()
+ef_explosion#:effect_kind
+ef_ring#:effect_kind
+ef_ellipse#:effect_kind
+ef_firework#:effect_kind
+ef_smoke#:effect_kind
+ef_smokeup#:effect_kind
+ef_star#:effect_kind
+ef_spark#:effect_kind
+ef_flare#:effect_kind
+ef_cloud#:effect_kind
+ef_rain#:effect_kind
+ef_snow#:effect_kind
