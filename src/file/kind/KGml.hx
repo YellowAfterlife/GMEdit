@@ -13,6 +13,7 @@ import tools.NativeString;
  * @author YellowAfterlife
  */
 class KGml extends KCode {
+	public static var inst:KGml = new KGml();
 	
 	/// Whether #import magic is supported for this kind
 	public var canImport:Bool = true;
@@ -170,7 +171,7 @@ class KGml extends KCode {
 		var content_noCoroutines = content;
 		content = GmlExtCoroutines.pre(content);
 		//
-		var out = new GmlSeekData();
+		var out = new GmlSeekData(this);
 		out.hasCoroutines = content != content_noCoroutines;
 		out.main = main;
 		var locals = new gml.GmlLocals();

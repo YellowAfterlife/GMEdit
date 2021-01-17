@@ -105,7 +105,7 @@ class YyLoaderV22 {
 		project.lambdaMap = new Dictionary();
 		var scriptLambdas = project.properties.lambdaMode == Scripts;
 		if (scriptLambdas) {
-			GmlExtLambda.seekData = new parsers.GmlSeekData();
+			GmlExtLambda.seekData = new parsers.GmlSeekData(KGmlLambdas.inst);
 			GmlExtLambda.seekPath = project.fullPath("#lambdas");
 		}
 		var lz = ui.Preferences.current.lambdaMagic;

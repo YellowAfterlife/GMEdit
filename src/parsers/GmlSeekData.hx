@@ -1,6 +1,7 @@
 package parsers;
 import ace.AceWrap;
 import ace.extern.*;
+import file.FileKind;
 import gml.GmlAPI;
 import gml.*;
 import gml.type.GmlType;
@@ -19,8 +20,9 @@ using tools.NativeArray;
 class GmlSeekData {
 	/** path -> data */
 	public static var map:Dictionary<GmlSeekData> = new Dictionary();
-	private static var blank:GmlSeekData = new GmlSeekData();
+	private static var blank:GmlSeekData = new GmlSeekData(null);
 	//
+	public var kind:FileKind;
 	public var main:String;
 	
 	// enums declared in this file
@@ -73,8 +75,9 @@ class GmlSeekData {
 	public var hasGMLive:Bool = false;
 	
 	//
-	public function new() {
-		
+	public function new(kind:FileKind) {
+		if (kind == null) kind = file.kind.gml.KGmlScript.inst;
+		this.kind = kind;
 	}
 	
 	public function addObjectHint(name:String, parentName:String) {
@@ -82,9 +85,9 @@ class GmlSeekData {
 		namespaceHints.set(name, nhs);
 	}
 	
-	public static function add(path:String) {
+	public static function add(path:String, kind:FileKind) {
 		if (map.exists(path)) return;
-		var next = new GmlSeekData();
+		var next = new GmlSeekData(kind);
 		map.set(path, next);
 		apply(path, null, next);
 	}

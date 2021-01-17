@@ -589,7 +589,7 @@ class GmlExtImport {
 		}
 		flush(q.pos);
 		if (seekData == null && version.config.indexingMode == Local) {
-			seekData = new GmlSeekData();
+			seekData = new GmlSeekData(null);
 			GmlSeekData.map.set(path, seekData);
 		}
 		if (seekData != null) seekData.imports = imps;

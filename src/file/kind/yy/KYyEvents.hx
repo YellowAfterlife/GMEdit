@@ -71,7 +71,7 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 			}
 		}
 		//
-		var out = new GmlSeekData();
+		var out = new GmlSeekData(inst);
 		var eventsLeft = 0;
 		var eventFiles = [];
 		for (event in obj.eventList) {

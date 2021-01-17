@@ -32,7 +32,7 @@ using StringTools;
  */
 class GmlExtLambda {
 	public static var defaultMap:Dictionary<GmlExtLambda> = new Dictionary();
-	public static var seekData:GmlSeekData = new GmlSeekData();
+	public static var seekData:GmlSeekData = new GmlSeekData(KGmlLambdas.inst);
 	public static var seekPath:String = "";
 	//
 	public var comp:AceAutoCompleteItems = [];

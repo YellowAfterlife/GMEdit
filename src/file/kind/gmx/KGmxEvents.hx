@@ -36,7 +36,7 @@ class KGmxEvents extends file.kind.gml.KGmlEvents {
 	}
 	override public function index(path:String, content:String, main:String):Bool {
 		var obj = SfGmx.parse(content);
-		var out = new GmlSeekData();
+		var out = new GmlSeekData(this);
 		//
 		var objectName = Path.withoutExtension(Path.withoutExtension(Path.withoutDirectory(path)));
 		var parentName = obj.findText("parentName");
