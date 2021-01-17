@@ -356,13 +356,13 @@ collision_circle<T>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool
 collision_ellipse<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
 collision_line<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
 
-collision_point_list<T>(x:number,y:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object|instance
-collision_rectangle_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object|instance
-collision_circle_list<T>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object|instance
-collision_ellipse_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object|instance
-collision_line_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object|instance
-instance_position_list<T>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int // where T:object|instance
-instance_place_list<T>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int // where T:object|instance
+collision_point_list<T>(x:number,y:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
+collision_rectangle_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
+collision_circle_list<T>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
+collision_ellipse_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
+collision_line_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
+instance_position_list<T>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int // where T:object
+instance_place_list<T>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int // where T:object
 
 point_in_rectangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number)->bool
 point_in_triangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->bool
@@ -392,7 +392,7 @@ instance_create_depth<T>(x:number,y:number,depth:number,obj:T)->T // where T:obj
 instance_create_layer<T>(x:number,y:number,layer_id_or_name:layer|string,obj:T)-> // where T:object
 instance_copy(performevent) // TODO... good luck with this one
 instance_change<T>(obj:T,performevents:bool)->void // where T:object|instance
-instance_destroy<T>(id*:T,execute_event_flag*:bool)->void // where T:object|instance
+instance_destroy<T>(?id*:T,?execute_event_flag*:bool)->void // where T:object|instance
 position_destroy(x:number,y:number)->void
 position_change<T>(x:number,y:number,obj:T,performevents:bool)->void // where T:object
 instance_id_get(index:int)->any // where any:instance
@@ -1153,7 +1153,7 @@ audio_emitter_velocity(emitterid:audio_emitter,vx:number,vy:number,vz:number)->v
 audio_emitter_falloff(emitterid:audio_emitter, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number)->void
 audio_emitter_gain(emitterid:audio_emitter,gain:number)->void
 audio_play_sound(soundid:sound,priority:int,loops:bool)->sound_instance
-audio_play_sound_on(emitterid:emitterid,soundid:sound,loops:bool,priority:int)->sound_instance
+audio_play_sound_on(emitterid:audio_emitter,soundid:sound,loops:bool,priority:int)->sound_instance
 audio_play_sound_at(soundid:sound,x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int)->sound_instance
 audio_stop_sound(soundid:sound|sound_instance)->void
 audio_resume_music()&->void
@@ -1238,7 +1238,7 @@ audio_sound_get_listener_mask(soundid:sound|sound_instance)->int
 audio_emitter_get_listener_mask(emitterid:audio_emitter)->int
 audio_get_listener_mask()->int
 audio_sound_set_listener_mask(soundid:sound|sound_instance,mask:int)->void
-audio_emitter_set_listener_mask(emitterid:emitterIndex,mask:int)->void
+audio_emitter_set_listener_mask(emitterid:audio_emitter,mask:int)->void
 audio_set_listener_mask(mask:int)->void
 audio_get_listener_count()->int
 audio_get_listener_info(index:int)->ds_map<string, any>
@@ -1260,7 +1260,7 @@ clickable_change(buttonid:html_clickable,spritetpe:html_clickable_tpe,x:number,y
 clickable_change_ext(buttonid:html_clickable,spritetpe:html_clickable_tpe,x:number,y:number,scale:number,alpha:number)->void
 clickable_delete(buttonid:html_clickable)->void
 clickable_exists(index:html_clickable)->bool
-clickable_set_style(buttonid:html_clickable,map:ds_map<string, string>)->bool
+clickable_set_style(buttonid:html_clickable,map:ds_map<string; string>)->bool
 
 show_question(str:string)->bool
 show_question_async(str:string)->int
@@ -1485,7 +1485,7 @@ room_get_camera(ind:room,vind:int)->camera
 room_set_camera(ind:room,vind:int,camera:camera)->void
 
 asset_get_index(name:string)->any
-asset_get_type(name:name)->asset_type
+asset_get_type(name:string)->asset_type
 
 asset_object#:asset_type
 asset_unknown#:asset_type
@@ -1612,7 +1612,7 @@ ds_queue_dequeue<T>(id:ds_queue<T>)->T
 ds_queue_head<T>(id:ds_queue<T>)->T
 ds_queue_tail<T>(id:ds_queue<T>)->T
 ds_queue_write<T>(id:ds_queue<T>)->string
-ds_queue_read<T>(id:ds_queue<T>,str:stringg,?legacy:bool)->void
+ds_queue_read<T>(id:ds_queue<T>,str:string,?legacy:bool)->void
 
 // section 11.3
 
@@ -1671,3 +1671,429 @@ ef_flare#:effect_kind
 ef_cloud#:effect_kind
 ef_rain#:effect_kind
 ef_snow#:effect_kind
+
+// section 12.1
+
+part_type_create()->particle
+part_type_destroy(ind:particle)->void
+part_type_exists(ind:particle)->void
+part_type_clear(ind:particle)->void
+part_type_shape(ind:particle,shape:particle_shape)->void
+part_type_sprite(ind:particle,sprite:sprite,animat:bool,stretch:bool,random:bool)->void
+part_type_size(ind:particle,size_min:number,size_max:number,size_incr:number,size_wiggle:number)->void
+part_type_scale(ind:particle,xscale:number,yscale:number)->void
+part_type_orientation(ind:particle,ang_min:number,ang_max:number,ang_incr:number,ang_wiggle:number,ang_relative:bool)->void
+part_type_life(ind:particle,life_min:number,life_max:number)->void
+part_type_step(ind:particle,step_number:int,step_type:particle)->void
+part_type_death(ind:particle,death_number:int,death_type:particle)->void
+part_type_speed(ind:particle,speed_min:number,speed_max:number,speed_incr:number,speed_wiggle:number)->void
+part_type_direction(ind:particle,dir_min:number,dir_max:number,dir_incr:number,dir_wiggle:number)->void
+part_type_gravity(ind:particle,grav_amount:number,grav_dir:number)->void
+part_type_colour1(ind:particle,colour1:int)£->void
+part_type_colour2(ind:particle,colour1:int,colour2:int)£->void
+part_type_colour3(ind:particle,colour1:int,colour2:int,colour3:int)£->void
+part_type_colour_mix(ind:particle,colour1:int,colour2:int)£->void
+part_type_colour_rgb(ind:particle,rmin:int,rmax:int,gmin:int,gmax:int,bmin:int,bmax:int)£->void
+part_type_colour_hsv(ind:particle,hmin:number,hmax:number,smin:number,smax:number,vmin:number,vmax:number)£->void
+part_type_color1(ind:particle,color1:int)$->void
+part_type_color2(ind:particle,color1:int,color2:int)$->void
+part_type_color3(ind:particle,color1:int,color2:int,color3:int)$->void
+part_type_color_mix(ind:particle,color1:int,color2:int)$->void
+part_type_color_rgb(ind:particle,rmin:int,rmax:int,gmin:int,gmax:int,bmin:int,bmax:int)$->void
+part_type_color_hsv(ind:particle,hmin:number,hmax:number,smin:number,smax:number,vmin:number,vmax:number)$->void
+part_type_alpha1(ind:particle,alpha1:number)->void
+part_type_alpha2(ind:particle,alpha1:number,alpha2:number)->void
+part_type_alpha3(ind:particle,alpha1:number,alpha2:number,alpha3:number)->void
+part_type_blend(ind:particle,additive:bool)->void
+pt_shape_pixel#:particle_shape
+pt_shape_disk#:particle_shape
+pt_shape_square#:particle_shape
+pt_shape_line#:particle_shape
+pt_shape_star#:particle_shape
+pt_shape_circle#:particle_shape
+pt_shape_ring#:particle_shape
+pt_shape_sphere#:particle_shape
+pt_shape_flare#:particle_shape
+pt_shape_spark#:particle_shape
+pt_shape_explosion#:particle_shape
+pt_shape_cloud#:particle_shape
+pt_shape_smoke#:particle_shape
+pt_shape_snow#:particle_shape
+
+// section 12.2
+
+part_system_create()->particle_system
+part_system_create_layer(layer:layer|string,persistent:bool)->particle_system
+part_system_destroy(ind:particle_system)->void
+part_system_exists(ind:particle_system)->bool
+part_system_clear(ind:particle_system)->void
+part_system_draw_order(ind:particle_system,oldtonew:bool)->void
+part_system_depth(ind:particle_system,depth:number)->void
+part_system_position(ind:particle_system,x:number,y:number)->void
+part_system_automatic_update(ind:particle_system,automatic:bool)->void
+part_system_automatic_draw(ind:particle_system,draw:bool)->void
+part_system_update(ind:particle_system)->void
+part_system_drawit(ind:particle_system)->void
+part_system_get_layer(ind:particle_system)->layer
+part_system_layer(ind:particle_system,layer:layer|string)->void
+
+part_particles_create(ind:particle_system,x:number,y:number,parttype:particle,number:int)->void
+part_particles_create_colour(ind:particle_system,x:number,y:number,parttype:particle,colour:int,number:int)£->void
+part_particles_create_color(ind:particle_system,x:number,y:number,parttype:particle,color:int,number:int)$->void
+part_particles_clear(ind:particle_system)->void
+part_particles_count(ind:particle_system)->int
+
+// section 12.3
+
+part_emitter_create(ps:particle_system)->particle_emitter
+part_emitter_destroy(ps:particle_system,emitter:particle_emitter)->void
+part_emitter_destroy_all(ps:particle_system)->void
+part_emitter_exists(ps:particle_system,ind:particle_emitter)->bool
+part_emitter_clear(ps:particle_system,ind:particle_emitter)->void
+part_emitter_region(ps:particle_system,ind:particle_emitter,xmin:number,xmax:number,ymin:number,ymax:number,shape:particle_region_shape,distribution:particle_distribution)->void
+part_emitter_burst(ps:particle_system,ind:particle_emitter,parttype:particle,number:int)->void
+part_emitter_stream(ps:particle_system,ind:particle_emitter,parttype:particle,number:int)->void
+ps_distr_linear#:particle_distribution
+ps_distr_gaussian#:particle_distribution
+ps_distr_invgaussian#:particle_distribution
+ps_shape_rectangle#:particle_region_shape
+ps_shape_ellipse#:particle_region_shape
+ps_shape_diamond#:particle_region_shape
+ps_shape_line#:particle_region_shape
+
+
+//////////////
+// Chapter 414
+//////////////
+
+//Handled by YAL
+
+//external_call(id,arg1,arg2,...)!
+//external_define(dll,name,calltype,restype,argnumb,arg1type,arg2type,...)!
+external_free(dllname:string)!
+window_handle()->pointer
+window_device()->pointer
+
+// Handled by YAL
+//ty_real#
+//ty_string#
+//dll_cdecl#
+//dll_stdcall#
+//////////////
+// Chapter 415
+//////////////
+
+matrix_view#:matrix_type
+matrix_projection#:matrix_type
+matrix_world#:matrix_type
+matrix_get(type:matrix_type)->number[]
+matrix_set(type:matrix_type,matrix:number[])->void
+matrix_build_identity()->number[]
+matrix_build(x:number,y:number,z:number,xrotation:number,yrotation:number,zrotation:number,xscale:number,yscale:number,zscale:number)->number[]
+matrix_build_lookat(xfrom:number,yfrom:number,zfrom:number,xto:number,yto:number,zto:number,xup:number,yup:number,zup:number)->number[]
+matrix_build_projection_ortho(width:number,height:number,znear:number,zfar:number)->number[]
+matrix_build_projection_perspective(width:number,height:number,znear:number,zfar:number)->number[]
+matrix_build_projection_perspective_fov(fov_y:number,aspect:number,znear:number,zfar:number)->number[]
+matrix_multiply(matrix:number[],matrix:number[])->number[]
+matrix_transform_vertex(matrix:number[], x:number, y:number, z:number)->number[]
+
+matrix_stack_push(matrix:number[])->void
+matrix_stack_pop()->void
+//matrix_stack_multiply(matrix)
+matrix_stack_set(matrix:number[])->void
+matrix_stack_clear()->void
+matrix_stack_top()->number[]
+matrix_stack_is_empty()->bool
+
+
+// YoYo extension stuff
+os_win32#&:os_type
+os_windows#:os_type
+os_macosx#:os_type
+os_ios#:os_type
+os_android#:os_type
+//os_symbian#
+os_linux#:os_type
+os_unknown#:os_type
+os_winphone#:os_type
+//os_tizen#
+os_win8native#:os_type
+//os_wiiu#
+//os_3ds#
+os_psvita#:os_type
+//os_bb10#
+os_ps4#
+os_xboxone#:os_type
+os_ps3#
+//os_xbox360#
+os_uwp#:os_type
+os_tvos#:os_type
+os_switch#:os_type
+
+browser_not_a_browser#:browser_type
+browser_unknown#:browser_type
+browser_ie#:browser_type
+browser_firefox#:browser_type
+browser_chrome#:browser_type
+browser_safari#:browser_type
+browser_safari_mobile#:browser_type
+browser_opera#:browser_type
+browser_tizen#:browser_type
+browser_edge#:browser_type
+browser_windows_store#:browser_type
+browser_ie_mobile#:browser_type
+browser_width*:number
+browser_height*:number
+browser_input_capture(enable:bool)->void
+
+device_ios_unknown#:device_type
+device_ios_iphone#:device_type
+device_ios_iphone_retina#:device_type
+device_ios_ipad#:device_type
+device_ios_ipad_retina#:device_type
+device_ios_iphone5#:device_type
+device_ios_iphone6#:device_type
+device_ios_iphone6plus#:device_type
+
+device_emulator#:device_type
+device_tablet#:device_type
+
+display_landscape#:display_orientation
+display_landscape_flipped#:display_orientation
+display_portrait#:display_orientation
+display_portrait_flipped#:display_orientation
+
+os_type*:os_type
+os_device*:device_type
+os_browser*:browser_type
+os_version*:int
+os_get_config()->string
+os_get_info()->ds_map<string, any>
+os_get_language()->string
+os_get_region()->string
+os_check_permission(permission:string)->android_permission_state
+os_request_permission(permission:string)->void
+os_lock_orientation(flag:bool)->void
+display_get_dpi_x()->number
+display_get_dpi_y()->number
+display_set_gui_size(width:number,height:number)->void
+display_set_gui_maximise(?xscale:number,?yscale:number,?xoffset:number,?yoffset:number)£->void
+display_set_gui_maximize(?xscale:number,?yscale:number,?xoffset:number,?yoffset:number)$->void
+device_mouse_dbclick_enable(enable:bool)->void
+display_aa*:int
+async_load*:ds_map<any, any>
+delta_time*:number
+webgl_enabled*:bool
+event_data*:ds_map<string, any>
+
+display_set_timing_method(method:display_timing_method)->void
+display_get_timing_method()->display_timing_method
+tm_sleep#:display_timing_method
+tm_countvsyncs#:display_timing_method
+
+display_set_sleep_margin(milliseconds:number)->void
+display_get_sleep_margin()->number
+
+// My job is not to judge that they're still here, just that they're correctly categorized
+of_challenge_win#:openfeint_challenge
+of_challenge_lose#:openfeint_challenge
+of_challenge_tie#:openfeint_challenge
+
+leaderboard_type_number# //TODO find these
+leaderboard_type_time_mins_secs#
+
+
+virtual_key_add(x:number,y:number,w:number,h:number,keycode:int)->virtual_key
+virtual_key_hide(id:virtual_key)->void
+virtual_key_delete(id:virtual_key)->void
+virtual_key_show(id:virtual_key)->void
+draw_enable_drawevent(enable:bool)->void
+draw_enable_swf_aa(enable:bool)!->void
+draw_set_swf_aa_level(aa_level:number)!->void
+draw_get_swf_aa_level()!->number
+draw_texture_flush()->void
+draw_flush()->void
+
+// GPU state setting
+
+// Constants
+cmpfunc_never#:gpu_cmpfunc
+cmpfunc_less#:gpu_cmpfunc
+cmpfunc_equal#:gpu_cmpfunc
+cmpfunc_lessequal#:gpu_cmpfunc
+cmpfunc_greater#:gpu_cmpfunc
+cmpfunc_notequal#:gpu_cmpfunc
+cmpfunc_greaterequal#:gpu_cmpfunc
+cmpfunc_always#:gpu_cmpfunc
+
+cull_noculling#:gpu_cullmode
+cull_clockwise#:gpu_cullmode
+cull_counterclockwise#:gpu_cullmode
+
+lighttype_dir#:draw_lighttype
+lighttype_point#:draw_lighttype
+
+gpu_set_blendenable(enable:bool)->void
+gpu_set_ztestenable(enable:bool)->void
+gpu_set_zfunc(cmp_func:gpu_cmpfunc)->void
+gpu_set_zwriteenable(enable:bool)->void
+//gpu_set_lightingenable(enable)
+gpu_set_fog(array_or_enable:bool|any[],?col:number,?start:number,?end:number)->void
+gpu_set_cullmode(cullmode:gpu_cullmode)->void
+gpu_set_blendmode(mode:blendmode)->void
+gpu_set_blendmode_ext(src:blendmode_ext,dest:blendmode_ext)->void
+gpu_set_blendmode_ext_sepalpha(src:blendmode_ext,dest:blendmode_ext,srcalpha:blendmode_ext,destalpha:blendmode_ext)->void
+gpu_set_colorwriteenable(red_or_array:bool|bool[],?green*:bool,?blue*:bool,?alpha*:bool)$->void
+gpu_set_colourwriteenable(red_or_array:bool|bool[],?green*:bool,?blue*,?alpha*:bool)£->void
+gpu_set_alphatestenable(enable:bool)->void
+gpu_set_alphatestref(value:int)->void
+gpu_set_texfilter(linear:bool)->void
+gpu_set_texfilter_ext(sampler_id:shader_sampler_index,linear:bool)->void
+gpu_set_texrepeat(repeat:bool)->void
+gpu_set_texrepeat_ext(sampler_id:shader_sampler_index,repeat:bool)->void
+gpu_set_tex_filter(linear:bool)->void
+gpu_set_tex_filter_ext(sampler_id:shader_sampler_index,linear:bool)->void
+gpu_set_tex_repeat(repeat:bool)->void
+gpu_set_tex_repeat_ext(sampler_id:shader_sampler_index,repeat:bool)->void
+
+gpu_set_tex_mip_filter(filter:texture_mip_filter)->void
+gpu_set_tex_mip_filter_ext(sampler_id:shader_sampler_index,filter:texture_mip_filter)->void
+gpu_set_tex_mip_bias(bias:number)->void
+gpu_set_tex_mip_bias_ext(sampler_id:shader_sampler_index,bias:number)->void
+gpu_set_tex_min_mip(minmip:int)->void
+gpu_set_tex_min_mip_ext(sampler_id:shader_sampler_index,minmip:int)->void
+gpu_set_tex_max_mip(maxmip:int)->void
+gpu_set_tex_max_mip_ext(sampler_id:shader_sampler_index,maxmip:int)->void
+gpu_set_tex_max_aniso(maxaniso:int)->void
+gpu_set_tex_max_aniso_ext(sampler_id:shader_sampler_index,maxaniso:int)->void
+gpu_set_tex_mip_enable(setting:texture_mip_state)
+gpu_set_tex_mip_enable_ext(sampler_id:shader_sampler_index,setting:texture_mip_state)
+
+gpu_get_blendenable()->bool
+gpu_get_ztestenable()->bool
+gpu_get_zfunc()->gpu_cmpfunc
+gpu_get_zwriteenable()->bool
+//gpu_get_lightingenable()
+gpu_get_fog()->any[]
+gpu_get_cullmode()->gpu_cullmode
+gpu_get_blendmode()->blendmode
+gpu_get_blendmode_ext()->blendmode_ext[]
+gpu_get_blendmode_ext_sepalpha()->blendmode_ext[]
+gpu_get_blendmode_src()->blendmode_ext
+gpu_get_blendmode_dest()->blendmode_ext
+gpu_get_blendmode_srcalpha()->blendmode_ext
+gpu_get_blendmode_destalpha()->blendmode_ext
+gpu_get_colorwriteenable()$->bool
+gpu_get_colourwriteenable()£->bool
+gpu_get_alphatestenable()->bool
+gpu_get_alphatestref()->int
+gpu_get_texfilter()->bool
+gpu_get_texfilter_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_texrepeat()->bool
+gpu_get_texrepeat_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_tex_filter()->bool
+gpu_get_tex_filter_ext(sampler_id:shader_sampler_index)->bool
+gpu_get_tex_repeat()->bool
+gpu_get_tex_repeat_ext(sampler_id:shader_sampler_index)->bool
+
+gpu_get_tex_mip_filter()->texture_mip_filter
+gpu_get_tex_mip_filter_ext(sampler_id:shader_sampler_index)->texture_mip_filter
+gpu_get_tex_mip_bias()->number
+gpu_get_tex_mip_bias_ext(sampler_id:shader_sampler_index)->number
+gpu_get_tex_min_mip()->int
+gpu_get_tex_min_mip_ext(sampler_id:shader_sampler_index)->int
+gpu_get_tex_max_mip()->int
+gpu_get_tex_max_mip_ext(sampler_id:shader_sampler_index)->int
+gpu_get_tex_max_aniso()->int
+gpu_get_tex_max_aniso_ext(sampler_id:shader_sampler_index)->int
+gpu_get_tex_mip_enable()->texture_mip_state
+gpu_get_tex_mip_enable_ext(sampler_id:shader_sampler_index)->texture_mip_state
+
+gpu_push_state()->void
+gpu_pop_state()->void
+
+gpu_get_state()->ds_map<string, any>
+gpu_set_state(map:ds_map<string; any>)->void
+
+draw_light_define_ambient(col:int)->void
+draw_light_define_direction(ind:int,dx:number,dy:number,dz:number,col:int)->void
+draw_light_define_point(ind:int,x:number,y:number,z:number,range:number,col:int)->void
+draw_light_enable(ind:int,enable:bool)->void
+draw_set_lighting(enable:bool)->void
+
+draw_light_get_ambient()->int
+draw_light_get(ind:int)->any[]
+draw_get_lighting()->bool
+
+
+shop_leave_rating(text_string:string,yes_string:string,no_string:string,url:string)->void
+
+
+url_get_domain()->string
+url_open(url:string)->void
+url_open_ext(url:string,target:string)->void
+url_open_full(url:string,target:string,options:string)->void
+get_timer()->int
+
+achievement_login()->void
+achievement_logout()->void
+achievement_post(achievement_name:string,value:number)->void
+achievement_increment(achievement_name:string,value:number)->void
+achievement_post_score(score_name:string,value:number)->void
+achievement_available()->bool
+achievement_show_achievements()->bool
+achievement_show_leaderboards()->bool
+achievement_load_friends()->bool
+achievement_load_leaderboard(ident:string,minindex:int,maxindex:int,filter:achievement_leaderboard_filter)->void
+achievement_send_challenge(to:string,challengeid:string,score:number,type:achievement_challenge_type,msg:string)->void
+achievement_load_progress()->void
+achievement_reset()->void
+achievement_login_status()->bool
+achievement_get_pic(char:string)->void
+
+achievement_show_challenge_notifications(receive_challenge:bool,local_complete:bool,remote_complete:bool)->void
+achievement_get_challenges()->void
+achievement_event(stringid:string)->void
+achievement_show(type:achievement_show_type,val:any)->void
+achievement_get_info(userid:string)->void
+
+
+cloud_file_save(filename:string, description:string)->int
+cloud_string_save(data:string, description:string)->int
+cloud_synchronise()->int
+
+ads_enable(x:number,y:number,num:int)&->void
+ads_disable(num:int)&->void
+ads_setup(user_uuid:string,ad_app_key:string)&->void
+ads_engagement_launch()&->void
+ads_engagement_available()&->bool
+ads_engagement_active()&->bool
+ads_event(stringid:string)&->void
+ads_event_preload(stringid:string)&->void
+
+ads_set_reward_callback(callback:string)&->void
+
+
+ads_get_display_height(slotnum:int)&->number
+ads_get_display_width(slotnum:int)&->number
+ads_move(x:number,y:number,slotnum:int)&->void
+
+ads_interstitial_available()&->bool
+ads_interstitial_display()&->void
+
+device_get_tilt_x()->number
+device_get_tilt_y()->number
+device_get_tilt_z()->number
+device_is_keypad_open()->bool
+
+
+// Multi-touch functionality
+device_mouse_check_button(device:int,button:mouse_button)->bool
+device_mouse_check_button_pressed(device:int,button:mouse_button)->bool
+device_mouse_check_button_released(device:int,button:mouse_button)->bool
+device_mouse_x(device:int)->number
+device_mouse_y(device:int)->number
+device_mouse_raw_x(device:int)->number
+device_mouse_raw_y(device:int)->number
+device_mouse_x_to_gui(device:int)->number
+device_mouse_y_to_gui(device:int)->number

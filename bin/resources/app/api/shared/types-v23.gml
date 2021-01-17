@@ -19,8 +19,13 @@ typedef html_clickable_tpe
 typedef texture_group
 typedef file_handle
 typedef binary_file_handle
+typedef particle
+typedef particle_system
+typedef particle_emitter
+typedef virtual_key
+typedef shader_sampler_index
 
-// Dumb types, only used as function arguments
+// Dumb types, only used as function arguments, can't be created
 typedef timezone_type
 typedef gamespeed_type
 typedef path_endaction
@@ -45,3 +50,21 @@ typedef buffer_type //buffer_s8 etc
 typedef sprite_speed_type
 typedef asset_type
 typedef file_attribute : int
+typedef particle_shape
+typedef particle_distribution
+typedef particle_region_shape
+typedef effect_kind
+typedef matrix_type
+typedef os_type
+typedef browser_type
+typedef device_type
+typedef android_permission_state
+typedef display_timing_method
+typedef openfeint_challenge
+typedef gpu_cmpfunc
+typedef gpu_cullmode
+typedef draw_lighttype
+typedef achievement_leaderboard_filter
+typedef achievement_challenge_type
+typedef achievement_async_id
+typedef achievement_show_type
