@@ -660,7 +660,7 @@ class GmlExtImport {
 					return one + (reader.checkWrites(p0, p1) ? '[@' : '[') + ind + ']';
 				}
 			}
-			else if (en != null || ns != null && ns.isStruct) {
+			else if (en != null || ns != null && ns.isSealed) {
 				if (errorText != "") errorText += "\n";
 				errorText += reader.getPos(dot + 1).toString() + ' Could not find field $fd in '
 					+ (ns != null ? 'namespace' : en != null ? 'enum' : 'unknown type')

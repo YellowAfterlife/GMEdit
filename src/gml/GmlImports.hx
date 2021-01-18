@@ -67,7 +67,7 @@ class GmlImports {
 			en = GmlAPI.gmlEnums[space];
 		}
 		if (en != null) {
-			ns.isStruct = true;
+			ns.isSealed = true;
 			for (comp in en.compList) {
 				var c = enumCompToNsComp(comp);
 				ns.compStatic.addn(c);
@@ -157,7 +157,7 @@ class GmlImports {
 				en = GmlAPI.gmlEnums[long];
 				if (en != null) {
 					ns = namespaces[short];
-					if (ns != null) ns.isStruct = true;
+					if (ns != null) ns.isSealed = true;
 					if (cache != null) {
 						var comps = cache.enumComps;
 						var nsComps = cache.enumNsComps;
@@ -262,5 +262,5 @@ class GmlImportNamespace extends GmlNamespace {
 	 * Means that the namespace is structurally complete and no extra variables can be used
 	 * on local variables with this namespace type.
 	 */
-	public var isStruct:Bool = false;
+	public var isSealed:Bool = false;
 }
