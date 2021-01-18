@@ -38,8 +38,8 @@ all#
 noone#
 global#
 undefined#
-pointer_invalid#
-pointer_null#
+pointer_invalid#:pointer
+pointer_null#:pointer
 
 path_action_stop#:path_endaction
 path_action_restart#:path_endaction
@@ -1484,7 +1484,7 @@ room_instance_clear(ind:room)->void
 room_get_camera(ind:room,vind:int)->camera
 room_set_camera(ind:room,vind:int,camera:camera)->void
 
-asset_get_index(name:string)->any
+asset_get_index(name:string)->asset
 asset_get_type(name:string)->asset_type
 
 asset_object#:asset_type
@@ -2622,7 +2622,7 @@ steam_ugc_create_query_user_ex( list_type:steam_ugc_query_list_type, match_type:
 steam_ugc_create_query_all( query_type:steam_ugc_query_type, match_type:steam_ugc_query_match_type, page:int )->int
 steam_ugc_create_query_all_ex( query_type:steam_ugc_query_type, match_type:steam_ugc_query_match_type, page:int, creator_app_id:steam_id, consumer_app_id:int )->int
 
-steam_ugc_query_set_cloud_filename_filter( ugc_query_handle:steam_ugc_query , match_cloud_filename:bool )->bool
+steam_ugc_query_set_cloud_filename_filter( ugc_query_handle:steam_ugc_query, match_cloud_filename:bool )->bool
 steam_ugc_query_set_match_any_tag( ugc_query_handle:steam_ugc_query, match_any_tag:bool )->bool
 steam_ugc_query_set_search_text( ugc_query_handle:steam_ugc_query, search_text:string )->bool
 steam_ugc_query_set_ranked_by_trend_days( ugc_query:steam_ugc_query, days:number)->bool
@@ -2790,3 +2790,471 @@ push_get_next_local_notification( ds_map:ds_map<string;string> )->int
 push_cancel_local_notification( id:int )->void
 push_get_application_badge_number()->int
 push_set_application_badge_number( num:int )->void
+
+
+// Instance specific
+skeleton_animation_set(anim_name:string)!->void
+skeleton_animation_get()!->string
+skeleton_animation_mix(anim_from:string,anim_to:string,duration:number)!->void
+skeleton_animation_set_ext(anim_name:string, track:int)!->void
+skeleton_animation_get_ext(track:int)!->string
+skeleton_animation_get_duration(anim_name:string)!->number
+skeleton_animation_get_frames(anim_name:string)!->int
+skeleton_animation_clear(track:int)!->void
+skeleton_skin_set(skin_name:string)!->void
+skeleton_skin_get()!->string
+skeleton_attachment_set(slot:string, attachment:string|sprite)!
+skeleton_attachment_get(slot:string)!->string
+skeleton_attachment_create(name:string,sprite:sprite,ind:int,xo:number,yo:number,xs:number,ys:number,rot:number)!->int
+skeleton_attachment_create_colour(name:string,sprite:sprite,ind:int,xo:number,yo:number,xs:number,ys:number,rot:number,col:int,alpha:number)->int!£
+skeleton_attachment_create_color(name:string,sprite:sprite,ind:int,xo:number,yo:number,xs:number,ys:number,rot:number,col:int,alpha:number)->int!$
+skeleton_collision_draw_set(val:bool)!->void
+skeleton_bone_data_get(bone:string, map:ds_map<string;any>)!->void
+skeleton_bone_data_set(bone:string, map:ds_map<string;any>)!->void
+skeleton_bone_state_get(bone:string, map:ds_map<string;any>)!->void
+skeleton_bone_state_set(bone:string, map:ds_map<string;any>)!->void
+skeleton_slot_colour_set(slot:string,col:int,alpha:number)!£->void
+skeleton_slot_color_set(slot:string,col:int,alpha:number)!$->void
+skeleton_slot_colour_get(slot:string)!£->int
+skeleton_slot_color_get(slot:string)!$->int
+skeleton_slot_alpha_get(slot:string)!->number
+skeleton_find_slot(x:number,y:number,list:ds_list<string>)!->void
+
+skeleton_get_minmax()!->number[]
+skeleton_get_num_bounds()!->int
+skeleton_get_bounds(index:int)!->number[]
+skeleton_animation_get_frame(track:int)!->int
+skeleton_animation_set_frame(track:int,index:int)!->void
+skeleton_animation_get_event_frames(anim_name:string,event_name:string)!->int[]
+
+// Instance independent!
+draw_skeleton(sprite:sprite,animname:string,skinname:string,frame:int,x:number,y:number,xscale:number,yscale:number,rot:number,col:int,alpha:number)!->void
+draw_skeleton_time(sprite:sprite, animname:string,skinname:string, time:number, x:number,y:number, xscale:number,yscale:number, rot:number, col:int,alpha:number)!->void
+draw_skeleton_instance<T>(instance:T, animname:string,skinname:string,frame:int,x:number,y:number,xscale:number,yscale:number,rot:number,col:int,alpha:number)!->void // where T:instance|object
+draw_skeleton_collision(sprite:sprite,animname:string,frame:int,x:number,y:number,xscale:number,yscale:number,rot:number,col:int)!->void
+draw_enable_skeleton_blendmodes(enable:bool)!->void
+draw_get_enable_skeleton_blendmodes()!->bool
+skeleton_animation_list(sprite:sprite, list:ds_list<string>)!->void
+skeleton_skin_list(sprite:sprite, list:ds_list<string>)!->void
+skeleton_bone_list(sprite:sprite, list:ds_list<string>)!->void
+skeleton_slot_list(sprite:sprite, list:ds_list<string>)!->void
+skeleton_slot_data(sprite:sprite, list:ds_list<ds_map<string;any>>)!->void
+skeleton_slot_data_instance(list:ds_list<ds_map<string;any>>)!
+
+// Layer functions!
+layer_get_id(layer_name:string)->layer
+layer_get_id_at_depth(depth:int)->layer
+layer_get_depth(layer_id:layer|string)->int
+layer_create(depth:int,?name:string)->layer
+layer_destroy(layer_id:layer|string)->void
+layer_destroy_instances(layer_id:layer|string)->void
+layer_add_instance<T>(layer_id:layer|string,instance:T)->void // where T:instance
+layer_has_instance<T>(layer_id:layer|string,instance:T)->bool // where T:instance|object
+layer_set_visible(layer_id:layer|string,visible:bool)->void
+layer_get_visible(layer_id:layer|string)->bool
+layer_exists(layer_id:layer|string)->bool
+layer_x(layer_id:layer|string,x:number)->void
+layer_y(layer_id:layer|string,y:number)->void
+layer_get_x(layer_id:layer|string)->number
+layer_get_y(layer_id:layer|string)->number
+layer_hspeed(layer_id:layer|string,speed:number)->void
+layer_vspeed(layer_id:layer|string,speed:number)->void
+layer_get_hspeed(layer_id:layer|string)->number
+layer_get_vspeed(layer_id:layer|string)->number
+
+layer_script_begin(layer_id:layer|string,script:script)->void
+layer_script_end(layer_id:layer|string,script:script)->void
+
+layer_shader(layer_id:layer|string,shader:shader)->void
+
+layer_get_script_begin(layer_id:layer|string)->script
+layer_get_script_end(layer_id:layer|string)->script
+
+layer_get_shader(layer_id:layer|string)->shader
+
+layer_set_target_room(room:room)->void
+layer_get_target_room()->room
+layer_reset_target_room()->void
+
+layer_get_all():layer[]
+layer_get_all_elements(layer_id:layer|string)->layer_element[]
+layer_get_name(layer_id:layer|string)->string
+layer_depth(layer_id:layer|string, depth:int)->void
+
+layer_get_element_layer(element_id:layer_element)->layer
+layer_get_element_type(element_id:layer_element)->layer_element_type
+
+layer_element_move(element_id:layer_element,layer_id:layer|string)->void
+
+layer_force_draw_depth(force:bool,depth:number)->void
+layer_is_draw_depth_forced()->bool
+layer_get_forced_depth()->number
+
+// Layer constants
+layerelementtype_undefined#:layer_element_type
+layerelementtype_background#:layer_element_type
+layerelementtype_instance#:layer_element_type
+layerelementtype_oldtilemap#:layer_element_type
+layerelementtype_sprite#:layer_element_type
+layerelementtype_tilemap#:layer_element_type
+layerelementtype_particlesystem#:layer_element_type
+layerelementtype_tile#:layer_element_type
+layerelementtype_sequence#:layer_element_type
+
+// Background element
+layer_background_get_id(layer_id:layer|string)->layer_background
+layer_background_exists(layer_id:layer|string,background_element_id:layer_background)->bool
+
+layer_background_create(layer_id:layer|string,sprite:sprite)->layer_background
+layer_background_destroy(background_element_id:layer_background)->void
+
+layer_background_visible(background_element_id:layer_background,visible:bool)->void
+layer_background_change(background_element_id:layer_background,sprite:sprite)->void
+layer_background_sprite(background_element_id:layer_background,sprite:sprite)->void
+layer_background_htiled(background_element_id:layer_background,tiled:bool)->void
+layer_background_vtiled(background_element_id:layer_background,tiled:bool)->void
+layer_background_stretch(background_element_id:layer_background,stretch:bool)->void
+layer_background_yscale(background_element_id:layer_background,yscale:number)->void
+layer_background_xscale(background_element_id:layer_background,xscale:number)->void
+layer_background_blend(background_element_id:layer_background,col:int)->void
+layer_background_alpha(background_element_id:layer_background,alpha:number)->void
+layer_background_index(background_element_id:layer_background,image_index:int)->void
+layer_background_speed(background_element_id:layer_background,image_speed:number)->void
+
+layer_background_get_visible(background_element_id:layer_background)->bool
+layer_background_get_sprite(background_element_id:layer_background)->sprite
+layer_background_get_htiled(background_element_id:layer_background)->bool
+layer_background_get_vtiled(background_element_id:layer_background)->bool
+layer_background_get_stretch(background_element_id:layer_background)->bool
+layer_background_get_yscale(background_element_id:layer_background)->number
+layer_background_get_xscale(background_element_id:layer_background)->number
+layer_background_get_blend(background_element_id:layer_background)->int
+layer_background_get_alpha(background_element_id:layer_background)->number
+layer_background_get_index(background_element_id:layer_background)->int
+layer_background_get_speed(background_element_id:layer_background)->number
+
+// Sprite element
+layer_sprite_get_id(layer_id:layer|string,sprite_element_name:string)->layer_sprite
+layer_sprite_exists(layer_id:layer|string,sprite_element_id:layer_sprite)->bool
+
+layer_sprite_create(layer_id:layer|string,x:number,y,sprite:number)->layer_sprite
+layer_sprite_destroy(sprite_element_id:layer_sprite)->void
+
+layer_sprite_change(sprite_element_id:layer_sprite,sprite:sprite)->void
+layer_sprite_index(sprite_element_id:layer_sprite,image_index:int)->void
+layer_sprite_speed(sprite_element_id:layer_sprite,image_speed:number)->void
+layer_sprite_xscale(sprite_element_id:layer_sprite,scale:number)->void
+layer_sprite_yscale(sprite_element_id:layer_sprite,scale:number)->void
+layer_sprite_angle(sprite_element_id:layer_sprite,angle:number)->void
+layer_sprite_blend(sprite_element_id:layer_sprite,col:int)->void
+layer_sprite_alpha(sprite_element_id:layer_sprite,alpha:number)->void
+layer_sprite_x(sprite_element_id:layer_sprite,x:number)->void
+layer_sprite_y(sprite_element_id:layer_sprite,y:number)->void
+
+layer_sprite_get_sprite(sprite_element_id:layer_sprite)->sprite
+layer_sprite_get_index(sprite_element_id:layer_sprite)->int
+layer_sprite_get_speed(sprite_element_id:layer_sprite)->number
+layer_sprite_get_xscale(sprite_element_id:layer_sprite)->number
+layer_sprite_get_yscale(sprite_element_id:layer_sprite)->number
+layer_sprite_get_angle(sprite_element_id:layer_sprite)->number
+layer_sprite_get_blend(sprite_element_id:layer_sprite)->int
+layer_sprite_get_alpha(sprite_element_id:layer_sprite)->number
+layer_sprite_get_x(sprite_element_id:layer_sprite)->number
+layer_sprite_get_y(sprite_element_id:layer_sprite)->number
+
+// Tilemap element
+layer_tilemap_get_id(layer_id:layer|string)->layer_tilemap
+layer_tilemap_exists(layer_id:layer|string,tilemap_element_id:layer_tilemap)->bool
+
+layer_tilemap_create(layer_id:layer|string,x:number,y:number,tileset:tileset,width:int,height:int)->layer_tilemap
+layer_tilemap_destroy(tilemap_element_id:layer_tilemap)->void
+
+tilemap_tileset(tilemap_element_id:layer_tilemap,tileset:tileset)->void
+tilemap_x(tilemap_element_id:layer_tilemap,x:number)->void
+tilemap_y(tilemap_element_id:layer_tilemap,y:number)->void
+
+tilemap_set(tilemap_element_id:layer_tilemap,tiledata:tilemap_data,cell_x:int,cell_y:int)->bool
+tilemap_set_at_pixel(tilemap_element_id:layer_tilemap,tiledata:tilemap_data,x:number,y:number)->bool
+
+tileset_get_texture(tileset:tileset)->texture
+tileset_get_uvs(tileset:tileset)->int[]
+tileset_get_name(tileset:tileset)->string
+
+tilemap_get_tileset(tilemap_element_id:layer_tilemap)->tileset
+tilemap_get_tile_width(tilemap_element_id:layer_tilemap)->int
+tilemap_get_tile_height(tilemap_element_id:layer_tilemap)->int
+tilemap_get_width(tilemap_element_id:layer_tilemap)->int
+tilemap_get_height(tilemap_element_id:layer_tilemap)->int
+tilemap_set_width(tilemap_element_id:layer_tilemap, width:int)->void
+tilemap_set_height(tilemap_element_id:layer_tilemap, height:int)->void
+
+tilemap_get_x(tilemap_element_id:layer_tilemap)->number
+tilemap_get_y(tilemap_element_id:layer_tilemap)->number
+
+tilemap_get(tilemap_element_id:layer_tilemap,cell_x:int,cell_y:int)->tilemap_data
+tilemap_get_at_pixel(tilemap_element_id:layer_tilemap,x:number,y:number)->tilemap_data
+tilemap_get_cell_x_at_pixel(tilemap_element_id:layer_tilemap,x:number,y:number)->int
+tilemap_get_cell_y_at_pixel(tilemap_element_id:layer_tilemap,x:number,y:number)->int
+
+tilemap_clear(tilemap_element_id:layer_tilemap,tiledata:tilemap_data)->void
+
+draw_tilemap(tilemap_element_id:layer_tilemap,x:number,y:number)->void
+draw_tile(tileset:tileset,tiledata:tilemap_data,frame:number,x:number,y:number)->void
+
+tilemap_set_global_mask(mask:tilemap_data)->void
+tilemap_get_global_mask()->tilemap_data
+
+tilemap_set_mask(tilemap_element_id:layer_tilemap, mask:tilemap_data)->void
+tilemap_get_mask(tilemap_element_id:layer_tilemap)->tilemap_data
+
+tilemap_get_frame(tilemap_element_id:layer_tilemap)->number
+
+// Tile functions
+tile_set_empty(tiledata:tilemap_data)->tilemap_data
+tile_set_index(tiledata:tilemap_data,tileindex:int)->tilemap_data
+tile_set_flip(tiledata:tilemap_data,flip:bool)->tilemap_data
+tile_set_mirror(tiledata:tilemap_data,mirror:bool)->tilemap_data
+tile_set_rotate(tiledata,rotate:bool)->tilemap_data
+
+tile_get_empty(tiledata:tilemap_data)->bool
+tile_get_index(tiledata:tilemap_data)->int
+tile_get_flip(tiledata:tilemap_data)->bool
+tile_get_mirror(tiledata:tilemap_data)->bool
+tile_get_rotate(tiledata:tilemap_data)->bool
+
+// Tile constants
+tile_rotate#:tilemap_data
+tile_flip#:tilemap_data
+tile_mirror#:tilemap_data
+tile_index_mask#:tilemap_data
+
+// Tile element functions
+layer_tile_exists(layer_id:layer|string,tile_element_id:layer_tile_legacy)->bool
+
+layer_tile_create(layer_id:layer|string,x:number,y:number,tileset:sprite,left:number,top:number,width:number,height:number)->layer_tile_legacy
+layer_tile_destroy(tile_element_id:layer_tile_legacy)->void
+
+layer_tile_change(tile_element_id:layer_tile_legacy,sprite:sprite)->void
+layer_tile_xscale(tile_element_id:layer_tile_legacy,scale:number)->void
+layer_tile_yscale(tile_element_id:layer_tile_legacy,scale:number)->void
+layer_tile_blend(tile_element_id:layer_tile_legacy,col:int)->void
+layer_tile_alpha(tile_element_id:layer_tile_legacy,alpha:number)->void
+layer_tile_x(tile_element_id:layer_tile_legacy,x:number)->void
+layer_tile_y(tile_element_id:layer_tile_legacy,y:number)->void
+layer_tile_region(tile_element_id:layer_tile_legacy,left:number,top:number,width:number,height:number)->void
+layer_tile_visible(tile_element_id:layer_tile_legacy,visible:bool)->void
+
+layer_tile_get_sprite(tile_element_id:layer_tile_legacy)->sprite
+layer_tile_get_xscale(tile_element_id:layer_tile_legacy)->number
+layer_tile_get_yscale(tile_element_id:layer_tile_legacy)->number
+layer_tile_get_blend(tile_element_id:layer_tile_legacy)->int
+layer_tile_get_alpha(tile_element_id:layer_tile_legacy)->number
+layer_tile_get_x(tile_element_id:layer_tile_legacy)->number
+layer_tile_get_y(tile_element_id:layer_tile_legacy)->number
+layer_tile_get_region(tile_element_id:layer_tile_legacy)->number[]
+layer_tile_get_visible(tile_element_id:layer_tile_legacy)->bool
+
+// Instance element functions
+layer_instance_get_instance(instance_element_id:layer_instance)->any // where any:instance
+
+instance_activate_layer(layer_id:layer|string)->bool
+instance_deactivate_layer(layer_id:layer|string)->bool
+
+// Camera functions
+camera_create()->camera
+camera_create_view<T>(room_x:number,room_y:number,width:number,height:number,?angle:number,?object:T,?x_speed:number,?y_speed:number,?x_border:number,?y_border:number)->camera // where T:instance|object
+camera_destroy(camera:camera)->void
+camera_apply(camera:camera)->void
+
+camera_get_active()->camera
+camera_get_default()->camera
+camera_set_default(camera:camera)->void
+
+// Setters
+camera_set_view_mat(camera:camera,matrix:number[])->void
+camera_set_proj_mat(camera:camera,matrix:number[])->void
+camera_set_update_script(camera:camera,script:script)->void
+camera_set_begin_script(camera:camera,script:script)->void
+camera_set_end_script(camera:camera,script:script)->void
+camera_set_view_pos(camera:camera,x:number,y:number)->void
+camera_set_view_size(camera:camera,width:number,height:number)->void
+camera_set_view_speed(camera:camera,x_speed:number,y_speed:number)->void
+camera_set_view_border(camera:camera,x_border:number,y_border:number)->void
+camera_set_view_angle(camera:camera,angle:number)->void
+camera_set_view_target<T>(camera:camera,object:T)->void  // where T:instance|object
+
+// Getters
+camera_get_view_mat(camera:camera)->number[]
+camera_get_proj_mat(camera:camera)->number[]
+camera_get_update_script(camera:camera)->script
+camera_get_begin_script(camera:camera)->script
+camera_get_end_script(camera:camera)->script
+
+camera_get_view_x(camera:camera)->number
+camera_get_view_y(camera:camera)->number
+camera_get_view_width(camera:camera)->number
+camera_get_view_height(camera:camera)->number
+camera_get_view_speed_x(camera:camera)->number
+camera_get_view_speed_y(camera:camera)->number
+camera_get_view_border_x(camera:camera)->number
+camera_get_view_border_y(camera:camera)->number
+camera_get_view_angle(camera:camera)->number
+camera_get_view_target(camera:camera)->any // where any:instance|object
+
+
+// View accessors
+view_get_camera(view:int)->camera
+view_get_visible(view:int)->bool
+view_get_xport(view:int)->int
+view_get_yport(view:int)->int
+view_get_wport(view:int)->int
+view_get_hport(view:int)->int
+view_get_surface_id(view:int)->surface
+
+view_set_camera(view:int,camera:camera)->void
+view_set_visible(view:int,visible:bool)->void
+view_set_xport(view:int,xport:int)->void
+view_set_yport(view:int,yport:int)->void
+view_set_wport(view:int,wport:int)->void
+view_set_hport(view:int,hport:int)->void
+view_set_surface_id(view:int,surface_id:surface)->void
+
+
+// Gesture stuff
+gesture_drag_time(time:number)->void
+gesture_drag_distance(distance:number)->void
+gesture_flick_speed(speed:number)->void
+gesture_double_tap_time(time:number)->void
+gesture_double_tap_distance(distance:number)->void
+
+gesture_pinch_distance(distance:number)->void
+gesture_pinch_angle_towards(angle:number)->void
+gesture_pinch_angle_away(angle:number)->void
+gesture_rotate_time(time:number)->void
+gesture_rotate_angle(angle:number)->void
+
+gesture_tap_count(enable:bool)->void
+
+gesture_get_drag_time()->number
+gesture_get_drag_distance()->number
+gesture_get_flick_speed()->number
+gesture_get_double_tap_time()->number
+gesture_get_double_tap_distance()->number
+
+gesture_get_pinch_distance()->number
+gesture_get_pinch_angle_towards()->number
+gesture_get_pinch_angle_away()->number
+gesture_get_rotate_time()->number
+gesture_get_rotate_angle()->number
+
+gesture_get_tap_count()->bool
+
+// Virtual keyboard
+keyboard_virtual_show(virtual_keyboard_type:virtual_keyboard_type, virtual_return_key_type:virtual_keyboard_return_key, auto_capitalization_type:virtual_keyboard_autocapitalization, predictive_text_enabled:bool)
+keyboard_virtual_hide()->void
+keyboard_virtual_status()->bool
+keyboard_virtual_height()->int
+
+kbv_type_default#:virtual_keyboard_type
+kbv_type_ascii#:virtual_keyboard_type
+kbv_type_url#:virtual_keyboard_type
+kbv_type_email#:virtual_keyboard_type
+kbv_type_numbers#:virtual_keyboard_type
+kbv_type_phone#:virtual_keyboard_type
+kbv_type_phone_name#:virtual_keyboard_type
+
+kbv_returnkey_default#:virtual_keyboard_return_key
+kbv_returnkey_go#:virtual_keyboard_return_key
+kbv_returnkey_google#:virtual_keyboard_return_key
+kbv_returnkey_join#:virtual_keyboard_return_key
+kbv_returnkey_next#:virtual_keyboard_return_key
+kbv_returnkey_route#:virtual_keyboard_return_key
+kbv_returnkey_search#:virtual_keyboard_return_key
+kbv_returnkey_send#:virtual_keyboard_return_key
+kbv_returnkey_yahoo#:virtual_keyboard_return_key
+kbv_returnkey_done#:virtual_keyboard_return_key
+kbv_returnkey_continue#:virtual_keyboard_return_key
+kbv_returnkey_emergency#:virtual_keyboard_return_key
+
+kbv_autocapitalize_none#:virtual_keyboard_autocapitalization
+kbv_autocapitalize_words#:virtual_keyboard_autocapitalization
+kbv_autocapitalize_sentences#:virtual_keyboard_autocapitalization
+kbv_autocapitalize_characters#:virtual_keyboard_autocapitalization
+
+os_permission_denied_dont_request#:android_permission_state
+os_permission_denied#:android_permission_state
+os_permission_granted#:android_permission_state
+
+//tags
+tag_get_asset_ids(tags:string|string[],asset_type:asset_type)->asset[]
+tag_get_assets(tags:string|string[])->string[]
+asset_get_tags(asset_name_or_id:string|asset,?asset_type:asset_type)->string[]
+asset_add_tags(asset_name_or_id:string|asset,tags:string|string[],?asset_type:asset_type)->bool
+asset_remove_tags(asset_name_or_id:string|asset,tags:string|string[],?asset_type:asset_type)->bool
+asset_has_tags(asset_name_or_id:string|asset,tags:string|string[],?asset_type:asset_type)->bool
+asset_has_any_tag(asset_name_or_id:string|asset,tags:string|string[],?asset_type:asset_type)->bool
+asset_clear_tags(asset_name_or_id:string|asset,?asset_type:asset_type)->bool
+
+
+//extension_get_string(ext_name:string, option_name:string)->any
+
+
+
+
+//sequences
+layer_sequence_get_instance(sequence_element_id:layer_sequence)->any // TODO
+layer_sequence_create(layer_id:layer|string,x:number,y:number,sequence_id:sequence)->layer_sequence
+layer_sequence_destroy(sequence_element_id:layer_sequence)->void
+layer_sequence_exists(layer_id:layer|string,sequence_element_id:layer_sequence)->bool
+layer_sequence_x(sequence_element_id:layer_sequence,pos_x:number)->void
+layer_sequence_y(sequence_element_id:layer_sequence,pos_y:number)->void
+layer_sequence_angle(sequence_element_id:layer_sequence,angle:number)->void
+layer_sequence_xscale(sequence_element_id:layer_sequence,xscale:number)->void
+layer_sequence_yscale(sequence_element_id:layer_sequence,yscale:number)->void
+layer_sequence_headpos(sequence_element_id:layer_sequence,position:number)->void
+layer_sequence_headdir(sequence_element_id:layer_sequence,direction:number)->void
+layer_sequence_pause(sequence_element_id:layer_sequence)->void
+layer_sequence_play(sequence_element_id:layer_sequence)->void
+layer_sequence_speedscale(sequence_element_id:layer_sequence,speedscale:number)->void
+
+layer_sequence_get_x(sequence_element_id:layer_sequence)->number
+layer_sequence_get_y(sequence_element_id:layer_sequence)->number
+layer_sequence_get_angle(sequence_element_id:layer_sequence)->number
+layer_sequence_get_xscale(sequence_element_id:layer_sequence)->number
+layer_sequence_get_yscale(sequence_element_id:layer_sequence)->number
+layer_sequence_get_headpos(sequence_element_id:layer_sequence)->number
+layer_sequence_get_headdir(sequence_element_id:layer_sequence)->number
+layer_sequence_get_sequence(sequence_element_id:layer_sequence)->any // TODO
+layer_sequence_is_paused(sequence_element_id:layer_sequence)->bool
+layer_sequence_is_finished(sequence_element_id:layer_sequence)->bool
+layer_sequence_get_speedscale(sequence_element_id:layer_sequence)->number
+
+layer_sequence_get_length(sequence_element_id:layer_sequence)->int
+
+
+// All sequence functions omitted
+
+
+// Garbage collection functions
+gc_collect()->void
+gc_enable(enable:bool)->void
+gc_is_enabled()->bool
+
+// This actually returns GCStats as defined below, by the original fnames
+gc_get_stats()->any // where any:struct
+
+
+gc_target_frame_time(time:int)->void
+gc_get_target_frame_time()->int
+
+// Garbage collection stats structure members
+??GCStats
+objects_touched?:int
+objects_collected?:int
+traversal_time?:int
+collection_time?:int
+gc_frame?:int
+generation_collected?:int
+num_generations?:int
+num_objects_in_generation?:int
+
