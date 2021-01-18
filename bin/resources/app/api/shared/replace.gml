@@ -142,7 +142,7 @@ string_pos(substr:string,str:string)->int
 string_pos_ext(substr:string,str:string,startpos:int)->int
 string_last_pos(substr:string,str:string)->int
 string_last_pos_ext(substr:string,str:string,startpos:int)->int
-string_copy(str:string,index:int,count:int)->int
+string_copy(str:string,index:int,count:int)->string
 string_char_at(str:string,index:int)->string
 string_ord_at(str:string,index:int)->int
 string_byte_at(str:string,index:int)->int
@@ -1841,13 +1841,13 @@ ps_shape_line#:particle_region_shape
 
 #region 14
 
-external_define(dll_path:string, func_name:string, calltype:external_call_type, restype:ty_t, argnumb:number, ...argtypes:external_arg_type)!->external_function
+external_define(dll_path:string, func_name:string, calltype:external_call_type, restype:external_value_type, argnumb:number, ...argtypes:external_value_type)!->external_function
 external_call(func:external_function, ...arguments)!
 external_free(dllname:string)!
 dll_cdecl#:external_call_type
 dll_stdcall#:external_call_type
-ty_real#:external_arg_type
-ty_string#:external_arg_type
+ty_real#:external_value_type
+ty_string#:external_value_type
 
 window_handle()->pointer
 window_device()->pointer

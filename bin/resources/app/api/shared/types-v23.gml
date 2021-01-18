@@ -1,3 +1,3 @@
 //
-typedef weak_reference
-
+typedef weak_reference;
+typedef sequence : asset;

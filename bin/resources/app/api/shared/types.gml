@@ -1,5 +1,5 @@
-typedef dll_t;
-typedef ty_t;
+typedef external_call_type;
+typedef external_value_type;
 typedef external_function;
 
 //
@@ -22,6 +22,7 @@ typedef font : asset;
 typedef timeline : asset;
 typedef object : asset;
 typedef room : asset;
+typedef audio_group : asset;
 
 // Types that generally have some data attached to them
 typedef datetime

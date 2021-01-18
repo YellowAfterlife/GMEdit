@@ -403,7 +403,6 @@ part_system_update
 part_system_drawit
 part_system_layer
 part_particles_clear
-part_particles_count
 part_emitter_destroy
 part_emitter_destroy_all
 part_emitter_clear
