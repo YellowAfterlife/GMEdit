@@ -91,8 +91,8 @@ class GmlFuncDoc {
 		var str = JsTools.nca(mt, mt[1]);
 		var type:GmlType;
 		if (str != null) {
-			if (templateNames != null) {
-				str = GmlTypeTools.patchTemplateNames(str, templateNames);
+			if (templateItems != null) {
+				str = GmlTypeTools.patchTemplateItems(str, templateItems);
 			}
 			type = GmlTypeDef.parse(str);
 		} else type = null;
@@ -104,7 +104,11 @@ class GmlFuncDoc {
 	var __returnType_cache_type:GmlType;
 	static var __returnType_rx:RegExp = new RegExp('^\\)$retArrow(\\S+)');
 	
-	public var templateNames:Array<String> = null;
+	/**
+	 * For fn<K:string, V>() these would be [{name:"K",ct:"string"},{name:"V"}]
+	 * For functions without templates this remains null.
+	 */
+	public var templateItems:Array<GmlTypeTemplateItem> = null;
 	
 	public var maxArgs(get, never):Int;
 	private function get_maxArgs():Int {
@@ -157,14 +161,20 @@ class GmlFuncDoc {
 		var p1 = s.indexOf(")", p0);
 		var name:String, pre:String, post:String, args:Array<String>, rest:Bool;
 		var argTypes:Array<GmlType> = null;
-		var templateNames:Array<String> = null;
+		var templateItems:Array<GmlTypeTemplateItem> = null;
 		if (p0 >= 0 && p1 >= 0) {
 			pre = s.substring(0, p0 + 1);
 			name = s.substring(0, p0); {
 				var mt = parse_rxTemplate.exec(pre);
 				if (mt != null) {
 					name = mt[1];
-					templateNames = mt[2].splitRx(JsTools.rx(~/[,;]\s*/g));
+					templateItems = [];
+					for (ts in mt[2].splitRx(JsTools.rx(~/[,;]\s*/g))) {
+						mt = JsTools.rx(~/^\s*(.+?)\s*:\s*(.+?)\s*$/).exec(ts);
+						if (mt != null) {
+							templateItems.push(new GmlTypeTemplateItem(mt[1], mt[2]));
+						} else templateItems.push(new GmlTypeTemplateItem(ts.trimBoth()));
+					}
 				}
 			}
 			var sw = s.substring(p0 + 1, p1).trimBoth();
@@ -177,8 +187,8 @@ class GmlFuncDoc {
 					if (mt != null) {
 						if (argTypes == null) argTypes = NativeArray.create(args.length);
 						var typeStr = mt[1].trimRight();
-						if (templateNames != null) {
-							typeStr = GmlTypeTools.patchTemplateNames(typeStr, templateNames);
+						if (templateItems != null) {
+							typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
 						}
 						argTypes[i] = GmlTypeDef.parse(typeStr);
 					}
@@ -203,7 +213,7 @@ class GmlFuncDoc {
 			out = new GmlFuncDoc(name, pre, post, args, rest);
 		}
 		out.argTypes = argTypes;
-		out.templateNames = templateNames;
+		out.templateItems = templateItems;
 		return out;
 	}
 	static var parse_rxTemplate = new RegExp("^(.*)" + "<(.+?)>\\(");

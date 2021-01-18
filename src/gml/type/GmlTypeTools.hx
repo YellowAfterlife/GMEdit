@@ -1,8 +1,10 @@
 package gml.type;
 import ace.AceGmlTools;
+import gml.GmlAPI;
 import gml.GmlNamespace;
 import gml.type.GmlType;
 import haxe.ds.ReadOnlyArray;
+import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.Dictionary;
 import tools.JsTools;
@@ -23,6 +25,8 @@ import ace.extern.AceTokenType;
 		"sprite", "background", "tileset", "sound", "path", "script", "shader", "font", "timeline", "object", "room"
 	];
 	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys(builtinTypes, "namespace");
+	
+	public static inline var templateItemName:String = "TemplateItem";
 	
 	/** If this might be a namespace, returns the name */
 	public static function getNamespace(t:GmlType):String {
@@ -115,7 +119,7 @@ import ace.extern.AceTokenType;
 		function f(t:GmlType):GmlType {
 			return switch (t) {
 				case null: null;
-				case TTemplate(ind): return templateTypes[ind];
+				case TTemplate(_, ind, _): return templateTypes[ind];
 				default: t.map(f);
 			}
 		}
@@ -125,13 +129,17 @@ import ace.extern.AceTokenType;
 	public static function equals(a:GmlType, b:GmlType, ?tpl:Array<GmlType>):Bool {
 		switch (b) {
 			case null:
-			case TTemplate(i):
+			case TTemplate(_, i, c):
 				if (tpl == null) return true;
 				if (tpl[i] != null) {
 					return equals(a, tpl[i]);
 				}  else {
 					// this is clearly not a very good idea
-					if (a != null) tpl[i]  = a;
+					if (a != null) {
+						if (c == null || canCastTo(a, c, tpl)) {
+							tpl[i] = a;
+						} else return false;
+					}
 					return true;
 				}
 			default:
@@ -180,7 +188,7 @@ import ace.extern.AceTokenType;
 					if (!field.type.equals(fm2.fields[name].type, tpl)) return false;
 				}
 				return n1 == fm2.fields.size();
-			case TTemplate(i1): return false;
+			case TTemplate(i1, _): return false;
 		}
 	}
 	
@@ -197,7 +205,7 @@ import ace.extern.AceTokenType;
 		if (from == null || to == null) return true;
 		if (kfrom == KAny || kto == KAny) return true;
 		
-		if (kfrom == kto && from.equals(to, tpl)) return true;
+		if (from.equals(to, tpl)) return true;
 		
 		if (kto == KNullable) {
 			// undefined -> number?
@@ -217,6 +225,11 @@ import ace.extern.AceTokenType;
 				if (k1 == KBool && k2 == KNumber || k1 == KNumber && k2 == KBool) return true;
 				
 				if (k2 == KArray && p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;
+				
+				if (k2 == KObject) {
+					var ns = GmlAPI.gmlNamespaces[n1];
+					if (JsTools.nca(ns, ns.isObject)) return true;
+				}
 				
 				if (k1 == k2 && (k1 != KCustom || n1 == n2)) {
 					var i = p1.length;
@@ -276,21 +289,39 @@ import ace.extern.AceTokenType;
 				if (sep) s += " ";
 				return s + "}";
 			};
-		case TTemplate(ind):
+		case TTemplate(name, ind, c):
 			var tt = JsTools.nca(tpl, tpl[ind]);
-			return tt != null ? toString(tt) : 'TN<$ind>';
+			if (tt != null) return toString(tt);
+			var s = name + "#" + ind;
+			if (c != null) s = "(" + s + ":" + c.toString() + ")";
+			return s;
 		}
 	}
 	
-	public static function patchTemplateNames(s:String, templateNames:Array<String>):String {
-		if (templateNames == null) return s;
-		for (i => tn in templateNames) {
-			s = s.replaceExt(tn.getWholeWordRegex("g"), 'TN<T$i>');
+	public static function patchTemplateItems(s:String, templateItems:Array<GmlTypeTemplateItem>):String {
+		if (templateItems == null) return s;
+		for (i => tn in templateItems) {
+			s = s.replaceExt(tn.regex, function() {
+				var ct = tn.constraint;
+				if (tn.constraint != null) {
+					return '$templateItemName<${tn.name},_$i,$ct>';
+				} else return '$templateItemName<${tn.name},_$i>';
+			});
 		}
 		return s;
 	}
 	
 	public static function getSelfCallDoc(self:GmlType, imp:GmlImports):GmlFuncDoc {
 		return JsTools.nca(self, AceGmlTools.findSelfCallDoc(self, imp));
+	}
+}
+class GmlTypeTemplateItem {
+	public var name:String;
+	public var regex:RegExp;
+	public var constraint:String;
+	public function new(name:String, ?ct:String) {
+		this.name = name;
+		regex = name.getWholeWordRegex("g");
+		constraint = ct;
 	}
 }

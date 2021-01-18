@@ -680,13 +680,6 @@ using tools.NativeArray;
 				rdef("comment.line"),
 			]), //}
 			"gml.comment.doc.line": rComment.concat([ //{
-				rxRule(function(meta, sp, type) { // meta-type doc-lines
-					var t:String;
-					if (meta != "@interface") {
-						t = getNamespaceType(type);
-					} else t = "namespace";
-					return ["comment.meta", commentDocLineType, t];
-				}, ~/(@(?:self|this|interface|implements|returns?))(\b\s*\{)(\w*)/),
 				rxRule(function(meta, _, type1, _, keyword, _, type2) {
 					var t1 = getNamespaceType(type1);
 					var t2 = getNamespaceType(type2);

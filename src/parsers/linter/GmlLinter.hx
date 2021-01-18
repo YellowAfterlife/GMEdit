@@ -266,8 +266,8 @@ class GmlLinter {
 		if (doc != null) {
 			argTypes = doc.argTypes;
 			argTypeLast = doc.rest && argTypes != null ? argTypes.length - 1 : 0x7fffffff;
-			if (doc.templateNames != null) {
-				templateTypes = NativeArray.create(doc.templateNames.length);
+			if (doc.templateItems != null) {
+				templateTypes = NativeArray.create(doc.templateItems.length);
 			}
 		} else {
 			argTypes = null;

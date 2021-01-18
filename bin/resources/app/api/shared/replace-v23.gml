@@ -81,22 +81,22 @@ is_infinity(val:any)->bool
 is_struct(val:any)->bool
 is_method(val:any)->bool
 typeof(val:any)->bool
-instanceof<T>(struct:T)->bool // where T:struct
+instanceof<T:struct>(struct:T)->bool
 exception_unhandled_handler(user_handler) // TODO
 variable_global_exists(name:string)->bool
 variable_global_get(name:string)->any
 variable_global_set(name:string,val:any)->void
-variable_instance_exists<T>(id:T,name:string)->bool // where T:instance
-variable_instance_get<T>(id:T,name:string)->any // where T:instance
-variable_instance_set<T>(id:T,name:string,val:any)->void // where T:instance
-variable_instance_get_names<T>(id:T)->string[] // where T:instance
-variable_instance_names_count<T>(id:T)->int // where T:instance
-variable_struct_exists<T>(struct:T,name:string)->bool // where T:struct
-variable_struct_get<T>(struct:T,name:string)->any // where T:struct
-variable_struct_set<T>(struct:T,name:string,val:any)->void // where T:struct
-variable_struct_get_names<T>(struct:T)->string[] // where T:struct
-variable_struct_names_count<T>(struct:T)->int // where T:struct
-variable_struct_remove<T>(struct:T,name:string)->void // where T:struct
+variable_instance_exists<T:instance>(id:T,name:string)->bool
+variable_instance_get<T:instance>(id:T,name:string)->any
+variable_instance_set<T:instance>(id:T,name:string,val:any)->void
+variable_instance_get_names<T:instance>(id:T)->string[]
+variable_instance_names_count<T:instance>(id:T)->int
+variable_struct_exists<T:struct>(struct:T,name:string)->bool
+variable_struct_get<T:struct>(struct:T,name:string)->any
+variable_struct_set<T:struct>(struct:T,name:string,val:any)->void
+variable_struct_get_names<T:struct>(struct:T)->string[]
+variable_struct_names_count<T:struct>(struct:T)->int
+variable_struct_remove<T:struct>(struct:T,name:string)->void
 array_length<T>(variable:T[])->int
 array_length_1d<T>(variable:T[])&->int
 array_length_2d<T>(variable:T[], index:int)&->int
@@ -172,7 +172,7 @@ point_direction(x1:number,y1:number,x2:number,y2:number)->number
 lengthdir_x(len:number,dir:number)->number
 lengthdir_y(len:number,dir:number)->number
 
-weak_ref_create<T>(thing_to_track:T)->weak_reference // where T:struct
+weak_ref_create<T:struct>(thing_to_track:T)->weak_reference
 weak_ref_alive(weak_ref:weak_reference)->bool
 weak_ref_any_alive(array:weak_reference[],[index]:int,[length]:int)->bool
 
@@ -294,8 +294,8 @@ in_collision_tree@:bool
 motion_set(dir:number,speed:number)->void
 motion_add(dir:number,speed:number)->void
 place_free(x:number,y:number)->bool
-place_empty<T>(x:number,y:number,obj:T)->bool // where T:object|instance
-place_meeting<T>(x:number,y:number,obj:T)->bool // where T:object|instance
+place_empty<T:object|instance>(x:number,y:number,obj:T)->bool
+place_meeting<T:object|instance>(x:number,y:number,obj:T)->bool
 place_snapped(hsnap:number,vsnap:number)->bool
 move_random(hsnap:number,vsnap:number)->void
 move_snap(hsnap:number,vsnap:number)->void
@@ -308,9 +308,9 @@ move_bounce_solid(advanced:bool)->void
 move_bounce_all(advanced:bool)->void
 move_wrap(hor:number,vert:number,margin:number)->void
 distance_to_point(x:number,y:number)->number
-distance_to_object<T>(obj:T)->number // where T:object|instance
+distance_to_object<T:object|instance>(obj:T)->number
 position_empty(x:number,y:number)->bool
-position_meeting<T>(x:number,y:number,obj:T)->bool // where T:object|instance
+position_meeting<T:object|instance>(x:number,y:number,obj:T)->bool
 
 // section 3.2
 
@@ -328,13 +328,13 @@ path_endaction@:path_endaction
 
 mp_linear_step(x:number,y:number,speed:number,checkall:bool)->bool
 mp_potential_step(x:number,y:number,speed:number,checkall:bool)->bool
-mp_linear_step_object<T>(x:number,y:number,speed:number,obj:T)->bool // where T:object|instance
-mp_potential_step_object<T>(x:number,y:number,speed:number,obj:T)->bool // where T:object|instance
+mp_linear_step_object<T:object|instance>(x:number,y:number,speed:number,obj:T)->bool
+mp_potential_step_object<T:object|instance>(x:number,y:number,speed:number,obj:T)->bool
 mp_potential_settings(maxrot:number,rotstep:number,ahead:int,onspot:bool)->void
 mp_linear_path(path:path,xg:number,yg:number,stepsize:number,checkall:bool)->bool
 mp_potential_path(path:path,xg:number,yg:number,stepsize:number,factor:int,checkall:bool)->bool
-mp_linear_path_object<T>(path:path,xg:number,yg:number,stepsize:number,obj:T)->bool // where T:object|instance
-mp_potential_path_object<T>(path:path,xg:number,yg:number,stepsize:number,factor:int,obj:T)->bool // where T:object|instance
+mp_linear_path_object<T:object|instance>(path:path,xg:number,yg:number,stepsize:number,obj:T)->bool
+mp_potential_path_object<T:object|instance>(path:path,xg:number,yg:number,stepsize:number,factor:int,obj:T)->bool
 mp_grid_create(left:number,top:number,hcells:int,vcells:int,cellwidth:number,cellheight:number)->mp_grid
 mp_grid_destroy(id:mp_grid)->void
 mp_grid_clear_all(id:mp_grid)->void
@@ -343,26 +343,26 @@ mp_grid_clear_rectangle(id:mp_grid,left:int,top:int,right:int,bottom:int)->void
 mp_grid_add_cell(id:mp_grid,h:int,v:int)->void
 mp_grid_get_cell(id:mp_grid,h:int,v:int)->int
 mp_grid_add_rectangle(id:mp_grid,left:int,top:int,right:int,bottom:int)->void
-mp_grid_add_instances<T>(id:mp_grid,obj:T,prec:bool)->void // where T:object|instance
+mp_grid_add_instances<T:object|instance>(id:mp_grid,obj:T,prec:bool)->void
 mp_grid_path(id:mp_grid,path:path,xstart:number,ystart:number,xgoal:number,ygoal:number,allowdiag:bool)->bool
 mp_grid_draw(id:mp_grid)->void
 mp_grid_to_ds_grid(src:mp_grid,dest:ds_grid<number>)->bool
 
 // section 3.4
 
-collision_point<T>(x:number,y:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
-collision_rectangle<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
-collision_circle<T>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
-collision_ellipse<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
-collision_line<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T // where T:object|instance
+collision_point<T:object|instance>(x:number,y:number,obj:T,prec:bool,notme:bool)->T
+collision_rectangle<T:object|instance>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T
+collision_circle<T:object|instance>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool)->T
+collision_ellipse<T:object|instance>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T
+collision_line<T:object|instance>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool)->T
 
-collision_point_list<T>(x:number,y:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
-collision_rectangle_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
-collision_circle_list<T>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
-collision_ellipse_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
-collision_line_list<T>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int // where T:object
-instance_position_list<T>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int // where T:object
-instance_place_list<T>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int // where T:object
+collision_point_list<T:object>(x:number,y:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int
+collision_rectangle_list<T:object>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int
+collision_circle_list<T:object>(x1:number,y1:number,radius:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int
+collision_ellipse_list<T:object>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int
+collision_line_list<T:object>(x1:number,y1:number,x2:number,y2:number,obj:T,prec:bool,notme:bool,list:ds_list<T>,ordered:bool)->int
+instance_position_list<T:object>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int
+instance_place_list<T:object>(x:number,y:number,obj:T,list:ds_list<T>,ordered:bool)->int
 
 point_in_rectangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number)->bool
 point_in_triangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->bool
@@ -381,29 +381,29 @@ persistent@:bool
 mask_index@:sprite
 instance_count*@:int
 instance_id*@ // TODO
-instance_find<T>(obj:T,n:int)->T // where T:object
-instance_exists<T>(obj:T)->bool // where T:object|instance
-instance_number<T>(obj:T)->bool // where T:object
-instance_position<T>(x:number,y:number,obj:T)->T // where T:object|instance
-instance_nearest<T>(x:number,y:number,obj:T)->T // where T:object|instance
-instance_furthest<T>(x:number,y:number,obj:T)->T // where T:object|instance
-instance_place<T>(x:number,y:number,obj:T)->T // where T:object|instance
-instance_create_depth<T>(x:number,y:number,depth:number,obj:T)->T // where T:object
-instance_create_layer<T>(x:number,y:number,layer_id_or_name:layer|string,obj:T)-> // where T:object
+instance_find<T:object>(obj:T,n:int)->T
+instance_exists<T:object|instance>(obj:T)->bool
+instance_number<T:object>(obj:T)->bool
+instance_position<T:object|instance>(x:number,y:number,obj:T)->T
+instance_nearest<T:object|instance>(x:number,y:number,obj:T)->T
+instance_furthest<T:object|instance>(x:number,y:number,obj:T)->T
+instance_place<T:object|instance>(x:number,y:number,obj:T)->T
+instance_create_depth<T:object>(x:number,y:number,depth:number,obj:T)->T
+instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,obj:T)->
 instance_copy(performevent) // TODO... good luck with this one
-instance_change<T>(obj:T,performevents:bool)->void // where T:object|instance
-instance_destroy<T>(?id*:T,?execute_event_flag*:bool)->void // where T:object|instance
+instance_change<T:object|instance>(obj:T,performevents:bool)->void
+instance_destroy<T:object|instance>(?id*:T,?execute_event_flag*:bool)->void
 position_destroy(x:number,y:number)->void
-position_change<T>(x:number,y:number,obj:T,performevents:bool)->void // where T:object
+position_change<T:object>(x:number,y:number,obj:T,performevents:bool)->void
 instance_id_get(index:int)->any // where any:instance
 
 // section 3.6
 
 instance_deactivate_all(notme:bool)->void
-instance_deactivate_object<T>(obj:T)->void // where T:object|instance
+instance_deactivate_object<T:object|instance>(obj:T)->void
 instance_deactivate_region(left:number,top:number,width:number,height:number,inside:bool,notme:bool)->void
 instance_activate_all()->void
-instance_activate_object<T>(obj:T)->void // where T:object|instance
+instance_activate_object<T:object|instance>(obj:T)->void
 instance_activate_region(left:number,top:number,width:number,height:number,inside:bool)->void
 
 // section 3.7
@@ -463,13 +463,13 @@ caption_health&
 
 // section 3.10
 
-event_perform<T>(type:event_type,numb:int|event_number|T)->void // where T:object
+event_perform<T:object>(type:event_type,numb:int|event_number|T)->void
 event_user(numb:int)->void
-event_perform_object<T0, T1>(obj:T0,type:event_type,numb:int|event_number|T1)->void // where T0:object, T1:object
+event_perform_object<T0:object, T1:object>(obj:T0,type:event_type,numb:int|event_number|T1)->void
 event_inherited()->void
 event_type*:any
 event_number*:int|event_number
-event_object*:any // where any:object
+event_object*:object
 event_action*:int
 ev_create#:event_type
 ev_destroy#:event_type
@@ -1383,16 +1383,16 @@ timeline_max_moment(ind:timeline)->int
 
 // section 8.8
 
-object_exists<T>(ind:T)->bool // where T:object
-object_get_name<T>(ind:T)->string // where T:object
-object_get_sprite<T>(ind:T)->sprite // where T:object
-object_get_solid<T>(ind:T)->bool // where T:object
-object_get_visible<T>(ind:T)->bool // where T:object
-object_get_persistent<T>(ind:T)->bool // where T:object
-object_get_mask<T>(ind:T)->sprite // where T:object
-object_get_parent<T>(ind:T)->any // where T:object, any:object
-object_get_physics<T>(ind:T)->bool // where T:object
-object_is_ancestor<T0, T1>(ind_child:T0,ind_parent:T1)->bool // where T0:object, T1:object
+object_exists<T:object>(ind:T)->bool
+object_get_name<T:object>(ind:T)->string
+object_get_sprite<T:object>(ind:T)->sprite
+object_get_solid<T:object>(ind:T)->bool
+object_get_visible<T:object>(ind:T)->bool
+object_get_persistent<T:object>(ind:T)->bool
+object_get_mask<T:object>(ind:T)->sprite
+object_get_parent<T:object, any:object>(ind:T)->any
+object_get_physics<T:object>(ind:T)->bool
+object_is_ancestor<T0:object, T1:object>(ind_child:T0,ind_parent:T1)->bool
 
 // section 8.9
 
@@ -1458,11 +1458,11 @@ script_execute_ext(ind:script,array:any[],[offset=0]:int,[num_args=array_length(
 
 // section 9.8
 
-object_set_sprite<T>(ind:T,spr:sprite)->void // where T:object
-object_set_solid<T>(ind:T,solid:bool)->void // where T:object
-object_set_visible<T>(ind:T,vis:bool)->void // where T:object
-object_set_persistent<T>(ind:T,pers:bool)->void // where T:object
-object_set_mask<T>(ind:T,spr:sprite) //->void where T:object
+object_set_sprite<T:object>(ind:T,spr:sprite)->void
+object_set_solid<T:object>(ind:T,solid:bool)->void
+object_set_visible<T:object>(ind:T,vis:bool)->void
+object_set_persistent<T:object>(ind:T,pers:bool)->void
+object_set_mask<T:object>(ind:T,spr:sprite)->void
 
 // section 9.9
 
@@ -1478,7 +1478,7 @@ room_set_view_enabled(ind:room,val:bool)->void
 room_add()!->room
 room_duplicate(ind:room)!->room
 room_assign(ind:room,source:room)->void
-room_instance_add<T>(ind:room,x:number,y:number,obj:T)->void // where T:object
+room_instance_add<T:object>(ind:room,x:number,y:number,obj:T)->void
 room_instance_clear(ind:room)->void
 
 room_get_camera(ind:room,vind:int)->camera
@@ -2175,8 +2175,8 @@ http_get_request_crossorigin()->string
 http_set_request_crossorigin(crossorigin_type:string)->void
 json_encode(ds_map:ds_map<string;any>)->string
 json_decode(string:string)->ds_map<string,any>
-json_stringify<T>(val:T)->string // where T:struct
-json_parse(json:string)->any // where any:struct
+json_stringify<T:struct|array|number|string|undefined>(val:T)->string
+json_parse(json:string)->any
 zip_unzip(file:string, destPath:string)->int
 
 load_csv(filename:string)->ds_grid<string>
@@ -2223,8 +2223,8 @@ physics_fixture_set_edge_shape(fixture:physics_fixture, x1:number,y1:number,x2:n
 physics_fixture_set_polygon_shape(fixture:physics_fixture)->void
 physics_fixture_set_chain_shape(fixture:physics_fixture, loop:bool)->void
 physics_fixture_add_point(fixture:physics_fixture, local_x:number, local_y:number)->void
-physics_fixture_bind<T>(fixture:physics_fixture, obj:T)->physics_fixture // where T:instance|object
-physics_fixture_bind_ext<T>(fixture:physics_fixture, obj:T, xo:number, yo:number)->physics_fixture // where T:instance|object
+physics_fixture_bind<T:instance|object>(fixture:physics_fixture, obj:T)->physics_fixture
+physics_fixture_bind_ext<T:instance|object>(fixture:physics_fixture, obj:T, xo:number, yo:number)->physics_fixture
 physics_fixture_delete(fixture:physics_fixture)->void
 
 // Physics instance manipulation functions
@@ -2236,7 +2236,7 @@ physics_apply_local_impulse(xlocal:number, ylocal:number, ximpulse_local:number,
 physics_apply_torque(torque:number)->void
 physics_mass_properties(mass:number, local_centre_of_mass_x:number, local_centre_of_mass_y:number, inertia:number)->void
 physics_draw_debug()->void
-physics_test_overlap<T>(x:number, y:number, angle:number, obj:T)->bool // where T:instance|object
+physics_test_overlap<T:instance|object>(x:number, y:number, angle:number, obj:T)->bool
 physics_remove_fixture<T>(inst:T, id:physics_fixture)->void
 physics_set_friction(fixture:physics_fixture, friction:number)->void
 physics_set_density(fixture:physics_fixture, density:number)->void
@@ -2246,15 +2246,15 @@ physics_get_density(fixture:physics_fixture)->number
 physics_get_restitution(fixture:physics_fixture)->number
 
 // Joints
-physics_joint_distance_create<T0, T1>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_rope_create<T0, T1>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, maxLength:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_revolute_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, lower_angle_limit:number, upper_angle_limit:number, enable_limit:number, max_motor_torque:number, motor_speed:number, enable_motor:bool, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_prismatic_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, axis_x:number, axis_y:number, lower_translation_limit:number, upper_translation_limit:number, enable_limit:bool, max_motor_force:number, motor_speed:number, enable_motor:bool, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_pulley_create<T0, T1>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, local_anchor_1_x:number, local_anchor_1_y:number, local_anchor_2_x:number, local_anchor_2_y:number, ratio:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_wheel_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, axis_x:number, axis_y:number, enableMotor:bool, max_motor_torque:number, motor_speed:number, freq_hz:number, damping_ratio:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_weld_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, ref_angle:number, freq_hz:number, damping_ratio:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_friction_create<T0, T1>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, max_force:number, max_torque:number, collideInstances:bool)->physics_joint //where T0:instance,T1:instance
-physics_joint_gear_create<T0, T1>(inst1:T0, inst2:T1, revoluteJoint:physics_joint, prismaticJoint:physics_joint, ratio:number)->physics_joint //where T0:instance,T1:instance
+physics_joint_distance_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, collideInstances:bool)->physics_joint
+physics_joint_rope_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, maxLength:number, collideInstances:bool)->physics_joint
+physics_joint_revolute_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, lower_angle_limit:number, upper_angle_limit:number, enable_limit:number, max_motor_torque:number, motor_speed:number, enable_motor:bool, collideInstances:bool)->physics_joint
+physics_joint_prismatic_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, axis_x:number, axis_y:number, lower_translation_limit:number, upper_translation_limit:number, enable_limit:bool, max_motor_force:number, motor_speed:number, enable_motor:bool, collideInstances:bool)->physics_joint
+physics_joint_pulley_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_1_x:number, anchor_1_y:number, anchor_2_x:number, anchor_2_y:number, local_anchor_1_x:number, local_anchor_1_y:number, local_anchor_2_x:number, local_anchor_2_y:number, ratio:number, collideInstances:bool)->physics_joint
+physics_joint_wheel_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, axis_x:number, axis_y:number, enableMotor:bool, max_motor_torque:number, motor_speed:number, freq_hz:number, damping_ratio:number, collideInstances:bool)->physics_joint
+physics_joint_weld_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, ref_angle:number, freq_hz:number, damping_ratio:number, collideInstances:bool)->physics_joint
+physics_joint_friction_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, anchor_x:number, anchor_y:number, max_force:number, max_torque:number, collideInstances:bool)->physics_joint
+physics_joint_gear_create<T0:instance,T1:instance>(inst1:T0, inst2:T1, revoluteJoint:physics_joint, prismaticJoint:physics_joint, ratio:number)->physics_joint
 physics_joint_enable_motor(joint:physics_joint, motorState:bool)->void
 physics_joint_get_value(joint:physics_joint, field:physics_joint_value)->number|bool
 physics_joint_set_value(joint:physics_joint, field:physics_joint_value, value:number|bool)->physics_joint_value

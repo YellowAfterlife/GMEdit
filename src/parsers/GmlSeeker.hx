@@ -14,6 +14,7 @@ import yy.*;
 import gml.*;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
+import gml.type.GmlTypeTools;
 import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
@@ -137,6 +138,11 @@ class GmlSeeker {
 	);
 	private static var jsDoc_implements_line = new RegExp("^\\s*(\\w+)");
 	
+	private static var jsDoc_interface = new RegExp("^///\\s*"
+		+ "@interface\\b\\s*"
+		+ "(?:\\{(\\w+)\\})?"
+	);
+	
 	private static var jsDoc_is = new RegExp("^///\\s*"
 		+ "@is(?:s)?"
 		+ "\\b\\s*\\{(.+?)\\}"
@@ -145,12 +151,11 @@ class GmlSeeker {
 		+ "(global\\s*\\.)?"
 		+ "\\s*\\b(\\w+)"
 	+ "\\s*=");
-	
-	private static var jsDoc_interface = new RegExp("^///\\s*"
-		+ "@interface\\b\\s*"
-		+ "(?:\\{(\\w+)\\})?"
+	private static var jsDoc_template = new RegExp("^///\\s*"
+		+ "@template\\b\\s*"
+		+ "(?:\\{(.*?)\\}\\s*)?"
+		+ "(\\S+)"
 	);
-	
 	
 	private static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 	private static var parseConst_rx10 = new RegExp("^-?\\d+$");
@@ -363,6 +368,7 @@ class GmlSeeker {
 		var jsDocInterface:Bool = false;
 		var jsDocInterfaceName:String = null;
 		var jsDocImplements:Array<String> = null;
+		var jsDocTemplateItems:Array<GmlTypeTemplateItem> = null;
 		/**  */
 		inline function linkDoc():Void {
 			if (doc != null) out.docs[main] = doc;
@@ -376,6 +382,7 @@ class GmlSeeker {
 			jsDocInterface = false;
 			jsDocInterfaceName = null;
 			jsDocImplements = null;
+			jsDocTemplateItems = null;
 		}
 		function flushDoc():Void {
 			var updateComp = false;
@@ -392,6 +399,7 @@ class GmlSeeker {
 				if (jsDocArgs != null) {
 					doc.args = jsDocArgs;
 					doc.argTypes = jsDocTypes;
+					doc.templateItems = jsDocTemplateItems;
 					if (jsDocRest) doc.rest = jsDocRest;
 					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
 				} else if (doc.args.length != 0) {
@@ -608,6 +616,17 @@ class GmlSeeker {
 					continue;
 				}
 				
+				mt = jsDoc_template.exec(s);
+				if (mt != null) {
+					var tc = mt[1];
+					var names = mt[2];
+					if (jsDocTemplateItems == null) jsDocTemplateItems = [];
+					for (name in names.split(",")) {
+						jsDocTemplateItems.push(new GmlTypeTemplateItem(name, tc));
+					}
+					continue;
+				}
+				
 				mt = jsDoc_hint_extimpl.exec(s);
 				if (mt != null) {
 					var name = mt[1];
@@ -663,7 +682,9 @@ class GmlSeeker {
 							jsDocTypes = [];
 						}
 						var argText = mt[2];
-						var argType = JsTools.nca(mt[1], GmlTypeDef.parse(mt[1]));
+						var argType = JsTools.nca(mt[1], GmlTypeDef.parse(
+							GmlTypeTools.patchTemplateItems(mt[1], jsDocTemplateItems)
+						));
 						for (arg in argText.split(",")) {
 							jsDocArgs.push(arg);
 							jsDocTypes.push(argType);
@@ -828,6 +849,7 @@ class GmlSeeker {
 							if (isDefine && jsDocArgs != null) {
 								// `@param` override the parsed arguments
 								doc = GmlFuncDoc.create(main, jsDocArgs, jsDocRest);
+								doc.templateItems = jsDocTemplateItems;
 								doc.argTypes = jsDocTypes;
 								jsDocArgs = null;
 								jsDocTypes = null;
@@ -836,6 +858,7 @@ class GmlSeeker {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 								doc.trimArgs();
 							}
+							jsDocTemplateItems = null;
 							docIsAutoFunc = isFunc;
 							linkDoc();
 						}

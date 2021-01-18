@@ -165,9 +165,11 @@ class AceWrapCommonCompleters {
 			new AceAutoCompleteItem("param", jsk, "@param [{Type}] name [description]\nMark a script argument"),
 			new AceAutoCompleteItem("returns", jsk, "@returns {Type} [description]\nSets return type"),
 			new AceAutoCompleteItem("self", jsk, "@self {Type}\nSets the type of `self`"),
+			new AceAutoCompleteItem("is", jsk, "@is {Type}\nHint types of non-local variables"),
 			new AceAutoCompleteItem("interface", jsk, "@interface [{Name}]\nMark a script as an interface"),
 			new AceAutoCompleteItem("implements", jsk, "@implements [{Name}]\nImplement an interface"),
 			new AceAutoCompleteItem("hint", jsk, "(see wiki)\nHint types/variables/methods"),
+			new AceAutoCompleteItem("template", jsk, "@template [{Constraint}] Type\nDeclare type parameters"),
 		];
 		jsDocCompleter = new AceWrapCompleter([], ["comment.meta"], false, gmlOnly);
 		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case

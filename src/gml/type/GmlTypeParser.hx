@@ -19,6 +19,7 @@ class GmlTypeParser {
 		r["Type"] = KType;
 		r["void"] = KVoid;
 		r["Void"] = KVoid;
+		r[GmlTypeTools.templateItemName] = KTemplateItem;
 		//
 		r["undefined"] = KUndefined;
 		r["int"] = KNumber;
@@ -35,6 +36,10 @@ class GmlTypeParser {
 		r["ds_list"] = KList;
 		r["ds_grid"] = KGrid;
 		r["ds_map"] = KMap;
+		//
+		r["object"] = KObject;
+		r["instance"] = KObject;
+		r["struct"] = KStruct;
 		//
 		return r;
 	})();
@@ -64,11 +69,13 @@ class GmlTypeParser {
 				var params = [];
 				//
 				var typeWarn = warnAboutMissing;
-				var typeWarnSize = JsTools.nca(typeWarn, typeWarn.length);
 				//
+				var isTIN = (name == GmlTypeTools.templateItemName);
 				if (q.peek() == "<".code) {
 					q.skip();
 					while (q.loop) {
+						// disable warnings for name and _index
+						warnAboutMissing = (isTIN && params.length < 2) ? null : typeWarn;
 						var t = parseRec(q);
 						if (t == null) return null;
 						params.push(t);
@@ -80,24 +87,27 @@ class GmlTypeParser {
 							default: return parseError("Expected a `,`/`;` or a `>` in `<>`", q);
 						}
 					}
+					if (isTIN) warnAboutMissing = typeWarn;
 				}
-				result = null;
-				if (kind == KCustom
-					&& name == "TN"
-					&& params.length == 1
-				) switch (params[0]) {
-					case TInst(tn, [], KCustom) if (StringTools.fastCodeAt(tn, 0) == "T".code):
-						if (typeWarn != null) typeWarn.splice(typeWarnSize, typeWarn.length - typeWarnSize);
-						result = TTemplate(Std.parseInt(tn.substring(1)));
-					default:
-				}
-				if (result == null) {
+				if (kind == KTemplateItem) {
+					if (params.length < 2) return parseError("Malformed parameters for " + GmlTypeTools.templateItemName, q);
+					var tn = switch (params[0]) {
+						case null: "?";
+						case TInst(s, [], KCustom): s;
+						default: "?";
+					}
+					var ti = switch (params[1]) {
+						case null: null;
+						case TInst(s, [], KCustom) if (s.fastCodeAt(0) == "_".code): Std.parseInt(s.substr(1));
+						default: null;
+					}
+					if (ti == null) return parseError("Malformed index for " + GmlTypeTools.templateItemName, q);
+					result = TTemplate(tn, ti, params[2]);
+				} else {
 					if (typeWarn != null
 						&& !GmlAPI.stdKind.exists(name)
 						&& !GmlTypeTools.kindMap.exists(name)
-					) {
-						typeWarn.push(name);
-					}
+					) typeWarn.push(name);
 					result = TInst(name, params, kind);
 				}
 			default:

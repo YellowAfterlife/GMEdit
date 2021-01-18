@@ -20,9 +20,10 @@ enum GmlType {
 	TAnon(inf:GmlTypeAnon);
 	
 	/**
-	 * fn<T>(m:array<T>):T is processed as fn(m:array<TN<T0>>):TN<T0>
+	 * fn<T>(m:array<T>):T is processed as
+	 * fn(m:array<TemplateItem<T, _0>>):TemplateItem<T, _0>
 	 */
-	TTemplate(ind:Int);
+	TTemplate(name:String, ind:Int, constraint:GmlType);
 }
 class GmlTypeAnon {
 	public var fields:Dictionary<GmlTypeAnonField> = new Dictionary();
@@ -43,6 +44,7 @@ enum abstract GmlTypeKind(Int) {
 	var KNullable = 0x03; // T?
 	var KType = 0x04; // type<T>
 	var KVoid = 0x05;
+	var KTemplateItem = 0x06; // TemplateItem<> -> TTemplate
 	
 	// value types
 	var KUndefined = 0x10;
@@ -55,4 +57,8 @@ enum abstract GmlTypeKind(Int) {
 	var KList = 0x21;
 	var KMap = 0x22;
 	var KGrid = 0x23;
+	
+	// Constraints:
+	var KObject = 0x30; // any object type casts to this
+	var KStruct = 0x31; // non-object namespaces cast to this
 }
