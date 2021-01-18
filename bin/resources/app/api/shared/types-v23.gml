@@ -4,7 +4,6 @@ typedef datetime
 typedef weak_reference
 typedef pointer
 typedef mp_grid
-typedef layer
 typedef buffer
 typedef surface
 typedef gif
@@ -37,6 +36,14 @@ typedef shader_sampler
 typedef shader_uniform
 typedef vertex_format
 typedef vertex_buffer
+typedef layer
+typedef layer_element
+typedef layer_background : layer_element
+typedef layer_sprite : layer_element
+typedef layer_tilemap : layer_element
+typedef layer_instance : layer_element
+typedef layer_tile_legacy : layer_element
+typedef layer_sequence : layer_element
 
 // Dumb types, only used as function arguments, can't be created
 typedef timezone_type
@@ -107,3 +114,8 @@ typedef steam_ugc_query_match_type
 typedef steam_ugc_query_sort_order
 typedef vertex_type
 typedef vertex_usage
+typedef layer_element_type
+typedef tilemap_data : int
+typedef virtual_keyboard_type
+typedef virtual_keyboard_return_key
+typedef virtual_keyboard_autocapitalization
