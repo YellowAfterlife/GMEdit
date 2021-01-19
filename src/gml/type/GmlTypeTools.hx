@@ -270,9 +270,9 @@ import ace.extern.AceTokenType;
 				if (AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
 					var depth = 0;
 					while (ns != null && ++depth < GmlNamespace.maxDepth) {
-						if (ns.name == n2) return true;
 						for (itf in ns.interfaces) if (ns.name == n2) return true;
 						ns = ns.parent;
+						if (JsTools.nca(ns, ns.name == n2)) return true;
 					}
 					return false;
 				})) return true;
