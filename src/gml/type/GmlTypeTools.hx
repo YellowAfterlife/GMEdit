@@ -257,9 +257,14 @@ import ace.extern.AceTokenType;
 				}
 				
 				if (k1 == k2 && (k1 != KCustom || n1 == n2)) {
+					// allow Array<T>->Array or Array<T>->Array<?>:
 					var i = p1.length;
-					while (--i >= 0) if (!isAny(p2[i])) break;
-					if (i < 0) return true; // allow Array<T>->Array or Array<T>->Array<?>
+					while (--i >= 0) if (p2[i] != null) break;
+					if (i < 0) return true;
+					// and Array<?>->Array<T>?
+					i = p2.length;
+					while (--i >= 0) if (p1[i] != null) break;
+					if (i < 0) return true;
 				}
 				
 				if (AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
