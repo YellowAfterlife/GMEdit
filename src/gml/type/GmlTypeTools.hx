@@ -322,8 +322,11 @@ import ace.extern.AceTokenType;
 		case TTemplate(name, ind, c):
 			var tt = JsTools.nca(tpl, tpl[ind]);
 			if (tt != null) return toString(tt);
-			var s = name + "#" + ind;
-			if (c != null) s = "(" + s + ":" + c.toString() + ")";
+			var s = name;
+			#if debug
+			s += "#" + ind;
+			#end
+			if (c != null) s = '($s:' + c.toString() + ')';
 			return s;
 		}
 	}
