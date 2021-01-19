@@ -537,7 +537,6 @@ class GmlLinter {
 						}
 					}
 					
-					
 					if (AceGmlTools.findNamespace(currName, imp, function(ns:GmlNamespace) {
 						if (ns.noTypeRef) return false;
 						currType = GmlTypeDef.type(currName);
@@ -719,7 +718,7 @@ class GmlLinter {
 							skip();
 							rc(readExpr(newDepth));
 							if (checkTypeCast(currType, GmlTypeDef.ds_map)) {
-								checkTypeCast(readExpr_currType, currType.unwrapParam(0));
+								checkTypeCast(readExpr_currType, currType.unwrapParam(0), "map key");
 								currType = currType.unwrapParam(1);
 							} else currType = null;
 						};
@@ -727,7 +726,7 @@ class GmlLinter {
 							skip();
 							
 							rc(readExpr(newDepth));
-							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							checkTypeCast(readExpr_currType, GmlTypeDef.number, "list index");
 							
 							if (checkTypeCast(currType, GmlTypeDef.ds_list)) {
 								currType = currType.unwrapParam(0);
@@ -737,7 +736,7 @@ class GmlLinter {
 							skip();
 							
 							rc(readExpr(newDepth));
-							checkTypeCast(readExpr_currType, GmlTypeDef.string);
+							checkTypeCast(readExpr_currType, GmlTypeDef.string, "struct key");
 							
 							if (true) { // todo: validate that object is struct-like
 								currType = currType.unwrapParam(0);
@@ -747,11 +746,11 @@ class GmlLinter {
 							skip();
 							
 							rc(readExpr(newDepth));
-							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							checkTypeCast(readExpr_currType, GmlTypeDef.number, "grid X");
 							
 							rc(readCheckSkip(KComma, "a comma before second index"));
 							rc(readExpr(newDepth));
-							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							checkTypeCast(readExpr_currType, GmlTypeDef.number, "grid Y");
 							
 							if (checkTypeCast(currType, GmlTypeDef.ds_grid)) {
 								currType = currType.unwrapParam(0);
@@ -761,11 +760,11 @@ class GmlLinter {
 							skip();
 							
 							rc(readExpr(newDepth));
-							checkTypeCast(readExpr_currType, GmlTypeDef.number);
+							checkTypeCast(readExpr_currType, GmlTypeDef.number, "array index");
 							
 							if (skipIf(peek() == KComma)) {
 								rc(readExpr(newDepth));
-								checkTypeCast(readExpr_currType, GmlTypeDef.number);
+								checkTypeCast(readExpr_currType, GmlTypeDef.number, "second array index");
 							}
 							
 							if (checkTypeCast(currType, GmlTypeDef.anyArray)) {
@@ -939,9 +938,11 @@ class GmlLinter {
 		return false;
 	}
 	
-	function checkTypeCast(source:GmlType, target:GmlType):Bool {
+	function checkTypeCast(source:GmlType, target:GmlType, ?ctx:String):Bool {
 		if (source.canCastTo(target, null, getImports())) return true;
-		addWarning('Can\'t cast ${source.toString()} to ' + target.toString());
+		var m = "Can't cast " + source.toString() + " to " + target.toString();
+		if (ctx != null) m += " for " + ctx;
+		addWarning(m);
 		return false;
 	}
 	
