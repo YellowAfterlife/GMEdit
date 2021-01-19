@@ -92,11 +92,14 @@ class GmlAPI {
 	/** Types per built-in variable */
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
 	
+	public static var stdNamespaceDefs:Array<GmlNamespaceDef> = [];
+	
 	public static function stdClear() {
 		stdDoc = new Dictionary();
 		stdTypes = new Dictionary();
 		stdComp.clear();
 		stdInstComp.clear();
+		stdNamespaceDefs.resize(0);
 		var sk = new Dictionary();
 		inline function add(s:String) {
 			sk.set(s, "keyword");
@@ -105,6 +108,7 @@ class GmlAPI {
 		var kw2 = version.config.additionalKeywords;
 		if (kw2 != null) for (s in kw2) add(s);
 		if (Preferences.current.importMagic) add("new");
+		for (k in GmlTypeTools.builtinTypes) sk[k] = "namespace";
 		stdKind = sk;
 	}
 	// extension scope
@@ -236,9 +240,26 @@ class GmlAPI {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
 		for (k in GmlTypeTools.builtinTypes) {
-			ensureNamespace(k);
-			//sk[k] = "namespace";
-			//stdComp.push(new AceAutoCompleteItem(k, "namespace", "type\nbuilt-in"));
+			var ns = ensureNamespace(k);
+			ns.canCastToStruct = ns.name == "struct";
+			ns.noTypeRef = true;
+		}
+		for (pair in stdNamespaceDefs) {
+			var ns = ensureNamespace(pair.name);
+			ns.canCastToStruct = false;
+			ns.noTypeRef = true;
+			switch (pair.parent) {
+				case null: // OK!
+				case "struct":
+					ns.canCastToStruct = true;
+				case "bitflags":
+					ns.interfaces["bitflags"] = ensureNamespace("bitflags");
+				default:
+					ns.parent = gmlNamespaces[pair.parent];
+					if (ns.parent != null) {
+						ns.canCastToStruct = ns.parent.canCastToStruct;
+					} else Console.warn('Parent ${pair.parent} is missing for ${pair.name}');
+			}
 		}
 		gml.type.GmlTypeParser.clear();
 	}
@@ -311,6 +332,7 @@ class GmlAPI {
 			doc: stdDoc,
 			comp: stdComp,
 			types: stdTypes,
+			namespaceDefs: stdNamespaceDefs,
 			instComp: stdInstComp,
 			ukSpelling: ukSpelling,
 			version: version,
@@ -484,3 +506,4 @@ typedef GmlConfig = {
 	?apiFiles:Array<String>,
 	?assetFiles:Array<String>,
 };
+typedef GmlNamespaceDef = {name:String, ?parent:String};

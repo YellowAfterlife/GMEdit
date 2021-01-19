@@ -21,8 +21,7 @@ import ace.extern.AceTokenType;
 		"bool", "int", "number", "string", 
 		"array", "Array",
 		"type", "Type",
-		"ds_list", "ds_map", "ds_grid",
-		"sprite", "background", "tileset", "sound", "path", "script", "shader", "font", "timeline", "object", "room"
+		"struct", "instance",
 	];
 	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys(builtinTypes, "namespace");
 	
@@ -214,6 +213,16 @@ import ace.extern.AceTokenType;
 			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl)) return true;
 		}
 		
+		if (kto == KStruct) switch (from) {
+			case TInst(name, _, _):
+				if (!canCastTo(from, GmlTypeDef.asset, tpl, imp)) {
+					var ns = GmlAPI.gmlNamespaces[name];
+					if (JsTools.nca(ns, ns.canCastToStruct)) return true;
+				}
+			case TAnon(_): return true;
+			default:
+		}
+		
 		switch ([from, to]) {
 			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to
 				for (t1 in et1) if (!canCastToAnyOf(t1, et2, tpl)) return false;
@@ -221,14 +230,21 @@ import ace.extern.AceTokenType;
 			}
 			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl);
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
-				// allow bool<->number casts:
-				if (k1 == KBool && k2 == KNumber || k1 == KNumber && k2 == KBool) return true;
-				
-				if (k2 == KArray && p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;
-				
-				if (k2 == KObject) {
-					var ns = GmlAPI.gmlNamespaces[n1];
-					if (JsTools.nca(ns, ns.isObject)) return true;
+				switch (k2) {
+					// allow bool<->number casts:
+					case KNumber: if (k1 == KBool) return true;
+					case KBool: if (k1 == KNumber) return true;
+					case KArray: // var v:Enum should be allowed for array access
+						if (p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;
+					case KObject:
+						var ns = GmlAPI.gmlNamespaces[n1];
+						if (JsTools.nca(ns, ns.isObject)) return true;
+					case KAsset:
+						var ns = GmlAPI.gmlNamespaces[n1];
+						if (JsTools.nca(ns, ns.isObject)) return true;
+						var nk = GmlAPI.gmlKind[n1];
+						if (nk != null && nk.startsWith("asset.")) return true;
+					default:
 				}
 				
 				if (k1 == k2 && (k1 != KCustom || n1 == n2)) {

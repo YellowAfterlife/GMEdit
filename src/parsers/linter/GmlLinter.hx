@@ -539,6 +539,7 @@ class GmlLinter {
 					
 					
 					if (AceGmlTools.findNamespace(currName, imp, function(ns:GmlNamespace) {
+						if (ns.noTypeRef) return false;
 						currType = GmlTypeDef.type(currName);
 						currFunc = JsTools.or(ns.docStaticMap[""], AceGmlTools.findGlobalFuncDoc(currName));
 						return true;
@@ -546,6 +547,9 @@ class GmlLinter {
 					
 					currFunc = AceGmlTools.findGlobalFuncDoc(currName);
 					if (currFunc != null) break;
+					
+					currType = GmlAPI.stdTypes[currName];
+					if (currType != null) break;
 					
 					var t = getSelfType();
 					var tn = t.getNamespace();

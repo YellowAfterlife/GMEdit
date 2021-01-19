@@ -40,6 +40,7 @@ class GmlTypeParser {
 		r["object"] = KObject;
 		r["instance"] = KObject;
 		r["struct"] = KStruct;
+		r["asset"] = KAsset;
 		//
 		return r;
 	})();

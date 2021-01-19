@@ -25,6 +25,17 @@ class GmlNamespace {
 	public var isObject:Bool = false;
 	
 	/**
+	 * Whether this can be cast to `struct` constraint-type.
+	 * Defaults to `true` for user types and `false` for built-ins.
+	 */
+	public var canCastToStruct:Bool = true;
+	
+	/**
+	 * If set to true, you cannot reference type<> for this namespace
+	 */
+	public var noTypeRef:Bool = false;
+	
+	/**
 	 * Parent namespace, if any
 	 */
 	public var parent:GmlNamespace = null;

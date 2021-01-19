@@ -30,6 +30,7 @@ class GmlParseAPI {
 		doc:Dictionary<GmlFuncDoc>,
 		comp:AceAutoCompleteItems,
 		?types:Dictionary<GmlType>,
+		?namespaceDefs:Array<GmlNamespaceDef>,
 		?ukSpelling:Bool,
 		?version:GmlVersion,
 		?kindPrefix:String,
@@ -50,6 +51,7 @@ class GmlParseAPI {
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
 		var instComp = data.instComp;
+		var namespaceDefs = data.namespaceDefs;
 		#if lwedit
 		var lwArg0 = data.lwArg0;
 		var lwArg1 = data.lwArg1;
@@ -63,9 +65,12 @@ class GmlParseAPI {
 		var rxTypedef = new RegExp("^"
 			+ "typedef\\s+"
 			+ "(\\w+)"
+			+ "(?:\\s*:\\s*(\\w+))?" // : parent
 		+ "", "gm");
-		rxTypedef.each(src, function(mt:RegExpMatch) {
+		if (namespaceDefs != null) rxTypedef.each(src, function(mt:RegExpMatch) {
 			var name = mt[1];
+			var parent = mt[2];
+			namespaceDefs.push({ name: name, parent: parent });
 			stdKind[name] = "namespace";
 			stdComp.push(new AceAutoCompleteItem(name, "namespace", "type\nbuilt-in"));
 		});
