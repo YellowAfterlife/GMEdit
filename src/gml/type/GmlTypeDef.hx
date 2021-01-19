@@ -18,9 +18,12 @@ class GmlTypeDef {
 	public static var anyArray:GmlType = TInst("array", [], KArray);
 	public static var void:GmlType = TInst("void", [], KVoid);
 	public static var forbidden:GmlType = TInst("forbidden", [], KVoid);
+	public static var asset:GmlType = TInst("asset", [], KCustom);
+	
 	public static inline function array(itemType:GmlType):GmlType {
 		return TInst("array", [itemType], KArray);
 	}
+	
 	public static function type(name:String):GmlType {
 		return TInst("type", [TInst(name, [], KCustom)], KType);
 	}

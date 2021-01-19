@@ -110,6 +110,9 @@ class GmlFuncDoc {
 	 */
 	public var templateItems:Array<GmlTypeTemplateItem> = null;
 	
+	/** For filling out type params in self.func() calls */
+	public var templateSelf:GmlType = null;
+	
 	public var maxArgs(get, never):Int;
 	private function get_maxArgs():Int {
 		return rest ? 0x7fffffff : args.length;

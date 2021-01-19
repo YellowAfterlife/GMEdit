@@ -26,6 +26,7 @@ import ace.extern.AceTokenType;
 	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys(builtinTypes, "namespace");
 	
 	public static inline var templateItemName:String = "TemplateItem";
+	public static inline var templateSelfName:String = "TemplateSelf";
 	
 	/** If this might be a namespace, returns the name */
 	public static function getNamespace(t:GmlType):String {
@@ -128,11 +129,19 @@ import ace.extern.AceTokenType;
 	public static function equals(a:GmlType, b:GmlType, ?tpl:Array<GmlType>):Bool {
 		switch (b) {
 			case null:
+			case TInst(_, bp, KTemplateSelf):
+				switch (a) {
+					case null: return true;
+					case TInst(_, ap, _):
+						for (i in 0 ... bp.length) equals(ap[i], bp[i], tpl);
+						return true;
+					default: return false;
+				}
 			case TTemplate(_, i, c):
 				if (tpl == null) return true;
 				if (tpl[i] != null) {
 					return equals(a, tpl[i]);
-				}  else {
+				} else {
 					// this is clearly not a very good idea
 					if (a != null) {
 						if (c == null || canCastTo(a, c, tpl)) {

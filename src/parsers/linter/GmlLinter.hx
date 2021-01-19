@@ -8,6 +8,7 @@ import gml.GmlNamespace;
 import gml.type.GmlType;
 import gml.Project;
 import gml.type.GmlTypeDef;
+import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterInit;
 import synext.GmlExtLambda;
 import tools.Aliases;
@@ -254,7 +255,7 @@ class GmlLinter {
 	 * @param	sqb Whether this is a [...args]
 	 * @return	number of arguments read, -1 on error
 	 */
-	function readArgs(oldDepth:Int, sqb:Bool, ?doc:GmlFuncDoc):Int {
+	function readArgs(oldDepth:Int, sqb:Bool, ?doc:GmlFuncDoc, ?selfType:GmlType):Int {
 		var newDepth = oldDepth + 1;
 		var q = reader;
 		seqStart.setTo(reader);
@@ -268,6 +269,14 @@ class GmlLinter {
 			argTypeLast = doc.rest && argTypes != null ? argTypes.length - 1 : 0x7fffffff;
 			if (doc.templateItems != null) {
 				templateTypes = NativeArray.create(doc.templateItems.length);
+			}
+			if (doc.templateSelf != null) {
+				if (!GmlTypeTools.canCastTo(selfType, doc.templateSelf, templateTypes, getImports())) {
+					addWarning("Can't cast " + selfType.toString(templateTypes)
+						+ " to " + doc.templateSelf.toString(templateTypes)
+						+ ' for ' + doc.name + "#self"
+					);
+				}
 			}
 		} else {
 			argTypes = null;
@@ -657,7 +666,7 @@ class GmlLinter {
 					}
 					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
-					var argc = readArgs(newDepth, false, currFunc);
+					var argc = readArgs(newDepth, false, currFunc, selfType);
 					rc(argc < 0);
 					if (currFunc != null) {
 						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));

@@ -32,6 +32,7 @@ import ui.treeview.TreeView;
 import yy.YyObject;
 using StringTools;
 using tools.NativeString;
+using tools.NativeArray;
 using tools.PathTools;
 
 /**
@@ -361,7 +362,7 @@ class GmlSeeker {
 		var doc:GmlFuncDoc = null;
 		var docIsAutoFunc = false;
 		var jsDocArgs:Array<String> = null;
-		var jsDocTypes:Array<GmlType> = null;
+		var jsDocTypes:Array<String> = null;
 		var jsDocRest:Bool = false;
 		var jsDocSelf:String = null;
 		var jsDocReturn:String = null;
@@ -369,6 +370,20 @@ class GmlSeeker {
 		var jsDocInterfaceName:String = null;
 		var jsDocImplements:Array<String> = null;
 		var jsDocTemplateItems:Array<GmlTypeTemplateItem> = null;
+		
+		function jsDocTypesFlush(?pre:Array<GmlTypeTemplateItem>):Array<GmlType> {
+			var tpl = pre != null && jsDocTemplateItems != null
+				? pre.concat(jsDocTemplateItems)
+				: JsTools.or(pre, jsDocTemplateItems);
+			var rt = [];
+			if (tpl != null) {
+				for (s in jsDocTypes) {
+					s = GmlTypeTools.patchTemplateItems(s, tpl);
+					rt.push(GmlTypeDef.parse(s));
+				}
+			} else for (s in jsDocTypes) rt.push(GmlTypeDef.parse(s));
+			return rt;
+		}
 		/**  */
 		inline function linkDoc():Void {
 			if (doc != null) out.docs[main] = doc;
@@ -398,7 +413,7 @@ class GmlSeeker {
 			if (doc != null) {
 				if (jsDocArgs != null) {
 					doc.args = jsDocArgs;
-					doc.argTypes = jsDocTypes;
+					doc.argTypes = jsDocTypesFlush();
 					doc.templateItems = jsDocTemplateItems;
 					if (jsDocRest) doc.rest = jsDocRest;
 					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
@@ -487,6 +502,7 @@ class GmlSeeker {
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
+		var addFieldHint_doc:GmlFuncDoc = null;
 		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String, type:GmlType, argTypes:Array<GmlType>) {
 			var parentSpace:String = null;
 			if (namespace == null) {
@@ -513,6 +529,7 @@ class GmlSeeker {
 				if (argTypes != null) hintDoc.argTypes = argTypes;
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
+			addFieldHint_doc = hintDoc;
 			info = NativeString.nzcct(info, "\n", 'from $namespace');
 			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type);
 			
@@ -682,9 +699,7 @@ class GmlSeeker {
 							jsDocTypes = [];
 						}
 						var argText = mt[2];
-						var argType = JsTools.nca(mt[1], GmlTypeDef.parse(
-							GmlTypeTools.patchTemplateItems(mt[1], jsDocTemplateItems)
-						));
+						var argType = mt[1];
 						for (arg in argText.split(",")) {
 							jsDocArgs.push(arg);
 							jsDocTypes.push(argType);
@@ -801,7 +816,7 @@ class GmlSeeker {
 							var argTypes = null;
 							if (jsDocArgs != null) {
 								args = "(" + jsDocArgs.join(", ") + ")";
-								argTypes = jsDocTypes;
+								argTypes = jsDocTypesFlush();
 								jsDocArgs = null;
 								jsDocTypes = null;
 							}
@@ -849,8 +864,7 @@ class GmlSeeker {
 							if (isDefine && jsDocArgs != null) {
 								// `@param` override the parsed arguments
 								doc = GmlFuncDoc.create(main, jsDocArgs, jsDocRest);
-								doc.templateItems = jsDocTemplateItems;
-								doc.argTypes = jsDocTypes;
+								doc.argTypes = jsDocTypesFlush();
 								jsDocArgs = null;
 								jsDocTypes = null;
 								jsDocRest = false;
@@ -858,6 +872,7 @@ class GmlSeeker {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 								doc.trimArgs();
 							}
+							doc.templateItems = jsDocTemplateItems;
 							jsDocTemplateItems = null;
 							docIsAutoFunc = isFunc;
 							linkDoc();
@@ -1181,6 +1196,8 @@ class GmlSeeker {
 						var args:String = null;
 						var argTypes:Array<GmlType> = null;
 						var isConstructor = false;
+						var templateSelf:GmlType = null;
+						var templateItems:Array<GmlTypeTemplateItem> = null;
 						do {
 							if (!q.peek().isIdent0_ni()) continue;
 							var start = q.pos;
@@ -1199,10 +1216,23 @@ class GmlSeeker {
 							while (q.loop && q.read() != ")".code) {}
 							if (jsDocArgs != null) {
 								args = "(" + jsDocArgs.join(", ") + ")";
-								argTypes = jsDocTypes;
+								argTypes = jsDocTypesFlush(JsTools.nca(doc, doc.templateItems));
 								jsDocArgs = null;
 								jsDocTypes = null;
 							} else args = q.substring(start, q.pos);
+							//
+							templateItems = jsDocTemplateItems;
+							jsDocTemplateItems = null;
+							if (doc != null && doc.templateItems != null) {
+								var tsp = [];
+								for (i => ti in doc.templateItems) {
+									tsp.push(TTemplate(ti.name, i, GmlTypeDef.parse(ti.constraint)));
+								}
+								templateSelf = TInst("self", tsp, KTemplateSelf);
+								templateItems = templateItems != null
+									? doc.templateItems.concat(templateItems)
+									: doc.templateItems.copy();
+							}
 							
 							if (jsDocReturn != null) {
 								args += GmlFuncDoc.retArrow + jsDocReturn;
@@ -1220,6 +1250,10 @@ class GmlSeeker {
 							}
 						} while (false);
 						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null, null, argTypes);
+						if (templateSelf != null && addFieldHint_doc != null) {
+							addFieldHint_doc.templateSelf = templateSelf;
+							addFieldHint_doc.templateItems = templateItems;
+						}
 					}
 					q_restore();
 				};

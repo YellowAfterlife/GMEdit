@@ -20,6 +20,7 @@ class GmlTypeParser {
 		r["void"] = KVoid;
 		r["Void"] = KVoid;
 		r[GmlTypeTools.templateItemName] = KTemplateItem;
+		r[GmlTypeTools.templateSelfName] = KTemplateSelf;
 		//
 		r["undefined"] = KUndefined;
 		r["int"] = KNumber;
