@@ -1,4 +1,9 @@
 package ui.treeview;
+import js.html.KeyboardEvent;
+import js.html.Document;
+import js.html.InputElement;
+import js.html.DOMElement;
+import js.html.Node;
 import electron.Dialog;
 import electron.Electron;
 import gml.Project;
@@ -16,6 +21,7 @@ import ui.treeview.TreeViewElement;
 import yy.YyManip;
 import yy.v22.YyManipV22;
 using tools.NativeString;
+import Main.document;
 
 /**
  * ...
@@ -295,7 +301,29 @@ class TreeViewItemMenus {
 	}
 	static function renameImpl() {
 		var d = getItemData(target);
-		Dialog.showPrompt("New name?", d.last, function(s:String) {
+
+		var textInputElement:InputElement = cast document.createElement("input");
+		textInputElement.type = "text";
+		textInputElement.value = d.last;
+
+		var spanChild = target.firstElementChild;
+		var oldDisplay = spanChild.style.display; // stores old display to apply later, probably overkill but who knows with themes
+		spanChild.style.display = "none";
+		Console.log("hoi");
+
+		var applyRenameFunction = function() {
+			if (textInputElement == null || textInputElement.parentNode == null || textInputElement.contains(textInputElement) == false) {
+				return;
+			}
+			var s = textInputElement.value;
+			// I've tried every concievable check, but this still causes Exceptions for repeated removal. Try it is.
+			Console.log("What " + s);
+			try {
+				textInputElement.remove();
+				textInputElement = null;
+			} catch (ex) {return;}
+			spanChild.style.display = oldDisplay;
+
 			if (s == d.last || s == "" || s == null) return;
 			var el:TreeViewElement = cast target;
 			var tvDir:TreeViewDir = el.treeParentDir;
@@ -365,7 +393,20 @@ class TreeViewItemMenus {
 				}
 				default: Dialog.showAlert("Can't rename an item for this version!");
 			}
+		};
+
+		textInputElement.addEventListener("focusout", applyRenameFunction);
+		textInputElement.addEventListener("keyup", function(event:KeyboardEvent) {
+			if (event.keyCode == 13) {
+				event.preventDefault();
+				applyRenameFunction();
+			}
 		});
+
+		target.appendChild(textInputElement);
+
+		textInputElement.select();
+
 	}
 	//
 	static function initCreateMenu() {
