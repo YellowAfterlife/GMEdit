@@ -94,6 +94,9 @@ class GmlVersion {
 	public function hasTemplateStrings():Bool {
 		return config.hasTemplateStrings || GmlAPI.forceTemplateStrings;
 	}
+	public function hasFunctionLiterals():Bool {
+		return config.additionalKeywords.contains("function");
+	}
 	public function hasJSDoc() return config.hasJSDoc;
 	public function hasScriptArgs() return config.hasDefineArgs;
 	public function resetOnDefine() return config.resetLineCounterOnDefine;

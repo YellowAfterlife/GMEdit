@@ -9,8 +9,10 @@ import gml.GmlImports;
 import gml.GmlLocals;
 import gml.Project;
 import gml.type.GmlType;
+import gml.type.GmlTypeDef;
 import haxe.io.Path;
 import js.lib.RegExp;
+import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;
@@ -61,6 +63,7 @@ class GmlExtImport {
 		"var\\s+",
 		"#args\\s+",
 		",\\s*",
+		"(\\s*",
 	].join("|") + ")\\w+:");
 	
 	/** Ditto but accounting for `/*:Type` */
@@ -68,6 +71,7 @@ class GmlExtImport {
 		"var\\s+",
 		"#args\\s+", // shouldn't be needed tbh
 		",\\s*",
+		"(\\s*",
 	].join("|") + ")\\w+"
 		+ "(?:/\\*)?" // opt: comment start
 	+ ":");
@@ -427,7 +431,7 @@ class GmlExtImport {
 		return next;
 	}
 	static var pre_needsCache:RegExp = new RegExp("\n#(?:define|event|moment|target)\\b");
-	public static function pre(code:String, path:String) {
+	public static function pre(code:GmlCode, path:String):GmlCode {
 		var seekData = GmlSeekData.map[path];
 		inline function cancel() {
 			if (seekData != null) seekData.imports = null;
@@ -459,6 +463,70 @@ class GmlExtImport {
 		var files = new Dictionary<Bool>();
 		if (globalExists) parseFile(imp, "global.gml", files, cache);
 		imps.set("", imp);
+		//
+		inline function procFunc(isTopLevel:Bool):Void {
+			q.skipSpaces1();
+			var c = q.peek();
+			var p:Int;
+			if (c.isIdent0()) {
+				p = q.pos;
+				q.skipIdent1();
+				if (isTopLevel) {
+					var fname = q.substring(p, q.pos);
+					imp = new GmlImports();
+					imps.set(fname, imp);
+					files = new Dictionary();
+					if (globalExists) parseFile(imp, "global.gml", files, cache);
+					q.skipSpaces1_local();
+					c = q.peek();
+				}
+			}
+			if (c == "(".code) {
+				q.skip();
+				var argName:String = null;
+				while (q.loop) {
+					c = q.read();
+					switch (c) {
+						case ")".code: break;
+						case "/".code: switch (q.peek()) {
+							case "/".code: q.skipLine();
+							case "*".code: {
+								q.skip();
+								p = q.peek() == ":".code ? q.pos + 1 : -1;
+								q.skipComment();
+								if (p < 0 || argName == null) continue;
+								var cmtEnd = q.pos;
+								q.pos = p;
+								q.skipType();
+								q.skipSpaces1x(cmtEnd);
+								if (q.pos == cmtEnd - 2) {
+									var typeStr = q.substring(p, cmtEnd - 2);
+									var type = GmlTypeDef.parse(typeStr);
+									if (type != null) {
+										flush(p - 3);
+										out += ":" + typeStr;
+										imp.localTypes[argName] = type;
+										start = cmtEnd;
+									}
+								}
+								q.pos = cmtEnd;
+							}
+							default:
+						};
+						case '"'.code, "'".code, "`".code, "@".code: {
+							q.skipStringAuto(c, version);
+						};
+						case ",".code: argName = null;
+						case _ if (c.isIdent0()): {
+							p = q.pos - 1;
+							q.skipIdent1();
+							argName = q.substring(p, q.pos);
+						}
+						default:
+					}
+				} // while (q.loop), can continue
+			}
+		}
 		//
 		while (q.loop) {
 			var p = q.pos;
@@ -512,18 +580,8 @@ class GmlExtImport {
 						var p1 = q.pos;
 						var ident = q.substring(p, p1);
 						var next:String = null;
-						if (ident == "function" && cubDepth == 0) {
-							q.skipSpaces1();
-							c = q.peek();
-							if (c.isIdent0()) {
-								p = q.pos;
-								q.skipIdent1();
-								ident = q.substring(p, q.pos);
-								imp = new GmlImports();
-								imps.set(ident, imp);
-								files = new Dictionary();
-								if (globalExists) parseFile(imp, "global.gml", files, cache);
-							}
+						if (ident == "function") {
+							procFunc(cubDepth == 0);
 						}
 						else if (ident == "var" || ident == "args" && q.get(p - 1) == "#".code) {
 							var isVar = ident == "var";
@@ -697,7 +755,7 @@ class GmlExtImport {
 		}
 		return null;
 	}
-	public static function post(code:String, path:String) {
+	public static function post(code:GmlCode, path:String):GmlCode {
 		errorText = "";
 		if (!Preferences.current.importMagic) {
 			post_numImports = 0;
@@ -718,6 +776,46 @@ class GmlExtImport {
 		var mayHaveType = imps != null || rxHasTypePost.test(code);
 		if (imp == null && mayHaveType) imp = new GmlImports();
 		var cubDepth = 0;
+		//
+		var canFunc = version.hasFunctionLiterals();
+		inline function procFunc(isTopLevel:Bool):Void {
+			q.skipSpaces1_local();
+			var c = q.peek();
+			
+			if (c.isIdent0()) { // function <name>
+				var nameStart = q.pos;
+				q.skipIdent1();
+				
+				if (isTopLevel) {
+					var name = q.substring(nameStart, q.pos);
+					imp = imps != null ? imps[name] : null;
+					if (imp == null && mayHaveType) imp = new GmlImports();
+				}
+				
+				q.skipSpaces1_local();
+				c = q.peek();
+			}
+			
+			if (c == "(".code) while (q.loopLocal) {
+				c = q.read();
+				switch (c) {
+					case ")".code: break;
+					case "/".code: switch (q.peek()) {
+						case "/".code: q.skipLine();
+						case "*".code: q.skip(); q.skipComment();
+						default:
+					};
+					case '"'.code, "'".code, "`".code, "@".code:
+						q.skipStringAuto(c, version);
+					case ":".code:
+						var tp = q.pos - 1;
+						if (q.skipType()) continue;
+						flush(tp);
+						out += "/*" + q.substring(tp, q.pos) + "*/";
+						start = q.pos;
+				}
+			}
+		}
 		//
 		while (q.loop) {
 			var p = q.pos;
@@ -760,87 +858,83 @@ class GmlExtImport {
 						} else q.pos = p + 1;
 					};
 				};
-				default: {
-					var ctx = cubDepth != null ? q.readFunctionName() : null;
-					if (ctx != null) {
-						imp = imps != null ? imps[ctx] : null;
-						if (imp == null && mayHaveType) imp = new GmlImports();
-					}
-					else if (c.isIdent0() && imp != null) {
-						//
-						var dotStart:Int, dotPos:Int, dotFull:String;
-						inline function readDotPair() {
-							dotStart = q.pos;
-							dotPos = -1;
-							while (q.loop) {
-								c = q.peek();
-								if (c.isIdent1()) {
+				case _ if (c.isIdent0() && imp != null): {
+					var dotStart:Int, dotPos:Int, dotFull:String;
+					inline function readDotPair() {
+						dotStart = q.pos;
+						dotPos = -1;
+						while (q.loop) {
+							c = q.peek();
+							if (c.isIdent1()) {
+								q.skip();
+							} else if (c == ".".code) {
+								if (dotPos == -1) {
+									dotPos = q.pos;
 									q.skip();
-								} else if (c == ".".code) {
-									if (dotPos == -1) {
-										dotPos = q.pos;
-										q.skip();
-									} else break;
 								} else break;
-							}
-							dotFull = q.substring(dotStart, q.pos);
+							} else break;
 						}
-						//
-						var procIdent_next:String;
-						inline function procIdent() {
-							procIdent_next = post_procIdent(q, imp, dotStart, dotPos, dotFull);
-							if (procIdent_next != null) {
-								flush(dotStart);
-								out += procIdent_next;
-								start = post_procIdent_p1;
-							}
+						dotFull = q.substring(dotStart, q.pos);
+					}
+					//
+					var procIdent_next:String;
+					inline function procIdent() {
+						procIdent_next = post_procIdent(q, imp, dotStart, dotPos, dotFull);
+						if (procIdent_next != null) {
+							flush(dotStart);
+							out += procIdent_next;
+							start = post_procIdent_p1;
 						}
-						//
-						q.pos -= 1;
-						readDotPair();
-						if (dotFull == "var" || dotFull == "args" && q.get(p - 1) == "#".code) {
-							var isVar = dotFull == "var";
-							procIdent_next = isVar ? imp.longen["var"] : null;
-							if (procIdent_next != null) {
-								flush(p);
-								out += procIdent_next;
-								start = q.pos;
+					}
+					//
+					q.pos -= 1;
+					readDotPair();
+					if (canFunc && dotFull == "function") {
+						procFunc(cubDepth == 0);
+					}
+					else if (dotFull == "var" || dotFull == "args" && q.get(p - 1) == "#".code) {
+						var isVar = dotFull == "var";
+						procIdent_next = isVar ? imp.longen["var"] : null;
+						if (procIdent_next != null) {
+							flush(p);
+							out += procIdent_next;
+							start = q.pos;
+						}
+						q.skipVars(function(d:SkipVarsData) {
+							var p = q.pos;
+							flush(d.type0);
+							if (d.typeStr != null) {
+								out += isVar ? "/*:" + d.typeStr + "*/" : ":" + d.typeStr;
+								impc += 1;
 							}
-							q.skipVars(function(d:SkipVarsData) {
-								var p = q.pos;
-								flush(d.type0);
-								if (d.typeStr != null) {
-									out += isVar ? "/*:" + d.typeStr + "*/" : ":" + d.typeStr;
-									impc += 1;
+							out += q.substring(d.type1, d.expr0);
+							q.pos = d.expr0;
+							start = q.pos;
+							while (q.pos < d.expr1) {
+								var p1 = q.pos;
+								var c = q.read();
+								switch (c) {
+									case "/".code: switch (q.peek()) {
+										case "/".code: q.skipLine();
+										case "*".code: q.skip(); q.skipComment();
+										default:
+									};
+									case '"'.code, "'".code, "`".code, "@".code: {
+										q.skipStringAuto(c, version);
+									};
+									default: if (c.isIdent0()) {
+										q.pos -= 1;
+										readDotPair();
+										procIdent();
+									};
 								}
-								out += q.substring(d.type1, d.expr0);
-								q.pos = d.expr0;
-								start = q.pos;
-								while (q.pos < d.expr1) {
-									var p1 = q.pos;
-									var c = q.read();
-									switch (c) {
-										case "/".code: switch (q.peek()) {
-											case "/".code: q.skipLine();
-											case "*".code: q.skip(); q.skipComment();
-											default:
-										};
-										case '"'.code, "'".code, "`".code, "@".code: {
-											q.skipStringAuto(c, version);
-										};
-										default: if (c.isIdent0()) {
-											q.pos -= 1;
-											readDotPair();
-											procIdent();
-										};
-									}
-								}
-								q.pos = p;
-							}, version, !isVar);
-						} else procIdent();
-						if (errorText != "") return null;
-					} // c.isIdent && imp
-				}; // default
+							}
+							q.pos = p;
+						}, version, !isVar);
+					}  else procIdent();
+					if (errorText != "") return null;
+				};
+				default:
 			} // switch
 		} // loop
 		post_numImports = impc;
