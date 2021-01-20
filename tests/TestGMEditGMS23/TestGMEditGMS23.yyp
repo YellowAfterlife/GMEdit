@@ -5,6 +5,7 @@
     {"id":{"name":"v_doc_template","path":"scripts/v_doc_template/v_doc_template.yy",},"order":0,},
     {"id":{"name":"v_doc_implements","path":"scripts/v_doc_implements/v_doc_implements.yy",},"order":1,},
     {"id":{"name":"v_imp_func_arg_types","path":"scripts/v_imp_func_arg_types/v_imp_func_arg_types.yy",},"order":0,},
+    {"id":{"name":"v_imp_typed_let","path":"scripts/v_imp_typed_let/v_imp_typed_let.yy",},"order":1,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

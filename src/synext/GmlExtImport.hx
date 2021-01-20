@@ -60,18 +60,18 @@ class GmlExtImport {
 	
 	/** `var a:T`, `#args a:T`, `var a, b:T` */
 	private static var rxHasTypePost = new RegExp("(?:" + [
-		"var\\s+",
+		"(?:var|let|const)\\s+",
 		"#args\\s+",
 		",\\s*",
-		"(\\s*",
+		"\\(\\s*",
 	].join("|") + ")\\w+:");
 	
 	/** Ditto but accounting for `/*:Type` */
 	private static var rxHasTypePre = new RegExp("(?:" + [
-		"var\\s+",
+		"(?:var|let|const)\\s+",
 		"#args\\s+", // shouldn't be needed tbh
 		",\\s*",
-		"(\\s*",
+		"\\(\\s*",
 	].join("|") + ")\\w+"
 		+ "(?:/\\*)?" // opt: comment start
 	+ ":");
@@ -464,6 +464,7 @@ class GmlExtImport {
 		if (globalExists) parseFile(imp, "global.gml", files, cache);
 		imps.set("", imp);
 		//
+		var canFn = version.hasFunctionLiterals();
 		inline function procFunc(isTopLevel:Bool):Void {
 			q.skipSpaces1();
 			var c = q.peek();
@@ -580,10 +581,17 @@ class GmlExtImport {
 						var p1 = q.pos;
 						var ident = q.substring(p, p1);
 						var next:String = null;
-						if (ident == "function") {
+						if (canFn && ident == "function") {
 							procFunc(cubDepth == 0);
+							continue;
 						}
-						else if (ident == "var" || ident == "args" && q.get(p - 1) == "#".code) {
+						//
+						var mcr = GmlAPI.gmlMacros[ident];
+						if (mcr != null && mcr.expr == "var") ident = "var";
+						//
+						if (ident == "var"
+							|| ident == "args" && q.get(p - 1) == "#".code
+						) {
 							var isVar = ident == "var";
 							next = isVar ? imp.shorten[ident] : null;
 							if (next != null) {
@@ -891,8 +899,13 @@ class GmlExtImport {
 					readDotPair();
 					if (canFunc && dotFull == "function") {
 						procFunc(cubDepth == 0);
+						continue;
 					}
-					else if (dotFull == "var" || dotFull == "args" && q.get(p - 1) == "#".code) {
+					//
+					var mcr = GmlAPI.gmlMacros[dotFull];
+					if (mcr != null && mcr.expr == "var") dotFull = "var";
+					//
+					if (dotFull == "var" || dotFull == "args" && q.get(p - 1) == "#".code) {
 						var isVar = dotFull == "var";
 						procIdent_next = isVar ? imp.longen["var"] : null;
 						if (procIdent_next != null) {
@@ -931,7 +944,7 @@ class GmlExtImport {
 							}
 							q.pos = p;
 						}, version, !isVar);
-					}  else procIdent();
+					} else procIdent();
 					if (errorText != "") return null;
 				};
 				default:
