@@ -6,7 +6,7 @@ using tools.NativeString;
  * In a good case scenario, inlines completely.
  * @author YellowAfterlife
  */
-class StringReader {
+@:keep class StringReader {
 	//
 	public var source(default, null):String;
 	public var pos:Int;
@@ -48,5 +48,9 @@ class StringReader {
 	}
 	public inline function substr(start:Int, length:Int):String {
 		return source.fastSub(start, length);
+	}
+	public function getWatch(n:Int) {
+		var bn = pos < n ? pos : n;
+		return source.fastSub(pos - bn, bn) + "¦" + source.fastSub(pos, n);
 	}
 }

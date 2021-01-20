@@ -1,6 +1,7 @@
 package ui;
 import electron.Dialog;
 import electron.Electron;
+import file.kind.gml.KGmlScript;
 import gml.file.GmlFile;
 import gml.Project;
 import js.html.BeforeUnloadEvent;
@@ -125,7 +126,7 @@ class ChromeTabs {
 				tabEl.addEventListener("mouseleave", hideHint);
 				tabEl.addEventListener("mousedown", hideHint);
 				#if lwedit
-				GmlSeekData.add(gmlFile.path);
+				GmlSeekData.add(gmlFile.path, KGmlScript.inst);
 				#end
 			}
 			sync(gmlFile, makeFile);
