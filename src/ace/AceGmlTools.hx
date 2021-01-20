@@ -187,7 +187,7 @@ using StringTools;
 		while (++step < 2) {
 			var ns = step > 0 ? GmlAPI.gmlNamespaces[name] : imp.namespaces[name];
 			if (ns == null) continue;
-			if ((result = fn(ns)) != null) break;
+			if (cast (result = fn(ns))) break;
 		}
 		return result;
 	}
