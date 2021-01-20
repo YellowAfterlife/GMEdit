@@ -151,8 +151,8 @@ class LiveWebState {
 				}
 			}
 			if (tabPairs == null) {
-				modeEl.setSelectValueWithoutOnChange(ls.getItem(lsMode), "2d");
-				verEl.setSelectValueWithoutOnChange(ls.getItem(lsVersion), "GMS2");
+				modeEl.setSelectValueWithoutOnChange(null, "2d");
+				verEl.setSelectValueWithoutOnChange(null, "GMS2");
 				tabPairs = [{
 					name: "Hello!",
 					code: WelcomePage.lwText
@@ -176,7 +176,7 @@ class LiveWebState {
 }
 typedef LiveWebTab = { name:String, code:String };
 typedef LiveWebStateImpl = {
-	pairs:Array<LiveWebStateImpl>,
+	pairs:Array<LiveWebTab>,
 	mode:String,
 	version:String
 }

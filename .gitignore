@@ -1,6 +1,7 @@
 /bin/*
 !/bin/resources
 /bin/resources/app/app.js
+/bin/resources/app/app.js.map
 /bin/resources/default_app.asar
 /bin/resources/electron.asar
 /art/*.png
@@ -9,8 +10,9 @@
 /bin/resources/app/misc/gmcr.js
 /bin/resources/app/misc/gml.js
 /bin/resources/app/lw-app.js
+/bin/resources/app/lw-app.js.map
 /bin/resources/app/lw
 /bin/resources/app/livejs*
 /bin/resources/app/app-starter.js
 /src/dump/decoding_error.txt
-/bin/resources/app/app.js.map
+/tests/*/#backups
