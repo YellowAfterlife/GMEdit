@@ -16,7 +16,7 @@ using tools.NativeString;
  * Extends regular string parser with a set of GML-related helpers.
  * @author YellowAfterlife
  */
-class GmlReader extends StringReader {
+@:keep class GmlReader extends StringReader {
 	//
 	public var loop(get, never):Bool;
 	private function get_loop():Bool {
@@ -355,13 +355,19 @@ class GmlReader extends StringReader {
 	 * `¦function name() {}` -> "name", `function name¦() {}`
 	 * `¦function() {}` -> null, `¦function() {}`
 	 */
-	public function readFunctionName():String {
+	public function readFunctionName(?first:CharCode):String {
 		var start = pos;
-		if (peek() != "f".code) return null;
-		if (peek(7) != "n".code) return null;
-		var c = peek(8); if (c.isIdent1()) return null;
-		if (substr(pos, 8) != "function") return null;
-		skip(8);
+		var at = pos;
+		if (first == null) {
+			first = peek();
+		} else at--;
+		//
+		if (first != "f".code) return null;
+		if (get(at + 7) != "n".code) return null;
+		var c = get(at + 8); if (c.isIdent1()) return null;
+		if (substr(at, 8) != "function") return null;
+		//
+		pos = at + 8;
 		skipSpaces0_local();
 		c = peek(); if (!c.isIdent0()) { pos = start; return null; }
 		start = pos;

@@ -516,7 +516,7 @@ class GmlLinter {
 					
 					var imp:GmlImports = getImports();
 					var locals = editor.locals[context];
-					if (imp != null && locals.kind.exists(currName)) {
+					if (imp != null && locals != null && locals.kind.exists(currName)) {
 						currType = imp.localTypes[currName];
 						currFunc = currType.getSelfCallDoc(imp);
 						break;

@@ -339,7 +339,7 @@ instance_nearest<T:object|instance>(x:number,y:number,obj:T)->T
 instance_furthest<T:object|instance>(x:number,y:number,obj:T)->T
 instance_place<T:object|instance>(x:number,y:number,obj:T)->T
 instance_create_depth<T:object>(x:number,y:number,depth:number,obj:T)->T
-instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,obj:T)->
+instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,obj:T)->T
 instance_copy(performevent) // TODO... good luck with this one
 instance_change<T:object|instance>(obj:T,performevents:bool)->void
 instance_destroy<T:object|instance>(?id*:T,?execute_event_flag*:bool)->void
