@@ -52,6 +52,11 @@
 	background-image: url(tree.png);
 	background-size: auto 100%;
 }
+.treeview .inline-text-field {
+	background: #222222;
+    color: white;
+    border: none;
+}
 
 /* */
 .popout-window {
@@ -340,3 +345,17 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	background: #111;
 	color: #ccc;
 }
+<<<<<<< Updated upstream
+=======
+#lw_prompt .window {
+	background: #262626;
+	color: white
+}
+#lw_prompt .window input[type="text"] {
+	background: #161616;
+	color: white;
+	border: none;
+	padding: 8px;
+	line-height: 25px;
+}
+>>>>>>> Stashed changes

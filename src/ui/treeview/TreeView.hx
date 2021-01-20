@@ -266,18 +266,19 @@ using tools.PathTools;
 		r.title = name;
 		return r;
 	}
-	public static function handleItemClick(e:MouseEvent, ?el:Element, ?nav:GmlFileNav):GmlFile {
+	public static function handleItemClick(e:MouseEvent, ?element:Element, ?nav:GmlFileNav):GmlFile {
 		if (e != null) {
 			e.preventDefault();
-			if (el == null) el = cast e.target;
-		} else if (el == null) return null;
-		var openAs = (cast el:TreeViewItem).yyOpenAs;
-		if (openAs != null) {
-			if (nav == null) {
-				nav = { kind: openAs };
-			} else nav.kind = openAs;
+			if (element == null) element = cast e.target;
+		} else if (element == null) return null;
+		var openAs = (cast element:TreeViewItem).yyOpenAs;
+		if (openAs == null) {
+			return null;
 		}
-		return GmlFile.open(el.innerText, el.getAttribute(attrPath), nav);
+		if (nav == null) {
+			nav = { kind: openAs };
+		} else nav.kind = openAs;
+		return GmlFile.open(element.innerText, element.getAttribute(attrPath), nav);
 	}
 	public static inline function makeItemShared(name:String, path:String, kind:String):TreeViewItem {
 		var r = makeItem(name);
