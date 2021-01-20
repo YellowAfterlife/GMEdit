@@ -269,12 +269,16 @@ import ace.extern.AceTokenType;
 				
 				if (AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
 					var depth = 0;
+					var found = false;
 					while (ns != null && ++depth < GmlNamespace.maxDepth) {
-						for (itf in ns.interfaces) if (ns.name == n2) return true;
+						for (itf in ns.interfaces) {
+							if (itf.name == n2) { found = true; break; }
+						}
+						if (found) break;
 						ns = ns.parent;
-						if (JsTools.nca(ns, ns.name == n2)) return true;
+						if (JsTools.nca(ns, ns.name == n2)) { found = true; break; }
 					}
-					return false;
+					return found;
 				})) return true;
 			};
 			case [TAnon(a1), TInst(n2, [], KCustom)]: {
