@@ -567,7 +567,7 @@ class GmlSeeker {
 				//
 				if (!out.kindMap.exists(name)) out.kindList.push(name);
 				out.kindMap[name] = "namespace";
-				out.docs[name] = hintDoc;
+				if (hintDoc != null) out.docs[name] = hintDoc;
 			}
 		}
 		function addInstVar(s:String):Void {
