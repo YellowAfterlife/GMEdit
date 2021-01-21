@@ -445,7 +445,6 @@ class GmlExtImport {
 			&& !globalExists
 			&& !rxHasHint.test(code)
 		) return cancel();
-		var seekLocals = seekData != null ? seekData.locals : null;
 		var needsCache = pre_needsCache.test(code);
 		var cache:GmlExtImportRuleCache = needsCache ? new Dictionary() : null;
 		var version = GmlAPI.version;
@@ -457,7 +456,6 @@ class GmlExtImport {
 		}
 		//
 		var imp = new GmlImports();
-		var firstImp = imp;
 		var cubDepth = 0;
 		var imps = new Dictionary<GmlImports>();
 		var files = new Dictionary<Bool>();
@@ -488,7 +486,18 @@ class GmlExtImport {
 				while (q.loop) {
 					c = q.read();
 					switch (c) {
-						case ")".code: break;
+						case ")".code:
+							q.skipSpaces1_local();
+							if (q.substr(q.pos, 4) == "/*->") {
+								var tcStart = q.pos;
+								q.skipComment();
+								if (q.substr(q.pos - 2, 2) == "*/") {
+									flush(tcStart);
+									out += q.substring(tcStart + 2, q.pos - 2);
+									start = q.pos;
+								}
+							}
+							break;
 						case "/".code: switch (q.peek()) {
 							case "/".code: q.skipLine();
 							case "*".code: {
@@ -807,7 +816,18 @@ class GmlExtImport {
 			if (c == "(".code) while (q.loopLocal) {
 				c = q.read();
 				switch (c) {
-					case ")".code: break;
+					case ")".code:
+						q.skipSpaces1_local();
+						if (q.substr(q.pos, 2) == "->") {
+							var tsStart = q.pos;
+							q.pos += 2;
+							if (!q.skipType()) {
+								flush(tsStart);
+								out += "/*" + q.substring(tsStart, q.pos) + "*/";
+								start = q.pos;
+							} else q.pos = tsStart;
+						}
+						break;
 					case "/".code: switch (q.peek()) {
 						case "/".code: q.skipLine();
 						case "*".code: q.skip(); q.skipComment();

@@ -1,4 +1,5 @@
 package gml;
+import gml.funcdoc.*;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
@@ -19,6 +20,7 @@ using tools.NativeString;
 class GmlFuncDoc {
 	
 	public static inline var retArrow:String = "➜";
+	public static inline var parRetArrow:String = ")➜";
 	public static inline function patchArrow(s:String):String {
 		return StringTools.replace(s, "->", retArrow);
 	}
@@ -87,8 +89,7 @@ class GmlFuncDoc {
 	public var returnType(get, never):GmlType;
 	private function get_returnType():GmlType {
 		if (post == __returnType_cache_post) return __returnType_cache_type;
-		var mt = __returnType_rx.exec(post);
-		var str = JsTools.nca(mt, mt[1]);
+		var str = inline get_returnTypeString();
 		var type:GmlType;
 		if (str != null) {
 			if (templateItems != null) {
@@ -102,7 +103,22 @@ class GmlFuncDoc {
 	}
 	var __returnType_cache_post:String;
 	var __returnType_cache_type:GmlType;
-	static var __returnType_rx:RegExp = new RegExp('^\\)$retArrow(\\S+)');
+	static var __returnType_rx:RegExp = new RegExp('^\\)(?:$retArrow(\\S+)?)?');
+	
+	public var returnTypeString(get, set):String;
+	private function get_returnTypeString():String {
+		var mt = __returnType_rx.exec(post);
+		return JsTools.nca(mt, mt[1]);
+	}
+	private function set_returnTypeString(typeStr:String):String {
+		post = NativeString.replaceExt(post, __returnType_rx, function(_) {
+			if (typeStr == null) return ")";
+			if (typeStr == "") return parRetArrow;
+			return parRetArrow + typeStr.replaceExt(JsTools.rx(~/\s+/), "");
+		});
+		hasReturn = typeStr != null;
+		return typeStr;
+	}
 	
 	/**
 	 * For fn<K:string, V>() these would be [{name:"K",ct:"string"},{name:"V"}]
@@ -158,180 +174,15 @@ class GmlFuncDoc {
 	}
 	
 	/** ("func(a, b)") -> { pre:"func(", args:["a","b"], post:")" } */
-	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
-		s = patchArrow(s);
-		var p0 = s.indexOf("(");
-		var p1 = s.indexOf(")", p0);
-		var name:String, pre:String, post:String, args:Array<String>, rest:Bool;
-		var argTypes:Array<GmlType> = null;
-		var templateItems:Array<GmlTypeTemplateItem> = null;
-		if (p0 >= 0 && p1 >= 0) {
-			pre = s.substring(0, p0 + 1);
-			name = s.substring(0, p0); {
-				var mt = parse_rxTemplate.exec(pre);
-				if (mt != null) {
-					name = mt[1];
-					templateItems = [];
-					for (ts in mt[2].splitRx(JsTools.rx(~/[,;]\s*/g))) {
-						mt = JsTools.rx(~/^\s*(.+?)\s*:\s*(.+?)\s*$/).exec(ts);
-						if (mt != null) {
-							templateItems.push(new GmlTypeTemplateItem(mt[1], mt[2]));
-						} else templateItems.push(new GmlTypeTemplateItem(ts.trimBoth()));
-					}
-				}
-			}
-			var sw = s.substring(p0 + 1, p1).trimBoth();
-			post = s.substring(p1);
-			if (sw != "") {
-				args = sw.splitRx(JsTools.rx(~/,\s*/g));
-				var rxt = JsTools.rx(~/:([^=]+)/);
-				for (i => a in args) {
-					var mt = rxt.exec(a);
-					if (mt != null) {
-						if (argTypes == null) argTypes = NativeArray.create(args.length);
-						var typeStr = mt[1].trimRight();
-						if (templateItems != null) {
-							typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
-						}
-						argTypes[i] = GmlTypeDef.parse(typeStr);
-					}
-				}
-			} else args = [];
-			rest = sw.contains("...");
-		} else {
-			name = s;
-			pre = s;
-			post = "";
-			args = [];
-			rest = false;
-		}
-		if (out != null) {
-			out.minArgsCache = null;
-			out.name = name;
-			out.pre = pre;
-			out.post = post;
-			out.args = args;
-			out.rest = rest;
-		} else {
-			out = new GmlFuncDoc(name, pre, post, args, rest);
-		}
-		out.argTypes = argTypes;
-		out.templateItems = templateItems;
-		return out;
-	}
-	static var parse_rxTemplate = new RegExp("^(.*)" + "<(.+?)>\\(");
-	
-	static var fromCode_rx:RegExp = new RegExp("\\bargument(?:"
-		+ "(\\d+)" // argument0
-		+ "|\\s*\\[\\s*(?:(\\d+)\\s*\\])?" // argument[0] | argument[???]
-	+ ")", "g");
-	static var fromCode_hasVarArg = new RegExp("\\bargument_count\\b");
-	static var fromCode_hasRet:RegExp = new RegExp("\\breturn\\b\\s*[^;]");
-	private static function fromCode_skipArgCountCmp(chunk:GmlCode, k:Int):Int {
-		var c:CharCode;
-		// `name = argument_count > 1[ ]? argument[1]`
-		while (--k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (!c.isSpace1()) break;
-		}
-		// `name = argument_count > [1] ? argument[1]`
-		c = chunk.fastCodeAt(k);
-		if (!c.isDigit()) return -1;
-		while (--k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (!c.isDigit()) break;
-		}
-		// `name = argument_count >[ ]1 ? argument[1]`
-		while (k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (c.isSpace1()) k--; else break;
-		}
-		// `name = argument_count [>] 1 ? argument[1]`
-		if (chunk.fastCodeAt(k) == "=".code) k--;
-		if (chunk.fastCodeAt(k) == ">".code) k--; else return -1;
-		// `name = argument_count[ ]> 1 ? argument[1]`
-		while (k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (c.isSpace1()) k--; else break;
-		}
-		// `name = [argument_count] > 1 ? argument[1]`
-		var acEnd = k + 1;
-		if (chunk.fastCodeAt(k) != "t".code) return -1;
-		while (--k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (!c.isIdent1()) break;
-		}
-		if (acEnd - k != 15 || chunk.substring(k + 1, acEnd) != "argument_count") return -1;
-		// `name =[ ]argument_count > 1 ? argument[1]`
-		while (k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (c.isSpace1()) k--; else break;
-		}
-		//
-		return k;
-	}
-	private static function fromCode_skipIf(chunk:GmlCode, k:Int):Int {
-		var c:CharCode;
-		// `if (argument_count > 1)[ ]some = argument[1]`
-		while (k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (c.isSpace1()) k--; else break;
-		}
-		// `if (argument_count > 1[)] some = argument[1]`
-		if (chunk.fastCodeAt(k) != ")".code) return -1;
-		k = fromCode_skipArgCountCmp(chunk, k);
-		if (k < 0) return -1;
-		// `if [(]argument_count > 1) some = argument[1]`
-		if (chunk.fastCodeAt(k) == "(".code) k--; else return -1;
-		// `if[ ](argument_count > 1) some = argument[1]`
-		while (k >= 0) {
-			c = chunk.fastCodeAt(k);
-			if (c.isSpace1()) k--; else break;
-		}
-		// `[if] (argument_count > 1) some = argument[1]`
-		var acEnd = k + 1;
-		if (chunk.fastCodeAt(k) == "f".code) k--; else return -1;
-		if (chunk.fastCodeAt(k) == "i".code) k--; else return -1;
-		if ((chunk.fastCodeAt(k):CharCode).isIdent1_ni()) return -1;
-		//
-		return k;
+	public static inline function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
+		return GmlFuncDocParser.parse(s, out);
 	}
 	
-	public static function splitOnSubFunctions(gml:String):Array<String> {
-		if (!GmlAPI.stdKind.exists("function")) return [gml];
-		var arr:Array<String> = [];
-		var start = 0;
-		var q = new GmlReader(gml);
-		while (q.loop) {
-			var n = q.skipCommon_inline();
-			if (n >= 0) continue;
-			//
-			var p = q.pos;
-			var c = q.read();
-			if (!c.isIdent0()) continue;
-			q.skipIdent1();
-			var id = q.substring(p, q.pos);
-			if (id != "function") continue;
-			//
-			while (q.loop && q.peek() != "{".code) q.skip();
-			var depth = 1;
-			while (q.loop) {
-				c = q.read();
-				switch (c) {
-					case "{".code: depth++;
-					case "}".code: if (--depth <= 0) break;
-					default: q.skipCommon_inline();
-				}
-			}
-			//
-			arr.push(gml.substring(start, p));
-			start = q.pos;
-		}
-		arr.push(gml.substring(start));
-		return arr;
+	public inline function fromCode(gml:GmlCode, from:Int = 0, ?till:Int) {
+		GmlFuncDocFromCode.proc(this, gml, from, till);
 	}
 	
-	static var nameTrimRegex = new RegExpCache();
+	public static var nameTrimRegex = new RegExpCache();
 	
 	public function trimArgs():Void {
 		var ntrx = nameTrimRegex.update(Project.current.properties.argNameRegex);
@@ -342,239 +193,8 @@ class GmlFuncDoc {
 		}
 	}
 	
-	public function fromCode(gml:String, from:Int = 0, ?_till:Int) {
-		var rx = fromCode_rx;
-		clear();
-		var ntrx = nameTrimRegex.update(Project.current.properties.argNameRegex);
-		//
-		var hasRet = false;
-		var hasRetRx = fromCode_hasRet;
-		var hasVarArg = false;
-		var hasVarArgRx = fromCode_hasVarArg;
-		var hasOpt = false;
-		var q:GmlReader = null, start:Int = 0;
-		function flush(p:Int):Void {
-			var chunk = q.substring(start, p);
-			rx.lastIndex = 0;
-			var mt = rx.exec(chunk);
-			var c:CharCode;
-			if (!hasRet && hasRetRx.test(chunk)) hasRet = true;
-			if (!hasVarArg && hasVarArgRx.test(chunk)) hasVarArg = true;
-			while (mt != null) {
-				var argis = tools.JsTools.or(mt[1], mt[2]);
-				if (argis != null) {
-					var argi:Int = Std.parseInt(argis);
-					var k = mt.index;
-					// see if argument is being assigned somewhere
-					var hasSet = false;
-					var isOpt = false;
-					while (--k >= 0) {
-						c = chunk.fastCodeAt(k);
-						if (c.isSpace1()) continue;
-						if (c == "?".code) { // perhaps `name = argument_count > 1 ? argument[1]`?
-							hasSet = false;
-							var k1 = fromCode_skipArgCountCmp(chunk, k);
-							if (k1 >= 0) {
-								k = k1;
-								c = chunk.fastCodeAt(k);
-								isOpt = true;
-							}
-						}
-						hasSet = (c == "=".code && chunk.fastCodeAt(k - 1) != "=".code);
-						break;
-					}
-					var name:String = null;
-					if (hasSet) while (--k >= 0) {
-						c = chunk.fastCodeAt(k);
-						if (c.isSpace1()) continue;
-						// perhaps `name/*:type*/ = val`?
-						var suffix:String = null;
-						if (c == "/".code && chunk.fastCodeAt(k - 1) == "*".code) {
-							k -= 1;
-							var suffixEnd = k;
-							while (--k >= 0) {
-								c = chunk.fastCodeAt(k);
-								if (c == "*".code && chunk.fastCodeAt(k - 1) == "/".code) {
-									if (chunk.fastCodeAt(k + 1) == ":".code) {
-										suffix = chunk.substring(k + 1, suffixEnd);
-									}
-									k -= 2;
-									while (k >= 0) {
-										c = chunk.fastCodeAt(k);
-										if (c.isSpace1()) k--; else break;
-									}
-									c = chunk.fastCodeAt(k);
-									break;
-								}
-							}
-						}
-						// make sure that it's getting assigned into somewhere
-						if (!c.isIdent1()) break;
-						var nameEnd = k + 1;
-						var nameStart = 0;
-						while (--k >= 0) {
-							c = chunk.fastCodeAt(k);
-							if (c.isIdent1()) continue;
-							nameStart = k + 1;
-							break;
-						}
-						name = chunk.substring(nameStart, nameEnd);
-						if (ntrx != null) {
-							var mt = ntrx.exec(name);
-							if (mt != null && mt[1] != null) name = mt[1];
-						}
-						if (suffix != null) name += suffix;
-						// perhaps it's GMS1-style `if (argument_count > 1) v = argument[1]`?
-						if (fromCode_skipIf(chunk, k) >= 0) isOpt = true;
-						break;
-					}
-					if (name == null) name = "arg" + argi;
-					if (isOpt) {
-						hasOpt = true;
-						name = "?" + name;
-					}
-					args[argi] = name;
-				} else rest = true;
-				mt = rx.exec(chunk);
-			}
-		}
-		//
-		var sections = splitOnSubFunctions(gml.substring(from, _till));
-		for (section in sections) {
-			q = new GmlReader(section);
-			start = 0;
-			while (q.loop) {
-				var p = q.pos, n;
-				if (q.peek() == "/".code && q.peek(1) == "*".code && q.peek(2) == ":".code) {
-					q.pos += 2; q.skipComment(); n = -1;
-				} else n = q.skipCommon_inline();
-				if (n >= 0) {
-					flush(p);
-					start = q.pos;
-				} else q.skip();
-			}
-			flush(q.pos);
-		}
-		//
-		post = ")";
-		if (rest) post = "..." + post;
-		if (hasRet) post += retArrow;
-		hasReturn = hasRet;
-		if (!hasOpt && hasVarArg) minArgsCache = 0;
-	}
-	
-	static var procHasReturn_rxHasArgArray:RegExp = new RegExp("\\bargument\\b\\s*\\[");
-	/**
-	 * A cheaper version of procCode that just figures out hasReturn and whether arguments might be optional.
-	 * 
-	 */
-	public function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int, ?isAuto:Bool, ?autoArgs:Array<String>) {
-		var start = from;
-		var till:Int = _till != null ? _till : gml.length;
-		var q = new GmlReader(gml);
-		var chunk:GmlCode;
-		var hasRetRx = fromCode_hasRet;
-		var seekHasRet = true;
-		var seekArg = isAuto && args.length > 0 && !rest;
-		var hasArgRx = procHasReturn_rxHasArgArray;
-		//
-		var autoRxs:Array<RegExp> = null;
-		if (autoArgs != null) try {
-			autoRxs = [];
-			for (arg in autoArgs) autoRxs.push(new RegExp('\\b$arg\\s*[!=]=\\s*undefined'));
-		} catch (_:Dynamic) autoRxs = null;
-		inline function checkAutoRxs() {
-			if (autoRxs == null) return;
-			var m = minArgsCache;
-			if (m == 0) return;
-			var n = m != null ? m : autoRxs.length;
-			var i = -1; while (++i < n) {
-				if (autoRxs[i].test(chunk)) {
-					minArgsCache = i;
-					break;
-				}
-			}
-		}
-		//
-		q.pos = from;
-		while (q.pos < till) {
-			var p = q.pos, n;
-			var n = q.skipCommon_inline();
-			if (n >= 0) {
-				chunk = q.substring(start, p);
-				if (seekHasRet && hasRetRx.test(chunk)) {
-					seekHasRet = false;
-					hasReturn = true;
-					if (post == ")") post = ")" + retArrow;
-					if (!seekArg) return;
-				}
-				if (seekArg && hasArgRx.test(chunk)) {
-					// mimicking 2.3 IDE behaviour where having
-					// argument[] access makes all arguments optional.
-					seekArg = false;
-					minArgsCache = 0;
-					rest = true;
-					if (!seekHasRet) return;
-				}
-				checkAutoRxs();
-				start = q.pos;
-			} else q.skip();
-		}
-		chunk = q.substring(start, q.pos);
-		// final:
-		if (seekHasRet) {
-			var hasRet = hasRetRx.test(chunk);
-			if (hasRet) {
-				if (post == ")") post = ")" + retArrow;
-			} else {
-				if (post == ")" + retArrow) post = ")";
-			}
-			hasReturn = hasRet;
-		}
-		if (seekArg && hasArgRx.test(chunk)) {
-			minArgsCache = 0;
-			rest = true;
-		}
-		checkAutoRxs();
-	}
-	
-	static var autogen_argi = [for (i in 0 ... 16) new RegExp('\\bargument$i\\b')];
-	static var autogen_argoi = [for (i in 0 ... 16) new RegExp('\\bargument\\s*\\[\\s*$i\\s*\\]')];
-	static var autogen_argo = new RegExp("\\bargument\\b");
-	
-	public static function autoArgs(code:String) {
-		var q = new GmlReader(code);
-		var rxi = autogen_argi;
-		var rxo = autogen_argo;
-		var rxoi = autogen_argoi;
-		var rxc = rxi;
-		var trail = false;
-		var argc = 0;
-		var chunk:String;
-		var start = 0;
-		inline function flush(p:Int) {
-			chunk = q.substring(start, p);
-			if (!trail && rxo.test(chunk)) {
-				trail = true;
-				rxc = rxoi;
-			}
-			while (argc < 16) {
-				if (rxc[argc].test(chunk)) argc += 1; else break;
-			}
-		}
-		while (q.loop) {
-			var p = q.pos;
-			var n = q.skipCommon_inline();
-			if (n >= 0) {
-				flush(p);
-				start = q.pos;
-			} else q.skip();
-		}
-		flush(q.pos);
-		if (argc == 0) return trail ? "..." : "";
-		var out = "v0";
-		for (i in 1 ... argc) out += ", v" + i;
-		if (trail) out += ", ...";
-		return out;
+	/** Figures out whether arguments are optional and whether the script returns anything. */
+	public inline function procHasReturn(gml:GmlCode, from:Int = 0, ?_till:Int, ?isAuto:Bool, ?autoArgs:Array<String>) {
+		GmlFuncDocArgsRet.proc(this, gml, from, _till, isAuto, autoArgs);
 	}
 }

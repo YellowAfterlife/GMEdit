@@ -1050,6 +1050,9 @@ class GmlLinter {
 			}
 		} else if (isFunc) return readExpect("function literal arguments");
 		//
+		if (skipIf(peek() == KArrow)) {
+			rc(readTypeName());
+		}
 		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
 			readCheckSkip(KIdent, "a parent type name");
 			readCheckSkip(KParOpen, "opening bracket");

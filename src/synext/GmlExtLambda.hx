@@ -331,7 +331,7 @@ class GmlExtLambda {
 					if (laCode == null) return error("Arguments error:\n" + GmlExtArgs.errorText);
 				} else {
 					laArgsMt = null;
-					laArgsDoc = GmlFuncDoc.autoArgs(laCode);
+					laArgsDoc = gml.funcdoc.GmlFuncDocCheapArgs.parse(laCode);
 				}
 				// pick an unoccupied name:
 				var laFull_0 = lfPrefix + prefix + "_" + (laName != null ? laName : "");
