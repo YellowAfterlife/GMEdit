@@ -234,6 +234,7 @@ class GmlExtArgs {
 				}
 			}
 			//
+			if (args == "#args") return null;
 			return args;
 		}
 		//
