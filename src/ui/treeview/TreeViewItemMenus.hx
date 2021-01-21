@@ -1,4 +1,6 @@
 package ui.treeview;
+import js.html.KeyboardEvent;
+import js.html.InputElement;
 import electron.Dialog;
 import electron.Electron;
 import gml.Project;
@@ -16,6 +18,7 @@ import ui.treeview.TreeViewElement;
 import yy.YyManip;
 import yy.v22.YyManipV22;
 using tools.NativeString;
+import Main.document;
 
 /**
  * ...
@@ -295,7 +298,33 @@ class TreeViewItemMenus {
 	}
 	static function renameImpl() {
 		var d = getItemData(target);
-		Dialog.showPrompt("New name?", d.last, function(s:String) {
+
+		
+		var spanChild = target.firstElementChild;
+		var oldDisplay = spanChild.style.display; // stores old display to apply back later, probably overkill but who knows with themes
+		target.draggable = false;
+		spanChild.style.display = "none";
+
+		var textInputElement:InputElement = cast document.createElement("input");
+
+		textInputElement.className = "inline-text-field";
+		textInputElement.type = "text";
+		textInputElement.value = d.last;
+		
+		var triggered = false;
+
+		var applyRenameFunction = function() {
+			if (triggered) {
+				return;
+			}
+			triggered = true;
+
+			var s = textInputElement.value;
+
+			textInputElement.remove();
+			spanChild.style.display = oldDisplay;
+			target.draggable = true;
+
 			if (s == d.last || s == "" || s == null) return;
 			var el:TreeViewElement = cast target;
 			var tvDir:TreeViewDir = el.treeParentDir;
@@ -365,7 +394,20 @@ class TreeViewItemMenus {
 				}
 				default: Dialog.showAlert("Can't rename an item for this version!");
 			}
+		};
+
+		textInputElement.addEventListener("focusout", applyRenameFunction);
+		textInputElement.addEventListener("keyup", function(event:KeyboardEvent) {
+			if (event.keyCode == 13) {
+				event.preventDefault();
+				applyRenameFunction();
+			}
 		});
+
+		target.appendChild(textInputElement);
+
+		textInputElement.select();
+
 	}
 	//
 	static function initCreateMenu() {
