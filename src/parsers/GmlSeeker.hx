@@ -417,7 +417,7 @@ class GmlSeeker {
 					doc.templateItems = jsDocTemplateItems;
 					if (jsDocRest) doc.rest = jsDocRest;
 					doc.procHasReturn(src, start, q.pos, docIsAutoFunc);
-				} else if (doc.args.length != 0) {
+				} else if (doc.args.length != 0 || doc.hasReturn) {
 					// have some arguments and no JSDoc
 					doc.procHasReturn(src, start, q.pos, docIsAutoFunc, doc.args);
 				} else { // no JSDoc, try indexing
@@ -425,7 +425,7 @@ class GmlSeeker {
 					updateComp = true;
 				}
 				if (jsDocReturn != null) {
-					doc.post = ")" + GmlFuncDoc.retArrow + jsDocReturn;
+					doc.returnTypeString = jsDocReturn;
 					updateComp = true;
 				}
 				if (jsDocInterface) {
@@ -490,6 +490,22 @@ class GmlSeeker {
 		inline function q_restore():Void {
 			q.setTo(q_swap);
 		}
+		function procFuncLiteralRetArrow() {
+			if (q.loop) {
+				var orig = q.pos;
+				q.skipSpaces1_local();
+				if (q.substr(q.pos, 4) == "/*->") {
+					q.pos += 4;
+					var typeStart = q.pos;
+					q.skipComment();
+					var typeEnd = q.pos - 2;
+					q.pos = typeStart;
+					if (!q.skipType(typeEnd)) {
+						jsDocReturn = q.substring(typeStart, q.pos);
+					} else q.pos = orig;
+				} else q.pos = orig;
+			}
+		}
 		function procFuncLiteralArgs() {
 			if (find(Par0) == "(") {
 				while (q.loop) {
@@ -497,6 +513,7 @@ class GmlSeeker {
 					if (s == ")" || s == null) break;
 					locals.add(s, localKind);
 				}
+				procFuncLiteralRetArrow();
 			}
 		}
 		//
@@ -849,7 +866,7 @@ class GmlSeeker {
 					setLookup(main, true);
 					locals = new GmlLocals(main);
 					out.locals.set(main, locals);
-					if (isFunc || isDefine && v.hasScriptArgs()) { // `#define name(...args)`
+					if (isFunc || isDefine && v.hasScriptArgs()) { // `<keyword> name(...args)`
 						s = find(isFunc ? Par0 : Line | Par0);
 						if (s == "(") {
 							var openPos = q.pos;
@@ -871,6 +888,11 @@ class GmlSeeker {
 							} else {
 								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
 								doc.trimArgs();
+							}
+							procFuncLiteralRetArrow();
+							if (jsDocReturn != null) {
+								doc.returnTypeString = jsDocReturn;
+								jsDocReturn = null;
 							}
 							doc.templateItems = jsDocTemplateItems;
 							jsDocTemplateItems = null;

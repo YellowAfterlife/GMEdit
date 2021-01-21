@@ -86,6 +86,7 @@ enum abstract GmlLinterKind(Int) {
 	var KNullCoalesce; // `??`
 	var KNullDot; // `?.`
 	var KNullSqb; // `?[`
+	var KArrow; // `->`, used for return types
 	
 	// branching:
 	var KIf;

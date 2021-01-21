@@ -11,7 +11,6 @@ import parsers.linter.GmlLinterKind.*;
 class GmlLinterParser {
 	public static function next(l:GmlLinter, q:GmlReaderExt) @:privateAccess
 	{
-		var nk:GmlLinterKind;
 		var nv:String;
 		//
 		var _src:String;
@@ -188,6 +187,7 @@ class GmlLinterParser {
 					switch (q.peek()) {
 						case "=".code: q.skip(); return retv(KSetOp, "-=");
 						case "-".code: q.skip(); return retv(KDec, "--");
+						case ">".code: q.skip(); return retv(KArrow, "->");
 						default: return retv(KSub, "-");
 					}
 				};
