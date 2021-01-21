@@ -15,6 +15,7 @@ import gmx.SfGmx;
 import haxe.DynamicAccess;
 import js.lib.RegExp;
 import synext.GmlExtArgs;
+import synext.SyntaxExtension;
 import tools.Dictionary;
 import tools.Aliases;
 import ui.Preferences;
@@ -27,10 +28,12 @@ using tools.NativeString;
 using StringTools;
 
 /**
- * ...
+ * Allows to declare scripts inline in pre-2.3 GMS versions
+ * https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%23lambda-magic
  * @author YellowAfterlife
  */
 class GmlExtLambda {
+	public static var inst:GmlExtLambdaWrap = new GmlExtLambdaWrap();
 	public static var defaultMap:Dictionary<GmlExtLambda> = new Dictionary();
 	public static var seekData:GmlSeekData = new GmlSeekData(KGmlLambdas.inst);
 	public static var seekPath:String = "";
@@ -958,4 +961,23 @@ typedef GmlExtLambdaPost = {
 	scopes:Dictionary<GmlExtLambda>,
 	scope:GmlExtLambda,
 	hasLambda:Null<Bool>,
+}
+class GmlExtLambdaWrap extends SyntaxExtension {
+	public function new() {
+		super("#lambda", "#lambda magic");
+	}
+	override public function check(editor:EditCode, code:String):Bool {
+		return editor.file.path != null
+			&& (cast editor.kind:file.kind.KGml).canLambda;
+	}
+	override public function preproc(editor:EditCode, code:String):String {
+		code = GmlExtLambda.pre(editor, code);
+		if (code == null) message = GmlExtLambda.errorText;
+		return code;
+	}
+	override public function postproc(editor:EditCode, code:String):String {
+		code = GmlExtLambda.post(editor, code);
+		if (code == null) message = GmlExtLambda.errorText;
+		return code;
+	}
 }

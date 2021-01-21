@@ -92,6 +92,7 @@ class Main {
 		if (modulePath == null) modulePath = ".";
 		Preferences.init();
 		file.FileKind.initStatic();
+		file.kind.KGml.initSyntaxExtensions();
 		GmlVersion.init();
 		GmlAPI.init();
 		ShaderAPI.init();

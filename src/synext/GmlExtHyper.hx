@@ -1,4 +1,7 @@
 package synext;
+import editors.EditCode;
+import file.kind.KGml;
+import synext.SyntaxExtension;
 import ui.Preferences;
 import gml.GmlAPI;
 import parsers.GmlReader;
@@ -7,7 +10,31 @@ import parsers.GmlReader;
  * ...
  * @author YellowAfterlife
  */
-class GmlExtHyper {
+class GmlExtHyper extends SyntaxExtension {
+	public static var inst:GmlExtHyper = new GmlExtHyper();
+	
+	function new() {
+		super("#hyper", "#hyper magic");
+	}
+	
+	override public function check(editor:EditCode, code:String):Bool {
+		return (cast editor.kind:KGml).canHyper;
+	}
+	
+	override public function preproc(editor:EditCode, code:String):String {
+		code = pre(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	override public function postproc(editor:EditCode, code:String):String {
+		code = post(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	public static var errorText:String;
+	
 	public static function pre(code:String):String {
 		if (!Preferences.current.hyperMagic) return code;
 		var version = GmlAPI.version;

@@ -1,4 +1,6 @@
 package synext;
+import file.kind.KGml;
+import editors.EditCode;
 import ace.AceMacro;
 import ace.extern.*;
 import electron.FileWrap;
@@ -29,6 +31,8 @@ using tools.NativeArray;
  * @author YellowAfterlife
  */
 class GmlExtImport {
+	public static var inst:GmlExtImportWrap = new GmlExtImportWrap();
+	
 	private static var rxImport = new RegExp((
 		"^#import[ \t]+(?:"
 			+ "([\\w.]+\\*?)" // com.pkg[.*] -> $1
@@ -984,3 +988,26 @@ private enum GmlExtImportRule {
 }
 private typedef GmlExtImportRules = Array<GmlExtImportRule>;
 private typedef GmlExtImportRuleCache = Dictionary<GmlExtImportRules>;
+
+class GmlExtImportWrap extends SyntaxExtension {
+	public function new() {
+		super("#import", "#import magic");
+	}
+	override public function check(editor:EditCode, code:String):Bool {
+		return editor.file.path != null && (cast editor.kind:file.kind.KGml).canImport;
+	}
+	override public function preproc(editor:EditCode, code:String):String {
+		code = GmlExtImport.pre(code, editor.file.path);
+		if (code == null) message = GmlExtImport.errorText;
+		return code;
+	}
+	override public function postproc(editor:EditCode, code:String):String {
+		var pair = editor.postpImport(code);
+		if (pair == null) return null;
+		code = pair.val;
+		if (pair.sessionChanged) {
+			(cast editor.kind:KGml).saveSessionChanged = true;
+		}
+		return code;
+	}
+}

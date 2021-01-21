@@ -1,5 +1,8 @@
 package synext;
+import editors.EditCode;
+import file.kind.KGml;
 import js.lib.RegExp;
+import synext.SyntaxExtension;
 import tools.Aliases;
 import gml.GmlAPI;
 import gml.Project;
@@ -10,7 +13,31 @@ using StringTools;
  * ...
  * @author YellowAfterlife
  */
-class GmlExtTemplateStrings {
+class GmlExtTemplateStrings extends SyntaxExtension {
+	public static var inst:GmlExtTemplateStrings = new GmlExtTemplateStrings();
+	
+	function new() {
+		super("`$v`", "template strings");
+	}
+	
+	override public function check(editor:EditCode, code:String):Bool {
+		return (cast editor.kind:KGml).canTemplateString;
+	}
+	
+	override public function preproc(editor:EditCode, code:String):String {
+		code = pre(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	override public function postproc(editor:EditCode, code:String):String {
+		code = post(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	public static var errorText:String;
+	
 	static function pre_format(fmt:String, args:Array<String>, spacing:Array<Bool>, esc:Bool) {
 		var out = "";
 		var start = 0;
