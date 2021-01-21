@@ -26,6 +26,11 @@ extern class TreeViewElement extends DivElement {
 		return classList.contains(TreeView.clDir);
 	}
 	
+	public var treeIsItem(get, never):Bool;
+	private inline function get_treeIsItem():Bool {
+		return classList.contains(TreeView.clItem);
+	}
+	
 	public var treeRelPath(get, set):String;
 	private inline function get_treeRelPath():String {
 		return getAttribute(TreeView.attrRel);
@@ -101,6 +106,7 @@ extern class TreeViewDir extends TreeViewElement {
 	}
 }
 extern class TreeViewItem extends TreeViewElement {
+	/** If not null, overrides the FileKind that will be used for this element. */
 	public var yyOpenAs:FileKind;
 }
 private class TreeViewElementTools {

@@ -271,13 +271,16 @@ using tools.PathTools;
 			e.preventDefault();
 			if (element == null) element = cast e.target;
 		} else if (element == null) return null;
+		
+		var item:TreeViewItem = cast element;
+		if (!item.treeIsItem) return null;
+		
 		var openAs = (cast element:TreeViewItem).yyOpenAs;
-		if (openAs == null) {
-			return null;
+		if (openAs != null) {
+			if (nav == null) {
+				nav = { kind: openAs };
+			} else nav.kind = openAs;
 		}
-		if (nav == null) {
-			nav = { kind: openAs };
-		} else nav.kind = openAs;
 		return GmlFile.open(element.innerText, element.getAttribute(attrPath), nav);
 	}
 	public static inline function makeItemShared(name:String, path:String, kind:String):TreeViewItem {
