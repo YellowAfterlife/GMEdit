@@ -1,6 +1,7 @@
 package parsers.linter;
 import ace.AceGmlContextResolver;
 import ace.AceGmlTools;
+import file.kind.gml.KGmlScript;
 import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.GmlLocals;
@@ -62,17 +63,25 @@ class GmlLinter {
 	}
 	//
 	
-	/** top-level context name */
-	var name:String;
-	
 	var reader:GmlReaderExt;
 	
 	var editor:EditCode;
 	
+	/**
+	 * Context name - such as current script name or event name.
+	 * Note: this can be modified by GmlLinterParser!
+	 */
 	var context:String = "";
 	inline function getImports():GmlImports {
 		return editor.imports[context];
 	}
+	
+	/**
+	 * If the linter is currently walking about a function, this holds that.
+	 * For full-file linting this will reflect upon sub-functions, but for
+	 * getType it will only have the top-level function info (which is mostly OK).
+	 */
+	var currFuncDoc:GmlFuncDoc;
 	
 	var __selfType_set = false;
 	var __selfType_type:GmlType = null;
@@ -1050,25 +1059,34 @@ class GmlLinter {
 			}
 		} else if (isFunc) return readExpect("function literal arguments");
 		//
-		if (skipIf(peek() == KArrow)) {
+		if (skipIf(peek() == KArrow)) { // `->returnType`
+			var tnStart = reader.pos;
 			rc(readTypeName());
+			doc.returnTypeString = reader.substring(tnStart, reader.pos);
 		}
 		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
 			readCheckSkip(KIdent, "a parent type name");
 			readCheckSkip(KParOpen, "opening bracket");
 			rc(readArgs(oldDepth + 1, false) < 0);
 		}
-		if (isFunc) {
+		if (isFunc) { // `function() constructor`?
 			skipIf(peek() == KIdent && nextVal == "constructor");
 		}
 		//
 		var oldLocalNames = localNamesPerDepth;
 		var oldLocalKinds = localKinds;
+		var oldFuncDoc = currFuncDoc;
+		
 		localNamesPerDepth = [];
 		localKinds = new Dictionary();
+		currFuncDoc = doc;
+		
 		rc(readStat(0));
+		
 		localNamesPerDepth = oldLocalNames;
 		localKinds = oldLocalKinds;
+		currFuncDoc = oldFuncDoc;
+		
 		readLambda_doc = doc;
 		return false;
 	}
@@ -1194,7 +1212,11 @@ class GmlLinter {
 			case KReturn: {
 				switch (peek()) {
 					case KSemico, KCubClose: skip(); flags.add(NoSemico);
-					default: rc(readExpr(newDepth));
+					default:
+						rc(readExpr(newDepth));
+						if (currFuncDoc != null && readExpr_currType != null) {
+							checkTypeCast(readExpr_currType, currFuncDoc.returnType, "return");
+						}
 				}
 			};
 			case KBreak: {
@@ -1263,11 +1285,17 @@ class GmlLinter {
 		return false;
 	}
 	
-	public function runPre(source:GmlCode, editor:EditCode, version:GmlVersion) {
+	public function runPre(source:GmlCode, editor:EditCode, version:GmlVersion, context:String = ""):Void {
 		this.version = version;
+		this.context = context;
+		if (context != "") {
+			currFuncDoc = GmlAPI.gmlDoc[context];
+		} else if (Std.is(editor.kind, KGmlScript) && !Project.current.isGMS23) {
+			currFuncDoc = GmlAPI.gmlDoc[editor.file.name];
+		} else currFuncDoc = null;
 		initKeywords();
 		var q = reader = new GmlReaderExt(source.trimRight());
-		this.name = q.name = editor.file.name;
+		q.name = editor.file.name;
 		this.editor = editor;
 		errorText = null;
 	}

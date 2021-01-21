@@ -207,6 +207,14 @@
             }
         },
         {
+            "Key": "de40ff17-a87f-8354-a230-f2480e9bb0e0",
+            "Value": {
+                "id": "c52b53de-8983-a49c-bf78-534ea3fc40ef",
+                "resourcePath": "scripts\\v_doc_returns\\v_doc_returns.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
             "Key": "e42bf5cc-3f46-4d67-a6d0-a4885a11ac3f",
             "Value": {
                 "id": "6301a1b1-6389-4099-868d-30e9276bd7a3",

@@ -17,7 +17,11 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class GmlFuncDocParser {
-	static var parse_rxTemplate = new RegExp("^(.*)" + "<(.+?)>\\(");
+	static var rxTemplate = new RegExp("^(.*)" + "<(.+?)>\\(");
+	static var rxArgType = new RegExp("(?:" + [
+		"/\\*:" + "(.+?)" + "\\*/", // type in a comment (as with GmlSeeker)
+		":([^=]+)", // pretty `:type` (as with @hint)
+	].join("|") + ")");
 	
 	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
 		s = GmlFuncDoc.patchArrow(s);
@@ -29,7 +33,7 @@ class GmlFuncDocParser {
 		if (p0 >= 0 && p1 >= 0) {
 			pre = s.substring(0, p0 + 1);
 			name = s.substring(0, p0); {
-				var mt = parse_rxTemplate.exec(pre);
+				var mt = rxTemplate.exec(pre);
 				if (mt != null) {
 					name = mt[1];
 					templateItems = [];
@@ -45,17 +49,17 @@ class GmlFuncDocParser {
 			post = s.substring(p1);
 			if (sw != "") {
 				args = sw.splitRx(JsTools.rx(~/,\s*/g));
-				var rxt = JsTools.rx(~/:([^=]+)/);
-				for (i => a in args) {
-					var mt = rxt.exec(a);
-					if (mt != null) {
+				var rxt = rxArgType;
+				for (i in 0 ... args.length) {
+					args[i] = args[i].replaceExt(rxt, function(_, t1, t2) {
 						if (argTypes == null) argTypes = NativeArray.create(args.length);
-						var typeStr = mt[1].trimRight();
+						var typeStr = JsTools.or(t1, t2).trimRight();
 						if (templateItems != null) {
 							typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
 						}
 						argTypes[i] = GmlTypeDef.parse(typeStr);
-					}
+						return "";
+					});
 				}
 			} else args = [];
 			rest = sw.contains("...");
