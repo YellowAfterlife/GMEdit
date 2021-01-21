@@ -214,7 +214,6 @@ https://stackoverflow.com/a/36247448/5578773
 	resize: both;
 }
 #lw_prompt .window {
-	height: 85px;
 	resize: horizontal;
 }
 .lw_modal textarea {
@@ -227,7 +226,8 @@ https://stackoverflow.com/a/36247448/5578773
 	box-sizing: border-box;
 	width: 100%;
 	height: 20px;
-	margin-bottom: 5px;
+	margin-top: 5px;
+	margin-bottom: 11px;
 }
 #lw_prompt .buttons {
 	text-align: right;
