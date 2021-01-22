@@ -1,7 +1,6 @@
 package ui.treeview;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
-import haxe.Constraints.Function;
 import js.html.DivElement;
 import tools.HtmlTools;
 import file.FileKind;
@@ -150,7 +149,11 @@ private class TreeViewElementTools {
 		return s;
 	}
 	public static function showInlineTextbox(el:TreeViewElement, finishFunction:String->Void) {
-		var spanChild = el.firstElementChild;
+		var header:DivElement;
+		if (el.treeIsDir) {
+			header = el.asTreeDir().treeHeader;
+		} else header = el;
+		var spanChild = header.firstElementChild;
 		var oldDisplay = spanChild.style.display; // stores old display to apply back later, probably overkill but who knows with themes
 		el.draggable = false;
 		spanChild.style.display = "none";
@@ -159,9 +162,15 @@ private class TreeViewElementTools {
 
 		textInputElement.className = "inline-text-field";
 		textInputElement.type = "text";
-		textInputElement.value = el.textContent;
-				
-		el.appendChild(textInputElement);
+		textInputElement.value = header.textContent;
+		
+		// Directories have an extra div
+		if (header.hasChildNodes()) {
+			header.insertBefore(textInputElement, header.firstChild);
+		} else {
+			header.appendChild(textInputElement);
+		}
+		
 
 		textInputElement.select();
 

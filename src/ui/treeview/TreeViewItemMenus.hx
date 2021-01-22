@@ -243,15 +243,12 @@ class TreeViewItemMenus {
 			mkdir: mkdir,
 		};
 
-		Console.log(args);
-
 		// Create a temporary TreeItem that hosts the textbox
 		var result = createImplTV(args);
 		// Set variables to nothing so we dont accidentally try something
 		result.treeRelPath = "";
 		result.treeFullPath = "";
 
-		Console.log(result);
 		result.showInlineTextbox(function(name) {
 			// Remove the temporary item
 			result.remove();
