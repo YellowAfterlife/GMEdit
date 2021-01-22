@@ -260,6 +260,7 @@ import ace.extern.AceTokenType;
 					case KObject:
 						var ns = GmlAPI.gmlNamespaces[n1];
 						if (JsTools.nca(ns, ns.isObject)) return true;
+						if (GmlAPI.gmlKind[n1] == "asset.object") return true;
 					case KAsset:
 						var ns = GmlAPI.gmlNamespaces[n1];
 						if (JsTools.nca(ns, ns.isObject)) return true;
