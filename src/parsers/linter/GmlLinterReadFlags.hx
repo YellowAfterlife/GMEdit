@@ -25,6 +25,8 @@ enum abstract GmlLinterReadFlags(Int) {
 	/** Expression is being read after a `new` */
 	var IsNew = 32;
 	
+	var IsCast = 64;
+	
 	public inline function new(flag:Int) {
 		this = flag;
 	}

@@ -32,7 +32,10 @@ using tools.NativeString;
 		return source.fastCodeAt(pos++);
 	}
 	public inline function peek(offset:Int = 0):CharCode {
-		return source.fastCodeAt(offset != 0 ? pos + offset : pos);
+		return source.fastCodeAt(pos + offset);
+	}
+	public inline function peekstr(count:Int, offset:Int = 0):String {
+		return source.fastSub(pos + offset, count);
 	}
 	public inline function skipPeek():CharCode {
 		return source.fastCodeAt(++pos);

@@ -23,6 +23,7 @@ import haxe.DynamicAccess;
 		hyperMagic: true,
 		mfuncMagic: true,
 		nullCoalescingAssignment: true,
+		castOperators: true,
 		
 		fileSessionTime: 7,
 		projectSessionTime: 14,
@@ -65,6 +66,7 @@ typedef PrefDataImpl = {
 	hyperMagic:Bool,
 	mfuncMagic:Bool,
 	nullCoalescingAssignment:Bool,
+	castOperators:Bool,
 	
 	assetThumbs:Bool,
 	clearAssetThumbsOnRefresh:Bool,

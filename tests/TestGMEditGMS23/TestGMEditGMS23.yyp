@@ -8,6 +8,7 @@
     {"id":{"name":"v_imp_typed_let","path":"scripts/v_imp_typed_let/v_imp_typed_let.yy",},"order":1,},
     {"id":{"name":"v_imp_return_type","path":"scripts/v_imp_return_type/v_imp_return_type.yy",},"order":2,},
     {"id":{"name":"v_hint_template","path":"scripts/v_hint_template/v_hint_template.yy",},"order":2,},
+    {"id":{"name":"v_cast_as","path":"scripts/v_cast_as/v_cast_as.yy",},"order":3,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

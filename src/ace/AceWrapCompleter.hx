@@ -195,16 +195,24 @@ using tools.NativeString;
 						var type:GmlType;
 						if (!isGlobal) {
 							// some special cases where we know that we don't have to parse anything:
-							var snip:GmlCode;
+							var snip:GmlCode = null;
 							switch (tk.type) {
 								case "local", "sublocal", "asset.object", "namespace", "enum": {
 									snip = tk.value;
 								};
 								case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
-								default: {
-									var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
-									snip = session.getTextRange(AceRange.fromPair(from, dotPos));
+								default:
+							}
+							// ... unless they are preceded by "as", of course
+							if (snip != null) {
+								var btk = iter.peekBackwardNonText();
+								if (btk != null && btk.ncType == "keyword") switch (btk.value) {
+									case "as", "cast": snip = null;
 								}
+							}
+							if (snip == null) {
+								var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
+								snip = session.getTextRange(AceRange.fromPair(from, dotPos));
 							}
 							
 							type = GmlLinter.getType(snip, session.gmlEditor, scope, dotPos).type;

@@ -96,6 +96,13 @@ class PrefMagic {
 		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%3F%3F=-operator");
 		
 		//
+		el = addCheckbox(out, "Use cast/as linter 'operators'", current.castOperators, function(z) {
+			current.castOperators = z;
+			save();
+		});
+		el.title = "Used for implicit/explicit casts";
+		
+		//
 		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
 		el = addDropdown(out, "Show GMLive badges", optGMLive[current.showGMLive], optGMLive, function(v) {

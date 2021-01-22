@@ -108,6 +108,10 @@ class GmlAPI {
 		var kw2 = version.config.additionalKeywords;
 		if (kw2 != null) for (s in kw2) add(s);
 		if (Preferences.current.importMagic) add("new");
+		if (Preferences.current.castOperators) {
+			add("cast");
+			add("as");
+		}
 		for (k in GmlTypeTools.builtinTypes) sk[k] = "namespace";
 		stdKind = sk;
 	}

@@ -46,6 +46,38 @@ class AceTokenIteratorTools {
 		} while (tk != null && tk.type == "text");
 		return tk;
 	}
+	
+	public static function peekBackward(it:AceTokenIterator):AceToken {
+		var tk = it.stepBackward();
+		it.stepForward();
+		return tk;
+	}
+	public static function peekForward(it:AceTokenIterator):AceToken {
+		var tk = it.stepBackward();
+		it.stepForward();
+		return tk;
+	}
+	public static function peekBackwardNonText(it:AceTokenIterator):AceToken {
+		var row = it.__row;
+		var rowTokens = it.__rowTokens;
+		var tokenIndex = it.__tokenIndex;
+		var tk = it.stepBackwardNonText();
+		it.__row = row;
+		it.__rowTokens = rowTokens;
+		it.__tokenIndex = tokenIndex;
+		return tk;
+	}
+	public static function peekForwardNonText(it:AceTokenIterator):AceToken {
+		var row = it.__row;
+		var rowTokens = it.__rowTokens;
+		var tokenIndex = it.__tokenIndex;
+		var tk = it.stepBackwardNonText();
+		it.__row = row;
+		it.__rowTokens = rowTokens;
+		it.__tokenIndex = tokenIndex;
+		return tk;
+	}
+	
 	public static function setTo(it:AceTokenIterator, to:AceTokenIterator):Void {
 		it.__session = to.__session;
 		it.__row = to.__row;

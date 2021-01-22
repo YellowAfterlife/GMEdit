@@ -11,6 +11,7 @@ import gml.Project;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterInit;
+import parsers.linter.GmlLinterReadFlags;
 import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.Dictionary;
@@ -590,6 +591,13 @@ class GmlLinter {
 				currType = GmlTypeDef.simple(readExpr_currName);
 				currFunc = currType.getSelfCallDoc(getImports());
 			};
+			case KCast: {
+				rc(readExpr(newDepth, GmlLinterReadFlags.NoOps.with(IsCast)));
+				if (readExpr_currKind == KAs) {
+					currType = readExpr_currType;
+				} else currType = null;
+				currFunc = null;
+			};
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
 				currType = nk == KNot ? GmlTypeDef.bool : GmlTypeDef.number;
@@ -841,6 +849,21 @@ class GmlLinter {
 					}
 					rc(readExpr(newDepth));
 					currKind = KLiveIn;
+				};
+				case KAs: { // <expr> as <type>
+					if (hasFlag(NoSfx)) break;
+					skip();
+					var tnp = q.pos;
+					rc(readTypeName());
+					if (!hasFlag(IsCast)) {
+						var ex = GmlTypeTools.canCastTo_explicit;
+						GmlTypeTools.canCastTo_explicit = true;
+						checkTypeCast(currType, readTypeName_type, "as");
+						GmlTypeTools.canCastTo_explicit = ex;
+					}
+					currType = readTypeName_type;
+					currFunc = null;
+					currKind = KAs;
 				};
 				case KQMark: { // x ? y : z
 					if (hasFlag(NoOps)) break;

@@ -3,6 +3,7 @@ import gml.GmlAPI;
 import parsers.GmlReaderExt;
 import tools.Dictionary;
 import parsers.linter.GmlLinterKind.*;
+import ui.Preferences;
 
 /**
  * ...
@@ -285,6 +286,12 @@ class GmlLinterParser {
 								}
 								q.pushSource(mcr.expr, mcr.name);
 								break;
+							}
+							switch (nv) {
+								case "cast":
+									if (Preferences.current.castOperators) return retv(KCast, nv);
+								case "as":
+									if (Preferences.current.castOperators) return retv(KAs, nv);
 							}
 							return retv(l.keywords.defget(nv, KIdent), nv);
 						} while (false);

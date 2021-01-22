@@ -200,11 +200,12 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
-	static function canCastToAnyOf(from:GmlType, toArr:ReadOnlyArray<GmlType>, ?tpl:Array<GmlType>):Bool {
-		for (to in toArr) if (canCastTo(from, to, tpl)) return true;
+	static function canCastToAnyOf(from:GmlType, toArr:ReadOnlyArray<GmlType>, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
+		for (to in toArr) if (canCastTo(from, to, tpl, imp)) return true;
 		return false;
 	}
 	
+	public static var canCastTo_explicit:Bool = false;
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		var kfrom = getKind(from), kto = getKind(to);
 		if (kfrom == KVoid || kto == KVoid) return false;
@@ -219,7 +220,18 @@ import ace.extern.AceTokenType;
 			// undefined -> number?
 			if (kfrom == KUndefined) return true;
 			// number -> number?
-			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl)) return true;
+			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl, imp)) return true;
+		}
+		
+		if (canCastTo_explicit) {
+			if (kfrom == KNullable) {
+				if (from.unwrapParam().canCastTo(to, tpl, imp)) return true;
+			} else switch (from) {
+				case TEither(et1): {
+					for (t in et1) if (canCastTo(t, to, tpl, imp)) return true;
+				};
+				default:
+			}
 		}
 		
 		if (kto == KStruct) switch (from) {
@@ -234,10 +246,10 @@ import ace.extern.AceTokenType;
 		
 		switch ([from, to]) {
 			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to
-				for (t1 in et1) if (!canCastToAnyOf(t1, et2, tpl)) return false;
+				for (t1 in et1) if (!canCastToAnyOf(t1, et2, tpl, imp)) return false;
 				return true;
 			}
-			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl);
+			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl, imp);
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
 				switch (k2) {
 					// allow bool<->number casts:

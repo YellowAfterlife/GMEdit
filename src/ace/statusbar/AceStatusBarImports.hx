@@ -62,6 +62,12 @@ class AceStatusBarImports {
 				iter.stepForward();
 				tk = iter.stepForward();
 			}
+			if (type != null) {
+				var btk = iter.peekBackwardNonText();
+				if (btk != null && btk.ncType == "keyword") switch (btk.value) {
+					case "as", "cast": type = null;
+				}
+			}
 		} else {
 			if (fnType == "localfield") {
 				type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });

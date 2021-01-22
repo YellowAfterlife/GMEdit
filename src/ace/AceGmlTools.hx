@@ -158,6 +158,7 @@ using StringTools;
 					if (depth == 0 && tkType == "keyword") {
 						switch (tk.value) {
 							case "self", "other": {}
+							case "cast", "as": break;
 							default: { // that's no good!
 								iter.stepForwardNonText();
 								break;
@@ -177,6 +178,14 @@ using StringTools;
 				}
 				case _ if (depth == 0): break;
 			}
+		}
+		tmpi.setTo(iter);
+		tk = tmpi.stepBackwardNonText();
+		if (tk.ncType == "keyword") switch (tk.value) {
+			case "cast": return tmpi.getCurrentTokenPosition();
+			case "as":
+				tmpi.stepBackward();
+				return skipDotExprBackwards(session, tmpi.getCurrentTokenPosition());
 		}
 		return iter.getCurrentTokenPosition();
 	}
