@@ -9,6 +9,9 @@
     {"id":{"name":"v_imp_return_type","path":"scripts/v_imp_return_type/v_imp_return_type.yy",},"order":2,},
     {"id":{"name":"v_hint_template","path":"scripts/v_hint_template/v_hint_template.yy",},"order":2,},
     {"id":{"name":"v_cast_as","path":"scripts/v_cast_as/v_cast_as.yy",},"order":3,},
+    {"id":{"name":"obj_one","path":"objects/obj_one/obj_one.yy",},"order":1,},
+    {"id":{"name":"obj_two","path":"objects/obj_two/obj_two.yy",},"order":2,},
+    {"id":{"name":"v_choose","path":"scripts/v_choose/v_choose.yy",},"order":4,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

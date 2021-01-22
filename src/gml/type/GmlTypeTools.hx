@@ -244,6 +244,8 @@ import ace.extern.AceTokenType;
 			default:
 		}
 		
+		if (tpl != null) to = mapTemplateTypes(to, tpl);
+		
 		switch ([from, to]) {
 			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to
 				for (t1 in et1) if (!canCastToAnyOf(t1, et2, tpl, imp)) return false;
