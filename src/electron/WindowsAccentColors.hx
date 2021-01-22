@@ -30,6 +30,7 @@ class WindowsAccentColors {
 		}
 	}
 	public static function updateFocus(active:Bool) {
+		init();
 		if (impl == null) return;
 		var html = document.documentElement;
 		var style = html.style;
