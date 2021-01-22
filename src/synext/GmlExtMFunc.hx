@@ -1,6 +1,7 @@
 package synext;
 import haxe.Json;
 import haxe.ds.Vector;
+import synext.SyntaxExtension;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;
@@ -26,6 +27,8 @@ import parsers.GmlReader;
  * @author YellowAfterlife
  */
 class GmlExtMFunc {
+	public static var inst:GmlExtMFuncWrap = new GmlExtMFuncWrap();
+	
 	public var name:String;
 	public var args:Array<String>;
 	public var order:Array<GmlExtMFuncOrder>;
@@ -779,7 +782,7 @@ abstract GmlExtMFuncOrder(Dynamic) {
 	//
 }
 
-/** NB: don't change the indexes or existing code will freak out */
+/** NB! Don't change the indexes here or the existing code will freak out */
 enum abstract GmlExtMFuncOrderKind(Int) {
 	/** (arg_index) */
 	var Plain = 0;
@@ -798,4 +801,23 @@ enum abstract GmlExtMFuncOrderKind(Int) {
 	
 	/** (arg_index, pre, post) */
 	var PrePost = 5;
+}
+
+class GmlExtMFuncWrap extends SyntaxExtension {
+	public function new() {
+		super("#mfunc", "#mfunc magic");
+	}
+	override public function check(editor:EditCode, code:String):Bool {
+		return (cast editor.kind:file.kind.KGml).canMFunc;
+	}
+	override public function preproc(editor:EditCode, code:String):String {
+		code = GmlExtMFunc.pre(editor, code);
+		if (code == null) message = GmlExtMFunc.errorText;
+		return code;
+	}
+	override public function postproc(editor:EditCode, code:String):String {
+		code = GmlExtMFunc.post(editor, code);
+		if (code == null) message = GmlExtMFunc.errorText;
+		return code;
+	}
 }

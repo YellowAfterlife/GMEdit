@@ -1,9 +1,12 @@
 package synext;
+import editors.EditCode;
+import file.kind.KGml;
 import gml.GmlAPI;
 import gml.Project;
 import js.lib.RegExp;
 import js.lib.RegExp.RegExpMatch;
 import parsers.GmlReader;
+import synext.SyntaxExtension;
 import tools.Aliases;
 import tools.GmlCodeTools;
 import tools.JsTools;
@@ -14,7 +17,31 @@ using tools.RegExpTools;
  * ...
  * @author YellowAfterlife
  */
-class GmlNullCoalescingOperator {
+class GmlNullCoalescingOperator extends SyntaxExtension {
+	public static var inst:GmlNullCoalescingOperator = new GmlNullCoalescingOperator();
+	
+	public function new() {
+		super("??", "null-coalescing operators");
+	}
+	
+	override public function check(editor:EditCode, code:String):Bool {
+		return Std.is(editor.kind, KGml) && (cast editor.kind:KGml).canNullCoalescingOperator;
+	}
+	
+	override public function preproc(editor:EditCode, code:String):String {
+		code = pre(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	override public function postproc(editor:EditCode, code:String):String {
+		code = post(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	public static var errorText:String;
+	
 	public static function pre(code:GmlCode):GmlCode {
 		var q = new GmlReader(code);
 		var version = GmlAPI.version;
@@ -103,6 +130,7 @@ class GmlNullCoalescingOperator {
 		flush(q.length);
 		return out;
 	}
+	
 	public static function post(code:GmlCode):GmlCode {
 		var ncSet = Project.current.properties.nullConditionalSet;
 		var ncVal = Project.current.properties.nullConditionalVal;

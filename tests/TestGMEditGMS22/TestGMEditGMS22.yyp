@@ -87,6 +87,14 @@
             }
         },
         {
+            "Key": "71539e52-5a84-aad9-e367-c9a097879e6f",
+            "Value": {
+                "id": "b4ef1bc4-24d0-4200-201e-fe0955145c6c",
+                "resourcePath": "views\\71539e52-5a84-aad9-e367-c9a097879e6f.yy",
+                "resourceType": "GMFolder"
+            }
+        },
+        {
             "Key": "72a698ee-2cbd-4534-a93f-01faec7dcae7",
             "Value": {
                 "id": "8b016407-2084-4150-8362-09681afbd8d5",
@@ -207,10 +215,26 @@
             }
         },
         {
+            "Key": "d7e58959-8766-f37f-dfb2-7e1fa1b6824c",
+            "Value": {
+                "id": "a2847322-2fa3-383e-865b-5f1d3a902efa",
+                "resourcePath": "scripts\\v_mfunc_basic\\v_mfunc_basic.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
             "Key": "de40ff17-a87f-8354-a230-f2480e9bb0e0",
             "Value": {
                 "id": "c52b53de-8983-a49c-bf78-534ea3fc40ef",
                 "resourcePath": "scripts\\v_doc_returns\\v_doc_returns.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
+            "Key": "e210f950-63a5-4693-c3e0-7ed9b32d0415",
+            "Value": {
+                "id": "b56dd067-0691-dfe1-8f54-dc8c2057d7e6",
+                "resourcePath": "scripts\\v_args_types\\v_args_types.yy",
                 "resourceType": "GMScript"
             }
         },

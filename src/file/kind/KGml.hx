@@ -48,6 +48,22 @@ class KGml extends KCode {
 	 */
 	public var saveSessionChanged:Bool;
 	
+	public static var syntaxExtensions:Array<SyntaxExtension> = null;
+	
+	public static function initSyntaxExtensions() {
+		syntaxExtensions = [
+			// GmlExtCoroutines.inst, // done in KGmlScript
+			GmlExtLambda.inst,
+			GmlExtMFunc.inst,
+			GmlExtImport.inst,
+			GmlNullCoalescingOperator.inst,
+			GmlNullCoalescingAssignment.inst,
+			GmlExtTemplateStrings.inst,
+			GmlExtHyper.inst,
+			// GmlExtArgs.inst, // also done in KGmlScript AND it's done out of order
+		];
+	}
+	
 	public function new() {
 		super();
 		modePath = "ace/mode/gml";
@@ -55,44 +71,14 @@ class KGml extends KCode {
 	}
 	
 	override public function preproc(editor:EditCode, code:String):String {
-		var onDisk = editor.file.path != null;
-		if (onDisk && canLambda) code = GmlExtLambda.pre(editor, code);
-		if (canMFunc) code = GmlExtMFunc.pre(editor, code);
-		if (onDisk && canImport) code = GmlExtImport.pre(code, editor.file.path);
-		if (canNullCoalescingOperator) code = GmlNullCoalescingOperator.pre(code);
-		if (canNullCoalescingAssignment) code = GmlNullCoalescingAssignment.pre(code);
-		if (canTemplateString) code = GmlExtTemplateStrings.pre(code);
-		if (canHyper) code = GmlExtHyper.pre(code);
-		return code;
+		code = SyntaxExtension.preprocArray(editor, code, syntaxExtensions);
+		return code != null ? code : "";
 	}
 	
 	override public function postproc(editor:EditCode, code:String):String {
 		saveSessionChanged = false;
-		var onDisk = editor.file.path != null;
-		if (canHyper) code = GmlExtHyper.post(code);
-		if (canTemplateString) code = GmlExtTemplateStrings.post(code);
-		if (canNullCoalescingAssignment) code = GmlNullCoalescingAssignment.post(code);
-		if (canNullCoalescingOperator) code = GmlNullCoalescingOperator.post(code);
-		if (onDisk && canImport) {
-			var pair = editor.postpImport(code);
-			if (pair == null) return null;
-			code = pair.val;
-			if (pair.sessionChanged) saveSessionChanged = true;
-		}
-		if (canMFunc) {
-			code = GmlExtMFunc.post(editor, code);
-			if (code == null) {
-				Dialog.showError("Can't process #mfunc:\n" + GmlExtMFunc.errorText);
-				return null;
-			}
-		}
-		if (onDisk && canLambda) {
-			code = GmlExtLambda.post(editor, code);
-			if (code == null) {
-				Dialog.showError("Can't process #lambda:\n" + GmlExtLambda.errorText);
-				return null;
-			}
-		}
+		
+		code = SyntaxExtension.postprocArray(editor, code, syntaxExtensions);
 		return code;
 	}
 	

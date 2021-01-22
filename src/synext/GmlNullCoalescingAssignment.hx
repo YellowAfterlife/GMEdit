@@ -1,7 +1,10 @@
 package synext;
+import editors.EditCode;
+import file.kind.KGml;
 import js.lib.RegExp;
 import js.lib.RegExp.RegExpMatch;
 import parsers.GmlReader;
+import synext.SyntaxExtension;
 import tools.Aliases;
 import tools.GmlCodeTools;
 import tools.JsTools;
@@ -17,7 +20,31 @@ using tools.RegExpTools;
  * 
  * @author YellowAfterlife
  */
-class GmlNullCoalescingAssignment {
+class GmlNullCoalescingAssignment extends SyntaxExtension {
+	public static var inst:GmlNullCoalescingAssignment = new GmlNullCoalescingAssignment();
+	
+	public function new() {
+		super("??=", "null-coalescing assignment");
+	}
+	
+	override public function check(editor:EditCode, code:String):Bool {
+		return Std.is(editor.kind, KGml) && (cast editor.kind:KGml).canNullCoalescingAssignment;
+	}
+	
+	override public function preproc(editor:EditCode, code:String):String {
+		code = pre(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	override public function postproc(editor:EditCode, code:String):String {
+		code = post(code);
+		if (code == null) message = errorText;
+		return code;
+	}
+	
+	public static var errorText:String;
+	
 	static var rxPre = new RegExp("if"
 		+ "(\\s*)" // 1
 		+ "\\("

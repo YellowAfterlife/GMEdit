@@ -64,8 +64,6 @@ class KGmlScript extends KGml {
 		out = GmlExtArgs.post(out);
 		if (out == null) return error("Can't process #args:\n" + GmlExtArgs.errorText);
 		//
-		out = GmlExtHyper.post(out);
-		//
 		var canCoroutines = isScript;
 		if (isScript && Preferences.current.argsFormat != "") {
 			if (!sessionChanged && GmlExtArgsDoc.proc(file)) {
