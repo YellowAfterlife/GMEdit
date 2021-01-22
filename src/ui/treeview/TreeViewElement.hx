@@ -1,8 +1,11 @@
 package ui.treeview;
+import js.html.InputElement;
+import js.html.KeyboardEvent;
 import js.html.DivElement;
 import tools.HtmlTools;
 import file.FileKind;
 using tools.NativeString;
+import Main.document;
 
 /**
  * Various shorthands
@@ -89,6 +92,15 @@ extern class TreeViewElement extends DivElement {
 	private inline function set_treeText(s:String):String {
 		return TreeViewElementTools.setTreeText(this, s);
 	}
+
+	/**
+	 * Opens and selects an inline textbox for the element. When the textbox is unfocused
+	 * or the user hits enter it will run the provided function 
+	 * @param finishFunction function that's ran on the element losing focus
+	 */
+	public inline function showInlineTextbox(finishFunction:String->Void):Void {
+		TreeViewElementTools.showInlineTextbox(this, finishFunction);
+	}
 }
 extern class TreeViewDir extends TreeViewElement {
 	public var treeHeader:DivElement;
@@ -135,5 +147,52 @@ private class TreeViewElementTools {
 		} else header = el;
 		header.querySelector("span").innerText = s;
 		return s;
+	}
+	public static function showInlineTextbox(el:TreeViewElement, finishFunction:String->Void) {
+		var header:DivElement;
+		if (el.treeIsDir) {
+			header = el.asTreeDir().treeHeader;
+		} else header = el;
+		var spanChild = header.firstElementChild;
+		var oldDisplay = spanChild.style.display; // stores old display to apply back later, probably overkill but who knows with themes
+		el.draggable = false;
+		spanChild.style.display = "none";
+
+		var textInputElement:InputElement = cast document.createElement("input");
+
+		textInputElement.className = "inline-text-field";
+		textInputElement.type = "text";
+		textInputElement.value = header.textContent;
+		
+		// Directories have an extra div
+		if (header.hasChildNodes()) {
+			header.insertBefore(textInputElement, header.firstChild);
+		} else {
+			header.appendChild(textInputElement);
+		}
+		
+
+		textInputElement.select();
+
+		var triggered = false;
+		var wrappedFinishFunction = function() {
+			if (triggered) {
+				return;
+			}
+			triggered = true;
+			textInputElement.remove();
+			spanChild.style.display = oldDisplay;
+			el.draggable = true;
+
+			finishFunction(textInputElement.value);
+		}
+
+		textInputElement.addEventListener("focusout", wrappedFinishFunction);
+		textInputElement.addEventListener("keyup", function(event:KeyboardEvent) {
+			if (event.keyCode == 13) {
+				event.preventDefault();
+				wrappedFinishFunction();
+			}
+		});
 	}
 }

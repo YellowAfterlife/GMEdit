@@ -1,6 +1,4 @@
 package ui.treeview;
-import js.html.KeyboardEvent;
-import js.html.InputElement;
 import electron.Dialog;
 import electron.Electron;
 import gml.Project;
@@ -18,7 +16,6 @@ import ui.treeview.TreeViewElement;
 import yy.YyManip;
 import yy.v22.YyManipV22;
 using tools.NativeString;
-import Main.document;
 
 /**
  * ...
@@ -190,6 +187,7 @@ class TreeViewItemMenus {
 			order: order,
 			mkdir: mkdir,
 		};
+
 		//
 		if (preproc != null) {
 			args = preproc(args);
@@ -225,9 +223,39 @@ class TreeViewItemMenus {
 	}
 	public static function createImpl(kind:String, order:Int) {
 		var dir = target;
-		Dialog.showPrompt("Name?", "", function(s) {
-			if (s == "" || s == null) return;
-			createImplBoth(kind, order, dir, s);
+
+		var targetData = getItemData(target);
+		var targetTV:TreeViewItem = cast target;
+		Console.log(targetTV);
+		var mkdir = kind == "dir";
+
+		var args:TreeViewItemCreate = {
+			prefix: targetData.prefix,
+			plural: targetData.plural,
+			single: targetData.single,
+			tvDir: order == 0 ? targetTV.asTreeDir() : targetTV.treeParentDir,
+			tvRef: dir,
+			chain: targetData.chain,
+			last: targetData.last,
+			name: "",
+			kind: (kind != "auto" && !mkdir) ? kind : targetData.filter,
+			order: order,
+			mkdir: mkdir,
+		};
+
+		// Create a temporary TreeItem that hosts the textbox
+		var result = createImplTV(args);
+		// Set variables to nothing so we dont accidentally try something
+		result.treeRelPath = "";
+		result.treeFullPath = "";
+
+		result.showInlineTextbox(function(name) {
+			// Remove the temporary item
+			result.remove();
+			if (name != "") {
+				// Insert the real item at the same spot
+				createImplBoth(kind, order, dir, name);
+			}
 		});
 	}
 	//
@@ -299,32 +327,7 @@ class TreeViewItemMenus {
 	static function renameImpl() {
 		var d = getItemData(target);
 
-		
-		var spanChild = target.firstElementChild;
-		var oldDisplay = spanChild.style.display; // stores old display to apply back later, probably overkill but who knows with themes
-		target.draggable = false;
-		spanChild.style.display = "none";
-
-		var textInputElement:InputElement = cast document.createElement("input");
-
-		textInputElement.className = "inline-text-field";
-		textInputElement.type = "text";
-		textInputElement.value = d.last;
-		
-		var triggered = false;
-
-		var applyRenameFunction = function() {
-			if (triggered) {
-				return;
-			}
-			triggered = true;
-
-			var s = textInputElement.value;
-
-			textInputElement.remove();
-			spanChild.style.display = oldDisplay;
-			target.draggable = true;
-
+		(cast target:TreeViewItem).showInlineTextbox(function(s) {
 			if (s == d.last || s == "" || s == null) return;
 			var el:TreeViewElement = cast target;
 			var tvDir:TreeViewDir = el.treeParentDir;
@@ -394,20 +397,7 @@ class TreeViewItemMenus {
 				}
 				default: Dialog.showAlert("Can't rename an item for this version!");
 			}
-		};
-
-		textInputElement.addEventListener("focusout", applyRenameFunction);
-		textInputElement.addEventListener("keyup", function(event:KeyboardEvent) {
-			if (event.keyCode == 13) {
-				event.preventDefault();
-				applyRenameFunction();
-			}
 		});
-
-		target.appendChild(textInputElement);
-
-		textInputElement.select();
-
 	}
 	//
 	static function initCreateMenu() {
