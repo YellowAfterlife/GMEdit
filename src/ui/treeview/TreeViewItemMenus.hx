@@ -187,6 +187,7 @@ class TreeViewItemMenus {
 			order: order,
 			mkdir: mkdir,
 		};
+
 		//
 		if (preproc != null) {
 			args = preproc(args);
@@ -222,9 +223,42 @@ class TreeViewItemMenus {
 	}
 	public static function createImpl(kind:String, order:Int) {
 		var dir = target;
-		Dialog.showPrompt("Name?", "", function(s) {
-			if (s == "" || s == null) return;
-			createImplBoth(kind, order, dir, s);
+
+		var targetData = getItemData(target);
+		var targetTV:TreeViewItem = cast target;
+		Console.log(targetTV);
+		var mkdir = kind == "dir";
+
+		var args:TreeViewItemCreate = {
+			prefix: targetData.prefix,
+			plural: targetData.plural,
+			single: targetData.single,
+			tvDir: order == 0 ? targetTV.asTreeDir() : targetTV.treeParentDir,
+			tvRef: dir,
+			chain: targetData.chain,
+			last: targetData.last,
+			name: "",
+			kind: (kind != "auto" && !mkdir) ? kind : targetData.filter,
+			order: order,
+			mkdir: mkdir,
+		};
+
+		Console.log(args);
+
+		// Create a temporary TreeItem that hosts the textbox
+		var result = createImplTV(args);
+		// Set variables to nothing so we dont accidentally try something
+		result.treeRelPath = "";
+		result.treeFullPath = "";
+
+		Console.log(result);
+		result.showInlineTextbox(function(name) {
+			// Remove the temporary item
+			result.remove();
+			if (name != "") {
+				// Insert the real item at the same spot
+				createImplBoth(kind, order, dir, name);
+			}
 		});
 	}
 	//
