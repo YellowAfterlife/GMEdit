@@ -85,6 +85,11 @@
 	box-shadow: none;
 	z-index: inherit;
 }
+
+#preferences-editor fieldset + fieldset,
+.project-properties fieldset + fieldset {
+	margin-top: 0.5em;
+}
 #preferences-editor > fieldset + fieldset,
 .project-properties > fieldset + fieldset {
 	margin-top: 1em;
