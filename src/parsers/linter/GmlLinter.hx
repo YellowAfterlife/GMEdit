@@ -1508,8 +1508,7 @@ class GmlLinter {
 	
 	public static function getType(expr:String, editor:EditCode, context:String, pos:AcePos):GmlLinterTypeInfo {
 		var q = new GmlLinter();
-		q.context = context;
-		q.runPre(expr, editor, Project.current.version);
+		q.runPre(expr, editor, Project.current.version, context);
 		if (pos != null) {
 			var types = AceGmlContextResolver.run(editor.session, pos);
 			Console.log(types);
