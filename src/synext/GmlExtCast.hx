@@ -51,7 +51,7 @@ class GmlExtCast extends SyntaxExtension {
 						} else if (len >= 3 && q.substr(p + 3, 2) == "as" && !q.get(p + 5).isIdent1_ni()) {
 							var cmtEnd = q.pos;
 							q.pos = p + 5;
-							if (q.skipType() || q.pos != cmtEnd - 2) {
+							if (!q.skipType() || q.pos != cmtEnd - 2) {
 								q.pos = cmtEnd;
 							} else {
 								flush(p);
@@ -98,7 +98,7 @@ class GmlExtCast extends SyntaxExtension {
 					q.skipIdent1();
 					var id = q.substring(p, q.pos);
 					if (id == "cast"
-						|| id == "as" && !q.skipType()
+						|| id == "as" && q.skipType()
 					) {
 						flush(p);
 						out += "/*#" + q.substring(p, q.pos) + "*/";

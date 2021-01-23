@@ -443,7 +443,7 @@ using tools.NativeString;
 	 * this"var a:Map¦<Int>" -> this"var a:Map<Int>¦"
 	 * this"var a:Map¦<=" -> this"var a:Map¦<="
 	 */
-	public function skipTypeParams(?till:Int) {
+	public function skipTypeParams(?till:Int):Success {
 		if (till == null) till = length;
 		var p2 = pos;
 		var depth = 1;
@@ -464,19 +464,19 @@ using tools.NativeString;
 		} else return true;
 	}
 	
-	public function skipType(?till:Int):FoundError {
+	public function skipType(?till:Int):Success {
 		// also see GmlTypeParser.parseRec, GmlLinter.readTypeName
 		if (till == null) till = length;
 		var start = pos;
-		inline function rewind():FoundError {
+		inline function rewind():Success {
 			pos = start;
-			return true;
+			return false;
 		}
 		skipSpaces1x(till);
 		var c = read();
 		switch (c) {
 			case "(".code:
-				if (skipType(till)) return rewind();
+				if (!skipType(till)) return rewind();
 				skipSpaces1x(till);
 				if (read() != ")".code) return rewind();
 			case _ if (c.isIdent0()):
@@ -498,13 +498,13 @@ using tools.NativeString;
 				case "?".code: skip();
 				case "|".code:
 					skip();
-					if (skipType(till)) return rewind();
+					if (!skipType(till)) return rewind();
 				default: break;
 			}
 			start = pos;
 		}
 		pos = start;
-		return false;
+		return true;
 	}
 	
 	/** Skips comments and strings. Returns >= 0 if something was skipped, -1 otherwise. */

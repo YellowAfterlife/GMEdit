@@ -7,6 +7,7 @@ import js.lib.RegExp;
  */
 class Aliases { }
 
+typedef Success = Bool;
 /** Whether an error was found (true/false) */
 typedef FoundError = Bool;
 typedef ErrorText = String;

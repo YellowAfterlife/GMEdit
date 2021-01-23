@@ -119,7 +119,10 @@ import ace.extern.AceTokenType;
 		function f(t:GmlType):GmlType {
 			return switch (t) {
 				case null: null;
-				case TTemplate(_, ind, _): return templateTypes[ind];
+				case TTemplate(_, ind, c): {
+					var t = templateTypes[ind];
+					return t != null ? t : c;
+				};
 				default: t.map(f);
 			}
 		}
@@ -244,7 +247,10 @@ import ace.extern.AceTokenType;
 			default:
 		}
 		
-		if (tpl != null) to = mapTemplateTypes(to, tpl);
+		if (tpl != null) {
+			to = mapTemplateTypes(to, tpl);
+			if (to == null) return false;
+		}
 		
 		switch ([from, to]) {
 			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to

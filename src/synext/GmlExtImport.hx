@@ -825,7 +825,7 @@ class GmlExtImport {
 						if (q.substr(q.pos, 2) == "->") {
 							var tsStart = q.pos;
 							q.pos += 2;
-							if (!q.skipType()) {
+							if (q.skipType()) {
 								flush(tsStart);
 								out += "/*" + q.substring(tsStart, q.pos) + "*/";
 								start = q.pos;
@@ -841,7 +841,7 @@ class GmlExtImport {
 						q.skipStringAuto(c, version);
 					case ":".code:
 						var tp = q.pos - 1;
-						if (q.skipType()) continue;
+						if (!q.skipType()) continue;
 						flush(tp);
 						out += "/*" + q.substring(tp, q.pos) + "*/";
 						start = q.pos;
