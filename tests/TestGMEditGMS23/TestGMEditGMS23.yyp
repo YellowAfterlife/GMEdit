@@ -12,6 +12,7 @@
     {"id":{"name":"obj_one","path":"objects/obj_one/obj_one.yy",},"order":1,},
     {"id":{"name":"obj_two","path":"objects/obj_two/obj_two.yy",},"order":2,},
     {"id":{"name":"v_choose","path":"scripts/v_choose/v_choose.yy",},"order":4,},
+    {"id":{"name":"v_op_checks","path":"scripts/v_op_checks/v_op_checks.yy",},"order":5,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

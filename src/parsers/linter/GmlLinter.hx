@@ -22,6 +22,7 @@ import ace.extern.*;
 import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
+import tools.macros.SynSugar.*;
 using tools.NativeArray;
 using tools.NativeString;
 
@@ -247,16 +248,49 @@ class GmlLinter {
 	}
 	
 	/** `+¦ a - b;` -> `+ a - b¦;` */
-	function readOps(oldDepth:Int):FoundError {
+	function readOps(oldDepth:Int, firstType:GmlType, firstOp:GmlLinterKind, firstVal:String):FoundError {
 		var newDepth = oldDepth + 1;
 		var q = reader;
+		var types = [firstType];
+		var ops = [firstOp];
+		var vals = [firstVal];
 		while (q.loop) {
 			rc(readExpr(newDepth, NoOps));
+			types.push(readExpr_currType);
 			var nk = peek();
 			if (nk.isBinOp() || nk == KSet) {
 				skip();
+				ops.push(nk);
+				vals.push(nextVal);
 			} else break;
 		}
+		//
+		var pmin = GmlLinterKind.getMaxBinPriority();
+		var pmax = 0;
+		for (op in ops) {
+			var pc = op.getBinOpPriority();
+			if (pc < pmin) pmin = pc;
+			if (pc > pmax) pmax = pc;
+		}
+		//
+		while (pmin <= pmax) {
+			var i = 0;
+			while (i < ops.length) {
+				var op = ops[i];
+				if (op.getBinOpPriority() == pmin) {
+					var t1 = types[i];
+					var t2 = types[i + 1];
+					var tr:GmlType = null;
+					types[i] = checkTypeCastOp(t1, t2, ops[i], vals[i]);
+					types.splice(i + 1, 1);
+					vals.splice(i, 1);
+					ops.splice(i, 1);
+				} else i += 1;
+			}
+			pmin += 1;
+		}
+		//
+		readExpr_currType = types[0];
 		return false;
 	}
 	
@@ -600,10 +634,17 @@ class GmlLinter {
 			};
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
-				currType = nk == KNot ? GmlTypeDef.bool : GmlTypeDef.number;
+				if (nk == KNot) {
+					checkTypeCast(readExpr_currType, GmlTypeDef.bool, "!");
+					currType = GmlTypeDef.bool;
+				} else {
+					checkTypeCast(readExpr_currType, GmlTypeDef.int, "~");
+					currType = GmlTypeDef.int;
+				}
 			};
 			case KInc, KDec: {
 				rc(readExpr(newDepth, HasPrefix));
+				checkTypeCast(readExpr_currType, GmlTypeDef.number, nk == KInc ? "++" : "--");
 				currType = GmlTypeDef.number;
 			};
 			case KSqbOpen: {
@@ -648,6 +689,7 @@ class GmlLinter {
 			default: {
 				if (nk.isUnOp()) { // +v or -v
 					rc(readExpr(newDepth));
+					checkTypeCast(readExpr_currType, GmlTypeDef.number, nk == KAdd ? "+" : "-");
 					currType = GmlTypeDef.number;
 				}
 				else return invalid();
@@ -672,9 +714,9 @@ class GmlLinter {
 							addWarning("Using single `=` as a comparison operator");
 						}
 						skip();
-						rc(readOps(newDepth));
+						rc(readOps(newDepth, currType, nk, "="));
 						flags.add(NoSfx);
-						currType = GmlTypeDef.bool;
+						currType = readExpr_currType;
 					}
 				};
 				case KParOpen: { // fn(...)
@@ -884,14 +926,21 @@ class GmlLinter {
 						if (!isStat()) return readError("Can't use " + nextDump() + " here.");
 						checkConst();
 						skip();
+						var opv = currType != null ? nextVal : null;
 						currKind = statKind = KSet;
 						rc(readExpr(newDepth));
+						if (currType != null) {
+							var opk = opv == "+=" ? KAdd : KSub;
+							checkTypeCastOp(currType, readExpr_currType, opk, opv);
+						}
+						currType = null;
 						flags.add(NoSfx);
 					}
 					else if (nk.isBinOp()) {
 						if (hasFlag(NoOps)) break;
 						skip();
-						rc(readOps(newDepth));
+						rc(readOps(newDepth, currType, nk, nextVal));
+						currType = readExpr_currType;
 						flags.add(NoSfx);
 					}
 					else break;
@@ -985,6 +1034,48 @@ class GmlLinter {
 		if (ctx != null) m += " for " + ctx;
 		addWarning(m);
 		return false;
+	}
+	
+	function checkTypeCastOp(left:GmlType, right:GmlType, op:GmlLinterKind, opv:String):GmlType {
+		switch (op) {
+			case KAdd: {
+				if (left.equals(GmlTypeDef.string) || left.equals(GmlTypeDef.number)) {
+					return checkTypeCast(right, left, opv) ? left : null;
+				} else if (right.equals(GmlTypeDef.string) || right.equals(GmlTypeDef.number)) {
+					return checkTypeCast(left, right, opv) ? right : null;
+				}
+			};
+			case KBoolAnd, KBoolOr, KBoolXor: {
+				checkTypeCast(left, GmlTypeDef.bool, opv);
+				checkTypeCast(right, GmlTypeDef.bool, opv);
+				return GmlTypeDef.bool;
+			};
+			case KEQ, KNE: {
+				// GML lets you compare anything to anything and that's okay
+				return GmlTypeDef.bool;
+			};
+			case KLT, KLE, KGT, KGE: {
+				checkTypeCast(left, GmlTypeDef.number, opv);
+				checkTypeCast(right, GmlTypeDef.number, opv);
+				return GmlTypeDef.bool;
+			};
+			case KAnd, KOr, KXor, KShl, KShr: {
+				checkTypeCast(left, GmlTypeDef.int, opv);
+				checkTypeCast(right, GmlTypeDef.int, opv);
+				return GmlTypeDef.int;
+			};
+			case KIntDiv: {
+				checkTypeCast(left, GmlTypeDef.number, opv);
+				checkTypeCast(right, GmlTypeDef.number, opv);
+				return GmlTypeDef.int;
+			};
+			default: {
+				checkTypeCast(left, GmlTypeDef.number, opv);
+				checkTypeCast(right, GmlTypeDef.number, opv);
+				return GmlTypeDef.number;
+			};
+		}
+		return null;
 	}
 	
 	function readSwitch(oldDepth:Int):FoundError {

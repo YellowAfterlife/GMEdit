@@ -1,4 +1,5 @@
 package parsers.linter;
+import haxe.ds.Vector;
 
 /**
  * ...
@@ -161,6 +162,41 @@ enum abstract GmlLinterKind(Int) {
 		KBoolAnd, KBoolOr, KBoolXor,
 	]);
 	public inline function isBinOp() return __isBinOp[this];
+	
+	static var __binOpPriority:Vector<Int> = (function() {
+		var n = GmlLinterKind.KMaxKind.getIndex();
+		var pr = new Vector<Int>(n);
+		for (i in 0 ... n) pr[i] = -4;
+		inline function set(p:Int, k:GmlLinterKind):Void {
+			pr[k.getIndex()] = p;
+		}
+		set(0x00, KMul);
+		set(0x01, KDiv);
+		set(0x02, KMod);
+		set(0x04, KIntDiv);
+		set(0x10, KAdd);
+		set(0x11, KSub);
+		set(0x20, KShl);
+		set(0x21, KShr);
+		set(0x30, KOr);
+		set(0x31, KAnd);
+		set(0x32, KXor);
+		set(0x40, KSet); // `=` among operators is `==`
+		set(0x40, KEQ);
+		set(0x41, KNE);
+		set(0x42, KLT);
+		set(0x43, KLE);
+		set(0x44, KGT);
+		set(0x45, KGE);
+		set(0x50, KBoolAnd);
+		set(0x51, KBoolXor); // todo: check what priority of this really is
+		set(0x60, KBoolOr);
+		return pr;
+	})();
+	public inline function getBinOpPriority():Int {
+		return __binOpPriority[this];
+	}
+	public static inline function getMaxBinPriority():Int return 0x7;
 	
 	static var __isSetOp = new GmlLinterKindSet([
 		KSetOp,

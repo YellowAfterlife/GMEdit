@@ -74,11 +74,11 @@ class AutoEnum {
 				var idxExpr = { expr: EConst(CInt(value)), pos: field.pos };
 				getNameCases.push({
 					values: [idxExpr],
-					expr: macro return $retExpr
+					expr: macro @:pos(field.pos) return $retExpr
 				});
 				createCases.push({
 					values: [retExpr],
-					expr: macro return cast $idxExpr
+					expr: macro @:pos(field.pos) return cast $idxExpr
 				});
 			}
 		} // for (field in fields)
