@@ -181,6 +181,13 @@ class GmlFile {
 		GmlFile.next = file;
 		ui.ChromeTabs.addTab(file.name);
 	}
+	public function rename(newName:String, newPath:String) {
+		this.name = newName;
+		this.path = newPath;
+		//
+		this.context = kind.getTabContext(this, {});
+	}
+
 	//
 	/**
 	 * Loads the current code
