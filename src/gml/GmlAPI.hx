@@ -112,7 +112,12 @@ class GmlAPI {
 			add("cast");
 			add("as");
 		}
-		for (k in GmlTypeTools.builtinTypes) sk[k] = "namespace";
+		for (k in GmlTypeTools.builtinTypes) {
+			switch (k) {
+				case "string", "bool": continue;
+			}
+			sk[k] = "namespace";
+		}
 		stdKind = sk;
 	}
 	// extension scope
@@ -198,7 +203,7 @@ class GmlAPI {
 			ns = new GmlNamespace(name);
 			gmlNamespaces[name] = ns;
 			gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
-			if (!gmlKind.exists(name)) gmlKind[name] = "namespace";
+			if (!gmlKind.exists(name) && !stdKind.exists(name)) gmlKind[name] = "namespace";
 		}
 		return ns;
 	}
