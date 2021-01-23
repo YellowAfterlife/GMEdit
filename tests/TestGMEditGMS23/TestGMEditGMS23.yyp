@@ -13,6 +13,8 @@
     {"id":{"name":"obj_two","path":"objects/obj_two/obj_two.yy",},"order":2,},
     {"id":{"name":"v_choose","path":"scripts/v_choose/v_choose.yy",},"order":4,},
     {"id":{"name":"v_op_checks","path":"scripts/v_op_checks/v_op_checks.yy",},"order":5,},
+    {"id":{"name":"v_null_conditional","path":"scripts/v_null_conditional/v_null_conditional.yy",},"order":6,},
+    {"id":{"name":"nc_scripts","path":"scripts/nc_scripts/nc_scripts.yy",},"order":0,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
@@ -50,8 +52,8 @@
     {"folderPath":"folders/Animation Curves.yy","order":12,"resourceVersion":"1.0","name":"Animation Curves","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Notes.yy","order":13,"resourceVersion":"1.0","name":"Notes","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Extensions.yy","order":14,"resourceVersion":"1.0","name":"Extensions","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Scripts/Linter.yy","order":0,"resourceVersion":"1.0","name":"Linter","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Scripts/Import.yy","order":1,"resourceVersion":"1.0","name":"Import","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/Scripts/Linter.yy","order":1,"resourceVersion":"1.0","name":"Linter","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/Scripts/Import.yy","order":2,"resourceVersion":"1.0","name":"Import","tags":[],"resourceType":"GMFolder",},
   ],
   "AudioGroups": [
     {"targets":-1,"resourceVersion":"1.3","name":"audiogroup_default","resourceType":"GMAudioGroup",},

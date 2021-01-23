@@ -915,16 +915,23 @@ class GmlLinter {
 				};
 				case KQMark: { // x ? y : z
 					if (hasFlag(NoOps)) break;
+					checkTypeCast(currType, GmlTypeDef.bool, "ternary condition");
 					skip();
 					rc(readExpr(newDepth));
-					rc(readCheckSkip(KColon, "a colon in a ?: operator"));
+					currType = readExpr_currType;
+					rc(readCheckSkip(KColon, "a colon in a ternary operator"));
 					rc(readExpr(newDepth));
+					if (currType != null) {
+						checkTypeCast(readExpr_currType, currType, "ternary else-value");
+					} else currType = readExpr_currType;
 					currKind = KQMark;
 				};
 				case KNullCoalesce: { // x ?? y
 					if (hasFlag(NoOps)) break;
 					skip();
 					rc(readExpr(newDepth));
+					if (currType.isNullable()) currType = currType.unwrapParam();
+					checkTypeCast(readExpr_currType, currType, "?? operator value");
 					currKind = KNullCoalesce;
 				};
 				default: {
