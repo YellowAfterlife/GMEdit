@@ -1,4 +1,6 @@
 package ui.treeview;
+import gml.file.GmlFile;
+import ui.ChromeTabs.ChromeTab;
 import electron.Dialog;
 import electron.Electron;
 import gml.Project;
@@ -16,6 +18,7 @@ import ui.treeview.TreeViewElement;
 import yy.YyManip;
 import yy.v22.YyManipV22;
 using tools.NativeString;
+import Main.document;
 
 /**
  * ...
@@ -387,6 +390,7 @@ class TreeViewItemMenus {
 				patchCode: mode == 1,
 			};
 			var project = Project.current;
+			var oldPath = el.treeFullPath;
 			var vi = project.version.config.projectModeId;
 			switch (vi) {
 				case 1: gmx.GmxManip.rename(args);
@@ -396,6 +400,15 @@ class TreeViewItemMenus {
 					} else YyManip.rename(args);
 				}
 				default: Dialog.showAlert("Can't rename an item for this version!");
+			}
+
+			// If you have the tab for the resource open, give it a new file source
+			for (tab in document.querySelectorAll(".chrome-tab")) {
+				var chromeTab:ChromeTab = cast tab;
+				if (chromeTab.gmlFile.path == oldPath) {
+					chromeTab.gmlFile.rename(s, el.treeFullPath);
+					chromeTab.refresh();
+				}
 			}
 		});
 	}

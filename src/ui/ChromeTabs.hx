@@ -109,7 +109,7 @@ class ChromeTabs {
 				gmlFile.tabEl = cast tabEl;
 				tabEl.gmlFile = gmlFile;
 				//tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
-				tabEl.setAttribute(attrContext, gmlFile.context);
+				tabEl.context = gmlFile.context;
 				tabEl.addEventListener("contextmenu", function(e:MouseEvent) {
 					e.preventDefault();
 					ChromeTabMenu.show(tabEl, e);
@@ -293,6 +293,25 @@ extern class ChromeTab extends Element {
 	private inline function set_tabText(s:String):String {
 		tabTitleText.innerText = s;
 		return s;
+	}
+	//
+	public var context(get, set):String;
+	private inline function get_context():String {
+		return getAttribute(ChromeTabs.attrContext);
+	}
+	private inline function set_context(s:String):String {
+		setAttribute(ChromeTabs.attrContext, s);
+		return s;
+	}
+	//
+	public var isOpen(get, never):Bool;
+	private inline function get_isOpen():Bool {
+		return classList.contains("chrome-tab-current");
+	}
+
+	public inline function refresh():Void {
+		tabText = gmlFile.name;
+		context = gmlFile.context;
 	}
 }
 extern class ChromeTabList implements ArrayAccess<ChromeTab> {

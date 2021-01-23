@@ -274,7 +274,7 @@ import ui.treeview.TreeViewElement;
 			var tab:ChromeTab = cast _tab;
 			var path = tab.gmlFile.path;
 			if (path != null) {
-				if (tab.classList.contains("chrome-tab-current")) activeTab = tabPaths.length;
+				if (tab.isOpen) activeTab = tabPaths.length;
 				tabPaths.push(path);
 			}
 		} catch (_:Dynamic) { }
