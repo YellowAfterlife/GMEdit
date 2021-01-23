@@ -1,6 +1,7 @@
 {
     "linterPrefs": {
-        
+        "specTypeConst": true,
+        "specTypeLet": true
     },
     "nullConditionalSet": "nc_set",
     "nullConditionalVal": "nc_val"

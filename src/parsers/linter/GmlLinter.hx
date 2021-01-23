@@ -131,6 +131,10 @@ class GmlLinter {
 	var optCheckHasReturn:Bool;
 	var optBlockScopedCase:Bool;
 	var optCheckScriptArgumentCounts:Bool;
+	var optSpecTypeVar:Bool;
+	var optSpecTypeLet:Bool;
+	var optSpecTypeConst:Bool;
+	var optSpecTypeMisc:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
@@ -141,6 +145,10 @@ class GmlLinter {
 		optRequireFunctions = getOption((q) -> q.requireFunctions);
 		optCheckHasReturn = getOption((q) -> q.checkHasReturn);
 		optCheckScriptArgumentCounts = getOption((q) -> q.checkScriptArgumentCounts);
+		optSpecTypeVar = getOption((q) -> q.specTypeVar);
+		optSpecTypeLet = getOption((q) -> q.specTypeLet);
+		optSpecTypeConst = getOption((q) -> q.specTypeConst);
+		optSpecTypeMisc = getOption((q) -> q.specTypeMisc);
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 	}
 	//{
@@ -1238,43 +1246,67 @@ class GmlLinter {
 			case KEnum: rc(readEnum(newDepth));
 			case KVar, KConst, KLet, KGlobalVar: {
 				//z = nk == KArgs;
+				var keywordStr = nextVal;
 				seqStart.setTo(reader);
 				var found = 0;
 				while (q.loop) {
 					nk = peek();
 					//if (z && nk == KQMark) { skip(); nk = peek(); }
 					if (!skipIf(nk == KIdent)) break;
+					var varName = nextVal;
 					if (mainKind != KGlobalVar) {
-						var name = nextVal;
 						if (mainKind != KVar || optBlockScopedVar) {
-							var lk = localKinds[name];
+							var lk = localKinds[varName];
 							if (lk != null && lk != KGhostVar) {
-								addWarning('Redefinition of a variable `$name`');
+								addWarning('Redefinition of a variable `$varName`');
 							} else {
 								var arr = localNamesPerDepth[oldDepth];
 								if (arr == null) {
 									arr = [];
 									localNamesPerDepth[oldDepth] = arr;
 								}
-								arr.push(name);
+								arr.push(varName);
 							}
 						}
-						localKinds[name] = mainKind;
+						localKinds[varName] = mainKind;
 					}
 					found++;
 					//
 					nk = peek();
-					var vt:GmlType;
+					var varType:GmlType;
 					if (nk == KColon) { // `name:type`
 						skip();
 						rc(readTypeName());
-						vt = readTypeName_type;
+						varType = readTypeName_type;
 						nk = peek();
-					} else vt = null;
+					} else varType = null;
+					//
 					if (nk == KSet) { // `name = val`
 						skip();
 						rc(readExpr(newDepth));
-						if (vt != null) checkTypeCast(readExpr_currType, vt);
+						var varExprType = readExpr_currType;
+						if (varType != null) {
+							checkTypeCast(varExprType, varType);
+						} else if (varExprType != null) {
+							var apply = switch (mainKind) {
+								case KLet: optSpecTypeLet;
+								case KConst: optSpecTypeConst;
+								default: keywordStr == "var" ? optSpecTypeVar : optSpecTypeMisc;
+							}
+							if (apply) {
+								var imp = getImports();
+								if (imp == null) {
+									editor.imports[context] = imp = new GmlImports();
+								}
+								var lastVarType = imp.localTypes[varName];
+								if (lastVarType == null) {
+									imp.localTypes[varName] = varExprType;
+								} else if (!varExprType.equals(lastVarType)) {
+									addWarning('Implicit redefinition of type for local variable $varName from '
+										+ lastVarType.toString() + " to " + varExprType.toString());
+								}
+							}
+						}
 					}
 					if (!skipIf(peek() == KComma)) break;
 				}

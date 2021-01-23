@@ -5,3 +5,6 @@ function nc_set(v) {
 	nc_val = v;
     return v != undefined && v != noone;
 }
+
+#macro let var
+#macro const var

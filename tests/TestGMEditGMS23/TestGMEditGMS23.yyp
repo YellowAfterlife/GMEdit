@@ -15,6 +15,7 @@
     {"id":{"name":"v_op_checks","path":"scripts/v_op_checks/v_op_checks.yy",},"order":5,},
     {"id":{"name":"v_null_conditional","path":"scripts/v_null_conditional/v_null_conditional.yy",},"order":6,},
     {"id":{"name":"nc_scripts","path":"scripts/nc_scripts/nc_scripts.yy",},"order":0,},
+    {"id":{"name":"v_speculative_types","path":"scripts/v_speculative_types/v_speculative_types.yy",},"order":7,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

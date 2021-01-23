@@ -194,9 +194,11 @@ import ace.extern.AceTokenType;
 					default: return false;
 				}
 				var n1 = 0;
-				for (name => field in fm1.fields) {
+				for (name => fd1 in fm1.fields) {
 					n1 += 1;
-					if (!field.type.equals(fm2.fields[name].type, tpl)) return false;
+					var fd2 = fm2.fields[name];
+					if (fd2 == null) return false;
+					if (!fd1.type.equals(fd2.type, tpl)) return false;
 				}
 				return n1 == fm2.fields.size();
 			case TTemplate(i1, _): return false;

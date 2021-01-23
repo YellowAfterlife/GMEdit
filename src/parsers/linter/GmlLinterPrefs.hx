@@ -15,7 +15,11 @@ package parsers.linter;
 		blockScopedCase: false,
 		requireFunctions: true,
 		checkHasReturn: true,
-		checkScriptArgumentCounts: true
+		checkScriptArgumentCounts: true,
+		specTypeVar: false,
+		specTypeLet: false,
+		specTypeConst: false,
+		specTypeMisc: false,
 	};
 }
 typedef GmlLinterPrefsImpl = {
@@ -29,4 +33,8 @@ typedef GmlLinterPrefsImpl = {
 	?requireFunctions:Bool,
 	?checkHasReturn:Bool,
 	?checkScriptArgumentCounts:Bool,
+	?specTypeVar:Bool,
+	?specTypeLet:Bool,
+	?specTypeConst:Bool,
+	?specTypeMisc:Bool,
 }

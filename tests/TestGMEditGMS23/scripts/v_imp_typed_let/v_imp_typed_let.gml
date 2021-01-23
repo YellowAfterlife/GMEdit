@@ -1,5 +1,3 @@
-#macro let var
-#macro const var
 function v_imp_typed_let() {
 	let a/*:int*/ = 0;
 	a = ""; // want warn
