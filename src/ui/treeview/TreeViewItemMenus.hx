@@ -73,6 +73,7 @@ class TreeViewItemMenus {
 				supported = switch (prefix) {
 					case "scripts/": true;
 					case "objects/": true;
+					case "shaders/": true;
 					default: false;
 				};
 			}
