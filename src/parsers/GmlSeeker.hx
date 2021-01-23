@@ -695,7 +695,10 @@ class GmlSeeker {
 					
 					if (nsName == null && doc != null && doc.templateItems != null) {
 						templateSelf = GmlTypeTemplateItem.toTemplateSelf(doc.templateItems);
-						templateItems = doc.templateItems.nzcct(templateItems, true);
+						templateItems = doc.templateItems.copy();
+					}
+					if (templateItems != null && typeStr != null) {
+						typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
 					}
 					
 					var isInst = false;
@@ -749,7 +752,6 @@ class GmlSeeker {
 					if (templateSelf != null && addFieldHint_doc != null) {
 						addFieldHint_doc.templateSelf = templateSelf;
 						addFieldHint_doc.templateItems = templateItems;
-						var argTypes = addFieldHint_doc.argTypes;
 					}
 					continue; // found!
 				}

@@ -2,12 +2,17 @@
 /// @hint HintArray<T>:push(...values:T)
 /// @hint HintArray<T>:pop()->T
 /// @hint HintArray<T>:fwd<X>(a:T, b:X)->X
+/// @hint {T} HintArray<T>:defValue
 
 function v_hint_template() {
 	var v/*:HintArray<int>*/ = new HintArray(4, "");
+	var i/*:int*/, s/*:string*/;
 	v.push(0);
 	v.push(""); // want warn
-	var i/*:int*/ = v.pop();
-	var s/*:string*/ = v.pop(); // want warn
+	i = v.pop();
+	s = v.pop(); // want warn
+	i = v.fwd(1, 0); // want warn
 	i = v.fwd(1, ""); // want warn
+	i = v.defValue;
+	s = v.defValue; // want warn
 }

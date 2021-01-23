@@ -762,6 +762,12 @@ class GmlLinter {
 							}
 							return currType != null || currFunc != null;
 						});
+						if (currType != null) switch (selfType) {
+							case TInst(_, sp, _) if (sp.length > 0): {
+								currType = currType.mapTemplateTypes(sp);
+							};
+							default:
+						}
 						if (!found) {
 							var en = GmlAPI.gmlEnums[ctn];
 							if (en != null) {
