@@ -1,4 +1,5 @@
 package ui.treeview;
+import tools.Aliases.RelPath;
 import gml.Project;
 import haxe.io.Path;
 import js.lib.RegExp;
@@ -56,8 +57,11 @@ class TreeViewDnD {
 			? dtTypes.indexOf(t) >= 0
 			: dtTypes.contains(t);
 	}
-	public static function bind(el:Element, rel:String, ?full:String) {
-		var dir = el.classList.contains("header");
+	public static function bind(el:Element) {
+		var isDir = el.classList.contains("header");
+		// The element that holds the data, different for a folder
+		var dataElement : TreeViewElement =  cast isDir ? el.parentElement : el;
+		var rel = dataElement.treeRelPath;
 		var prefix = prefixOf(rel).toLowerCase();
 		var ownType = dropType + "=" + rel.toLowerCase();
 		var ownPrefix = dropPrefix + "=" + prefix;
@@ -67,7 +71,7 @@ class TreeViewDnD {
 			function updateAuto(e:DragEvent) {
 				var y = e.offsetY;
 				var h = el.scrollHeight;
-				var th = dir ? 0.25 : 0.35;
+				var th = isDir ? 0.25 : 0.35;
 				if (!v23 && !hasType(e, ownPrefix)) {
 					update(null, 0);
 				} else if (y < h * th) {
@@ -75,7 +79,7 @@ class TreeViewDnD {
 				} else if (y > h * (1 - th)) {
 					update(el, 1);
 				} else {
-					update(dir && !hasType(e, ownType) ? el : null, 0);
+					update(isDir && !hasType(e, ownType) ? el : null, 0);
 				}
 			}
 			el.addEventListener("dragover", (e:DragEvent) -> {
@@ -159,6 +163,7 @@ class TreeViewDnD {
 				if (order != 0 && dst.parentElement == TreeView.element) {
 					return;
 				}
+
 				var rel = e.dataTransfer.getData(dropType);
 				var full = e.dataTransfer.getData(dropFull);
 				if (rel != null) {
@@ -170,10 +175,13 @@ class TreeViewDnD {
 		if ((v2?rxCanDrag2:rxCanDrag).test(rel)) {
 			el.setAttribute("draggable", "true");
 			el.addEventListener("dragstart", (e:DragEvent) -> {
-				e.dataTransfer.setData(dropType, rel);
-				if (full != null) e.dataTransfer.setData(dropFull, full);
+				var dragRel = dataElement.treeRelPath;
+				var dragFull = dataElement.treeFullPath;
+				var dragPrefix = prefixOf(dragRel).toLowerCase();
+				e.dataTransfer.setData(dropType, dragRel);
+				if (dragFull != null) e.dataTransfer.setData(dropFull, dragFull);
 				e.dataTransfer.setData(ownType, "");
-				e.dataTransfer.setData(dropPrefix, prefix);
+				e.dataTransfer.setData(dropPrefix, dragPrefix);
 				e.dataTransfer.setData(ownPrefix, "");
 			});
 		}
