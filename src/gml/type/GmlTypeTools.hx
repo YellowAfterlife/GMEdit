@@ -362,8 +362,8 @@ import ace.extern.AceTokenType;
 			s = s.replaceExt(tn.regex, function() {
 				var ct = tn.constraint;
 				if (tn.constraint != null) {
-					return '$templateItemName<${tn.name},_$i,$ct>';
-				} else return '$templateItemName<${tn.name},_$i>';
+					return '$templateItemName<${tn.name};_$i;$ct>';
+				} else return '$templateItemName<${tn.name};_$i>';
 			});
 		}
 		return s;
@@ -371,15 +371,5 @@ import ace.extern.AceTokenType;
 	
 	public static function getSelfCallDoc(self:GmlType, imp:GmlImports):GmlFuncDoc {
 		return JsTools.nca(self, AceGmlTools.findSelfCallDoc(self, imp));
-	}
-}
-class GmlTypeTemplateItem {
-	public var name:String;
-	public var regex:RegExp;
-	public var constraint:String;
-	public function new(name:String, ?ct:String) {
-		this.name = name;
-		regex = name.getWholeWordRegex("g");
-		constraint = ct;
 	}
 }

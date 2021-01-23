@@ -28,13 +28,14 @@ class AceGmlDocHint {
 			Token("new\\b", "keyword"),
 			dOptSpace,
 		])];
+		var dOptParams = OptGroup([
+			Token("<", tOperator),
+			Token("[^>*]", tNamespace),
+			Token(">?", tOperator),
+		]);
 		var dType = [
 			Token("\\w+", tNamespace),
-			OptGroup([
-				Token("<", tOperator),
-				Token("[^>*]", tNamespace),
-				Token(">?", tOperator),
-			]),
+			dOptParams,
 		];
 		var dFull = dNew.concat(dType).concat([
 			OptGroup([
@@ -42,12 +43,16 @@ class AceGmlDocHint {
 				Token("[:.]", tPunctOp),
 				dOptSpace,
 				Token("\\w*", "field"),
+				dOptParams,
 			]),
 		]);
 		var dAuto = dNew.concat([
 			Token("[:.]", tPunctOp),
 			dOptSpace,
-			Token("\\w*", "field"),
+			OptGroup([
+				Token("\\w+", "field"),
+				dOptParams,
+			]),
 		]);
 		var dExtends = dType.concat([
 			dOptSpace,

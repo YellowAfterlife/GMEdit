@@ -9,6 +9,18 @@ package tools;
 		return js.Syntax.code("new Array")(size);
 	}
 	
+	public static function nzcct<T>(a:Array<T>, b:Array<T>, ?copy:Bool):Array<T> {
+		if (a != null) {
+			if (b != null) {
+				return a.concat(b);
+			} else return copy ? a.copy() : a;
+		} else {
+			if (b != null) {
+				return copy ? b.copy() : b;
+			} else return null;
+		}
+	}
+	
 	public static inline function clear<T>(arr:Array<T>):Void {
 		untyped arr.length = 0;
 	}

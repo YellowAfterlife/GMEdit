@@ -3,6 +3,7 @@ import gml.GmlFuncDoc;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
+import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
@@ -18,7 +19,7 @@ using tools.NativeString;
  */
 class GmlFuncDocParser {
 	static var rxTemplate = new RegExp("^(.*)" + "<(.+?)>\\(");
-	static var rxArgType = new RegExp("(?:" + [
+	public static var rxArgType = new RegExp("(?:" + [
 		"/\\*:" + "(.+?)" + "\\*/", // type in a comment (as with GmlSeeker)
 		":([^=]+)", // pretty `:type` (as with @hint)
 	].join("|") + ")");
@@ -36,13 +37,7 @@ class GmlFuncDocParser {
 				var mt = rxTemplate.exec(pre);
 				if (mt != null) {
 					name = mt[1];
-					templateItems = [];
-					for (ts in mt[2].splitRx(JsTools.rx(~/[,;]\s*/g))) {
-						mt = JsTools.rx(~/^\s*(.+?)\s*:\s*(.+?)\s*$/).exec(ts);
-						if (mt != null) {
-							templateItems.push(new GmlTypeTemplateItem(mt[1], mt[2]));
-						} else templateItems.push(new GmlTypeTemplateItem(ts.trimBoth()));
-					}
+					templateItems = GmlTypeTemplateItem.parseSplit(mt[2]);
 				}
 			}
 			var sw = s.substring(p0 + 1, p1).trimBoth();

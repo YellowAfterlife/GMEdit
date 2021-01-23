@@ -15,6 +15,7 @@ import gml.*;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
+import gml.type.GmlTypeTemplateItem;
 import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
@@ -108,13 +109,7 @@ class GmlSeeker {
 		+ "@hint\\b\\s*"
 		+ "(?:\\{(.+)?\\}\\s*)?" // type -> $1
 		+ "(new\\b\\s*)?" // constructor mark -> $2
-		+ "(\\w+)?" // namespace (opt.) -> $3
-		+ "(?:"
-			+ "\\s*([:.])" // separator -> $4
-			+ "\\s*(\\w+)?" // field -> $5
-		+ ")?"
-		+ "\\s*(\\(.*?\\)(?:->\\S*)?)?" // (args) or (args)->retType -> $6
-		+ "\\s*(.*)" // text -> $7
+		+ "(.+)" // the stuff we'll have to parse ourselves
 	);
 	private static var jsDoc_hint_extimpl = new RegExp("^///\\s*"
 		+ "@hint\\b\\s*"
@@ -500,7 +495,7 @@ class GmlSeeker {
 					q.skipComment();
 					var typeEnd = q.pos - 2;
 					q.pos = typeStart;
-					if (!q.skipType(typeEnd)) {
+					if (q.skipType(typeEnd)) {
 						jsDocReturn = q.substring(typeStart, q.pos);
 					} else q.pos = orig;
 				} else q.pos = orig;
@@ -676,8 +671,86 @@ class GmlSeeker {
 				}
 				
 				mt = jsDoc_hint.exec(s);
-				if (mt != null) {
-					addFieldHint(mt[2] != null, mt[3], mt[4] == ":", mt[5], mt[6], mt[7], GmlTypeDef.parse(mt[1]), null);
+				if (mt != null) { // @hint
+					var mti = 0;
+					var typeStr = mt[1];
+					var isNew = mt[2] != null;
+					var hr = new GmlReader(mt[3], v), hp:Int;
+					hr.skipSpaces0_local();
+					
+					var templateSelf:GmlType = null;
+					var templateItems:Array<GmlTypeTemplateItem> = null;
+					var nsName = hr.readIdent();
+					if (nsName != null) {
+						hr.skipSpaces0_local();
+						if (hr.peek() == "<".code) { // namespace<params>
+							hp = hr.pos;
+							if (hr.skipTypeParams()) {
+								templateItems = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
+								templateSelf = GmlTypeTemplateItem.toTemplateSelf(templateItems);
+								hr.skipSpaces0_local();
+							} else continue;
+						}
+					}
+					
+					if (nsName == null && doc != null && doc.templateItems != null) {
+						templateSelf = GmlTypeTemplateItem.toTemplateSelf(doc.templateItems);
+						templateItems = doc.templateItems.nzcct(templateItems, true);
+					}
+					
+					var isInst = false;
+					var fdName = null;
+					var c = hr.peek();
+					if (c == ".".code || c == ":".code) {
+						isInst = c == ":".code;
+						hr.skip();
+						hr.skipSpaces0_local();
+						fdName = hr.readIdent();
+						if (fdName != null) {
+							hr.skipSpaces0_local();
+							if (hr.peek() == "<".code) { // namespace<params>
+								hp = hr.pos;
+								if (hr.skipTypeParams()) {
+									var fdp = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
+									templateItems = templateItems.nzcct(fdp);
+									hr.skipSpaces0_local();
+								} else continue;
+							}
+						}
+					}
+					
+					var args = null;
+					if (hr.peek() == "(".code) {
+						hp = hr.pos;
+						hr.skip();
+						var depth = 1;
+						while (hr.loopLocal) {
+							c = hr.read();
+							switch (c) {
+								case "(".code: depth++;
+								case ")".code: if (--depth <= 0) break;
+							}
+						}
+						if (depth > 0) continue;
+						if (hr.peekstr(2) == "->") {
+							hr.skip(2);
+							hr.skipType();
+						}
+						args = hr.substring(hp, hr.pos);
+						if (templateItems != null) {
+							args = GmlTypeTools.patchTemplateItems(args, templateItems);
+						}
+						hr.skipSpaces0_local();
+					}
+					
+					var info = hr.source.substring(hr.pos);
+					
+					addFieldHint(isNew, nsName, isInst, fdName, args, info, GmlTypeDef.parse(typeStr), null);
+					if (templateSelf != null && addFieldHint_doc != null) {
+						addFieldHint_doc.templateSelf = templateSelf;
+						addFieldHint_doc.templateItems = templateItems;
+						var argTypes = addFieldHint_doc.argTypes;
+					}
 					continue; // found!
 				}
 				
@@ -1246,11 +1319,7 @@ class GmlSeeker {
 							templateItems = jsDocTemplateItems;
 							jsDocTemplateItems = null;
 							if (doc != null && doc.templateItems != null) {
-								var tsp = [];
-								for (i => ti in doc.templateItems) {
-									tsp.push(TTemplate(ti.name, i, GmlTypeDef.parse(ti.constraint)));
-								}
-								templateSelf = TInst("self", tsp, KTemplateSelf);
+								templateSelf = GmlTypeTemplateItem.toTemplateSelf(doc.templateItems);
 								templateItems = templateItems != null
 									? doc.templateItems.concat(templateItems)
 									: doc.templateItems.copy();

@@ -3,6 +3,7 @@ import gml.funcdoc.*;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
+import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
