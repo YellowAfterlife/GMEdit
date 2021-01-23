@@ -173,6 +173,7 @@ class GmlParseAPI {
 				+ "([~\\*\\$£#@&]*)" // 4 -> flags
 			+ ")"
 			+ "(?::(\\S+))?" // 5 -> type annotation
+			+ "\\s+$" // this is here because otherwise the regex greedily triggers on functions
 		+ "", "gm");
 		rxVar.each(src, function(mt:RegExpMatch) {
 			var comp =  mt[1];
