@@ -157,6 +157,10 @@ class GmlFuncDoc {
 		return pre + args.join(", ") + post;
 	}
 	
+	public function getConstructorType():String {
+		return name + GmlTypeTemplateItem.joinTemplateString(templateItems, false);
+	}
+	
 	public static function create(name:String, ?args:Array<String>, ?rest:Bool):GmlFuncDoc {
 		if (args == null) {
 			args = [];

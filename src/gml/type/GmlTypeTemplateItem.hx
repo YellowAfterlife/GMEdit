@@ -37,6 +37,18 @@ class GmlTypeTemplateItem {
 		return arr;
 	}
 	
+	/** [T1, T2:C2] -> "<T1,T2:C2>" */
+	public static function joinTemplateString(arr:Array<GmlTypeTemplateItem>, constraints:Bool):String {
+		if (arr == null) return "";
+		var r = "<";
+		for (i => ti in arr) {
+			if (i > 0) r += ",";
+			r += ti.name;
+			if (constraints && ti.constraint != null) r += ":" + ti.constraint;
+		}
+		return r + ">";
+	}
+	
 	public static function toTemplateSelf(arr:Array<GmlTypeTemplateItem>):GmlType {
 		var tsp = [];
 		for (i => ti in arr) {

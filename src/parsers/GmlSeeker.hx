@@ -694,12 +694,15 @@ class GmlSeeker {
 					var templateSelf:GmlType = null;
 					var templateItems:Array<GmlTypeTemplateItem> = null;
 					var nsName = hr.readIdent();
+					var ctrReturn = null;
 					if (nsName != null) {
+						if (isNew) ctrReturn = nsName;
 						hr.skipSpaces0_local();
 						if (hr.peek() == "<".code) { // namespace<params>
 							hp = hr.pos;
 							if (hr.skipTypeParams()) {
 								templateItems = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
+								ctrReturn += GmlTypeTemplateItem.joinTemplateString(templateItems, false);
 								templateSelf = GmlTypeTemplateItem.toTemplateSelf(templateItems);
 								hr.skipSpaces0_local();
 							} else continue;
@@ -762,9 +765,12 @@ class GmlSeeker {
 					var info = hr.source.substring(hr.pos);
 					
 					addFieldHint(isNew, nsName, isInst, fdName, args, info, GmlTypeDef.parse(typeStr), null);
-					if (templateSelf != null && addFieldHint_doc != null) {
-						addFieldHint_doc.templateSelf = templateSelf;
-						addFieldHint_doc.templateItems = templateItems;
+					if (addFieldHint_doc != null) {
+						if (ctrReturn != null) addFieldHint_doc.returnTypeString = ctrReturn;
+						if (templateSelf != null) {
+							addFieldHint_doc.templateSelf = templateSelf;
+							addFieldHint_doc.templateItems = templateItems;
+						}
 					}
 					continue; // found!
 				}
@@ -974,7 +980,11 @@ class GmlSeeker {
 								jsDocTypes = null;
 								jsDocRest = false;
 							} else {
-								doc = GmlFuncDoc.parse(main + q.substring(start, q.pos));
+								var docStart = main;
+								if (jsDocTemplateItems != null) {
+									docStart += GmlTypeTemplateItem.joinTemplateString(jsDocTemplateItems, true);
+								}
+								doc = GmlFuncDoc.parse(docStart + q.substring(start, q.pos));
 								doc.trimArgs();
 							}
 							procFuncLiteralRetArrow();
@@ -1007,6 +1017,7 @@ class GmlSeeker {
 								linkDoc();
 							}
 							doc.isConstructor = true;
+							doc.returnTypeString = doc.getConstructorType();
 							if (s == ":") {
 								s = find(Line | Cub0 | Ident);
 								if (s != null && (s.fastCodeAt(0):CharCode).isIdent0_ni()) {

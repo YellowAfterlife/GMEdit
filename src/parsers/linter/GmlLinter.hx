@@ -646,7 +646,7 @@ class GmlLinter {
 			};
 			case KNew: {
 				rc(readExpr(newDepth, IsNew));
-				currType = GmlTypeDef.simple(readExpr_currName);
+				currType = JsTools.or(readExpr_currType, GmlTypeDef.simple(readExpr_currName));
 				currFunc = currType.getSelfCallDoc(getImports());
 			};
 			case KCast: {

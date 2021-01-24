@@ -5,7 +5,7 @@
 /// @hint {T} HintArray<T>:defValue
 
 function v_hint_template() {
-	var v/*:HintArray<int>*/ = new HintArray(4, "");
+	var v/*:HintArray<int>*/ = new HintArray(4, ""); // want warn - casting <string> to <int>
 	var i/*:int*/, s/*:string*/;
 	v.push(0);
 	v.push(""); // want warn
