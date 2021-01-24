@@ -770,6 +770,10 @@ class GmlLinter {
 					skip();
 					rc(readCheckSkip(KIdent, "field name after `.`"));
 					var field = nextVal;
+					
+					// extract `Type` from `Type?` when doing `v?.field`
+					if (nk == KNullDot && currType.isNullable()) currType = currType.unwrapParam();
+					
 					currKind = nk == KDot ? KField : KNullField;
 					var isStatic = currType.isType();
 					var nsType = isStatic ? currType.unwrapParam() : currType;
@@ -819,6 +823,10 @@ class GmlLinter {
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					skip();
 					var isNull = nk == KNullSqb;
+					
+					// extract `Type` from `Type?` when doing `v?[indexer]`
+					if (isNull && currType.isNullable()) currType = currType.unwrapParam();
+					
 					var isArray = false;
 					var isLiteral = false;
 					var arrayType1 = null;
