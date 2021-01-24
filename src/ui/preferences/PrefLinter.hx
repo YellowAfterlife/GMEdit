@@ -80,6 +80,7 @@ class PrefLinter {
 		el = addf("Warn about trying to use result of a script/function with no returned values", opt.checkHasReturn);
 		el.title = "For functions, the list of functions without return values can be found in resources/app/api/<version>/noret.gml";
 		addf("Warn about mismatched argument counts on user-defined scripts/functions", opt.checkScriptArgumentCounts);
+		addf("Warn about missing fields on a.b access", opt.requireFields);
 		
 		out = addGroup(orig, "Block scoping");
 		el = addf("Treat `var` as block-scoped", opt.blockScopedVar);

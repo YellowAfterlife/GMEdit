@@ -316,6 +316,8 @@ import ace.extern.AceTokenType;
 		switch (type) {
 			case null: return "?";
 			case TInst(_, [p], KNullable): return toString(p, tpl) + "?";
+			case TInst(_, p, KTemplateItem):
+				return p.length < 3 ? toString(p[0]) : "(" + toString(p[0]) + ":" + toString(p[2]) + ")";
 			case TInst(name, params, kind): {
 				var s:String = name;
 				if (params.length > 0) {

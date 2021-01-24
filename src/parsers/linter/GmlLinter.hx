@@ -135,6 +135,7 @@ class GmlLinter {
 	var optSpecTypeLet:Bool;
 	var optSpecTypeConst:Bool;
 	var optSpecTypeMisc:Bool;
+	var optRequireFields:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
@@ -149,6 +150,7 @@ class GmlLinter {
 		optSpecTypeLet = getOption((q) -> q.specTypeLet);
 		optSpecTypeConst = getOption((q) -> q.specTypeConst);
 		optSpecTypeMisc = getOption((q) -> q.specTypeMisc);
+		optRequireFields = getOption((q) -> q.requireFields);
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 	}
 	//{
@@ -622,13 +624,18 @@ class GmlLinter {
 					
 					var t = getSelfType();
 					var tn = t.getNamespace();
-					if (tn != null) AceGmlTools.findNamespace(tn, imp, function(ns:GmlNamespace) {
-						if (ns.instKind.exists(currName)) {
-							currType = ns.getInstType(currName);
-							currFunc = ns.getInstDoc(currName);
-							return true;
-						} else return false;
-					});
+					if (tn != null) {
+						var wantWarn = false;
+						var found = AceGmlTools.findNamespace(tn, imp, function(ns:GmlNamespace) {
+							wantWarn = true;
+							if (ns.getInstKind(currName) != null) {
+								currType = ns.getInstType(currName);
+								currFunc = ns.getInstDoc(currName);
+								return true;
+							} else return false;
+						});
+						if (!found && wantWarn && optRequireFields) addWarning('Variable $currName is not part of $tn');
+					}
 				} while (false);
 			};
 			case KParOpen: {
@@ -769,15 +776,18 @@ class GmlLinter {
 					var ctn = nsType.getNamespace();
 					selfType = currType;
 					if (ctn != null) {
+						var wantWarn = false;
 						var found = AceGmlTools.findNamespace(ctn, getImports(), function(ns) {
+							wantWarn = true;
 							if (isStatic) {
 								currType = ns.staticTypes[field];
 								currFunc = ns.docStaticMap[field];
+								return ns.staticKind.exists(field);
 							} else {
 								currType = ns.getInstType(field);
 								currFunc = ns.getInstDoc(field);
+								return ns.getInstKind(field) != null;
 							}
-							return currType != null || currFunc != null;
 						});
 						
 						if (found) {
@@ -790,13 +800,17 @@ class GmlLinter {
 						} else {
 							var en = GmlAPI.gmlEnums[ctn];
 							if (en != null) {
+								wantWarn = true;
 								if (en.items.exists(field)) {
 									// TODO: come up with some method of indicating that enum
 									// is typed as itself and may not cast to integers
 									currType = GmlTypeDef.int;
+									found = true;
 								} else currType = GmlTypeDef.forbidden;
 							} else currType = null;
+							currFunc = null;
 						}
+						if (!found && wantWarn && optRequireFields) addWarning('Variable $field is not part of $ctn');
 					} else {
 						currType = selfType.getKind() == KGlobal ? GmlAPI.gmlGlobalTypes[field] : null;
 						currFunc = null;

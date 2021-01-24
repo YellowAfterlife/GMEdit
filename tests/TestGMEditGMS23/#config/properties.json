@@ -1,5 +1,6 @@
 {
     "linterPrefs": {
+        "requireFields": true,
         "specTypeConst": true,
         "specTypeLet": true
     },

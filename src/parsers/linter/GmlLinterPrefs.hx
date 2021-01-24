@@ -20,6 +20,7 @@ package parsers.linter;
 		specTypeLet: false,
 		specTypeConst: false,
 		specTypeMisc: false,
+		requireFields: false,
 	};
 }
 typedef GmlLinterPrefsImpl = {
@@ -37,4 +38,5 @@ typedef GmlLinterPrefsImpl = {
 	?specTypeLet:Bool,
 	?specTypeConst:Bool,
 	?specTypeMisc:Bool,
+	?requireFields:Bool,
 }
