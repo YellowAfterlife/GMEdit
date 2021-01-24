@@ -11,7 +11,7 @@ function v_hint_template() {
 	v.push(""); // want warn
 	i = v.pop();
 	s = v.pop(); // want warn
-	i = v.fwd(1, 0); // want warn
+	i = v.fwd(1, 0);
 	i = v.fwd(1, ""); // want warn
 	i = v.defValue;
 	s = v.defValue; // want warn

@@ -83,7 +83,9 @@ class GmlAPI {
 	public static var ukSpelling:Bool = false;
 	//
 	public static var forceTemplateStrings:Bool = false;
-	//
+	
+	//{ Built-ins
+	
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
 	public static var stdInstComp:AceAutoCompleteItems = [];
@@ -120,7 +122,11 @@ class GmlAPI {
 		}
 		stdKind = sk;
 	}
-	// extension scope
+	
+	//}
+	
+	//{ Extension scope
+	
 	public static var extDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var extKind:Dictionary<String> = new Dictionary();
 	public static var extComp:AceAutoCompleteItems = [];
@@ -140,12 +146,19 @@ class GmlAPI {
 		extCompMap = new Dictionary();
 		extArgc = new Dictionary();
 	}
-	// script/object scope
+	
+	//}
+	
+	//{ Project scope
+	
 	/** script name -> doc */
 	public static var gmlDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	
 	/** word -> ACE kind */
 	public static var gmlKind:Dictionary<String> = new Dictionary();
+	
+	/** for global identifiers */
+	public static var gmlTypes:Dictionary<GmlType> = new Dictionary();
 	
 	/** array of auto-completion items */
 	public static var gmlComp:AceAutoCompleteItems = [];
@@ -170,6 +183,8 @@ class GmlAPI {
 	
 	/** global field name -> data */
 	public static var gmlGlobalFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	
+	public static var gmlGlobalTypes:Dictionary<GmlType> = new Dictionary();
 	
 	/** global field AC items */
 	public static var gmlGlobalFieldComp:AceAutoCompleteItems = [];
@@ -228,6 +243,7 @@ class GmlAPI {
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
+		gmlTypes = new Dictionary();
 		gmlComp.clear();
 		gmlEnums = new Dictionary();
 		gmlEnumTypeComp.clear();
@@ -238,6 +254,7 @@ class GmlAPI {
 		gmlGlobalFieldMap = new Dictionary();
 		gmlGlobalFieldComp.clear();
 		gmlGlobalFullMap = new Dictionary();
+		gmlGlobalTypes = new Dictionary();
 		gmlGlobalFullComp.clear();
 		gmlInstFieldMap = new Dictionary();
 		gmlInstFieldComp.clear();
@@ -272,6 +289,9 @@ class GmlAPI {
 		}
 		gml.type.GmlTypeParser.clear();
 	}
+	
+	//}
+	
 	//
 	public static function init() {
 		stdClear();

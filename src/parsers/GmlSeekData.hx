@@ -29,16 +29,17 @@ class GmlSeekData {
 	public var enums:ArrayMap<GmlEnum> = new ArrayMap();
 	
 	// globalvars declared in this file
-	public var globalVarList:Array<GmlGlobalVar> = [];
-	public var globalVarMap:Dictionary<GmlGlobalVar> = new Dictionary();
+	public var globalVars:ArrayMap<GmlGlobalVar> = new ArrayMap();
+	public var globalVarTypes:ArrayMap<GmlType> = new ArrayMap();
 	
 	// specific globals used in this file
-	public var globalFieldList:Array<GmlGlobalField> = [];
-	public var globalFieldMap:Dictionary<GmlGlobalField> = new Dictionary();
+	public var globalFields:ArrayMap<GmlGlobalField> = new ArrayMap();
 	public var globalFieldComp:AceAutoCompleteItems = [];
 	// ditto but with "global." prefix
 	public var globalFullMap:Dictionary<GmlGlobalField> = new Dictionary();
 	public var globalFullComp:AceAutoCompleteItems = [];
+	/** `global.name = ...; /// @is {type}` */
+	public var globalTypes:ArrayMap<GmlType> = new ArrayMap();
 	
 	// instance variables assigned in this file
 	public var instFieldMap:Dictionary<GmlField> = new Dictionary();
@@ -168,9 +169,17 @@ class GmlSeekData {
 		}
 		for (m in next.mfuncs) GmlAPI.gmlMFuncs.set(m.name, m);
 		
+		//
+		prev.globalVarTypes.forEach(function(s, t) {
+			if (!next.globalTypes.exists(s)) GmlAPI.gmlTypes.remove(s);
+		});
+		next.globalVarTypes.forEach(function(s, t) {
+			GmlAPI.gmlTypes[s] = t;
+		});
+		
 		// global fields (delta)
-		for (g in prev.globalFieldList) {
-			if (next.globalFieldMap[g.name] == g) continue;
+		for (g in prev.globalFields) {
+			if (next.globalFields[g.name] == g) continue;
 			if (--g.refs <= 0) {
 				GmlAPI.gmlGlobalFieldMap.remove(g.name);
 				GmlAPI.gmlGlobalFieldComp.remove(g.comp);
@@ -178,8 +187,8 @@ class GmlSeekData {
 				GmlAPI.gmlGlobalFullComp.remove(g.fullComp);
 			}
 		}
-		for (g in next.globalFieldList) {
-			if (prev.globalFieldMap[g.name] == g) continue;
+		for (g in next.globalFields) {
+			if (prev.globalFields[g.name] == g) continue;
 			if (++g.refs == 1) {
 				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
 				GmlAPI.gmlGlobalFieldComp.push(g.comp);
@@ -187,6 +196,13 @@ class GmlSeekData {
 				GmlAPI.gmlGlobalFullComp.push(g.fullComp);
 			}
 		}
+		
+		prev.globalTypes.forEach(function(s, t) {
+			if (!next.globalTypes.exists(s)) GmlAPI.gmlGlobalTypes.remove(s);
+		});
+		next.globalTypes.forEach(function(s, t) {
+			GmlAPI.gmlGlobalTypes[s] = t;
+		});
 		
 		// instance fields (delta)
 		for (fd in prev.instFieldList) {

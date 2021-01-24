@@ -255,7 +255,7 @@ class GmlFile {
 			GmlAPI.gmlGlobalFullMap = data.globalFullMap;
 			comp.globalCompleter.items = data.globalFieldComp;
 			GmlAPI.gmlGlobalFieldComp = data.globalFieldComp;
-			GmlAPI.gmlGlobalFieldMap = data.globalFieldMap;
+			GmlAPI.gmlGlobalFieldMap = data.globalFields.map;
 			comp.instCompleter.items = data.instFieldComp;
 			GmlAPI.gmlInstFieldComp = data.instFieldComp;
 			GmlAPI.gmlInstFieldMap = data.instFieldMap;

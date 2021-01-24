@@ -143,10 +143,11 @@ class GmlSeeker {
 		+ "@is(?:s)?"
 		+ "\\b\\s*\\{(.+?)\\}"
 	);
-	private static var jsDoc_is_line = new RegExp("^\\s*"
-		+ "(global\\s*\\.)?"
-		+ "\\s*\\b(\\w+)"
-	+ "\\s*=");
+	private static var jsDoc_is_line = new RegExp("^\\s*(?:" + [
+		"globalvar\\s+(\\w+)", // globalvar name
+		"global\\s*\\.\\s*(\\w+)\\s*=", // global.name=
+		"(\\w+)\\s*=" // name=
+	].join("|") + ")");
 	private static var jsDoc_template = new RegExp("^///\\s*"
 		+ "@template\\b\\s*"
 		+ "(?:\\{(.*?)\\}\\s*)?"
@@ -621,14 +622,26 @@ class GmlSeeker {
 				
 				mt = jsDoc_is.exec(s);
 				if (mt != null) {
-					var type = mt[1];
+					var typeStr = mt[1];
 					var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
 					var lineText = q.source.substring(lineStart, q.pos);
 					var lineMatch = jsDoc_is_line.exec(lineText);
 					if (lineMatch == null) continue;
 					var kind = lineMatch[1];
-					var name = lineMatch[2];
-					if (kind == null) {
+					var name:String;
+					var type = GmlTypeDef.parse(typeStr);
+					if (lineMatch[1] != null) {
+						name = lineMatch[1];
+						out.globalVarTypes[name] = type;
+						var comp = out.comps[name];
+						if (comp != null) comp.doc = comp.doc.nzcct("\n", "type " + typeStr);
+					} else if (lineMatch[2] != null) {
+						name = lineMatch[2];
+						out.globalTypes[name] = type;
+						var v = out.globalFields[name];
+						if (v != null) v.comp.doc = v.comp.doc.nzcct("\n", "type " + typeStr);
+					} else {
+						name = lineMatch[3];
 						var namespace:String;
 						if (isCreateEvent) {
 							namespace = getObjectName();
@@ -638,8 +651,8 @@ class GmlSeeker {
 						} else continue;
 						var hint = out.hintMap[namespace + ":" + name];
 						if (hint != null) {
-							hint.type = GmlTypeDef.parse(type);
-							hint.comp.doc = NativeString.nzcct(hint.comp.doc, "\n", "type " + type);
+							hint.type = type;
+							hint.comp.doc = hint.comp.doc.nzcct("\n", "type " + typeStr);
 						}
 					}
 					continue;
@@ -1068,8 +1081,7 @@ class GmlSeeker {
 						s = find(Ident | Semico);
 						if (s == null || s == ";" || GmlAPI.kwFlow.exists(s)) break;
 						var g = new GmlGlobalVar(s, orig);
-						out.globalVarList.push(g);
-						out.globalVarMap.set(s, g);
+						out.globalVars[s] = g;
 						out.comps[s] = g.comp;
 						out.kindList.push(s);
 						out.kindMap.set(s, "globalvar");
@@ -1079,14 +1091,13 @@ class GmlSeeker {
 				case "global": {
 					if (find(Period | Ident) == ".") {
 						s = find(Ident);
-						if (s != null && out.globalFieldMap[s] == null) {
+						if (s != null && !out.globalFields.exists(s)) {
 							var gfd = GmlAPI.gmlGlobalFieldMap[s];
 							if (gfd == null) {
 								gfd = new GmlGlobalField(s);
 								GmlAPI.gmlGlobalFieldMap.set(s, gfd);
 							}
-							out.globalFieldList.push(gfd);
-							out.globalFieldMap.set(s, gfd);
+							out.globalFields[s] = gfd;
 							out.globalFieldComp.push(gfd.comp);
 						}
 					}

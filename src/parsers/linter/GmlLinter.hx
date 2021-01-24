@@ -556,14 +556,18 @@ class GmlLinter {
 				}
 				// figure out what this is:
 				do {
-					if (currName == "self") {
-						currType = getSelfType();
-						currFunc = currType.getSelfCallDoc(getImports());
-						break;
-					} else if (currName == "other") {
-						currType = getOtherType();
-						currFunc = currType.getSelfCallDoc(getImports());
-						break;
+					switch (currName) {
+						case "self":
+							currType = getSelfType();
+							currFunc = currType.getSelfCallDoc(getImports());
+							break;
+						case "other":
+							currType = getOtherType();
+							currFunc = currType.getSelfCallDoc(getImports());
+							break;
+						case "global":
+							currType = GmlTypeDef.global;
+							break;
 					}
 					
 					var imp:GmlImports = getImports();
@@ -604,6 +608,11 @@ class GmlLinter {
 						currFunc = JsTools.or(ns.docStaticMap[""], AceGmlTools.findGlobalFuncDoc(currName));
 						return true;
 					})) break;
+					
+					if (kind != null) {
+						currType = GmlAPI.gmlTypes[currName];
+						break;
+					}
 					
 					currFunc = AceGmlTools.findGlobalFuncDoc(currName);
 					if (currFunc != null) break;
@@ -758,8 +767,8 @@ class GmlLinter {
 					var isStatic = currType.isType();
 					var nsType = isStatic ? currType.unwrapParam() : currType;
 					var ctn = nsType.getNamespace();
+					selfType = currType;
 					if (ctn != null) {
-						selfType = currType;
 						var found = AceGmlTools.findNamespace(ctn, getImports(), function(ns) {
 							if (isStatic) {
 								currType = ns.staticTypes[field];
@@ -770,13 +779,15 @@ class GmlLinter {
 							}
 							return currType != null || currFunc != null;
 						});
-						if (currType != null) switch (selfType) {
-							case TInst(_, sp, _) if (sp.length > 0): {
-								currType = currType.mapTemplateTypes(sp);
-							};
-							default:
-						}
-						if (!found) {
+						
+						if (found) {
+							if (currType != null) switch (selfType) {
+								case TInst(_, sp, _) if (sp.length > 0): {
+									currType = currType.mapTemplateTypes(sp);
+								};
+								default:
+							}
+						} else {
 							var en = GmlAPI.gmlEnums[ctn];
 							if (en != null) {
 								if (en.items.exists(field)) {
@@ -786,7 +797,10 @@ class GmlLinter {
 								} else currType = GmlTypeDef.forbidden;
 							} else currType = null;
 						}
-					} else { selfType = null; currFunc = null; }
+					} else {
+						currType = selfType.getKind() == KGlobal ? GmlAPI.gmlGlobalTypes[field] : null;
+						currFunc = null;
+					}
 				};
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					skip();

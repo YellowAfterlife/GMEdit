@@ -3,7 +3,7 @@ import haxe.iterators.ArrayKeyValueIterator;
 import tools.ArrayMap;
 
 /**
- * Like ArrayMap, but has 
+ * Like ArrayMap, but has a "last change ID" field that is incremented on change
  * @author YellowAfterlife
  */
 @:forward abstract ArrayMapSync<T>(ArrayMapSyncImpl<T>)

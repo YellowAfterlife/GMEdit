@@ -98,6 +98,10 @@ import haxe.iterators.ArrayKeyValueIterator;
 			return untyped (cast a).name < (cast b).name ? -1 : 1;
 		});
 	}
+	
+	public inline function forEach(fn:String->T->Void):Void {
+		map.forEach(fn);
+	}
 }
 class ArrayKeyValueReverseIterator<T> {
 	var current:Int;
