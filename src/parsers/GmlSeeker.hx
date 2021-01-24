@@ -322,6 +322,18 @@ class GmlSeeker {
 									q.pushSource(m.expr);
 									return find(flags);
 								} else return null;
+							} else if (flags.has(Ident)) switch (id) {
+								case "let", "const":
+									// unfortunately there is no warranty that we'll index
+									// let/const macros before we index other files, so let's just
+									// assume that `let <ident>` means that you have such a macro.
+									var k = q.pos;
+									while (q.loopLocal) {
+										c = q.get(k);
+										if (c.isSpace1()) k++; else break;
+									}
+									c = q.get(k);
+									if (c.isIdent0()) id = "var";
 							}
 							if (hasFunctionLiterals && flags.has(Define) && id == "function") return id;
 							if (flags.has(Static) && id == "static") return id;
