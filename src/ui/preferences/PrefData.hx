@@ -24,6 +24,7 @@ import haxe.DynamicAccess;
 		mfuncMagic: true,
 		nullCoalescingAssignment: true,
 		castOperators: true,
+		showGMLive: Everywhere,
 		
 		fileSessionTime: 7,
 		projectSessionTime: 14,
@@ -31,9 +32,10 @@ import haxe.DynamicAccess;
 		taskbarOverlays: false,
 		assetThumbs: true,
 		clearAssetThumbsOnRefresh: true,
-		showGMLive: Everywhere,
 		codeLiterals: false,
 		ctrlWheelFontSize: true,
+		showArgTypesInStatusBar: false,
+		
 		fileChangeAction: Ask,
 		closeTabsOnFileDeletion: true,
 		backupCount: { v1: 2, v2: 0, live: 0 },
@@ -91,6 +93,7 @@ typedef PrefDataImpl = {
 	tooltipKeyboardDelay:Int,
 	codeLiterals:Bool,
 	ctrlWheelFontSize:Bool,
+	showArgTypesInStatusBar:Bool,
 	//
 	eventOrder:Int,
 	assetOrder23:PrefAssetOrder23,

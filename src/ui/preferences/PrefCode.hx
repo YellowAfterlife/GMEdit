@@ -98,6 +98,12 @@ class PrefCode {
 			save();
 		}).title = "If disabled, you can still use F7, F8, or code editor settings.";
 		
+		addCheckbox(out,
+			"Show argument types in status bar",
+		current.showArgTypesInStatusBar, function(z) {
+			current.showArgTypesInStatusBar = z;
+			save();
+		});
 		
 		addCheckbox(out,
 			"Highlight code inside hinted GML strings (e.g. /*gml*/@'return 1')",

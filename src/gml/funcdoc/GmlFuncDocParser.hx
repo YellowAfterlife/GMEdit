@@ -11,6 +11,7 @@ import tools.JsTools;
 import tools.NativeArray;
 import tools.RegExpCache;
 import tools.Aliases;
+import ui.Preferences;
 using tools.NativeString;
 
 /**
@@ -26,35 +27,41 @@ class GmlFuncDocParser {
 	
 	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
 		s = GmlFuncDoc.patchArrow(s);
-		var p0 = s.indexOf("(");
-		var p1 = s.indexOf(")", p0);
+		var parOpenAt = s.indexOf("(");
+		var parCloseAt = s.indexOf(")", parOpenAt);
 		var name:String, pre:String, post:String, args:Array<String>, rest:Bool;
 		var argTypes:Array<GmlType> = null;
 		var templateItems:Array<GmlTypeTemplateItem> = null;
-		if (p0 >= 0 && p1 >= 0) {
-			pre = s.substring(0, p0 + 1);
-			name = s.substring(0, p0); {
+		if (parOpenAt >= 0 && parCloseAt >= 0) {
+			pre = s.substring(0, parOpenAt + 1);
+			name = s.substring(0, parOpenAt); {
 				var mt = rxTemplate.exec(pre);
 				if (mt != null) {
 					name = mt[1];
 					templateItems = GmlTypeTemplateItem.parseSplit(mt[2]);
 				}
 			}
-			var sw = s.substring(p0 + 1, p1).trimBoth();
-			post = s.substring(p1);
+			var sw = s.substring(parOpenAt + 1, parCloseAt).trimBoth();
+			post = s.substring(parCloseAt);
 			if (sw != "") {
 				args = sw.splitRx(JsTools.rx(~/,\s*/g));
 				var rxt = rxArgType;
+				var showArgTypes = Preferences.current.showArgTypesInStatusBar;
 				for (i in 0 ... args.length) {
-					args[i] = args[i].replaceExt(rxt, function(_, t1, t2) {
-						if (argTypes == null) argTypes = NativeArray.create(args.length);
+					var arg = args[i];
+					var hadBrackets = !showArgTypes && arg.startsWith("[") && arg.endsWith("]");
+					if (hadBrackets) arg = arg.substring(1, arg.length - 1);
+					arg = arg.replaceExt(rxt, function(str, t1, t2) {
 						var typeStr = JsTools.or(t1, t2).trimRight();
 						if (templateItems != null) {
 							typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
 						}
+						if (argTypes == null) argTypes = NativeArray.create(args.length);
 						argTypes[i] = GmlTypeDef.parse(typeStr);
-						return "";
+						return showArgTypes ? str : "";
 					});
+					if (hadBrackets) arg = "[" + arg + "]";
+					args[i] = arg;
 				}
 			} else args = [];
 			rest = sw.contains("...");
