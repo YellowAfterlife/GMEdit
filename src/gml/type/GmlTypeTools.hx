@@ -116,6 +116,7 @@ import ace.extern.AceTokenType;
 	 * (Map<K, V>, [int, string]) -> Map<int, string>
 	 */
 	public static function mapTemplateTypes(t:GmlType, templateTypes:ReadOnlyArray<GmlType>):GmlType {
+		if (templateTypes == null) return t;
 		function f(t:GmlType):GmlType {
 			return switch (t) {
 				case null: null;

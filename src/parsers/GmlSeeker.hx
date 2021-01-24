@@ -702,7 +702,7 @@ class GmlSeeker {
 							hp = hr.pos;
 							if (hr.skipTypeParams()) {
 								templateItems = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
-								ctrReturn += GmlTypeTemplateItem.joinTemplateString(templateItems, false);
+								if (isNew) ctrReturn += GmlTypeTemplateItem.joinTemplateString(templateItems, false);
 								templateSelf = GmlTypeTemplateItem.toTemplateSelf(templateItems);
 								hr.skipSpaces0_local();
 							} else continue;
@@ -722,6 +722,7 @@ class GmlSeeker {
 					var c = hr.peek();
 					if (c == ".".code || c == ":".code) {
 						isInst = c == ":".code;
+						if (!isInst) templateSelf = null;
 						hr.skip();
 						hr.skipSpaces0_local();
 						fdName = hr.readIdent();
@@ -767,10 +768,8 @@ class GmlSeeker {
 					addFieldHint(isNew, nsName, isInst, fdName, args, info, GmlTypeDef.parse(typeStr), null);
 					if (addFieldHint_doc != null) {
 						if (ctrReturn != null) addFieldHint_doc.returnTypeString = ctrReturn;
-						if (templateSelf != null) {
-							addFieldHint_doc.templateSelf = templateSelf;
-							addFieldHint_doc.templateItems = templateItems;
-						}
+						if (templateSelf != null) addFieldHint_doc.templateSelf = templateSelf;
+						if (templateItems != null) addFieldHint_doc.templateItems = templateItems;
 					}
 					continue; // found!
 				}

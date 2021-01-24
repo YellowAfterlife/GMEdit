@@ -384,7 +384,9 @@ class GmlLinter {
 		if (sqb) {
 			readArgs_outType = itemType;
 		} else {
-			readArgs_outType = doc != null ? doc.returnType.mapTemplateTypes(templateTypes) : null;
+			if (doc != null) {
+				readArgs_outType = doc.returnType.mapTemplateTypes(templateTypes);
+			} else readArgs_outType = null;
 		}
 		if (!closed) {
 			readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
