@@ -16,3 +16,6 @@
 /bin/resources/app/app-starter.js
 /src/dump/decoding_error.txt
 /tests/*/#backups
+tests/report/*
+tests/unittest_build/*
+tests/unittest/TestSuite.hx

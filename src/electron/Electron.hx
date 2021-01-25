@@ -1,9 +1,11 @@
 package electron;
+
+#if !test
 import gmx.SfGmx;
 import js.lib.Error;
 import haxe.extern.EitherType;
 
-/**
+/*
  * ...
  * @author YellowAfterlife
  */
@@ -62,3 +64,18 @@ import haxe.extern.EitherType;
 		}
 	}
 }
+
+#else
+
+
+class Electron {
+	public static function isAvailable():Bool {
+		return false;
+	}
+	public static function init() {}
+	public static var shell:Dynamic;
+	public static var remote:Dynamic;
+	public static var clipboard:Clipboard;
+}
+
+#end
