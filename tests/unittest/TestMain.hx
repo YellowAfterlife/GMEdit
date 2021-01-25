@@ -1,3 +1,8 @@
+import gml.Project;
+import ui.preferences.PrefData;
+import ui.Preferences;
+import file.kind.KGml;
+import electron.Electron;
 import massive.munit.client.PrintClient;
 import massive.munit.client.RichPrintClient;
 import massive.munit.client.HTTPClient;
@@ -12,8 +17,14 @@ class TestMain
 {
 	static function main() new TestMain();
 
-	public function new()
-	{
+	public function new() {
+		// init things that you can't do without:
+		Electron.init();
+		Preferences.current = PrefData.defValue();
+		gml.GmlVersion.init();
+		KGml.initSyntaxExtensions();
+		Project.open("");
+		//
 		var suites = new Array<Class<massive.munit.TestSuite>>();
 		suites.push(TestSuite);
 

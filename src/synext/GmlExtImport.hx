@@ -1,4 +1,5 @@
 package synext;
+import electron.FileSystem;
 import file.kind.KGml;
 import editors.EditCode;
 import ace.AceMacro;
@@ -443,7 +444,7 @@ class GmlExtImport {
 		}
 		if (!Preferences.current.importMagic) return cancel();
 		var globalPath = Path.join([Project.current.dir, "#import", "global.gml"]);
-		var globalExists = FileWrap.existsSync(globalPath);
+		var globalExists = FileSystem.canSync && FileWrap.existsSync(globalPath);
 		if (code.indexOf("//!#import") < 0
 			&& !rxHasTypePre.test(code)
 			&& !globalExists

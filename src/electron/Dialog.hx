@@ -65,7 +65,13 @@ class Dialog {
 				message: message,
 				buttons: ["OK"],
 			});
-		} else Main.window.alert("❌ " + message);
+		} else {
+			#if test
+			throw message;
+			#else
+			Main.window.alert("❌ " + message);
+			#end
+		}
 	}
 	
 	/**

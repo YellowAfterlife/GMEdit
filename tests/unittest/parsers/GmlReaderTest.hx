@@ -8,7 +8,6 @@ class GmlReaderTest {
 	
 	@Test
 	public function parseLocalStringVariable() {
-		GmlVersion.init();
 		var gmlReader = new GmlReader("var a = \"hello\"", GmlVersion.v2);
 		Assert.areEqual("var", gmlReader.readIdent());
 		gmlReader.skipNops();

@@ -63,6 +63,7 @@ class EditCode extends Editor {
 		var _prev = currentNew;
 		currentNew = this;
 		// todo: this does not seem to cache per-version, but not a performance hit either?
+		#if !test
 		session = AceTools.createSession(file.code, { path: modePath, version: GmlAPI.version });
 		AceTools.bindSession(session, this);
 		//
@@ -86,6 +87,7 @@ class EditCode extends Editor {
 		if (modePath == "ace/mode/javascript") {
 			session.setOption("useWorker", false);
 		}
+		#end
 		//
 		currentNew = _prev;
 		//

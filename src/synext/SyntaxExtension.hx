@@ -38,17 +38,26 @@ class SyntaxExtension {
 	 * Bails if any return null or error out.
 	 */
 	public static function preprocArray(editor:EditCode, code:String, sxs:Array<SyntaxExtension>):String {
-		for (sx in sxs) try {
-			if (sx.check(editor, code)) {
-				code = sx.preproc(editor, code);
-				if (code == null) {
-					var e = JsTools.or(sx.message, "(unspecified error)");
-					Dialog.showError('An error occurred in ${sx.displayName} preprocessor:\n' + e);
-					return null;
-				}
+		for (sx in sxs) {
+			inline function proc():Bool {
+				if (sx.check(editor, code)) {
+					code = sx.preproc(editor, code);
+					if (code == null) {
+						var e = JsTools.or(sx.message, "(unspecified error)");
+						Dialog.showError('An error occurred in ${sx.displayName} preprocessor:\n' + e);
+						return true;
+					} else return false;
+				} else return false;
 			}
-		} catch (x:Dynamic) {
-			Dialog.showError('An error occurred in ${sx.displayName} preprocessor:\n' + Std.string(x));
+			#if test
+			if (proc()) return null;
+			#else
+			try {
+				if (proc()) return null;
+			} catch (x:Dynamic) {
+				Dialog.showError('An error occurred in ${sx.displayName} preprocessor:\n' + Std.string(x));
+			}
+			#end
 		}
 		return code;
 	}
@@ -60,18 +69,31 @@ class SyntaxExtension {
 		var i = sxs.length;
 		while (--i >= 0) {
 			var sx = sxs[i];
-			try {
+			inline function proc():Bool {
 				if (sx.check(editor, code)) {
 					code = sx.postproc(editor, code);
 					if (code == null) {
 						var e = JsTools.or(sx.message, "(unspecified error)");
-						Dialog.showError('An error occurred in ${sx.displayName} postprocessor:\n' + e);
-						return null;
-					}
-				}
+						var text = 'An error occurred in ${sx.displayName} postprocessor:\n' + e;
+						#if test
+						throw text;
+						#else
+						trace("not test??");
+						Dialog.showError(text);
+						#end
+						return true;
+					} else return false;
+				} else return false;
+			}
+			#if test
+			if (proc()) return null;
+			#else
+			try {
+				if (proc()) return null;
 			} catch (x:Dynamic) {
 				Dialog.showError('An error occurred in ${sx.displayName} postprocessor:\n' + Std.string(x));
 			}
+			#end
 		}
 		return code;
 	}

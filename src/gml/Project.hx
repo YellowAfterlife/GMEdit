@@ -235,7 +235,7 @@ import ui.treeview.TreeViewElement;
 			name = _path.ptNoDir();
 			displayName = name;
 		}
-		#if !lwedit
+		#if (!lwedit && !test)
 		if (path != null) detectVersion();
 		if (_load) {
 			document.title = path != "" ? (displayName + " - GMEdit") : "GMEdit";
