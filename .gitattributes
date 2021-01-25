@@ -1,3 +1,4 @@
 *.yy linguist-language=Game Maker Language
 
 bin/resources/app/ace/src-noconflict/* linguist-vendored
+bin/resources/app/chrome-tabs/* linguist-vendored
