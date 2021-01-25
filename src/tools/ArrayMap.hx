@@ -35,7 +35,9 @@ import haxe.iterators.ArrayKeyValueIterator;
 		return new ArrayKeyValueReverseIterator(this.array);
 	}
 }
-@:native("tools.ArrayMap")
+#if !test
+	@:native("tools.ArrayMap")
+#end
 @:keep class ArrayMapImpl<T> {
 	public var array:Array<T> = [];
 	public var map:Dictionary<T> = new Dictionary();

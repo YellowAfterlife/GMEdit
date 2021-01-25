@@ -12,8 +12,19 @@ class AceHighlight extends AceHighlightImpl {
 		editor = EditCode.currentNew;
 	}
 }
+
+
+#if test
+class AceHighlightImpl {
+	public var rules:AceHighlightRuleset;
+	function createKeywordMapper(obj:Dynamic<String>, def:String):Function {return null;}
+	function normalizeRules():Void {}
+}
+#else
+
 @:native("AceHighlightImpl") extern class AceHighlightImpl {
 	@:native("$rules") public var rules:AceHighlightRuleset;
 	function createKeywordMapper(obj:Dynamic<String>, def:String):Function;
 	function normalizeRules():Void;
 }
+#end

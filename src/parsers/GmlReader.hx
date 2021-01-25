@@ -184,6 +184,7 @@ using tools.NativeString;
 		}
 	}
 	
+	/** Reads the remainder of an already opened string */
 	public function skipStringAuto(startquote:CharCode, version:GmlVersion):Int {
 		switch (startquote) {
 			case '"'.code: {

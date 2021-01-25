@@ -1,0 +1,5 @@
+build.hxml
+-cp tests/unittest
+-lib munit
+-lib hamcrest
+#-D test

@@ -1,0 +1,6 @@
+version=2.3.5
+src=tests/unittest
+bin=tests/unittest_build
+report=tests/report
+hxml=tests/test.hxml
+classPaths=src
