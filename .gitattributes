@@ -3,4 +3,4 @@
 bin/resources/app/ace/src-noconflict/* linguist-vendored
 bin/resources/app/ace/src-noconflict/ace.js linguist-vendored
 bin/resources/app/chrome-tabs/* linguist-vendored
-bin/resources/app/api/*/helpindexdat.js linguist-vendored
+bin/resources/app/api/* linguist-vendored
