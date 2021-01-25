@@ -104,6 +104,7 @@ class AceTooltips {
 			}
 			return showRow;
 		}
+		r = r.nzcct("\n", extra);
 		if (doc == null) switch (t) {
 			case "enumfield": {
 				var iter = new AceTokenIterator(session, pos.row, pos.column);
@@ -158,7 +159,7 @@ class AceTooltips {
 							+ 'vertical-align: middle;'
 							+ 'width: 0.8em;'
 							+ 'height: 0.8em;'
-						+ '"></span> (' + (bit & 0xff)
+						+ '"></span> RGB(' + (bit & 0xff)
 							+ ', ' + ((bit >> 8) & 0xff)
 							+ ', ' + ((bit >> 16) & 0xff)
 						+ ')');
@@ -230,7 +231,6 @@ class AceTooltips {
 		switch (t) {
 			case "globalvar": r = (r == null) ? "[globalvar]" : "[globalvar] " + r;
 		}
-		r = r.nzcct("\n", extra);
 		if (r == "") r = null;
 		if (text != r) {
 			text = r;

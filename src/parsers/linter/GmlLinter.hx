@@ -1588,7 +1588,9 @@ class GmlLinter {
 		q.runPre(expr, editor, Project.current.version, context);
 		if (pos != null) {
 			var types = AceGmlContextResolver.run(editor.session, pos);
+			#if debug
 			Console.log(types);
+			#end
 			q.__selfType_set = true;
 			q.__selfType_type = types.self;
 			q.__otherType_set = true;
@@ -1596,7 +1598,9 @@ class GmlLinter {
 		}
 		var ok = !q.readExpr(0);
 		q.runPost();
+		#if debug
 		Console.log(expr, q.readExpr_currType, q.readExpr_currFunc);
+		#end
 		return {
 			type: ok ? q.readExpr_currType : null,
 			doc:  ok ? q.readExpr_currFunc : null,
