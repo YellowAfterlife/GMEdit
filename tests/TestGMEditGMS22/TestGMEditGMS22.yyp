@@ -175,6 +175,14 @@
             }
         },
         {
+            "Key": "bc675a1d-3faf-0739-7414-79b2b8281a8f",
+            "Value": {
+                "id": "ca658ee3-47b8-83dc-27ad-0a24bffe2efc",
+                "resourcePath": "objects\\obj_mfunc_events\\obj_mfunc_events.yy",
+                "resourceType": "GMObject"
+            }
+        },
+        {
             "Key": "c0c9e6a7-900a-ee7a-5232-4560d4e153ec",
             "Value": {
                 "id": "67ed775e-14e5-6f93-6906-0ae62f4d57b1",

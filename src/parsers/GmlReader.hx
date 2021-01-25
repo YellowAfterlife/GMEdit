@@ -305,33 +305,27 @@ using tools.NativeString;
 		var p = pos;
 		skipIdent1();
 		var preproc = substring(p - 1, pos);
+		var result:String;
+		inline function proc(fn:Void->Void):Void {
+			skipSpaces0();
+			p = pos;
+			fn();
+			result = substring(p, pos);
+			skipLine();
+		}
 		switch (preproc) {
-			case "#define", "#event", "#moment", "#target": {
-				skipSpaces0();
-				p = pos;
-				inline function next():String {
-					return substring(p, pos);
-				}
-				switch (preproc) {
-					case "#define", "#target": {
-						skipIdent1();
-						return next();
-					};
-					case "#event": {
-						skipEventName();
-						return name != null ? name + "(" + next() + ")" : next();
-					};
-					case "#moment": {
-						skipIdent1();
-						return name != null ? name + "(" + next() + ")" : next();
-					};
-					default: {
-						// todo: see if rewinding to orig-p is OK here
-						return null;
-					};
-				}
-			};
-			default: return null;
+			case "#define", "#target":
+				proc(function() skipIdent1());
+				return result;
+			case "#event":
+				proc(function() skipEventName());
+				return name != null ? name + '($result)' : result;
+			case "#moment":
+				proc(function() skipIdent1());
+				return name != null ? name + '($result)' : result;
+			default:
+				// todo: see if rewinding to orig-p is OK here
+				return null;
 		}
 	}
 	
