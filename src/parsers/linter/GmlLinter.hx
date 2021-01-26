@@ -84,13 +84,15 @@ class GmlLinter {
 	 * getType it will only have the top-level function info (which is mostly OK).
 	 */
 	var currFuncDoc:GmlFuncDoc;
-	
+
 	var __selfType_set = false;
 	var __selfType_type:GmlType = null;
 	function getSelfType() {
 		if (__selfType_set) return __selfType_type;
-		return AceGmlTools.getSelfType({ session: editor.session, scope: context });
+		return AceGmlTools.getSelfTypeForFile(editor.file, context);
 	}
+
+	
 	
 	var __otherType_set = false;
 	var __otherType_type:GmlType = null;
@@ -520,6 +522,11 @@ class GmlLinter {
 		inline function checkConst():Void {
 			readExpr_checkConst(currName, currKind);
 		}
+
+		if (currName == "ass") {
+			js.Lib.debug();
+		}
+
 		//
 		switch (nk) {
 			case KNumber: {

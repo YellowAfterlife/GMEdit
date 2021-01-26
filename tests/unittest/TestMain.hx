@@ -43,7 +43,7 @@ class TestMain
 		runner.completionHandler = completionHandler;
 
 		#if (js && !nodejs)
-			var seconds = 0; // edit here to add some startup delay
+			var seconds = 2; // edit here to add some startup delay
 			function delayStartup()
 			{
 				if (seconds > 0)

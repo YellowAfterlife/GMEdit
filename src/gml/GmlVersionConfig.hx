@@ -150,7 +150,7 @@ class GmlVersionConfigDefaults {
 			docMode: null,
 			projectRegex: null,
 			//
-			additionalKeywords: null,
+			additionalKeywords: [],
 			apiFiles: null,
 			assetFiles: null,
 		};
