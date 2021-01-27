@@ -114,7 +114,16 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 	
-	this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)|#define\b|#event\b|#moment\b|#section\b|#region\b|#target\b|^\s*(?:case|default)\b/;
+	this.foldingStartMarker = new RegExp([
+		"(" + [ // `{` or `[` not followed by the respective closing symbol
+			"\\{" + "[^\\}]*" + "$",
+			"\\[" + "[^\\]]*" + "$",
+		].join("|") + ")",
+		"^" + "\\s*" + "(\\/\\*)", // opening comment block
+		"^#(?:define|event|moment|section|target)\\b", // start-of-line context magic
+		"#region\\b",
+		"^" + "\\s*" + "(?:case|default)\\b", // switch blocks
+	].join("|"));
 	this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
 	this.singleLineBlockCommentRe = /^\s*(\/\*).*\*\/\s*$/;
 	this.tripleStarBlockCommentRe = /^\s*(\/\*\*\*).*\*\/\s*$/;
@@ -152,8 +161,17 @@ oop.inherits(FoldMode, BaseFoldMode);
 		if (match) {
 			var i = match.index;
 
-			if (match[1])
-				return this.openingBracketBlock(session, match[1], row, i);
+			if (match[1]) {
+				var range = this.openingBracketBlock(session, match[1].charAt(0), row, i);
+				if (range && i >= 2 && line.substr(i - 2, 2) == "//") {
+					range.start.column = line.length;
+					var endLine = session.getLine(range.end.row);
+					if (endLine.substr(range.end.column - 2, 2) == "//") {
+						range.end.column -= 2;
+					}
+				}
+				return range;
+			}
 				
 			var range = session.getCommentFoldRange(row, i + match[0].length, 1);
 			
