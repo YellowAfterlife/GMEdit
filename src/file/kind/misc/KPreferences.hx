@@ -8,7 +8,7 @@ import ui.Preferences;
  * ...
  * @author YellowAfterlife
  */
-class KPreferences extends FileKind {
+class KPreferences extends KPreferencesBase {
 	public static var inst = new KPreferences();
 	override public function init(file:GmlFile, data:Dynamic):Void {
 		file.editor = new KPreferencesEditor(file);

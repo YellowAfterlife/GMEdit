@@ -98,6 +98,12 @@ class HtmlTools {
 	public static inline function getChildrenAs<T:Element>(el:DOMElement):ElementListOf<T> {
 		return cast el.children;
 	}
+	
+	public static function scrollIntoViewIfNeeded(el:Element):Void {
+		if ((cast el).scrollIntoViewIfNeeded) {
+			(cast el).scrollIntoViewIfNeeded();
+		} else el.scrollIntoView();
+	}
 }
 extern class ElementList implements ArrayAccess<Element> {
 	public var length(default, never):Int;

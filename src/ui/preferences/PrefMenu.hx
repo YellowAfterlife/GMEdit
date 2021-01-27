@@ -10,6 +10,7 @@ import electron.Shell;
  */
 class PrefMenu {
 	public static function build(out:Element):Void {
+		out.appendChild(Main.document.createTextNode("(note: you can click on section headers to collapse/expand them)"));
 		PrefTheme.build(out);
 		PrefMagic.build(out);
 		PrefCode.build(out);

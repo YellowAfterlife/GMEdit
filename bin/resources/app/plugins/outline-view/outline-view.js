@@ -40,7 +40,7 @@
 			var rxPop = /^\s*(?:#endregion|\/\/#endregion)\b/;
 			var rxMark = /^\s*((?:\/\/#mark|#section)\b\s*(.*))$/;
 			var rxCtx = /^\s*((?:#region|\/\/#region|\/\/#mark)\b.*)$/
-			function update(file, pos) {
+			function update_gml(file, pos) {
 				var def = pos.def, row = pos.row;
 				var ctx = null, ctxRow = null;
 				var doc = file.codeEditor.session.doc;
@@ -69,7 +69,7 @@
 				pos.ctx = ctx;
 				pos.row = ctxRow != null ? ctxRow : row;
 			}
-			function reindex(file, ctx) {
+			function reindex_gml(file, ctx) {
 				var doc = file.codeEditor.session.doc;
 				var n = doc.getLength();
 				var def = null;
@@ -133,8 +133,8 @@
 				}
 			}
 			return {
-				update: update,
-				reindex: reindex
+				update: update_gml,
+				reindex: reindex_gml
 			}
 		})(),
 		"ace/mode/markdown": (function() {
@@ -175,6 +175,69 @@
 				reindex: function(file, ctx) {
 					if (file.kind.isDocMd) reindex_dmd(file, ctx);
 				}
+			}
+		})(),
+		"$preferences": (function() {
+			function pref_getRoot(file) {
+				var parent = file.editor.element;
+				if (parent.children.length == 1) parent = parent.children[0];
+				return parent;
+			}
+			function pref_update(file, pos) {
+				var parent = pref_getRoot(file);
+				var groups = parent.querySelectorAll("fieldset");
+				var i = groups.length;
+				var scroller = file.editor.element;
+				var scrollTop = scroller.scrollTop + 40; // scroller.offsetHeight / 2
+				while (--i >= 0) {
+					var group = groups[i];
+					var legend = group.querySelector("legend");
+					var label = legend.dataset.outlineViewLabel;
+					if (group.parentElement != parent && label == null) continue;
+					if (group.offsetTop <= scrollTop) {
+						if (group.id) {
+							pos.def = group.id;
+						} else {
+							if (!label) label = legend.textContent.replace(/\(.+\)$/, "");
+							pos.ctx = label;
+						}
+						return;
+					}
+				}
+				pos.def = pos.ctx = null;
+			}
+			function pref_scroll(e) {
+				update(this);
+			}
+			function pref_reindex(file, ctx) {
+				var parent = pref_getRoot(file);
+				var groups = parent.querySelectorAll("fieldset");
+				for (var i = 0; i < groups.length; i++) {
+					var group = groups[i];
+					var legend = group.querySelector("legend");
+					var label = legend.dataset.outlineViewLabel;
+					if (group.parentElement != parent && label == null) continue;
+					if (!label) label = legend.textContent.replace(/\(.+\)$/, "");
+					var nav = {};
+					if (group.id) {
+						nav.def = group.id;
+					} else {
+						nav.ctx = legend.textContent;
+					}
+					ctx.mark(label, label, nav);
+				}
+				if (!file.outlineViewScroll) {
+					file.outlineViewScroll = true;
+					file.editor.element.addEventListener("scroll", pref_scroll.bind(file));
+					file.editor.element.addEventListener("resize", pref_scroll.bind(file));
+					setTimeout(function() {
+						update(file);
+					}, 1);
+				}
+			}
+			return {
+				update: pref_update,
+				reindex: pref_reindex
 			}
 		})(),
 	};
@@ -249,26 +312,39 @@
 		return r;
 	}
 	//
+	function getConf(file) {
+		if (file.codeEditor) {
+			return modeMap[file.codeEditor.session.$modeId];
+		} else if (file.kind instanceof $gmedit["file.kind.misc.KPreferencesBase"]) {
+			return modeMap["$preferences"];
+		} else return null;
+	}
 	function update(file) {
-		if (!file.codeEditor) return;
-		var session = file.codeEditor.session;
-		var conf = modeMap[session.$modeId];
+		var conf = getConf(file);
 		if (!conf) return;
-		var row = session.selection.lead.row;
-		
-		// if the cursor is inside JSDoc line immediately before a function, highlight the function instead
-		var rxJSDoc = /^\s*\/\/\/\s*@.*/;
-		var rows = session.getLength();
-		while (row < rows && rxJSDoc.test(session.getLine(row))) row++;
-		
 		var pos = {
-			row: row,
+			row: null,
 			def: null,
 			ctx: null,
+		};
+		var currDir;
+		if (file.codeEditor) {
+			var session = file.codeEditor.session;
+			var row = session.selection.lead.row;
+			
+			// if the cursor is inside JSDoc line immediately before a function, highlight the function instead
+			var rxJSDoc = /^\s*\/\/\/\s*@.*/;
+			var rows = session.getLength();
+			while (row < rows && rxJSDoc.test(session.getLine(row))) row++;
+			
+			pos.row = row;
+			conf.update(file, pos);
+			//
+			currDir = treeview.querySelector(".outline-current-file");
+		} else {
+			conf.update(file, pos);
+			currDir = treeview.querySelector(".outline-current-file");
 		}
-		conf.update(file, pos);
-		//
-		var currDir = treeview.querySelector(".outline-current-file");
 		if (!currDir) return;
 		var currItem = currDir.querySelector(".outline-current-item");
 		// if cursor is after a mark/subregion, try to highlight that,
@@ -294,7 +370,6 @@
 	}
 	function reindex(file) {
 		var ov = file.outlineView;
-		if (!file.codeEditor) return;
 		// memorize which 
 		var closed = ov.treeItems.querySelectorAll(".outline-item:not(.open)");
 		var reclose = [];
@@ -319,7 +394,7 @@
 		}
 		ov.treeItems.innerHTML = "";
 		//
-		var conf = modeMap[file.codeEditor.session.$modeId];
+		var conf = getConf(file);
 		if (!conf) return;
 		var stack = [];
 		var curr = ov;
