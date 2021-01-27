@@ -1,6 +1,7 @@
 package tools.macros;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+using StringTools;
 
 /**
  * ...
@@ -51,7 +52,27 @@ class SynSugar {
 	
 	public static macro function xmls(e:ExprOf<String>):ExprOf<String> {
 		return switch (e) {
-			case macro @:markup $v{(s:String)}: macro $v{s};
+			case macro @:markup $v{(_s:String)}:
+				var s:String = _s;
+				s = s.substring(s.indexOf(">") + 1, s.lastIndexOf("<")); // (grab content inside the tag)
+				var indent = "";
+				var rx = ~/^([ \t]*\r?\n)([ \t]*)/;
+				if (rx.match(s)) { // unindent if formatted accordingly
+					var indent = rx.matched(2);
+					if (indent != "") s = s.replace("\n" + indent, "\n");
+					s = s.substring(rx.matched(1).length);
+					// trim last linebreak:
+					var n = s.length - 1;
+					while (n > 0) switch (StringTools.fastCodeAt(s, n)) {
+						case "\t".code, " ".code: n--;
+						default: break;
+					}
+					if (StringTools.fastCodeAt(s, n) == "\n".code) {
+						if (StringTools.fastCodeAt(s, n - 1) == "\r".code) n--;
+						s = s.substring(0, n);
+					}
+				}
+				macro $v{s};
 			default: Context.error("Markup literal expected", e.pos);
 		}
 	}
