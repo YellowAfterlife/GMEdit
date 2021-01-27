@@ -1,3 +1,5 @@
+import gml.GmlVersion;
+import gml.GmlAPI;
 import gml.Project;
 import ui.preferences.PrefData;
 import ui.Preferences;
@@ -22,6 +24,7 @@ class TestMain
 		Electron.init();
 		Preferences.current = PrefData.defValue();
 		gml.GmlVersion.init();
+		GmlAPI.version = GmlVersion.v2;
 		KGml.initSyntaxExtensions();
 		Project.open("");
 		//
@@ -43,7 +46,7 @@ class TestMain
 		runner.completionHandler = completionHandler;
 
 		#if (js && !nodejs)
-			var seconds = 0; // edit here to add some startup delay
+			var seconds = 2; // edit here to add some startup delay
 			function delayStartup()
 			{
 				if (seconds > 0)
@@ -60,7 +63,7 @@ class TestMain
 			}
 			delayStartup();
 		#else
-			runner.run(suites);
+			runner.run(cast suites);
 		#end
 	}
 

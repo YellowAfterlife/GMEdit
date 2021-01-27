@@ -1,4 +1,5 @@
 package gml.file;
+import tools.Aliases.GmlCode;
 import ace.AceSessionData;
 import ace.extern.*;
 import editors.*;
@@ -57,7 +58,7 @@ class GmlFile {
 	
 	/** Source file change time */
 	public var time:Float = 0;
-	public inline function syncTime() {
+	public function syncTime() {
 		#if !lwedit
 		if (path != null && FileSystem.canSync) {
 			if (kind.checkSelfForChanges) try {
@@ -283,6 +284,25 @@ class GmlFile {
 		}
 		return file;
 	}
+	
+	/**Returns if the content exists on disk(or wherever it may be) or not
+	*/
+	public function existsContent() : Bool {
+		return FileWrap.existsSync(path);
+	}
+
+	/**Writes the given code to storage
+	*/
+	public function writeContent(code : GmlCode) {
+		FileWrap.writeTextFileSync(path, code);
+	}
+
+	/**Reads the code from storage
+	*/
+	public function readContent() : GmlCode {
+		return FileWrap.readTextFileSync(path);
+	}
+
 }
 typedef GmlFileNav = {
 	/** definition (script/event) */

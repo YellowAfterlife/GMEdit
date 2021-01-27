@@ -26,8 +26,8 @@ class KGmlScript extends KGml {
 	private var doesNotExist:Bool = false;
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
 		if (data != null) return data;
-		if (electron.FileWrap.existsSync(editor.file.path)) {
-			var text = electron.FileWrap.readTextFileSync(editor.file.path);
+		if (editor.file.existsContent()) {
+			var text = editor.file.readContent();
 			doesNotExist = false;
 			return text;
 		} else {
