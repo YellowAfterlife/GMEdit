@@ -25,7 +25,6 @@ class TestMain
 		Preferences.current = PrefData.defValue();
 		gml.GmlVersion.init();
 		GmlAPI.version = GmlVersion.v2;
-		GmlAPI.init();
 		KGml.initSyntaxExtensions();
 		Project.open("");
 		//
