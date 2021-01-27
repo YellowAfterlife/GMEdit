@@ -1150,7 +1150,7 @@ audio_emitter_get_vz(emitterid:audio_emitter)->number
 audio_listener_set_position(index:int, x:number,y:number,z:number)->void
 audio_listener_set_velocity(index:int, vx:number,vy:number,vz:number)->void
 audio_listener_set_orientation(index:int, lookat_x:number,lookat_y:number,lookat_z:number,up_x:number,up_y:number,up_z:number)->void
-audio_listener_get_data(index:int)->ds_map<string, number>
+audio_listener_get_data(index:int)->ds_map<string,number>
 audio_set_master_gain(listenerIndex:int, gain:number)->void
 audio_get_master_gain(listenerIndex:int)->number
 audio_sound_get_gain(index:sound|sound_instance)->number
@@ -1186,7 +1186,7 @@ audio_free_play_queue(queueId:sound_play_queue)!->void
 audio_queue_sound(queueId:sound_play_queue, buffer_id:buffer, offset:int, length:int)!->void
 
 audio_get_recorder_count()->int
-audio_get_recorder_info(recorder_num:int)->ds_map<string, any>
+audio_get_recorder_info(recorder_num:int)->ds_map<string,any>
 audio_start_recording(recorder_num:int)->buffer
 audio_stop_recording(channel_index:int)->void
 
@@ -1197,7 +1197,7 @@ audio_sound_set_listener_mask(soundid:sound|sound_instance,mask:int)->void
 audio_emitter_set_listener_mask(emitterid:audio_emitter,mask:int)->void
 audio_set_listener_mask(mask:int)->void
 audio_get_listener_count()->int
-audio_get_listener_info(index:int)->ds_map<string, any>
+audio_get_listener_info(index:int)->ds_map<string,any>
 
 #endregion
 
@@ -1922,7 +1922,7 @@ browser_input_capture(enable:bool)->void
 
 os_version*:int
 os_get_config()->string
-os_get_info()->ds_map<string, any>
+os_get_info()->ds_map<string,any>
 os_get_language()->string
 os_get_region()->string
 os_check_permission(permission:string)->android_permission_state
@@ -1938,7 +1938,7 @@ display_set_gui_maximise(?xscale:number,?yscale:number,?xoffset:number,?yoffset:
 display_set_gui_maximize(?xscale:number,?yscale:number,?xoffset:number,?yoffset:number)$->void
 device_mouse_dbclick_enable(enable:bool)->void
 display_aa*:int
-async_load*:ds_map<any, any>
+async_load*:ds_map<any,any>
 delta_time*:number
 webgl_enabled*:bool
 
