@@ -48,6 +48,7 @@ class ProjectProperties {
 	static function buildCode(project:Project, out:DivElement) {
 		var d = project.properties;
 		var fs = Preferences.addGroup(out, "Code editor (these take effect for newly opened editors)");
+		fs.id = "project-properties-code";
 		var el = Preferences.addInput(fs, "Indentation size override",
 			(d.indentSize != null ? "" + d.indentSize : ""),
 		function(s) {
@@ -106,6 +107,7 @@ class ProjectProperties {
 	static function buildSyntax(project:Project, out:DivElement) {
 		var d = project.properties;
 		var fs = Preferences.addGroup(out, "Syntax extensions");
+		fs.id = "project-properties-syntax";
 		var lambdaModes = [
 			"Default (extension)",
 			"Compatible (extension macros)",

@@ -389,9 +389,7 @@ using tools.PathTools;
 		
 		if (check && par != null) TreeView.ensureThumbs(par);
 		
-		if ((cast item).scrollIntoViewIfNeeded) {
-			(cast item).scrollIntoViewIfNeeded();
-		}
+		item.scrollIntoViewIfNeeded();
 	}
 	//
 	public static var openPaths:Array<String> = [];

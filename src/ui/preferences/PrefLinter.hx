@@ -19,7 +19,9 @@ class PrefLinter {
 	static var selectVals:Array<Bool> = [null, true, false];
 	public static function build(out:Element, project:Project) {
 		out = addGroup(out, "Linter");
-		out.id = "pref-linter";
+		if (project != null) {
+			out.id = "project-properties-linter";
+		} else out.id = "pref-linter";
 		var el:Element;
 		//
 		var opt:GmlLinterPrefs;

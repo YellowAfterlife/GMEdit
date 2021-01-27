@@ -9,7 +9,7 @@ import ui.project.ProjectProperties;
  * ...
  * @author YellowAfterlife
  */
-class KProjectProperties extends FileKind {
+class KProjectProperties extends KPreferencesBase {
 	public static var inst = new KProjectProperties();
 	override public function init(file:GmlFile, data:Dynamic):Void {
 		file.editor = new KProjectPropertiesEditor(file, data);

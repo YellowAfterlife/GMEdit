@@ -48,4 +48,11 @@ class SynSugar {
 			default: $not;
 		}
 	}
+	
+	public static macro function xmls(e:ExprOf<String>):ExprOf<String> {
+		return switch (e) {
+			case macro @:markup $v{(s:String)}: macro $v{s};
+			default: Context.error("Markup literal expected", e.pos);
+		}
+	}
 }
