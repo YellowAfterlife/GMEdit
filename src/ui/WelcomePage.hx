@@ -32,7 +32,7 @@ class WelcomePage {
 		return session;
 	}
 	#if lwedit
-	public static var lwText:String = SynSugar.xmls(<gml>
+	public static var lwText:String = StringTools.replace(SynSugar.xmls(<gml>
 		/*
 		Hello!
 
@@ -47,17 +47,17 @@ class WelcomePage {
 		trace("hi!");
 		frame = 0;
 
-		#define step
+		@define step
 		// step event code
 		frame += delta_time/1000000;
 
-		#define draw
+		@define draw
 		// draw event code
 		scr_show("hi!");
 
-		#define scr_show
+		@define scr_show
 		// define scripts like this
 		draw_text(10, 10 + sin(frame / 0.7) * 3, argument0);
-	</gml>);
+	</gml>), "@define", "#define");
 	#end
 }
