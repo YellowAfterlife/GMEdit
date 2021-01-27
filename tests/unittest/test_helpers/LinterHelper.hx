@@ -7,11 +7,9 @@ import file.kind.KGml;
 import editors.EditCode;
 
 class LinterHelper {
-	private static var testCounter : Int = 0;
 
 	public static function runLinter(code:String) {
-		var name = "test" + testCounter++;
-		var file = new GmlFileInMemory(name, KGml.inst, code);
+		var file = GmlFileHelper.makeGmlFile(code);
 		var editor = file.codeEditor;
 		var linter = new GmlLinter();
 		var ok = !linter.run(code, editor, gml.Project.current.version);
