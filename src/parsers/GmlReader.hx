@@ -335,7 +335,7 @@ using tools.NativeString;
 		if (version == pj.version) {
 			if (!pj.isGMS23) return false;
 		} else {
-			if (!version.config.additionalKeywords.contains("function")) return false;
+			if (!version.hasFunctionLiterals()) return false;
 		}
 		if (!Std.is(kind, KGmlScript)) return false;
 		return (cast kind:KGmlScript).isScript;

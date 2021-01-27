@@ -1,4 +1,5 @@
 package ace;
+import gml.file.GmlFile;
 import ace.extern.AcePos;
 import ace.extern.AceSession;
 import ace.extern.AceToken;
@@ -89,14 +90,16 @@ using StringTools;
 	}
 	
 	public static inline function getSelfType(ctx:AceGmlTools_getSelfType):GmlType {
-		var gmlFile = ctx.session.gmlFile;
+		return getSelfTypeForFile(ctx.session.gmlFile, ctx.scope);
+	}
+	public static inline function getSelfTypeForFile(gmlFile:GmlFile, scope:String):GmlType {
 		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
 			return GmlTypeDef.parse(gmlFile.name);
 		} else {
-			var scopeDoc = GmlAPI.gmlDoc[ctx.scope];
+			var scopeDoc = GmlAPI.gmlDoc[scope];
 			if (scopeDoc != null) {
 				if (scopeDoc.isConstructor) {
-					return GmlTypeDef.parse(ctx.scope);
+					return GmlTypeDef.parse(scope);
 				} else return scopeDoc.selfType;
 			} else return null;
 		}

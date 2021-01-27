@@ -29,11 +29,11 @@ class KCode extends FileKind {
 	}
 	
 	public function loadCode(editor:EditCode, data:Dynamic):String {
-		return data != null ? data : FileWrap.readTextFileSync(editor.file.path);
+		return data != null ? data : editor.file.readContent();
 	}
 	public function saveCode(editor:EditCode, code:String):Bool {
 		if (editor.file.path == null) return false;
-		FileWrap.writeTextFileSync(editor.file.path, code);
+		editor.file.writeContent(code);
 		return true;
 	}
 	
