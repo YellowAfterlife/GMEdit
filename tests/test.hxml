@@ -8,4 +8,4 @@
 
 -cp tests/unittest
 -D test=1
--js tests/unittest_build/js_test.js
+-js tests/unittest_node/public/js_test.js

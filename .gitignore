@@ -19,3 +19,6 @@
 /tests/report/*
 /tests/unittest_build/*
 /tests/unittest/TestSuite.hx
+
+/tests/unittest_node/node_modules/*
+/tests/unittest_node/public/js_test.js

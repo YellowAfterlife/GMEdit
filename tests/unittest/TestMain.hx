@@ -1,3 +1,5 @@
+import gml.GmlVersion;
+import gml.GmlAPI;
 import gml.Project;
 import ui.preferences.PrefData;
 import ui.Preferences;
@@ -22,6 +24,8 @@ class TestMain
 		Electron.init();
 		Preferences.current = PrefData.defValue();
 		gml.GmlVersion.init();
+		GmlAPI.version = GmlVersion.v2;
+		GmlAPI.init();
 		KGml.initSyntaxExtensions();
 		Project.open("");
 		//
@@ -60,7 +64,7 @@ class TestMain
 			}
 			delayStartup();
 		#else
-			runner.run(suites);
+			runner.run(cast suites);
 		#end
 	}
 
