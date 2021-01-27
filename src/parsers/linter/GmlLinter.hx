@@ -523,10 +523,6 @@ class GmlLinter {
 			readExpr_checkConst(currName, currKind);
 		}
 
-		if (currName == "ass") {
-			js.Lib.debug();
-		}
-
 		//
 		switch (nk) {
 			case KNumber: {
