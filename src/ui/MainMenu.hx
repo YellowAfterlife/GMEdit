@@ -110,6 +110,11 @@ class MainMenu {
 				label: "Show in directory",
 				click: function() electron.Shell.showItemInFolder(Project.current.path)
 			}));
+			menu.append(new MenuItem({
+				id: "new-ide",
+				label: "New IDE",
+				click: function() electron.IPC.send("new-ide")
+			}));
 		}
 		#end
 	}
