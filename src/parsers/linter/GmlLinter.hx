@@ -575,6 +575,9 @@ class GmlLinter {
 						case "global":
 							currType = GmlTypeDef.global;
 							break;
+						case "true", "false":
+							currType = GmlTypeDef.bool;
+							break;
 					}
 					
 					var imp:GmlImports = getImports();

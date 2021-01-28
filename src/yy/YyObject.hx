@@ -301,9 +301,19 @@ typedef YyObjectProperty = YyBase & {
 	?filters:Array<String>,
 	/** if multi-select: `"A", "B"` */
 	value:String,
-	varType:Int,
+	varType:YyObjectPropertyType,
 	/** 2.2 */
 	?varName:String,
 	/** 2.3 */
 	?name:String,
 };
+enum abstract YyObjectPropertyType(Int) {
+	var TReal = 0;
+	var TInt = 1;
+	var TString = 2;
+	var TBool = 3;
+	var TExpr = 4;
+	var TAsset = 5;
+	var TList = 6;
+	var TColor = 7;
+}

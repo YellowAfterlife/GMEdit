@@ -51,6 +51,12 @@ class YyObjectProperties {
 		return dict;
 	})();
 	static var allAssetTypes23:Array<String>;
+	public static function isAllAssetTypes23(filters:Array<String>):Bool {
+		var allTypes = allAssetTypes23;
+		return (filters.length == allTypes.length
+			&& filters.filter((s) -> (allTypes.indexOf(s) < 0)).length == 0
+		);
+	}
 	static var assetTypeMap23:Dictionary<String> = (function() {
 		var dict = new Dictionary<String>();
 		var all = [];
@@ -155,17 +161,17 @@ class YyObjectProperties {
 				}
 			}
 			switch (prop.varType) {
-				case 0, 1: {
-					out += prop.varType == 1 ? "int" : "real";
+				case TReal, TInt: {
+					out += prop.varType == TInt ? "int" : "real";
 					if (prop.rangeEnabled) {
 						out += '<' + prop.rangeMin + ', ' + prop.rangeMax + '>';
 					}
 					out += ' = ' + prop.value;
 				};
-				case 2: out += 'string = ' + Json.stringify(prop.value);
-				case 3: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
-				case 4: out += 'expr = ' + printExpr(prop.value);
-				case 5: {
+				case TString: out += 'string = ' + Json.stringify(prop.value);
+				case TBool: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
+				case TExpr: out += 'expr = ' + printExpr(prop.value);
+				case TAsset: {
 					out += 'asset';
 					if (v22) {
 						var flags = prop.resourceFilter;
@@ -190,10 +196,7 @@ class YyObjectProperties {
 					} else {
 						var filters:Array<String> = prop.filters;
 						for (i => v in filters) filters[i] = NativeString.trimBoth(v);
-						var allTypes = allAssetTypes23;
-						var isAll = (filters.length == allTypes.length
-							&& filters.filter((s) -> (allTypes.indexOf(s) < 0)).length == 0
-						);
+						var isAll = isAllAssetTypes23(filters);
 						var atm = assetTypeMap23;
 						if (!isAll) {
 							out += "<";
@@ -206,7 +209,7 @@ class YyObjectProperties {
 					}
 					out += ' = ' + prop.value;
 				};
-				case 6: {
+				case TList: {
 					out += 'list<';
 					var sep = false;
 					for (item in prop.listItems) {
@@ -239,7 +242,7 @@ class YyObjectProperties {
 						out += ']';
 					} else out += printExpr(prop.value);
 				};
-				case 7: {
+				case TColor: {
 					out += 'color = "' + prop.value + '"';
 				};
 				default: {
@@ -398,7 +401,7 @@ class YyObjectProperties {
 							rangeMax: rangeMax,
 							rangeMin: rangeMin,
 							value: Json.stringify(asInt ? int(value) : real(value)),
-							varType: asInt ? 1 : 0,
+							varType: asInt ? TInt : TReal,
 						});
 					};
 					case "string", "expr": {
@@ -411,7 +414,7 @@ class YyObjectProperties {
 							rangeMax: 10,
 							rangeMin: 0,
 							value: asExpr ? expr(value) : string(value),
-							varType: asExpr ? 4 : 2,
+							varType: asExpr ? TExpr : TString,
 						});
 					};
 					case "asset": {
@@ -441,7 +444,7 @@ class YyObjectProperties {
 								rangeMin: 0,
 								resourceFilter: flags,
 								value: asset,
-								varType: 5,
+								varType: TAsset,
 							});
 						} else {
 							var filters:Array<String>;
@@ -463,7 +466,7 @@ class YyObjectProperties {
 								rangeMin: 0,
 								filters: filters,
 								value: asset,
-								varType: 5,
+								varType: TAsset,
 							});
 						}
 					};
@@ -476,7 +479,7 @@ class YyObjectProperties {
 							rangeMax: 10,
 							rangeMin: 0,
 							value: bool(value) ? "True" : "False",
-							varType: 3,
+							varType: TBool,
 						});
 					};
 					case "unknown": {
@@ -511,7 +514,7 @@ class YyObjectProperties {
 							rangeMax: 10,
 							rangeMin: 0,
 							value: out,
-							varType: 6,
+							varType: TList,
 						});
 					};
 					case "color": {
@@ -523,7 +526,7 @@ class YyObjectProperties {
 							rangeMax: 10,
 							rangeMin: 0,
 							value: string(value),
-							varType: 7,
+							varType: TColor,
 						});
 					};
 					default: throw '$type is not a known type';

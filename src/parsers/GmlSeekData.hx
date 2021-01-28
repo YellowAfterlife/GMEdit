@@ -62,9 +62,7 @@ class GmlSeekData {
 	public var docs:ArrayMap<GmlFuncDoc> = new ArrayMap();
 	
 	// namespace hints
-	public var hintList:Array<GmlSeekDataHint> = [];
-	public var hintMap:Dictionary<GmlSeekDataHint> = new Dictionary();
-	
+	public var fieldHints:ArrayMap<GmlSeekDataHint> = new ArrayMap();
 	public var namespaceHints:ArrayMap<GmlSeekDataNamespaceHint> = new ArrayMap();
 	
 	/** namespace -> implements-list */
@@ -251,12 +249,12 @@ class GmlSeekData {
 			}
 		}
 		
-		for (hint in prev.hintList) {
+		for (hint in prev.fieldHints) {
 			var ns = GmlAPI.gmlNamespaces[hint.namespace];
 			if (ns == null) continue;
 			ns.removeFieldHint(hint.field, hint.isInst);
 		}
-		for (hint in next.hintList) {
+		for (hint in next.fieldHints) {
 			var ns = GmlAPI.ensureNamespace(hint.namespace);
 			if (hint.parentSpace != null && (ns.parent == null || ns.parent.name != hint.parentSpace)) {
 				ns.parent = GmlAPI.ensureNamespace(hint.parentSpace);

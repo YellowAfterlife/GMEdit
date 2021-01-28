@@ -562,10 +562,9 @@ class GmlSeeker {
 			var comp = new AceAutoCompleteItem(name, compMeta, info);
 			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace, type);
 			
-			var lastHint = out.hintMap[hint.key];
+			var lastHint = out.fieldHints[hint.key];
 			if (lastHint == null) {
-				out.hintList.push(hint);
-				out.hintMap[hint.key] = hint;
+				out.fieldHints[hint.key] = hint;
 			} else lastHint.merge(hint);
 			
 			if (isField) {
@@ -661,7 +660,7 @@ class GmlSeeker {
 							namespace = doc.name;
 							if (namespace == null) continue;
 						} else continue;
-						var hint = out.hintMap[namespace + ":" + name];
+						var hint = out.fieldHints[namespace + ":" + name];
 						if (hint != null) {
 							hint.type = type;
 							hint.comp.doc = hint.comp.doc.nzcct("\n", "type " + typeStr);

@@ -1,8 +1,12 @@
 package file.kind.yy;
+import ace.extern.AceAutoCompleteItem;
 import editors.EditCode;
 import electron.FileWrap;
 import file.kind.KGml;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
 import haxe.Json;
+import parsers.GmlSeekData;
 import tools.NativeArray;
 import tools.NativeString;
 import yy.YyObject;
@@ -85,6 +89,7 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 				full: full,
 			});
 		}
+		
 		{ // hack: use locals for properties-specific variables
 			var locals = new GmlLocals("properties");
 			out.locals.set("properties", locals);
@@ -98,12 +103,61 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 				locals.add(pair.name, "property.namespace", "(asset type)");
 			}
 		};
+		
+		//
+		out.addObjectHint(obj.name, parentName);
+		function getPropType(prop:YyObjectProperty):GmlType {
+			switch (prop.varType) {
+				case TInt: return GmlTypeDef.int;
+				case TReal: return GmlTypeDef.number;
+				case TString: return GmlTypeDef.string;
+				case TBool: return GmlTypeDef.bool;
+				case TAsset:
+					var et = [];
+					if (v23) {
+						var filters = prop.filters.map((s) -> NativeString.trimBoth(s));
+						if (YyObjectProperties.isAllAssetTypes23(filters)) return GmlTypeDef.asset;
+						for (ft in prop.filters) {
+							ft = NativeString.trimBoth(ft);
+							et.push(GmlTypeDef.parse(ft.substring(2).toLowerCase()));
+						}
+					} else {
+						var flags = prop.resourceFilter;
+						if (flags == 1023) return GmlTypeDef.asset;
+						for (tp in YyObjectProperties.assetTypes) {
+							if ((flags & tp.flag) == 0) continue;
+							et.push(GmlTypeDef.parse(tp.name));
+						}
+					}
+					if (et.length > 1) {
+						return GmlType.TEither(et);
+					} else if (et.length == 1) {
+						return et[0];
+					} else return null;
+				case TColor: return GmlTypeDef.parse("color");
+				default: return null;
+			}
+		}
+		for (prop in obj.properties) {
+			var fdName = v23 ? prop.name : prop.varName;
+			var fdType = getPropType(prop);
+			var compText = (
+				"variable definition\n" +
+				"from " + obj.name
+			);
+			if (fdType != null) compText += "\ntype " + fdType.toString();
+			var comp = new AceAutoCompleteItem(fdName, "variable", compText);
+			var hint = new GmlSeekDataHint(obj.name, true, fdName, comp, null, parentName, fdType);
+			out.fieldHints[hint.key] = hint;
+		}
+		
+		// quick exit if there are no events:
 		if (eventFiles.length == 0) {
 			GmlSeeker.finish(orig, out);
 			return true;
 		}
-		//
-		out.addObjectHint(obj.name, parentName);
+		
+		// process events:
 		for (file in eventFiles) (function(name, full) {
 			if (!allSync) {
 				function procEvent(err, code) {
