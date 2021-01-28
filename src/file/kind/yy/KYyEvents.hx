@@ -138,7 +138,7 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 				default: return null;
 			}
 		}
-		for (prop in obj.properties) {
+		if (obj.properties != null) for (prop in obj.properties) {
 			var fdName = v23 ? prop.name : prop.varName;
 			var fdType = getPropType(prop);
 			var compText = (
