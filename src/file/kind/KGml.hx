@@ -60,6 +60,7 @@ class KGml extends KCode {
 			GmlNullCoalescingAssignment.inst,
 			GmlExtTemplateStrings.inst,
 			GmlExtCast.inst,
+			GmlExtHashColorLiterals.inst,
 			GmlExtHyper.inst,
 			// GmlExtArgs.inst, // also done in KGmlScript AND it's done out of order
 		];

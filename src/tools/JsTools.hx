@@ -36,9 +36,10 @@ class JsTools {
 	public static macro function rx(e:ExprOf<EReg>) {
 		switch (e.expr) {
 			case EConst(CRegexp(s, o)): {
+				var p = Context.currentPos();
 				s = ~/\//g.replace(s, "\\/");
 				var s = '/$s/$o';
-				return macro (cast js.Syntax.code($v{s}):js.lib.RegExp);
+				return macro @:pos(p) (cast js.Syntax.code($v{s}):js.lib.RegExp);
 			};
 			default: throw Context.error("Expected a regexp literal", e.pos);
 		}

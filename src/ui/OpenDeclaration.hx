@@ -12,6 +12,7 @@ import electron.Shell;
 import haxe.io.Path;
 import gml.GmlAPI;
 import gml.GmlImports;
+import ui.ColorPicker;
 import ui.treeview.TreeView;
 using tools.NativeString;
 using StringTools;
@@ -122,7 +123,7 @@ class OpenDeclaration {
 			if (openImportFile(term.substring(1, term.length - 1))) return true;
 		}
 		// color picker for hex colors:
-		if (term.charCodeAt(0) == "$".code || term.startsWith("0x")) {
+		if (token.type == "numeric" && ColorPicker.rxGml.test(term)) {
 			ColorPicker.open(term);
 			return true;
 		}

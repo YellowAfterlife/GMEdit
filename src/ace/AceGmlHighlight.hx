@@ -28,6 +28,7 @@ import ace.raw.*;
 import haxe.extern.EitherType;
 import tools.HighlightTools.*;
 import tools.JsTools;
+import ui.Preferences;
 using tools.NativeString;
 using tools.NativeArray;
 
@@ -467,6 +468,12 @@ using tools.NativeArray;
 		};
 		//}
 		var rParOpen:AceLangRule;
+		if (Preferences.current.hashColorLiterals) {
+			rBase = rBase.concat([
+				rxRule(["square.paren.lparen", "text"], ~/\[#/),
+				rxRule("numeric", ~/#[0-9a-fA-F]{6,6}\b/)
+			]);
+		}
 		rBase = rBase.concat([ //{
 			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]*/), // $c0ffee
 			rxRule("numeric", ~/[+-]?\d+(?:\.\d*)?/), // 42.5 (GML has no E# suffixes)

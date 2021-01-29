@@ -92,6 +92,20 @@ class GmlLinterParser {
 				};
 				case "#".code: {
 					c = q.peek();
+					if (c.isHex()) {
+						var i = 0, ci;
+						while (++i < 6) {
+							ci = q.peek(i);
+							if (!ci.isHex()) break;
+						}
+						if (i >= 6) {
+							ci = q.peek(i);
+							if (!ci.isHex()) {
+								q.pos += 6;
+								return retv(KNumber, q.substr(p, 7));
+							}
+						}
+					}
 					if (c.isIdent0()) {
 						p++;
 						q.skipIdent1();

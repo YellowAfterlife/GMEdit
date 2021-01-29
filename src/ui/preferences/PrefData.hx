@@ -24,6 +24,7 @@ import haxe.DynamicAccess;
 		mfuncMagic: true,
 		nullCoalescingAssignment: true,
 		castOperators: true,
+		hashColorLiterals: true,
 		showGMLive: Everywhere,
 		
 		fileSessionTime: 7,
@@ -69,6 +70,7 @@ typedef PrefDataImpl = {
 	mfuncMagic:Bool,
 	nullCoalescingAssignment:Bool,
 	castOperators:Bool,
+	hashColorLiterals:Bool,
 	
 	assetThumbs:Bool,
 	clearAssetThumbsOnRefresh:Bool,

@@ -11,9 +11,10 @@ import Main.aceEditor;
  */
 class ColorPicker {
 	public static var element:InputElement;
-	private static var rxGml:RegExp;
+	public static var rxGml:RegExp;
 	private static var rxJs:RegExp;
 	private static var prefix:String;
+	private static var isBGR:Bool = true;
 	private static function changed(e:Event) {
 		aceEditor.session.selection.selectWord();
 		var word = aceEditor.getSelectedText();
@@ -23,11 +24,19 @@ class ColorPicker {
 		hexc = hexc.toUpperCase();
 		var next = rxJs.exec(hexc);
 		if (next == null) return;
-		aceEditor.insert(curr[1] + next[3] + next[2] + next[1]);
+		if (isBGR) {
+			aceEditor.insert(curr[1] + next[3] + next[2] + next[1]);
+		} else {
+			aceEditor.insert(curr[1] + next[1] + next[2] + next[3]);
+		}
 	}
 	public static function open(value:String) {
 		var vals = rxGml.exec(value);
-		element.value = "#" + vals[4] + vals[3] + vals[2];
+		isBGR = value.charCodeAt(0) != "#".code;
+		element.value = "#" + (isBGR
+			? vals[4] + vals[3] + vals[2]
+			: vals[2] + vals[3] + vals[4]
+		);
 		element.click();
 	}
 	public static function init() {
@@ -36,7 +45,7 @@ class ColorPicker {
 		//
 		var hp = "([0-9a-fA-F]{2})";
 		var hp3 = hp + hp + hp;
-		rxGml = new RegExp("^(0x|\\$)" + hp3 + "$", "");
+		rxGml = new RegExp("^(0x|\\$||#)" + hp3 + "$", "");
 		rxJs = new RegExp("^#" + hp3 + "$", "");
 	}
 }

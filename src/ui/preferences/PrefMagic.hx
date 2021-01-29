@@ -101,6 +101,14 @@ class PrefMagic {
 			save();
 		});
 		el.title = "Used for implicit/explicit casts";
+		addWiki(el, "https://github.com/YellowAfterlife/GMEdit/wiki/Smart-completion#x-as-y");
+		
+		//
+		el = addCheckbox(out, "Use `#RrGgBb` color literals", current.hashColorLiterals, function(z) {
+			current.hashColorLiterals = z;
+			save();
+		});
+		el.title = "(as an alternative to usual 0xBbGgRr)";
 		
 		//
 		#if !lwedit
