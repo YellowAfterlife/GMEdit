@@ -468,7 +468,7 @@ class GmlExtImport {
 		imps.set("", imp);
 		//
 		var canFn = version.hasFunctionLiterals();
-		inline function procFunc(isTopLevel:Bool):Void {
+		function procFunc(isTopLevel:Bool):Void {
 			q.skipSpaces1();
 			var c = q.peek();
 			var p:Int;
@@ -646,11 +646,15 @@ class GmlExtImport {
 										default: if (c.isIdent0()) {
 											q.skipIdent1();
 											var id = q.substring(p0, q.pos);
-											var idn = pre_mapIdent(imp, q, id, p0);
-											if (idn != null) {
-												flush(p0);
-												out += idn;
-												start = q.pos;
+											if (canFn && id == "function") {
+												procFunc(cubDepth == 0);
+											} else {
+												var idn = pre_mapIdent(imp, q, id, p0);
+												if (idn != null) {
+													flush(p0);
+													out += idn;
+													start = q.pos;
+												}
 											}
 										};
 									}
@@ -800,7 +804,7 @@ class GmlExtImport {
 		var cubDepth = 0;
 		//
 		var canFunc = version.hasFunctionLiterals();
-		inline function procFunc(isTopLevel:Bool):Void {
+		function procFunc(isTopLevel:Bool):Void {
 			q.skipSpaces1_local();
 			var c = q.peek();
 			
@@ -850,6 +854,24 @@ class GmlExtImport {
 			}
 		}
 		//
+		var dotStart:Int, dotPos:Int, dotFull:String;
+		function readDotPair() {
+			dotStart = q.pos;
+			dotPos = -1;
+			while (q.loop) {
+				var c = q.peek();
+				if (c.isIdent1()) {
+					q.skip();
+				} else if (c == ".".code) {
+					if (dotPos == -1) {
+						dotPos = q.pos;
+						q.skip();
+					} else break;
+				} else break;
+			}
+			dotFull = q.substring(dotStart, q.pos);
+		}
+		//
 		while (q.loop) {
 			var p = q.pos;
 			var c = q.read();
@@ -892,23 +914,6 @@ class GmlExtImport {
 					};
 				};
 				case _ if (c.isIdent0() && imp != null): {
-					var dotStart:Int, dotPos:Int, dotFull:String;
-					inline function readDotPair() {
-						dotStart = q.pos;
-						dotPos = -1;
-						while (q.loop) {
-							c = q.peek();
-							if (c.isIdent1()) {
-								q.skip();
-							} else if (c == ".".code) {
-								if (dotPos == -1) {
-									dotPos = q.pos;
-									q.skip();
-								} else break;
-							} else break;
-						}
-						dotFull = q.substring(dotStart, q.pos);
-					}
 					//
 					var procIdent_next:String;
 					inline function procIdent() {
@@ -960,10 +965,14 @@ class GmlExtImport {
 									case '"'.code, "'".code, "`".code, "@".code: {
 										q.skipStringAuto(c, version);
 									};
+									case "{".code: cubDepth++;
+									case "}".code: cubDepth--;
 									default: if (c.isIdent0()) {
 										q.pos -= 1;
 										readDotPair();
-										procIdent();
+										if (dotFull == "function" && canFunc) {
+											procFunc(cubDepth == 0);
+										} else procIdent();
 									};
 								}
 							}
