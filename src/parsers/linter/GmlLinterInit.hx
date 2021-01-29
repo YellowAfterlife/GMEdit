@@ -1,4 +1,5 @@
 package parsers.linter;
+import gml.GmlVersionConfig;
 import parsers.linter.GmlLinterKind;
 import tools.Dictionary;
 
@@ -7,7 +8,7 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 class GmlLinterInit {
-	public static function keywords(l:GmlLinter):Dictionary<GmlLinterKind> {
+	public static function keywords(config:GmlVersionConfig):Dictionary<GmlLinterKind> {
 		var q = new Dictionary<GmlLinterKind>();
 		q["var"] = KVar;
 		q["globalvar"] = KGlobalVar;
@@ -50,7 +51,7 @@ class GmlLinterInit {
 		q["finally"] = KFinally;
 		q["throw"] = KThrow;
 		//
-		var kws = @:privateAccess l.version.config.additionalKeywords;
+		var kws = config.additionalKeywords;
 		if (kws != null) {
 			inline function addOpt(name:String, k:GmlLinterKind) {
 				if (kws.indexOf(name) >= 0) q[name] = k;
