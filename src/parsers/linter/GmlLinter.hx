@@ -74,8 +74,13 @@ class GmlLinter {
 	 * Note: this can be modified by GmlLinterParser!
 	 */
 	var context:String = "";
-	inline function getImports():GmlImports {
-		return editor.imports[context];
+	function getImports(?force:Bool):GmlImports {
+		var imp = editor.imports[context];
+		if (imp == null && force) {
+			imp = new GmlImports();
+			editor.imports[context] = imp;
+		}
+		return imp;
 	}
 	
 	/**
@@ -84,6 +89,7 @@ class GmlLinter {
 	 * getType it will only have the top-level function info (which is mostly OK).
 	 */
 	var currFuncDoc:GmlFuncDoc;
+	var currFuncRetStatus:GmlLinterReturnStatus = NoReturn;
 
 	var __selfType_set = false;
 	var __selfType_type:GmlType = null;
@@ -602,7 +608,7 @@ class GmlLinter {
 								currType = GmlTypeDef.object(currName);
 							} else if (kind == "script") {
 								currFunc = GmlAPI.gmlDoc[currName];
-								currType = null;
+								currType = JsTools.nca(currFunc, currFunc.getFunctionType());
 							} else {
 								currType = GmlTypeDef.simple(kind);
 							}
@@ -611,24 +617,33 @@ class GmlLinter {
 							currType = GmlTypeDef.type(currName);
 						}
 					}
-					
 					if (AceGmlTools.findNamespace(currName, imp, function(ns:GmlNamespace) {
 						if (ns.noTypeRef) return false;
 						currType = GmlTypeDef.type(currName);
 						currFunc = JsTools.or(ns.docStaticMap[""], AceGmlTools.findGlobalFuncDoc(currName));
 						return true;
 					})) break;
-					
 					if (kind != null) {
 						currType = GmlAPI.gmlTypes[currName];
 						break;
 					}
 					
-					currFunc = AceGmlTools.findGlobalFuncDoc(currName);
-					if (currFunc != null) break;
+					if (GmlAPI.extKind.exists(currName)) {
+						currFunc = GmlAPI.extDoc[currName];
+						if (currType == null && currFunc != null) {
+							currType = currFunc.getFunctionType();
+						}
+						break;
+					}
 					
-					currType = GmlAPI.stdTypes[currName];
-					if (currType != null) break;
+					if (GmlAPI.stdKind.exists(currName)) {
+						currFunc = GmlAPI.stdDoc[currName];
+						currType = GmlAPI.stdTypes[currName];
+						if (currType == null && currFunc != null) {
+							currType = currFunc.getFunctionType();
+						}
+						break;
+					}
 					
 					var t = getSelfType();
 					var tn = t.getNamespace();
@@ -684,8 +699,10 @@ class GmlLinter {
 				rc(found < 0);
 				currType = found > 0 ? GmlTypeDef.array(readArgs_outType) : GmlTypeDef.anyArray;
 			};
-			case KLambda: rc(readLambda(newDepth, false, isStat())); currFunc = readLambda_doc;
-			case KFunction: rc(readLambda(newDepth, true, isStat())); currFunc = readLambda_doc;
+			case KLambda, KFunction:
+				rc(readLambda(newDepth, nk == KFunction, isStat()));
+				currFunc = readLambda_doc;
+				currType = currFunc.getFunctionType();
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
 				var anon = new GmlTypeAnon();
 				var anonFields = anon.fields;
@@ -1228,8 +1245,22 @@ class GmlLinter {
 					case KParClose: if (--depth <= 0) break;
 					case KIdent: {
 						if (awaitArgName) {
+							var argName = nextVal;
 							awaitArgName = false;
 							doc.args.push(nextVal);
+							var imp = getImports(true);
+							if (skipIf(peek() == KColon)) {
+								rc(readTypeName());
+								var t = readTypeName_type;
+								imp.localTypes[argName] = t;
+								if (doc.argTypes == null) {
+									doc.argTypes = NativeArray.create(doc.args.length - 1);
+								}
+								doc.argTypes.push(t);
+							} else {
+								imp.localTypes[argName] = null;
+								if (doc.argTypes != null) doc.argTypes.push(null);
+							}
 						}
 					};
 					case KComma: if (depth == 1) awaitArgName = true;
@@ -1238,10 +1269,12 @@ class GmlLinter {
 			}
 		} else if (isFunc) return readExpect("function literal arguments");
 		//
+		var nextFuncRetStatus = GmlLinterReturnStatus.NoReturn;
 		if (skipIf(peek() == KArrow)) { // `->returnType`
 			var tnStart = reader.pos;
 			rc(readTypeName());
 			doc.returnTypeString = reader.substring(tnStart, reader.pos);
+			nextFuncRetStatus = (doc.returnType.getKind() == KVoid ? WantNoReturn : WantReturn);
 		}
 		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
 			readCheckSkip(KIdent, "a parent type name");
@@ -1255,16 +1288,29 @@ class GmlLinter {
 		var oldLocalNames = localNamesPerDepth;
 		var oldLocalKinds = localKinds;
 		var oldFuncDoc = currFuncDoc;
+		var oldFuncRetStatus = currFuncRetStatus;
 		
 		localNamesPerDepth = [];
 		localKinds = new Dictionary();
 		currFuncDoc = doc;
+		currFuncRetStatus = nextFuncRetStatus;
 		
 		rc(readStat(0));
+		
+		switch (currFuncRetStatus) {
+			case HasReturn:
+				if (nextFuncRetStatus == NoReturn) doc.returnTypeString = "";
+			case WantReturn:
+				addWarning("The function is marked as having a return but does not return anything.");
+			case NoReturn:
+				doc.hasReturn = false;
+			default:
+		}
 		
 		localNamesPerDepth = oldLocalNames;
 		localKinds = oldLocalKinds;
 		currFuncDoc = oldFuncDoc;
+		currFuncRetStatus = oldFuncRetStatus;
 		
 		readLambda_doc = doc;
 		return false;
@@ -1338,10 +1384,7 @@ class GmlLinter {
 								default: keywordStr == "var" ? optSpecTypeVar : optSpecTypeMisc;
 							}
 							if (apply) {
-								var imp = getImports();
-								if (imp == null) {
-									editor.imports[context] = imp = new GmlImports();
-								}
+								var imp = getImports(true);
 								var lastVarType = imp.localTypes[varName];
 								if (lastVarType == null) {
 									imp.localTypes[varName] = varExprType;
@@ -1376,6 +1419,7 @@ class GmlLinter {
 			case KIf: {
 				rc(readExpr(newDepth));
 				checkParens();
+				checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an if condition");
 				skipIf(peek() == KThen);
 				if (skipIf(peek() == KSemico)) {
 					return readError("You have a semicolon before your then-expression.");
@@ -1386,6 +1430,11 @@ class GmlLinter {
 			case KWhile, KRepeat, KWith: {
 				rc(readExpr(newDepth));
 				checkParens();
+				switch (nk) {
+					case KWhile: checkTypeCast(readExpr_currType, GmlTypeDef.bool, "a while-loop condition");
+					case KRepeat: checkTypeCast(readExpr_currType, GmlTypeDef.number, "a repeat-loop count");
+					default:
+				}
 				rc(readLoopStat(newDepth));
 			};
 			case KDo: {
@@ -1394,18 +1443,22 @@ class GmlLinter {
 					case KUntil, KWhile: {
 						rc(readExpr(newDepth));
 						checkParens();
+						checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an do-loop condition");
 					};
 					default: return readExpect("an `until` or `while` for a do-loop");
 				}
 			};
 			case KFor: {
 				if (next() != KParOpen) return readExpect("a `(` to open a for-loop");
-				if (!skipIf(peek() == KSemico)) rc(readStat(newDepth));
-				if (!skipIf(peek() == KSemico)) {
+				if (!skipIf(peek() == KSemico)) { // init
+					rc(readStat(newDepth));
+				}
+				if (!skipIf(peek() == KSemico)) { // condition
 					rc(readExpr(newDepth));
+					checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an if condition");
 					skipIf(peek() == KSemico);
 				}
-				if (!skipIf(peek() == KParClose)) {
+				if (!skipIf(peek() == KParClose)) { // post
 					rc(readLoopStat(newDepth, NoSemico));
 					if (next() != KParClose) return readExpect("a `)` to close a for-loop");
 				}
@@ -1417,6 +1470,12 @@ class GmlLinter {
 					case KSemico, KCubClose: skip(); flags.add(NoSemico);
 					default:
 						rc(readExpr(newDepth));
+						switch (currFuncRetStatus) {
+							case NoReturn, WantReturn: currFuncRetStatus = HasReturn;
+							case WantNoReturn: 
+								addWarning("The function is marked as returning nothing but has a return statement.");
+							default:
+						}
 						if (currFuncDoc != null && readExpr_currType != null) {
 							checkTypeCast(readExpr_currType, currFuncDoc.returnType, "return");
 						}
@@ -1631,4 +1690,10 @@ enum GmlLinterValue {
 	VUndefined;
 	VNumber(n:Float, gml:String);
 	VString(s:String, gml:String);
+}
+enum abstract GmlLinterReturnStatus(Int) {
+	var NoReturn;
+	var HasReturn;
+	var WantReturn;
+	var WantNoReturn;
 }

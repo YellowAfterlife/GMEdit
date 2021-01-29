@@ -21,6 +21,8 @@
     {"id":{"name":"v_statusbar_arg_types","path":"scripts/v_statusbar_arg_types/v_statusbar_arg_types.yy",},"order":0,},
     {"id":{"name":"v_tooltip_color","path":"scripts/v_tooltip_color/v_tooltip_color.yy",},"order":0,},
     {"id":{"name":"v_reassign","path":"scripts/v_reassign/v_reassign.yy",},"order":10,},
+    {"id":{"name":"v_func_literal_types","path":"scripts/v_func_literal_types/v_func_literal_types.yy",},"order":11,},
+    {"id":{"name":"v_method","path":"scripts/v_method/v_method.yy",},"order":12,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

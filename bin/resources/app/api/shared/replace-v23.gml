@@ -7,7 +7,7 @@
 is_struct(val:any)->bool
 is_method(val:any)->bool
 instanceof<T:struct>(struct:T)->bool
-exception_unhandled_handler(user_handler) // TODO
+exception_unhandled_handler(user_handler:function<Exception;any>)
 
 variable_struct_exists<T:struct>(struct:T,name:string)->bool
 variable_struct_get<T:struct>(struct:T,name:string)->any
@@ -24,19 +24,19 @@ array_push<T>(array:T[],...values:T)->void
 array_pop<T>(array:T[])->T
 array_insert<T>(array:T[],index:int,...values:T)->void
 array_delete<T>(array:T[],index:int,number:int)->void
-array_sort<T>(array:T[],sortType_or_function:any)->void //TODO function is untyped
+array_sort<T>(array:T[],sortType_or_function:bool|function<T;T;int>)->void
 
 weak_ref_create<T:struct>(thing_to_track:T)->weak_reference
 weak_ref_alive(weak_ref:weak_reference)->bool
-weak_ref_any_alive(array:weak_reference[],[index]:int,[length]:int)->bool
+weak_ref_any_alive(array:weak_reference[],?index:int,?length:int)->bool
 
 #endregion
 
 #region 2.3
 
-method(struct_ref_or_instance_id,func) //TODO
-method_get_index(method) //TODO
-method_get_self(method) //TODO
+method<T:function>(struct_ref_or_instance_id:instance|struct,func:T)->T
+method_get_index(method)
+method_get_self(method)
 
 string_pos_ext(substr:string,str:string,startpos:int)->int
 string_last_pos(substr:string,str:string)->int

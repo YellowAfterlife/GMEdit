@@ -47,6 +47,8 @@ enum abstract GmlTypeKind(Int) {
 	var KTemplateItem = 0x06; // TemplateItem<> -> TTemplate
 	var KTemplateSelf = 0x07; // TemplateSelf<> for filling out self-params
 	var KGlobal = 0x08; // type of `global`
+	var KFunction = 0x09; // (a:int, b:string)->any is function<int, string, any>
+	var KRest = 0x0A; // `...v:T` in functions
 	
 	// value types
 	var KUndefined = 0x10;

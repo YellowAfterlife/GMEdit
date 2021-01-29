@@ -277,6 +277,12 @@ import ace.extern.AceTokenType;
 						if (JsTools.nca(ns, ns.isObject)) return true;
 						var nk = GmlAPI.gmlKind[n1];
 						if (nk != null && nk.startsWith("asset.")) return true;
+					case KFunction:
+						if (k1 != KFunction) return false;
+						var i = p2.length;
+						if (i == 0 || p1.length == 0) return true; // any-functions
+						while (--i >= 0) if (!p1[i].canCastTo(p2[i], tpl, imp)) return false;
+						return true;
 					default:
 				}
 				
@@ -319,6 +325,15 @@ import ace.extern.AceTokenType;
 			case TInst(_, [p], KNullable): return toString(p, tpl) + "?";
 			case TInst(_, p, KTemplateItem):
 				return p.length < 3 ? toString(p[0]) : "(" + toString(p[0]) + ":" + toString(p[2]) + ")";
+			case TInst(_, p, KFunction):
+				var n = p.length - 1;
+				if (n < 0) return "function";
+				var s = "function(";
+				var i = -1; while (++i < n) {
+					if (i > 0) s += ", ";
+					s += ":" + toString(p[i], tpl);
+				}
+				return s + GmlFuncDoc.parRetArrow + toString(p[n], tpl);
 			case TInst(name, params, kind): {
 				var s:String = name;
 				if (params.length > 0) {

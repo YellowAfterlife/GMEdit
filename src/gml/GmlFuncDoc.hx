@@ -117,7 +117,7 @@ class GmlFuncDoc {
 			if (typeStr == "") return parRetArrow;
 			return parRetArrow + typeStr.replaceExt(JsTools.rx(~/\s+/), "");
 		});
-		hasReturn = typeStr != null;
+		hasReturn = typeStr != null && typeStr != "void";
 		return typeStr;
 	}
 	
@@ -157,10 +157,6 @@ class GmlFuncDoc {
 		return pre + args.join(", ") + post;
 	}
 	
-	public function getConstructorType():String {
-		return name + GmlTypeTemplateItem.joinTemplateString(templateItems, false);
-	}
-	
 	public static function create(name:String, ?args:Array<String>, ?rest:Bool):GmlFuncDoc {
 		if (args == null) {
 			args = [];
@@ -185,6 +181,33 @@ class GmlFuncDoc {
 	
 	public inline function fromCode(gml:GmlCode, from:Int = 0, ?till:Int) {
 		GmlFuncDocFromCode.proc(this, gml, from, till);
+	}
+	
+	/** For `some<A, B>(...)` returns `some<A, B>` */
+	public function getConstructorType():String {
+		return name + GmlTypeTemplateItem.joinTemplateString(templateItems, false);
+	}
+	
+	/** For `some(a:A, b:B)->C`, returns `function<A, B, C>` */
+	public function getFunctionType():GmlType {
+		// todo: investigate whether caching would be beneficial
+		var rt = hasReturn ? returnType : null;
+		if (rt == null && argTypes == null && hasReturn == null) return GmlTypeDef.anyFunction;
+		
+		//
+		var params = [];
+		if (argTypes != null) {
+			for (t in argTypes) params.push(t);
+		} else {
+			for (_ in args) params.push(null);
+		}
+		if (rest && params.length > 0) {
+			params.push(GmlType.TInst("rest", [params.pop()], KRest));
+		}
+		if (hasReturn) {
+			params.push(returnType);
+		} else params.push(GmlTypeDef.void);
+		return GmlType.TInst("function", params, KFunction);
 	}
 	
 	public static var nameTrimRegex = new RegExpCache();
