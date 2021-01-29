@@ -202,7 +202,7 @@ class GmlLinter {
 	//
 	var keywords:Dictionary<GmlLinterKind>;
 	function initKeywords() {
-		keywords = GmlLinterInit.keywords(this);
+		keywords = GmlLinterInit.keywords(version.config);
 	}
 	
 	//

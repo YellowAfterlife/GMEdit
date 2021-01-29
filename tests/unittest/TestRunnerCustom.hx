@@ -285,7 +285,7 @@ class TestRunnerCustom implements IAsyncDelegateObserver
     function executeTestCase(testCaseData:Dynamic, async:Bool)
     {
         var result:TestResult = testCaseData.result;
-        //try
+        try
         {
             var assertionCount:Int = Assert.assertionCount;
             if (async)
@@ -308,8 +308,11 @@ class TestRunnerCustom implements IAsyncDelegateObserver
                     c.addPass(result);
             }
         }
-        /*catch(e:Dynamic)
+        catch(e:Dynamic)
         {
+            if ((e is AssertionException) == false) {
+                throw e;
+            }
             if(async && asyncDelegate != null)
             {
                 asyncDelegate.cancelTest();
@@ -340,7 +343,7 @@ class TestRunnerCustom implements IAsyncDelegateObserver
                 for (c in clients)
                     c.addError(result);
             }
-        }*/
+        }
     }
 
     function clientCompletionHandler(resultClient:ITestResultClient)
