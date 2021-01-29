@@ -7,7 +7,7 @@
 is_struct(val:any)->bool
 is_method(val:any)->bool
 instanceof<T:struct>(struct:T)->bool
-exception_unhandled_handler(user_handler:function<Exception;any>)
+exception_unhandled_handler(user_handler:function<Exception;any|void>)
 
 variable_struct_exists<T:struct>(struct:T,name:string)->bool
 variable_struct_get<T:struct>(struct:T,name:string)->any
@@ -73,7 +73,7 @@ font_texture_page_size:int
 #region 5.1
 
 // exception structure entries
-??Exception
+[+message]??Exception
 message?:string
 longMessage?:string
 script?:script

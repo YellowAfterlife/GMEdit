@@ -6,19 +6,23 @@ import gml.type.GmlType;
 import gml.type.GmlTypeTools;
 import haxe.io.Path;
 import js.lib.RegExp;
+import js.lib.RegExp.RegExpMatch;
 import parsers.GmlParseAPI;
+import parsers.GmlSeekData.GmlSeekDataHint;
 import synext.GmlExtMFunc;
 import tools.ArrayMap;
 import tools.ChainCall;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
+import tools.JsTools;
 import tools.NativeString;
 import ui.Preferences;
 import ui.liveweb.LiveWeb;
 import electron.FileWrap;
 import gml.GmlImports;
 using tools.ERegTools;
+using tools.RegExpTools;
 using StringTools;
 using tools.NativeString;
 
@@ -95,6 +99,7 @@ class GmlAPI {
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
 	
 	public static var stdNamespaceDefs:Array<GmlNamespaceDef> = [];
+	public static var stdFieldHints:Array<GmlSeekDataHint> = [];
 	
 	public static function stdClear() {
 		stdDoc = new Dictionary();
@@ -102,6 +107,7 @@ class GmlAPI {
 		stdComp.clear();
 		stdInstComp.clear();
 		stdNamespaceDefs.resize(0);
+		stdFieldHints.resize(0);
 		var sk = new Dictionary();
 		inline function add(s:String) {
 			sk.set(s, "keyword");
@@ -270,6 +276,11 @@ class GmlAPI {
 			ns.canCastToStruct = ns.name == "struct";
 			ns.noTypeRef = true;
 		}
+		for (hint in stdFieldHints) {
+			var ns = GmlAPI.ensureNamespace(hint.namespace);
+			ns.noTypeRef = true;
+			ns.addFieldHint(hint.field, hint.isInst, hint.comp, hint.doc, hint.type);
+		}
 		for (pair in stdNamespaceDefs) {
 			var ns = ensureNamespace(pair.name);
 			ns.canCastToStruct = false;
@@ -362,6 +373,7 @@ class GmlAPI {
 			comp: stdComp,
 			types: stdTypes,
 			namespaceDefs: stdNamespaceDefs,
+			fieldHints: stdFieldHints,
 			instComp: stdInstComp,
 			ukSpelling: ukSpelling,
 			version: version,
@@ -402,11 +414,22 @@ class GmlAPI {
 		});
 		
 		// various corrections instead of editing fnames by hand
+		var rxInsertBefore = JsTools.rx(~/^\[\+(\w+)\]\s*(.+)$/gm);
+		var rxReplace = JsTools.rx(~/^(\w+).+$/gm);
 		function addPatchFile(txt:String) {
-			~/^(\w+).+$/gm.each(txt, function(rx:EReg) {
-				var name = rx.matched(1);
-				var code = rx.matched(0);
-				raw = (new EReg('^$name\\b.*$$', "gm")).map(raw, function(r1) {
+			rxInsertBefore.each(txt, function(mt:RegExpMatch) {
+				var name = mt[1];
+				var code = mt[2];
+				var rx = new RegExp('^$name\\b', "gm");
+				raw = raw.replaceExt(rx, function(next) {
+					return code + "\n" + next;
+				});
+			});
+			rxReplace.each(txt, function(mt:RegExpMatch) {
+				var name = mt[1];
+				var code = mt[0];
+				var rx = new RegExp('^$name\\b.*$', "gm");
+				raw = raw.replaceExt(rx, function(_) {
 					return code;
 				});
 			});

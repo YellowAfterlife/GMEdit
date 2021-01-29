@@ -8,6 +8,7 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeParser;
 import js.RegExp.RegExpMatch;
 import js.lib.RegExp;
+import parsers.GmlSeekData.GmlSeekDataHint;
 import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.*;
@@ -35,6 +36,7 @@ class GmlParseAPI {
 		?version:GmlVersion,
 		?kindPrefix:String,
 		?instComp:AceAutoCompleteItems,
+		?fieldHints:Array<GmlSeekDataHint>,
 		#if lwedit
 		?lwArg0:Dictionary<Int>,
 		?lwArg1:Dictionary<Int>,
@@ -52,6 +54,7 @@ class GmlParseAPI {
 		var version = data.version != null ? data.version : GmlVersion.none;
 		var instComp = data.instComp;
 		var namespaceDefs = data.namespaceDefs;
+		var fieldHints = data.fieldHints;
 		#if lwedit
 		var lwArg0 = data.lwArg0;
 		var lwArg1 = data.lwArg1;
@@ -73,6 +76,33 @@ class GmlParseAPI {
 			namespaceDefs.push({ name: name, parent: parent });
 			stdKind[name] = "namespace";
 			stdComp.push(new AceAutoCompleteItem(name, "namespace", "type\nbuilt-in"));
+		});
+		
+		// struct types
+		var rxStruct = new RegExp("^(?:" + [
+				"(\\w+)" + "\\?" // 1 -> name
+				+ "(?::(\\S+))?" // 2 -> type annotation
+			, // alt:
+				"\\?\\?" + "(\\w+)" // 3 -> namespace name
+			].join("|") + ")"
+			+ "(?://.*)?"
+		+ "$", "gm");
+		var currStruct = null;
+		if (fieldHints != null)
+		rxStruct.each(src, function(mt:RegExpMatch) {
+			var name = mt[1];
+			if (name == null) {
+				name = mt[3];
+				currStruct = name;
+				stdKind[name] = "namespace";
+				return;
+			}
+			var typeStr = mt[2];
+			var type = GmlTypeDef.parse(typeStr);
+			var cinf = "from " + currStruct;
+			if (typeStr != null) cinf += "\ntype " + typeStr;
+			var comp = new AceAutoCompleteItem(name, "variable", cinf);
+			fieldHints.push(new GmlSeekDataHint(currStruct, true, name, comp, null, null, type)); 
 		});
 		
 		var oldTypeWarn = GmlTypeParser.warnAboutMissing;
@@ -235,7 +265,8 @@ class GmlParseAPI {
 				doc: doc
 			});
 		});
-		// name       =      value
+		
+		// `name = value` constants (for custom dialects)
 		~/^(\w+)[ \t]*=[ \t]*(.+)$/gm.each(src, function(rx:EReg) {
 			var name = rx.matched(1);
 			var expr = rx.matched(2);

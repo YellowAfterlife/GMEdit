@@ -212,9 +212,12 @@ import ace.extern.AceTokenType;
 	}
 	
 	public static var canCastTo_explicit:Bool = false;
+	public static var canCastTo_voidCast:Bool = false;
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		var kfrom = getKind(from), kto = getKind(to);
-		if (kfrom == KVoid || kto == KVoid) return false;
+		if (!canCastTo_voidCast) {
+			if (kfrom == KVoid || kto == KVoid) return false;
+		}
 		
 		if (from == to) return true;
 		if (from == null || to == null) return true;
@@ -281,7 +284,16 @@ import ace.extern.AceTokenType;
 						if (k1 != KFunction) return false;
 						var i = p2.length;
 						if (i == 0 || p1.length == 0) return true; // any-functions
-						while (--i >= 0) if (!p1[i].canCastTo(p2[i], tpl, imp)) return false;
+						if (--i >= 0) { // return value
+							var couldVoidCast = canCastTo_voidCast;
+							canCastTo_voidCast = true;
+							var ok = p1[i].canCastTo(p2[i], tpl, imp);
+							canCastTo_voidCast = couldVoidCast;
+							if (!ok) return false;
+						}
+						while (--i >= 0) { // arguments
+							if (!p1[i].canCastTo(p2[i], tpl, imp)) return false;
+						}
 						return true;
 					default:
 				}
