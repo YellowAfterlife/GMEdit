@@ -93,7 +93,7 @@ class PrefMagic {
 			save();
 		});
 		el.title = "Allows to write `a ??= b` instead of `if (a == undefined) a = b`";
-		addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/Using-%3F%3F=-operator");
+		addWiki(el, "https://github.com/YellowAfterlife/GMEdit/wiki/Using-null-conditional-assignment");
 		
 		//
 		el = addCheckbox(out, "Use cast/as linter 'operators'", current.castOperators, function(z) {
