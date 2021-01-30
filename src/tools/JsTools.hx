@@ -15,6 +15,23 @@ class JsTools {
 		return untyped (a && b);
 		#end
 	}
+	/**
+	 * ncf(a.b.c) -> (a.b && a.b.c)
+	 * ncf(a.b.c()) -> (a.b && a.b.c())
+	 * ncf(a.b.c, d) -> (a.b ? a.b.c : d)
+	 */
+	public static macro function ncf(e:Expr, ?defValue:Expr):Expr {
+		var p = Context.currentPos();
+		switch (e.expr) {
+			case EField(obj, field), ECall(_ => { expr: EField(obj, field) }, _):
+				if (defValue != null) switch (defValue) {
+					case macro null: //
+					default: return macro @:pos(p) ((cast $obj) ? $e : $defValue);
+				}
+				return macro @:pos(p) tools.JsTools.nca($obj, $e);
+			default: throw Context.error("Expected a field access expression", p);
+		}
+	}
 	/** raw JS (a || b) */
 	public static inline function or<T>(a:T, b:T):T {
 		#if !macro
@@ -34,14 +51,14 @@ class JsTools {
 	}
 	/** Haxe regexp literal to JS regexp literal */
 	public static macro function rx(e:ExprOf<EReg>) {
+		var p = Context.currentPos();
 		switch (e.expr) {
 			case EConst(CRegexp(s, o)): {
-				var p = Context.currentPos();
 				s = ~/\//g.replace(s, "\\/");
 				var s = '/$s/$o';
 				return macro @:pos(p) (cast js.Syntax.code($v{s}):js.lib.RegExp);
 			};
-			default: throw Context.error("Expected a regexp literal", e.pos);
+			default: throw Context.error("Expected a regexp literal", p);
 		}
 	}
 }
