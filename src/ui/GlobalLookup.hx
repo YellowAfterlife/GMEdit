@@ -63,8 +63,13 @@ class GlobalLookup {
 				var hint:String, title:String;
 				if (isCmd) {
 					var cmd = CommandPalette.lookupMap[name];
-					hint = cmd.key;
-					title = cmd.title;
+					if (cmd != null) {
+						hint = cmd.key;
+						title = cmd.title;
+					} else {
+						hint = null;
+						title = null;
+					}
 				} else {
 					var ac = GmlAPI.gmlAssetComp[name];
 					if (ac != null) {
