@@ -1137,7 +1137,7 @@ class GmlSeeker {
 						if (s != null && s.startsWith("/*")) { // name/*...*/
 							mt = localType.exec(s);
 							if (mt != null) {
-								locals.type.set(name, mt[1]);
+								//locals.type.set(name, mt[1]);
 							}
 							s = find(flags);
 						}
