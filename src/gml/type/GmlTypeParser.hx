@@ -34,6 +34,7 @@ class GmlTypeParser {
 		r["String"] = KString;
 		r["bool"] = KBool;
 		r["Bool"] = KBool;
+		r["boolean"] = KBool;
 		//
 		r["array"] = KArray;
 		r["Array"] = KArray;

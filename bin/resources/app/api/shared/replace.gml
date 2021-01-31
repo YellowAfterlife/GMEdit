@@ -1441,7 +1441,8 @@ room_assign(ind:room,source:room)->void
 room_instance_add<T:object>(ind:room,x:number,y:number,obj:T)->void
 room_instance_clear(ind:room)->void
 
-asset_get_index(name:string)->asset
+//asset_get_index<T:asset>(name:string)->T // not supported yet
+asset_get_index(name:string)->any
 asset_get_type(name:string)->asset_type
 
 asset_object#:asset_type
@@ -1938,7 +1939,7 @@ display_set_gui_maximise(?xscale:number,?yscale:number,?xoffset:number,?yoffset:
 display_set_gui_maximize(?xscale:number,?yscale:number,?xoffset:number,?yoffset:number)$->void
 device_mouse_dbclick_enable(enable:bool)->void
 display_aa*:int
-async_load*:ds_map<any,any>
+async_load*:ds_map<string,any>
 delta_time*:number
 webgl_enabled*:bool
 

@@ -27,6 +27,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		if (o == null) o = {};
 		if (o.statusBar != false) new AceStatusBar().bind(this);
 		if (o.completers != false) new AceWrapCommonCompleters().bind(this);
+		if (o.linter != false) new ace.gml.AceGmlLinter().bind(this);
 		if (o.commands != false) AceCommands.init(this, o.isPrimary);
 		if (o.contextMenu != false) new AceCtxMenu().bind(this);
 		if (o.inputHelpers != false) ui.KeyboardShortcuts.initEditor(this);
@@ -110,6 +111,7 @@ typedef AceWrapOptions = {
 	?isPrimary:Bool,
 	?statusBar:Bool,
 	?completers:Bool,
+	?linter:Bool,
 	?contextMenu:Bool,
 	?commands:Bool,
 	?inputHelpers:Bool,

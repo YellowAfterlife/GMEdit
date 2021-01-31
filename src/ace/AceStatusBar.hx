@@ -21,6 +21,7 @@ import synext.GmlExtLambda;
 import shaders.ShaderAPI;
 import tools.Dictionary;
 import tools.JsTools;
+import tools.macros.SynSugar;
 using tools.NativeString;
 
 /**
@@ -41,7 +42,7 @@ class AceStatusBar {
 		statusBar.className = "ace_status-bar";
 		statusSpan = document.createSpanElement();
 		statusSpan.className = "ace_status-hint";
-		statusSpan.innerHTML = '
+		statusSpan.innerHTML = SynSugar.xmls(<html>
 			<span class="status" style="display:none">?</span>
 			<span class="recording" style="display:none">REC</span>
 			<span class="select" style="display:none">(:)</span>
@@ -52,7 +53,7 @@ class AceStatusBar {
 			<span class="ranges" style="display:none"></span>
 			<span class="context-pre" style="display:none"></span>
 			<span class="context" style="display:none"><span class="context-txt"></span></span>
-		';
+		</html>);
 		statusBar.appendChild(statusSpan);
 		//
 		statusHint = document.createSpanElement();
@@ -63,8 +64,8 @@ class AceStatusBar {
 		this.editor = editor;
 		editor.statusBar = this;
 		var lang = AceWrap.require("ace/lib/lang");
-		var dc = lang.delayedCall(update);
-		var dcUpdate = function() dc.schedule(delayTime);
+		var dc:AceDelayedCall = lang.delayedCall(update);
+		var dcUpdate = function() dc.delay(delayTime);
 		editor.on("changeStatus", dcUpdate);
 		editor.on("changeSelection", dcUpdate);
 		editor.on("keyboardActivity", dcUpdate);

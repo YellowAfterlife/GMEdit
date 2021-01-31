@@ -21,6 +21,14 @@ package parsers.linter;
 		specTypeConst: false,
 		specTypeMisc: false,
 		requireFields: false,
+		
+		liveCheckOnEnter: false,
+		liveCheckOnSemico: false,
+		liveMaxLines: 100,
+		liveMinDelay: 250,
+		
+		liveIdleDelay: 0,
+		liveIdleMaxLines: 300,
 	};
 }
 typedef GmlLinterPrefsImpl = {
@@ -39,4 +47,11 @@ typedef GmlLinterPrefsImpl = {
 	?specTypeConst:Bool,
 	?specTypeMisc:Bool,
 	?requireFields:Bool,
+	
+	?liveCheckOnEnter:Bool,
+	?liveCheckOnSemico:Bool,
+	?liveMaxLines:Int,
+	?liveMinDelay:Int,
+	?liveIdleDelay:Int,
+	?liveIdleMaxLines:Int,
 }

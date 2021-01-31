@@ -7,7 +7,7 @@ import haxe.macro.Expr;
  * @author ...
  */
 class PrefLinterMacros {
-	public static macro function addf(name:Expr, fd:Expr) {
+	public static macro function addf(add:Expr, name:Expr, fd:Expr) {
 		var p = Context.currentPos();
 		var get, set, def;
 		switch (fd.expr) {
@@ -21,6 +21,6 @@ class PrefLinterMacros {
 				return macro {};
 			}
 		}
-		return macro add($name, $get, $set, $def);
+		return macro $add($name, $get, $set, $def);
 	}
 }

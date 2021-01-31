@@ -69,6 +69,8 @@ import haxe.extern.EitherType;
 	public var gmlEditor:editors.EditCode;
 	public var gmlErrorMarker:AceMarker;
 	public var gmlErrorMarkers:Array<AceMarker>;
+	public var gmlLinterDirty:Bool;
+	public var gmlLinterRevision:Int;
 }
 class AceSessionTools {
 	public static function getEOF(s:AceSession):AcePos {

@@ -1,6 +1,7 @@
 package parsers.linter;
 import ace.AceGmlContextResolver;
 import ace.AceGmlTools;
+import ace.AceWrap;
 import file.kind.gml.KGmlScript;
 import gml.GmlFuncDoc;
 import gml.GmlImports;
@@ -12,7 +13,6 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterInit;
 import parsers.linter.GmlLinterReadFlags;
-import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;
@@ -22,7 +22,6 @@ import ace.extern.*;
 import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
-import tools.macros.SynSugar.*;
 using tools.NativeArray;
 using tools.NativeString;
 
@@ -32,9 +31,9 @@ using tools.NativeString;
  */
 class GmlLinter {
 	
-	public static function getOption(fn:GmlLinterPrefs->Bool):Bool {
-		var lp = gml.Project.current.properties.linterPrefs;
-		var r:Bool = null;
+	public static function getOption<T>(fn:GmlLinterPrefs->T):T {
+		var lp = Project.current.properties.linterPrefs;
+		var r:T = null;
 		for (_ in 0 ... 1) {
 			if (lp != null) {
 				r = fn(lp);
@@ -73,7 +72,17 @@ class GmlLinter {
 	 * Context name - such as current script name or event name.
 	 * Note: this can be modified by GmlLinterParser!
 	 */
-	var context:String = "";
+	var context(default, set):String = "";
+	public function set_context(ctx:String):String {
+		context = ctx;
+		if (setLocalVars) {
+			editor.locals[ctx] = new GmlLocals(ctx);
+			getImports(true).localTypes = new Dictionary();
+		}
+		return ctx;
+	}
+	var localVarTokenType:AceTokenType = "local";
+	
 	function getImports(?force:Bool):GmlImports {
 		var imp = editor.imports[context];
 		if (imp == null && force) {
@@ -112,6 +121,8 @@ class GmlLinter {
 	var localKinds:Dictionary<GmlLinterKind> = new Dictionary();
 	
 	var isProperties:Bool = false;
+	var setLocalVars:Bool = false;
+	var setLocalTypes:Bool = true;
 	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
 	var seqStart:GmlReaderExt = new GmlReaderExt("", GmlVersion.none);
@@ -369,7 +380,13 @@ class GmlLinter {
 						seenComma = false;
 						if (readExpr(newDepth)) return -1;
 						if (sqb) {
-							if (itemType == null) itemType = readExpr_currType;
+							if (argc == 0) {
+								itemType = readExpr_currType;
+							} else if (itemType != null) {
+								// turn mixed-type array literals into array<any>
+								if (!readExpr_currType.canCastTo(itemType)) itemType = null;
+								// tuples require passing the supposed destination type to readExpr.
+							}
 						} else if (argTypes != null && readExpr_currType != null) {
 							var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
 							var argType = argTypes[argTypeInd];
@@ -1132,7 +1149,7 @@ class GmlLinter {
 				checkTypeCast(right, GmlTypeDef.bool, opv);
 				return GmlTypeDef.bool;
 			};
-			case KEQ, KNE: {
+			case KEQ, KNE, KSet: {
 				// GML lets you compare anything to anything and that's okay
 				return GmlTypeDef.bool;
 			};
@@ -1230,12 +1247,14 @@ class GmlLinter {
 	static var readLambda_doc:GmlFuncDoc;
 	function readLambda(oldDepth:Int, isFunc:Bool, isStat:Bool):FoundError {
 		var name = "function";
+		var isTopLevel = isFunc && isStat && oldDepth == 2;
 		if (peek() == KIdent) {
 			skip();
 			name = nextVal;
-			if (isFunc && isStat && oldDepth == 2) context = name;
+			if (isTopLevel) context = name;
 		}
 		var doc = new GmlFuncDoc(name, "(", ")", [], false);
+		var nextLocalType = isTopLevel ? "local" : "sublocal";
 		if (skipIf(peek() == KParOpen)) { // (...args)
 			var depth = 1;
 			var awaitArgName = true;
@@ -1248,19 +1267,26 @@ class GmlLinter {
 							var argName = nextVal;
 							awaitArgName = false;
 							doc.args.push(nextVal);
-							var imp = getImports(true);
+							var imp = getImports(setLocalTypes);
+							var argTypeStr = null;
 							if (skipIf(peek() == KColon)) {
+								var argTypeStart = reader.pos;
 								rc(readTypeName());
+								argTypeStr = reader.substring(argTypeStart, reader.pos);
+								
 								var t = readTypeName_type;
-								imp.localTypes[argName] = t;
+								if (setLocalTypes) imp.localTypes[argName] = t;
 								if (doc.argTypes == null) {
 									doc.argTypes = NativeArray.create(doc.args.length - 1);
 								}
 								doc.argTypes.push(t);
 							} else {
-								imp.localTypes[argName] = null;
+								if (setLocalTypes) imp.localTypes[argName] = null;
 								if (doc.argTypes != null) doc.argTypes.push(null);
 							}
+							if (setLocalVars) editor.locals[context].add(argName, nextLocalType,
+								JsTools.nca(argTypeStr, "type " + argTypeStr)
+							);
 						}
 					};
 					case KComma: if (depth == 1) awaitArgName = true;
@@ -1289,11 +1315,13 @@ class GmlLinter {
 		var oldLocalKinds = localKinds;
 		var oldFuncDoc = currFuncDoc;
 		var oldFuncRetStatus = currFuncRetStatus;
+		var oldLocalTokenType = localVarTokenType;
 		
 		localNamesPerDepth = [];
 		localKinds = new Dictionary();
 		currFuncDoc = doc;
 		currFuncRetStatus = nextFuncRetStatus;
+		localVarTokenType = nextLocalType;
 		
 		rc(readStat(0));
 		
@@ -1311,6 +1339,7 @@ class GmlLinter {
 		localKinds = oldLocalKinds;
 		currFuncDoc = oldFuncDoc;
 		currFuncRetStatus = oldFuncRetStatus;
+		localVarTokenType = oldLocalTokenType;
 		
 		readLambda_doc = doc;
 		return false;
@@ -1363,14 +1392,18 @@ class GmlLinter {
 					found++;
 					//
 					nk = peek();
-					var varType:GmlType;
+					var varType:GmlType, varTypeStr:String;
 					if (nk == KColon) { // `name:type`
 						skip();
+						var varTypeStart = q.pos;
 						rc(readTypeName());
+						varTypeStr = q.substring(varTypeStart, q.pos);
 						varType = readTypeName_type;
+						if (setLocalTypes) getImports(true).localTypes[varName] = varType;
 						nk = peek();
-					} else varType = null;
+					} else { varType = null; varTypeStr = null; }
 					//
+					var typeInfo:String = null;
 					if (nk == KSet) { // `name = val`
 						skip();
 						rc(readExpr(newDepth));
@@ -1378,7 +1411,7 @@ class GmlLinter {
 						if (varType != null) {
 							checkTypeCast(varExprType, varType);
 						} else if (varExprType != null) {
-							var apply = switch (mainKind) {
+							var apply = setLocalTypes && switch (mainKind) {
 								case KLet: optSpecTypeLet;
 								case KConst: optSpecTypeConst;
 								default: keywordStr == "var" ? optSpecTypeVar : optSpecTypeMisc;
@@ -1387,6 +1420,7 @@ class GmlLinter {
 								var imp = getImports(true);
 								var lastVarType = imp.localTypes[varName];
 								if (lastVarType == null) {
+									if (setLocalVars) typeInfo = "type " + varExprType.toString() + " (auto)";
 									imp.localTypes[varName] = varExprType;
 								} else if (!varExprType.equals(lastVarType)) {
 									addWarning('Implicit redefinition of type for local variable $varName from '
@@ -1395,6 +1429,19 @@ class GmlLinter {
 							}
 						}
 					}
+					if (setLocalVars) {
+						if (typeInfo == null && varTypeStr != null) {
+							typeInfo = "type " + varTypeStr;
+						}
+						var locals = editor.locals[context];
+						if (locals.kind.exists(varName)) {
+							if (typeInfo != null) {
+								var comp = locals.comp.findFirst((cc) -> cc.name == varName);
+								if (comp != null) comp.doc = typeInfo;
+							}
+						} else locals.add(varName, localVarTokenType, typeInfo);
+					}
+					//
 					if (!skipIf(peek() == KComma)) break;
 				}
 				if (found == 0) readSeqStartWarn("This `var` has no declarations.");
@@ -1549,6 +1596,7 @@ class GmlLinter {
 	
 	public function runPre(source:GmlCode, editor:EditCode, version:GmlVersion, context:String = ""):Void {
 		this.version = version;
+		this.editor = editor;
 		this.context = context;
 		if (context != "") {
 			currFuncDoc = GmlAPI.gmlDoc[context];
@@ -1558,7 +1606,6 @@ class GmlLinter {
 		initKeywords();
 		var q = reader = new GmlReaderExt(source.trimRight());
 		q.name = editor.file.name;
-		this.editor = editor;
 		errorText = null;
 	}
 	public function runPost() {
@@ -1589,15 +1636,17 @@ class GmlLinter {
 	}
 	
 	
-	public static function runFor(editor:EditCode, ?code:GmlCode):FoundError {
+	public static function runFor(editor:EditCode, ?opt:GmlLinterOptions):FoundError {
 		var q = new GmlLinter();
-		var session = editor.session;
+		q.setLocalVars = JsTools.ncf(opt.setLocals, false);
+		var session = JsTools.ncf(opt.session, editor.session);
 		if (session.gmlErrorMarkers != null) {
 			for (mk in session.gmlErrorMarkers) session.removeMarker(mk);
 			session.gmlErrorMarkers.clear();
 			session.clearAnnotations();
 		}
 		var t = Main.window.performance.now();
+		var code = JsTools.ncf(opt.code);
 		if (code == null) code = session.getValue();
 		var ohno = q.run(code, editor, gml.Project.current.version);
 		t = (Main.window.performance.now() - t);
@@ -1617,39 +1666,43 @@ class GmlLinter {
 		for (warn in q.warnings) addMarker(warn.text, warn.pos, false);
 		for (error in q.errors) addMarker(error.text, error.pos, true);
 		//
-		var msg:String;
-		if (q.warnings.length == 0 && q.errors.length == 0) {
-			msg = "OK!";
-		} else {
-			if (ohno) {
-				msg = "⛔"; // 🚔
-			} else if (q.errors.length > 0) {
-				msg = "🛑"; // 🚒
-			} else msg = "⚠";
-			if (q.errors.length > 0) {
-				msg += q.errors.length + " error";
-				if (q.errors.length != 1) msg += "s";
+		if (JsTools.ncf(opt.updateStatusBar, true)) {
+			var msg:String;
+			if (q.warnings.length == 0 && q.errors.length == 0) {
+				msg = "OK!";
+			} else {
+				if (ohno) {
+					msg = "⛔"; // 🚔
+				} else if (q.errors.length > 0) {
+					msg = "🛑"; // 🚒
+				} else msg = "⚠";
+				if (q.errors.length > 0) {
+					msg += q.errors.length + " error";
+					if (q.errors.length != 1) msg += "s";
+				}
+				if (q.warnings.length > 0) {
+					if (q.errors.length > 0) msg += ", ";
+					msg += q.warnings.length + " warning";
+					if (q.warnings.length != 1) msg += "s";
+				}
+				msg += "!";
 			}
-			if (q.warnings.length > 0) {
-				if (q.errors.length > 0) msg += ", ";
-				msg += q.warnings.length + " warning";
-				if (q.warnings.length != 1) msg += "s";
-			}
-			msg += "!";
+			msg += " (lint time: " + untyped (t.toFixed(2)) + "ms)";
+			//
+			var aceEditor = JsTools.ncf(opt.editor, Main.aceEditor);
+			Main.window.setTimeout(function() {
+				var statusBar = aceEditor.statusBar;
+				statusBar.ignoreUntil = Main.window.performance.now() + statusBar.delayTime + 50;
+				statusBar.setText(msg);
+			}, 50);
 		}
-		msg += " (lint time: " + untyped (t.toFixed(2)) + "ms)";
-		//
-		Main.window.setTimeout(function() {
-			var statusBar = Main.aceEditor.statusBar;
-			statusBar.ignoreUntil = Main.window.performance.now() + statusBar.delayTime + 50;
-			statusBar.setText(msg);
-		}, 50);
 		session.setAnnotations(annotations);
 		return ohno;
 	}
 	
 	public static function getType(expr:String, editor:EditCode, context:String, pos:AcePos):GmlLinterTypeInfo {
 		var q = new GmlLinter();
+		q.setLocalTypes = false;
 		q.runPre(expr, editor, Project.current.version, context);
 		if (pos != null) {
 			var types = AceGmlContextResolver.run(editor.session, pos);
@@ -1671,6 +1724,13 @@ class GmlLinter {
 			doc:  ok ? q.readExpr_currFunc : null,
 		}
 	}
+}
+typedef GmlLinterOptions = {
+	?code:GmlCode,
+	?editor:AceWrap,
+	?session:AceSession,
+	?setLocals:Bool,
+	?updateStatusBar:Bool,
 }
 typedef GmlLinterTypeInfo = {
 	type: GmlType,
