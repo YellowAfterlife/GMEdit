@@ -22,3 +22,4 @@
 
 /tests/unittest_node/node_modules/*
 /tests/unittest_node/public/js_test.js
+/art/media/x*.png
