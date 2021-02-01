@@ -162,6 +162,10 @@ class GmlLinterParser {
 					else return retv(KHash, "#");
 				};
 				case "$".code: {
+					js.Lib.debug();
+					if (q.peek(-2) == '['.code) { // Special case, $ after a [ is always treated as an accessor
+						return retv(KDollar, "$");
+					}
 					start();
 					if (q.peek().isHex()) {
 						q.skipHex();
