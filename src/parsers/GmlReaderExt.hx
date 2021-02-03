@@ -1,6 +1,5 @@
 package parsers;
 
-import gml.GmlVersion;
 import ace.extern.*;
 using tools.NativeArray;
 using tools.NativeString;
@@ -211,5 +210,12 @@ using StringTools;
 			r.push(oldSource[i].substring(oldPos[i], oldLength[i]));
 		}
 		return r;
+	}
+	
+	public function getWatchForDepth(depth:Int, n:Int) {
+		var p = oldPos[depth];
+		var bn = p < n ? p : n;
+		var src = oldSource[depth];
+		return src.fastSub(p - bn, bn) + "¦" + src.fastSub(p, n);
 	}
 }

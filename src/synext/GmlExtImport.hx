@@ -728,6 +728,7 @@ class GmlExtImport {
 	 * @param	full "Type.field"
 	 */
 	static function post_procIdent(reader:GmlReaderExt, imp:GmlImports, p0:Int, dot:Int, full:String) {
+		if (imp == null) return null;
 		var p1 = reader.pos; // `Type.field¦`
 		var one:String = dot != -1 ? reader.substring(p0, dot) : null;
 		var peeker = post_procIdent_peeker;

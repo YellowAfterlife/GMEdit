@@ -26,6 +26,7 @@
     {"id":{"name":"v_std_structs","path":"scripts/v_std_structs/v_std_structs.yy",},"order":13,},
     {"id":{"name":"v_color_literal","path":"scripts/v_color_literal/v_color_literal.yy",},"order":1,},
     {"id":{"name":"v_imp_namespace_class","path":"scripts/v_imp_namespace_class/v_imp_namespace_class.yy",},"order":3,},
+    {"id":{"name":"v_imp_static","path":"scripts/v_imp_static/v_imp_static.yy",},"order":4,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

@@ -25,6 +25,7 @@ class GmlLinterImports {
 		GmlExtImport.errorText = "";
 		var next = GmlExtImport.post_procIdent(q, imp, dotStart, dotPos, dotFull);
 		if (next != null) {
+			q.pos = GmlExtImport.post_procIdent_p1;
 			q.pushSource(next);
 			return false;
 		}
