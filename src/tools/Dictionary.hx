@@ -14,6 +14,13 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 	public inline function new() {
 		this = js.lib.Object.create(null);
 	}
+	public function copy():Dictionary<T> {
+		var dict = new Dictionary();
+		NativeObject.forField(this, function(s) {
+			dict[s] = get(s);
+		});
+		return copy;
+	}
 	public static function fromKeys<T>(keys:Array<String>, val:T):Dictionary<T> {
 		var out = new Dictionary();
 		for (key in keys) out.set(key, val);

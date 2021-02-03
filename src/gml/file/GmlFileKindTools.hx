@@ -4,8 +4,7 @@ import file.FileKindDetect;
 import file.kind.*;
 import file.kind.misc.KExtern;
 import haxe.io.Path;
-import yy.*;
-import electron.*;
+import file.kind.gml.*;
 
 /**
  * ...
@@ -14,6 +13,10 @@ import electron.*;
 class GmlFileKindTools {
 	public static function isGML(kind:FileKind) {
 		return Std.is(kind, KGml);
+	}
+	/** Returns whether top-level `function name()` should change context */
+	public static inline function functionsAreGlobal(kind:FileKind) {
+		return Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
 	}
 	public static function detect(path:String):FileKindDetect {
 		var ext = Path.extension(path).toLowerCase();

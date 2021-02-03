@@ -1,4 +1,5 @@
 package parsers;
+import gml.file.GmlFileKindTools;
 import ace.AceGmlTools;
 import ace.extern.*;
 import electron.FileSystem;
@@ -185,7 +186,7 @@ class GmlSeeker {
 			var kws = v.config.additionalKeywords;
 			kws != null && kws.contains("function");
 		};
-		var funcsAreGlobal:Bool = Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
+		var funcsAreGlobal = GmlFileKindTools.functionsAreGlobal(kind);
 		var isObject = Std.is(kind, KGmlEvents);
 		var isCreateEvent = isObject && locals.name == "create";
 		var __objectName:String = null;

@@ -989,13 +989,14 @@ class GmlLinter {
 					skip();
 					var tnp = q.pos;
 					rc(readTypeName());
+					var asType = GmlTypeDef.parse(readTypeName_typeStr);
 					if (!hasFlag(IsCast)) {
 						var ex = GmlTypeTools.canCastTo_explicit;
 						GmlTypeTools.canCastTo_explicit = true;
-						checkTypeCast(currType, readTypeName_type, "as");
+						checkTypeCast(currType, asType, "as");
 						GmlTypeTools.canCastTo_explicit = ex;
 					}
-					currType = readTypeName_type;
+					currType = asType;
 					currFunc = null;
 					currKind = KAs;
 				};
@@ -1083,49 +1084,61 @@ class GmlLinter {
 		return result;
 	}
 	
-	static var readTypeName_type:GmlType;
 	function readTypeName():FoundError {
 		// also see: GmlTypeParser, GmlReader.skipType
 		var start = reader.pos;
+		var startDepth = reader.depth;
+		var typeStr:String;
 		switch (next()) {
 			case KParOpen:
 				seqStart.setTo(reader);
 				rc(readTypeName());
 				if (next() != KParClose) return readSeqStartError("Unclosed type ()");
+				typeStr = '($readTypeName_typeStr)';
 			case KIdent, KUndefined:
+				typeStr = nextVal;
 				if (skipIf(peek() == KLT)) {
 					var depth = 1;
+					typeStr += "<";
 					seqStart.setTo(reader);
 					while (reader.loop) {
 						switch (next()) {
-							case KLT: depth += 1;
-							case KGT: 
+							case KLT:
+								typeStr += "<";
+								depth += 1;
+							case KGT:
+								typeStr += ">";
 								depth -= 1;
 								if (depth <= 0) break;
 							default:
+								typeStr += nextVal;
 						}
 					}
 					if (depth > 0) return readSeqStartError("Unclosed type parameters");
 				}
 			default: return readExpect("a type name");
 		}
-		while (reader.loopLocal) {
+		while (reader.loop) {
 			switch (peek()) {
 				case KSqbOpen:
 					skip();
 					readCheckSkip(KSqbClose, "a closing `]`");
+					typeStr += "[]";
 				case KQMark:
 					skip();
+					typeStr += "?";
 				case KOr:
 					skip();
 					rc(readTypeName());
+					typeStr += "|" + readTypeName_typeStr;
 				default: break;
 			}
 		}
 		// todo: maybe just form the type name here too
-		readTypeName_type = GmlTypeDef.parse(reader.substring(start, reader.pos));
+		readTypeName_typeStr = typeStr;
 		return false;
 	}
+	static var readTypeName_typeStr:String;
 	
 	function checkTypeCast(source:GmlType, target:GmlType, ?ctx:String):Bool {
 		if (source.canCastTo(target, null, getImports())) return true;
@@ -1270,11 +1283,9 @@ class GmlLinter {
 							var imp = getImports(setLocalTypes);
 							var argTypeStr = null;
 							if (skipIf(peek() == KColon)) {
-								var argTypeStart = reader.pos;
 								rc(readTypeName());
-								argTypeStr = reader.substring(argTypeStart, reader.pos);
-								
-								var t = readTypeName_type;
+								argTypeStr = readTypeName_typeStr;
+								var t = GmlTypeDef.parse(argTypeStr);
 								if (setLocalTypes) imp.localTypes[argName] = t;
 								if (doc.argTypes == null) {
 									doc.argTypes = NativeArray.create(doc.args.length - 1);
@@ -1297,9 +1308,8 @@ class GmlLinter {
 		//
 		var nextFuncRetStatus = GmlLinterReturnStatus.NoReturn;
 		if (skipIf(peek() == KArrow)) { // `->returnType`
-			var tnStart = reader.pos;
 			rc(readTypeName());
-			doc.returnTypeString = reader.substring(tnStart, reader.pos);
+			doc.returnTypeString = readTypeName_typeStr;
 			nextFuncRetStatus = (doc.returnType.getKind() == KVoid ? WantNoReturn : WantReturn);
 		}
 		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
@@ -1397,8 +1407,8 @@ class GmlLinter {
 						skip();
 						var varTypeStart = q.pos;
 						rc(readTypeName());
-						varTypeStr = q.substring(varTypeStart, q.pos);
-						varType = readTypeName_type;
+						varTypeStr = readTypeName_typeStr;
+						varType = GmlTypeDef.parse(varTypeStr);
 						if (setLocalTypes) getImports(true).localTypes[varName] = varType;
 						nk = peek();
 					} else { varType = null; varTypeStr = null; }

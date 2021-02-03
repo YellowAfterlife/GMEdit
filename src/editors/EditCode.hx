@@ -126,7 +126,7 @@ class EditCode extends Editor {
 	public function postpImport(val:String):{val:String,sessionChanged:Bool} {
 		var val_preImport = val;
 		var path = file.path;
-		val = GmlExtImport.post(val, path);
+		val = GmlExtImport.post(val, this);
 		if (val == null) {
 			Dialog.showError(GmlExtImport.errorText);
 			return null;
@@ -136,7 +136,7 @@ class EditCode extends Editor {
 		var sessionChanged = false;
 		var hadImports = data != null && data.imports != null;
 		if (hadImports || GmlExtImport.post_numImports > 0) {
-			var next = GmlExtImport.pre(val, path);
+			var next = GmlExtImport.pre(val, this);
 			if (data != null && data.imports != null) {
 				imports = data.imports;
 			} else imports = GmlImports.defaultMap;
@@ -159,7 +159,7 @@ class EditCode extends Editor {
 				// if we didn't have imports before, data.imports would
 				// be null and thus our imports were left untransformed.
 				// But now they are OK so we can do it again and right.
-				val = GmlExtImport.post(val_preImport, path);
+				val = GmlExtImport.post(val_preImport, this);
 				if (val == null) {
 					Main.window.alert(GmlExtImport.errorText);
 					return null;

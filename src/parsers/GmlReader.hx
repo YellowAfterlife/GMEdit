@@ -595,14 +595,9 @@ using tools.NativeString;
 		return false;
 	}
 	
-	private static var rxVarType = new js.lib.RegExp("^" + GmlExtImport.rsLocalType + "$");
-	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool):Int {
+	public function skipVars(fn:SkipVarsData->Void, v:GmlVersion, isArgs:Bool, ?d:SkipVarsData):Int {
 		var n = 0;
-		var d:SkipVarsData = { // NB! this is getting reused
-			name: null, name0: 0, name1: 0,
-			type: null, type0: 0, type1: 0, typeStr: null,
-			expr0: 0, expr1: 0, opt: false,
-		};
+		if (d == null) d = new SkipVarsData(); // NB! this is getting reused
 		skipNops();
 		var till:Int;
 		if (isArgs) {
@@ -613,25 +608,26 @@ using tools.NativeString;
 			var c = peek();
 			if (!c.isIdent0()) break;
 			var p = pos;
-			d.name0 = p;
+			d.nameStart = p;
 			if (peek() == "?".code) {
-				d.opt = true; skip(); skipNops();
-			} else d.opt = false;
+				d.isOptional = true; skip(); skipNops();
+			} else d.isOptional = false;
 			skipIdent1();
-			d.name1 = pos;
+			d.nameEnd = pos;
 			d.name = substring(p, pos);
+			
 			// handle `:type` or `/*:type*/`:
 			skipSpaces1x(till);
-			d.type0 = pos;
-			var type = null;
+			d.rawTypeStart = pos;
 			if (peek() == ":".code) {
 				skip();
-				var p1 = pos;
+				d.typeStart = pos;
+				var typeStart = pos;
 				skipType();
-				if (pos > p1) {
-					d.typeStr = substring(p1, pos);
-					d.type = GmlTypeDef.parse(d.typeStr);
-				} else d.type = null;
+				if (pos > typeStart) {
+					d.typeEnd = pos;
+					d.typeStr = substring(typeStart, pos);
+				} else d.typeStr = null;
 			} else if (peek() == "/".code && peek(1) == "*".code && peek(2) == ":".code) {
 				skip(3);
 				var cmtStart = pos;
@@ -641,27 +637,23 @@ using tools.NativeString;
 				skipType();
 				skipSpaces1x(cmtEnd);
 				if (pos == cmtEnd - 2) {
+					d.typeStart = cmtStart;
+					d.typeEnd = cmtEnd - 2;
 					d.typeStr = substring(cmtStart, cmtEnd - 2);
-					d.type = GmlTypeDef.parse(d.typeStr);
-				} else {
-					d.type0 = cmtEnd;
-					d.typeStr = null;
-					d.type = null;
-				}
+				} else d.typeStr = null;
 				pos = cmtEnd;
-			} else {
-				d.typeStr = null;
-				d.type = null;
-			}
-			d.type1 = pos;
+			} else d.typeStr = null;
+			d.rawTypeEnd = pos;
+			
 			// see if there's `= value`:
 			skipSpaces1x(till);
 			if (peek() == "=".code) {
 				skip(); skipSpaces1();
-				d.expr0 = pos;
+				d.exprStart = pos;
 				skipVarExpr(v, ",".code);
-			} else d.expr0 = pos;
-			d.expr1 = pos;
+			} else d.exprStart = pos;
+			d.exprEnd = pos;
+			
 			skipNops(till);
 			fn(d);
 			if (peek() != ",".code) break;
@@ -695,8 +687,23 @@ using tools.NativeString;
 		return new AcePos(p - rowStart, row);
 	}
 }
-typedef SkipVarsData = {
-	name:String, name0:Int, name1:Int,
-	type:GmlType, type0:Int, type1:Int, typeStr:String,
-	expr0:Int, expr1:Int, opt:Bool,
-};
+class SkipVarsData {
+	public var name:String = null;
+	public var nameStart:StringPos = 0;
+	public var nameEnd:StringPos = 0;
+	
+	/** if typeStr == null, these two are just pointing at `var varName¦` */
+	public var rawTypeStart:StringPos = 0;
+	public var rawTypeEnd:StringPos = 0;
+	
+	/** typeStart/typeEnd can be gibberish if typeStr==null (no type) */
+	public var typeStr:String = null;
+	public var typeStart:StringPos = 0;
+	public var typeEnd:StringPos = 0;
+	
+	public var exprStart:StringPos = 0;
+	public var exprEnd:StringPos = 0;
+	
+	public var isOptional:Bool = false;
+	public function new() {}
+}

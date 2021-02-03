@@ -14,7 +14,7 @@ import ace.extern.*;
  */
 class GmlImports {
 	public static var defaultMap:Dictionary<GmlImports> = new Dictionary();
-	//
+	// NB! When adding new fields, don't forget to add them to GmlImportsLink too
 	public var compList:AceAutoCompleteItems = [];
 	public var compMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	
@@ -48,6 +48,9 @@ class GmlImports {
 	//
 	public function new() {
 		//
+	}
+	public function createLink() {
+		return new GmlImportsLink(this);
 	}
 	//
 	public function ensureNamespace(space:String):GmlImportNamespace {
@@ -244,6 +247,28 @@ class GmlImports {
 		}
 	}
 	//
+}
+class GmlImportsLink extends GmlImports {
+	public var parent:GmlImports;
+	public function new(imp:GmlImports) {
+		super();
+		if (Std.is(imp, GmlImportsLink)) {
+			imp = (cast imp:GmlImportsLink).parent;
+		}
+		parent = imp;
+		compList = imp.compList;
+		compMap = imp.compMap;
+		kind = imp.kind;
+		shorten = imp.shorten;
+		shortenGlobal = imp.shortenGlobal;
+		hasGlobal = imp.hasGlobal;
+		longen = imp.longen;
+		longenEnum = imp.longenEnum;
+		namespaces = imp.namespaces;
+		namespaceComp = imp.namespaceComp;
+		docs = imp.docs;
+		// we keep our own localTypes
+	}
 }
 typedef GmlImportsCache = {
 	?comp:AceAutoCompleteItem,
