@@ -1,4 +1,5 @@
 package synext;
+import tools.RegExpTools;
 import gml.file.GmlFileKindTools;
 import electron.FileSystem;
 import file.kind.KGml;
@@ -594,15 +595,34 @@ class GmlExtImport {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
 						q.skipLine();
+						var cmtEnd = q.pos;
 						if (q.get(p + 2) == "/".code) {
-							var i = p + 3;
-							while (q.get(i).isSpace0()) i++;
-							if (q.get(i) == "@".code
-								&& q.substring(i + 1, i + 5) == "hint"
-								&& !q.get(i + 5).isIdent1_ni()
-							) {
-								var txt = q.substring(i + 5, q.pos);
-								parseHint(imp, txt, files, cache, null);
+							var cp = p + 3;
+							while (cp < cmtEnd) {
+								c = q.get(cp);
+								if (c.isSpace0()) cp++; else break;
+							}
+							if (q.get(cp) == "@".code) {
+								if (q.substring(cp + 1, cp + 5) == "hint"
+									&& !q.get(cp + 5).isIdent1_ni()
+								) {
+									var txt = q.substring(cp + 5, cmtEnd);
+									parseHint(imp, txt, files, cache, null);
+									// NB! This will also process the text in the end of the comment
+									flush(cp + 5);
+									procSegment(cp + 5, cmtEnd, true);
+								} else if (q.get(cp + 1).isIdent0_ni()) { // @meta
+									q.pos = cp + 1;
+									q.skipIdent1();
+									var rx = JsTools.rx(~/\{.+?\}/g);
+									RegExpTools.each(rx, code, function(mt:RegExpMatch) {
+										var mtStart = mt.index;
+										var mtEnd = mtStart + mt[0].length;
+										flush(mtStart);
+										procSegment(mtStart, mtEnd, true);
+									}, q.pos, cmtEnd);
+								}
+								q.pos = cmtEnd;
 							}
 						}
 						else if (q.get(p + 2) == "!".code
@@ -943,14 +963,43 @@ class GmlExtImport {
 			switch (c) {
 				case "/".code: switch (q.peek()) {
 					case "/".code: {
-						if (q.get(p + 2) == "!".code
+						q.skipLine();
+						var cmtEnd = q.pos;
+						if (q.get(p + 2) == "/".code) {
+							// this mimicks pre() a little too closely...
+							var cp = p + 3;
+							while (cp < cmtEnd) {
+								c = q.get(cp);
+								if (c.isSpace0()) cp++; else break;
+							}
+							if (q.get(cp) == "@".code) {
+								if (q.substring(cp + 1, cp + 5) == "hint"
+									&& !q.get(cp + 5).isIdent1_ni()
+								) {
+									// NB! This will also process the text in the end of the comment
+									flush(cp + 5);
+									procSegment(cp + 5, cmtEnd, true);
+								} else if (q.get(cp + 1).isIdent0_ni()) { // @meta
+									q.pos = cp + 1;
+									q.skipIdent1();
+									var rx = JsTools.rx(~/\{.+?\}/g);
+									RegExpTools.each(rx, code, function(mt:RegExpMatch) {
+										var mtStart = mt.index;
+										var mtEnd = mtStart + mt[0].length;
+										flush(mtStart);
+										procSegment(mtStart, mtEnd, true);
+									}, q.pos, cmtEnd);
+								}
+								q.pos = cmtEnd;
+							}
+						}
+						else if (q.get(p + 2) == "!".code
 						&& q.get(p + 3) == "#".code
 						&& q.substr(p + 4, 6) == "import") {
 							flush(p + 3);
 							out += " ";
 							start = p + 3;
 						}
-						q.skipLine();
 					};
 					case "*".code: q.skip(); q.skipComment();
 					default:
