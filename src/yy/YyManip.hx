@@ -209,6 +209,10 @@ class YyManip {
 					pj.writeTextFileSync(pre + ".fsh", YyShaderDefaults.baseFragGLSL);
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
 				};
+				case "font": {
+					var font:YyFont = YyFont.GenerateDefault(yyParent, name);
+					yyResource = font;
+				}
 				default: {
 					Dialog.showError('No idea how to create type=`$kind`, sorry');
 					return false;
