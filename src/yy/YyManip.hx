@@ -210,7 +210,7 @@ class YyManip {
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
 				};
 				case "font": {
-					var font:YyFont = YyFont.GenerateDefault(yyParent, name);
+					var font:YyFont = YyFont.generateDefault(yyParent, name);
 					yyResource = font;
 				}
 				default: {

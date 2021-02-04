@@ -26,6 +26,7 @@ class EditFont extends Editor {
 	private var fontStyleSelect: SelectElement;
 	private var fontSizeInput: InputElement;
 	private var previewWindow: DivElement;
+	private var rangeWindow: DivElement;
 
 	public override function load(data:Dynamic) {
 		super.load(data);
@@ -142,7 +143,7 @@ class EditFont extends Editor {
 
 	private function onSizeChanged() {
 		var newSize = Std.parseFloat(fontSizeInput.value);
-		if (newSize == font.size) {
+		if (newSize == font.size || newSize == Math.NaN) {
 			return;
 		}
 
@@ -180,6 +181,17 @@ class EditFont extends Editor {
 			}
 		}
 	}
+
+	private function populateRanges() {
+		rangeWindow.clearInner();
+
+		for (range in font.ranges) {
+			var rangeInput = document.createInputElement();
+			rangeInput.value = '${range.lower}-${range.upper}';
+			rangeWindow.appendChild(rangeInput);
+		}
+
+	}
 	
 	private function onFontChanged() {
 		var fontDescriptor = getCurrentFont();
@@ -200,12 +212,18 @@ class EditFont extends Editor {
 			previewWindow.style.fontWeight = Std.string(fontDescriptor.weight);
 			previewWindow.style.fontFamily = '"${fontDescriptor.postscriptName}", "${fontDescriptor.family} ${fontDescriptor.style}", "${fontDescriptor.family}"';
 		} else {
-			previewWindow.style.fontWeight = "500";
+			previewWindow.style.fontWeight = "normal";
 			previewWindow.style.fontFamily = '"${font.fontName} ${font.styleName}", "${font.fontName}"';
 		}
 
 		previewWindow.style.fontStyle = font.italic ? "italic" : "normal";
 		previewWindow.style.fontSize = Std.string(font.size) + "pt";
+
+		previewWindow.innerHTML = font.getAllCharacters();
+	}
+
+	private function updateRange() {
+
 	}
 
 	// Sneakily put at the bottom so you never have to see it
@@ -265,13 +283,20 @@ class EditFont extends Editor {
 				optionsDiv.appendChild(fontSizeInput);
 			}
 
+			// Font range selection
+			{
+				rangeWindow = document.createDivElement();
+				populateRanges();
+				optionsDiv.appendChild(rangeWindow);
+			}
+
 			element.appendChild(optionsDiv);
 		}
 
 
 		{
 			previewWindow = document.createDivElement();
-			previewWindow.innerHTML = "ABCDefffgo m faomoiaofd sosaf gs   fgoks";
+			previewWindow.innerHTML = "";
 
 			element.appendChild(previewWindow);
 		}
