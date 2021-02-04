@@ -139,7 +139,6 @@ class Main {
 		LiveWeb.init();
 		#end
 		plugins.PluginManager.init();
-		console.log("hello!");
 		return null;
 	}
 }

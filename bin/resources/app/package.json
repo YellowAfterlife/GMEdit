@@ -7,7 +7,8 @@
     "start": "electron ."
   },
   "author": "YellowAfterlife",
-  "devDependencies": {
-    "electron": "~4.0.0-beta.10"
+  "devDependencies": {},
+  "dependencies": {
+    "font-scanner": "^0.1.2"
   }
 }
