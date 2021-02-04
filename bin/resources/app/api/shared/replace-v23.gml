@@ -6,7 +6,7 @@
 
 is_struct(val:any)->bool
 is_method(val:any)->bool
-instanceof<T:struct>(struct:T)->bool
+instanceof<T:struct>(struct:T)->string|undefined
 exception_unhandled_handler(user_handler:function<Exception;any|void>)
 
 variable_struct_exists<T:struct>(struct:T,name:string)->bool
