@@ -12,6 +12,11 @@ class Random {
 		return (Std.random(2) == 0);
 	}
 
+	/**Generates a random number up to but not including size*/
+	public static function integer(size: Int): Int {
+		return (Std.random(size));
+	}
+
 	/** Generates a random string with characters A-Z, a-z
 	 * 
 	**/
