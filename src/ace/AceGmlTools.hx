@@ -193,7 +193,8 @@ using StringTools;
 		return iter.getCurrentTokenPosition();
 	}
 	
-	public static inline function findNamespace<T>(name:String, imp:GmlImports, fn:GmlNamespace->T):T {
+	#if !debug inline #end
+	public static function findNamespace<T>(name:String, imp:GmlImports, fn:GmlNamespace->T):T {
 		var step = imp != null ? -1 : 0;
 		var result:T = null;
 		while (++step < 2) {
