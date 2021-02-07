@@ -1348,13 +1348,31 @@ class GmlSeeker {
 							
 							start = q.pos;
 							if (q.read() != "(".code) continue;
-							while (q.loop && q.read() != ")".code) {}
+							while (q.loop) {
+								var c = q.peek();
+								if (c == ")".code) {
+									q.skip();
+									break;
+								} else {
+									if (q.skipCommon() < 0) q.skip();
+								}
+							}
+							
 							if (jsDocArgs != null) {
 								args = "(" + jsDocArgs.join(", ") + ")";
 								argTypes = jsDocTypesFlush(JsTools.nca(doc, doc.templateItems));
 								jsDocArgs = null;
 								jsDocTypes = null;
 							} else args = q.substring(start, q.pos);
+							
+							if (q.peekstr(4) == "/*->") {
+								var p = q.pos + 2;
+								q.skip(4);
+								q.skipComment();
+								if (q.peekstr(2, -2) == "*/") {
+									args += q.substring(p, q.pos - 2);
+								}
+							}
 							//
 							templateItems = jsDocTemplateItems;
 							jsDocTemplateItems = null;

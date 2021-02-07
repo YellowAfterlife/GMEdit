@@ -28,6 +28,7 @@
     {"id":{"name":"v_imp_namespace_class","path":"scripts/v_imp_namespace_class/v_imp_namespace_class.yy",},"order":3,},
     {"id":{"name":"v_imp_static","path":"scripts/v_imp_static/v_imp_static.yy",},"order":4,},
     {"id":{"name":"v_is_highlight","path":"scripts/v_is_highlight/v_is_highlight.yy",},"order":0,},
+    {"id":{"name":"v_constructor_method_arrow_types","path":"scripts/v_constructor_method_arrow_types/v_constructor_method_arrow_types.yy",},"order":14,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
