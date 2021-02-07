@@ -1490,7 +1490,7 @@ class GmlLinter {
 				rc(readStat(newDepth));
 				if (skipIf(peek() == KElse)) rc(readStat(newDepth));
 			};
-			case KWhile, KRepeat, KWith: {
+			case KWhile, KRepeat: {
 				rc(readExpr(newDepth));
 				checkParens();
 				switch (nk) {
@@ -1499,6 +1499,24 @@ class GmlLinter {
 					default:
 				}
 				rc(readLoopStat(newDepth));
+			};
+			case KWith: {
+				rc(readExpr(newDepth));
+				var ctxType = readExpr_currType;
+				checkParens();
+				var self0z = __selfType_set;
+				var self0t = __selfType_type;
+				var other0z = __otherType_set;
+				var other0t = __otherType_type;
+				__otherType_set = true;
+				__otherType_type = getSelfType();
+				__selfType_set = true;
+				__selfType_type = ctxType;
+				rc(readLoopStat(newDepth));
+				__otherType_set = other0z;
+				__otherType_type = other0t;
+				__selfType_set = self0z;
+				__selfType_type = other0t;
 			};
 			case KDo: {
 				rc(readLoopStat(newDepth));
