@@ -645,6 +645,7 @@ using tools.NativeArray;
 		function pop2(c:AceLangRuleState, st:Array<AceLangRuleState>) {
 			st.shift();
 			st.shift();
+			st.shift();
 			return JsTools.or(st.shift(), "start");
 		}
 		rules = {
@@ -705,8 +706,12 @@ using tools.NativeArray;
 					if (GmlAPI.gmlNamespaces.exists(id)) return "namespace";
 					return JsTools.or(GmlTypeTools.kindMap[id], "identifier");
 				}, ~/\w+/),
-				rxRule("punctuation.operator", ~/,/),
+				rxRule("punctuation.operator", ~/[,?]/),
 				rxRule("operator", ~/[<>]/),
+				rxRule("square.paren.lparen", ~/\[/),
+				rxRule("square.paren.rparen", ~/\]/),
+				rxRule("paren.lparen", ~/\(/),
+				rxRule("paren.rparen", ~/\)/),
 				rxRule("curly.paren.rparen", ~/\}$/, pop2),
 				rxRule("curly.paren.rparen", ~/\}/, "pop"),
 				rxRule("text", ~/$/, pop2),
