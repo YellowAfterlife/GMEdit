@@ -611,9 +611,14 @@ class GmlLinter {
 					
 					var imp:GmlImports = getImports();
 					var locals = editor.locals[context];
-					if (imp != null && locals != null && locals.kind.exists(currName)) {
-						currType = imp.localTypes[currName];
-						currFunc = currType.getSelfCallDoc(imp);
+					if (locals != null && locals.kind.exists(currName)) {
+						if (imp != null) {
+							currType = imp.localTypes[currName];
+							currFunc = currType.getSelfCallDoc(imp);
+						} else { // locals without type information
+							currType = null;
+							currFunc = null;
+						}
 						break;
 					}
 					
