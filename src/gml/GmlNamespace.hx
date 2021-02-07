@@ -57,6 +57,10 @@ class GmlNamespace {
 		while (q != null && ++n <= maxDepth) {
 			var t = q.instKind[field];
 			if (t != null) return t;
+			if (q.isObject) {
+				t = GmlAPI.stdInstKind[field];
+				if (t != null) return t;
+			}
 			for (qi in q.interfaces.array) {
 				t = qi.getInstKind(field, n);
 				if (t != null) return t;
@@ -72,6 +76,10 @@ class GmlNamespace {
 		while (q != null && ++n <= maxDepth) {
 			var t = q.instTypes[field];
 			if (t != null) return t;
+			if (q.isObject) {
+				t = GmlAPI.stdInstType[field];
+				if (t != null) return t;
+			}
 			for (qi in q.interfaces.array) {
 				t = qi.getInstType(field, n);
 				if (t != null) return t;
@@ -213,11 +221,5 @@ class GmlNamespace {
 		
 		var comps:ArrayMap<AceAutoCompleteItem> = isInst ? compInst : compStatic;
 		comps.remove(field);
-	}
-	
-	public function addStdInstComp() {
-		for (item in GmlAPI.stdInstComp) {
-			compInst[item.name] = item;
-		}
 	}
 }

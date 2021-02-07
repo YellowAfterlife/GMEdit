@@ -36,6 +36,8 @@ class GmlParseAPI {
 		?version:GmlVersion,
 		?kindPrefix:String,
 		?instComp:AceAutoCompleteItems,
+		?instKind:Dictionary<AceTokenType>,
+		?instType:Dictionary<GmlType>,
 		?fieldHints:Array<GmlSeekDataHint>,
 		#if lwedit
 		?lwArg0:Dictionary<Int>,
@@ -53,6 +55,8 @@ class GmlParseAPI {
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
 		var instComp = data.instComp;
+		var instKind = data.instKind;
+		var instType = data.instType;
 		var namespaceDefs = data.namespaceDefs;
 		var fieldHints = data.fieldHints;
 		#if lwedit
@@ -212,10 +216,12 @@ class GmlParseAPI {
 			var name =  mt[2];
 			var range = mt[3];
 			var flags = mt[4];
-			var type =  mt[5];
+			var typeStr = mt[5];
+			var type:GmlType = null;
 			if (NativeString.contains(flags, "&")) return;
-			if (type != null && stdTypes != null) {
-				stdTypes[name] = GmlTypeDef.parse(type);
+			if (typeStr != null && stdTypes != null) {
+				type = GmlTypeDef.parse(typeStr);
+				stdTypes[name] = type;
 				for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in', mt[0]);
 				typeWarn.clear();
 			}
@@ -223,13 +229,17 @@ class GmlParseAPI {
 			var isConst:Bool = flags.indexOf("#") >= 0;
 			var kind:String = isConst ? "constant" : "variable";
 			//
-			if (instComp != null
-				&& NativeString.contains(flags, "@")
-			) {
-				var doc = "built-in";
-				if (flags.contains("*")) doc += "\nread-only";
-				if (range != null) doc += "\narray" + range;
-				instComp.push(new AceAutoCompleteItem(name, "variable", doc));
+			var isInst = NativeString.contains(flags, "@");
+			if (isInst) {
+				if (instComp != null) {
+					var doc = "built-in";
+					if (flags.contains("*")) doc += "\nread-only";
+					if (range != null) doc += "\narray" + range;
+					if (typeStr != null) doc += "\ntype" + typeStr;
+					instComp.push(new AceAutoCompleteItem(name, "variable", doc));
+				}
+				if (instKind != null) instKind[name] = "variable";
+				if (instKind != null && typeStr != null) instType[name] = type;
 			}
 			//
 			var orig = name;
@@ -249,14 +259,14 @@ class GmlParseAPI {
 				var lwBits = 0x0;
 				if (NativeString.contains(flags, "*")) lwBits |= 1;
 				if (range != null) lwBits |= 2;
-				if (NativeString.contains(flags, "@")) lwBits |= 4;
+				if (isInst) lwBits |= 4;
 				lwFlags.set(name, lwBits);
 				if (orig != name) lwFlags.set(orig, lwBits);
 			}
 			#end
 			stdKind.set(name, kindPrefix + kind);
 			var doc = comp;
-			if (type != null) doc += "\ntype " + type;
+			if (typeStr != null) doc += "\ntype " + typeStr;
 			stdComp.push({
 				name: name,
 				value: name,

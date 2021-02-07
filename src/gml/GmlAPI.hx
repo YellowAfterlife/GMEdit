@@ -92,11 +92,14 @@ class GmlAPI {
 	
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
-	public static var stdInstComp:AceAutoCompleteItems = [];
 	public static var stdKind:Dictionary<String> = new Dictionary();
 	
 	/** Types per built-in variable */
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
+	
+	public static var stdInstComp:AceAutoCompleteItems = [];
+	public static var stdInstKind:Dictionary<AceTokenType> = new Dictionary();
+	public static var stdInstType:Dictionary<GmlType> = new Dictionary();
 	
 	public static var stdNamespaceDefs:Array<GmlNamespaceDef> = [];
 	public static var stdFieldHints:Array<GmlSeekDataHint> = [];
@@ -105,7 +108,11 @@ class GmlAPI {
 		stdDoc = new Dictionary();
 		stdTypes = new Dictionary();
 		stdComp.clear();
+		
 		stdInstComp.clear();
+		stdInstKind = new Dictionary();
+		stdInstType = new Dictionary();
+		
 		stdNamespaceDefs.resize(0);
 		stdFieldHints.resize(0);
 		var sk = new Dictionary();
@@ -225,6 +232,7 @@ class GmlAPI {
 			gmlNamespaces[name] = ns;
 			gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
 			if (!gmlKind.exists(name) && !stdKind.exists(name)) gmlKind[name] = "namespace";
+			if (name == "instance" || name == "object") ns.isObject = true;
 		}
 		return ns;
 	}
@@ -375,6 +383,8 @@ class GmlAPI {
 			namespaceDefs: stdNamespaceDefs,
 			fieldHints: stdFieldHints,
 			instComp: stdInstComp,
+			instKind: stdInstKind,
+			instType: stdInstType,
 			ukSpelling: ukSpelling,
 			version: version,
 			#if lwedit
