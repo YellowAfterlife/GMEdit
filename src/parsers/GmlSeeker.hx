@@ -439,7 +439,9 @@ class GmlSeeker {
 				}
 				if (jsDocInterface) {
 					if (jsDocInterfaceName == null) jsDocInterfaceName = main;
-					out.namespaceHints[jsDocInterfaceName] = new GmlSeekDataNamespaceHint(jsDocInterfaceName, null, null);
+					if (!out.namespaceHints.exists(jsDocInterfaceName)) {
+						out.namespaceHints[jsDocInterfaceName] = new GmlSeekDataNamespaceHint(jsDocInterfaceName, null, null);
+					}
 				}
 				doc.selfType = GmlTypeDef.parse(jsDocSelf);
 				
@@ -684,13 +686,19 @@ class GmlSeeker {
 				mt = jsDoc_hint_extimpl.exec(s);
 				if (mt != null) {
 					var name = mt[1];
-					var imp = mt[3];
+					var target = mt[3];
 					if (mt[2] == "implements") {
 						var arr = out.namespaceImplements[name];
 						if (arr == null) out.namespaceImplements[name] = arr = [];
-						if (arr.indexOf(imp) < 0) arr.push(imp);
+						if (arr.indexOf(target) < 0) arr.push(target);
 					} else {
-						out.namespaceHints[name] = new GmlSeekDataNamespaceHint(name, imp, null);
+						var imp = out.namespaceHints[name];
+						if (imp != null) {
+							imp.parentSpace = target;
+						} else {
+							imp = new GmlSeekDataNamespaceHint(name, target, null);
+							out.namespaceHints[name] = imp;
+						}
 					}
 					continue;
 				}
