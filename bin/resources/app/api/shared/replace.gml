@@ -47,7 +47,7 @@ is_vec3(val:any)&->bool
 is_vec4(val:any)&->bool
 is_matrix(val:any)&->bool
 
-typeof(val:any)->bool
+typeof(val:any)->string
 
 variable_global_exists(name:string)->bool
 variable_global_get(name:string)->any
