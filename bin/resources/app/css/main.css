@@ -409,3 +409,80 @@ https://stackoverflow.com/a/36247448/5578773
 #misc-panel > div {
 	flex-grow: 1;
 }
+
+
+/* Font editor */
+#font-editor {
+	width: 100%;
+	padding-left: 30px;
+	padding-right: 30px;
+	display: flex;
+    flex-direction: column;
+}
+
+#font-editor > div {
+	height: 100%;
+	display: flex;
+}
+
+#font-editor > h2 {
+	font-weight: 400;
+	margin-bottom: 5px;
+}
+
+#font-editor #font-options {
+	max-width: 300px;
+	min-width: 200px;
+	width: 50%;
+	float: left;
+	height: 100%;
+}
+
+#font-editor .hint {
+	opacity: .5;
+	margin: 3px;
+}
+
+#font-options .option {
+	width: 100%;
+}
+#font-options .option > p {
+	margin-bottom: 2px;
+}
+
+#font-options .option input, #font-editor #font-options .option select {
+	width: 100%;
+}
+
+#font-ranges .font-range {
+	width: 100%;
+	position: relative;
+}
+
+#font-ranges .font-range input {
+	border: none;
+}
+
+#font-ranges .font-range button {
+	position: absolute;
+	right: 0px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	opacity: 0.7;
+}
+
+#font-preview {
+	height: 100%;
+	width: 100%;
+	padding-left: 25px;
+	display: flex;
+    flex-direction: column;
+}
+
+#font-preview textarea {
+	width: 100%;
+	margin-top: 4px;
+	height: calc(100% - 50px);
+	resize: none;
+}

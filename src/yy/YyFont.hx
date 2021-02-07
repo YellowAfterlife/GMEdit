@@ -1,5 +1,8 @@
 package yy;
 
+import tools.NativeArray;
+import tools.NativeString;
+
 /**Represents a 2.3 font*/
 @:forward
 abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
@@ -53,9 +56,10 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 	 * @param letters letters to add to the range
 	 */
 	public function addCharacters(letters:String) {
-		var letterCodes: Array<Int> = new Array();
-		for (letter in StringTools.iterator(letters)) {
-			letterCodes.push(letter);
+		var letterCodes = new Array<Int>();
+		var letterStringCodes: Array<String> = NativeArray.from(letters);
+		for (letterStringCode in letterStringCodes) {
+			letterCodes.push(NativeString.codePointAt(letterStringCode, 0));
 		}
 
 		// Backwards sort, we want to pop smaller values first
@@ -115,7 +119,7 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 		var str = "";
 		for (range in this.ranges) {
 			for (i in range.lower...range.upper+1) {
-				str+= String.fromCharCode(i);
+				str+= NativeString.fromCodePoint(i);
 			}
 		}
 

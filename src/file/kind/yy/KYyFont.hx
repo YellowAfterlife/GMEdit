@@ -16,4 +16,5 @@ class KYyFont extends FileKind {
 	override public function init(file:GmlFile, data:Dynamic):Void {
 		file.editor = new EditFont(file);
 	}
+
 }

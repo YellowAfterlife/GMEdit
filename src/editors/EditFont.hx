@@ -1,5 +1,7 @@
 package editors;
 
+import gml.Project;
+import yy.YyJson;
 import electron.Dialog;
 import yy.YyFont;
 import tools.Dictionary;
@@ -15,6 +17,7 @@ class EditFont extends Editor {
 	public function new(file:GmlFile) {
 		super(file);
 		element = document.createDivElement();
+		element.id = "font-editor";
 		fontFamilies = new Dictionary();
 	}
 
@@ -25,7 +28,7 @@ class EditFont extends Editor {
 	private var fontFamilySelect: SelectElement;
 	private var fontStyleSelect: SelectElement;
 	private var fontSizeInput: InputElement;
-	private var previewWindow: DivElement;
+	private var previewTextArea: TextAreaElement;
 	private var rangeWindow: DivElement;
 
 	public override function load(data:Dynamic) {
@@ -44,6 +47,13 @@ class EditFont extends Editor {
 		buildPage();
 
 		FontScanner.getAvailableFonts().then(onFontsLoaded);
+	}
+
+	public override function save(): Bool {
+		var newFontJson = YyJson.stringify(font, Project.current.yyExtJson);
+		file.writeContent(newFontJson);
+		file.changed = false;
+		return true;
 	}
 
 	private function onFontsLoaded(fonts: Array<FontDescriptor>) {
@@ -186,14 +196,28 @@ class EditFont extends Editor {
 		rangeWindow.clearInner();
 
 		for (range in font.ranges) {
-			var rangeInput = document.createInputElement();
-			rangeInput.value = '${range.lower}-${range.upper}';
-			rangeWindow.appendChild(rangeInput);
+			var rangeDiv = document.createDivElement();
+			rangeDiv.classList.add("font-range");
+
+			{
+				var rangeInput = document.createInputElement();
+				rangeInput.value = '${range.lower}-${range.upper}';
+				rangeDiv.appendChild(rangeInput);
+			}
+
+			{
+				var closeButton = document.createButtonElement();
+				closeButton.innerHTML = "x";
+				closeButton.title = "Remove range";
+				rangeDiv.appendChild(closeButton);
+			}
+
+			rangeWindow.appendChild(rangeDiv);
 		}
 
 	}
 	
-	private function onFontChanged() {
+	private function onFontChanged(refreshPreview: Bool = true) {
 		var fontDescriptor = getCurrentFont();
 		if (fontDescriptor != null) {
 			font.italic = fontDescriptor.italic;
@@ -201,7 +225,45 @@ class EditFont extends Editor {
 		// This looks hella weird because it is, but from my limited testing it seems to be how GM determines if it's a bold or not font as well
 		font.bold = font.styleName.toLowerCase().indexOf("bold") >= 0;
 
-		updatePreview();
+		file.changed = true;
+		if (refreshPreview) {
+			updatePreview();
+		}
+	}
+
+	var lastPreviewText:String = null;
+	private function onPreviewTextChanged() {
+		if (lastPreviewText == previewTextArea.value) {
+			return;
+		}
+
+		font.ranges = [];
+		font.addCharacters(previewTextArea.value);
+		lastPreviewText = previewTextArea.value;
+		populateRanges();
+		onFontChanged(false);
+	}
+
+	private function onPreviewTextLostFocus() {
+		var text = previewTextArea.value;
+		var charcodeArray = new Array<Int>();
+
+		for (letter in StringTools.iterator(text)) {
+			charcodeArray.push(letter);
+		}
+
+		charcodeArray.sort((a, b) -> a-b);
+		var last = -1;
+		var str = "";
+		for (charCode in charcodeArray) {
+			if (last == charCode) {
+				continue;
+			}
+			last = charCode;
+			str+=String.fromCharCode(charCode);
+		}
+
+		previewTextArea.value = str;
 	}
 
 	/**Updates the size and font inside the preview-window*/
@@ -209,17 +271,18 @@ class EditFont extends Editor {
 		var fontDescriptor = getCurrentFont();
 		
 		if (fontDescriptor != null) {
-			previewWindow.style.fontWeight = Std.string(fontDescriptor.weight);
-			previewWindow.style.fontFamily = '"${fontDescriptor.postscriptName}", "${fontDescriptor.family} ${fontDescriptor.style}", "${fontDescriptor.family}"';
+			previewTextArea.style.fontWeight = Std.string(fontDescriptor.weight);
+			previewTextArea.style.fontFamily = '"${fontDescriptor.postscriptName}", "${fontDescriptor.family} ${fontDescriptor.style}", "${fontDescriptor.family}"';
 		} else {
-			previewWindow.style.fontWeight = "normal";
-			previewWindow.style.fontFamily = '"${font.fontName} ${font.styleName}", "${font.fontName}"';
+			previewTextArea.style.fontWeight = "normal";
+			previewTextArea.style.fontFamily = '"${font.fontName} ${font.styleName}", "${font.fontName}"';
 		}
 
-		previewWindow.style.fontStyle = font.italic ? "italic" : "normal";
-		previewWindow.style.fontSize = Std.string(font.size) + "pt";
+		previewTextArea.style.fontStyle = font.italic ? "italic" : "normal";
+		previewTextArea.style.fontSize = Std.string(font.size) + "pt";
 
-		previewWindow.innerHTML = font.getAllCharacters();
+		lastPreviewText = font.getAllCharacters();
+		previewTextArea.value = font.getAllCharacters();
 	}
 
 	private function updateRange() {
@@ -229,8 +292,25 @@ class EditFont extends Editor {
 	// Sneakily put at the bottom so you never have to see it
 	/**Builds the HTML page*/
 	private function buildPage() {
+		var header = document.createElement("h2");
+		header.innerHTML = file.name;
+		element.appendChild(header);
+
+		var container = document.createDivElement();
 		{
 			var optionsDiv = document.createDivElement();
+			optionsDiv.id = "font-options";
+
+			function addOptionElement(name: String, element: Element) {
+				var headerDiv = document.createDivElement();
+				var paragraph = document.createParagraphElement();
+				paragraph.innerHTML = name;
+				headerDiv.appendChild(paragraph);
+				headerDiv.appendChild(element);
+				headerDiv.classList.add("option");
+				
+				optionsDiv.append(headerDiv);
+			}
 
 			// Font family selector
 			{
@@ -249,7 +329,7 @@ class EditFont extends Editor {
 				}
 
 				fontFamilySelect.addEventListener("change", onFamilyChanged);
-				optionsDiv.appendChild(fontFamilySelect);
+				addOptionElement("Font family", fontFamilySelect);
 			}
 
 			// Font type selector
@@ -268,7 +348,7 @@ class EditFont extends Editor {
 					fontStyleSelect.appendChild(loadingSelectOption);
 				}
 				fontStyleSelect.addEventListener("change", onStyleChanged);
-				optionsDiv.appendChild(fontStyleSelect);
+				addOptionElement("Font style", fontStyleSelect);
 			}
 
 			// Font size selection
@@ -279,29 +359,46 @@ class EditFont extends Editor {
 				fontSizeInput.min = "1";
 				fontSizeInput.max = "200"; // This is the limit enforced in GMS2.3
 
-				optionsDiv.addEventListener("input", onSizeChanged);
-				optionsDiv.appendChild(fontSizeInput);
+				fontSizeInput.addEventListener("input", onSizeChanged);
+				addOptionElement("Font size", fontSizeInput);
 			}
 
 			// Font range selection
 			{
 				rangeWindow = document.createDivElement();
+				rangeWindow.id = "font-ranges";
 				populateRanges();
-				optionsDiv.appendChild(rangeWindow);
+				addOptionElement("Character ranges", rangeWindow);
 			}
 
-			element.appendChild(optionsDiv);
+			container.appendChild(optionsDiv);
 		}
 
 
 		{
-			previewWindow = document.createDivElement();
-			previewWindow.innerHTML = "";
+			var previewArea = document.createDivElement();
+			previewArea.id = "font-preview";
 
-			element.appendChild(previewWindow);
+			{
+				previewTextArea = document.createTextAreaElement();
+				updatePreview();
+				previewTextArea.addEventListener("input", onPreviewTextChanged);
+				previewTextArea.addEventListener("blur", onPreviewTextLostFocus);
+				previewArea.appendChild(previewTextArea);
+			}
+
+			{
+				var previewHint = document.createParagraphElement();
+				previewHint.classList.add("hint");
+				previewHint.innerHTML = "Tip: Changing the characters inside this preview box will also change the font's included characters";
+				previewArea.appendChild(previewHint);
+			}
+
+			container.appendChild(previewArea);
+
 		}
 
-		updatePreview();
+		element.appendChild(container);
 	}
 }
 
