@@ -7,6 +7,7 @@ import gml.GmlFuncDoc;
 import gml.GmlImports;
 import gml.GmlLocals;
 import gml.GmlNamespace;
+import gml.file.GmlFileKindTools;
 import gml.type.GmlType;
 import gml.Project;
 import gml.type.GmlTypeDef;
@@ -67,6 +68,7 @@ class GmlLinter {
 	var reader:GmlReaderExt;
 	
 	var editor:EditCode;
+	var functionsAreGlobal:Bool;
 	
 	/**
 	 * Context name - such as current script name or event name.
@@ -1264,7 +1266,7 @@ class GmlLinter {
 	static var readLambda_doc:GmlFuncDoc;
 	function readLambda(oldDepth:Int, isFunc:Bool, isStat:Bool):FoundError {
 		var name = "function";
-		var isTopLevel = isFunc && isStat && oldDepth == 2;
+		var isTopLevel = isFunc && isStat && oldDepth == 2 && functionsAreGlobal;
 		if (peek() == KIdent) {
 			skip();
 			name = nextVal;
@@ -1611,6 +1613,7 @@ class GmlLinter {
 	public function runPre(source:GmlCode, editor:EditCode, version:GmlVersion, context:String = ""):Void {
 		this.version = version;
 		this.editor = editor;
+		functionsAreGlobal = GmlFileKindTools.functionsAreGlobal(editor.kind);
 		this.context = context;
 		if (context != "") {
 			currFuncDoc = GmlAPI.gmlDoc[context];
