@@ -34,7 +34,7 @@ weak_ref_any_alive(array:weak_reference[],?index:int,?length:int)->bool
 
 #region 2.3
 
-method<T:function>(struct_ref_or_instance_id:instance|struct,func:T)->T
+method<T:function>(context:instance|struct|undefined,func:T)->T
 method_get_index(method)
 method_get_self(method)
 
