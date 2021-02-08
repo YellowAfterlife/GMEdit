@@ -56,6 +56,12 @@ class EditFont extends Editor {
 		if (data == null) {
 			return;
 		}
+
+		if (Project.current.yyUsesGUID ) {
+			Dialog.showAlert("Font editing not supported on 2.2");
+			return;
+		}
+
 		font = data;
 
 		var imagePath = getImageFileName();
