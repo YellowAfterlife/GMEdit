@@ -58,7 +58,7 @@ class EditFont extends Editor {
 		}
 
 		if (Project.current.yyUsesGUID ) {
-			Dialog.showAlert("Font editing not supported on 2.2");
+			Dialog.showAlert("Font editing is not supported for the version used by this project");
 			return;
 		}
 
