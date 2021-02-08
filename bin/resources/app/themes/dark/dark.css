@@ -357,3 +357,75 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	padding: 8px;
 	line-height: 25px;
 }
+
+
+/* Font editor */
+
+
+#font-options .option {
+	width: 100%;
+}
+#font-options .option > p {
+	margin-bottom: 2px;
+}
+
+#font-options .option input, #font-editor #font-options .option select {
+	background-color: #333333;
+	color: #eeeeee;
+	border: none;
+	padding: 6px;
+}
+
+
+#font-ranges .font-range:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+#font-ranges .font-range input {
+	background-color: transparent;
+	padding: 4px;
+}
+
+#font-ranges .font-range button {
+	padding: 4px;
+	color: white;
+}
+
+#font-options #add-range {
+	border: none;
+	color: white;
+	padding: 3px;
+}
+
+#font-options #add-range button {
+	color: white;
+	background-color: #333333;
+	width: calc(100% - 32px);
+	height: 26px;
+	padding: 0px;
+	margin: 0px;
+}
+
+
+#font-options #add-range .more-options {
+	border: none;
+	background-color: #333333;
+	padding: 0px;
+	margin: 0px;
+}
+
+#font-options .more-options-list {
+	background-color: #333333;
+}
+#font-options .more-options-list button {
+	color: white;
+}
+#font-options .more-options-list button:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+#font-preview textarea {
+	background-color: #333333;
+	color: white;
+}

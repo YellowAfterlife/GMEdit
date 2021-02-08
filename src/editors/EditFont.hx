@@ -1,5 +1,13 @@
 package editors;
 
+import electron.FileSystem;
+import haxe.io.Path;
+import gml.GmlVersion;
+import js.lib.Math;
+import js.lib.Intl;
+import tools.JsTools;
+import js.lib.RegExp;
+import tools.NativeString;
 import gml.Project;
 import yy.YyJson;
 import electron.Dialog;
@@ -12,6 +20,7 @@ import file.kind.yy.KYyFont;
 import gml.file.GmlFile;
 import Main.document;
 using tools.HtmlTools;
+using Lambda;
 
 class EditFont extends Editor {
 	public function new(file:GmlFile) {
@@ -23,6 +32,8 @@ class EditFont extends Editor {
 
 	private var font: YyFont;
 
+	private var imageFileExists: Bool = false;
+	private var needsRegenerationWarning: ParagraphElement;
 
 	private var fontFamilies: Dictionary<FontFamily>;
 	private var fontFamilySelect: SelectElement;
@@ -30,9 +41,12 @@ class EditFont extends Editor {
 	private var fontSizeInput: InputElement;
 	private var previewTextArea: TextAreaElement;
 	private var rangeWindow: DivElement;
+	private var moreRangeOptionsDiv: DivElement;
+	private var rangesDiv : DivElement;
 
 	public override function load(data:Dynamic) {
 		super.load(data);
+
 
 		if (Std.is(file.kind, KYyFont) == false) {
 			return;
@@ -44,15 +58,32 @@ class EditFont extends Editor {
 		}
 		font = data;
 
+		var imagePath = getImageFileName();
+		imageFileExists = FileSystem.existsSync(imagePath);
+
 		buildPage();
 
 		FontScanner.getAvailableFonts().then(onFontsLoaded);
+	}
+
+	private function getImageFileName() {
+		var directory = Path.directory(file.path);
+		return Path.join([directory, font.name]) + ".png";
 	}
 
 	public override function save(): Bool {
 		var newFontJson = YyJson.stringify(font, Project.current.yyExtJson);
 		file.writeContent(newFontJson);
 		file.changed = false;
+
+		// Remove the old .png if it exists
+		var directory = Path.directory(file.path);
+		var imagePath = getImageFileName();
+		if (FileSystem.existsSync(imagePath)) {
+			imageFileExists = false;
+			FileSystem.renameSync(imagePath, Path.join([directory, font.name]) + ".old.png");
+		}
+
 		return true;
 	}
 
@@ -192,29 +223,111 @@ class EditFont extends Editor {
 		}
 	}
 
+	function addRangeElement(range: YyFontRange): DivElement {
+		rangesDiv = document.createDivElement();
+		rangesDiv.classList.add("font-range");
+
+		{
+			var rangeInput = document.createInputElement();
+			if (range.lower == range.upper) {
+				rangeInput.value = '${range.lower}';
+			} else {
+				rangeInput.value = '${range.lower}-${range.upper}';
+			}
+		
+			rangeInput.addEventListener("input", () -> onRangeChanged(rangeInput, range));
+			rangeInput.addEventListener("blur", () -> onRangeUnfocus(rangeInput, range));
+			rangeInput.addEventListener("keyup", function(event:KeyboardEvent) {
+				if (event.keyCode == 13) {
+					event.preventDefault();
+					onRangeUnfocus(rangeInput, range);
+				}
+			});
+			rangesDiv.appendChild(rangeInput);
+		}
+
+		// Can't remove what's already gone *taps forehead*
+		{
+			var closeButton = document.createButtonElement();
+			closeButton.innerHTML = "x";
+			closeButton.title = "Remove range";
+			closeButton.addEventListener("click", function() {
+				font.ranges.remove(range);
+				rangesDiv.remove();
+				onFontChanged();
+			});
+			rangesDiv.appendChild(closeButton);
+		}
+
+		return rangesDiv;
+	}
+
 	private function populateRanges() {
 		rangeWindow.clearInner();
 
 		for (range in font.ranges) {
-			var rangeDiv = document.createDivElement();
-			rangeDiv.classList.add("font-range");
-
-			{
-				var rangeInput = document.createInputElement();
-				rangeInput.value = '${range.lower}-${range.upper}';
-				rangeDiv.appendChild(rangeInput);
-			}
-
-			{
-				var closeButton = document.createButtonElement();
-				closeButton.innerHTML = "x";
-				closeButton.title = "Remove range";
-				rangeDiv.appendChild(closeButton);
-			}
-
+			var rangeDiv = addRangeElement(range);
 			rangeWindow.appendChild(rangeDiv);
 		}
 
+	}
+
+	private function getRangeValues(input: String): Array<Int> {
+		var ranges = input.split('-').filter(x -> x != "");
+
+		if (ranges.length == 0) {
+			return [];
+		}
+
+		var intRanges:Array<Int> = ranges.map(x -> Std.parseInt(x)).map(x -> Math.max(x, 32));
+
+		if (intRanges.length == 0) {
+			return [];
+		}
+
+		intRanges.sort((a, b) -> a-b);
+		if (intRanges.length == 1) {
+			return [intRanges[0], intRanges[0]];
+		}
+		return intRanges.slice(0, 2);
+	}
+
+	private function onRangeChanged(element: InputElement, range: YyFontRange) {
+		element.value = NativeString.replaceExt(element.value, JsTools.rx(~/[^0-9\\-]/gi), '');
+		var intRanges = getRangeValues(element.value);
+
+		// Don't do auto updates if value is larger than 1000
+		if (intRanges[1] - intRanges[0] > 1000) {
+			return;
+		}
+
+		// Temporairly update the range for preview purposes
+		var oldLower = range.lower;
+		var oldUpper = range.upper;
+		range.lower = intRanges[0];
+		range.upper = intRanges[1];
+		onFontChanged();
+		// Set the range back so we dont potentially leave it in a broken state
+		range.lower = oldLower;
+		range.upper = oldUpper;
+	}
+	private function onRangeUnfocus(element: InputElement, range: YyFontRange) {
+		var result = element.value;
+		
+		var intRanges = getRangeValues(result);
+		if (intRanges.length == 0) {
+			element.parentElement.remove();
+			font.ranges.remove(range);
+			onFontChanged();
+			return;
+		}
+
+		// Remove old range and insert new range
+		// This ensures it's properly sorted and merged as necessary
+		font.ranges.remove(range);
+		font.addRange({lower: intRanges[0], upper: intRanges[1]});
+		populateRanges();
+		onFontChanged();
 	}
 	
 	private function onFontChanged(refreshPreview: Bool = true) {
@@ -233,7 +346,13 @@ class EditFont extends Editor {
 
 	var lastPreviewText:String = null;
 	private function onPreviewTextChanged() {
+		if (previewIsGettingSet) {
+			return;
+		}
 		if (lastPreviewText == previewTextArea.value) {
+			return;
+		}
+		if (previewTextArea.disabled) {
 			return;
 		}
 
@@ -266,9 +385,12 @@ class EditFont extends Editor {
 		previewTextArea.value = str;
 	}
 
+	/**Used to prevent a feedback loop where updating a value in preview triggers an event back and forth*/
+	var previewIsGettingSet = false;
 	/**Updates the size and font inside the preview-window*/
 	private function updatePreview() {
 		var fontDescriptor = getCurrentFont();
+		previewIsGettingSet = true;
 		
 		if (fontDescriptor != null) {
 			previewTextArea.style.fontWeight = Std.string(fontDescriptor.weight);
@@ -281,12 +403,21 @@ class EditFont extends Editor {
 		previewTextArea.style.fontStyle = font.italic ? "italic" : "normal";
 		previewTextArea.style.fontSize = Std.string(font.size) + "pt";
 
-		lastPreviewText = font.getAllCharacters();
-		previewTextArea.value = font.getAllCharacters();
+
+		if (font.characterCount > 5000) {
+			previewTextArea.disabled = true;
+			previewTextArea.value = "There's too many characters to preview\nHere's some preview text:\n\n" + font.sampleText;
+		}
+		else {
+			lastPreviewText = font.getAllCharacters();
+			previewTextArea.disabled = false;
+			previewTextArea.value = lastPreviewText;
+		}
+		previewIsGettingSet = false;
 	}
 
-	private function updateRange() {
-
+	private function onImagefileChanged() {
+		needsRegenerationWarning.style.display = imageFileExists ? "none" : "unset";
 	}
 
 	// Sneakily put at the bottom so you never have to see it
@@ -297,6 +428,8 @@ class EditFont extends Editor {
 		element.appendChild(header);
 
 		var container = document.createDivElement();
+
+
 		{
 			var optionsDiv = document.createDivElement();
 			optionsDiv.id = "font-options";
@@ -362,7 +495,7 @@ class EditFont extends Editor {
 				fontSizeInput.addEventListener("input", onSizeChanged);
 				addOptionElement("Font size", fontSizeInput);
 			}
-
+			
 			// Font range selection
 			{
 				rangeWindow = document.createDivElement();
@@ -371,6 +504,107 @@ class EditFont extends Editor {
 				addOptionElement("Character ranges", rangeWindow);
 			}
 
+			// Font add range
+			{
+				var addRangeDiv = document.createDivElement();
+				addRangeDiv.id = "add-range";
+				{
+					var newButton = document.createButtonElement();
+					newButton.innerHTML = "Add range";
+					newButton.addEventListener("click", function() {
+						moreRangeOptionsDiv.style.display = "none";
+						var newRange = {lower: 0x10FFFF, upper: 0x10FFFF};
+						font.addRange(newRange);
+
+						var rangeDiv = addRangeElement(newRange);
+
+						rangeWindow.appendChild(rangeDiv);
+						var input:InputElement = cast rangeDiv.getElementsByTagName("input")[0];
+						input.value = "";
+						input.select();
+					});
+					addRangeDiv.appendChild(newButton);
+				}
+	
+				{
+					var moreOptionsButton = document.createButtonElement();
+					moreOptionsButton.innerHTML = "▼";
+					moreOptionsButton.classList.add("more-options");
+					moreOptionsButton.addEventListener("click", function() {
+						moreRangeOptionsDiv.style.display = moreRangeOptionsDiv.style.display == "block" ? "none" : "block";
+					});
+					addRangeDiv.appendChild(moreOptionsButton);
+					
+				}
+				optionsDiv.appendChild(addRangeDiv);
+
+			
+				moreRangeOptionsDiv = document.createDivElement();
+				moreRangeOptionsDiv.classList.add("more-options-list");
+				{
+					var addCharacters = document.createButtonElement();
+					addCharacters.innerHTML = "Add characters...";
+					addCharacters.addEventListener("click", function() {
+						Dialog.showPrompt("Characters to add to font:", "", function(newCharacters) {
+							font.addCharacters(newCharacters);
+							
+							populateRanges();
+							onFontChanged();
+						});
+					});
+					moreRangeOptionsDiv.appendChild(addCharacters);
+				}
+	
+				{
+					var addAscii = document.createButtonElement();
+					addAscii.innerHTML = "Add ASCII range";
+					addAscii.addEventListener("click", function() {
+						font.addRange({lower: 32, upper: 255});
+	
+						populateRanges();
+						onFontChanged();
+					});
+					moreRangeOptionsDiv.appendChild(addAscii);
+				}
+	
+				{
+					var addAscii = document.createButtonElement();
+					addAscii.innerHTML = "Add digits range";
+					addAscii.addEventListener("click", function() {
+						font.addRange({lower: 48, upper: 57});
+	
+						populateRanges();
+						onFontChanged();
+					});
+					moreRangeOptionsDiv.appendChild(addAscii);
+				}
+	
+				{
+					var addLetters = document.createButtonElement();
+					addLetters.innerHTML = "Add letters range";
+					addLetters.addEventListener("click", function() {
+						font.addRange({lower: 'A'.code, upper: 'Z'.code});
+						font.addRange({lower: 'a'.code, upper: 'z'.code});
+	
+						populateRanges();
+						onFontChanged();
+					});
+					moreRangeOptionsDiv.appendChild(addLetters);
+				}
+	
+				optionsDiv.appendChild(moreRangeOptionsDiv);
+			}
+
+			// Regeneration warning
+			{
+				needsRegenerationWarning = document.createParagraphElement();
+				needsRegenerationWarning.classList.add("regeneration-warning"); // straight outta doctor who
+				needsRegenerationWarning.innerHTML = "The generated font file does not exist on disk. It is necessary to run the project inside GameMaker to create it.";	
+				onImagefileChanged();
+	
+				optionsDiv.append(needsRegenerationWarning);
+			}
+	
 			container.appendChild(optionsDiv);
 		}
 

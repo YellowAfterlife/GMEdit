@@ -1,7 +1,9 @@
 package yy;
 
+import js.html.svg.Length;
 import tools.NativeArray;
 import tools.NativeString;
+using Lambda;
 
 /**Represents a 2.3 font*/
 @:forward
@@ -50,6 +52,18 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 			"resourceType": "GMFont",
 		}
 	}
+
+	public var characterCount(get,never): Int;
+
+	/**Returns the total number of characters in the font*/
+	private function get_characterCount(): Int {
+		var sum = 0;
+		for (range in this.ranges) {
+			sum += range.upper - range.lower + 1;
+		}
+		return sum;
+	}
+
 
 	/**
 	 * Add characters to the font ranges of the font, creating and merging ranges as necessary
@@ -125,6 +139,41 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 
 		return str;
 	}
+
+	/**
+	 * Adds a range to the ranges, sorts and merging as necessary
+	 */
+	 public function addRange(range: YyFontRange) {
+		if (this.ranges.length == 0) {
+			this.ranges.push(range);
+			return;
+		}
+		
+		var toRemove = new Array<YyFontRange>();
+		// Absorb everything it touches
+		for (otherRange in this.ranges) {
+			if ( range.lower - 1 <= otherRange.upper && range.upper + 1 >= otherRange.lower ) {
+				range.lower = cast Math.min(otherRange.lower, range.lower);
+				range.upper = cast Math.max(otherRange.upper, range.upper);
+				toRemove.push(otherRange);
+			}
+		}
+
+		for (otherRange in toRemove) {
+			this.ranges.remove(otherRange);
+		}
+
+		for (i in 0...this.ranges.length) {
+			var otherRange = this.ranges[i];
+			if (otherRange.lower > range.lower) {
+				this.ranges.insert(i, range);
+				return;
+			}
+		}
+
+		// Nothing found, add to the end
+		this.ranges.push(range);
+	 }
 }
 
 typedef YyFontImpl = {
