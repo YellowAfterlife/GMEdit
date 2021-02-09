@@ -1265,26 +1265,50 @@ class GmlSeeker {
 				};
 				default: { // maybe an instance field assignment
 					// skip if it's a local/project/extension identifier:
-					if (locals.kind[s] != null) continue;
-					if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
-						procLambdaIdent(s, locals);
-						continue;
+					var isDotSelf = false;
+					var isDot = false; {
+						var dp = q.pos - s.length;
+						while (--dp >= 0) {
+							var c = q.get(dp);
+							if (c == ".".code) {
+								isDot = true;
+								while (--dp >= 0) {
+									c = q.get(dp);
+									if (!c.isSpace1()) break;
+								}
+								if (c == "f".code
+									&& dp >= 3 && q.substr(dp - 3, 4) == "self"
+									&& (dp == 3 || !q.get(dp - 4).isIdent1_ni())
+								) isDotSelf = true;
+							} else if (c.isSpace1()) {
+								// OK
+							} else break;
+						}
 					}
-					if (GmlAPI.gmlKind[s] != null || GmlAPI.extKind[s] != null) continue;
+					if (!isDot) {
+						if (locals.kind[s] != null) continue;
+						if (canLam && s.startsWith(GmlExtLambda.lfPrefix)) {
+							procLambdaIdent(s, locals);
+							continue;
+						}
+						if (GmlAPI.gmlKind[s] != null || GmlAPI.extKind[s] != null) continue;
+					}
 					
 					// we'll hint top-level variable assignments in constructors and Create events:
 					var isConstructorField:Bool;
-					if (jsDocInterface) {
-						var wantDepth = hasFunctionLiterals && funcsAreGlobal ? 1 : 0;
-						isConstructorField = (cubDepth == wantDepth);
-					} else if (isCreateEvent) {
-						isConstructorField = cubDepth == 0;
-					} else {
-						isConstructorField = cubDepth == 1 && doc != null && doc.isConstructor;
-					}
-					if (isConstructorField && privateFieldRegex != null && privateFieldRegex.test(s)) {
-						isConstructorField = false;
-					}
+					if (!isDot || isDotSelf) {
+						if (jsDocInterface) {
+							var wantDepth = hasFunctionLiterals && funcsAreGlobal ? 1 : 0;
+							isConstructorField = (cubDepth == wantDepth);
+						} else if (isCreateEvent) {
+							isConstructorField = cubDepth == 0;
+						} else {
+							isConstructorField = cubDepth == 1 && doc != null && doc.isConstructor;
+						}
+						if (isConstructorField && privateFieldRegex != null && privateFieldRegex.test(s)) {
+							isConstructorField = false;
+						}
+					} else isConstructorField = false;
 					
 					// skip if we don't have anything to do:
 					var kind = GmlAPI.stdKind[s];
