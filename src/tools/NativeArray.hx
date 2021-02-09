@@ -1,5 +1,7 @@
 package tools;
 
+import js.Syntax;
+
 /**
  * ...
  * @author YellowAfterlife
@@ -7,6 +9,11 @@ package tools;
 @:keep class NativeArray {
 	public static inline function create<T>(size:Int):Array<T> {
 		return js.Syntax.code("new Array")(size);
+	}
+
+	/**Create a new array from a given content*/
+	public static inline function from<T>(content: Dynamic):Array<T> {
+		return Syntax.code("Array.from")(content);
 	}
 	
 	public static function nzcct<T>(a:Array<T>, b:Array<T>, ?copy:Bool):Array<T> {

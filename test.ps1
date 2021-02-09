@@ -21,10 +21,13 @@ Push-Location ./tests/unittest_node/
 #If node modules are not present, install them
 if (-not (Test-Path "node_modules")) {
 	npm install
-} 
+}
+
+#Exit out of node folder
+Pop-Location
 
 #Start node
-node ./index.js
+npm start --prefix tests/unittest_node
 
 #If node crashed give a warning
 if (-not ($?)) {
@@ -32,6 +35,3 @@ if (-not ($?)) {
 	write-host "Server was not started, is the port busy? Press any key to continue..."
 	[void][System.Console]::ReadKey($true)
 }
-
-#Exit out of node folder
-Pop-Location

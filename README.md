@@ -32,6 +32,7 @@ Same page also houses screenshots and development log.
 
 ## Building
 
+### First time setup
 * Download/clone the repository
 * Download [a pre-built 7.x Electron binary](https://github.com/electron/electron/releases)
   and extract the files into bin/ directory (so that you have `bin/electron.exe` on Windows or `bin/electron` on Mac/Linux).
@@ -39,6 +40,18 @@ Same page also houses screenshots and development log.
   You can find which exact version GMEdit is using by evaluating `process.versions.electron` in the JS console (Ctrl+Shift+I).
   
   Alternatively, extract an existing GMEdit Beta to `bin/` without replacing files.
+* Install node modules by navigating to `bin/resources/app` and then running  
+  ```
+  npm install
+  ```  
+  Electron requires native node modules to be rebuilt using electron-rebuild. To install and launch this, run:  
+  ```
+  npm install -g electron-rebuild
+  electron-rebuild -v VERSION
+  ```  
+  where VERSION is the version of Electron you downloaded.
+  
+### Compiling
 * Build the project via  
   ```
   haxe build.hxml

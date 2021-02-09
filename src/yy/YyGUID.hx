@@ -1,4 +1,5 @@
 package yy;
+import tools.Random;
 import js.lib.RegExp;
 
 /**
@@ -25,7 +26,15 @@ abstract YyGUID(String) to String {
 			if (j == 8 || j == 12 || j == 16 || j == 20) {
 				result += "-";
 			}
-			result += "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
+			if (j == 12) {
+				result += "4";
+			}
+			else if (j == 16) {
+				result += "89ab".charAt(Random.integer(4));
+			}
+			else {
+				result += "0123456789abcdef".charAt(Random.integer(16));
+			}
 		}
 		return result;
 	}

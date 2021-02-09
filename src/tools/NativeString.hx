@@ -15,6 +15,16 @@ import tools.CharCode;
 	public static inline function fastCodeAt(s:String, index:Int):CharCode {
 		return (cast s).charCodeAt(index);
 	}
+
+	/** Returns the unicode correct character at a specific point*/
+	public static inline function codePointAt(s: String, index:Int):CharCode {
+		return (cast s).codePointAt(index);
+	}
+
+	/** Returns the unicode correct character at a specific point*/
+	public static inline function fromCodePoint(index:Int):String {
+		return Syntax.code("String.fromCodePoint")(index);
+	}
 	
 	public static inline function replaceExt(
 		s:String, what:EitherType<String, RegExp>, by:EitherType<String, Function>
