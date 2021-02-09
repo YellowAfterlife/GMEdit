@@ -37,7 +37,9 @@ class EditFont extends Editor {
 
 	private var fontFamilies: Dictionary<FontFamily>;
 	private var fontFamilySelect: SelectElement;
+	private var fontFamilyInput: InputElement;
 	private var fontStyleSelect: SelectElement;
+	private var fontStyleInput: InputElement;
 	private var fontSizeInput: InputElement;
 	private var previewTextArea: TextAreaElement;
 	private var rangeWindow: DivElement;
@@ -95,23 +97,45 @@ class EditFont extends Editor {
 
 	private function onFontsLoaded(fonts: Array<FontDescriptor>) {
 		processFonts(fonts);
-
-		fontFamilySelect.clearInner();
-
+		
 		var fontList = fontFamilies.keys();
 		fontList.sort((a, b) -> a < b ? -1 : 1);
-
-		for (fontName in fontList) {
-			var optionElement = document.createOptionElement();
-			optionElement.innerText = fontName;
-			fontFamilySelect.appendChild(optionElement);
-			// Set the current family as the marked one
-			if (font.fontName == fontName) {
-				optionElement.selected = true;
+		
+		if (fontList.length == 0) {
+			if (fontFamilyInput == null) {
+				fontFamilyInput = document.createInputElement();
+				fontFamilyInput.addEventListener("change", onFamilyChanged);
+				fontFamilySelect.replaceWith(fontFamilyInput);
 			}
+			fontFamilyInput.value = font.fontName;
+			if (fontStyleInput == null) {
+				fontStyleInput = document.createInputElement();
+				fontStyleInput.addEventListener("change", onStyleChanged);
+				fontStyleSelect.replaceWith(fontStyleInput);
+			}
+			fontStyleInput.value = font.styleName;
+		} else {
+			fontFamilySelect.clearInner();
+			
+			var foundCurrent = false;
+			for (fontName in fontList) {
+				var optionElement = document.createOptionElement();
+				optionElement.innerText = fontName;
+				fontFamilySelect.appendChild(optionElement);
+				// Set the current family as the marked one
+				if (font.fontName == fontName) {
+					optionElement.selected = true;
+					foundCurrent = true;
+				}
+			}
+			if (!foundCurrent) {
+				var optionElement = document.createOptionElement();
+				optionElement.innerText = font.fontName;
+				optionElement.selected = true;
+				fontFamilySelect.prepend(optionElement);
+			}
+			populateStyles();
 		}
-
-		populateStyles();
 		updatePreview();
 	}
 
@@ -147,8 +171,20 @@ class EditFont extends Editor {
 	}
 
 	private function onFamilyChanged() {
-		var newName = (cast fontFamilySelect.options[fontFamilySelect.selectedIndex]).text;
+		var newName:String;
+		if (fontFamilyInput != null) {
+			newName = fontFamilyInput.value;
+		} else {
+			var curOption:OptionElement = cast fontFamilySelect.options[fontFamilySelect.selectedIndex];
+			newName = curOption.text;
+		}
 		if (newName == font.fontName || newName == "" || newName == null) {
+			return;
+		}
+		
+		if (fontFamilies.isEmpty()) { // no data - let it have at it
+			font.fontName = newName;
+			onFontChanged();
 			return;
 		}
 		
@@ -179,7 +215,13 @@ class EditFont extends Editor {
 	}
 
 	private function onStyleChanged() {
-		var newStyle = (cast fontStyleSelect.options[fontStyleSelect.selectedIndex]).text;
+		var newStyle:String;
+		if (fontStyleInput != null) {
+			newStyle = fontStyleInput.value;
+		} else {
+			var opt:OptionElement = cast fontStyleSelect.options[fontStyleSelect.selectedIndex];
+			newStyle = opt.text;
+		}
 		if (newStyle == font.styleName || newStyle == "" || newStyle == null) {
 			return;
 		}
@@ -204,6 +246,7 @@ class EditFont extends Editor {
 
 		var currentFontFamily = fontFamilies[font.fontName];
 		if (currentFontFamily != null) {
+			var foundCur = false;
 			for (fontChild in currentFontFamily.children) {
 				var optionElement = document.createOptionElement();
 				optionElement.innerText = fontChild.style;
@@ -211,7 +254,13 @@ class EditFont extends Editor {
 				// Set the current style as the marked one
 				if (font.styleName == fontChild.style) {
 					optionElement.selected = true;
+					foundCur = true;
 				}
+			}
+			if (!foundCur) {
+				var optionElement = document.createOptionElement();
+				optionElement.innerText = font.styleName;
+				fontStyleSelect.prepend(optionElement);
 			}
 		} else {
 			{

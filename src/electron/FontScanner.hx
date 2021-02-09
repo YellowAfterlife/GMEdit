@@ -2,22 +2,23 @@ package electron;
 
 import js.lib.Promise;
 
-#if !test
-@:jsRequire("font-scanner")
-extern class FontScanner {
+@:native("libFontScanner") extern class FontScanner {
 	static function getAvailableFonts(): Promise<Array<FontDescriptor>>;
 	
 	static function getAvailableFontsSync(): Array<FontDescriptor>;
 
 }
-#else
-class FontScanner {
-	public static function getAvailableFonts(): Promise<Array<FontDescriptor>> { return null; }
+@:keep class FontScannerFallback {
+	public static function getAvailableFonts(): Promise<Array<FontDescriptor>> {
+		return new Promise(function(resolve, reject) {
+			resolve([]);
+		});
+	}
 	
-	public static function getAvailableFontsSync(): Array<FontDescriptor> {return null;}
+	public static function getAvailableFontsSync(): Array<FontDescriptor> {
+		return [];
+	}
 }
-
-#end
 
 typedef FontDescriptor = {
 	path: String,

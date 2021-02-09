@@ -1,5 +1,6 @@
 package electron;
 
+import electron.FontScanner.FontScannerFallback;
 import gmx.SfGmx;
 import js.lib.Error;
 import haxe.extern.EitherType;
@@ -37,6 +38,14 @@ import haxe.extern.EitherType;
 			set("Electron_Menu", remote.Menu);
 			set("Electron_MenuItem", remote.MenuItem);
 			set("Electron_App", remote.app);
+			
+			try {
+				load("libFontScanner", "font-scanner");
+			} catch (x:Dynamic) {
+				Main.console.warn("font-scanner failed to load: ", x);
+				set("libFontScanner", FontScannerFallback);
+			}
+			
 			function ensure(dir:String) {
 				FileSystem.ensureDirSync(dir);
 			}
@@ -57,9 +66,10 @@ import haxe.extern.EitherType;
 			set("Electron_FS", FileSystem.FileSystemBrowser);
 			blank("Electron_IPC");
 			blank("Electron_Shell");
-			blank("Electron_App");
 			set("Electron_Menu", Menu.MenuFallback);
 			set("Electron_MenuItem", Menu.MenuItemFallback);
+			blank("Electron_App");
+			set("libFontScanner", FontScannerFallback);
 		}
 	}
 }
