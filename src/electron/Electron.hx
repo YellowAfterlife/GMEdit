@@ -40,7 +40,7 @@ import haxe.extern.EitherType;
 			set("Electron_App", remote.app);
 			
 			try {
-				load("libFontScanner", "font-scanner");
+				load("libFontScanner", "./native/font-scanner/index.js");
 			} catch (x:Dynamic) {
 				Main.console.warn("font-scanner failed to load: ", x);
 				set("libFontScanner", FontScannerFallback);

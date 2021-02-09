@@ -40,16 +40,6 @@ Same page also houses screenshots and development log.
   You can find which exact version GMEdit is using by evaluating `process.versions.electron` in the JS console (Ctrl+Shift+I).
   
   Alternatively, extract an existing GMEdit Beta to `bin/` without replacing files.
-* Install node modules by navigating to `bin/resources/app` and then running  
-  ```
-  npm install
-  ```  
-  Electron requires native node modules to be rebuilt using electron-rebuild. To install and launch this, run:  
-  ```
-  npm install -g electron-rebuild
-  electron-rebuild -v VERSION
-  ```  
-  where VERSION is the version of Electron you downloaded.
   
 ### Compiling
 * Build the project via  
@@ -75,6 +65,7 @@ Same page also houses screenshots and development log.
 * Dark theme tree icons: [Font Awesome](https://fontawesome.com/)
 * zlib decompression: [pako](https://github.com/nodeca/pako)
 * Windows title bar color detection: [this library](https://github.com/loilo/windows-titlebar-color)
+* System font enumerator for the font editor: [font-scanner](https://www.npmjs.com/package/font-scanner)
 
 ### License
 
