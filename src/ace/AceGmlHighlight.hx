@@ -155,26 +155,29 @@ using tools.NativeArray;
 							checkStatics = true;
 						}
 						// perhaps a NameSpace.staticField?:
-						if (checkStatics) for (step in (imp != null ? 0 : 1) ... 2) {
-							ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
-							var e1:String;
-							inline function checkEnum(error:String) {
-								if (step != 0) return;
-								e1 = imp.longenEnum[object];
-								if (e1 == null) return;
-								en = GmlAPI.gmlEnums[e1];
-								if (en == null) return;
-								fdType = en.items[field] ? "enumfield" : error;
+						if (checkStatics) {
+							for (step in (imp != null ? 0 : 1) ... 2) {
+								ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
+								//
+								if (ns != null) {
+									objType = ns.isObject ? "asset.object" : "namespace";
+									fdType = ns.staticKind[field];
+									if (fdType != null) break;
+								}
+								//
+								if (step == 0) {
+									// handles `#import EnumName in Namespace`
+									var e1 = imp.longenEnum[object];
+									if (e1 != null) {
+										en = GmlAPI.gmlEnums[e1];
+										if (en != null && en.items[field]) {
+											fdType = "enumfield";
+											break;
+										}
+									}
+								}
 							}
-							//
-							if (ns != null) {
-								objType = ns.isObject ? "asset.object" : "namespace";
-								fdType = ns.staticKind[field];
-								if (fdType != null) break;
-								fdType = "identifier";
-								checkEnum("identifier");
-							} else checkEnum("enumerror");
-							if (fdType != null) break;
+							if (objType != null && fdType == null) fdType = "identifier";
 						}
 						// evidently that wasn't a namespace, perhaps a local variable?
 						if (!checkStatics || objType == null) {
