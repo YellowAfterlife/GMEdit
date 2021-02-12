@@ -1291,6 +1291,10 @@ class GmlSeeker {
 							procLambdaIdent(s, locals);
 							continue;
 						}
+						if (s == "with") {
+							locals.hasWith = true;
+							continue;
+						}
 						if (GmlAPI.gmlKind[s] != null || GmlAPI.extKind[s] != null) continue;
 					}
 					

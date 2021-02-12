@@ -67,27 +67,44 @@ using tools.NativeArray;
 			);
 		}
 		//
-		inline function getLocalType_1(name:String, scope:String, canLocal:Bool):String {
-			var kind:String = null;
-			//
-			var lambdas = editor.lambdas[scope];
-			if (lambdas != null) kind = lambdas.kind[name];
-			//
-			if (kind == null) {
-				if (canLocal) {
-					var locals = editor.locals[scope];
-					if (locals != null) kind = locals.kind[name];
+		function genIdentPairFunc_getInstType(field:String, localTypeNS:String, ns:GmlNamespace, ns2:GmlNamespace) {
+			var fdType:AceTokenType;
+			if (ns != null) {
+				fdType = ns.getInstKind(field);
+				if (fdType == null) {
+					if (ns2 != null) {
+						fdType = jsOrx(ns2.getInstKind(field), "typeerror");
+					} else fdType = "typeerror";
 				}
-				//
-				if (kind == null) {
-					var imports = editor.imports[scope];
-					if (imports != null) kind = imports.kind[name];
+			} else if (ns2 != null) {
+				fdType = jsOrx(ns2.getInstKind(field), "typeerror");
+			} else {
+				var en = GmlAPI.gmlEnums[localTypeNS];
+				if (en != null) {
+					fdType = en.items[field] ? "enumfield" : "enumerror";
+				} else { // local.something
+					fdType = getGlobalType(field, "field");
 				}
 			}
-			//
-			return kind;
+			return fdType;
 		}
-		inline function getLocalType(row:Int, name:String, canLocal:Bool):String {
+		function getLocalType_1(name:String, scope:String, canLocal:Bool):String {
+			var kind:String;
+			//
+			var lambdas = editor.lambdas[scope];
+			if (lambdas != null && (kind = lambdas.kind[name]) != null) return kind;
+			//
+			if (canLocal) {
+				var locals = editor.locals[scope];
+				if (locals != null && (kind = locals.kind[name]) != null) return kind;
+			}
+			//
+			var imports = editor.imports[scope];
+			if (imports != null && (kind = imports.kind[name]) != null) return kind;
+			//
+			return null;
+		}
+		function getLocalType(row:Int, name:String, canLocal:Bool):String {
 			if (row != null) {
 				var scope = editor.session.gmlScopes.get(row);
 				if (scope != null) {
@@ -106,8 +123,23 @@ using tools.NativeArray;
 				onMatch: function(
 					value:String, state:String, stack:Array<String>, line:String, row:Int
 				) {
-					var type:String = getLocalType(row, value, !mf);
-					if (type == null) type = getGlobalType(value, def);
+					var type:String;
+					var scope:String = row != null ? editor.session.gmlScopes.get(row) : null;
+					type = scope != null ? getLocalType_1(value, scope, !mf) : null;
+					if (type == null) type = getGlobalType(value, null);
+					if (type == null) do {
+						var locals = editor.locals[scope];
+						if (locals == null || locals.hasWith) break;
+						var localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
+						if (localType == null) break;
+						var localTypeNS = localType.getNamespace();
+						if (localTypeNS == null) break;
+						var imports = editor.imports[scope];
+						type = genIdentPairFunc_getInstType(value, localTypeNS,
+							JsTools.nca(imports, imports.namespaces[localTypeNS]),
+							GmlAPI.gmlNamespaces[localTypeNS]);
+					} while (false);
+					if (type == null) type = def;
 					return [rtk(type, value)];
 				},
 			};
@@ -135,7 +167,7 @@ using tools.NativeArray;
 					var en:GmlEnum;
 					var scope = JsTools.nca(row != null, editor.session.gmlScopes.get(row));
 					if (scope != null) {
-						var imp:GmlImports = editor.imports[scope], ns:GmlNamespace;
+						var imp:GmlImports = editor.imports[scope], ns:GmlNamespace, ns2:GmlNamespace;
 						// save some trouble:
 						var localType:GmlType;
 						var checkStatics = false;
@@ -180,34 +212,38 @@ using tools.NativeArray;
 							if (objType != null && fdType == null) fdType = "identifier";
 						}
 						// evidently that wasn't a namespace, perhaps a local variable?
+						var localTypeNS:String;
 						if (!checkStatics || objType == null) {
 							if (objType == null) {
 								objType = getLocalType_1(object, scope, !mf);
 								localType = JsTools.nca(imp, imp.localTypes[object]);
 							}
-							var localTypeNS = JsTools.nca(localType, localType.getNamespace());
+							localTypeNS = JsTools.nca(localType, localType.getNamespace());
 							if (localTypeNS != null) {
-								ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
-								var ns2 = GmlAPI.gmlNamespaces[localTypeNS];
-								if (ns != null) {
-									fdType = ns.getInstKind(field);
-									if (fdType == null) {
-										if (ns2 != null) {
-											fdType = jsOrx(ns2.getInstKind(field), "typeerror");
-										} else fdType = "typeerror";
-									}
-								} else if (ns2 != null) {
-									fdType = jsOrx(ns2.getInstKind(field), "typeerror");
-								} else {
-									en = GmlAPI.gmlEnums[localTypeNS];
-									if (en != null) {
-										fdType = en.items[field] ? "enumfield" : "enumerror";
-									} else { // local.something
-										fdType = getGlobalType(field, "field");
-									}
-								}
+								fdType = genIdentPairFunc_getInstType(field, localTypeNS,
+									JsTools.nca(imp, imp.namespaces[localTypeNS]),
+									GmlAPI.gmlNamespaces[localTypeNS]);
+							} else switch (localType) {
+								case null: //
+								case TAnon(inf):
+									fdType = inf.fields.exists(field) ? "field" : "typeerror";
+								default:
 							}
 						}
+						// implicit self-vars
+						if (objType == null) do {
+							var locals = editor.locals[scope];
+							if (locals == null || locals.hasWith) break;
+							localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
+							if (localType == null) break;
+							localTypeNS = localType.getNamespace();
+							if (localTypeNS == null) break;
+							ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
+							ns2 = GmlAPI.gmlNamespaces[localTypeNS];
+							objType = genIdentPairFunc_getInstType(field, localTypeNS,
+								JsTools.nca(imp, imp.namespaces[localTypeNS]),
+								GmlAPI.gmlNamespaces[localTypeNS]);
+						} while (false);
 					} // has scope
 					if (objType == null) {
 						// well that sucks, maybe an enum?:

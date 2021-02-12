@@ -13,6 +13,12 @@ class GmlLocals {
 	public var name:String;
 	public var comp:AceAutoCompleteItems = [];
 	public var kind:Dictionary<AceTokenType> = new Dictionary();
+	/**
+	 * Indicates that this local scope contains a with-block
+	 * Implications: we can no longer "just" assume that `ident` is self-access
+	 */
+	public var hasWith:Bool = false;
+	
 	public function add(name:String, lkind:AceTokenType, ?doc:String) {
 		if (kind[name] == null) {
 			kind.set(name, lkind);

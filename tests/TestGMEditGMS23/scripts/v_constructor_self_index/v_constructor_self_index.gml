@@ -6,4 +6,11 @@ function v_constructor_self_index(myVar) constructor {
 	v = flatVar;
 	v = self.myVar;
 	v = otherVar; // want warn
+	v = self.otherVar; // want warn
+	static getMyVar = function() {
+		return self.myVar;
+	}
+	static getOtherVar = function() {
+		return otherVar; // want warn
+	}
 }

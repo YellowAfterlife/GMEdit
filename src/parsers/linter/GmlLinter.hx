@@ -1506,6 +1506,8 @@ class GmlLinter {
 				rc(readLoopStat(newDepth));
 			};
 			case KWith: {
+				var locals = editor.locals[context];
+				if (locals != null) locals.hasWith = true;
 				rc(readExpr(newDepth));
 				var ctxType = readExpr_currType;
 				checkParens();
