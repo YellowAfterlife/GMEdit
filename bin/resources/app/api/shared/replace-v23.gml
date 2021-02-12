@@ -133,8 +133,8 @@ ds_list_is_list<T>(list:ds_list<T>, pos:int)->bool
 
 #region 11.4 - map
 
-ds_map_values_to_array<K;V>(map:ds_map<K;V>, K[])->K[]
-ds_map_keys_to_array<K;V>(map:ds_map<K;V>, V[])->V[]
+ds_map_values_to_array<K;V>(map:ds_map<K;V>, ?K[])->K[]
+ds_map_keys_to_array<K;V>(map:ds_map<K;V>, ?V[])->V[]
 ds_map_is_map<K;V>(map:ds_map<K;V>,key:K)->bool
 ds_map_is_list<K;V>(map:ds_map<K;V>,key:K)->bool
 
