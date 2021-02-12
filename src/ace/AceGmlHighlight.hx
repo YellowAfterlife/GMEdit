@@ -231,7 +231,7 @@ using tools.NativeArray;
 							}
 						}
 						// implicit self-vars
-						if (objType == null) do {
+						if (objType == null && !GmlAPI.gmlEnums.exists(object)) do {
 							var locals = editor.locals[scope];
 							if (locals == null || locals.hasWith) break;
 							localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
