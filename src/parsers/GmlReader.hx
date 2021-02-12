@@ -496,11 +496,9 @@ using tools.NativeString;
 		while (pos < till) {
 			var c:CharCode = read();
 			switch (c) {
-				case " ".code, "\t".code: {};
 				case "<".code: depth++;
 				case ">".code: if (--depth <= 0) break;
-				case ",".code, ";".code: {};
-				default: if (!c.isIdent1()) break;
+				default:
 			}
 		}
 		if (depth > 0) {
