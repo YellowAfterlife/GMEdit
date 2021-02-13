@@ -7,12 +7,15 @@
 }
 
 input {
-	background-color:  var(--color-hightlight-background);
+	background-color: var(--color-hightlight-background);
 	border: none;
 	color: white;
 }
 
-input[type=button] {
+input[type=button], button {
+	background-color: var(--color-hightlight-background);
+	border: none;
+	color: white;
 	padding: 7px;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -76,11 +79,10 @@ select {
 }
 
 
-.highlighted_button {
+input[type=button].highlighted_button, button.highlighted_button {
 	background-color: var(--color-primary);
 	font-weight: 600;
 }
-
 
 /* */
 #splitter-td, .splitter-td {
@@ -497,7 +499,6 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 
 #font-ranges .font-range button {
 	padding: 4px;
-	color: white;
 }
 
 #font-options #add-range {
@@ -525,9 +526,6 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 
 #font-options .more-options-list {
 	background-color: #333333;
-}
-#font-options .more-options-list button {
-	color: white;
 }
 #font-options .more-options-list button:hover {
 	background-color: rgba(255, 255, 255, 0.1);
