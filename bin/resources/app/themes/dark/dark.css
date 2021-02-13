@@ -10,6 +10,7 @@ input[type=button] {
 	padding: 7px;
 	padding-left: 10px;
 	padding-right: 10px;
+	cursor: pointer;
 }
 
 input[type=text], input[type=number] {
@@ -27,7 +28,7 @@ input[type=checkbox], input[type=radio] {
     left: 0px;
     top: -2px;
 	cursor: pointer;
-	border: #777 solid 1px;
+	border: rgba(255, 255, 255, 0.3) solid 1px;
 }
 input[type=checkbox]:checked {
 	background-color: #5584d4;
@@ -150,10 +151,20 @@ select {
 .popout-window a {
 	color: #40C3F4;
 }
+
 .popout-window input[type="text"],
 .popout-window input[type="button"],
 .popout-window select {
 	background: #444;
+}
+
+#preferences-editor {
+	background-color: #222;
+}
+#preferences-editor input[type="text"],
+#preferences-editor input[type="button"],
+#preferences-editor select {
+	background: #333;
 }
 
 
@@ -458,7 +469,6 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #font-options .option input, #font-options .option select {
 	color: #eeeeee;
 	border: none;
-	padding: 6px;
 }
 
 
