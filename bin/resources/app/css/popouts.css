@@ -43,7 +43,7 @@
 	margin: auto;
 	width: 520px;
 	height: 170px;
-	resize: both;
+	resize: horizontal;
 	display: flex;
 }
 #global-search .search-main {
