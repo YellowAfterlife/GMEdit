@@ -1,7 +1,13 @@
 /* Global modifiers */
 
+:root {
+	--color-primary: #5584d4;
+	--color-background: #222222;
+	--color-hightlight-background: #333333;
+}
+
 input {
-	background-color: #333;
+	background-color:  var(--color-hightlight-background);
 	border: none;
 	color: white;
 }
@@ -31,7 +37,7 @@ input[type=checkbox], input[type=radio] {
 	border: rgba(255, 255, 255, 0.3) solid 1px;
 }
 input[type=checkbox]:checked {
-	background-color: #5584d4;
+	background-color: var(--color-primary);
 }
 input[type=checkbox]:checked:before {
 	content: "✔";
@@ -45,7 +51,7 @@ input[type=radio] {
 	border-radius: 10px;
 }
 input[type=radio]:checked {
-	background-color: #5584d4;
+	background-color: var(--color-primary);
 }
 input[type=radio]:checked:before {
 	content: "•";
@@ -62,13 +68,18 @@ select {
 	padding: 6px;
 }
 * {
-    -webkit-tap-highlight-color: #5584d4 !important;
-    -webkit-focus-ring-color: #5584d4 !important;
+    -webkit-tap-highlight-color: var(--color-primary) !important;
+    -webkit-focus-ring-color:var(--color-primary) !important;
 } 
 *:focus {
-	outline-color: #5584d4 !important;
+	outline-color: var(--color-primary) !important;
 }
 
+
+.highlighted_button {
+	background-color: var(--color-primary);
+	font-weight: 600;
+}
 
 
 /* */
@@ -153,13 +164,12 @@ select {
 }
 
 .popout-window input[type="text"],
-.popout-window input[type="button"],
 .popout-window select {
 	background: #444;
 }
 
 #preferences-editor {
-	background-color: #222;
+	background-color: var(--color-background);
 }
 #preferences-editor input[type="text"],
 #preferences-editor input[type="button"],
@@ -376,7 +386,11 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 	margin-top: 3px;
 	background-color: transparent;
 	border: none;
-
+	color: #eee;
+}
+#main .ace_search .ace_searchbtn.prev::after,
+#main .ace_search .ace_searchbtn.next::after {
+	border-color: #eee;
 }
 #main .ace_search .ace_button:hover {
 	background-color: #606060;
