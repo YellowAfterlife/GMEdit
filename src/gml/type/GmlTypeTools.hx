@@ -324,7 +324,19 @@ import ace.extern.AceTokenType;
 				})) return true;
 			};
 			case [TAnon(a1), TInst(n2, [], KCustom)]: {
-				// todo: see if anon can be unified
+				var ns = GmlAPI.gmlNamespaces[n2];
+				if (ns != null) {
+					var ok = true;
+					for (fdc in ns.getInstComp(0, false)) {
+						var fd = fdc.name;
+						var af = a1.fields[fd];
+						if (af == null || !af.type.canCastTo(ns.getInstType(fd))) {
+							ok = false;
+							break;
+						}
+					}
+					if (ok) return true;
+				}
 			}
 			default:
 		}
