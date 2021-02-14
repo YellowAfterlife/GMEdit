@@ -34,36 +34,62 @@ input[type=checkbox], input[type=radio] {
     appearance: none;
     outline: none;
     position: relative;
-    left: 0px;
-    top: -2px;
 	cursor: pointer;
 	border: rgba(255, 255, 255, 0.3) solid 1px;
 }
+input[type=checkbox]:checked:before, input[type=radio]:checked:before {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
 input[type=checkbox]:checked {
 	background-color: var(--color-primary);
 }
 input[type=checkbox]:checked:before {
 	content: "✔";
 	color:white;
-	margin-left: 0.5px;
-	position: absolute;
 	font-size: 12px;
-	top: -3px;
 }
 input[type=radio] {
 	border-radius: 10px;
 }
 input[type=radio]:checked {
 	background-color: var(--color-primary);
+	text-align: center;
 }
 input[type=radio]:checked:before {
 	content: "•";
 	color:white;
-	margin-left: 2.5px;
-	position: absolute;
 	font-size: 19px;
-	top: -5px;
 }
+input[type=range] {
+	-webkit-appearance: none;
+	background: transparent;
+	overflow: hidden;
+}
+input[type=range]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	background-color: var(--color-primary);
+	width: 16px;
+	height: 16px;
+	border-radius: 10px;
+	margin-top: -6px;
+}
+input[type=range]::-webkit-slider-runnable-track {
+	width: 100%;
+	cursor: pointer;
+	height: 3px;
+  
+	/* Hides the slider so custom styles can be added */
+	background: rgba(255, 255, 255, 0.7); 
+	border-color: transparent;
+	color: transparent;
+}
+
+
 select {
 	background-color: #333;
 	color: #eeeeee;
@@ -79,7 +105,8 @@ select {
 }
 
 
-input[type=button].highlighted_button, button.highlighted_button {
+input[type=button].highlighted_button, button.highlighted_button, .highlighted-button,
+button[type=button].highlighted-button {
 	background-color: var(--color-primary);
 	font-weight: 600;
 }
@@ -535,4 +562,13 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #font-preview textarea {
 	background-color: #333333;
 	color: white;
+}
+
+/* Sound Editor */
+#sound-playback {
+	filter: invert();
+}
+
+#sound-playback::-webkit-media-controls-panel {
+	background-color: #dddddd; /* Inverse of #222222 */
 }
