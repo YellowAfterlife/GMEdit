@@ -296,17 +296,25 @@ class EditSound extends Editor {
 				<div class="option">
 					<label>Compression Type</label>
 					<div id="sound-compress-type">
-						<input type="radio" name="compress-type" id="uncompressed" value="0">
-						<label for="uncompressed">Uncompressed - Not Streamed</label><br>
-						
-						<input type="radio" name="compress-type" id="compressed" value="1">
-						<label for="compressed">Compressed - Not Streamed</label><br>
-				
-						<input type="radio" name="compress-type" id="uncompressed-load" value="2">
-						<label for="uncompressed-load">Uncompress on Load - Not Streamed</label><br>
-				
-						<input type="radio" name="compress-type" id="compressed-streamed" value="3">
-						<label for="compressed-streamed">Compressed - Streamed</label><br>
+						<div title="Audio is uncompresssed and stored in memory. Low CPU usage at the cost of storage. Good for short frequently used sound effects.">
+							<input type="radio" name="compress-type" id="uncompressed" value="0">
+							<label for="uncompressed">Uncompressed - Not Streamed</label><br>
+						</div>
+
+						<div title="Audio is compressed at all times. Heavier on the CPU but reduces storage. Good for long sound effects that are infrequently used.">
+							<input type="radio" name="compress-type" id="compressed" value="1">
+							<label for="compressed">Compressed - Not Streamed</label><br>
+						</div>
+
+						<div title="Audio is uncompressed on game startup. Increases start up time but reduces storage. Good for long sound effects that are frequently used.">
+							<input type="radio" name="compress-type" id="uncompressed-load" value="2">
+							<label for="uncompressed-load">Uncompress on Load - Not Streamed</label><br>
+						</div>
+
+						<div title="Audio is compressed and streamed from disk, reducing storage size at the cost of being heavier on the CPU. Good for music.">
+							<input type="radio" name="compress-type" id="compressed-streamed" value="3">
+							<label for="compressed-streamed">Compressed - Streamed</label><br>
+						</div>
 					</div> 
 				</div> 
 				
