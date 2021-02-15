@@ -166,10 +166,12 @@ using tools.NativeArray;
 					fdType = null;
 					var en:GmlEnum;
 					var scope = JsTools.nca(row != null, editor.session.gmlScopes.get(row));
+					var imp:GmlImports = null, ns:GmlNamespace, ns2:GmlNamespace;
+					var localType:GmlType, localTypeNS:String;
+					var checkSelf = false;
 					if (scope != null) {
-						var imp:GmlImports = editor.imports[scope], ns:GmlNamespace, ns2:GmlNamespace;
+						imp = editor.imports[scope];
 						// save some trouble:
-						var localType:GmlType;
 						var checkStatics = false;
 						if (object == "self") {
 							objType = "keyword";
@@ -212,7 +214,6 @@ using tools.NativeArray;
 							if (objType != null && fdType == null) fdType = "identifier";
 						}
 						// evidently that wasn't a namespace, perhaps a local variable?
-						var localTypeNS:String;
 						if (!checkStatics || objType == null) {
 							if (objType == null) {
 								objType = getLocalType_1(object, scope, !mf);
@@ -231,19 +232,10 @@ using tools.NativeArray;
 							}
 						}
 						// implicit self-vars
-						if (objType == null && !GmlAPI.gmlEnums.exists(object)) do {
+						if (objType == null) {
 							var locals = editor.locals[scope];
-							if (locals == null || locals.hasWith) break;
-							localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
-							if (localType == null) break;
-							localTypeNS = localType.getNamespace();
-							if (localTypeNS == null) break;
-							ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
-							ns2 = GmlAPI.gmlNamespaces[localTypeNS];
-							objType = genIdentPairFunc_getInstType(field, localTypeNS,
-								JsTools.nca(imp, imp.namespaces[localTypeNS]),
-								GmlAPI.gmlNamespaces[localTypeNS]);
-						} while (false);
+							checkSelf = locals != null && !locals.hasWith;
+						}
 					} // has scope
 					if (objType == null) {
 						// well that sucks, maybe an enum?:
@@ -252,7 +244,19 @@ using tools.NativeArray;
 							objType = "enum";
 							fdType = en.items[field] ? "enumfield" : "enumerror";
 						} else { // that's just built-ins then:
-							objType = getGlobalType(object, def);
+							objType = getGlobalType(object, null);
+							if (objType == null && checkSelf) do {
+								localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
+								if (localType == null) break;
+								localTypeNS = localType.getNamespace();
+								if (localTypeNS == null) break;
+								ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
+								ns2 = GmlAPI.gmlNamespaces[localTypeNS];
+								objType = genIdentPairFunc_getInstType(field, localTypeNS,
+									JsTools.nca(imp, imp.namespaces[localTypeNS]),
+									GmlAPI.gmlNamespaces[localTypeNS]);
+							} while (false);
+							if (objType == null) objType = def;
 							fdType = getGlobalType(field, "field");
 						}
 					} else if (fdType == null) { // found type, but no field (and not an error)
@@ -337,6 +341,10 @@ using tools.NativeArray;
 				return jsThis.nextState;
 			}
 		};
+		var rDocHint = {
+			regex: JsTools.rx(~/(\/\/\/\s*)(@hint\b)(\s*)(.*)/),
+			onMatch: AceGmlDocHint.match,
+		};
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
@@ -367,8 +375,7 @@ using tools.NativeArray;
 				~/(\/\/)(#(?:region|endregion|mark)\b)(.*)$/),
 			rxRule("comment.doc.line", ~/\/\/\/$/), // a blank doc-line
 			
-			rxPush(["comment.doc.line", "comment.meta"], ~/(\/\/\/\s*)(@hint)$/),
-			rxPush(["comment.doc.line", "comment.meta"], ~/(\/\/\/\s*)(@hint)/, "gml.comment.doc.hint"),
+			rDocHint,
 			
 			rxRule(function(s) { // a doc-line starting with X and having no @[tags]
 				return "comment.doc.line.startswith_" + s;
@@ -735,7 +742,6 @@ using tools.NativeArray;
 				}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
 				rxPush("curly.paren.lparen", ~/\{$/),
 				rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
-				rxRule(["comment.meta", "text"], ~/@hint\b\s*/, AceGmlDocHint.sBase),
 				rule("comment.meta", "@(?:\\w+|$)"),
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),
@@ -768,7 +774,6 @@ using tools.NativeArray;
 				rxRule("comment", ~/.*?\*\//, "pop"),
 			]).concat(rBase),
 		};
-		AceGmlDocHint.add(rules, rComment);
 		//
 		if (ui.Preferences.current.codeLiterals && (version.hasLiteralStrings() || version.hasSingleQuoteStrings())) {
 			function addShaderBlock(substart:String, subset:AceHighlightRuleset) {
