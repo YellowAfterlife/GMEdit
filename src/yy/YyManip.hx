@@ -213,6 +213,10 @@ class YyManip {
 					var font:YyFont = YyFont.generateDefault(yyParent, name);
 					yyResource = font;
 				}
+				case "sound": {
+					var sound:YySound = YySound.generateDefault(yyParent, name);
+					yyResource = sound;
+				}
 				default: {
 					Dialog.showError('No idea how to create type=`$kind`, sorry');
 					return false;

@@ -564,3 +564,69 @@ https://stackoverflow.com/a/36247448/5578773
 	height: calc(100% - 50px);
 	resize: none;
 }
+
+
+/* Sound editor */
+#sound-editor > div {
+	margin-left: 25px;
+}
+
+#sound-editor h2 {
+	font-weight: 400;
+	margin-bottom: 5px;
+}
+
+#sound-editor .option {
+	display: block;
+	margin-top: 10px;
+}
+
+#sound-editor .option #sound-compress-type label {
+	display: inline;
+}
+
+#sound-editor .option label {
+	display: block;
+}
+
+#sound-editor #import-button {
+	display: block;
+	margin-bottom: 20px;
+	margin-top: 30px;
+}
+
+#sound-editor #sound-playback {
+	height: 25px;
+	width: 400px;
+	max-width: calc(100% - 10px);
+	margin-top: 0px;
+	display:block;
+}
+
+/* Removes mute-button */
+#sound-playback::-webkit-media-controls-volume-slider-container,
+#sound-playback::-webkit-media-controls-volume-slider,
+#sound-playback::-webkit-media-controls-mute-button {
+	display: none;
+}
+#sound-playback::-webkit-media-controls-panel {
+	padding: 0px;
+	background-color: #FFFFFF;
+}
+#sound-playback:focus {
+	border: none;
+	outline: none;
+}
+
+#sound-editor #sound-volume-container {
+	width: 400px;
+	max-width: calc(100% - 10px);
+	display: flex;
+}
+#sound-editor #sound-volume-slider {
+	width: 100%;
+	padding-right: 10px;
+}
+#sound-editor #sound-volume-text {
+	width: 50px;
+}

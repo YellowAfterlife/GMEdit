@@ -135,7 +135,7 @@ class GmlParseAPI {
 			var orig = name;
 			var show = true;
 			var doc = GmlFuncDoc.parse(comp);
-			for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in', mt[0]);
+			for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in ${mt[0]}');
 			typeWarn.clear();
 			//
 			if (version.config.docMode != "gms1") {
@@ -222,7 +222,7 @@ class GmlParseAPI {
 			if (typeStr != null && stdTypes != null) {
 				type = GmlTypeDef.parse(typeStr);
 				stdTypes[name] = type;
-				for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in', mt[0]);
+				for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in ${mt[0]}');
 				typeWarn.clear();
 			}
 			//
