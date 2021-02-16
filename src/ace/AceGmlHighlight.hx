@@ -138,6 +138,7 @@ using tools.NativeArray;
 						type = genIdentPairFunc_getInstType(value, localTypeNS,
 							JsTools.nca(imports, imports.namespaces[localTypeNS]),
 							GmlAPI.gmlNamespaces[localTypeNS]);
+						if (type == "field") type = def;
 					} while (false);
 					if (type == null) type = def;
 					return [rtk(type, value)];
@@ -252,9 +253,10 @@ using tools.NativeArray;
 								if (localTypeNS == null) break;
 								ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
 								ns2 = GmlAPI.gmlNamespaces[localTypeNS];
-								objType = genIdentPairFunc_getInstType(field, localTypeNS,
+								objType = genIdentPairFunc_getInstType(object, localTypeNS,
 									JsTools.nca(imp, imp.namespaces[localTypeNS]),
 									GmlAPI.gmlNamespaces[localTypeNS]);
+								if (objType == "field") objType = def;
 							} while (false);
 							if (objType == null) objType = def;
 							fdType = getGlobalType(field, "field");
