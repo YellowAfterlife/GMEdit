@@ -284,6 +284,7 @@ import ace.extern.AceTokenType;
 						if (k1 != KFunction) return false;
 						var i = p2.length;
 						if (i == 0 || p1.length == 0) return true; // any-functions
+						if (p1.length != i) return false;
 						if (--i >= 0) { // return value
 							var couldVoidCast = canCastTo_voidCast;
 							canCastTo_voidCast = true;
