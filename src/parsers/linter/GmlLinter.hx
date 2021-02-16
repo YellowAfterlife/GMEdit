@@ -1106,7 +1106,7 @@ class GmlLinter {
 				rc(readTypeName());
 				if (next() != KParClose) return readSeqStartError("Unclosed type ()");
 				typeStr = '($readTypeName_typeStr)';
-			case KIdent, KUndefined:
+			case KIdent, KUndefined, KFunction:
 				typeStr = nextVal;
 				if (skipIf(peek() == KLT)) {
 					var depth = 1;
