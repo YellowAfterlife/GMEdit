@@ -424,7 +424,8 @@ class TreeViewItemMenus {
 			for (dat in ["script", "object", "shader", "font", "sound"]) {
 				var pair = dat.split("|");
 				var kind = pair[0];
-				var label = JsTools.or(pair[1], kind.capitalize());
+				var label = pair[1];
+				if (label == null) label = kind.capitalize();
 				addLink(submenu, "create-" + kind, label, function() {
 					createImpl(kind, orderInd - 1);
 				});

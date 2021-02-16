@@ -636,7 +636,7 @@ class GmlLinter {
 								currType = GmlTypeDef.object(currName);
 							} else if (kind == "script") {
 								currFunc = GmlAPI.gmlDoc[currName];
-								currType = JsTools.nca(currFunc, currFunc.getFunctionType());
+								currType = currFunc != null ? currFunc.getFunctionType() : null;
 							} else {
 								currType = GmlTypeDef.simple(kind);
 							}
