@@ -128,8 +128,9 @@ class AceCtxMenu {
 			menu.appendOpt({
 				id: "cut",
 				label: "Cut",
+				role: "cut",
 				accelerator: "CommandOrControl+X",
-				click: function() {
+				click: function() { // used in web
 					if (!editor.selection.isEmpty()) {
 						cb().writeText(editor.getSelectedText());
 					}
@@ -139,8 +140,9 @@ class AceCtxMenu {
 			menu.appendOpt({
 				id: "copy",
 				label: "Copy",
+				role: "copy",
 				accelerator: "CommandOrControl+C",
-				click: function() {
+				click: function() { // used in web
 					if (!editor.selection.isEmpty()) {
 						cb().writeText(editor.getSelectedText());
 					}
@@ -150,8 +152,9 @@ class AceCtxMenu {
 			menu.appendOpt({
 				id: "paste",
 				label: "Paste",
+				role: "paste",
 				accelerator: "CommandOrControl+V",
-				click: function() {
+				click: function() { // used in web
 					editor.execCommand("paste", cb().readText());
 				}
 			});
