@@ -31,6 +31,15 @@ using tools.NativeString;
 	public inline function read():CharCode {
 		return source.fastCodeAt(pos++);
 	}
+	public inline function readChar():String {
+		return source.charAt(pos++);
+	}
+	public function readChars(count:Int):String {
+		var s = source.substr(pos, count);
+		pos += count;
+		return s;
+	}
+	
 	public inline function peek(offset:Int = 0):CharCode {
 		return source.fastCodeAt(pos + offset);
 	}
@@ -43,9 +52,14 @@ using tools.NativeString;
 	public inline function skip(num:Int = 1):Void {
 		pos += num;
 	}
+	
 	public inline function get(p:Int):CharCode {
 		return source.fastCodeAt(p);
 	}
+	public inline function charAt(p:Int):String {
+		return source.charAt(p);
+	}
+	
 	public inline function substring(start:Int, till:Int):String {
 		return source.substring(start, till);
 	}

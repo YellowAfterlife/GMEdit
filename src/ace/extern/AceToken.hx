@@ -8,6 +8,10 @@ import tools.JsTools;
  * @author YellowAfterlife
  */
 @:forward abstract AceToken(AceTokenImpl) from AceTokenImpl to AceTokenImpl {
+	public inline function new(type:String, value:String) {
+		this = { type: type, value: value };
+	}
+	
 	/** shortcut for value.length */
 	public var length(get, never):Int;
 	private inline function get_length():Int {

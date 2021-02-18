@@ -284,6 +284,7 @@ import ace.extern.AceTokenType;
 						if (k1 != KFunction) return false;
 						var i = p2.length;
 						if (i == 0 || p1.length == 0) return true; // any-functions
+						if (p1.length != i) return false;
 						if (--i >= 0) { // return value
 							var couldVoidCast = canCastTo_voidCast;
 							canCastTo_voidCast = true;
@@ -324,7 +325,19 @@ import ace.extern.AceTokenType;
 				})) return true;
 			};
 			case [TAnon(a1), TInst(n2, [], KCustom)]: {
-				// todo: see if anon can be unified
+				var ns = GmlAPI.gmlNamespaces[n2];
+				if (ns != null) {
+					var ok = true;
+					for (fdc in ns.getInstComp(0, false)) {
+						var fd = fdc.name;
+						var af = a1.fields[fd];
+						if (af == null || !af.type.canCastTo(ns.getInstType(fd))) {
+							ok = false;
+							break;
+						}
+					}
+					if (ok) return true;
+				}
 			}
 			default:
 		}

@@ -334,8 +334,6 @@ ds_map_replace
 ds_map_replace_map
 ds_map_replace_list
 ds_map_delete
-ds_map_values_to_array
-ds_map_keys_to_array
 ds_map_secure_save
 ds_map_secure_save_buffer
 ds_map_set

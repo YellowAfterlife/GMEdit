@@ -636,7 +636,7 @@ class GmlLinter {
 								currType = GmlTypeDef.object(currName);
 							} else if (kind == "script") {
 								currFunc = GmlAPI.gmlDoc[currName];
-								currType = JsTools.nca(currFunc, currFunc.getFunctionType());
+								currType = currFunc != null ? currFunc.getFunctionType() : null;
 							} else {
 								currType = GmlTypeDef.simple(kind);
 							}
@@ -1106,7 +1106,7 @@ class GmlLinter {
 				rc(readTypeName());
 				if (next() != KParClose) return readSeqStartError("Unclosed type ()");
 				typeStr = '($readTypeName_typeStr)';
-			case KIdent, KUndefined:
+			case KIdent, KUndefined, KFunction:
 				typeStr = nextVal;
 				if (skipIf(peek() == KLT)) {
 					var depth = 1;

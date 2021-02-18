@@ -197,9 +197,11 @@ class GmlNamespace {
 		var kind = isInst ? instKind : staticKind;
 		kind[field] = doc != null ? "asset.script" : "field";
 		
+		var types = isInst ? instTypes : staticTypes;
 		if (type != null) {
-			var types = isInst ? instTypes : staticTypes;
 			types[field] = type;
+		} else if (doc != null) {
+			types[field] = doc.getFunctionType();
 		}
 		
 		if (doc != null) {

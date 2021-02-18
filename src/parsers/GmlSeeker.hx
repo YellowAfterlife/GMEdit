@@ -559,7 +559,7 @@ class GmlSeeker {
 			}
 			addFieldHint_doc = hintDoc;
 			info = NativeString.nzcct(info, "\n", 'from $namespace');
-			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type);
+			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type.toString());
 			
 			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
 			var comp = new AceAutoCompleteItem(name, compMeta, info);

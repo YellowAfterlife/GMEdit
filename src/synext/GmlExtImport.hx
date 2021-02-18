@@ -476,8 +476,8 @@ class GmlExtImport {
 					imp = imp.createLink();
 					imps.set(funcName, imp);
 					q.skipSpaces1_local();
-					c = q.peek();
 				}
+				c = q.peek();
 			}
 			if (c == "(".code) {
 				q.skip();

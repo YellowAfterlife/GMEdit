@@ -17,7 +17,10 @@ typedef AceLangRule = {
 	?splitRegex:RegExp,
 };
 typedef AceLangRuleState = String;
-typedef AceLangRuleMatch = (value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->EitherType<AceTokenType, Array<AceToken>>;
+typedef AceLangRuleMatch = EitherType<
+	(value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->AceTokenType,
+	(value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->Array<AceToken>
+>;
 
 /**
 push: "name" and next: "pop" rule fields work like this:

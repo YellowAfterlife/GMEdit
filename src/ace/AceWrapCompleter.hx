@@ -60,8 +60,7 @@ using tools.NativeString;
 	
 	public static function checkColon(iter:AceTokenIterator) {
 		// `var [some]:type`:
-		var token = iter.stepBackward();
-		if (token != null && token.type == "text") token = iter.stepBackward();
+		var token = iter.stepBackwardNonText();
 		if (token == null) return false;
 		switch (token.type) {
 			case "local", "sublocal", "localfield": {};
@@ -69,8 +68,7 @@ using tools.NativeString;
 			default: return false;
 		}
 		// `[var] some:type`:
-		token = iter.stepBackward();
-		if (token != null && token.type == "text") token = iter.stepBackward();
+		token = iter.stepBackwardNonText();
 		if (token == null) return false;
 		switch (token.value) {
 			case "var", ",", "#args": {};
@@ -80,6 +78,13 @@ using tools.NativeString;
 				if (token == null) return false;
 				switch (token.type) {
 					case "scriptname", "preproc.lambda": {};
+					case "asset.script": { // function <name>
+						token = iter.stepBackwardNonText();
+						if (token.ncType != "keyword" || token.value != "function") return false;
+					};
+					case "keyword": {
+						if (token.value != "function") return false;
+					};
 					default: return false;
 				}
 			};

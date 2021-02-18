@@ -1155,7 +1155,7 @@ audio_set_master_gain(listenerIndex:int, gain:number)->void
 audio_get_master_gain(listenerIndex:int)->number
 audio_sound_get_gain(index:sound|sound_instance)->number
 audio_sound_get_pitch(index:sound|sound_instance)->number
-audio_get_name(index:sound|sound_instance)->number
+audio_get_name(index:sound|sound_instance)->string
 audio_sound_set_track_position(index:sound|sound_instance, time:number)->void
 audio_sound_get_track_position(index:sound|sound_instance)->number
 audio_create_stream(filename:string)!->sound
@@ -2431,8 +2431,8 @@ buffer_create(size:int, buffer_kind:buffer_kind, alignment:int)->buffer
 buffer_write(buffer:buffer, type:buffer_type, value:number|string|bool)->int
 buffer_read(buffer:buffer, type:buffer_type)->number|string|bool
 buffer_seek(buffer:buffer, base:buffer_seek_base, offset:int)->void
-buffer_get_surface(buffer:buffer, surface:surface,offset:int)->void
-buffer_set_surface(buffer:buffer, surface:surface,offset:int)->void
+buffer_get_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
+buffer_set_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
 buffer_delete(buffer:buffer)->void
 buffer_exists(buffer:buffer)->bool
 buffer_get_type(buffer:buffer)->buffer_kind
