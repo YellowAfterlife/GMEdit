@@ -1,3 +1,7 @@
+:root {
+	--color-primary: #0B9B80;
+}
+
 .chrome-tabs .chrome-tab-close {
   border-radius: 0px;
 }
