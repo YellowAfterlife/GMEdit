@@ -220,7 +220,8 @@ class GmlNamespace {
 		kind.remove(field);
 		var docs = isInst ? docInstMap : docStaticMap;
 		docs.remove(field);
-		
+		var types = isInst ? instTypes : staticTypes;
+		types.remove(field);
 		var comps:ArrayMap<AceAutoCompleteItem> = isInst ? compInst : compStatic;
 		comps.remove(field);
 	}
