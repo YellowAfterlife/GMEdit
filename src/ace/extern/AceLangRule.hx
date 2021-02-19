@@ -16,7 +16,7 @@ typedef AceLangRule = {
 	?consumeLineEnd:Bool,
 	?splitRegex:RegExp,
 };
-typedef AceLangRuleState = String;
+typedef AceLangRuleState = EitherType<String, ace.gml.AceGmlState>;
 typedef AceLangRuleMatch = EitherType<
 	(value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->AceTokenType,
 	(value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->Array<AceToken>
@@ -47,5 +47,5 @@ push:"two" -> state: "two", stack: ["two", "one"]
 next:"pop" -> state: "one", stack: []
 next:"pop" -> state: "start", stack: []
 **/
-typedef AceLangRuleNext = (currentState:AceLangRuleState, stack:Array<String>)->String;
+typedef AceLangRuleNext = (currentState:AceLangRuleState, stack:Array<AceLangRuleState>)->AceLangRuleState;
 typedef AceLangRuleNextInit = EitherType<AceLangRuleState, EitherType<Array<AceLangRuleState>, AceLangRuleNext>>;

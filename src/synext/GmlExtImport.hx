@@ -67,21 +67,27 @@ class GmlExtImport {
 	
 	/** `var a:T`, `#args a:T`, `var a, b:T` */
 	private static var rxHasTypePost = new RegExp("(?:" + [
-		"(?:var|let|const)\\s+",
-		"#args\\s+",
-		",\\s*",
-		"\\(\\s*",
-	].join("|") + ")\\w+:");
+		"(?:" + [
+			"(?:var|let|const)\\s+",
+			"#args\\s+",
+			",\\s*",
+			"\\(\\s*",
+		].join("|") + ")\\w+:",
+		"\\)->"
+	].join("|") + ")");
 	
 	/** Ditto but accounting for `/*:Type` */
 	private static var rxHasTypePre = new RegExp("(?:" + [
-		"(?:var|let|const)\\s+",
-		"#args\\s+", // shouldn't be needed tbh
-		",\\s*",
-		"\\(\\s*",
-	].join("|") + ")\\w+"
-		+ "(?:/\\*)?" // opt: comment start
-	+ ":");
+		"(?:" + [
+			"(?:var|let|const)\\s+",
+			"#args\\s+", // shouldn't be needed tbh
+			",\\s*",
+			"\\(\\s*",
+		].join("|") + ")\\w+"
+			+ "(?:/\\*)?" // opt: comment start
+		+ ":",
+		"\\)/\\*->" // func()->Type
+	].join("|") + ")");
 	
 	public static var errorText:String;
 	//
