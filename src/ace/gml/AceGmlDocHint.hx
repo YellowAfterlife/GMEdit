@@ -25,7 +25,7 @@ using ace.extern.AceLangRuleDefTools;
 class AceGmlDocHint {
 	public static inline var ttDefault:String = "comment.doc.line";
 	public static inline var ttOperator:String = "punctuation.operator";
-	public static function match(value:String, state:String, stack, line, row):Array<AceToken> {
+	public static function match(value:String, state:AceLangRuleState, stack, line, row):Array<AceToken> {
 		var mt = (AceMacro.jsThis:AceLangRule).splitRegex.exec(value);
 		var arr = [
 			rtk(ttDefault, mt[1]), // start

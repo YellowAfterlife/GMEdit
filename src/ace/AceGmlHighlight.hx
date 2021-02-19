@@ -2,6 +2,7 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.gml.AceGmlDocHint;
+import ace.gml.AceGmlState;
 import editors.EditCode;
 import file.kind.gml.KGmlSearchResults;
 import file.kind.misc.KMarkdown;
@@ -40,8 +41,6 @@ using tools.NativeArray;
  */
 @:expose("AceGmlHighlight")
 @:keep class AceGmlHighlight extends AceHighlight {
-	static inline var depthSep:String = "-depth=";
-	static inline var depthSepLen:Int = 7; // "-depth=".length;
 	public static var useBracketDepth:Bool = (function() {
 		return Main.document.documentElement.getAttribute("data-theme-uses-bracket-depth") != null;
 	})();
@@ -121,7 +120,7 @@ using tools.NativeArray;
 			return {
 				regex: '[a-zA-Z_][a-zA-Z0-9_]*\\b',
 				onMatch: function(
-					value:String, state:String, stack:Array<String>, line:String, row:Int
+					value:String, state:AceLangRuleState, stack:Array<String>, line:String, row:Int
 				) {
 					var type:String;
 					var scope:String = row != null ? editor.session.gmlScopes.get(row) : null;
@@ -152,7 +151,7 @@ using tools.NativeArray;
 		function genIdentPairFunc(mf:Bool) {
 			var def = getFieldDef(mf);
 			return function(
-				value:String, state:String, stack:Array<String>, line:String, row:Int
+				value:String, state:AceLangRuleState, stack:Array<String>, line:String, row:Int
 			) {
 				var values:Array<String> = jsThis.splitRegex.exec(value);
 				var object = values[1];
@@ -319,7 +318,7 @@ using tools.NativeArray;
 		var rPragma_call:AceLangRule = {
 			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
 				'("global"|\'global\')(\\s*)(,)(\\s*)(@?)("|\')',
-			onMatch: function(value:String, state:String, stack:Array<String>, line:String, row) {
+			onMatch: function(value:String, state:AceLangRuleState, stack:Array<String>, line:String, row) {
 				var values:Array<String> = jsThis.splitRegex.exec(value);
 				stack.push(state);
 				jsThis.nextState = values[10] == '"' ? "gml.pragma.dq" : "gml.pragma.sq";
@@ -338,7 +337,8 @@ using tools.NativeArray;
 			},
 			next: cast function(current, stack) {
 				if (current != "start" || stack.length > 0) {
-					stack.unshift(jsThis.nextState, current);
+					stack.unshift(current);
+					stack.unshift(jsThis.nextState);
 				}
 				return jsThis.nextState;
 			}
@@ -464,52 +464,30 @@ using tools.NativeArray;
 		//{ braces
 		var rCurlyOpen:AceLangRule = {
 			regex: "\\{",
-			onMatch: function(value:String, state:String, stack, line, row) {
+			onMatch: function(value:String, state:AceLangRuleState, stack, line, row) {
 				if (useBracketDepth) {
-					var pos = state.lastIndexOf(depthSep);
-					if (pos >= 0) {
-						return "curly.paren.lparen.depth" +
-							Std.parseInt(state.substring(pos + depthSepLen));
-					} else if (state == "start") {
-						return "curly.paren.lparen.depth0";
-					}
+					return "curly.paren.lparen.depth" + AceGmlState.getDepth(state);
 				}
 				return "curly.paren.lparen";
 			},
-			next: function(current:String, stack:Array<String>) {
+			next: function(current:AceLangRuleState, stack:Array<String>) {
 				if (useBracketDepth) {
-					var pos = current.lastIndexOf(depthSep), next:String;
-					if (pos >= 0) {
-						next = current.substring(0, pos + depthSepLen)
-							+ (Std.parseInt(current.substring(pos + depthSepLen)) + 1);
-					} else {
-						next = current + (depthSep + "1");
-					}
-					if (rules.exists(next)) return next;
+					return AceGmlState.adjustDepth(current, 1);
 				}
 				return current;
 			}
 		};
 		var rCurlyClose:AceLangRule = {
 			regex: "\\}",
-			onMatch: function(value:String, state:String, stack, line, row) {
+			onMatch: function(value:String, state:AceLangRuleState, stack, line, row) {
 				if (useBracketDepth) {
-					var pos = state.lastIndexOf(depthSep);
-					if (pos >= 0) {
-						return "curly.paren.rparen.depth" +
-							(Std.parseInt(state.substring(pos + depthSepLen)) - 1);
-					}
+					return "curly.paren.rparen.depth" + (AceGmlState.getDepth(state) - 1);
 				}
 				return "curly.paren.rparen";
 			},
-			next: function(current:String, stack:Array<String>) {
+			next: function(current:AceLangRuleState, stack:Array<String>) {
 				if (useBracketDepth) {
-					var pos = current.lastIndexOf(depthSep), next:String;
-					if (pos >= 0) {
-						var ind = Std.parseInt(current.substring(pos + depthSepLen)) - 1;
-						if (ind <= 0) return current.substring(0, pos);
-						return current.substring(0, pos + depthSepLen) + ind;
-					}
+					return AceGmlState.adjustDepth(current, -1);
 				}
 				return current;
 			}
@@ -567,13 +545,13 @@ using tools.NativeArray;
 		if (fakeMultiline) rEnum.unshift(rxRule("text", ~/$/, "pop"));
 		var rEnumValue = [ //{
 			rxRule("punctuation.operator", ~/,/, "pop"),
-			rxRule("curly.paren.rparen", ~/\}/, function(currentState, stack:Array<String>) {
+			rxRule("curly.paren.rparen", ~/\}/, function(currentState, stack:Array<AceLangRuleState>) {
 				// double-pop because we must both exit gml.enum.value and gml.enum
 				stack.shift();
 				stack.shift();
 				if (stack.length > 0) {
 					return stack.shift();
-				} else return "start";
+				} else return AceGmlState.changeState(currentState, "start");
 			}),
 		].concat(rBase); //}
 		//{ comments
@@ -615,7 +593,7 @@ using tools.NativeArray;
 		var rString_tpl_id:AceLangRule = {
 			regex: "(\\$)([a-zA-Z_]\\w*)",
 			onMatch: function(
-				value:String, state:String, stack:Array<String>, line:String, row:Int
+				value:String, state:AceLangRuleState, stack:Array<String>, line:String, row:Int
 			) {
 				value = value.substring(1);
 				var type:String = getLocalType(row, value, true);
@@ -676,7 +654,7 @@ using tools.NativeArray;
 		var rMFuncEOL:AceLangRule = null;
 		rMFuncEOL = {
 			regex: "$",
-			onMatch: function(value:String, currentState:String, stack:Array<String>, line:String, row) {
+			onMatch: function(value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row) {
 				rMFuncEOL.next = line.endsWith("\\") ? null : rMFuncEOL_pop;
 				return "text";
 			}
@@ -798,12 +776,6 @@ using tools.NativeArray;
 			add("hlsl");
 			add("glsl");
 			add("gml");
-		}
-		//
-		for (k in ["start"]) {
-			for (i in 0 ... 32) {
-				rules[k + depthSep + i] = rules[k];
-			}
 		}
 		//
 		return rules;

@@ -6068,7 +6068,7 @@ var Tokenizer = function(rules) {
         return new RegExp(src, (flag||"").replace("g", ""));
     };
     this.getLineTokens = function(line, startState, row) { // GMEdit: +`, row`
-        if (startState && typeof startState != "string") {
+        if (startState && Array.isArray(startState)) { // GMEdit: typeof -> Array.isArray
             var stack = startState.slice(0);
             startState = stack[0];
             if (startState === "#tmp") {
@@ -6286,7 +6286,7 @@ var TextHighlightRules = function() {
     };
 
     var pushState = function(currentState, stack) {
-        if (currentState != "start" || stack.length)
+        if (currentState !== "start" || stack.length) // GMEdit: `!=` -> `!==`
             stack.unshift(this.nextState, currentState);
         return this.nextState;
     };
@@ -6327,7 +6327,7 @@ var TextHighlightRules = function() {
                     var stateName = rule.stateName;
                     if (!stateName)  {
                         stateName = rule.token;
-                        if (typeof stateName != "string")
+                        if (Array.isArray(stateName)) // GMEdit: typeof -> Array.isArray
                             stateName = stateName[0] || "";
                         if (rules[stateName])
                             stateName += id++;
@@ -7205,7 +7205,7 @@ var Mode = function() {
 
     this.$delegator = function(method, args, defaultHandler) {
         var state = args[0] || "start";
-        if (typeof state != "string") {
+        if (Array.isArray(state)) { // GMEdit: typeof -> Array.isArray
             if (Array.isArray(state[2])) {
                 var language = state[2][state[2].length - 1];
                 var mode = this.$modes[language];
@@ -7970,7 +7970,8 @@ var BackgroundTokenizer = function(tokenizer, editor) {
 
         var data = this.tokenizer.getLineTokens(line, state, row);
 
-        if (this.states[row] + "" !== data.state + "") {
+        var fn = window.BackgroundTokenizer_cmp; // GMEdit: added this line and condition on next
+        if (fn ? !fn(this.states[row], data.state) : this.states[row] + "" !== data.state + "") {
             this.states[row] = data.state;
             this.lines[row + 1] = null;
             if (this.currentLine > row + 1)

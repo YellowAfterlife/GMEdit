@@ -105,6 +105,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		window.AceRange = AceEditor.require("ace/range").Range;
 		window.AceTooltip = AceEditor.require("ace/tooltip").Tooltip;
 		window.AceOOP = AceEditor.require("ace/lib/oop");
+		window.BackgroundTokenizer_cmp = ace.gml.AceGmlState.tokenizerEquals;
 	}
 }
 typedef AceWrapOptions = {
