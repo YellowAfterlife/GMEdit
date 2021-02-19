@@ -662,10 +662,10 @@ import ui.treeview.TreeViewElement;
 		}
 	}
 	//
-	public function mkdirSync(path:String) {
+	public function mkdirSync(path:String, ?options:{?recursive: Bool, ?mode: Int}) {
 		var full = fullPath(path);
 		if (!FileSystem.existsSync(full)) {
-			FileSystem.mkdirSync(full);
+			FileSystem.mkdirSync(full, options);
 		}
 	}
 	public function rmdirSync(path:String) {
