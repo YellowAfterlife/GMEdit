@@ -353,7 +353,7 @@
 		if (pos.ctx) {
 			var prefix = pos.def ? '.outline-item[outline-def="'+escapeProp(pos.def)+'"] ' : '';
 			nextItem = currDir.querySelector(prefix+'.outline-item[outline-ctx="'+escapeProp(pos.ctx)+'"]');
-			while (!nextItem) {
+			while (!nextItem && pos.row >= 0) {
 				pos.row -= 1;
 				conf.update(file, pos);
 				if (pos.ctx == null) break;
