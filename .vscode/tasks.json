@@ -17,6 +17,49 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "build_debug",
+            "type": "hxml",
+            "file": "debug.hxml",
+            "problemMatcher": [
+                "$haxe-absolute",
+                "$haxe",
+                "$haxe-error",
+                "$haxe-trace"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "start",
+            "type":"process",
+            "dependsOn": "build_debug",
+            "command": "./bin/electron.exe",
+            "args": ["--remote-debugging-port=8315"],
+            "isBackground": true,
+
+            // Since electron never exits, this is used to move on to the next tasks.
+            // Inspired by https://stackoverflow.com/questions/44242048/how-to-make-vscode-not-wait-for-finishing-a-prelaunchtask
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": ".",
+                    }
+                }
+            ]
         }
     ]
 }
