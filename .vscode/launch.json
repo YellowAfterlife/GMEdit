@@ -2,10 +2,21 @@
     "configurations": [
         {
             "name":"Launch",
-            "type":"node",
+            "type": "node",
             "request": "launch",
             "preLaunchTask": "build", 
-            "runtimeExecutable": "${workspaceFolder}/bin/electron.exe",
+            "runtimeExecutable": "${workspaceFolder}/bin/electron",
+            "runtimeArgs": [
+                "--remote-debugging-port=8315"
+            ],
+            "port":8315
+        },
+        {
+            "name":"LaunchAndAttach",
+            "type": "chrome",
+            "request": "attach",
+            "preLaunchTask": "start",
+            "port": 8315
         }
     ]   
 }
