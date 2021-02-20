@@ -41,24 +41,23 @@
             "args": ["--remote-debugging-port=8315"],
             "isBackground": true,
 
-            // This task is run before some debug tasks.
-            // Problem is, it's a watch script, and since it never exits, VSCode
-            // complains. All this is needed so VSCode just lets it run.
+            // Since electron never exits, this is used to move on to the next tasks.
+            // Inspired by https://stackoverflow.com/questions/44242048/how-to-make-vscode-not-wait-for-finishing-a-prelaunchtask
             "problemMatcher": [
                 {
-                "pattern": [
-                    {
-                    "regexp": ".",
-                    "file": 1,
-                    "location": 2,
-                    "message": 3
+                    "pattern": [
+                        {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": ".",
                     }
-                ],
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".",
-                    "endsPattern": ".",
-                }
                 }
             ]
         }
