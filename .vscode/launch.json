@@ -15,7 +15,7 @@
             "name":"LaunchAndAttach",
             "type": "chrome",
             "request": "attach",
-            "preLaunchTask": "start",
+            "preLaunchTask": "start_and_build",
             "port": 8315
         }
     ]   

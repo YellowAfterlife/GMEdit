@@ -34,9 +34,7 @@
             }
         },
         {
-            "label": "start",
-            "type":"process",
-            "dependsOn": "build_debug",
+            "label":"start_debug",
             "command": "./bin/electron.exe",
             "args": ["--remote-debugging-port=8315"],
             "isBackground": true,
@@ -60,6 +58,12 @@
                     }
                 }
             ]
+        },
+        {
+            "label": "start_and_build",
+            "type":"shell",
+            "dependsOrder": "sequence",
+            "dependsOn": ["build_debug", "start_debug"],
         }
     ]
 }
