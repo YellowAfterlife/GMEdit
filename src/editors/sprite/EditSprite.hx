@@ -1,14 +1,17 @@
 package editors.sprite;
 
+import yy.YyGUID;
+import editors.sprite.SpriteResource.SpriteResourceFrame;
+import electron.FileSystem;
+import electron.Dialog;
+import tools.macros.SynSugar;
 import editors.Editor;
 import electron.FileWrap;
-import gml.Project;
 import gml.file.GmlFile;
 import haxe.io.Path;
 import js.html.*;
 import file.kind.yy.KYySprite;
 using tools.HtmlTools;
-import yy.YySprite;
 import Main.document;
 import Main.window;
 import electron.Shell;
@@ -18,8 +21,7 @@ import electron.Shell;
  * @author YellowAfterlife
  */
 class EditSprite extends Editor {
-	var sprite:YySprite23;
-	var image:ImageElement;
+	var sprite:SpriteResource;
 	var panner:Panner;
 	var frameCount:Int = 0;
 	var currentFrame:Int = 0;
@@ -36,8 +38,7 @@ class EditSprite extends Editor {
 	public function new(file:GmlFile) {
 		super(file);
 		element = document.createDivElement();
-		element.classList.add("resinfo");
-		element.classList.add("sprite");
+		element.id = "sprite-editor";
 		element.tabIndex = 0;
 		element.addEventListener("keydown", function(e:KeyboardEvent) {
 			if (document.activeElement.nodeName == "INPUT") return;
@@ -67,31 +68,13 @@ class EditSprite extends Editor {
 		checkRecenter();
 	}
 	//
-	function getSpriteFrameData(q:YySprite23):EditSpriteData {
-		var d = new EditSpriteData();
-
-		d.width = q.width;
-		d.height = q.height;
-		d.playbackIsFps = q.sequence.playbackSpeedType == 0;
-		d.playbackSpeed = q.sequence.playbackSpeed;
-		var dir = Path.directory(file.path);
-		for (frame in q.frames) {
-			var fid = frame.name;
-			var frel = Path.join([dir, fid + ".png"]);
-			var url = FileWrap.getImageURL(frel);
-			d.frameURLs.push(url);
-			d.framePaths.push(frel);
-		}
-		d.frameCount = d.frameURLs.length;
-		return d;
-	}
 	function setCurrentFrameElement(i:Int, ?frame:DivElement):DivElement {
 		if (frame == null) frame = frameElements[i];
 		if (currentFrameElement == frame) return frame;
 		currentFrameElement.classList.remove("current");
 		frame.classList.add("current");
 		currentFrameElement = frame;
-		image.src = frameURLs[i];
+		panner.image.src = frameURLs[i];
 		return frame;
 	}
 	function adjustCurrentFrame(delta:Int):DivElement {
@@ -104,170 +87,14 @@ class EditSprite extends Editor {
 		var v2 = Std.is(file.kind, KYySprite);
 		if (v2 && data == null) data = FileWrap.readYyFileSync(file.path);
 		
-		sprite = data;
-		var spriteFrameData:EditSpriteData = getSpriteFrameData(sprite);
-		
-		element.clearInner();
-		//
-		var ctr = document.createDivElement();
-		ctr.classList.add("sprite-info");
-		var info = document.createDivElement();
-		info.classList.add("sprite-info-text");
-		info.appendChild(document.createTextNode(spriteFrameData.width + "x" + spriteFrameData.height
-			+ "; " + sprite.sequence.xorigin + "," + sprite.sequence.yorigin));
-		info.appendChild(document.createBRElement());
-		info.appendChild(document.createTextNode(spriteFrameData.frameCount + " frame" + (spriteFrameData.frameCount != 1 ? "s" : "")));
-		if (spriteFrameData.frameCount > 1) {
-			info.appendChild(document.createBRElement());
-			var toggle:InputElement, mult:InputElement, fps:InputElement;
-			toggle = document.createInputElement();
-			toggle.type = "checkbox";
-			toggle.title = "Toggle playback";
-			animToggle = toggle;
-			info.appendChild(toggle);
-			//
-			mult = document.createInputElement();
-			mult.style.width = "2em";
-			mult.value = "1";
-			mult.title = "Playback speed multiplier";
-			info.appendChild(mult);
-			fps = document.createInputElement();
-			if (spriteFrameData.playbackIsFps) {
-				info.appendChild(document.createTextNode("x"));
-				fps.style.width = "2em";
-				fps.value = "" + Project.current.getFrameRate();
-				fps.title = "Target framerate";
-				info.appendChild(fps);
-			} else {
-				info.appendChild(document.createTextNode("x"));
-				fps.value = Std.string(sprite.sequence.playbackSpeed);
-			}
-			//
-			function nextFrame() {
-				adjustCurrentFrame(playbackDelta);
-			}
-			function syncInterval(_) {
-				if (interval != null) window.clearInterval(interval);
-				if (toggle.checked) {
-					//
-					var tx = Std.parseFloat(mult.value);
-					if (Math.isNaN(tx)) {
-						tx = 0;
-						mult.classList.add("error");
-					} else mult.classList.remove("error");
-					//
-					var tf = 1.;
-					if (spriteFrameData.playbackIsFps) {
-						tf = Std.parseFloat(fps.value);
-						if (Math.isNaN(tf)) {
-							tf = 0;
-							fps.classList.add("error");
-						} else fps.classList.remove("error");
-					}
-					//
-					if (tx == 0 || tf == 0 || spriteFrameData.playbackSpeed == 0) {
-						interval = null;
-					} else {
-						var s = spriteFrameData.playbackSpeed * tx * tf;
-						if (s < 0) {
-							playbackDelta = -1;
-							s = -s;
-						} else playbackDelta = 1;
-						var t = Std.int(1000 / s);
-						interval = window.setInterval(nextFrame, t);
-					}
-				} else interval = null;
-			}
-			var mult_val = mult.value;
-			var fps_val = fps.value;
-			var toggle_val = toggle.checked;
-			var autosync_can = true;
-			function autosync_1() {
-				autosync_can = true;
-				syncInterval(null);
-			}
-			function autosync() {
-				if (mult.value == mult_val
-				&& fps.value == fps_val
-				&& toggle.checked == toggle_val) return;
-				mult_val = mult.value;
-				fps_val = fps.value;
-				toggle_val = toggle.checked;
-				if (autosync_can) {
-					autosync_can = false;
-					window.setTimeout(autosync_1, 50);
-				}
-			}
-			toggle.onchange = autosync;
-			mult.onchange = autosync;
-			mult.onkeydown = autosync;
-			mult.onkeyup = autosync;
-			fps.onchange = autosync;
-			fps.onkeydown = autosync;
-			fps.onkeyup = autosync;
-		};
-		//
-		var frames = document.createDivElement();
-		frames.classList.add("frames");
-		frameCount = spriteFrameData.frameCount;
-		frameElements = [];
-		frameURLs = [];
-		framePaths = [];
-		frameTimes = [];
-		for (i in 0 ... spriteFrameData.frameCount) {
-			var url = spriteFrameData.frameURLs[i];
-			var framePath = spriteFrameData.framePaths[i];
-			var frame = document.createDivElement();
-			var index = frameElements.length;
-			if (index == 0) {
-				currentFrameElement = frame;
-				frame.classList.add("current");
-			}
-			frame.title = "" + index;
-			frameElements.push(frame);
-			frameURLs.push(url);
-			framePaths.push(framePath);
-			frameTimes.push(FileWrap.mtimeSync(framePath));
-			//
-			frame.classList.add("frame");
-			if (spriteFrameData.width > 48 || spriteFrameData.height > 48) {
-				frame.style.backgroundSize = "contain";
-			}
-			// something isn't right here, why do we only need to escape this here of all places?
-			url = StringTools.replace(url, " ", "%20");
-			//
-			frame.style.backgroundImage = 'url($url)';
-			if (spriteFrameData.width <= 24 && spriteFrameData.height <= 24) {
-				frame.style.backgroundSize = '${spriteFrameData.width * 2}px ${spriteFrameData.height * 2}px';
-				frame.classList.add("zoomed");
-			}
-			frame.onclick = function(_) {
-				currentFrame = index;
-				setCurrentFrameElement(index, frame);
-			}
-			frame.ondblclick = function(_) {
-				Shell.openExternal(url);
-			};
-			frames.appendChild(frame);
-		}
-		ctr.appendChild(info);
-		ctr.appendChild(frames);
-		element.appendChild(ctr);
-		//
-		var pan = document.createDivElement();
-		pan.style.flex = "1";
-		var img = document.createImageElement();
-		image = img;
-		recenter = true;
-		img.onload = function(_) {
-			img.onload = null;
-			checkRecenter();
-		}
-		img.src = spriteFrameData.frameURLs[0];
-		pan.appendChild(img);
-		panner = new Panner(pan, img);
-		element.appendChild(pan);
-		//
+		sprite = new SpriteResource(data);
+
+		buildHtml();
+	}
+
+	private function getImagePath(frame: SpriteResourceFrame):String {
+		var dir = Path.directory(file.path);
+		return Path.join([dir, frame.id + ".png"]);
 	}
 	
 	override public function checkChanges():Void {
@@ -293,16 +120,165 @@ class EditSprite extends Editor {
 			}
 		}
 	}
-}
-class EditSpriteData {
-	public var width:Float;
-	public var height:Float;
-	public var frameCount:Int = 0;
-	public var frameURLs:Array<String> = [];
-	public var framePaths:Array<String> = [];
-	public var playbackSpeed = 1.;
-	public var playbackIsFps = true;
-	public function new() {
+
+	private function onSpriteImport() {
+		Dialog.showOpenDialog({
+			title: "Open",
+			buttonLabel: "Import",
+			properties: [ DialogOpenFeature.multiSelections ],
+			filters: [
+				new DialogFilter( "Image files", ["png"])
+			]
+		}, function(array: Array<String>) {
+			if (array == null || array.length == 0) {
+				return;
+			}
+			
+			var newFiles = array.filter(x -> FileSystem.existsSync(x));
+			if (newFiles.length == 0) {
+				return;
+			}
+			
+			// Delete all old files
+			for (frame in sprite.frames) {
+				var path = getImagePath(frame);
+				FileSystem.unlinkSync(path);
+			}
+			var directory = Path.directory(file.path);
+			var layerDirectory = Path.join( [directory, "layers"]);
+			// Delete the entire layer folder
+			FileSystem.rmdirSync( layerDirectory, {recursive: true} );
+			// And create it anew, nice and fresh
+			FileSystem.mkdirSync(layerDirectory);
+
+			// Import new images
+			for (newFile in newFiles) {
+				var newId = new YyGUID();
+				var newLayer = new YyGUID();
+
+				FileSystem.mkdirSync( Path.join([layerDirectory, newId]));
+				FileSystem.copyFileSync(newFile, Path.join([layerDirectory, newId, newLayer + ".png"]));
+				FileSystem.copyFileSync(newFile, Path.join([layerDirectory, newId + ".png"]));
+			}
+
+			// A save to save the new path, since we can get stray files otherwise.
+			save();
+		});
+	}
+
+
+	private function buildHtml() {
+		element.clearInner();
 		
+		buildOptions();
+		bindOptions();
+
+		buildPreview();
+	}
+
+	private function bindOptions() {
+		var importButton = element.querySelector("#import-button");
+		importButton.addEventListener('click', onSpriteImport);
+	}
+
+	private function buildOptions() {
+		var options = document.createDivElement();
+		options.id = "sprite-options";
+		options.innerHTML = SynSugar.xmls(<html>
+			
+			<h2>SpriteName</h2>
+			<button id="import-button" class="highlighted-button">Import Image</input>
+			
+		</html>);
+		element.appendChild(options);
+	}
+
+	private function buildPreview() {
+		//
+		var previewContainer = document.createDivElement();
+		previewContainer.classList.add("resinfo");
+		previewContainer.classList.add("sprite");
+
+		var pannerContainer = document.createDivElement();
+		pannerContainer.classList.add("sprite-info");
+
+		//
+		var frames = document.createDivElement();
+		frames.classList.add("frames");
+		frameCount = sprite.frames.length;
+		frameElements = [];
+		frameURLs = [];
+		framePaths = [];
+		frameTimes = [];
+		for (frame in sprite.frames) {
+			var framePath = getImagePath(frame);
+			var url = FileWrap.getImageURL(framePath);
+			var frame = document.createDivElement();
+			var index = frameElements.length;
+			if (index == 0) {
+				currentFrameElement = frame;
+				frame.classList.add("current");
+			}
+			frame.title = "" + index;
+			frameElements.push(frame);
+			frameURLs.push(url);
+			framePaths.push(framePath);
+			frameTimes.push(FileWrap.mtimeSync(framePath));
+			//
+			frame.classList.add("frame");
+			if (sprite.width > 48 || sprite.height > 48) {
+				frame.style.backgroundSize = "contain";
+			}
+			// something isn't right here, why do we only need to escape this here of all places?
+			url = StringTools.replace(url, " ", "%20");
+			//
+			frame.style.backgroundImage = 'url($url)';
+			if (sprite.width <= 24 && sprite.height <= 24) {
+				frame.style.backgroundSize = '${sprite.width * 2}px ${sprite.height * 2}px';
+				frame.classList.add("zoomed");
+			}
+			frame.onclick = function(_) {
+				currentFrame = index;
+				setCurrentFrameElement(index, frame);
+			}
+			frame.ondblclick = function(_) {
+				Shell.openExternal(url);
+			};
+			frames.appendChild(frame);
+		}
+		
+		pannerContainer.appendChild(frames);
+		
+		previewContainer.appendChild(pannerContainer);
+		//
+		var pan = document.createDivElement();
+
+		var imgCtr = document.createDivElement();
+		recenter = true;
+
+		var img = document.createImageElement();
+		img.onload = function(_) {
+			img.onload = null;
+			checkRecenter();
+		}
+		var framePath = getImagePath(sprite.frames[0]);
+		img.src = FileWrap.getImageURL(framePath);
+		imgCtr.appendChild(img);
+
+
+		var spriteBorder = document.createDivElement();
+		spriteBorder.classList.add("panner-element");
+		spriteBorder.style.width = '${sprite.width}px';
+		spriteBorder.style.height = '${sprite.height}px';
+		spriteBorder.style.border = "1px solid rgba(255, 255, 255, 0.5)";
+		imgCtr.appendChild(spriteBorder);
+
+
+		pan.appendChild(imgCtr);
+		panner = new Panner(pan, imgCtr);
+		previewContainer.appendChild(pan);
+		//
+
+		element.appendChild(previewContainer);
 	}
 }

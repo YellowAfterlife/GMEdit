@@ -23,7 +23,7 @@ abstract YySequence(YySequenceImpl) from YySequenceImpl to YySequenceImpl {
 			"timeUnits": 1,
 			"playback": 1,
 			"playbackSpeed": 30.0,
-			"playbackSpeedType": 0,
+			"playbackSpeedType": cast 0,
 			"autoRecord": true,
 			"volume": 1.0,
 			"length": imageIds.length,
@@ -66,7 +66,7 @@ typedef YySequenceImpl = {
 	timeUnits:Int,
 	playback:Int,
 	playbackSpeed:Float,
-	playbackSpeedType:Int,
+	playbackSpeedType: PlaybackSpeedType,
 	autoRecord:Bool,
 	volume:Float,
 	length:Float,
@@ -105,6 +105,11 @@ typedef YySequenceImpl = {
 	eventStubScript:Any
 
 };
+
+enum abstract PlaybackSpeedType(Int) {
+	var FramesPerSecond = 0;
+	var FramesPerGameFrame = 1;
+}
 
 typedef YySequenceKeyframeSprite = {
 	id:String,

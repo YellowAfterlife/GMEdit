@@ -1,6 +1,6 @@
 package file.kind.gmx;
 
-import editors.PreviewSprite;
+import editors.sprite.PreviewSprite;
 import file.FileKind;
 import gml.file.GmlFile;
 

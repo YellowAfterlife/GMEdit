@@ -103,8 +103,8 @@ class EditSound extends Editor {
 
 	private function importSound() {
 		Dialog.showOpenDialog({
-			title: "title goes here",
-			buttonLabel: "button label",
+			title: "Open",
+			buttonLabel: "Import",
 			filters: [
 				new DialogFilter( "Audio files", ["mp3", "ogg", "wav", "wma"])
 			]

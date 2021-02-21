@@ -66,60 +66,6 @@ https://stackoverflow.com/a/36247448/5578773
 	box-sizing: border-box;
 }
 
-.resinfo.sprite {
-	display: flex;
-	flex-direction: column;
-	height: var(--main-height);
-	height: var(--main-height-vh);
-	padding: 0;
-	outline: 0 solid transparent;
-}
-.resinfo.sprite .sprite-info {
-	display: flex;
-	width: var(--main-width);
-}
-.resinfo.sprite .sprite-info-text {
-	padding: 0.3em;
-	min-width: 7em;
-}
-.resinfo.sprite .sprite-info-text input {
-	vertical-align: middle;
-}
-.resinfo.sprite .frames {
-	overflow-x: scroll;
-	overflow-y: hidden;
-	white-space: nowrap;
-	font-size: 0;
-	flex-grow: 1;
-}
-.resinfo.sprite .frame {
-	width: 48px;
-	height: 48px;
-	display: inline-block;
-	background-color: #6A86B7;
-	background-repeat: no-repeat;
-	background-position: center center;
-	margin: 2px;
-	position: relative;
-	font-size: 10px;
-}
-.resinfo.sprite .frame.current:after {
-	content: attr(title);
-	left: 0; bottom: 0;
-	position: absolute;
-	color: white;
-	background: rgba(0, 0, 0, 0.7);
-	padding: 1px 2px;
-}
-.resinfo.sprite input.error {
-	outline: 2px solid red;
-}
-.resinfo.sprite .frame.current {
-	outline: 2px solid red;
-}
-.resinfo.sprite .panner {
-	flex-grow: 1;
-}
 
 .panner {
 	overflow: hidden;
@@ -128,12 +74,17 @@ https://stackoverflow.com/a/36247448/5578773
 	width: 100%;
 	position: relative;
 	/* blue/dark blue checkerboard */
-	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABCSURBVFhH7c4hEQAgEABB2lGCBMRAUIl4T4E3zAvMijOntvWxotLcpxQAAAAAAADAf0A2X8pQLwEAAAAAAAB8Bqy4mHeUiBSSWmgAAAAASUVORK5CYIIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==);
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAABlBMVEVqhrdHXILSZs3zAAAAE0lEQVQI12P4/5+BgZoEA3VNBADtvT/BrQ+bEwAAAABJRU5ErkJggg==)
 }
-.panner img {
+.panner img, .panner > div {
 	transform-origin: left top 0px;
 	position: absolute;
 	pointer-events: none;
+}
+.panner .panner-element {
+	position: absolute;
+	top: 0px;
+	left: 0px;
 }
 .panner.zoomed img, .resinfo.sprite .frame.zoomed {
 	-ms-interpolation-mode: nearest-neighbor;
@@ -407,6 +358,78 @@ https://stackoverflow.com/a/36247448/5578773
 	min-height: 0;
 }
 #misc-panel > div {
+	flex-grow: 1;
+}
+
+
+/* Sprite editor */
+
+#sprite-editor {
+	display: flex;
+	flex-direction: row;
+}
+#sprite-editor #sprite-options {
+	width: 300px;
+	flex-shrink: 0;
+}
+#sprite-editor .resinfo.sprite {
+	width: 100%;
+}
+
+
+/* Sprite preview/panner box */
+.resinfo.sprite {
+	display: flex;
+	flex-direction: column;
+	height: var(--main-height);
+	height: var(--main-height-vh);
+	padding: 0;
+	outline: 0 solid transparent;
+}
+.resinfo.sprite .sprite-info {
+	display: flex;
+	width: var(--main-width);
+}
+.resinfo.sprite .sprite-info-text {
+	padding: 0.3em;
+	min-width: 7em;
+}
+.resinfo.sprite .sprite-info-text input {
+	vertical-align: middle;
+}
+.resinfo.sprite .frames {
+	overflow-x: scroll;
+	overflow-y: hidden;
+	white-space: nowrap;
+	font-size: 0;
+	flex-grow: 1;
+}
+.resinfo.sprite .frame {
+	width: 48px;
+	height: 48px;
+	display: inline-block;
+	background-color: #6A86B7;
+	background-repeat: no-repeat;
+	background-position: center center;
+	margin: 2px;
+	position: relative;
+	font-size: 10px;
+}
+.resinfo.sprite .frame.current:after {
+	content: attr(title);
+	left: 0; bottom: 0;
+	position: absolute;
+	color: white;
+	background: rgba(0, 0, 0, 0.7);
+	padding: 1px 2px;
+}
+.resinfo.sprite input.error {
+	outline: 2px solid red;
+}
+.resinfo.sprite .frame.current {
+	outline: 2px solid red;
+}
+.resinfo.sprite .panner {
 	flex-grow: 1;
 }
 
