@@ -1,20 +1,12 @@
-package editors;
+package editors.sprite;
 
 import editors.Editor;
-import electron.FileSystem;
 import electron.FileWrap;
 import gml.Project;
 import gml.file.GmlFile;
-import gml.file.GmlFileExtra;
-import gmx.SfGmx;
 import haxe.io.Path;
-import js.html.DivElement;
-import js.html.ImageElement;
-import js.html.InputElement;
-import js.html.KeyboardEvent;
-import tools.NativeString;
+import js.html.*;
 import file.kind.yy.KYySprite;
-import file.kind.gmx.KGmxSprite;
 using tools.HtmlTools;
 import yy.YySprite;
 import Main.document;
@@ -26,6 +18,7 @@ import electron.Shell;
  * @author YellowAfterlife
  */
 class EditSprite extends Editor {
+	var sprite:YySprite23;
 	var image:ImageElement;
 	var panner:Panner;
 	var frameCount:Int = 0;
@@ -39,6 +32,7 @@ class EditSprite extends Editor {
 	var playbackDelta:Int = 1;
 	var recenter = true;
 	var animToggle:InputElement;
+
 	public function new(file:GmlFile) {
 		super(file);
 		element = document.createDivElement();
@@ -73,36 +67,16 @@ class EditSprite extends Editor {
 		checkRecenter();
 	}
 	//
-	function getData1(data:String):EditSpriteData {
+	function getSpriteFrameData(q:YySprite23):EditSpriteData {
 		var d = new EditSpriteData();
-		var pj = Project.current;
-		var q:SfGmx = FileWrap.readGmxFileSync(file.path);
-		d.xorig = q.findFloat("xorig");
-		d.yorig = q.findFloat("yorigin");
-		d.width = q.findFloat("width");
-		d.height = q.findFloat("height");
-		for (frame in q.find("frames").findAll("frame")) {
-			var frel = "sprites/" + frame.text;
-			var url = pj.getImageURL(frel);
-			d.frameURLs.push(url);
-			d.framePaths.push(frel);
-		}
-		d.frameCount = d.frameURLs.length;
-		return d;
-	}
-	function getData2(q:YySprite):EditSpriteData {
-		var d = new EditSpriteData();
-		d.xorig = q.xorig;
-		d.yorig = q.yorig;
+
 		d.width = q.width;
 		d.height = q.height;
-		d.playbackLegacy = q.playbackSpeedType != 0;
-		d.playbackSpeed = q.playbackSpeed;
+		d.playbackIsFps = q.sequence.playbackSpeedType == 0;
+		d.playbackSpeed = q.sequence.playbackSpeed;
 		var dir = Path.directory(file.path);
-		var pj = Project.current;
 		for (frame in q.frames) {
 			var fid = frame.name;
-			if (fid == null) fid = frame.id;
 			var frel = Path.join([dir, fid + ".png"]);
 			var url = FileWrap.getImageURL(frel);
 			d.frameURLs.push(url);
@@ -129,18 +103,21 @@ class EditSprite extends Editor {
 	override public function load(data:Dynamic):Void {
 		var v2 = Std.is(file.kind, KYySprite);
 		if (v2 && data == null) data = FileWrap.readYyFileSync(file.path);
-		var d:EditSpriteData = v2 ? getData2(data) : getData1(data);
+		
+		sprite = data;
+		var spriteFrameData:EditSpriteData = getSpriteFrameData(sprite);
+		
 		element.clearInner();
 		//
 		var ctr = document.createDivElement();
 		ctr.classList.add("sprite-info");
 		var info = document.createDivElement();
 		info.classList.add("sprite-info-text");
-		info.appendChild(document.createTextNode(d.width + "x" + d.height
-			+ "; " + d.xorig + "," + d.yorig));
+		info.appendChild(document.createTextNode(spriteFrameData.width + "x" + spriteFrameData.height
+			+ "; " + sprite.sequence.xorigin + "," + sprite.sequence.yorigin));
 		info.appendChild(document.createBRElement());
-		info.appendChild(document.createTextNode(d.frameCount + " frame" + (d.frameCount != 1 ? "s" : "")));
-		if (d.frameCount > 1) {
+		info.appendChild(document.createTextNode(spriteFrameData.frameCount + " frame" + (spriteFrameData.frameCount != 1 ? "s" : "")));
+		if (spriteFrameData.frameCount > 1) {
 			info.appendChild(document.createBRElement());
 			var toggle:InputElement, mult:InputElement, fps:InputElement;
 			toggle = document.createInputElement();
@@ -155,7 +132,7 @@ class EditSprite extends Editor {
 			mult.title = "Playback speed multiplier";
 			info.appendChild(mult);
 			fps = document.createInputElement();
-			if (d.playbackLegacy) {
+			if (spriteFrameData.playbackIsFps) {
 				info.appendChild(document.createTextNode("x"));
 				fps.style.width = "2em";
 				fps.value = "" + Project.current.getFrameRate();
@@ -163,7 +140,7 @@ class EditSprite extends Editor {
 				info.appendChild(fps);
 			} else {
 				info.appendChild(document.createTextNode("x"));
-				fps.value = "1";
+				fps.value = Std.string(sprite.sequence.playbackSpeed);
 			}
 			//
 			function nextFrame() {
@@ -180,7 +157,7 @@ class EditSprite extends Editor {
 					} else mult.classList.remove("error");
 					//
 					var tf = 1.;
-					if (d.playbackLegacy) {
+					if (spriteFrameData.playbackIsFps) {
 						tf = Std.parseFloat(fps.value);
 						if (Math.isNaN(tf)) {
 							tf = 0;
@@ -188,10 +165,10 @@ class EditSprite extends Editor {
 						} else fps.classList.remove("error");
 					}
 					//
-					if (tx == 0 || tf == 0 || d.playbackSpeed == 0) {
+					if (tx == 0 || tf == 0 || spriteFrameData.playbackSpeed == 0) {
 						interval = null;
 					} else {
-						var s = d.playbackSpeed * tx * tf;
+						var s = spriteFrameData.playbackSpeed * tx * tf;
 						if (s < 0) {
 							playbackDelta = -1;
 							s = -s;
@@ -232,14 +209,14 @@ class EditSprite extends Editor {
 		//
 		var frames = document.createDivElement();
 		frames.classList.add("frames");
-		frameCount = d.frameCount;
+		frameCount = spriteFrameData.frameCount;
 		frameElements = [];
 		frameURLs = [];
 		framePaths = [];
 		frameTimes = [];
-		for (i in 0 ... d.frameCount) {
-			var url = d.frameURLs[i];
-			var framePath = d.framePaths[i];
+		for (i in 0 ... spriteFrameData.frameCount) {
+			var url = spriteFrameData.frameURLs[i];
+			var framePath = spriteFrameData.framePaths[i];
 			var frame = document.createDivElement();
 			var index = frameElements.length;
 			if (index == 0) {
@@ -253,15 +230,15 @@ class EditSprite extends Editor {
 			frameTimes.push(FileWrap.mtimeSync(framePath));
 			//
 			frame.classList.add("frame");
-			if (d.width > 48 || d.height > 48) {
+			if (spriteFrameData.width > 48 || spriteFrameData.height > 48) {
 				frame.style.backgroundSize = "contain";
 			}
 			// something isn't right here, why do we only need to escape this here of all places?
 			url = StringTools.replace(url, " ", "%20");
 			//
 			frame.style.backgroundImage = 'url($url)';
-			if (d.width <= 24 && d.height <= 24) {
-				frame.style.backgroundSize = '${d.width * 2}px ${d.height * 2}px';
+			if (spriteFrameData.width <= 24 && spriteFrameData.height <= 24) {
+				frame.style.backgroundSize = '${spriteFrameData.width * 2}px ${spriteFrameData.height * 2}px';
 				frame.classList.add("zoomed");
 			}
 			frame.onclick = function(_) {
@@ -286,7 +263,7 @@ class EditSprite extends Editor {
 			img.onload = null;
 			checkRecenter();
 		}
-		img.src = d.frameURLs[0];
+		img.src = spriteFrameData.frameURLs[0];
 		pan.appendChild(img);
 		panner = new Panner(pan, img);
 		element.appendChild(pan);
@@ -318,15 +295,13 @@ class EditSprite extends Editor {
 	}
 }
 class EditSpriteData {
-	public var xorig:Float;
-	public var yorig:Float;
 	public var width:Float;
 	public var height:Float;
 	public var frameCount:Int = 0;
 	public var frameURLs:Array<String> = [];
 	public var framePaths:Array<String> = [];
 	public var playbackSpeed = 1.;
-	public var playbackLegacy = true;
+	public var playbackIsFps = true;
 	public function new() {
 		
 	}

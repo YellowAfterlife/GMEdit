@@ -1,6 +1,6 @@
 package file.kind.gmx;
 
-import editors.EditSprite;
+import editors.PreviewSprite;
 import file.FileKind;
 import gml.file.GmlFile;
 
@@ -14,6 +14,6 @@ class KGmxSprite extends FileKind {
 		super();
 	}
 	override public function init(file:GmlFile, data:Dynamic):Void {
-		file.editor = new EditSprite(file);
+		file.editor = new PreviewSprite(file);
 	}
 }

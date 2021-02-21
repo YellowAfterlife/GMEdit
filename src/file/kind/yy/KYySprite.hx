@@ -1,6 +1,8 @@
 package file.kind.yy;
 
-import editors.EditSprite;
+import editors.sprite.EditSprite;
+import gml.Project;
+import editors.sprite.PreviewSprite;
 import file.FileKind;
 import gml.file.GmlFile;
 
@@ -14,6 +16,10 @@ class KYySprite extends FileKind {
 		super();
 	}
 	override public function init(file:GmlFile, data:Dynamic):Void {
-		file.editor = new EditSprite(file);
+		if (Project.current.yyUsesGUID) {
+			file.editor = new PreviewSprite(file);
+		} else {
+			file.editor = new EditSprite(file);
+		}
 	}
 }
