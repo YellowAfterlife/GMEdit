@@ -12,7 +12,7 @@
             "port":8315
         },
         {
-            "name":"LaunchAndAttach",
+            "name":"Debug",
             "type": "chrome",
             "request": "attach",
             "preLaunchTask": "start_and_build",
