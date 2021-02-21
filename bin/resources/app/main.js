@@ -21,6 +21,7 @@ function createWindow() {
 		backgroundColor: "#889EC5",
 		title: "GMEdit",
 		webPreferences: {
+			enableRemoteModule: true,
 			nodeIntegration: true
 		},
 		show: !showOnceReady,
