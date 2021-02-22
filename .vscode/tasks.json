@@ -34,30 +34,11 @@
             }
         },
         {
+            "type": "shell",
             "label":"start_debug",
-            "command": "./bin/electron.exe",
-            "args": ["--remote-debugging-port=8315"],
+            "command": "./.vscode/start_debug.cmd",
             "isBackground": true,
-
-            // Since electron never exits, this is used to move on to the next tasks.
-            // Inspired by https://stackoverflow.com/questions/44242048/how-to-make-vscode-not-wait-for-finishing-a-prelaunchtask
-            "problemMatcher": [
-                {
-                    "pattern": [
-                        {
-                        "regexp": ".",
-                        "file": 1,
-                        "location": 2,
-                        "message": 3
-                        }
-                    ],
-                    "background": {
-                        "activeOnStart": true,
-                        "beginsPattern": ".",
-                        "endsPattern": ".",
-                    }
-                }
-            ]
+            "problemMatcher": []
         },
         {
             "label": "start_and_build",

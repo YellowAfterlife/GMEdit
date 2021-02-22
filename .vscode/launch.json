@@ -5,11 +5,7 @@
             "type": "node",
             "request": "launch",
             "preLaunchTask": "build", 
-            "runtimeExecutable": "${workspaceFolder}/bin/electron",
-            "runtimeArgs": [
-                "--remote-debugging-port=8315"
-            ],
-            "port":8315
+            "runtimeExecutable": "${workspaceFolder}/bin/electron"
         },
         {
             "name":"Debug",
