@@ -17,6 +17,34 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "build_debug",
+            "type": "hxml",
+            "file": "debug.hxml",
+            "problemMatcher": [
+                "$haxe-absolute",
+                "$haxe",
+                "$haxe-error",
+                "$haxe-trace"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label":"start_debug",
+            "command": "./.vscode/start_debug.cmd",
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "start_and_build",
+            "type":"shell",
+            "dependsOrder": "sequence",
+            "dependsOn": ["build_debug", "start_debug"],
         }
     ]
 }

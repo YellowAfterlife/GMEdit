@@ -2,10 +2,17 @@
     "configurations": [
         {
             "name":"Launch",
-            "type":"node",
+            "type": "node",
             "request": "launch",
             "preLaunchTask": "build", 
-            "runtimeExecutable": "${workspaceFolder}/bin/electron.exe",
+            "runtimeExecutable": "${workspaceFolder}/bin/electron"
+        },
+        {
+            "name":"Debug",
+            "type": "chrome",
+            "request": "attach",
+            "preLaunchTask": "start_and_build",
+            "port": 8315
         }
     ]   
 }
