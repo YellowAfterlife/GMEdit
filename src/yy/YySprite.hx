@@ -72,16 +72,10 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 			"swatchColours": null,
 			"gridX": 0,
 			"gridY": 0,
-			"frames": [
-			  	{
-				  "compositeImage": {"FrameId":{"name": imageGuid,"path": spritePath},"LayerId":null,"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMSpriteBitmap",}
-				  ,"images":[ {"FrameId":{"name":imageGuid,"path": spritePath,},"LayerId":{"name": layerGuid,"path": spritePath,},"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMSpriteBitmap",}],
-				  "parent": spriteReference,"resourceVersion":"1.0","name":imageGuid,"tags":[],"resourceType":"GMSpriteFrame"
-				}
-			],
-			"sequence": YySequence.generateDefaultSpriteSequence(spriteReference, [imageGuid]),
+			"frames": [ YySprite23Frame.generateDefault(spriteReference, imageGuid, layerGuid) ],
+			"sequence": YySequence.generateDefaultSpriteSequence(spriteReference, imageGuid),
 			"layers": [
-			  {"visible":true,"isLocked":false,"blendMode":0,"opacity":100.0,"displayName":"default","resourceVersion":"1.0","name":layerGuid,"tags":[],"resourceType":"GMImageLayer",},
+			  YySprite23Layer.generateDefault(layerGuid),
 			],
 			"parent": parent,
 			"resourceVersion": "1.0",
@@ -89,6 +83,36 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 			"tags": [],
 			"resourceType": "GMSprite",
 		  };
+	}
+
+	/**Clears current frames and replaces them with new ones*/
+	public function replaceFrames(frameGuids: Array<YyGUID>) {
+		this.frames = [];
+		this.sequence.tracks[0].keyframes.Keyframes = [];
+		for (frameGuid in frameGuids) {
+			addFrame(frameGuid);
+		}
+	}
+
+	public function addFrame(frameGuid: YyGUID, ?layerGuid: YyGUID) {
+		var spritePath:String = 'sprites/${this.name}/${this.name}.yy';
+		var thisReference:YyResourceRef = {name: this.name, path: spritePath}
+		if (layerGuid == null) {
+			layerGuid = cast this.layers[0].name;
+		}
+
+		var index: Int = this.frames.length;
+
+		this.frames.push(
+			YySprite23Frame.generateDefault( thisReference , frameGuid, layerGuid)
+		);
+
+		this.sequence.tracks[0].keyframes.Keyframes.push(
+			YySequenceKeyframeSprite.generateDefault(thisReference, index, frameGuid)
+		);
+
+		this.sequence.length = this.frames.length;
+		
 	}
 }
 
@@ -120,17 +144,45 @@ typedef YySprite23Impl = {
 	gridY:Int,
 	sequence: YySequence,
 	frames:Array<YySprite23Frame>,
-	layers:Array<{
-		>YyBase23,
-		visible:Bool,
-		isLocked:Bool,
-		blendMode:Int,
-		opacity:Float,
-		displayName:String
-	}>
+	layers:Array<YySprite23Layer>
 }
 
-typedef YySprite23Frame = {
+
+@:forward
+abstract YySprite23Frame(YySprite23FrameImpl) from YySprite23FrameImpl to YySprite23FrameImpl {
+	/**
+	 * Create a new YySprite23Frame with the default values found in 2.3
+	 */
+	 public static function generateDefault(parentReference: YyResourceRef, imageGuid: YyGUID, layerGuid: YyGUID):YySprite23Frame {
+		var thisReference = {name: imageGuid, path: parentReference.path}
+		return {
+			"compositeImage": {
+				"FrameId": thisReference,
+				"LayerId":null,
+				"resourceVersion":"1.0",
+				"name":"",
+				"tags":[],
+				"resourceType":"GMSpriteBitmap",
+			},
+			"images":[
+				{
+					"FrameId": thisReference,
+					"LayerId": {"name": layerGuid,"path": parentReference.path,},
+					"resourceVersion":"1.0",
+					"name":"",
+					"tags":[],
+					"resourceType":"GMSpriteBitmap",
+				},
+		  	],
+			"parent": parentReference,
+			"resourceVersion":"1.0",
+			"name": imageGuid,
+			"tags":[],
+			"resourceType":"GMSpriteFrame",}
+	 }
+}
+
+typedef YySprite23FrameImpl = {
 	>YyBase23,
 	compositeImage:{
 		>YyBase23,
@@ -143,4 +195,30 @@ typedef YySprite23Frame = {
 		LayerId: YyResourceRef
 	}>,
 	parent: YyResourceRef
+}
+
+@:forward
+abstract YySprite23Layer(YySprite23LayerImpl) from YySprite23LayerImpl to YySprite23LayerImpl {
+	public static function generateDefault(layerGuid: YyGUID):YySprite23Layer {
+		return {
+			"visible":true,
+			"isLocked":false,
+			"blendMode":0,
+			"opacity":100.0,
+			"displayName":"default",
+			"resourceVersion":"1.0",
+			"name":layerGuid,
+			"tags":[],
+			"resourceType":"GMImageLayer",
+		}
+	}
+}
+
+typedef YySprite23LayerImpl = {
+	>YyBase23,
+	visible:Bool,
+	isLocked:Bool,
+	blendMode:Int,
+	opacity:Float,
+	displayName:String
 }

@@ -16,37 +16,45 @@ class EventBuildingMacro {
 	*/
     public static macro function build():Array<Field> {
         var fields = Context.getBuildFields();
-        for (fd in fields.copy()) {
-            var observeableTag = fd.meta.filter((m) -> m.name == ":observable")[0];
+        for (field in fields.copy()) {
+            var observeableTag = field.meta.filter((m) -> m.name == ":observable")[0];
 			if (observeableTag == null) continue;
 
 			var sourceData = observeableTag.params[0];
-
-            var fdName = fd.name;
-            var fdType;
-            switch (fd.kind) {
-                case FVar(t, e): fdType = t;
+            var fieldName = field.name;
+            var fieldType;
+            switch (field.kind) {
+                case FVar(t, e): fieldType = t;
                 default: continue;
             }
-		    var upperCase = fdName.charAt(0).toUpperCase() + fdName.substr(1);
+		    var upperCase = fieldName.charAt(0).toUpperCase() + fieldName.substr(1);
 			var eventName = 'on${upperCase}Changed';
-            var getter = "get_" + fdName;
-            var setter = "set_" + fdName;
-            var mc = macro class Wow {
+            var docs:String = field.doc;
+            var getter = "get_" + fieldName;
+            var setter = "set_" + fieldName;
+            var macroTempClass = macro class Wow {
                 public var $eventName:Dynamic;
-                public var $fdName(get, set):$fdType;
-                public function $getter():$fdType {
+                public var $fieldName(get, set):$fieldType;
+                private function $getter():$fieldType {
                     return $sourceData;
                 }
-                public function $setter(value:$fdType):$fdType {
+                private function $setter(value:$fieldType):$fieldType {
 					if (value == $sourceData) return value;
                     $sourceData = value;
 					$i{eventName}.invoke(value);
                     return value;
                 }
             };
-            fields.remove(fd);
-            for (mcf in mc.fields) fields.push(mcf);
+            fields.remove(field);
+            for (tempField in macroTempClass.fields) {
+                if (tempField.name == fieldName) {
+                    tempField.doc = docs;
+                } else if (tempField.name == eventName) {
+                    tempField.doc = 'Raised whenever $fieldName is modified';
+                }
+
+                fields.push(tempField);
+            }
         }
 
         return fields;

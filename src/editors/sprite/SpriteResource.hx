@@ -1,5 +1,6 @@
 package editors.sprite;
 
+import yy.YyGUID;
 import yy.YySequence.PlaybackSpeedType;
 import electron.FileWrap;
 import tools.EventHandler;
@@ -35,7 +36,20 @@ class SpriteResource {
 	@:observable( spriteData.sequence.playbackSpeed )
 	var playbackSpeed: Float;
 
+	/** Layer 0, the layer most people use*/
+	public var defaultLayer(get, null): String;
+	private function get_defaultLayer(): String {
+		return spriteData.layers[0].name;
+	}
 
+
+	/** 
+	 * Gets the underlying data. Only use when necessary, like when you need to send the data in for saving 
+	 * If you call this to access a not exposed field, please make it an observable instead.
+	 */
+	public function getUnderlyingData():YySprite23 {
+		return spriteData;
+	}
 }
 
 @:forward
@@ -62,10 +76,29 @@ class SpriteResourceFramesImpl {
 		}
 	}
 
+	public var onFramesReplaced: EventHandler<Void> = new EventHandler();
+	/**
+	 * Replace all frames in the resource with new ones. Basically clearing the old images and adding new ones.	
+	 */
+	 public function replaceFrames(frameGuids: Array<YyGUID>) {
+		spriteData.replaceFrames(frameGuids);
+	}
+
+	public var onFrameAdded: EventHandler<{frame:SpriteResourceFrame, index:Int}> = new EventHandler();
+	/** Add a new frame to the sprite*/
+	public function add(frameId: YyGUID, ?layerId: YyGUID) {
+		this.spriteData.addFrame(frameId, layerId);
+		var index = array.length;
+		var frame = new SpriteResourceFrame(this.spriteData, index);
+		array.push( frame );
+		onFrameAdded.invoke({frame:frame, index: index});
+	}
+
 	public function get(index: Int): SpriteResourceFrame {
 		return this.array[index];
 	}
 
+	/** Number of frames inside the collection*/
 	public var length(get, null): Int;
 	private function get_length():Int {
 		return array.length;

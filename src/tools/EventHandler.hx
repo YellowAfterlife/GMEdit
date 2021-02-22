@@ -9,7 +9,7 @@ class EventHandler<T> {
 	}
 
 	/** Adds a function to be executed when the event is invoked */
-	public function listen( listener: (T) -> Void ) {
+	public function add( listener: (T) -> Void ) {
 		listeners.push(listener);
 	}
 

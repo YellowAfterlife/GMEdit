@@ -8,15 +8,9 @@ abstract YySequence(YySequenceImpl) from YySequenceImpl to YySequenceImpl {
 	/**
 	 * Create a new YySequence to use with a sprite populated with the default values found in 2.3
 	 */
-	 public static function generateDefaultSpriteSequence(spriteReference: YyResourceRef, imageIds: Array<String>):YySequence {
+	 public static function generateDefaultSpriteSequence(spriteReference: YyResourceRef, imageId: String):YySequence {
 		
 		var trackKeyframes:Array<YySequenceKeyframeSprite> = [];
-		var i = 0;
-		for (imageId in imageIds) {
-			trackKeyframes.push(
-				{"id":new YyGUID(),"Key":0.0,"Length": i++,"Stretch":false,"Disabled":false,"IsCreationKey":false,"Channels":{"0":{"Id":{"name":imageId,"path":spriteReference.path,},"resourceVersion":"1.0","resourceType":"SpriteFrameKeyframe",},},"resourceVersion":"1.0","resourceType":"Keyframe<SpriteFrameKeyframe>",}
-			);
-		}
 
 		return {
 			"spriteId": spriteReference,
@@ -26,12 +20,12 @@ abstract YySequence(YySequenceImpl) from YySequenceImpl to YySequenceImpl {
 			"playbackSpeedType": cast 0,
 			"autoRecord": true,
 			"volume": 1.0,
-			"length": imageIds.length,
+			"length": 1,
 			"events": {"Keyframes":[],"resourceVersion":"1.0","resourceType":"KeyframeStore<MessageEventKeyframe>",},
 			"moments": {"Keyframes":[],"resourceVersion":"1.0","resourceType":"KeyframeStore<MomentsEventKeyframe>",},
 			"tracks": [
 			  {"name":"frames","spriteId":null,"keyframes":{"Keyframes": 
-			  	trackKeyframes
+			  	[YySequenceKeyframeSprite.generateDefault(spriteReference, 0, imageId)]
 				,"resourceVersion":"1.0","resourceType":"KeyframeStore<SpriteFrameKeyframe>",},"trackColour":0,"inheritsTrackColour":true,"builtinName":0,"traits":0,"interpolation":1,"tracks":[],"events":[],"modifiers":[],"isCreationTrack":false,"resourceVersion":"1.0","tags":[],"resourceType":"GMSpriteFramesTrack",},
 			],
 			"visibleRange": null,
@@ -111,7 +105,33 @@ enum abstract PlaybackSpeedType(Int) {
 	var FramesPerGameFrame = 1;
 }
 
-typedef YySequenceKeyframeSprite = {
+@:forward
+abstract YySequenceKeyframeSprite(YySequenceKeyframeSpriteImpl) from YySequenceKeyframeSpriteImpl to YySequenceKeyframeSpriteImpl {
+	/**
+	 * Create a new KeyframeSprite to use with a sprite populated with the default values found in 2.3
+	 */
+	 public static function generateDefault(spriteReference: YyResourceRef, index: Int, frameGuid: String):YySequenceKeyframeSprite {
+		return {
+			"id": new YyGUID(),
+			"Key": index,
+			"Length": 1.0,
+			"Stretch":false,
+			"Disabled":false,
+			"IsCreationKey":false,
+			"Channels": {
+				"0": {
+					"Id": {"name": frameGuid,"path":spriteReference.path,},
+					"resourceVersion":"1.0",
+					"resourceType":"SpriteFrameKeyframe"
+				},
+			},
+			"resourceVersion":"1.0",
+			"resourceType":"Keyframe<SpriteFrameKeyframe>",
+		}
+	 }
+}
+
+typedef YySequenceKeyframeSpriteImpl = {
 	id:String,
 	Key:Float,
 	Length:Float,

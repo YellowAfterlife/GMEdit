@@ -1,5 +1,7 @@
 package editors.sprite;
 
+import gml.Project;
+import yy.YyJson;
 import yy.YyGUID;
 import editors.sprite.SpriteResource.SpriteResourceFrame;
 import electron.FileSystem;
@@ -39,6 +41,7 @@ class EditSprite extends Editor {
 		super(file);
 		element = document.createDivElement();
 		element.id = "sprite-editor";
+
 		element.tabIndex = 0;
 		element.addEventListener("keydown", function(e:KeyboardEvent) {
 			if (document.activeElement.nodeName == "INPUT") return;
@@ -90,6 +93,14 @@ class EditSprite extends Editor {
 		sprite = new SpriteResource(data);
 
 		buildHtml();
+	}
+
+	public override function save(): Bool {
+		var newSpriteJson = YyJson.stringify(sprite.getUnderlyingData(), Project.current.yyExtJson);
+		file.writeContent(newSpriteJson);
+		file.changed = false;
+
+		return true;
 	}
 
 	private function getImagePath(frame: SpriteResourceFrame):String {
@@ -151,15 +162,20 @@ class EditSprite extends Editor {
 			// And create it anew, nice and fresh
 			FileSystem.mkdirSync(layerDirectory);
 
+			var layerId = sprite.defaultLayer;
+			var newIds:Array<YyGUID> = [];
+
 			// Import new images
 			for (newFile in newFiles) {
 				var newId = new YyGUID();
-				var newLayer = new YyGUID();
+				newIds.push(newId);
 
 				FileSystem.mkdirSync( Path.join([layerDirectory, newId]));
-				FileSystem.copyFileSync(newFile, Path.join([layerDirectory, newId, newLayer + ".png"]));
-				FileSystem.copyFileSync(newFile, Path.join([layerDirectory, newId + ".png"]));
+				FileSystem.copyFileSync(newFile, Path.join([layerDirectory, newId, layerId + ".png"]));
+				FileSystem.copyFileSync(newFile, Path.join([directory, newId + ".png"]));
 			}
+
+			sprite.frames.replaceFrames(newIds);
 
 			// A save to save the new path, since we can get stray files otherwise.
 			save();
