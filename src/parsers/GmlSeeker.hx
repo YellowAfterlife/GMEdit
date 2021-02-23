@@ -1316,7 +1316,11 @@ class GmlSeeker {
 					
 					// skip if we don't have anything to do:
 					var kind = GmlAPI.stdKind[s];
-					var addInstField = (kind == null); // don't add built-ins to variable list
+					var addInstField:Bool;
+					if (kind != null) {
+						var ns = GmlAPI.gmlNamespaces[s];
+						addInstField = ns == null || ns.noTypeRef;
+					} else addInstField = true;
 					if (!addInstField && (
 						// create events shouldn't hint built-ins since we'll auto-include them:
 						isCreateEvent
