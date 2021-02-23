@@ -1429,7 +1429,9 @@ class GmlLinter {
 						skip();
 						rc(readExpr(newDepth));
 						var varExprType = readExpr_currType;
-						if (varType != null) {
+						if (mainKind == KGlobalVar) {
+							// not today
+						} else if (varType != null) {
 							checkTypeCast(varExprType, varType);
 						} else if (varExprType != null) {
 							var apply = setLocalTypes && switch (mainKind) {
@@ -1450,7 +1452,7 @@ class GmlLinter {
 							}
 						}
 					}
-					if (setLocalVars) {
+					if (setLocalVars && mainKind != KGlobalVar) {
 						if (typeInfo == null && varTypeStr != null) {
 							typeInfo = "type " + varTypeStr;
 						}
