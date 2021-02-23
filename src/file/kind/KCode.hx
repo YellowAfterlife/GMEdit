@@ -33,8 +33,7 @@ class KCode extends FileKind {
 	}
 	public function saveCode(editor:EditCode, code:String):Bool {
 		if (editor.file.path == null) return false;
-		editor.file.writeContent(code);
-		return true;
+		return editor.file.writeContent(code);
 	}
 	
 	/**
