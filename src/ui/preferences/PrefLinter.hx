@@ -137,10 +137,11 @@ class PrefLinter {
 		el = addf(aBool, "Treat `case` as block-scoped", opt.blockScopedCase);
 		el.title = "Allows cases to redefine block-scoped variables inside cases, but variables in fall-through cases will not be considered accessible in subsequent case(s)";
 		
-		out = addGroup(orig, "Implicit types for local variables");
+		out = addGroup(orig, "Implicit types");
 		addf(aBool, "For `var`", opt.specTypeVar);
 		addf(aBool, "For `let`", opt.specTypeLet);
 		addf(aBool, "For `const`", opt.specTypeConst);
 		addf(aBool, "For other `var` macros", opt.specTypeMisc);
+		addf(aBool, "For simple instance/constructor variables (numbers, booleans, strings, `new`)", opt.specTypeInst);
 	}
 }

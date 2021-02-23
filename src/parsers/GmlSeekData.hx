@@ -313,7 +313,7 @@ class GmlSeekDataHint {
 		this.type = type;
 		this.key = namespace + (isInst ? ":" : ".") + field;
 	}
-	public function merge(hint:GmlSeekDataHint) {
+	public function merge(hint:GmlSeekDataHint, ?preferExisting:Bool) {
 		var cd0 = comp.doc;
 		var cd1 = hint.comp.doc;
 		var cdp = field + "(";
@@ -337,7 +337,7 @@ class GmlSeekDataHint {
 			}
 		}
 		//
-		if (hint.doc != null) doc = hint.doc;
-		if (hint.type != null) type = hint.type;
+		if (hint.doc != null && (!preferExisting || doc == null)) doc = hint.doc;
+		if (hint.type != null && (!preferExisting || type == null)) type = hint.type;
 	}
 }

@@ -30,6 +30,7 @@
     {"id":{"name":"v_is_highlight","path":"scripts/v_is_highlight/v_is_highlight.yy",},"order":0,},
     {"id":{"name":"v_constructor_method_arrow_types","path":"scripts/v_constructor_method_arrow_types/v_constructor_method_arrow_types.yy",},"order":14,},
     {"id":{"name":"v_constructor_self_index","path":"scripts/v_constructor_self_index/v_constructor_self_index.yy",},"order":15,},
+    {"id":{"name":"obj_implicit_inst_types","path":"objects/obj_implicit_inst_types/obj_implicit_inst_types.yy",},"order":3,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

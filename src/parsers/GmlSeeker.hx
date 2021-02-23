@@ -22,6 +22,7 @@ import js.lib.Error;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import parsers.GmlSeekData;
+import parsers.linter.GmlLinter;
 import synext.GmlExtLambda;
 import synext.GmlExtMFunc;
 import tools.CharCode;
@@ -175,7 +176,7 @@ class GmlSeeker {
 		var mainTop = main;
 		var sub = null;
 		var q = new GmlReaderExt(src);
-		var v = GmlAPI.version;
+		var version:GmlVersion = GmlAPI.version;
 		var row = 0;
 		var project = Project.current;
 		var notLam = !Std.is(kind, KGmlLambdas);
@@ -183,9 +184,10 @@ class GmlSeeker {
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var cubDepth:Int = 0; // depth of {}
 		var hasFunctionLiterals = {
-			var kws = v.config.additionalKeywords;
+			var kws = version.config.additionalKeywords;
 			kws != null && kws.contains("function");
 		};
+		var specTypeInst = GmlLinter.getOption((p) -> p.specTypeInst);
 		var funcsAreGlobal = GmlFileKindTools.functionsAreGlobal(kind);
 		var isObject = Std.is(kind, KGmlEvents);
 		var isCreateEvent = isObject && locals.name == "create";
@@ -288,7 +290,7 @@ class GmlSeeker {
 						};
 						default:
 					};
-					case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, v);
+					case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
 					case "#".code: {
 						q.skipIdent1();
 						if (q.pos > start + 1) {
@@ -568,7 +570,7 @@ class GmlSeeker {
 			var lastHint = out.fieldHints[hint.key];
 			if (lastHint == null) {
 				out.fieldHints[hint.key] = hint;
-			} else lastHint.merge(hint);
+			} else lastHint.merge(hint, true);
 			
 			if (isField) {
 				//
@@ -652,8 +654,10 @@ class GmlSeeker {
 					} else if (lineMatch[2] != null) {
 						name = lineMatch[2];
 						out.globalTypes[name] = type;
-						var v = out.globalFields[name];
-						if (v != null) v.comp.doc = v.comp.doc.nzcct("\n", "type " + typeStr);
+						var globalField = out.globalFields[name];
+						if (globalField != null) {
+							globalField.comp.doc = globalField.comp.doc.nzcct("\n", "type " + typeStr);
+						}
 					} else {
 						name = lineMatch[3];
 						var namespace:String;
@@ -708,7 +712,7 @@ class GmlSeeker {
 					var mti = 0;
 					var typeStr = mt[1];
 					var isNew = mt[2] != null;
-					var hr = new GmlReader(mt[3], v), hp:Int;
+					var hr = new GmlReader(mt[3], version), hp:Int;
 					hr.skipSpaces0_local();
 					
 					var templateSelf:GmlType = null;
@@ -873,7 +877,7 @@ class GmlSeeker {
 				}
 				
 				// merge suffix-docs in GML variants with #define args into the doc line:
-				if (v.hasScriptArgs()) {
+				if (version.hasScriptArgs()) {
 					// `#define func(a, b)\n/// does things` -> `func(a, b) does things`
 					s = s.substring(3).trimLeft();
 					doc = out.docs[main];
@@ -976,7 +980,7 @@ class GmlSeeker {
 					setLookup(main, true);
 					locals = new GmlLocals(main);
 					out.locals.set(main, locals);
-					if (isFunc || isDefine && v.hasScriptArgs()) { // `<keyword> name(...args)`
+					if (isFunc || isDefine && version.hasScriptArgs()) { // `<keyword> name(...args)`
 						s = find(isFunc ? Par0 : Line | Par0);
 						if (s == "(") {
 							var openPos = q.pos;
@@ -1365,11 +1369,52 @@ class GmlSeeker {
 						var isConstructor = false;
 						var templateSelf:GmlType = null;
 						var templateItems:Array<GmlTypeTemplateItem> = null;
+						var fieldType:GmlType = null;
 						do {
-							if (!q.peek().isIdent0_ni()) continue;
+							var c = q.peek();
+							switch (c) {
+								case "[".code:
+									if (specTypeInst) fieldType = GmlTypeDef.anyArray;
+									continue;
+								case '"'.code:
+									if (specTypeInst) fieldType = GmlTypeDef.string;
+									continue;
+								case "'".code if (!version.hasLiteralStrings()):
+									if (specTypeInst) fieldType = GmlTypeDef.string;
+									continue;
+								case "@".code if (version.hasLiteralStrings() && (
+									q.peek(1) == '"'.code || q.peek(1) == "'".code
+								)):
+									if (specTypeInst) fieldType = GmlTypeDef.string;
+									continue;
+								case "-".code, "+".code:
+									if (specTypeInst) fieldType = GmlTypeDef.number;
+									continue;
+								case _ if (c.isDigit()):
+									if (specTypeInst) fieldType = GmlTypeDef.number;
+									continue;
+								case _ if (c.isIdent0()):
+									// OK!
+								default: continue;
+							}
+							if (!c.isIdent0_ni()) continue;
 							var start = q.pos;
 							q.skipIdent1();
-							if (q.substring(start, q.pos) != "function") continue;
+							switch (q.substring(start, q.pos)) {
+								case "function":
+									// OK!
+								case "new" if (hasFunctionLiterals):
+									if (specTypeInst) {
+										q.skipSpaces1();
+										var ctr = q.readIdent();
+										if (ctr != null) fieldType = GmlTypeDef.simple(ctr);
+									}
+									continue;
+								case "true", "false":
+									if (specTypeInst) fieldType = GmlTypeDef.bool;
+									continue;
+								default: continue;
+							}
 							q.skipSpaces1();
 							if (q.peek().isIdent0_ni()) {
 								// though you've messed up if you did `static name = function name`
@@ -1430,7 +1475,7 @@ class GmlSeeker {
 								isConstructor = q.substring(ctStart, q.pos) == "constructor";
 							}
 						} while (false);
-						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null, null, argTypes);
+						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null, fieldType, argTypes);
 						if (templateSelf != null && addFieldHint_doc != null) {
 							addFieldHint_doc.templateSelf = templateSelf;
 							addFieldHint_doc.templateItems = templateItems;
