@@ -68,7 +68,7 @@ class Main {
 		return out;
 	}
 	//
-	static function main() {
+	static function main():Void {
 		moduleArgs = getArgs();
 		haxe.Log.trace = @:access(js.Boot.__string_rec) function(
 			v:Dynamic, ?infos:haxe.PosInfos
@@ -140,6 +140,5 @@ class Main {
 		#end
 		plugins.PluginManager.init();
 		console.log("hello!");
-		return null;
 	}
 }
