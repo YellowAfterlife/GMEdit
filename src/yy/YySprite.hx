@@ -51,7 +51,7 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 			"bboxMode": 0,
 			"collisionKind": 1,
 			"type": 0,
-			"origin": 0,
+			"origin": cast 0,
 			"preMultiplyAlpha": false,
 			"edgeFiltering": false,
 			"collisionTolerance": 0,
@@ -121,7 +121,7 @@ typedef YySprite23Impl = {
 	bboxMode:Int,
 	collisionKind:Int,
 	type:Int,
-	origin:Int,
+	origin:SpriteOriginType,
 	preMultiplyAlpha:Bool,
 	edgeFiltering:Bool,
 	collisionTolerance:Int,
@@ -147,6 +147,18 @@ typedef YySprite23Impl = {
 	layers:Array<YySprite23Layer>
 }
 
+enum abstract SpriteOriginType(Int) {
+	var TopLeft = 0;
+	var TopCentre = 1;
+	var TopRight = 2;
+	var MiddleLeft = 3;
+	var MiddleCentre = 4;
+	var MiddleRight = 5;
+	var BottomLeft = 6;
+	var BottomCentre = 7;
+	var BottomRight = 8;
+	var Custom = 9;
+}
 
 @:forward
 abstract YySprite23Frame(YySprite23FrameImpl) from YySprite23FrameImpl to YySprite23FrameImpl {

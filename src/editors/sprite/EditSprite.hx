@@ -236,7 +236,7 @@ class EditSprite extends Editor {
 			originXElement.value = Std.string(sprite.originX);
 			var xUpdate = () -> sprite.originX = cast originXElement.valueAsNumber;
 			originXElement.addEventListener('change', xUpdate);
-			originXElement.addEventListener('onkeydown', xUpdate);
+			originXElement.addEventListener('input', xUpdate);
 			sprite.onOriginXChanged.add(x -> originXElement.value = Std.string(x));
 		}
 		{
@@ -244,8 +244,14 @@ class EditSprite extends Editor {
 			originYElement.value = Std.string(sprite.originY);
 			var yUpdate = () -> sprite.originY = cast originYElement.valueAsNumber;
 			originYElement.addEventListener('change', yUpdate);
-			originYElement.addEventListener('onkeydown', yUpdate);
+			originYElement.addEventListener('input', yUpdate);
 			sprite.onOriginYChanged.add(y -> originYElement.value = Std.string(y));
+		}
+		{
+			var originTypeElement:SelectElement = cast element.querySelectorAuto("#origin-type");
+			HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType));
+			originTypeElement.addEventListener('change', () -> sprite.setOriginType(cast Std.parseInt(originTypeElement.value)));
+			sprite.onOriginTypeChanged.add(x -> HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType)));
 		}
 	}
 
@@ -263,17 +269,17 @@ class EditSprite extends Editor {
 					<span>x</span>
 					<input type="number" id="origin-y"></input>
 				</div>
-				<select>
-					<option>Custom</option>
-					<option>Top Left</option>
-					<option>Top Centre</option>
-					<option>Top Right</option>
-					<option>Middle Left</option>
-					<option>Middle Centre</option>
-					<option>Middle Right</option>
-					<option>Bottom Left</option>
-					<option>Bottom Centre</option>
-					<option>Bottom Right</option>
+				<select id="origin-type">
+					<option value="9">Custom</option>
+					<option value="0">Top Left</option>
+					<option value="1">Top Centre</option>
+					<option value="2">Top Right</option>
+					<option value="3">Middle Left</option>
+					<option value="4">Middle Centre</option>
+					<option value="5">Middle Right</option>
+					<option value="6">Bottom Left</option>
+					<option value="7">Bottom Centre</option>
+					<option value="8">Bottom Right</option>
 				</select>
 			</div>
 		</html>);
@@ -368,18 +374,7 @@ class EditSprite extends Editor {
 				imgCtr.appendChild(spriteBorder);
 			}
 			{
-				var originCross = document.createParagraphElement();
-				originCross.classList.add("panner-element");
-				originCross.classList.add("origin");
-				originCross.innerText = "+";
-				originCross.style.left = '${sprite.originX}px';
-				sprite.onOriginXChanged.add(x -> {
-					originCross.style.left = '${x}px';
-				});
-				originCross.style.top = '${sprite.originY}px';
-				sprite.onOriginYChanged.add(y -> {
-					originCross.style.top = '${y}px';
-				});
+				var originCross = buildOriginCross();
 				imgCtr.appendChild(originCross);
 			}
 
@@ -390,5 +385,64 @@ class EditSprite extends Editor {
 		//
 
 		element.appendChild(previewContainer);
+	}
+
+	private function buildOriginCross(): Element {
+		var originCross = document.createParagraphElement();
+		originCross.classList.add("panner-element");
+		originCross.classList.add("origin");
+		originCross.innerText = "+";
+
+		var grabbed = false;
+		originCross.style.left = '${sprite.originX}px';
+		sprite.onOriginXChanged.add(x -> {
+			if (grabbed) return;
+			originCross.style.left = '${x}px';
+		});
+		originCross.style.top = '${sprite.originY}px';
+		sprite.onOriginYChanged.add(y -> {
+			if (grabbed) return;
+			originCross.style.top = '${y}px';
+		});
+
+
+		var startX: Float = 0;
+		var startY: Float = 0;
+
+		function onMouseMove(e: MouseEvent) {
+			e.preventDefault();
+
+			var diffX = (e.clientX - startX)/panner.mult;
+			var diffY = (e.clientY - startY)/panner.mult;
+
+			originCross.style.left = (diffX) + "px";
+			originCross.style.top = (diffY) + "px";
+			
+			sprite.originX = Math.round(diffX);
+			sprite.originY = Math.round(diffY);
+		}
+
+		function onMouseUp() {
+			document.removeEventListener('mouseup', onMouseUp);
+			document.removeEventListener('mousemove', onMouseMove);
+			grabbed = false;
+		}
+
+		function onMouseDown(e: MouseEvent) {
+			e.preventDefault();
+			e.stopPropagation();
+
+			startX = (e.clientX - Std.parseInt(originCross.style.left)*panner.mult);
+			startY = (e.clientY - Std.parseInt(originCross.style.top)*panner.mult);
+
+			document.addEventListener('mouseup', onMouseUp);
+			document.addEventListener('mousemove', onMouseMove);
+			grabbed = true;
+		}
+
+		originCross.addEventListener('mousedown', onMouseDown);
+
+
+		return originCross;
 	}
 }

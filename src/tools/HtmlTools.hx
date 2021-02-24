@@ -1,4 +1,5 @@
 package tools;
+import js.html.OptionElement;
 import gml.file.GmlFile;
 import js.html.DOMElement;
 import js.html.DOMTokenList;
@@ -103,6 +104,13 @@ class HtmlTools {
 		if ((cast el).scrollIntoViewIfNeeded) {
 			(cast el).scrollIntoViewIfNeeded();
 		} else el.scrollIntoView();
+	}
+
+	public static function setSelectedValue(element: SelectElement, selectedValue: String) {
+		var value:OptionElement = cast element.querySelector('option[value="${selectedValue}"]');
+		if (value != null) {
+			value.selected = true;
+		}
 	}
 }
 extern class ElementList implements ArrayAccess<Element> {

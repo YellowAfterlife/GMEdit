@@ -1,0 +1,1210 @@
+[{
+	access: [APublic]
+	doc: null
+	kind: FProp(default, null, TPath({
+		name: SpriteResourceFrames
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: []
+	name: frames
+	pos: #pos
+}, {
+	access: []
+	doc: null
+	kind: FVar(TPath({
+		name: YySprite23
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: []
+	name: spriteData
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: []
+			name: spriteData
+			opt: false
+			type: TPath({
+				name: YySprite23
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EConst(CIdent(this))
+						pos: #pos
+					}, spriteData)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(spriteData))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EConst(CIdent(this))
+						pos: #pos
+					}, frames)
+					pos: #pos
+				}, {
+					expr: ENew({
+						name: SpriteResourceFrames
+						pack: []
+						params: []
+						sub: null
+					}, [{
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}])
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: null
+	})
+	meta: []
+	name: new
+	pos: #pos
+}, {
+	access: [APublic]
+	doc:  Layer 0, the layer most people use
+	kind: FProp(get, null, TPath({
+		name: String
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: []
+	name: defaultLayer
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EArray({
+							expr: EField({
+								expr: EConst(CIdent(spriteData))
+								pos: #pos
+							}, layers)
+							pos: #pos
+						}, {
+							expr: EConst(CInt(0))
+							pos: #pos
+						})
+						pos: #pos
+					}, name)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: String
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: []
+	name: get_defaultLayer
+	pos: #pos
+}, {
+	access: [APublic]
+	doc:  
+	 * Gets the underlying data. Only use when necessary, like when you need to send the data in for saving 
+	 * If you call this to access a not exposed field, please make it an observable instead.
+	 
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EConst(CIdent(spriteData))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: YySprite23
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: []
+	name: getUnderlyingData
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever originX is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		}))]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onOriginXChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, TPath({
+		name: Int
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: null
+	name: originX
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, xorigin)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: get_originX
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: TPath({
+				name: Int
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EField({
+								expr: EConst(CIdent(spriteData))
+								pos: #pos
+							}, sequence)
+							pos: #pos
+						}, xorigin)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, xorigin)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onOriginXChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: set_originX
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever originY is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		}))]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onOriginYChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, TPath({
+		name: Int
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: null
+	name: originY
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, yorigin)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: get_originY
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: TPath({
+				name: Int
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EField({
+								expr: EConst(CIdent(spriteData))
+								pos: #pos
+							}, sequence)
+							pos: #pos
+						}, yorigin)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, yorigin)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onOriginYChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: set_originY
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever width is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		}))]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onWidthChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, TPath({
+		name: Int
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: null
+	name: width
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}, width)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: get_width
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: TPath({
+				name: Int
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, width)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}, width)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onWidthChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: set_width
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever height is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		}))]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onHeightChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, TPath({
+		name: Int
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: null
+	name: height
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}, height)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: get_height
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: TPath({
+				name: Int
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, height)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}, height)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onHeightChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Int
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: set_height
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever playbackSpeedType is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(TPath({
+			name: PlaybackSpeedType
+			pack: []
+			params: []
+			sub: null
+		}))]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onPlaybackSpeedTypeChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, TPath({
+		name: PlaybackSpeedType
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: null
+	name: playbackSpeedType
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, playbackSpeedType)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: PlaybackSpeedType
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: get_playbackSpeedType
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: TPath({
+				name: PlaybackSpeedType
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EField({
+								expr: EConst(CIdent(spriteData))
+								pos: #pos
+							}, sequence)
+							pos: #pos
+						}, playbackSpeedType)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, playbackSpeedType)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onPlaybackSpeedTypeChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: PlaybackSpeedType
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: set_playbackSpeedType
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever playbackSpeed is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(TPath({
+			name: Float
+			pack: []
+			params: []
+			sub: null
+		}))]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onPlaybackSpeedChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, TPath({
+		name: Float
+		pack: []
+		params: []
+		sub: null
+	}), null)
+	meta: null
+	name: playbackSpeed
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, playbackSpeed)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Float
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: get_playbackSpeed
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: TPath({
+				name: Float
+				pack: []
+				params: []
+				sub: null
+			})
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EField({
+								expr: EConst(CIdent(spriteData))
+								pos: #pos
+							}, sequence)
+							pos: #pos
+						}, playbackSpeed)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, sequence)
+						pos: #pos
+					}, playbackSpeed)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onPlaybackSpeedChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: TPath({
+			name: Float
+			pack: []
+			params: []
+			sub: null
+		})
+	})
+	meta: null
+	name: set_playbackSpeed
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: Raised whenever originT is modified
+	kind: FVar(TPath({
+		name: EventHandler
+		pack: []
+		params: [TPType(null <- expected enum value)]
+		sub: null
+	}), {
+		expr: ENew({
+			name: EventHandler
+			pack: []
+			params: []
+			sub: null
+		}, [])
+		pos: #pos
+	})
+	meta: null
+	name: onOriginTChanged
+	pos: #pos
+}, {
+	access: [APublic]
+	doc: null
+	kind: FProp(get, set, null, null)
+	meta: null
+	name: originT
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: []
+		expr: {
+			expr: EBlock([{
+				expr: EReturn({
+					expr: EField({
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}, origin)
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: null
+	})
+	meta: null
+	name: get_originT
+	pos: #pos
+}, {
+	access: [APrivate]
+	doc: null
+	kind: FFun({
+		args: [{
+			meta: null
+			name: value
+			opt: false
+			type: null
+			value: null
+		}]
+		expr: {
+			expr: EBlock([{
+				expr: EIf({
+					expr: EBinop(OpEq, {
+						expr: EConst(CIdent(value))
+						pos: #pos
+					}, {
+						expr: EField({
+							expr: EConst(CIdent(spriteData))
+							pos: #pos
+						}, origin)
+						pos: #pos
+					})
+					pos: #pos
+				}, {
+					expr: EReturn({
+						expr: EConst(CIdent(value))
+						pos: #pos
+					})
+					pos: #pos
+				}, null)
+				pos: #pos
+			}, {
+				expr: EBinop(OpAssign, {
+					expr: EField({
+						expr: EConst(CIdent(spriteData))
+						pos: #pos
+					}, origin)
+					pos: #pos
+				}, {
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}, {
+				expr: ECall({
+					expr: EField({
+						expr: EConst(CIdent(onOriginTChanged))
+						pos: #pos
+					}, invoke)
+					pos: #pos
+				}, [{
+					expr: EConst(CIdent(value))
+					pos: #pos
+				}])
+				pos: #pos
+			}, {
+				expr: EReturn({
+					expr: EConst(CIdent(value))
+					pos: #pos
+				})
+				pos: #pos
+			}])
+			pos: #pos
+		}
+		params: []
+		ret: null
+	})
+	meta: null
+	name: set_originT
+	pos: #pos
+}]
+line 1089: expected enum value

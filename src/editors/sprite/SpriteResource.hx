@@ -18,11 +18,67 @@ class SpriteResource {
 		this.frames = new SpriteResourceFrames(spriteData);
 	}
 
-	@:observable(spriteData.sequence.xorigin)
-	var originX: Int;
+	public var onOriginXChanged: EventHandler<Int> = new EventHandler();
+	public var originX(get, set):Int;
+	private function get_originX(): Int {
+		return spriteData.sequence.xorigin;
+	}
+	private function set_originX(value: Int): Int {
+		if (value == spriteData.sequence.xorigin) return value;
+		spriteData.sequence.xorigin = value;
+		setOriginType(SpriteOriginType.Custom);
+		onOriginXChanged.invoke(value);
+		return value;
+	}
 
-	@:observable(spriteData.sequence.yorigin)
-	var originY: Int;
+	public var onOriginYChanged: EventHandler<Int> = new EventHandler();
+	public var originY(get, set):Int;
+	private function get_originY(): Int {
+		return spriteData.sequence.yorigin;
+	}
+	private function set_originY(value: Int): Int {
+		if (value == spriteData.sequence.yorigin) return value;
+		spriteData.sequence.yorigin = value;
+		setOriginType(SpriteOriginType.Custom);
+		onOriginYChanged.invoke(value);
+		return value;
+	}
+
+	public var onOriginTypeChanged: EventHandler<SpriteOriginType> = new EventHandler();
+	public var originType(get, null): SpriteOriginType;
+	private function get_originType(): SpriteOriginType {
+		return spriteData.origin;
+	}
+
+	/** 
+	 * Sets the current origin type. This will update the the originX and originY values if not set to custom
+	 */
+	public function setOriginType(type: SpriteOriginType): SpriteOriginType {
+		if (type == spriteData.origin) return type;
+
+		if (type != SpriteOriginType.Custom) {
+			var typeAsNumber: Int = cast type;
+			var xInt = typeAsNumber % 3;
+			var yInt = Math.floor(typeAsNumber / 3);
+
+			var oldX = originX;
+			var oldY = originY;
+
+			spriteData.sequence.xorigin = Math.round(width/2 * xInt);
+			spriteData.sequence.yorigin = Math.round(height/2 * yInt);
+
+			if (oldX != originX) {
+				onOriginXChanged.invoke(originX);
+			}
+			if (oldY != originY) {
+				onOriginYChanged.invoke(originY);
+			}
+		}
+
+		spriteData.origin = type;
+		onOriginTypeChanged.invoke(type);
+		return type;
+	}
 
 	@:observable(spriteData.width)
 	var width: Int;
