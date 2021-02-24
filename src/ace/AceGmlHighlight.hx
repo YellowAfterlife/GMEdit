@@ -2,6 +2,7 @@ package ace;
 import ace.AceWrap;
 import ace.extern.*;
 import ace.gml.AceGmlDocHint;
+import ace.gml.AceGmlHighlightIdents;
 import ace.gml.AceGmlState;
 import editors.EditCode;
 import file.kind.gml.KGmlSearchResults;
@@ -55,242 +56,21 @@ using tools.NativeArray;
 		function rwnext(ruleToCopy:AceLangRule, newNext:String):AceLangRule {
 			return { token: ruleToCopy.token, regex: ruleToCopy.regex, next: newNext };
 		}
+		// #mfunc versions use "identifier" instead of normal default field token
+		var rIdentLocal:AceLangRule = AceGmlHighlightIdents.genIdent(editor, false, fieldDef);
+		var rIdentLocalMFunc:AceLangRule = AceGmlHighlightIdents.genIdent(editor, true, fieldDef);
+		var rIdentPair = AceGmlHighlightIdents.genIdentPair(editor, false, fieldDef);
+		var rIdentPairMFunc = AceGmlHighlightIdents.genIdentPair(editor, true, fieldDef);
 		//
-		inline function getGlobalType(name:String, fallback:String) {
-			return jsOrx(
-				GmlAPI.gmlKind[name],
-				GmlAPI.extKind[name],
-				GmlAPI.stdKind[name],
-				synext.GmlExtCoroutines.keywordMap[name],
-				fallback
-			);
-		}
-		//
-		function genIdentPairFunc_getInstType(field:String, localTypeNS:String, ns:GmlNamespace, ns2:GmlNamespace) {
-			var fdType:AceTokenType;
-			if (ns != null) {
-				fdType = ns.getInstKind(field);
-				if (fdType == null) {
-					if (ns2 != null) {
-						fdType = jsOrx(ns2.getInstKind(field), "typeerror");
-					} else fdType = "typeerror";
-				}
-			} else if (ns2 != null) {
-				fdType = jsOrx(ns2.getInstKind(field), "typeerror");
-			} else {
-				var en = GmlAPI.gmlEnums[localTypeNS];
-				if (en != null) {
-					fdType = en.items[field] ? "enumfield" : "enumerror";
-				} else { // local.something
-					fdType = getGlobalType(field, "field");
-				}
-			}
-			return fdType;
-		}
-		function getLocalType_1(name:String, scope:String, canLocal:Bool):String {
-			var kind:String;
-			//
-			var lambdas = editor.lambdas[scope];
-			if (lambdas != null && (kind = lambdas.kind[name]) != null) return kind;
-			//
-			if (canLocal) {
-				var locals = editor.locals[scope];
-				if (locals != null && (kind = locals.kind[name]) != null) return kind;
-			}
-			//
-			var imports = editor.imports[scope];
-			if (imports != null && (kind = imports.kind[name]) != null) return kind;
-			//
-			return null;
-		}
-		function getLocalType(row:Int, name:String, canLocal:Bool):String {
-			if (row != null) {
-				var scope = editor.session.gmlScopes.get(row);
-				if (scope != null) {
-					return getLocalType_1(name, scope, canLocal);
-				} else return null;
-			} else return null;
-		}
-		inline function getFieldDef(mf:Bool):String {
-			return mf ? "identifier" : fieldDef;
-		}
-		//{
-		function genIdent(mf:Bool):AceLangRule {
-			var def = getFieldDef(mf);
-			return {
-				regex: '[a-zA-Z_][a-zA-Z0-9_]*\\b',
-				onMatch: function(
-					value:String, state:AceLangRuleState, stack:Array<String>, line:String, row:Int
-				) {
-					var type:String;
-					var scope:String = row != null ? editor.session.gmlScopes.get(row) : null;
-					type = scope != null ? getLocalType_1(value, scope, !mf) : null;
-					if (type == null) type = getGlobalType(value, null);
-					if (type == null) do {
-						var locals = editor.locals[scope];
-						if (locals == null || locals.hasWith) break;
-						var localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
-						if (localType == null) break;
-						var localTypeNS = localType.getNamespace();
-						if (localTypeNS == null) break;
-						var imports = editor.imports[scope];
-						type = genIdentPairFunc_getInstType(value, localTypeNS,
-							JsTools.nca(imports, imports.namespaces[localTypeNS]),
-							GmlAPI.gmlNamespaces[localTypeNS]);
-						if (type == "field") type = def;
-					} while (false);
-					if (type == null) type = def;
-					return [rtk(type, value)];
-				},
-			};
-		}
-		var rIdentLocal:AceLangRule = genIdent(false);
-		var rIdentLocalMF:AceLangRule = genIdent(true);
-		//}
-		//{ something.field
-		function genIdentPairFunc(mf:Bool) {
-			var def = getFieldDef(mf);
-			return function(
-				value:String, state:AceLangRuleState, stack:Array<String>, line:String, row:Int
-			) {
-				var values:Array<String> = jsThis.splitRegex.exec(value);
-				var object = values[1];
-				var field = values[5];
-				var objType:AceTokenType, fdType:AceTokenType;
-				//
-				if (object == "global") {
-					objType = "keyword";
-					fdType = "globalfield";
-				} else {
-					objType = null;
-					fdType = null;
-					var en:GmlEnum;
-					var scope = JsTools.nca(row != null, editor.session.gmlScopes.get(row));
-					var imp:GmlImports = null, ns:GmlNamespace, ns2:GmlNamespace;
-					var localType:GmlType, localTypeNS:String;
-					var checkSelf = false;
-					if (scope != null) {
-						imp = editor.imports[scope];
-						// save some trouble:
-						var checkStatics = false;
-						if (object == "self") {
-							objType = "keyword";
-							localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
-						} else if (object == "other") {
-							objType = "keyword";
-							localType = null;
-							// we could, but we would be consistently wrong inside with(){} blocks
-							//localType = AceGmlTools.getOtherType({session:editor.session, scope:scope});
-						} else if (GmlAPI.gmlKind[object] == "asset.object") {
-							objType = "asset.object";
-							localType = GmlTypeDef.object(object);
-						} else {
-							localType = null;
-							checkStatics = true;
-						}
-						// perhaps a NameSpace.staticField?:
-						if (checkStatics) {
-							for (step in (imp != null ? 0 : 1) ... 2) {
-								ns = step != 0 ? GmlAPI.gmlNamespaces[object] : imp.namespaces[object];
-								//
-								if (ns != null) {
-									objType = ns.isObject ? "asset.object" : "namespace";
-									fdType = ns.staticKind[field];
-									if (fdType != null) break;
-								}
-								//
-								if (step == 0) {
-									// handles `#import EnumName in Namespace`
-									var e1 = imp.longenEnum[object];
-									if (e1 != null) {
-										en = GmlAPI.gmlEnums[e1];
-										if (en != null && en.items[field]) {
-											fdType = "enumfield";
-											break;
-										}
-									}
-								}
-							}
-							if (objType != null && fdType == null) fdType = "identifier";
-						}
-						// evidently that wasn't a namespace, perhaps a local variable?
-						if (!checkStatics || objType == null) {
-							if (objType == null) {
-								objType = getLocalType_1(object, scope, !mf);
-								localType = JsTools.nca(imp, imp.localTypes[object]);
-							}
-							localTypeNS = JsTools.nca(localType, localType.getNamespace());
-							if (localTypeNS != null) {
-								fdType = genIdentPairFunc_getInstType(field, localTypeNS,
-									JsTools.nca(imp, imp.namespaces[localTypeNS]),
-									GmlAPI.gmlNamespaces[localTypeNS]);
-							} else switch (localType) {
-								case null: //
-								case TAnon(inf):
-									fdType = inf.fields.exists(field) ? "field" : "typeerror";
-								default:
-							}
-						}
-						// implicit self-vars
-						if (objType == null) {
-							var locals = editor.locals[scope];
-							checkSelf = locals != null && !locals.hasWith;
-						}
-					} // has scope
-					if (objType == null) {
-						// well that sucks, maybe an enum?:
-						en = GmlAPI.gmlEnums[object];
-						if (en != null) {
-							objType = "enum";
-							fdType = en.items[field] ? "enumfield" : "enumerror";
-						} else { // that's just built-ins then:
-							objType = getGlobalType(object, null);
-							if (objType == null && checkSelf) do {
-								localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
-								if (localType == null) break;
-								localTypeNS = localType.getNamespace();
-								if (localTypeNS == null) break;
-								ns = JsTools.nca(imp, imp.namespaces[localTypeNS]);
-								ns2 = GmlAPI.gmlNamespaces[localTypeNS];
-								objType = genIdentPairFunc_getInstType(object, localTypeNS,
-									JsTools.nca(imp, imp.namespaces[localTypeNS]),
-									GmlAPI.gmlNamespaces[localTypeNS]);
-								if (objType == "field") objType = def;
-							} while (false);
-							if (objType == null) objType = def;
-							fdType = getGlobalType(field, "field");
-						}
-					} else if (fdType == null) { // found type, but no field (and not an error)
-						fdType = getGlobalType(field, "field");
-					}
-				}
-				var tokens:Array<AceToken> = [rtk(objType, object)];
-				if (values[2] != "") tokens.push(rtk("text", values[2]));
-				tokens.push(rtk("punctuation.operator", values[3]));
-				if (values[4] != "") tokens.push(rtk("text", values[4]));
-				tokens.push(rtk(fdType, field));
-				return tokens;
-			};
-		}
-		function genIdentPair(mf:Bool):AceLangRule {
-			return {
-				regex: '([a-zA-Z_]\\w*)(\\s*)(\\.)(\\s*)([a-zA-Z_]\\w*|)',
-				onMatch: genIdentPairFunc(mf)
-			};
-		}
-		var rIdentPair = genIdentPair(false);
-		var rIdentPairMF = genIdentPair(true);
-		//}
-		function mtField(_, _, field:String) {
-			return ["punctuation.operator", "text", getGlobalType(field, "field")];
-		}
 		function mtEventHead(def, _, name, col, kind, label) {
 			var kindToken:String;
 			if (kind != null) {
 				var kc = StringTools.fastCodeAt(kind, 0);
 				if (kc >= "0".code && kc <= "9".code) {
 					kindToken = "numeric";
-				} else kindToken = getGlobalType(kind, "identifier");
+				} else {
+					kindToken = AceGmlHighlightIdents.getGlobalType(kind, "identifier");
+				}
 			} else kindToken = "identifier";
 			return [
 				"preproc.event",
@@ -301,8 +81,11 @@ using tools.NativeArray;
 				"eventtext"
 			];
 		}
+		function mtField(_, _, field:String) {
+			return ["punctuation.operator", "text", AceGmlHighlightIdents.getGlobalType(field, "field")];
+		}
 		function mtIdent(ident:String) {
-			return getGlobalType(ident, fieldDef);
+			return AceGmlHighlightIdents.getGlobalType(ident, fieldDef);
 		}
 		function mtImport(_import, _, _pkg:String, _, _in, _, _as) {
 			return ["preproc.import",
@@ -511,10 +294,12 @@ using tools.NativeArray;
 				} else return [mtIdent(goto), "text", mtIdent(label)];
 			}, ~/(goto|label)(\s+)(\w+)/),
 			rPragma_call,
+			//
 			rIdentPair,
 			rIdentLocal,
 			rxRule(mtField, ~/(\.)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)/),
-			rxRule(mtIdent, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/),
+			rxRule(mtIdent, ~/[a-zA-Z_][a-zA-Z0-9_]*\b/), // todo: consistently shadowed by rIdentLocal?
+			//
 			rxRule("operator", ~/==/),
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
 			rxRule("operator", ~/!|%|&|@|\*|\-\-|\-|\+\+|\+|~|!=|<=|>=|<>|<|>|!|&&|\|\|/),
@@ -596,8 +381,8 @@ using tools.NativeArray;
 				value:String, state:AceLangRuleState, stack:Array<String>, line:String, row:Int
 			) {
 				value = value.substring(1);
-				var type:String = getLocalType(row, value, true);
-				if (type == null) type = getGlobalType(value, fieldDef);
+				var type:String = AceGmlHighlightIdents.getLocalType(editor, row, value, true);
+				if (type == null) type = AceGmlHighlightIdents.getGlobalType(value, fieldDef);
 				return [rtk("string", "$"), rtk(type, value)];
 			},
 		};
@@ -664,8 +449,8 @@ using tools.NativeArray;
 			rMFuncEOL,
 			rule(["operator", "constant"], synext.GmlExtMFunc.magicRegex),
 		].concat(rBase);
-		rMFunc.replaceOne(rIdentLocal, rIdentLocalMF);
-		rMFunc.replaceOne(rIdentPair, rIdentPairMF);
+		rMFunc.replaceOne(rIdentLocal, rIdentLocalMFunc);
+		rMFunc.replaceOne(rIdentPair, rIdentPairMFunc);
 		//}
 		//
 		function pop2(c:AceLangRuleState, st:Array<AceLangRuleState>) {
