@@ -12,10 +12,10 @@ class PrefMenu {
 	public static function build(out:Element):Void {
 		out.appendChild(Main.document.createTextNode("(note: you can click on section headers to collapse/expand them)"));
 		PrefTheme.build(out);
-		PrefMagic.build(out);
 		PrefCode.build(out);
-		PrefLinter.build(out, null);
 		PrefNav.build(out);
+		PrefLinter.build(out, null);
+		PrefMagic.build(out);
 		PrefBackups.build(out);
 		PrefPlugins.build(out);
 		if (electron.Electron.isAvailable()) {

@@ -267,6 +267,20 @@ class Preferences {
 		out.appendChild(ctr);
 		return ctr;
 	}
+	/** Or, rather, a properly sized button */
+	public static function addBigButton(out:Element, text:String, fn:Void->Void):Element {
+		var ctr = document.createDivElement();
+		var el = document.createInputElement();
+		el.type = "button";
+		el.value = text;
+		el.addEventListener("click", function(e:MouseEvent) {
+			e.preventDefault();
+			fn();
+		});
+		ctr.appendChild(el);
+		out.appendChild(ctr);
+		return ctr;
+	}
 	public static function addText(out:Element, text:String):Element {
 		var ctr = document.createDivElement();
 		ctr.classList.add("plaintext");
