@@ -11,6 +11,7 @@ import tools.Dictionary;
 import tools.NativeString;
 import ace.AceMacro;
 import gml.GmlAPI;
+import tools.macros.SynSugar;
 using tools.HtmlTools;
 
 /**
@@ -207,13 +208,15 @@ class GlobalLookup {
 		element.id = "global-lookup";
 		element.classList.add("popout-window");
 		element.style.display = "none";
-		element.innerHTML = '
+		element.innerHTML = SynSugar.xmls(<html>
 			<div>
 				<input name="name" type="text" />
-				<input name="filter" type="checkbox" title="Click to set default filters"/>
+				<label for="filter">
+					<input name="filter" type="checkbox" title="Click to set default filters"/>
+				</label>
 			</div>
 			<select name="comp" size="5"></select>
-		';
+		</html>);
 		document.querySelectorAuto("#main", Element).insertAfterSelf(element);
 		//
 		field = element.querySelectorAuto('input[name="name"]');
