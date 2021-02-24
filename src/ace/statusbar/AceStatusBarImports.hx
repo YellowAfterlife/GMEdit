@@ -99,6 +99,7 @@ class AceStatusBarImports {
 					if (fieldType == null) {
 						fieldType = ns.getInstType(name);
 					}
+					return false;
 				});
 			}
 			ctx.type = fieldType;
