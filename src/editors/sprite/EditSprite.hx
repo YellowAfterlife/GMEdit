@@ -19,6 +19,7 @@ using tools.HtmlTools;
 import Main.document;
 import Main.window;
 import electron.Shell;
+import Lambda;
 
 /**
  * This is a big mess as for something that's just an image strip viewer.
@@ -38,12 +39,16 @@ class EditSprite extends Editor {
 	var playbackDelta:Int = 1;
 	var recenter = true;
 	var animToggle:InputElement;
+	var boundingBoxMeasurer: BoundingBoxMeasurer;
+	var spriteManipulatorBusy = false;
+	var spriteManipulator: SpriteManipulator;
 
 	public function new(file:GmlFile) {
 		super(file);
 		element = document.createDivElement();
 		element.id = "sprite-editor";
 
+		spriteManipulator = new SpriteManipulator();
 		element.tabIndex = 0;
 		element.addEventListener("keydown", function(e:KeyboardEvent) {
 			if (document.activeElement.nodeName == "INPUT") return;
@@ -93,6 +98,9 @@ class EditSprite extends Editor {
 		if (v2 && data == null) data = FileWrap.readYyFileSync(file.path);
 		
 		sprite = new SpriteResource(data);
+		sprite.onUnsavedChangesChanged.add(x -> {
+			file.changed = x;
+		});
 
 		buildHtml();
 	}
@@ -100,7 +108,7 @@ class EditSprite extends Editor {
 	public override function save(): Bool {
 		var newSpriteJson = YyJson.stringify(sprite.getUnderlyingData(), Project.current.yyExtJson);
 		file.writeContent(newSpriteJson);
-		file.changed = false;
+		sprite.unsavedChanges = false;
 
 		return true;
 	}
@@ -112,6 +120,7 @@ class EditSprite extends Editor {
 	
 	override public function checkChanges():Void {
 		if (!Path.isAbsolute(file.path)) return;
+		/*
 		var t1 = FileWrap.mtimeSync(file.path);
 		if (t1 != file.time) {
 			file.time = t1;
@@ -131,7 +140,7 @@ class EditSprite extends Editor {
 				frameElements[i].style.backgroundImage = 'url($url)';
 				if (currentFrame == i) panner.image.src = url;
 			}
-		}
+		}*/
 	}
 
 	private function onSpriteImport() {
@@ -211,12 +220,33 @@ class EditSprite extends Editor {
 
 			// A save to save the new path, since we can get stray files otherwise.
 			save();
-			
+
+			// Start measuring the bounding box for our new sprite			
+			var spriteFrames = [for (frame in sprite.frames) frame];
+
+			spriteManipulatorBusy = true;
+			boundingBoxMeasurer = new BoundingBoxMeasurer(spriteFrames.map(x -> getImagePath(x)), spriteManipulator);
+			boundingBoxMeasurer.onMeasured.add(onSpriteInitialMeasureReady);
+			boundingBoxMeasurer.start();
+
 			}); // Close measure all promise
 
 		});
 	}
 
+	private function onSpriteInitialMeasureReady(_) {
+		var bbox = spriteManipulator.getBoundingBox();
+
+		sprite.bboxBottom = bbox.bottom;
+		sprite.bboxLeft = bbox.left;
+		sprite.bboxTop = bbox.top;
+		sprite.bboxRight = bbox.right;
+
+		save();
+	
+		spriteManipulatorBusy = false;
+		spriteManipulator.onReady.remove(onSpriteInitialMeasureReady);
+	}
 
 	private function buildHtml() {
 		element.clearInner();
@@ -246,6 +276,7 @@ class EditSprite extends Editor {
 			originYElement.addEventListener('change', yUpdate);
 			originYElement.addEventListener('input', yUpdate);
 			sprite.onOriginYChanged.add(y -> originYElement.value = Std.string(y));
+			
 		}
 		{
 			var originTypeElement:SelectElement = cast element.querySelectorAuto("#origin-type");

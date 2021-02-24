@@ -2,7 +2,6 @@ package editors.sprite;
 
 import yy.YyGUID;
 import yy.YySequence.PlaybackSpeedType;
-import electron.FileWrap;
 import tools.EventHandler;
 import yy.YySprite;
 
@@ -18,31 +17,15 @@ class SpriteResource {
 		this.frames = new SpriteResourceFrames(spriteData);
 	}
 
-	public var onOriginXChanged: EventHandler<Int> = new EventHandler();
-	public var originX(get, set):Int;
-	private function get_originX(): Int {
-		return spriteData.sequence.xorigin;
-	}
-	private function set_originX(value: Int): Int {
-		if (value == spriteData.sequence.xorigin) return value;
-		spriteData.sequence.xorigin = value;
-		setOriginType(SpriteOriginType.Custom);
-		onOriginXChanged.invoke(value);
-		return value;
-	}
+	private var _unsavedChanges: Bool = false;
+	@:observable(this._unsavedChanges)
+	var unsavedChanges: Bool;
 
-	public var onOriginYChanged: EventHandler<Int> = new EventHandler();
-	public var originY(get, set):Int;
-	private function get_originY(): Int {
-		return spriteData.sequence.yorigin;
-	}
-	private function set_originY(value: Int): Int {
-		if (value == spriteData.sequence.yorigin) return value;
-		spriteData.sequence.yorigin = value;
-		setOriginType(SpriteOriginType.Custom);
-		onOriginYChanged.invoke(value);
-		return value;
-	}
+	@:observable(spriteData.sequence.xorigin, {setOriginType(SpriteOriginType.Custom); unsavedChanges = true;} )
+	var originX: Int;
+
+	@:observable(spriteData.sequence.yorigin, {setOriginType(SpriteOriginType.Custom); unsavedChanges = true;})
+	var originY: Int;
 
 	public var onOriginTypeChanged: EventHandler<SpriteOriginType> = new EventHandler();
 	public var originType(get, null): SpriteOriginType;
@@ -76,28 +59,40 @@ class SpriteResource {
 		}
 
 		spriteData.origin = type;
+		unsavedChanges = true;
 		onOriginTypeChanged.invoke(type);
 		return type;
 	}
 
-	@:observable(spriteData.width)
+	@:observable(spriteData.width, unsavedChanges = true)
 	var width: Int;
 
-	@:observable(spriteData.height)
+	@:observable(spriteData.height, unsavedChanges = true)
 	var height: Int;
 
-	@:observable( spriteData.sequence.playbackSpeedType )
+	@:observable(spriteData.sequence.playbackSpeedType, unsavedChanges = true)
 	var playbackSpeedType: PlaybackSpeedType;
 
-	@:observable( spriteData.sequence.playbackSpeed )
+	@:observable(spriteData.sequence.playbackSpeed, unsavedChanges = true)
 	var playbackSpeed: Float;
+
+	@:observable(spriteData.bbox_left, unsavedChanges = true)
+	var bboxLeft: Int;
+
+	@:observable(spriteData.bbox_right, unsavedChanges = true)
+	var bboxRight: Int;
+
+	@:observable(spriteData.bbox_top, unsavedChanges = true)
+	var bboxTop: Int;
+
+	@:observable(spriteData.bbox_bottom, unsavedChanges = true)
+	var bboxBottom: Int;
 
 	/** Layer 0, the layer most people use*/
 	public var defaultLayer(get, null): String;
 	private function get_defaultLayer(): String {
 		return spriteData.layers[0].name;
 	}
-
 
 	/** 
 	 * Gets the underlying data. Only use when necessary, like when you need to send the data in for saving 
@@ -138,6 +133,10 @@ class SpriteResourceFramesImpl {
 	 */
 	 public function replaceFrames(frameGuids: Array<YyGUID>) {
 		spriteData.replaceFrames(frameGuids);
+		this.array = [];
+		for (i in 0 ... this.spriteData.frames.length) {
+			this.array.push(new SpriteResourceFrame(spriteData, i));
+		}
 	}
 
 	public var onFrameAdded: EventHandler<{frame:SpriteResourceFrame, index:Int}> = new EventHandler();

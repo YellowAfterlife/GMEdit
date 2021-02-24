@@ -8,7 +8,7 @@ class EventBuildingMacro {
 		Creates a getter, setter and changed event for any fields annotated with :observable(sourceValue)  
 		where sourceValue is the underlying value you want to return. Example:
 
-		@:observable(mySource)
+		@:observable(mySource, ?extraOnChangeCode)
 		myVar: Int
 
 		Will change the myVar field into a property and create an accompanying onMyVarChanged event that gets fired whenever myVar
@@ -21,6 +21,10 @@ class EventBuildingMacro {
 			if (observeableTag == null) continue;
 
 			var sourceData = observeableTag.params[0];
+            var onChangedExtraCode = observeableTag.params[1];
+            if (onChangedExtraCode == null) {
+                onChangedExtraCode = macro {};
+            }
             var fieldName = field.name;
             var fieldType;
             switch (field.kind) {
@@ -41,11 +45,13 @@ class EventBuildingMacro {
                 private function $setter(value:$fieldType):$fieldType {
 					if (value == $sourceData) return value;
                     $sourceData = value;
+                    $onChangedExtraCode;
 					$i{eventName}.invoke(value);
                     return value;
                 }
             };
             fields.remove(field);
+
             for (tempField in macroTempClass.fields) {
                 if (tempField.name == fieldName) {
                     tempField.doc = docs;
