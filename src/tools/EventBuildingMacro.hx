@@ -33,7 +33,7 @@ class EventBuildingMacro {
             var getter = "get_" + fieldName;
             var setter = "set_" + fieldName;
             var macroTempClass = macro class Wow {
-                public var $eventName:Dynamic;
+                public var $eventName:EventHandler<$fieldType> = new EventHandler();
                 public var $fieldName(get, set):$fieldType;
                 private function $getter():$fieldType {
                     return $sourceData;

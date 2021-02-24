@@ -85,6 +85,8 @@ https://stackoverflow.com/a/36247448/5578773
 	position: absolute;
 	top: 0px;
 	left: 0px;
+	margin: 0px;
+	padding: 0px;
 }
 .panner.zoomed img, .resinfo.sprite .frame.zoomed {
 	-ms-interpolation-mode: nearest-neighbor;
@@ -431,6 +433,15 @@ https://stackoverflow.com/a/36247448/5578773
 }
 .resinfo.sprite .panner {
 	flex-grow: 1;
+}
+
+.panner-element.origin {
+	transform: translate(-50%, -50%);
+	color: rgba(255, 255, 255, 0.5);
+	font-size: 15px;
+	cursor: grab;
+	pointer-events: initial;
+	content: "+";
 }
 
 

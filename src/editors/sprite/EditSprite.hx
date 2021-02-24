@@ -1,5 +1,7 @@
 package editors.sprite;
 
+import js.lib.Promise;
+import resource.SpriteManipulator;
 import gml.Project;
 import yy.YyJson;
 import yy.YyGUID;
@@ -150,6 +152,34 @@ class EditSprite extends Editor {
 				return;
 			}
 			
+			var measurePromises = [];
+			// Measure the new sprites, abort if their size differ
+			for (newFile in newFiles) {
+				measurePromises.push( SpriteManipulator.MeasureSpriteAsync(newFile) );
+
+			}
+
+			Promise.all(measurePromises).then(promiseResult -> {
+			var newFileMeasurements:Array<{width: Int, height: Int}> = cast promiseResult;
+			
+			var width = newFileMeasurements[0].width;
+			var height = newFileMeasurements[0].height;
+
+			for (i in 1...newFileMeasurements.length) {
+				var measure = newFileMeasurements[i];
+				if (measure.width != width ||
+				    measure.height != height) {
+
+					Dialog.showAlert(
+						"Can't import images that are not the same dimensions.\n" +
+						'${newFiles[0]} is ${width}x${height}.\n' + 
+						'${newFiles[i]} is ${measure.width}x${measure.height}.'
+					);
+					return;
+				
+				}
+			}
+
 			// Delete all old files
 			for (frame in sprite.frames) {
 				var path = getImagePath(frame);
@@ -176,9 +206,14 @@ class EditSprite extends Editor {
 			}
 
 			sprite.frames.replaceFrames(newIds);
+			sprite.width = width;
+			sprite.height = height;
 
 			// A save to save the new path, since we can get stray files otherwise.
 			save();
+			
+			}); // Close measure all promise
+
 		});
 	}
 
@@ -195,16 +230,52 @@ class EditSprite extends Editor {
 	private function bindOptions() {
 		var importButton = element.querySelector("#import-button");
 		importButton.addEventListener('click', onSpriteImport);
+
+		{
+			var originXElement:InputElement = cast element.querySelector("#origin-x");
+			originXElement.value = Std.string(sprite.originX);
+			var xUpdate = () -> sprite.originX = cast originXElement.valueAsNumber;
+			originXElement.addEventListener('change', xUpdate);
+			originXElement.addEventListener('onkeydown', xUpdate);
+			sprite.onOriginXChanged.add(x -> originXElement.value = Std.string(x));
+		}
+		{
+			var originYElement:InputElement = cast element.querySelector("#origin-y");
+			originYElement.value = Std.string(sprite.originY);
+			var yUpdate = () -> sprite.originY = cast originYElement.valueAsNumber;
+			originYElement.addEventListener('change', yUpdate);
+			originYElement.addEventListener('onkeydown', yUpdate);
+			sprite.onOriginYChanged.add(y -> originYElement.value = Std.string(y));
+		}
 	}
 
 	private function buildOptions() {
 		var options = document.createDivElement();
 		options.id = "sprite-options";
+
 		options.innerHTML = SynSugar.xmls(<html>
-			
 			<h2>SpriteName</h2>
-			<button id="import-button" class="highlighted-button">Import Image</input>
+			<button id="import-button" class="highlighted-button">Import Image</button>
 			
+			<div>
+				<div>
+					<input type="number" id="origin-x"></input>
+					<span>x</span>
+					<input type="number" id="origin-y"></input>
+				</div>
+				<select>
+					<option>Custom</option>
+					<option>Top Left</option>
+					<option>Top Centre</option>
+					<option>Top Right</option>
+					<option>Middle Left</option>
+					<option>Middle Centre</option>
+					<option>Middle Right</option>
+					<option>Bottom Left</option>
+					<option>Bottom Centre</option>
+					<option>Bottom Right</option>
+				</select>
+			</div>
 		</html>);
 		element.appendChild(options);
 	}
@@ -214,85 +285,108 @@ class EditSprite extends Editor {
 		var previewContainer = document.createDivElement();
 		previewContainer.classList.add("resinfo");
 		previewContainer.classList.add("sprite");
+		{
+			var pannerContainer = document.createDivElement();
+			pannerContainer.classList.add("sprite-info");
 
-		var pannerContainer = document.createDivElement();
-		pannerContainer.classList.add("sprite-info");
-
-		//
-		var frames = document.createDivElement();
-		frames.classList.add("frames");
-		frameCount = sprite.frames.length;
-		frameElements = [];
-		frameURLs = [];
-		framePaths = [];
-		frameTimes = [];
-		for (frame in sprite.frames) {
-			var framePath = getImagePath(frame);
-			var url = FileWrap.getImageURL(framePath);
-			var frame = document.createDivElement();
-			var index = frameElements.length;
-			if (index == 0) {
-				currentFrameElement = frame;
-				frame.classList.add("current");
-			}
-			frame.title = "" + index;
-			frameElements.push(frame);
-			frameURLs.push(url);
-			framePaths.push(framePath);
-			frameTimes.push(FileWrap.mtimeSync(framePath));
 			//
-			frame.classList.add("frame");
-			if (sprite.width > 48 || sprite.height > 48) {
-				frame.style.backgroundSize = "contain";
+			var frames = document.createDivElement();
+			frames.classList.add("frames");
+			frameCount = sprite.frames.length;
+			frameElements = [];
+			frameURLs = [];
+			framePaths = [];
+			frameTimes = [];
+			for (frame in sprite.frames) {
+				var framePath = getImagePath(frame);
+				var url = FileWrap.getImageURL(framePath);
+				var frame = document.createDivElement();
+				var index = frameElements.length;
+				if (index == 0) {
+					currentFrameElement = frame;
+					frame.classList.add("current");
+				}
+				frame.title = "" + index;
+				frameElements.push(frame);
+				frameURLs.push(url);
+				framePaths.push(framePath);
+				frameTimes.push(FileWrap.mtimeSync(framePath));
+				//
+				frame.classList.add("frame");
+				if (sprite.width > 48 || sprite.height > 48) {
+					frame.style.backgroundSize = "contain";
+				}
+				// something isn't right here, why do we only need to escape this here of all places?
+				url = StringTools.replace(url, " ", "%20");
+				//
+				frame.style.backgroundImage = 'url($url)';
+				if (sprite.width <= 24 && sprite.height <= 24) {
+					frame.style.backgroundSize = '${sprite.width * 2}px ${sprite.height * 2}px';
+					frame.classList.add("zoomed");
+				}
+				frame.onclick = function(_) {
+					currentFrame = index;
+					setCurrentFrameElement(index, frame);
+				}
+				frame.ondblclick = function(_) {
+					Shell.openExternal(url);
+				};
+				frames.appendChild(frame);
 			}
-			// something isn't right here, why do we only need to escape this here of all places?
-			url = StringTools.replace(url, " ", "%20");
-			//
-			frame.style.backgroundImage = 'url($url)';
-			if (sprite.width <= 24 && sprite.height <= 24) {
-				frame.style.backgroundSize = '${sprite.width * 2}px ${sprite.height * 2}px';
-				frame.classList.add("zoomed");
-			}
-			frame.onclick = function(_) {
-				currentFrame = index;
-				setCurrentFrameElement(index, frame);
-			}
-			frame.ondblclick = function(_) {
-				Shell.openExternal(url);
-			};
-			frames.appendChild(frame);
+			
+			pannerContainer.appendChild(frames);
+			
+			previewContainer.appendChild(pannerContainer);
 		}
-		
-		pannerContainer.appendChild(frames);
-		
-		previewContainer.appendChild(pannerContainer);
-		//
-		var pan = document.createDivElement();
+		{
+			var pan = document.createDivElement();
 
-		var imgCtr = document.createDivElement();
-		recenter = true;
+			var imgCtr = document.createDivElement();
+			recenter = true;
+			{
+				var img = document.createImageElement();
+				img.onload = function(_) {
+					img.onload = null;
+					checkRecenter();
+				}
+				var framePath = getImagePath(sprite.frames[0]);
+				img.src = FileWrap.getImageURL(framePath);
+				imgCtr.appendChild(img);
+			}
+			{
+				var spriteBorder = document.createDivElement();
+				spriteBorder.classList.add("panner-element");
+				spriteBorder.style.width = '${sprite.width}px';
+				sprite.onWidthChanged.add(x -> {
+					spriteBorder.style.width = '${x}px';
+				});
+				spriteBorder.style.height = '${sprite.height}px';
+				sprite.onHeightChanged.add(x -> {
+					spriteBorder.style.height = '${x}px';
+				});
+				spriteBorder.style.border = "1px solid rgba(255, 255, 255, 0.5)";
+				imgCtr.appendChild(spriteBorder);
+			}
+			{
+				var originCross = document.createParagraphElement();
+				originCross.classList.add("panner-element");
+				originCross.classList.add("origin");
+				originCross.innerText = "+";
+				originCross.style.left = '${sprite.originX}px';
+				sprite.onOriginXChanged.add(x -> {
+					originCross.style.left = '${x}px';
+				});
+				originCross.style.top = '${sprite.originY}px';
+				sprite.onOriginYChanged.add(y -> {
+					originCross.style.top = '${y}px';
+				});
+				imgCtr.appendChild(originCross);
+			}
 
-		var img = document.createImageElement();
-		img.onload = function(_) {
-			img.onload = null;
-			checkRecenter();
+			pan.appendChild(imgCtr);
+			panner = new Panner(pan, imgCtr);
+			previewContainer.appendChild(pan);
 		}
-		var framePath = getImagePath(sprite.frames[0]);
-		img.src = FileWrap.getImageURL(framePath);
-		imgCtr.appendChild(img);
-
-
-		var spriteBorder = document.createDivElement();
-		spriteBorder.classList.add("panner-element");
-		spriteBorder.style.width = '${sprite.width}px';
-		spriteBorder.style.height = '${sprite.height}px';
-		spriteBorder.style.border = "1px solid rgba(255, 255, 255, 0.5)";
-		imgCtr.appendChild(spriteBorder);
-
-
-		pan.appendChild(imgCtr);
-		panner = new Panner(pan, imgCtr);
-		previewContainer.appendChild(pan);
 		//
 
 		element.appendChild(previewContainer);

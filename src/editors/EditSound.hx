@@ -241,7 +241,7 @@ class EditSound extends Editor {
 	/**Updates all values on the page to reflect whatever is inside the current sound*/
 	private function setOptionValues() {
 		var header = element.querySelector("h2");
-		header.innerHTML = sound.name;
+		header.innerText = sound.name;
 
 		soundVolumeSlider.value = Std.string(sound.volume);
 
