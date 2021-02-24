@@ -533,7 +533,8 @@ class GmlSeeker {
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
 		//
 		var addFieldHint_doc:GmlFuncDoc = null;
-		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String, args:String, info:String, type:GmlType, argTypes:Array<GmlType>) {
+		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String,
+		args:String, info:String, type:GmlType, argTypes:Array<GmlType>, isAuto:Bool) {
 			var parentSpace:String = null;
 			if (namespace == null) {
 				if (isCreateEvent) {
@@ -557,6 +558,7 @@ class GmlSeeker {
 				hintDoc.trimArgs();
 				hintDoc.isConstructor = isConstructor;
 				if (argTypes != null) hintDoc.argTypes = argTypes;
+				if (type == null) type = hintDoc.getFunctionType();
 				info = NativeString.nzcct(hintDoc.getAcText(), "\n", info);
 			}
 			addFieldHint_doc = hintDoc;
@@ -570,7 +572,7 @@ class GmlSeeker {
 			var lastHint = out.fieldHints[hint.key];
 			if (lastHint == null) {
 				out.fieldHints[hint.key] = hint;
-			} else lastHint.merge(hint, true);
+			} else lastHint.merge(hint, isAuto);
 			
 			if (isField) {
 				//
@@ -789,7 +791,7 @@ class GmlSeeker {
 					
 					var info = hr.source.substring(hr.pos);
 					
-					addFieldHint(isNew, nsName, isInst, fdName, args, info, GmlTypeDef.parse(typeStr), null);
+					addFieldHint(isNew, nsName, isInst, fdName, args, info, GmlTypeDef.parse(typeStr), null, false);
 					if (addFieldHint_doc != null) {
 						if (ctrReturn != null) addFieldHint_doc.returnTypeString = ctrReturn;
 						if (templateSelf != null) addFieldHint_doc.templateSelf = templateSelf;
@@ -959,7 +961,7 @@ class GmlSeeker {
 							s = find(Line | Cub0 | Ident | Colon);
 							var isConstructor = (s == ":" || s == "constructor");
 							//
-							addFieldHint(isConstructor, getObjectName(), true, fname, args, null, null, argTypes);
+							addFieldHint(isConstructor, getObjectName(), true, fname, args, null, null, argTypes, true);
 						} else procFuncLiteralArgs();
 						resetDoc(); // discard any collected JSDoc
 						continue;
@@ -1475,7 +1477,7 @@ class GmlSeeker {
 								isConstructor = q.substring(ctStart, q.pos) == "constructor";
 							}
 						} while (false);
-						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null, fieldType, argTypes);
+						addFieldHint(isConstructor, jsDocInterfaceName, true, s, args, null, fieldType, argTypes, true);
 						if (templateSelf != null && addFieldHint_doc != null) {
 							addFieldHint_doc.templateSelf = templateSelf;
 							addFieldHint_doc.templateItems = templateItems;

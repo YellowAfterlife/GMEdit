@@ -3,6 +3,7 @@ import ace.AceStatusBar;
 import ace.extern.AceRange;
 import gml.GmlAPI;
 import gml.GmlImports;
+import gml.GmlNamespace;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import parsers.linter.GmlLinter;
@@ -20,7 +21,7 @@ class AceStatusBarImports {
 		if (imports == null && !hasGlobalNamespaces) return 0;
 		var tk = ctx.tk;
 		var fnType = tk.type;
-		var type:GmlType = null;
+		var objType:GmlType = null;
 		var iter = ctx.iter;
 		var name = tk.value;
 		var doc = ctx.docs[name];
@@ -30,11 +31,11 @@ class AceStatusBarImports {
 		if (tk != null && tk.value == ".") {
 			tk = iter.stepBackward();
 			if (tk.type == "asset.object") {
-				type = GmlTypeDef.object(tk.value);
+				objType = GmlTypeDef.object(tk.value);
 			} else if (tk.value == "other") {
-				type = AceGmlTools.getOtherType({ session: ctx.session, scope: ctx.scope });
+				objType = AceGmlTools.getOtherType({ session: ctx.session, scope: ctx.scope });
 			} else if (tk.value == "self") {
-				type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
+				objType = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
 			} else if (tk.type == "namespace") {
 				var nsName = tk.value;
 				var td = null;
@@ -57,20 +58,20 @@ class AceStatusBarImports {
 				&& (tk.type == "local" || tk.type == "sublocal")
 				&& imports.localTypes.exists(tk.value)
 			) {
-				type = imports.localTypes[tk.value];
+				objType = imports.localTypes[tk.value];
 			} else {
 				iter.stepForward();
 				tk = iter.stepForward();
 			}
-			if (type != null) {
+			if (objType != null) {
 				var btk = iter.peekBackwardNonText();
 				if (btk != null && btk.ncType == "keyword") switch (btk.value) {
-					case "as", "cast": type = null;
+					case "as", "cast": objType = null;
 				}
 			}
 		} else {
 			if (fnType == "localfield") {
-				type = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
+				objType = AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope });
 			}
 			if (imports != null) {
 				doc = AceMacro.jsOr(imports.docs[name], doc);
@@ -78,24 +79,30 @@ class AceStatusBarImports {
 			tk = iter.stepForward();
 		}
 		//
-		if (type != null) {
-			ctx.type = type;
-			var step = (imports != null ? -1 : 0);
-			var till = hasGlobalNamespaces ? 2 : 1;
-			var tn = type.getNamespace();
-			if (tn != null) while (++step < till) {
-				var ns = (step > 0 ? GmlAPI.gmlNamespaces[tn] : imports.namespaces[tn]);
-				if (ns == null) continue;
-				
-				var td = ns.getInstDoc(name);
-				if (td != null) {
-					doc = td;
-					if (step == 0
-						&& (cast ns:GmlImportNamespace).longen.exists(name)
-					) argStart = 1;
-					break;
-				}
+		if (objType != null) {
+			var tn = objType.getNamespace();
+			var fieldType:GmlType = null;
+			var fieldTypeText:String = null;
+			if (tn != null) {
+				AceGmlTools.findNamespace(tn, imports, function(ns:GmlNamespace){
+					if (doc == null) {
+						doc = ns.getInstDoc(name);
+						if (doc != null
+							&& Std.is(ns, GmlImportNamespace)
+							&& (cast ns:GmlImportNamespace).longen.exists(name)
+						) argStart = 1;
+					}
+					if (fieldTypeText == null) {
+						var comp = ns.getInstCompItem(name);
+						if (comp != null) fieldTypeText = comp.doc;
+					}
+					if (fieldType == null) {
+						fieldType = ns.getInstType(name);
+					}
+				});
 			}
+			ctx.type = fieldType;
+			ctx.typeText = fieldTypeText;
 		} else {
 			var from = AceGmlTools.skipDotExprBackwards(ctx.session, ctx.funcEnd);
 			ctx.exprStart = from;

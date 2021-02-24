@@ -8,3 +8,5 @@ an_array = [];
 an_array = 0; ///want_warn "Can't cast number to array"
 a_point = new CastPoint();
 a_point = 0; ///want_warn "Can't cast number to CastPoint"
+a_func = function(a, b) {}
+a_func = 0; ///want_warn "Can't cast number to function"

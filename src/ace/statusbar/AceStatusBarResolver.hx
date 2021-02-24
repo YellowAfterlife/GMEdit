@@ -48,6 +48,7 @@ class AceStatusBarResolver {
 			if (imp == null) return false;
 			var localType = imp.localTypes[ctx.tk.value];
 			if (localType == null) return false;
+			ctx.type = localType;
 			var doc = AceGmlTools.findSelfCallDoc(localType, imp);
 			if (doc != null) {
 				ctx.doc = doc;

@@ -79,8 +79,16 @@ class AceTooltips {
 				}
 			}
 			//
-			if (ctx.type != null) extra = "type " + ctx.type.toString();
-			if (false) { // doesn't work quite right
+			if (ctx.typeText != null) {
+				extra = extra.nzcct("\n", ctx.typeText);
+			} else if (ctx.type != null) {
+				extra = extra.nzcct("\n", "type " + ctx.type.toString());
+			}
+			
+			// the following doesn't work quite right,
+			// have to figure out why it can get offset
+			// (probably because of my changes to line count gutter width)
+			if (false) {
 				if (marker != null) markerSession.removeMarker(marker);
 				var to = ctx.funcEnd;
 				var from = ctx.exprStart;

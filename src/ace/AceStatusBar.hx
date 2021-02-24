@@ -73,7 +73,7 @@ class AceStatusBar {
 	}
 	
 	public static var canDocData:Dictionary<AceStatusBarDocSearch->Bool> = @:privateAccess AceStatusBarResolver.initCanDocData();
-	@:keep public static inline function getDocData(ctx:AceStatusBarDocSearch):Bool {
+	@:keep public static function getDocData(ctx:AceStatusBarDocSearch):Bool {
 		var f = canDocData[ctx.tk.type];
 		if (f != null) {
 			return f(ctx);
@@ -305,6 +305,7 @@ typedef AceStatusBarDocSearch = {
 	docs:Dictionary<GmlFuncDoc>,
 	doc:GmlFuncDoc,
 	?type:GmlType,
+	?typeText:String,
 	tk:AceToken,
 	session:AceSession,
 	scope:String,

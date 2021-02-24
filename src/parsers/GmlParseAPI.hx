@@ -36,6 +36,7 @@ class GmlParseAPI {
 		?version:GmlVersion,
 		?kindPrefix:String,
 		?instComp:AceAutoCompleteItems,
+		?instCompMap:Dictionary<AceAutoCompleteItem>,
 		?instKind:Dictionary<AceTokenType>,
 		?instType:Dictionary<GmlType>,
 		?fieldHints:Array<GmlSeekDataHint>,
@@ -55,6 +56,7 @@ class GmlParseAPI {
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
 		var instComp = data.instComp;
+		var instCompMap = data.instCompMap;
 		var instKind = data.instKind;
 		var instType = data.instType;
 		var namespaceDefs = data.namespaceDefs;
@@ -236,7 +238,9 @@ class GmlParseAPI {
 					if (flags.contains("*")) doc += "\nread-only";
 					if (range != null) doc += "\narray" + range;
 					if (typeStr != null) doc += "\ntype" + typeStr;
-					instComp.push(new AceAutoCompleteItem(name, "variable", doc));
+					var c = new AceAutoCompleteItem(name, "variable", doc);
+					instComp.push(c);
+					instCompMap[name] = c;
 				}
 				if (instKind != null) instKind[name] = "variable";
 				if (instKind != null && typeStr != null) instType[name] = type;

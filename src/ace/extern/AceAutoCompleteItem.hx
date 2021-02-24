@@ -38,5 +38,6 @@ typedef AceAutoCompleteItemImpl = {
 	@:optional var caption:String;
 	@:optional var snippet:String;
 	@:optional var exactMatch:Bool;
+	/** Used internally by "smart completion" mode */
 	@:optional var matchMask:Int;
 };

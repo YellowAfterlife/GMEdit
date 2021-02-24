@@ -98,6 +98,7 @@ class GmlAPI {
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
 	
 	public static var stdInstComp:AceAutoCompleteItems = [];
+	public static var stdInstCompMap:Dictionary<AceAutoCompleteItem> = new Dictionary();
 	public static var stdInstKind:Dictionary<AceTokenType> = new Dictionary();
 	public static var stdInstType:Dictionary<GmlType> = new Dictionary();
 	
@@ -110,6 +111,7 @@ class GmlAPI {
 		stdComp.clear();
 		
 		stdInstComp.clear();
+		stdInstCompMap = new Dictionary();
 		stdInstKind = new Dictionary();
 		stdInstType = new Dictionary();
 		
@@ -383,6 +385,7 @@ class GmlAPI {
 			namespaceDefs: stdNamespaceDefs,
 			fieldHints: stdFieldHints,
 			instComp: stdInstComp,
+			instCompMap: stdInstCompMap,
 			instKind: stdInstKind,
 			instType: stdInstType,
 			ukSpelling: ukSpelling,

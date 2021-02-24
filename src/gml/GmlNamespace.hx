@@ -91,6 +91,24 @@ class GmlNamespace {
 	
 	/** instance (`var b; b.ptr`) completions */
 	public var compInst:ArrayMapSync<AceAutoCompleteItem> = new ArrayMapSync();
+	public function getInstCompItem(field:String, depth:Int = 0):AceAutoCompleteItem {
+		var q = this, n = depth;
+		while (q != null && ++n <= maxDepth) {
+			var c = q.compInst[field];
+			if (c != null) return c;
+			if (q.isObject) {
+				c = GmlAPI.stdInstCompMap[field];
+				if (c != null) return c;
+			}
+			for (qi in q.interfaces.array) {
+				c = qi.getInstCompItem(field, n);
+				if (c != null) return c;
+			}
+			q = q.parent;
+		}
+		return null;
+	}
+	
 	private var compInstCache:AceAutoCompleteItems = new AceAutoCompleteItems();
 	private var compInstCacheID:Int = 0;
 	private var compInstCacheParent:String = null;
