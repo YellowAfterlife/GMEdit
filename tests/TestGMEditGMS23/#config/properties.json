@@ -2,6 +2,7 @@
     "linterPrefs": {
         "requireFields": true,
         "specTypeConst": true,
+        "specTypeInst": true,
         "specTypeLet": true
     },
     "nullConditionalSet": "nc_set",

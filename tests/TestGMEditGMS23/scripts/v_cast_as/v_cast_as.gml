@@ -4,10 +4,10 @@ function CastPoint() constructor {
 }
 function v_cast_as() {
 	var zi/*:int?*/ = 1;
-	var i/*:int*/ = zi; // want warn
+	var i/*:int*/ = zi; ///want_warn "Can't cast"
 	i = /*#cast*/ zi;
 	i = zi /*#as int*/;
-	var s/*:string*/ = zi /*#as string*/; // want warn
+	var s/*:string*/ = zi /*#as string*/; ///want_warn "Can't cast"
 	if (false) {
 		var p/*:CastPoint*/ = (/*#cast*/ zi /*#as CastPoint*/); // incorrect, but allowed
 		p = (/*#cast*/ (1 + 2) /*#as CastPoint*/); // ditto
@@ -15,8 +15,8 @@ function v_cast_as() {
 	}
 	
 	var si/*:int|string*/ = 0;
-	i = si; // want warn
+	i = si; ///want_warn "Can't cast"
 	i = si /*#as int*/; // allowed - explicit cast
-	s = si; // want warn
+	s = si; ///want_warn "Can't cast"
 	s = si /*#as string*/; // allowed - explicit cast
 }

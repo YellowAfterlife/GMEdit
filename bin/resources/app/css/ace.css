@@ -291,3 +291,13 @@ textarea#source {
 	border: 1px solid #f0c;
 	background: #ff00cc10;
 }
+
+#ace_settingsmenu #more-controls {
+	width: 100%;
+}
+#ace_settingsmenu #controls > .ace_optionsMenuEntry td > input[type="text"]:only-child,
+#ace_settingsmenu #controls > .ace_optionsMenuEntry td > input[type="number"]:only-child,
+#ace_settingsmenu #controls > .ace_optionsMenuEntry td > select:only-child {
+	width: 100% !important;
+	box-sizing: border-box;
+}

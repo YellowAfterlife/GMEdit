@@ -95,7 +95,7 @@ import tools.CharCode;
 		return untyped s.includes(q);
 	}
 	
-	private static var escapeRx_1:RegExp = new RegExp('([.*+?^${}()|[\\]\\/\\\\])', 'g');
+	private static var escapeRx_1:RegExp = new RegExp("([.*+?^${}()|[\\]\\/\\\\])", 'g');
 	public static inline function escapeRx(s:String):String {
 		return replaceExt(s, escapeRx_1, "\\$1");
 	}

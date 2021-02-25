@@ -14,10 +14,10 @@ function v_missing_fields() {
 	var m/*:MissingFields*/ = new MissingFields();
 	m.one = 1;
 	m.two = 2;
-	m.miss = 3; // want warn
+	m.miss = 3; ///want_warn
 	var c/*:MissingFieldsChild*/ = new MissingFieldsChild();
 	c.one = 1;
-	c.miss = 3; // want warn
+	c.miss = 3; ///want_warn
 	c.four = 4;
 }
 /// @self {MissingFieldsChild}
@@ -26,6 +26,6 @@ function v_missing_fields_self() {
 	one = 1;
 	self.extra = 5;
 	extra = 5;
-	self.miss = 3; // want warn
-	miss = 3; // want warn
+	self.miss = 3; ///want_warn
+	miss = 3; ///want_warn
 }

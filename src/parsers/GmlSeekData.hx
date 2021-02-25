@@ -313,31 +313,29 @@ class GmlSeekDataHint {
 		this.type = type;
 		this.key = namespace + (isInst ? ":" : ".") + field;
 	}
-	public function merge(hint:GmlSeekDataHint) {
-		var cd0 = comp.doc;
+	public function merge(hint:GmlSeekDataHint, ?preferExisting:Bool) {
 		var cd1 = hint.comp.doc;
-		var cdp = field + "(";
-		if (cd0 == null) {
-			comp.doc = cd1;
-		} else if (cd0.startsWith(cdp)) {
-			if (cd1 == null) {
-				// OK!
-			} else if (cd1.startsWith(cdp)) {
+		if (cd1 != null) {
+			var cd0 = comp.doc;
+			var cdp = field + "(";
+			if (cd0 == null) {
 				comp.doc = cd1;
+			} else if (cd0.startsWith(cdp)) {
+				if (cd1.startsWith(cdp)) {
+					if (!preferExisting) comp.doc = cd1;
+				} else {
+					comp.doc = cd0 + "\n" + cd1;
+				}
 			} else {
-				comp.doc = cd0 + "\n" + cd1;
-			}
-		} else {
-			if (cd1 == null) {
-				// OK!
-			} else if (cd1.startsWith(cdp)) {
-				comp.doc = cd1 + "\n" + cd0;
-			} else {
-				comp.doc = cd1;
+				if (cd1.startsWith(cdp)) {
+					comp.doc = cd1 + "\n" + cd0;
+				} else {
+					if (!preferExisting) comp.doc = cd1;
+				}
 			}
 		}
 		//
-		if (hint.doc != null) doc = hint.doc;
-		if (hint.type != null) type = hint.type;
+		if (hint.doc != null && (!preferExisting || doc == null)) doc = hint.doc;
+		if (hint.type != null && (!preferExisting || type == null)) type = hint.type;
 	}
 }

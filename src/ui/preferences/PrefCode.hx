@@ -80,6 +80,16 @@ class PrefCode {
 		out.id = "pref-code";
 		var el:Element;
 		//
+		el = addBigButton(out, "Code Editor Settings", function() {
+			ace.AceWrap.loadModule("ace/ext/settings_menu", function(module) {
+				module.init(Main.aceEditor);
+				untyped Main.aceEditor.showSettingsMenu();
+			});
+		});
+		el.appendChild(Main.document.createTextNode(" Font, size, word wrap, etc."));
+		addBigButton(out, "Edit Keyboard Shortcuts", function() editors.EditKeybindings.open());
+		
+		//
 		buildComp(addGroup(out, "Auto-completion"));
 		buildTooltips(addGroup(out, "Tooltips"));
 		
@@ -114,13 +124,6 @@ class PrefCode {
 			+ "\nGMS2: use /*mode*/@'string'."
 			+ "\nGMS1: use /*mode*/'string'."
 			+ "\nAffects newly opened code tabs.";
-		//
-		addButton(out, "Code Editor Settings", function() {
-			ace.AceWrap.loadModule("ace/ext/settings_menu", function(module) {
-				module.init(Main.aceEditor);
-				untyped Main.aceEditor.showSettingsMenu();
-			});
-		});
-		addButton(out, "Edit Keyboard Shortcuts", function() editors.EditKeybindings.open());
+		//		
 	}
 }

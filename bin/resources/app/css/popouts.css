@@ -26,9 +26,10 @@
 	margin-bottom: 4px;
 	display: flex;
 }
-#global-lookup > div > input[type="checkbox"] {
-	height: 100%;
+#global-lookup > div > label {
 	margin-left: 6px;
+	display: flex;
+	align-items: center;
 }
 #global-lookup > select {
 	flex-grow: 1;

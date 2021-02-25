@@ -14,12 +14,12 @@ function v_imp_namespace_class(_arg/*:namespace_Class*/)/*->namespace_Class*/ {
 	let _c = new namespace_Class();
 	return _arg;
 	return _c;
-	return 0; // want warn
+	return 0; ///want_warn
 }
 function v_imp_namespace_class_1(_arg/*:int*/)/*->int*/ {
 	let _c = new namespace_Class();
 	return _arg;
-	return _c; // want warn
+	return _c; ///want_warn
 	return 0;
 }
 /// @param {namespace_Class} _arg
@@ -28,5 +28,5 @@ function v_imp_namespace_class_2(_arg) {
 	let _c = new namespace_Class();
 	return _arg;
 	return _c;
-	return 0; // want warn
+	return 0; ///want_warn
 }

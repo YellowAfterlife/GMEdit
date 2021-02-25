@@ -293,8 +293,14 @@ class GmlFile {
 
 	/**Writes the given code to storage
 	*/
-	public function writeContent(code : GmlCode) {
-		FileWrap.writeTextFileSync(path, code);
+	public function writeContent(code:GmlCode):Bool {
+		try {
+			FileWrap.writeTextFileSync(path, code);
+			return true;
+		} catch (x) {
+			Dialog.showWarning("Couldn't update " + name+ ":\n" + x);
+			return false;
+		}
 	}
 
 	/**Reads the code from storage

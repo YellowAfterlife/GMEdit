@@ -21,6 +21,12 @@ input[type=button], button {
 	padding-right: 10px;
 	cursor: pointer;
 }
+input[type="button"]:hover {
+	outline: 1px solid var(--color-primary);
+}
+input[type="button"]:active {
+	background: var(--color-primary);
+}
 
 input[type=text], input[type=number] {
 	padding: 5px;
@@ -197,15 +203,36 @@ button[type=button].highlighted-button {
 	background: #444;
 }
 
-#preferences-editor {
+#preferences-editor, #keybindings-editor {
 	background-color: var(--color-background);
 }
 #preferences-editor input[type="text"],
 #preferences-editor input[type="button"],
+.ace_optionsMenuEntry button,
+.ace_optionsMenuEntry button:hover,
 #preferences-editor select {
 	background: #333;
 }
 
+#ace_settingsmenu {
+	background: #222;
+	color: #C0C0C0;
+	box-shadow: 4px 5px rgba(0, 0, 0, 0.55);
+}
+.ace_optionsMenuEntry button:not(:first-child) {
+	margin-left: 2px;
+}
+.ace_optionsMenuEntry button,
+.ace_optionsMenuEntry button[ace_selected_button=true] {
+	border: none;
+	box-shadow: none;
+}
+.ace_optionsMenuEntry button:hover {
+	box-shadow: var(--color-primary) 0 0 2px inset;
+}
+.ace_optionsMenuEntry button[ace_selected_button=true] {
+	background: var(--color-primary);
+}
 
 /* gutter */
 #main .ace_gutter,
