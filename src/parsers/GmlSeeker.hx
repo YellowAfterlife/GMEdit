@@ -1402,7 +1402,8 @@ class GmlSeeker {
 							if (!c.isIdent0_ni()) continue;
 							var start = q.pos;
 							q.skipIdent1();
-							switch (q.substring(start, q.pos)) {
+							var ident = q.substring(start, q.pos);
+							switch (ident) {
 								case "function":
 									// OK!
 								case "new" if (hasFunctionLiterals):
@@ -1415,7 +1416,14 @@ class GmlSeeker {
 								case "true", "false":
 									if (specTypeInst) fieldType = GmlTypeDef.bool;
 									continue;
-								default: continue;
+								default:
+									var doc = GmlAPI.stdDoc[ident];
+									if (doc != null) {
+										fieldType = doc.returnType.mapTemplateTypes([]);
+									} else {
+										fieldType = GmlAPI.stdTypes[ident];
+									}
+									continue;
 							}
 							q.skipSpaces1();
 							if (q.peek().isIdent0_ni()) {
