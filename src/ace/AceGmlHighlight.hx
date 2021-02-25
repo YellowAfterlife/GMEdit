@@ -20,11 +20,7 @@ import gml.GmlVersion;
 import js.lib.RegExp;
 import synext.GmlExtMFunc;
 import tools.Dictionary;
-import ace.AceMacro.rxRule;
-import ace.AceMacro.rxPush;
-import ace.AceMacro.jsOr;
-import ace.AceMacro.jsOrx;
-import ace.AceMacro.jsThis;
+import ace.AceMacro.*;
 import ace.extern.AceLangRule;
 import ace.raw.*;
 import haxe.extern.EitherType;
@@ -294,6 +290,40 @@ using tools.NativeArray;
 				} else return [mtIdent(goto), "text", mtIdent(label)];
 			}, ~/(goto|label)(\s+)(\w+)/),
 			rPragma_call,
+			// the following are a little hack to prevent "variable not found"
+			// syntax highglithing for `field:` inside object literals
+			rxMatch(function(value, state, stack, line, row) {
+				var mt = jsThisAsRule.splitRegex.exec(value);
+				var idt = AceGmlHighlightIdents.matchIdent(editor, row, mt[3], fieldDef, false);
+				return [
+					rtk("punctuation.operator", mt[1]),
+					rtk("text", mt[2]),
+					rtk(idt, mt[3]),
+					rtk("text", mt[4]),
+					rtk("punctuation.operator", mt[5]),
+				];
+			}, ~/(\?)(\s*)(\w+)(\s*)(:)/),
+			rxMatch(function(value, state, stack, line, row) {
+				var mt = jsThisAsRule.splitRegex.exec(value);
+				var idt = AceGmlHighlightIdents.matchIdent(editor, row, mt[3], fieldDef, false);
+				return [
+					rtk("keyword", mt[1]),
+					rtk("text", mt[2]),
+					rtk(idt, mt[3]),
+					rtk("text", mt[4]),
+					rtk("punctuation.operator", mt[5]),
+				];
+			}, ~/(case)(\s+)(\w+)(\s*)(:)/),
+			rxMatch(function(value, state, stack, line, row) {
+				var mt = jsThisAsRule.splitRegex.exec(value);
+				var idt = AceGmlHighlightIdents.matchIdent(editor, row, mt[1], fieldDef, false);
+				if (idt == "typeerror") idt = fieldDef;
+				return [
+					rtk(idt, mt[1]),
+					rtk("text", mt[2]),
+					rtk("punctuation.operator", mt[3]),
+				];
+			}, ~/(\w+)(\s*)(:)/),
 			//
 			rIdentPair,
 			rIdentLocal,

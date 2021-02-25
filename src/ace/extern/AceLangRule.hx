@@ -1,13 +1,15 @@
 package ace.extern;
+import haxe.Constraints.Function;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
+import tools.Aliases;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 typedef AceLangRule = {
-	?token: EitherType<EitherType<AceTokenType, Array<AceTokenType>>, String->String>,
+	?token:AceLangRuleTokenInit,
 	?regex:EitherType<String, RegExp>,
 	?onMatch:AceLangRuleMatch,
 	?next:AceLangRuleNextInit,
@@ -16,6 +18,11 @@ typedef AceLangRule = {
 	?consumeLineEnd:Bool,
 	?splitRegex:RegExp,
 };
+/**
+ * Function option here will be called with one argument per match group,
+ * which makes it not very constraint-able.
+ */
+typedef AceLangRuleTokenInit = EitherType3<AceTokenType, Array<AceTokenType>, Function>;
 typedef AceLangRuleState = EitherType<String, ace.gml.AceGmlState>;
 typedef AceLangRuleMatch = EitherType<
 	(value:String, currentState:AceLangRuleState, stack:Array<String>, line:String, row:Int)->AceTokenType,
@@ -48,4 +55,4 @@ next:"pop" -> state: "one", stack: []
 next:"pop" -> state: "start", stack: []
 **/
 typedef AceLangRuleNext = (currentState:AceLangRuleState, stack:Array<AceLangRuleState>)->AceLangRuleState;
-typedef AceLangRuleNextInit = EitherType<AceLangRuleState, EitherType<Array<AceLangRuleState>, AceLangRuleNext>>;
+typedef AceLangRuleNextInit = EitherType3<AceLangRuleState, Array<AceLangRuleState>, AceLangRuleNext>;

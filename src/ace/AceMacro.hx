@@ -29,6 +29,13 @@ class AceMacro {
 		}
 	}
 	
+	public static macro function rxMatch(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
+		switch (rx.expr) {
+			case EConst(CRegexp(r, o)): return macro rmatch($tk, $v{r}, $nx);
+			default: throw Context.error("Expected a regular expression literal", rx.pos);
+		}
+	}
+	
 	public static macro function rxPush(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
 		switch (rx.expr) {
 			case EConst(CRegexp(r, o)): return macro rpush($tk, $v{r}, $nx);

@@ -32,6 +32,7 @@
     {"id":{"name":"v_constructor_self_index","path":"scripts/v_constructor_self_index/v_constructor_self_index.yy",},"order":16,},
     {"id":{"name":"obj_implicit_inst_types","path":"objects/obj_implicit_inst_types/obj_implicit_inst_types.yy",},"order":3,},
     {"id":{"name":"v_hint_override","path":"scripts/v_hint_override/v_hint_override.yy",},"order":3,},
+    {"id":{"name":"v_literal_fields","path":"scripts/v_literal_fields/v_literal_fields.yy",},"order":1,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

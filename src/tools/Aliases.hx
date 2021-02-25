@@ -1,4 +1,5 @@
 package tools;
+import haxe.extern.EitherType;
 import js.lib.RegExp;
 
 /**
@@ -26,3 +27,6 @@ typedef GmlName = String;
 
 /** An offset in a string */
 typedef StringPos = Int;
+
+typedef EitherType3<A, B, C> = EitherType<EitherType<A, B>, C>;
+typedef EitherType4<A, B, C, D> = EitherType<EitherType<EitherType<A, B>, C>, D>;

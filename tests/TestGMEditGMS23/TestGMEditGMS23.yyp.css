@@ -21,3 +21,27 @@
 	);
 	color: rgba(255, 200, 79, 1);
 }
+
+#app .ace_comment.ace_doc.ace_line.ace_startswith_note\: {
+	background-image: repeating-linear-gradient(135deg,
+		rgba(175, 255, 79, 0),
+		rgba(175, 255, 79, 0) 10px,
+		rgba(175, 255, 79, 0.25) 10px,
+		rgba(175, 255, 79, 0.25) 20px
+	);
+	outline: 1px solid rgba(175, 255, 79, 0.75);
+	outline-offset: 1px;
+	background-position: top left;
+	background-repeat: repeat;
+	/*font-weight: bold;*/
+	color: rgba(175, 255, 79);
+}
+#app #main.chrome-tabs-dark-theme .ace_comment.ace_doc.ace_line.ace_startswith_note\: {
+	background-image: repeating-linear-gradient(135deg,
+		rgba(175, 255, 79, 0),
+		rgba(175, 255, 79, 0) 10px,
+		rgba(175, 255, 79, 0.15) 10px,
+		rgba(175, 255, 79, 0.15) 20px
+	);
+	color: rgba(175, 255, 79, 1);
+}
