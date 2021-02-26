@@ -77,12 +77,12 @@ class GmlLinter {
 	var context(default, set):String = "";
 	public function set_context(ctx:String):String {
 		context = ctx;
-		if (setLocalVars) {
+		if (setLocalVars || setLocalTypes) {
 			if ((editor.kind is file.kind.gml.KGmlEvents) && ctx == "properties") {
 				// don't re-index properties
 			} else {
-				editor.locals[ctx] = new GmlLocals(ctx);
-				getImports(true).localTypes = new Dictionary();
+				if (setLocalVars) editor.locals[ctx] = new GmlLocals(ctx);
+				if (setLocalTypes) getImports(true).localTypes = new Dictionary();
 			}
 		}
 		return ctx;
