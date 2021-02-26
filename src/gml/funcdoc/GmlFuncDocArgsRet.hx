@@ -24,7 +24,10 @@ class GmlFuncDocArgsRet {
 		var autoRxs:Array<RegExp> = null;
 		if (autoArgs != null) try {
 			autoRxs = [];
-			for (arg in autoArgs) autoRxs.push(new RegExp('\\b$arg\\s*[!=]=\\s*undefined'));
+			for (arg in autoArgs) autoRxs.push(new RegExp('\\b(?:'
+				+ arg + '\\s*[!=]=\\s*undefined'
+				+ "|is_undefined\\s*\\(\\s*" + arg + "\\s*\\)"
+			+ ')'));
 		} catch (_:Dynamic) autoRxs = null;
 		inline function checkAutoRxs() {
 			if (autoRxs == null) return;
