@@ -1700,9 +1700,9 @@ class GmlLinter {
 		function addMarker(text:String, pos:AcePos, isError:Bool) {
 			var line = session.getLine(pos.row);
 			var range = new AceRange(0, pos.row, line.length, pos.row);
-			session.gmlErrorMarkers.push(
-				session.addMarker(range, isError ? "ace_error-line" : "ace_warning-line", "fullLine")
-			);
+			var clazz = isError ? "ace_error-line" : "ace_warning-line";
+			var marker = new ace.gml.AceGmlWarningMarker(session, pos.row, clazz);
+			session.gmlErrorMarkers.push(marker.addTo(session));
 			annotations.push({
 				row: pos.row, column: pos.column, type: isError ? "error" : "warning", text: text
 			});
