@@ -42,26 +42,43 @@ class GmlFuncDocArgsRet {
 			}
 		}
 		//
+		function flush(p:Int) {
+			chunk = q.substring(start, p);
+			if (seekHasRet && hasRetRx.test(chunk)) {
+				seekHasRet = false;
+				doc.returnTypeString = "";
+				if (!seekArg) return;
+			}
+			if (seekArg && hasArgRx.test(chunk)) {
+				// mimicking 2.3 IDE behaviour where having
+				// argument[] access makes all arguments optional.
+				seekArg = false;
+				@:privateAccess doc.minArgsCache = 0;
+				doc.rest = true;
+				if (!seekHasRet) return;
+			}
+			checkAutoRxs();
+			start = q.pos;
+		}
 		q.pos = from;
 		while (q.pos < till) {
-			var p = q.pos, n;
+			var p = q.pos;
 			var n = q.skipCommon_inline();
 			if (n >= 0) {
-				chunk = q.substring(start, p);
-				if (seekHasRet && hasRetRx.test(chunk)) {
-					seekHasRet = false;
-					doc.returnTypeString = "";
-					if (!seekArg) return;
+				flush(p);
+			} else if (q.peek().isIdent0_ni() && q.readIdent() == "function") {
+				flush(p);
+				var depth = 0;
+				while (q.pos < till) {
+					switch (q.peek()) {
+						case "{".code: q.skip(); depth++;
+						case "}".code: q.skip(); if (--depth <= 0) break;
+						default:
+							if (q.skipCommon_inline() >= 0) {
+								//
+							} else q.skip();
+					}
 				}
-				if (seekArg && hasArgRx.test(chunk)) {
-					// mimicking 2.3 IDE behaviour where having
-					// argument[] access makes all arguments optional.
-					seekArg = false;
-					@:privateAccess doc.minArgsCache = 0;
-					doc.rest = true;
-					if (!seekHasRet) return;
-				}
-				checkAutoRxs();
 				start = q.pos;
 			} else q.skip();
 		}
