@@ -16,7 +16,7 @@ class WelcomePage {
 	public static function init(e:AceEditor) {
 		var session:AceSession;
 		#if lwedit
-			file = new GmlFile("WelcomePage", null, KGmlScript.inst, "");
+			file = new GmlFile("WelcomePage", null, ui.liveweb.KLiveWeb.inst, "");
 			GmlFile.current = file;
 			session = file.codeEditor.session;
 			session.setValue(lwText);
