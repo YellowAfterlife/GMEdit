@@ -6,6 +6,7 @@ import gml.file.GmlFile;
 import js.lib.RegExp;
 import synext.GmlExtArgs;
 import tools.NativeArray;
+import tools.RegExpCache;
 using StringTools;
 
 /**
@@ -25,6 +26,7 @@ class GmlExtArgsDoc {
 		+ "(\\s*)" // 8 -> after name
 		+ ")(.*)" // 9 -> text
 	);
+	static var rxSimpleVal = new RegExp("^\\s*=\\s*(\\S+)\\s*$");
 	/** Modifies `/// func(...args)` line as per #args */
 	public static function proc1(file:GmlFile):Bool {
 		var session = file.getAceSession();
@@ -112,9 +114,7 @@ class GmlExtArgsDoc {
 		if (session.getValue().indexOf("#args") < 0) return false;
 		var beforeMeta = " ";
 		var afterMeta = " ";
-		var argData = GmlExtArgs.argData;
-		var curr = argData[""];
-		var names = curr.names;
+		//
 		var rxTrim:RegExp = null; {
 			var s = Project.current.properties.argNameRegex;
 			if (s != null && s.trim() != "") try {
@@ -123,18 +123,36 @@ class GmlExtArgsDoc {
 				Main.console.error("Error parsing argument regex: ", x);
 			}
 		};
-		if (rxTrim != null) for (i in 0 ... names.length) {
-			var name = names[i];
-			var mt = rxTrim.exec(name);
-			if (mt != null && mt[1] != null) names[i] = mt[1];
+		var rxSimpleVal = GmlExtArgsDoc.rxSimpleVal;
+		//
+		var names:Array<String>, types:Array<String>, texts:Array<String>, count:Int;
+		function sync(curr:GmlExtArgData) {
+			names = curr.names;
+			texts = curr.texts;
+			types = curr.types;
+			count = names.length;
+			if (rxTrim != null) for (i in 0 ... count) {
+				var name = names[i];
+				var mt = rxTrim.exec(name);
+				if (mt != null && mt[1] != null) names[i] = mt[1];
+			}
+			for (i in 0 ... count) {
+				var mt = rxSimpleVal.exec(texts[i]);
+				if (mt != null) {
+					if (names[i].fastCodeAt(0) != "?".code || mt[1] != "undefined") {
+						names[i] += "=" + mt[1];
+					}
+					texts[i] = "";
+				}
+			}
 		}
-		var texts = curr.texts;
-		var types = curr.types;
+		var argData = GmlExtArgs.argData;
+		sync(argData[""]);
+		//
 		var aceDoc = session.doc;
 		var iter = new AceTokenIterator(session, 0, 0);
 		var tk = iter.getCurrentToken();
 		var lastRow = -1;
-		var count = names.length;
 		var rows = [];
 		var remove = [];
 		var replace = [];
@@ -242,10 +260,7 @@ class GmlExtArgsDoc {
 					if (tk != null) {
 						flush();
 						lastRow = iter.getCurrentTokenRow() + addOffset;
-						curr = argData[tk.value];
-						names = curr.names;
-						texts = curr.texts;
-						count = names.length;
+						sync(argData[tk.value]);
 						NativeArray.clearResize(rows, count);
 						hasArgs = false;
 					}

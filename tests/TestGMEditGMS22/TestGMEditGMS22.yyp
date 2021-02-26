@@ -63,6 +63,14 @@
             }
         },
         {
+            "Key": "23a9b91c-9668-4256-ab81-85a20be4bd1e",
+            "Value": {
+                "id": "f081ffec-b9ed-4fa8-ac81-37c12925b441",
+                "resourcePath": "scripts\/v_args_gen_opt\/v_args_gen_opt.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
             "Key": "2f72fde3-c3e7-4973-b370-6d4d7c01ca45",
             "Value": {
                 "id": "6ac4a07f-078e-4ed5-880d-0546ed57cfaa",
