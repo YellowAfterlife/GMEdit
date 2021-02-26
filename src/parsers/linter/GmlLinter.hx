@@ -1382,16 +1382,19 @@ class GmlLinter {
 		}
 		switch (nk) {
 			case KMFuncDecl, KMacro: {};
-			case KArgs: {};
 			case KEnum: rc(readEnum(newDepth));
-			case KVar, KConst, KLet, KGlobalVar: {
-				//z = nk == KArgs;
+			case KVar, KConst, KLet, KGlobalVar, KArgs: {
+				var isArgs = nk == KArgs;
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
 				var found = 0;
+				var startRow = reader.row;
 				while (q.loop) {
 					nk = peek();
-					//if (z && nk == KQMark) { skip(); nk = peek(); }
+					// #args-specific: quit on linebreak, allow ?arg:
+					if (isArgs && __peekReader.row > startRow) break;
+					if (isArgs && nk == KQMark) { skip(); nk = peek(); }
+					//
 					if (!skipIf(nk == KIdent)) break;
 					var varName = nextVal;
 					if (mainKind != KGlobalVar) {
