@@ -56,12 +56,12 @@ class AceStatusBarResolver {
 			} else return false;
 		}
 		d["field"] = function(ctx:AceStatusBarDocSearch) { // might be self.field
-			ctx.docs = GmlNamespace.blank;
+			ctx.docs = {};
 			return true;
 		}
 		d["localfield"] = function(ctx:AceStatusBarDocSearch) { // field()?
 			if (AceGmlTools.getSelfType({ session: ctx.session, scope: ctx.scope }) != null) {
-				ctx.docs = GmlNamespace.blank;
+				ctx.docs = {};
 				return true;
 			} else return false;
 		}
