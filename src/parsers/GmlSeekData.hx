@@ -243,7 +243,9 @@ class GmlSeekData {
 			var ns = GmlAPI.ensureNamespace(nsName);
 			var arr0 = prev.namespaceImplements[nsName];
 			for (impName in arr1) {
-				if (arr0 != null && arr0.contains(impName)) continue;
+				if (arr0 != null && arr0.contains(impName)
+					&& ns.interfaces.exists(impName)
+				) continue;
 				var impSpace = GmlAPI.ensureNamespace(impName);
 				ns.interfaces.addn(impSpace);
 			}
