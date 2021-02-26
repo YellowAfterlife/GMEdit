@@ -2,11 +2,11 @@
   "isDnD": false,
   "isCompatibility": false,
   "parent": {
-    "name": "JSDoc",
-    "path": "folders/Scripts/Linter/JSDoc.yy",
+    "name": "Constructors",
+    "path": "folders/Scripts/Linter/Constructors.yy",
   },
   "resourceVersion": "1.0",
-  "name": "v_doc_template",
+  "name": "v_constructor_inner_args",
   "tags": [],
   "resourceType": "GMScript",
 }
