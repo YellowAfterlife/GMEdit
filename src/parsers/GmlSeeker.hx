@@ -1419,13 +1419,15 @@ class GmlSeeker {
 								default:
 									if (specTypeInst) {
 										var doc = GmlAPI.stdDoc[ident];
+										q.skipSpaces1_local();
 										if (doc != null) {
-											q.skipSpaces1_local();
 											if (q.peek() == "(".code) {
 												fieldType = doc.returnType.mapTemplateTypes([]);
 											}
-										} else {
-											fieldType = GmlAPI.stdTypes[ident];
+										} else switch (q.peek()) {
+											case "\r".code, "\n".code, ";".code:
+												fieldType = GmlAPI.stdTypes[ident];
+											default:
 										}
 									}
 									continue;
