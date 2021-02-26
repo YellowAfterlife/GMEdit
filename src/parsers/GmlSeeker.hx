@@ -566,7 +566,8 @@ class GmlSeeker {
 			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type.toString());
 			
 			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
-			var comp = new AceAutoCompleteItem(name, compMeta, info);
+			var comp = privateFieldRegex == null || !privateFieldRegex.test(s)
+				? new AceAutoCompleteItem(name, compMeta, info) : null;
 			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace, type);
 			
 			var lastHint = out.fieldHints[hint.key];
@@ -585,7 +586,9 @@ class GmlSeeker {
 			}
 		}
 		function addInstVar(s:String):Void {
-			if (out.instFieldMap[s] == null) {
+			if (out.instFieldMap[s] == null
+				&& (privateFieldRegex == null || !privateFieldRegex.test(s))
+			) {
 				var fd = GmlAPI.gmlInstFieldMap[s];
 				if (fd == null) {
 					fd = new GmlField(s, "variable");
@@ -1315,9 +1318,6 @@ class GmlSeeker {
 						} else {
 							isConstructorField = cubDepth == 1 && doc != null && doc.isConstructor;
 						}
-						if (isConstructorField && privateFieldRegex != null && privateFieldRegex.test(s)) {
-							isConstructorField = false;
-						}
 					} else isConstructorField = false;
 					
 					// skip if we don't have anything to do:
@@ -1327,6 +1327,7 @@ class GmlSeeker {
 						var ns = GmlAPI.gmlNamespaces[s];
 						addInstField = ns == null || ns.noTypeRef;
 					} else addInstField = true;
+					
 					if (!addInstField && (
 						// create events shouldn't hint built-ins since we'll auto-include them:
 						isCreateEvent

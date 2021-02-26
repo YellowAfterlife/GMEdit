@@ -34,6 +34,7 @@
     {"id":{"name":"v_hint_override","path":"scripts/v_hint_override/v_hint_override.yy",},"order":3,},
     {"id":{"name":"v_literal_fields","path":"scripts/v_literal_fields/v_literal_fields.yy",},"order":1,},
     {"id":{"name":"v_constructor_inner_args","path":"scripts/v_constructor_inner_args/v_constructor_inner_args.yy",},"order":2,},
+    {"id":{"name":"v_private_fields","path":"scripts/v_private_fields/v_private_fields.yy",},"order":3,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

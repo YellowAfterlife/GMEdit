@@ -9,6 +9,7 @@ import synext.GmlExtCoroutines;
 import synext.GmlExtMFunc;
 import tools.ArrayMap;
 import tools.Dictionary;
+import tools.JsTools;
 using tools.NativeString;
 using tools.NativeArray;
 
@@ -316,9 +317,9 @@ class GmlSeekDataHint {
 		this.key = namespace + (isInst ? ":" : ".") + field;
 	}
 	public function merge(hint:GmlSeekDataHint, ?preferExisting:Bool) {
-		var cd1 = hint.comp.doc;
+		var cd1:String = JsTools.ncf(hint.comp.doc);
 		if (cd1 != null) {
-			var cd0 = comp.doc;
+			var cd0 = JsTools.ncf(comp.doc);
 			var cdp = field + "(";
 			if (cd0 == null) {
 				comp.doc = cd1;
