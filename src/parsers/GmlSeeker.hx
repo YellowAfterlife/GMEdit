@@ -655,13 +655,13 @@ class GmlSeeker {
 						name = lineMatch[1];
 						out.globalVarTypes[name] = type;
 						var comp = out.comps[name];
-						if (comp != null) comp.doc = comp.doc.nzcct("\n", "type " + typeStr);
+						if (comp != null) comp.setDocTag("type", typeStr);
 					} else if (lineMatch[2] != null) {
 						name = lineMatch[2];
 						out.globalTypes[name] = type;
 						var globalField = out.globalFields[name];
 						if (globalField != null) {
-							globalField.comp.doc = globalField.comp.doc.nzcct("\n", "type " + typeStr);
+							globalField.comp.setDocTag("type", typeStr);
 						}
 					} else {
 						name = lineMatch[3];
@@ -675,7 +675,7 @@ class GmlSeeker {
 						var hint = out.fieldHints[namespace + ":" + name];
 						if (hint != null) {
 							hint.type = type;
-							hint.comp.doc = hint.comp.doc.nzcct("\n", "type " + typeStr);
+							hint.comp.setDocTag("type", typeStr);
 						}
 					}
 					continue;
