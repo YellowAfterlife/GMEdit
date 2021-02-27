@@ -630,7 +630,7 @@ class GmlSeeker {
 				if (mt != null) {
 					var nsi = mt[1];
 					if (nsi == null) {
-						var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
+						var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
 						var lineText = q.source.substring(lineStart, q.pos);
 						var lineMatch = jsDoc_implements_line.exec(lineText);
 						if (lineMatch == null) continue;
@@ -644,7 +644,7 @@ class GmlSeeker {
 				mt = jsDoc_is.exec(s);
 				if (mt != null) {
 					var typeStr = mt[1];
-					var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
+					var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
 					var lineText = q.source.substring(lineStart, q.pos);
 					var lineMatch = jsDoc_is_line.exec(lineText);
 					if (lineMatch == null) continue;
