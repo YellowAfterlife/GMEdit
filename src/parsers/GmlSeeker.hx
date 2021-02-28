@@ -566,8 +566,9 @@ class GmlSeeker {
 			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type.toString());
 			
 			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
-			var comp = privateFieldRegex == null || !privateFieldRegex.test(s)
-				? new AceAutoCompleteItem(name, compMeta, info) : null;
+			var compName = privateFieldRegex == null || !privateFieldRegex.test(s)
+				? name : "";
+			var comp = new AceAutoCompleteItem(compName, compMeta, info);
 			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace, type);
 			
 			var lastHint = out.fieldHints[hint.key];
