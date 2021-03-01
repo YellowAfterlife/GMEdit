@@ -143,15 +143,21 @@ class ProjectProperties {
 		argRegexInput = el.querySelectorAuto("input");
 		
 		//
-		var privateFieldRegexInput:InputElement = null;
 		el = Preferences.addRegexPatternInput(fs,
-			"Regex for determining that 2.3 struct variables are private (e.g. `^_` for anything starting with an underscore)",
+			"Regex for determining that instance/struct variables are private (e.g. `^_` for anything starting with an underscore)",
 			d.privateFieldRegex,
 		function(s) {
 			d.privateFieldRegex = s;
 			save(project, d);
 		});
-		privateFieldRegexInput = el.querySelectorAuto("input");
+		
+		el = Preferences.addRegexPatternInput(fs,
+			"Regex for determining that global variables are private (e.g. `^_` for anything starting with an underscore)",
+			d.privateGlobalRegex,
+		function(s) {
+			d.privateGlobalRegex = s;
+			save(project, d);
+		});
 		
 		//
 		el = addGmlNameInput(fs, "Template string script name", d.templateStringScript, function(s) {

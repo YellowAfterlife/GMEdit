@@ -181,18 +181,18 @@ class GmlSeekData {
 			if (next.globalFields[g.name] == g) continue;
 			if (--g.refs <= 0) {
 				GmlAPI.gmlGlobalFieldMap.remove(g.name);
-				GmlAPI.gmlGlobalFieldComp.remove(g.comp);
+				if (!g.hidden) GmlAPI.gmlGlobalFieldComp.remove(g.comp);
 				GmlAPI.gmlGlobalFullMap.remove(g.name);
-				GmlAPI.gmlGlobalFullComp.remove(g.fullComp);
+				if (!g.hidden) GmlAPI.gmlGlobalFullComp.remove(g.fullComp);
 			}
 		}
 		for (g in next.globalFields) {
 			if (prev.globalFields[g.name] == g) continue;
 			if (++g.refs == 1) {
 				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
-				GmlAPI.gmlGlobalFieldComp.push(g.comp);
+				if (!g.hidden) GmlAPI.gmlGlobalFieldComp.push(g.comp);
 				GmlAPI.gmlGlobalFullMap.set(g.name, g);
-				GmlAPI.gmlGlobalFullComp.push(g.fullComp);
+				if (!g.hidden) GmlAPI.gmlGlobalFullComp.push(g.fullComp);
 			}
 		}
 		

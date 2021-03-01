@@ -169,6 +169,7 @@ class GmlSeeker {
 	}
 	
 	private static var privateFieldRC:RegExpCache = new RegExpCache();
+	private static var privateGlobalRC:RegExpCache = new RegExpCache();
 	
 	public static function runSyncImpl(
 		orig:FullPath, src:GmlCode, main:String, out:GmlSeekData, locals:GmlLocals, kind:FileKind
@@ -531,6 +532,7 @@ class GmlSeeker {
 		}
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
+		var privateGlobalRegex = privateGlobalRC.update(project.properties.privateGlobalRegex);
 		//
 		var addFieldHint_doc:GmlFuncDoc = null;
 		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String,
@@ -1118,7 +1120,9 @@ class GmlSeeker {
 						if (s == null || s == ";" || GmlAPI.kwFlow.exists(s)) break;
 						var g = new GmlGlobalVar(s, orig);
 						out.globalVars[s] = g;
-						out.comps[s] = g.comp;
+						if (privateGlobalRegex == null || !privateGlobalRegex.test(s)) {
+							out.comps[s] = g.comp;
+						}
 						out.kindList.push(s);
 						out.kindMap.set(s, "globalvar");
 						setLookup(s);
@@ -1129,12 +1133,14 @@ class GmlSeeker {
 						s = find(Ident);
 						if (s != null && !out.globalFields.exists(s)) {
 							var gfd = GmlAPI.gmlGlobalFieldMap[s];
+							var hide = privateGlobalRegex != null && privateGlobalRegex.test(s);
 							if (gfd == null) {
 								gfd = new GmlGlobalField(s);
+								gfd.hidden = hide;
 								GmlAPI.gmlGlobalFieldMap.set(s, gfd);
 							}
 							out.globalFields[s] = gfd;
-							out.globalFieldComp.push(gfd.comp);
+							if (!hide) out.globalFieldComp.push(gfd.comp);
 						}
 					}
 				};

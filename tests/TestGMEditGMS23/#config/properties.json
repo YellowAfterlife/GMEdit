@@ -7,5 +7,6 @@
     },
     "nullConditionalSet": "nc_set",
     "nullConditionalVal": "nc_val",
-    "privateFieldRegex": "^__"
+    "privateFieldRegex": "^__",
+    "privateGlobalRegex": "^__"
 }
