@@ -5,7 +5,7 @@ import tools.Dictionary;
 import gml.GmlAPI;
 
 /**
- * ...
+ * Represents a GML enum declaration, along with constructs inside.
  * @author YellowAfterlife
  */
 class GmlEnum extends GmlStruct {

@@ -8,7 +8,7 @@ import file.kind.gml.KGmlScript;
 import tools.macros.SynSugar;
 
 /**
- * ...
+ * What you see when you boot up GMEdit
  * @author YellowAfterlife
  */
 class WelcomePage {

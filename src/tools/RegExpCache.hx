@@ -2,7 +2,7 @@ package tools;
 import js.lib.RegExp;
 
 /**
- * ...
+ * Caches a RegExp for the given pattern so that we don't re-construct it too often.
  * @author YellowAfterlife
  */
 class RegExpCache {

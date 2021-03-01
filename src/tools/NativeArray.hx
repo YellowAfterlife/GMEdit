@@ -16,6 +16,7 @@ import js.Syntax;
 		return Syntax.code("Array.from")(content);
 	}
 	
+	/** Concatenate two arrays while allowing either to be null */
 	public static function nzcct<T>(a:Array<T>, b:Array<T>, ?copy:Bool):Array<T> {
 		if (a != null) {
 			if (b != null) {
@@ -74,7 +75,7 @@ import js.Syntax;
 	}
 	
 	/** Purges all array items for which fn(item) returned false */
-	@:extern public static inline function filterSelf<T>(arr:Array<T>, fn:T->Bool):Void {
+	extern public static inline function filterSelf<T>(arr:Array<T>, fn:T->Bool):Void {
 		var i:Int = 0;
 		while (i < arr.length) {
 			if (fn(arr[i])) {

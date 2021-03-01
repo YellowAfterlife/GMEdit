@@ -7,17 +7,19 @@ import haxe.io.Path;
 import file.kind.gml.*;
 
 /**
- * ...
+ * Various small helpers for working with GmlFile
  * @author YellowAfterlife
  */
 class GmlFileKindTools {
 	public static function isGML(kind:FileKind) {
-		return Std.is(kind, KGml);
+		return kind is KGml;
 	}
+	
 	/** Returns whether top-level `function name()` should change context */
 	public static inline function functionsAreGlobal(kind:FileKind) {
-		return Std.is(kind, KGmlScript) && (cast kind:KGmlScript).isScript;
+		return (kind is KGmlScript) && (cast kind:KGmlScript).isScript;
 	}
+	
 	public static function detect(path:String):FileKindDetect {
 		var ext = Path.extension(path).toLowerCase();
 		var kinds = FileKind.map[ext];

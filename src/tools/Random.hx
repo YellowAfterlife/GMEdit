@@ -1,13 +1,11 @@
 package tools;
 
 class Random {
-	/** Generates number from a random range, exclusive
-	**/
+	/** Generates number from a random range, exclusive **/
 	public static function range(start : Int, end : Int) : Int {
 		return (Std.random(end-start)+start);
 	}
-	/** Generates a random bool
-	**/
+	/** Generates a random bool **/
 	public static function bool() : Bool {
 		return (Std.random(2) == 0);
 	}
@@ -17,9 +15,7 @@ class Random {
 		return (Std.random(size));
 	}
 
-	/** Generates a random string with characters A-Z, a-z
-	 * 
-	**/
+	/** Generates a random string with characters A-Z, a-z **/
 	public static function letterString(length : Int) : String {
 		var s = "";
 		for (_ in 0...length) {

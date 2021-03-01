@@ -2,7 +2,7 @@ package gml;
 import js.lib.RegExp;
 
 /**
- * ...
+ * A typedef for versions' JSON files describing supported features and so on.
  * @author YellowAfterlife
  */
 typedef GmlVersionConfig = {

@@ -1,7 +1,7 @@
 package tools;
 
 /**
- * ...
+ * Helpers for checking character code ranges.
  * @author YellowAfterlife
  */
 abstract CharCode(Int) from Int to Int {

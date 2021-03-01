@@ -8,7 +8,7 @@ import gml.file.GmlFile;
 import electron.FileSystem;
 
 /**
- * ...
+ * Handles the "Object information" context menu logic.
  * @author YellowAfterlife
  */
 class GmlObjectInfo {

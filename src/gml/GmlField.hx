@@ -3,7 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 
 /**
- * ...
+ * Represents a single GML variable name as used across the project.
  * @author YellowAfterlife
  */
 class GmlField {

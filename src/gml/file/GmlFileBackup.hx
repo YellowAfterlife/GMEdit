@@ -9,7 +9,7 @@ using tools.NativeString;
 using tools.NativeArray;
 
 /**
- * ...
+ * Handles making backups of your code files on save.
  * @author YellowAfterlife
  */
 class GmlFileBackup {

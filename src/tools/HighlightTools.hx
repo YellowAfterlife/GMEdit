@@ -5,7 +5,7 @@ import ace.extern.AceLangRule;
 import haxe.extern.EitherType;
 
 /**
- * ...
+ * Helpers for building syntax highlighter rules easier.
  * @author YellowAfterlife
  */
 class HighlightTools {

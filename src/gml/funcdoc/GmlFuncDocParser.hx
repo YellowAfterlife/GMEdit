@@ -15,7 +15,7 @@ import ui.Preferences;
 using tools.NativeString;
 
 /**
- * ...
+ * Fills up a GmlFuncDoc from inputs like "func(a, b:number) does stuff"
  * @author YellowAfterlife
  */
 class GmlFuncDocParser {

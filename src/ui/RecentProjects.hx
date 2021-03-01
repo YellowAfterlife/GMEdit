@@ -6,7 +6,7 @@ import haxe.io.Path;
 import ui.treeview.TreeView;
 
 /**
- * ...
+ * Manages a list of recently opened projects.
  * @author YellowAfterlife
  */
 class RecentProjects {

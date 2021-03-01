@@ -1,7 +1,7 @@
 package gml;
 
 /**
- * ...
+ * Checks if a GML snippet seems valid for the given version (1 / 2)
  * @author YellowAfterlife
  */
 class GmlVersionDetect {

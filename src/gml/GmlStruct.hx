@@ -1,7 +1,7 @@
 package gml;
 
 /**
- * ...
+ * Not a struct-struct, but rather a parent for other definitions.
  * @author YellowAfterlife
  */
 class GmlStruct {

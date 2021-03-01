@@ -21,7 +21,7 @@ using tools.NativeString;
 using tools.HtmlTools;
 
 /**
- * ...
+ * A wrapper and helpers for Chrome Tabs library.
  * @author YellowAfterlife
  */
 class ChromeTabs {

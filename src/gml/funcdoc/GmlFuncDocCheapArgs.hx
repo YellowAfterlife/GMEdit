@@ -3,7 +3,8 @@ import js.lib.RegExp;
 import parsers.GmlReader;
 
 /**
- * ...
+ * Very cheaply generates an arguments-string based on `argument#`/`argument[#]` uses in code.
+ * Only used for generating placeholders for <=2.2 #lambda
  * @author YellowAfterlife
  */
 class GmlFuncDocCheapArgs {

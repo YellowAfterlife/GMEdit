@@ -1,7 +1,8 @@
 package tools;
 
 /**
- * A pretty simple wrapper for externs
+ * A pretty simple wrapper for externs that are kind of misusing objects
+ * by doing `obj = {}; obj[100] = 1;`
  * @author YellowAfterlife
  */
 abstract IntDictionary<T>(Dynamic) from Dynamic {

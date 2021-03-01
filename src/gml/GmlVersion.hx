@@ -10,7 +10,10 @@ import electron.FileSystem;
 import electron.FileWrap;
 
 /**
- * ...
+ * A version determines how the parser works (e.g. GMS1 '' vs GMS2 @''),
+ * what API entries are loaded, how the project is indexed, and so on.
+ * 
+ * Custom dialects are also "versions"
  * @author YellowAfterlife
  */
 class GmlVersion {

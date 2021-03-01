@@ -27,7 +27,7 @@ using StringTools;
 using tools.NativeString;
 
 /**
- * Stores current API state and projct-specific data.
+ * Stores current API state and project-specific data.
  * @author YellowAfterlife
  */
 @:expose("GmlAPI")

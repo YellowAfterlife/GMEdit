@@ -13,7 +13,7 @@ import gml.file.GmlFile;
 import file.kind.misc.KExtern;
 
 /**
- * ...
+ * This little class allows you to drag and drop files onto GMEdit window.
  * @author YellowAfterlife
  */
 class FileDrag {

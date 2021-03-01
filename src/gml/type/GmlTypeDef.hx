@@ -2,7 +2,7 @@ package gml.type;
 import gml.type.GmlType;
 
 /**
- * ...
+ * Helpers for grabbing specific type definitions
  * @author YellowAfterlife
  */
 class GmlTypeDef {

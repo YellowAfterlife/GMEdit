@@ -4,7 +4,7 @@ import tools.JsTools;
 using tools.NativeString;
 
 /**
- * ...
+ * Represents resolved template types and/or constraints (<A, B:C>)
  * @author YellowAfterlife
  */
 @:using(gml.type.GmlTypeTemplateItem)

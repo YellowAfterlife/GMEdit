@@ -3,7 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 
 /**
- * ...
+ * Represents a single GML #macro definition.
  * @author YellowAfterlife
  */
 class GmlMacro extends GmlStruct {

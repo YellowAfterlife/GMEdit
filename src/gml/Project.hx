@@ -41,7 +41,10 @@ import ui.treeview.TreeView;
 import ui.treeview.TreeViewElement;
 
 /**
- * ...
+ * Although project-specific operations are abstracted away in this class,
+ * only one project (Project.current) is active at a time.
+ * 
+ * When adding features, take note of YyZip, which inherits from this.
  * @author YellowAfterlife
  */
 @:keep class Project {
