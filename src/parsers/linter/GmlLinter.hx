@@ -10,6 +10,7 @@ import gml.GmlNamespace;
 import gml.file.GmlFileKindTools;
 import gml.type.GmlType;
 import gml.Project;
+import gml.type.GmlTypeCanCastTo;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterInit;
@@ -710,7 +711,7 @@ class GmlLinter {
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
 				if (nk == KNot) {
-					checkTypeCast(readExpr_currType, GmlTypeDef.bool, "!");
+					checkTypeCastBoolOp(readExpr_currType, "!");
 					currType = GmlTypeDef.bool;
 				} else {
 					checkTypeCast(readExpr_currType, GmlTypeDef.int, "~");
@@ -1002,10 +1003,10 @@ class GmlLinter {
 					rc(readTypeName());
 					var asType = GmlTypeDef.parse(readTypeName_typeStr);
 					if (!hasFlag(IsCast)) {
-						var ex = GmlTypeTools.canCastTo_explicit;
-						GmlTypeTools.canCastTo_explicit = true;
+						var ex = GmlTypeCanCastTo.isExplicit;
+						GmlTypeCanCastTo.isExplicit = true;
 						checkTypeCast(currType, asType, "as");
-						GmlTypeTools.canCastTo_explicit = ex;
+						GmlTypeCanCastTo.isExplicit = ex;
 					}
 					currType = asType;
 					currFunc = null;
@@ -1158,6 +1159,13 @@ class GmlLinter {
 		addWarning(m);
 		return false;
 	}
+	function checkTypeCastBoolOp(source:GmlType, ?ctx:String):Bool {
+		var wasBoolOp = GmlTypeCanCastTo.isBoolOp;
+		GmlTypeCanCastTo.isBoolOp = true;
+		var result = checkTypeCast(source, GmlTypeDef.bool, ctx);
+		GmlTypeCanCastTo.isBoolOp = wasBoolOp;
+		return result;
+	}
 	
 	function checkTypeCastOp(left:GmlType, right:GmlType, op:GmlLinterKind, opv:String):GmlType {
 		switch (op) {
@@ -1169,8 +1177,8 @@ class GmlLinter {
 				}
 			};
 			case KBoolAnd, KBoolOr, KBoolXor: {
-				checkTypeCast(left, GmlTypeDef.bool, opv);
-				checkTypeCast(right, GmlTypeDef.bool, opv);
+				checkTypeCastBoolOp(left, opv);
+				checkTypeCastBoolOp(right, opv);
 				return GmlTypeDef.bool;
 			};
 			case KEQ, KNE, KSet: {
@@ -1492,7 +1500,7 @@ class GmlLinter {
 			case KIf: {
 				rc(readExpr(newDepth));
 				checkParens();
-				checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an if condition");
+				checkTypeCastBoolOp(readExpr_currType, "an if condition");
 				skipIf(peek() == KThen);
 				if (skipIf(peek() == KSemico)) {
 					return readError("You have a semicolon before your then-expression.");
@@ -1504,7 +1512,7 @@ class GmlLinter {
 				rc(readExpr(newDepth));
 				checkParens();
 				switch (nk) {
-					case KWhile: checkTypeCast(readExpr_currType, GmlTypeDef.bool, "a while-loop condition");
+					case KWhile: checkTypeCastBoolOp(readExpr_currType, "a while-loop condition");
 					case KRepeat: checkTypeCast(readExpr_currType, GmlTypeDef.number, "a repeat-loop count");
 					default:
 				}
@@ -1536,7 +1544,7 @@ class GmlLinter {
 					case KUntil, KWhile: {
 						rc(readExpr(newDepth));
 						checkParens();
-						checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an do-loop condition");
+						checkTypeCastBoolOp(readExpr_currType, "an do-loop condition");
 					};
 					default: return readExpect("an `until` or `while` for a do-loop");
 				}
@@ -1548,7 +1556,7 @@ class GmlLinter {
 				}
 				if (!skipIf(peek() == KSemico)) { // condition
 					rc(readExpr(newDepth));
-					checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an if condition");
+					checkTypeCastBoolOp(readExpr_currType, "an if condition");
 					skipIf(peek() == KSemico);
 				}
 				if (!skipIf(peek() == KParClose)) { // post
