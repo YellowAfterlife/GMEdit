@@ -2,11 +2,11 @@
   "isDnD": false,
   "isCompatibility": false,
   "parent": {
-    "name": "Built-in functions",
-    "path": "folders/Scripts/Linter/Built-in functions.yy",
+    "name": "Casts",
+    "path": "folders/Scripts/Linter/Casts.yy",
   },
   "resourceVersion": "1.0",
-  "name": "v_choose",
+  "name": "v_truthy_instance",
   "tags": [],
   "resourceType": "GMScript",
 }
