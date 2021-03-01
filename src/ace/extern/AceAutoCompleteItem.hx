@@ -24,6 +24,7 @@ from AceAutoCompleteItemImpl to AceAutoCompleteItemImpl {
 	}
 	/** ("type") for doc="from X\ntype Y" returns "Y" */
 	public function getDocTag(key:String):String {
+		if (this == null) return null;
 		var doc = this.doc;
 		if (doc == null) return null;
 		key += " ";
@@ -44,6 +45,7 @@ from AceAutoCompleteItemImpl to AceAutoCompleteItemImpl {
 	 * prefix but what to do.
 	 */
 	public function setDocTag(key:String, val:String):Void {
+		if (this == null) return;
 		var doc = this.doc;
 		if (doc == null) {
 			this.doc = key + " " + val;

@@ -660,7 +660,7 @@ class GmlSeeker {
 						name = lineMatch[2];
 						out.globalTypes[name] = type;
 						var globalField = out.globalFields[name];
-						if (globalField != null) {
+						if (globalField != null && globalField.comp != null) {
 							globalField.comp.setDocTag("type", typeStr);
 						}
 					} else {
@@ -675,7 +675,7 @@ class GmlSeeker {
 						var hint = out.fieldHints[namespace + ":" + name];
 						if (hint != null) {
 							hint.type = type;
-							hint.comp.setDocTag("type", typeStr);
+							if (hint.comp != null) hint.comp.setDocTag("type", typeStr);
 						}
 					}
 					continue;

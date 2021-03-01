@@ -305,6 +305,7 @@ typedef AceStatusBarDocSearch = {
 	docs:Dictionary<GmlFuncDoc>,
 	doc:GmlFuncDoc,
 	?type:GmlType,
+	/** Used by tooltips */
 	?typeText:String,
 	tk:AceToken,
 	session:AceSession,

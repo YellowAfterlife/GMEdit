@@ -88,6 +88,30 @@ class GmlNamespace {
 		}
 		return null;
 	}
+	/**
+	 * Returns a "from <namespace>\ntype <type>"
+	 * Handy for fields without auto-completion items
+	 */
+	public function getInstTypeText(field:String, depth:Int = 0):String {
+		var q = this, n = depth;
+		inline function fin(t:GmlType):String {
+			return "from " + q.name + "\ntype " + t.toString();
+		}
+		while (q != null && ++n <= maxDepth) {
+			var t = q.instTypes[field];
+			if (t != null) return fin(t);
+			if (q.isObject) {
+				t = GmlAPI.stdInstType[field];
+				if (t != null) return fin(t);
+			}
+			for (qi in q.interfaces.array) {
+				var s = qi.getInstTypeText(field, n);
+				if (s != null) return s;
+			}
+			q = q.parent;
+		}
+		return null;
+	}
 	
 	/** instance (`var b; b.ptr`) completions */
 	public var compInst:ArrayMapSync<AceAutoCompleteItem> = new ArrayMapSync();
