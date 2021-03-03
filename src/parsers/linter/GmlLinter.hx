@@ -178,6 +178,7 @@ class GmlLinter {
 		optSpecTypeMisc = getOption((q) -> q.specTypeMisc);
 		optRequireFields = getOption((q) -> q.requireFields);
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
+		GmlTypeCanCastTo.allowImplicitNullCast = getOption((q) -> q.implicitNullableCasts);
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;

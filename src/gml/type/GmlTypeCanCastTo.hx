@@ -21,6 +21,8 @@ class GmlTypeCanCastTo {
 	public static var allowVoidCast:Bool = false;
 	/** Whether this is in a boolean operator and it's okay to cast instances to it */
 	public static var isBoolOp:Bool = false;
+	/** Note: linter updates this in the constructor */
+	public static var allowImplicitNullCast:Bool = false;
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		var kfrom:GmlTypeKind = GmlTypeTools.getKind(from);
@@ -51,6 +53,8 @@ class GmlTypeCanCastTo {
 				};
 				default:
 			}
+		} else if (kfrom == KNullable && allowImplicitNullCast) {
+			if (from.unwrapParam().canCastTo(to, tpl, imp)) return true;
 		}
 		
 		if (kto == KStruct) switch (from) {
