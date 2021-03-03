@@ -17,6 +17,11 @@ class SpriteResource {
 		this.frames = new SpriteResourceFrames(spriteData);
 	}
 
+	public var name(get, null): String;
+	private function get_name(): String {
+		return spriteData.name;
+	}
+
 	private var _unsavedChanges: Bool = false;
 	@:observable(this._unsavedChanges)
 	var unsavedChanges: Bool;
@@ -87,6 +92,23 @@ class SpriteResource {
 
 	@:observable(spriteData.bbox_bottom, unsavedChanges = true)
 	var bboxBottom: Int;
+
+	@:observable(spriteData.HTile, unsavedChanges = true)
+	var tiledHorizontal: Bool;
+
+	@:observable(spriteData.VTile, unsavedChanges = true)
+	var tiledVertical: Bool;
+
+	@:observable(spriteData.For3D, unsavedChanges = true)
+	var seperateTexturePage: Bool;
+
+	@:observable(spriteData.preMultiplyAlpha, unsavedChanges = true)
+	var premultipliedAlpha: Bool;
+
+	@:observable(spriteData.edgeFiltering, unsavedChanges = true)
+	var edgeFiltering: Bool;
+
+	
 
 	/** Layer 0, the layer most people use*/
 	public var defaultLayer(get, null): String;

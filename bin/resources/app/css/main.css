@@ -377,6 +377,29 @@ https://stackoverflow.com/a/36247448/5578773
 #sprite-editor .resinfo.sprite {
 	width: 100%;
 }
+#sprite-options {
+	margin-left: 15px;
+}
+#sprite-options .one-line {
+	width: 100%;
+	display: block;
+	overflow: hidden;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+#sprite-options .one-line .short-label {
+	width: 50px;
+	display: inline-block;
+}
+#sprite-options input[type="number"] {
+	width: 60px;
+	margin-right: 20px;
+}
+#sprite-options .float-right {
+	margin-right: 30px;
+	width: 150px;
+	float: right;
+}
 
 
 /* Sprite preview/panner box */

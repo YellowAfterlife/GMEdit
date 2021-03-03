@@ -1,5 +1,6 @@
 package editors.sprite;
 
+import tools.EventHandler;
 import js.lib.Promise;
 import resource.SpriteManipulator;
 import gml.Project;
@@ -246,11 +247,26 @@ class EditSprite extends Editor {
 	}
 
 	private function bindOptions() {
-		var importButton = element.querySelector("#import-button");
-		importButton.addEventListener('click', onSpriteImport);
 
 		{
-			var originXElement:InputElement = cast element.querySelector("#origin-x");
+			var title = element.querySelector("#sprite-title");
+			title.innerText = sprite.name;
+		}
+		{
+			var widthHeight = element.querySelector("#sprite-width-height");
+			var onWidthHeightChanged = (_) -> {
+				widthHeight.innerText = '${sprite.width}x${sprite.height}';
+			}
+			onWidthHeightChanged(null);
+			sprite.onHeightChanged.add(onWidthHeightChanged);
+			sprite.onWidthChanged.add(onWidthHeightChanged);
+		}
+		{
+			var importButton = element.querySelector("#import-button");
+			importButton.addEventListener('click', onSpriteImport);
+		}
+		{
+			var originXElement:InputElement = cast element.querySelector("#option-origin-x");
 			originXElement.value = Std.string(sprite.originX);
 			var xUpdate = () -> sprite.originX = cast originXElement.valueAsNumber;
 			originXElement.addEventListener('change', xUpdate);
@@ -258,7 +274,7 @@ class EditSprite extends Editor {
 			sprite.onOriginXChanged.add(x -> originXElement.value = Std.string(x));
 		}
 		{
-			var originYElement:InputElement = cast element.querySelector("#origin-y");
+			var originYElement:InputElement = cast element.querySelector("#option-origin-y");
 			originYElement.value = Std.string(sprite.originY);
 			var yUpdate = () -> sprite.originY = cast originYElement.valueAsNumber;
 			originYElement.addEventListener('change', yUpdate);
@@ -267,11 +283,55 @@ class EditSprite extends Editor {
 			
 		}
 		{
-			var originTypeElement:SelectElement = cast element.querySelectorAuto("#origin-type");
+			var originTypeElement:SelectElement = cast element.querySelector("#option-origin-type");
 			HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType));
 			originTypeElement.addEventListener('change', () -> sprite.setOriginType(cast Std.parseInt(originTypeElement.value)));
 			sprite.onOriginTypeChanged.add(x -> HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType)));
 		}
+		{
+			var textureGroupElement:SelectElement = cast element.querySelector("#option-texture-group");
+			for (textureGroup in Project.current.yyTextureGroups) {
+				var option = document.createOptionElement();
+				option.innerText = textureGroup;
+				textureGroupElement.appendChild(option);
+			}
+			
+		}
+
+		function bindToCheckbox(checkboxId: String, startValue: Bool, setter: (Bool) -> Void, event: EventHandler<Bool>) {
+			var inputElement: InputElement = cast element.querySelector("#"+checkboxId);
+			inputElement.checked = startValue;
+			inputElement.addEventListener('change', () -> { setter(inputElement.checked); });
+			event.add(newValue -> inputElement.checked = newValue);
+		}
+		
+		bindToCheckbox( "option-tiled-horizontally",
+			sprite.tiledHorizontal,
+			newValue -> sprite.tiledHorizontal = newValue,
+			sprite.onTiledHorizontalChanged
+		);
+		bindToCheckbox( "option-tiled-vertically",
+			sprite.tiledVertical,
+			newValue -> sprite.tiledVertical = newValue,
+			sprite.onTiledVerticalChanged
+		);
+		bindToCheckbox( "option-seperate-texture-page",
+			sprite.seperateTexturePage,
+			newValue -> sprite.seperateTexturePage = newValue,
+			sprite.onSeperateTexturePageChanged
+		);
+		bindToCheckbox( "option-premultiplied-alpha",
+			sprite.premultipliedAlpha,
+			newValue -> sprite.premultipliedAlpha = newValue,
+			sprite.onPremultipliedAlphaChanged
+		);
+		bindToCheckbox( "option-edge-filtering",
+			sprite.edgeFiltering,
+			newValue -> sprite.edgeFiltering = newValue,
+			sprite.onEdgeFilteringChanged
+		);
+
+
 	}
 
 	private function buildOptions() {
@@ -279,16 +339,14 @@ class EditSprite extends Editor {
 		options.id = "sprite-options";
 
 		options.innerHTML = SynSugar.xmls(<html>
-			<h2>SpriteName</h2>
-			<button id="import-button" class="highlighted-button">Import Image</button>
+			<h2 id="sprite-title">SpriteName</h2>
+			<p id="sprite-width-height">WIDTHxHEIGHT</p>
+			
+			<button id="import-button" class="highlighted-button">Import Images</button>
 			
 			<div>
-				<div>
-					<input type="number" id="origin-x"></input>
-					<span>x</span>
-					<input type="number" id="origin-y"></input>
-				</div>
-				<select id="origin-type">
+				<h4>Origin</h4>
+				<select id="option-origin-type">
 					<option value="9">Custom</option>
 					<option value="0">Top Left</option>
 					<option value="1">Top Centre</option>
@@ -300,7 +358,84 @@ class EditSprite extends Editor {
 					<option value="7">Bottom Centre</option>
 					<option value="8">Bottom Right</option>
 				</select>
+				<div>
+					<input type="number" id="option-origin-x"></input>
+					<span>x</span>
+					<input type="number" id="option-origin-y"></input>
+				</div>
 			</div>
+			
+			<div>
+				<h4>Texture Settings</h4>
+				<div class="one-line">
+					<label>Texture Group</label>
+					<select id="option-texture-group" class="float-right">
+					</select>
+				</div>
+				<div class="one-line">
+					<input type="checkbox" id="option-tiled-horizontally"></input>
+					<label for="option-tiled-horizontally">Tiled Horizontally</label>
+				</div>
+				<div class="one-line">
+					<input type="checkbox" id="option-tiled-vertically"></input>
+					<label for="option-tiled-vertically">Tiled Vertically</label>
+				</div>
+				<div class="one-line">
+					<input type="checkbox" id="option-seperate-texture-page"></input>
+					<label for="option-seperate-texture-page">Seperate Texture Page</label>
+				</div>
+				<div class="one-line">
+					<input type="checkbox" id="option-premultiplied-alpha"></input>
+					<label for="option-premultiplied-alpha">Premultiplied Alpha</label>
+				</div>
+				<div class="one-line">
+					<input type="checkbox" id="option-edge-filtering"></input>
+					<label for="option-edge-filtering">Edge Filtered</label>
+				</div>
+			<div>
+
+			<div>
+				<h4>Collision Mask</h4>
+				
+				<div class="one-line">
+					<label>Mode</label>
+					<select id="bbox-mode" class="float-right">
+						<option>Automatic</option>
+						<option>Full Image</option>
+						<option>Manual</option>
+					</select>
+				</div>
+
+				<div class="one-line">
+					<label>Type</label>
+					<select id="bbox-type" class="float-right">
+						<option>Rectangle</option>
+						<option>Rectangle</option>
+						<option>Ellipse</option>
+						<option>Diamond</option>
+						<option>Precise</option>
+						<option>Precise Per Frame</option>
+					</select>
+				</div>
+
+				<div class="one-line">
+					<label>Tolerance</label>
+					<input type="range" class="float-right" id="sound-bbox-tolerance-slider" min="0" max="255" step="1"/>
+				</div>
+				<div class="one-line">
+					<label class="short-label">Left</label>
+					<input type="number"></input>
+					<label class="short-label">Right</label>
+					<input type="number"></input>
+				</div>
+				<div class="one-line">
+					<label class="short-label">Top</label>
+					<input type="number"></input>
+					<label class="short-label">Bottom</label>
+					<input type="number"></input>
+				</div>
+			</div>
+
 		</html>);
 		element.appendChild(options);
 	}
@@ -345,6 +480,8 @@ class EditSprite extends Editor {
 			}
 			{
 				var spriteBorder = document.createDivElement();
+				spriteBorder.style.top = "-1px";
+				spriteBorder.style.left = "-1px";
 				spriteBorder.classList.add("panner-element");
 				spriteBorder.style.width = '${sprite.width}px';
 				sprite.onWidthChanged.add(x -> {
