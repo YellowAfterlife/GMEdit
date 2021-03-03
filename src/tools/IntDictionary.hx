@@ -1,7 +1,8 @@
 package tools;
 
 /**
- * A pretty simple wrapper for externs
+ * A pretty simple wrapper for externs that are kind of misusing objects
+ * by doing `obj = {}; obj[100] = 1;`
  * @author YellowAfterlife
  */
 abstract IntDictionary<T>(Dynamic) from Dynamic {
@@ -24,5 +25,11 @@ abstract IntDictionary<T>(Dynamic) from Dynamic {
 	
 	public inline function exists(k:Int):Bool {
 		return Reflect.hasField(this, cast k);
+	}
+	public inline function forEach(fn:Int->T->Void):Void {
+		NativeObject.forField(this, function(s) {
+			var i = Std.parseInt(s);
+			fn(i, get(i));
+		});
 	}
 }

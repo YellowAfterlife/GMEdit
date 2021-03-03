@@ -28,7 +28,7 @@ using tools.NativeString;
 using tools.HtmlTools;
 
 /**
- * ...
+ * Handles global keyboard shortcuts
  * @author YellowAfterlife
  */
 class KeyboardShortcuts {

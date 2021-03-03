@@ -121,10 +121,7 @@ class GmlLinterParser {
 								}
 								return ret(nv == "macro" ? KMacro : KMFuncDecl);
 							};
-							case "args": {
-								q.skipLine();
-								return retv(KArgs, "#args");
-							};
+							case "args": return retv(KArgs, "#args");
 							case "lambda": return retv(KLambda, "#lambda");
 							case "lamdef": return retv(KLamDef, "#lamdef");
 							case "import", "hyper": {

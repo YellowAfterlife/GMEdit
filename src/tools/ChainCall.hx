@@ -2,7 +2,7 @@ package tools;
 import js.lib.Function;
 
 /**
- * A really simple wrapper for calling 
+ * A really simple wrapper for calling async functions one after other.
  * @author YellowAfterlife
  */
 class ChainCall {

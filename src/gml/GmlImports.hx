@@ -9,7 +9,8 @@ import ace.AceWrap;
 import ace.extern.*;
 
 /**
- * ...
+ * Represents an #import context for a single scope.
+ * Note that local variable types are also part of #import syntactic sugar.
  * @author YellowAfterlife
  */
 class GmlImports {
@@ -248,6 +249,11 @@ class GmlImports {
 	}
 	//
 }
+
+/**
+ * Used by 2.3 functions so that they can have their own local variable types
+ * but inherit #import declarations from the parent script.
+ */
 class GmlImportsLink extends GmlImports {
 	public var parent:GmlImports;
 	public function new(imp:GmlImports) {

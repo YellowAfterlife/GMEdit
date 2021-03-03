@@ -11,7 +11,7 @@ const url = require('url')
 // be closed automatically when the JavaScript object is garbage collected.
 let activeWindows = []
 
-function createWindow() {
+function createWindow(first) {
 	// Create the browser window.
 	const showOnceReady = false
 	let wnd = new BrowserWindow({
@@ -53,22 +53,25 @@ function createWindow() {
 		protocol: 'file:',
 		slashes: true
 	})
-	let args = process.argv
-	let openArg = 1
 	
-	// https://apple.stackexchange.com/questions/207895/app-gets-in-commandline-parameter-psn-0-nnnnnn-why
-	if (process.platform === 'darwin' && openArg < args.length && args[openArg].startsWith("-psn")) openArg += 1
-	
-	//
-	if (args.includes("--liveweb")) {
-		index_url = url.format({
-			pathname: path.join(__dirname, "index-live.html"),
-			protocol: 'file:',
-			slashes: true
-		})
+	if (first) {
+		let args = process.argv
+		let openArg = 1
+		
+		// https://apple.stackexchange.com/questions/207895/app-gets-in-commandline-parameter-psn-0-nnnnnn-why
+		if (process.platform === 'darwin' && openArg < args.length && args[openArg].startsWith("-psn")) openArg += 1
+		
+		//
+		if (args.includes("--liveweb")) {
+			index_url = url.format({
+				pathname: path.join(__dirname, "index-live.html"),
+				protocol: 'file:',
+				slashes: true
+			})
+		}
+		let openArgs = args.slice(1).filter((arg) => !arg.startsWith("--"))
+		if (openArgs.length > 0) index_url += "?open=" + encodeURIComponent(openArgs[0])
 	}
-	let openArgs = args.slice(1).filter((arg) => !arg.startsWith("--"))
-	if (openArgs.length > 0) index_url += "?open=" + encodeURIComponent(openArgs[0])
 	
 	wnd.loadURL(index_url)
 
@@ -90,14 +93,14 @@ app.on('ready', function () {
 	// This method will be called when Electron has finished
 	// initialization and is ready to create browser windows.
 	// Some APIs can only be used after this event occurs.
-	createWindow()
+	createWindow(true)
 })
 
 app.on('activate', function () {
 	// On OS X it's common to re-create a window in the app when the
 	// dock icon is clicked and there are no other windows open.
 	if (activeWindows.length == 0) {
-		createWindow()
+		createWindow(true)
 	}
 })
 

@@ -1,19 +1,10 @@
 package tools;
-import js.html.OptionElement;
-import gml.file.GmlFile;
-import js.html.DOMElement;
-import js.html.DOMTokenList;
-import js.html.DivElement;
-import js.html.Document;
-import js.html.Element;
-import js.html.HTMLCollection;
-import js.html.MouseEvent;
+import js.html.*;
 import haxe.extern.EitherType;
-import js.html.Node;
-import js.html.SelectElement;
+
 
 /**
- * ...
+ * Various helpers for js.html.*
  * @author YellowAfterlife
  */
 class HtmlTools {

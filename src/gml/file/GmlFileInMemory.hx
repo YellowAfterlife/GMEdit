@@ -4,6 +4,10 @@ import tools.Random;
 import file.FileKind;
 import tools.Aliases.GmlCode;
 
+/**
+ * Anton's contraption that allows unit tests to work with a "file" in memory
+ * instead of writing it to disk, running a test, and reading it back to check.
+ */
 class GmlFileInMemory extends GmlFile {
 	var content : GmlCode;
 

@@ -15,6 +15,7 @@ class JsTools {
 		return untyped (a && b);
 		#end
 	}
+	
 	/**
 	 * ncf(a.b.c) -> (a.b && a.b.c)
 	 * ncf(a.b.c()) -> (a.b && a.b.c())
@@ -32,6 +33,7 @@ class JsTools {
 			default: throw Context.error("Expected a field access expression", p);
 		}
 	}
+	
 	/** raw JS (a || b) */
 	public static inline function or<T>(a:T, b:T):T {
 		#if !macro
@@ -40,6 +42,7 @@ class JsTools {
 		return untyped (a || b);
 		#end
 	}
+	
 	/** (a, b, c) -> (a || b) || c */
 	public static macro function orx<T>(exprs:Array<ExprOf<T>>):ExprOf<T> {
 		var p = Context.currentPos();
@@ -49,6 +52,7 @@ class JsTools {
 		}
 		return q;
 	}
+	
 	/** Haxe regexp literal to JS regexp literal */
 	public static macro function rx(e:ExprOf<EReg>) {
 		var p = Context.currentPos();

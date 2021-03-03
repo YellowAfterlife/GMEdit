@@ -1,1 +1,0 @@
-Various GMEdit-specific syntax extensions and pre/post-processors.

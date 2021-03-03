@@ -7,7 +7,7 @@ import js.Syntax;
 import tools.CharCode;
 
 /**
- * ...
+ * There are many JS-specific things that you can do with strings.
  * @author YellowAfterlife
  */
 @:keep class NativeString {

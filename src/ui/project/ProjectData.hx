@@ -23,6 +23,7 @@ typedef ProjectData = {
 	?argNameRegex:String,
 	
 	?privateFieldRegex:String,
+	?privateGlobalRegex:String,
 	
 	?templateStringScript:GmlName,
 	

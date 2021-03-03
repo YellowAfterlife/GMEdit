@@ -6,7 +6,8 @@ import haxe.extern.Rest;
 using tools.PathTools;
 
 /**
- * ...
+ * `using` haxe.io.Path is a little nasty, so there's this.
+ * Could be using node's `path` package, but then I have to polyfill it for the browser...
  * @author YellowAfterlife
  */
 class PathTools {

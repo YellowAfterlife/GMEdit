@@ -6,7 +6,7 @@ import tools.NativeString;
 import ui.project.ProjectProperties;
 
 /**
- * ...
+ * The thing you see when you press Ctrl+Shift+T
  * @author YellowAfterlife
  */
 @:expose("CommandPalette")

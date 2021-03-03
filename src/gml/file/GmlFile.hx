@@ -34,7 +34,8 @@ import ui.Preferences;
 using tools.HtmlTools;
 
 /**
- * ...
+ * Represents a single "file", which will usually be tied to a tab and has an editor tied to it.
+ * Some editor types (e.g. object editor for GMS2+) may associate multiple files on disk with one tab.
  * @author YellowAfterlife
  */
 class GmlFile {
@@ -285,14 +286,12 @@ class GmlFile {
 		return file;
 	}
 	
-	/**Returns if the content exists on disk(or wherever it may be) or not
-	*/
+	/** Returns if the content exists on disk (or wherever it may be) or not */
 	public function existsContent() : Bool {
 		return FileWrap.existsSync(path);
 	}
 
-	/**Writes the given code to storage
-	*/
+	/** Writes the given code to storage */
 	public function writeContent(code:GmlCode):Bool {
 		try {
 			FileWrap.writeTextFileSync(path, code);
@@ -303,8 +302,7 @@ class GmlFile {
 		}
 	}
 
-	/**Reads the code from storage
-	*/
+	/** Reads the code from storage */
 	public function readContent() : GmlCode {
 		return FileWrap.readTextFileSync(path);
 	}

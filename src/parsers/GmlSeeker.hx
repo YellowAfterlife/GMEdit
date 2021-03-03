@@ -169,6 +169,7 @@ class GmlSeeker {
 	}
 	
 	private static var privateFieldRC:RegExpCache = new RegExpCache();
+	private static var privateGlobalRC:RegExpCache = new RegExpCache();
 	
 	public static function runSyncImpl(
 		orig:FullPath, src:GmlCode, main:String, out:GmlSeekData, locals:GmlLocals, kind:FileKind
@@ -531,6 +532,7 @@ class GmlSeeker {
 		}
 		//
 		var privateFieldRegex = privateFieldRC.update(project.properties.privateFieldRegex);
+		var privateGlobalRegex = privateGlobalRC.update(project.properties.privateGlobalRegex);
 		//
 		var addFieldHint_doc:GmlFuncDoc = null;
 		function addFieldHint(isConstructor:Bool, namespace:String, isInst:Bool, field:String,
@@ -566,7 +568,8 @@ class GmlSeeker {
 			if (type != null) info = NativeString.nzcct(info, "\n", "type " + type.toString());
 			
 			var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
-			var comp = new AceAutoCompleteItem(name, compMeta, info);
+			var comp = privateFieldRegex == null || !privateFieldRegex.test(s)
+				? new AceAutoCompleteItem(name, compMeta, info) : null;
 			var hint = new GmlSeekDataHint(namespace, isInst, field, comp, hintDoc, parentSpace, type);
 			
 			var lastHint = out.fieldHints[hint.key];
@@ -585,7 +588,9 @@ class GmlSeeker {
 			}
 		}
 		function addInstVar(s:String):Void {
-			if (out.instFieldMap[s] == null) {
+			if (out.instFieldMap[s] == null
+				&& (privateFieldRegex == null || !privateFieldRegex.test(s))
+			) {
 				var fd = GmlAPI.gmlInstFieldMap[s];
 				if (fd == null) {
 					fd = new GmlField(s, "variable");
@@ -627,7 +632,7 @@ class GmlSeeker {
 				if (mt != null) {
 					var nsi = mt[1];
 					if (nsi == null) {
-						var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
+						var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
 						var lineText = q.source.substring(lineStart, q.pos);
 						var lineMatch = jsDoc_implements_line.exec(lineText);
 						if (lineMatch == null) continue;
@@ -641,7 +646,7 @@ class GmlSeeker {
 				mt = jsDoc_is.exec(s);
 				if (mt != null) {
 					var typeStr = mt[1];
-					var lineStart = q.source.lastIndexOf("\n", q.pos) + 1;
+					var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
 					var lineText = q.source.substring(lineStart, q.pos);
 					var lineMatch = jsDoc_is_line.exec(lineText);
 					if (lineMatch == null) continue;
@@ -652,13 +657,13 @@ class GmlSeeker {
 						name = lineMatch[1];
 						out.globalVarTypes[name] = type;
 						var comp = out.comps[name];
-						if (comp != null) comp.doc = comp.doc.nzcct("\n", "type " + typeStr);
+						if (comp != null) comp.setDocTag("type", typeStr);
 					} else if (lineMatch[2] != null) {
 						name = lineMatch[2];
 						out.globalTypes[name] = type;
 						var globalField = out.globalFields[name];
-						if (globalField != null) {
-							globalField.comp.doc = globalField.comp.doc.nzcct("\n", "type " + typeStr);
+						if (globalField != null && globalField.comp != null) {
+							globalField.comp.setDocTag("type", typeStr);
 						}
 					} else {
 						name = lineMatch[3];
@@ -672,7 +677,7 @@ class GmlSeeker {
 						var hint = out.fieldHints[namespace + ":" + name];
 						if (hint != null) {
 							hint.type = type;
-							hint.comp.doc = hint.comp.doc.nzcct("\n", "type " + typeStr);
+							if (hint.comp != null) hint.comp.setDocTag("type", typeStr);
 						}
 					}
 					continue;
@@ -1115,7 +1120,9 @@ class GmlSeeker {
 						if (s == null || s == ";" || GmlAPI.kwFlow.exists(s)) break;
 						var g = new GmlGlobalVar(s, orig);
 						out.globalVars[s] = g;
-						out.comps[s] = g.comp;
+						if (privateGlobalRegex == null || !privateGlobalRegex.test(s)) {
+							out.comps[s] = g.comp;
+						}
 						out.kindList.push(s);
 						out.kindMap.set(s, "globalvar");
 						setLookup(s);
@@ -1126,12 +1133,14 @@ class GmlSeeker {
 						s = find(Ident);
 						if (s != null && !out.globalFields.exists(s)) {
 							var gfd = GmlAPI.gmlGlobalFieldMap[s];
+							var hide = privateGlobalRegex != null && privateGlobalRegex.test(s);
 							if (gfd == null) {
 								gfd = new GmlGlobalField(s);
+								gfd.hidden = hide;
 								GmlAPI.gmlGlobalFieldMap.set(s, gfd);
 							}
 							out.globalFields[s] = gfd;
-							out.globalFieldComp.push(gfd.comp);
+							if (!hide) out.globalFieldComp.push(gfd.comp);
 						}
 					}
 				};
@@ -1315,9 +1324,6 @@ class GmlSeeker {
 						} else {
 							isConstructorField = cubDepth == 1 && doc != null && doc.isConstructor;
 						}
-						if (isConstructorField && privateFieldRegex != null && privateFieldRegex.test(s)) {
-							isConstructorField = false;
-						}
 					} else isConstructorField = false;
 					
 					// skip if we don't have anything to do:
@@ -1327,6 +1333,7 @@ class GmlSeeker {
 						var ns = GmlAPI.gmlNamespaces[s];
 						addInstField = ns == null || ns.noTypeRef;
 					} else addInstField = true;
+					
 					if (!addInstField && (
 						// create events shouldn't hint built-ins since we'll auto-include them:
 						isCreateEvent
@@ -1402,7 +1409,8 @@ class GmlSeeker {
 							if (!c.isIdent0_ni()) continue;
 							var start = q.pos;
 							q.skipIdent1();
-							switch (q.substring(start, q.pos)) {
+							var ident = q.substring(start, q.pos);
+							switch (ident) {
 								case "function":
 									// OK!
 								case "new" if (hasFunctionLiterals):
@@ -1415,7 +1423,21 @@ class GmlSeeker {
 								case "true", "false":
 									if (specTypeInst) fieldType = GmlTypeDef.bool;
 									continue;
-								default: continue;
+								default:
+									if (specTypeInst) {
+										var doc = GmlAPI.stdDoc[ident];
+										q.skipSpaces1_local();
+										if (doc != null) {
+											if (q.peek() == "(".code) {
+												fieldType = doc.returnType.mapTemplateTypes([]);
+											}
+										} else switch (q.peek()) {
+											case "\r".code, "\n".code, ";".code:
+												fieldType = GmlAPI.stdTypes[ident];
+											default:
+										}
+									}
+									continue;
 							}
 							q.skipSpaces1();
 							if (q.peek().isIdent0_ni()) {

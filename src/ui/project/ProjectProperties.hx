@@ -129,7 +129,6 @@ class ProjectProperties {
 			"Regex for trimming argument name (e.g. `^_(\\w+)$`)",
 			d.argNameRegex,
 		function(s) {
-			if (NativeString.trimBoth(s) == "") s = null;
 			if (s != null) try {
 				new RegExp(s);
 				argRegexInput.classList.remove("error");
@@ -144,16 +143,21 @@ class ProjectProperties {
 		argRegexInput = el.querySelectorAuto("input");
 		
 		//
-		var privateFieldRegexInput:InputElement = null;
 		el = Preferences.addRegexPatternInput(fs,
-			"Regex for determining that 2.3 struct variables are private (e.g. `^_` for anything starting with an underscore)",
+			"Regex for determining that instance/struct variables are private (e.g. `^_` for anything starting with an underscore)",
 			d.privateFieldRegex,
 		function(s) {
-			if (NativeString.trimBoth(s) == "") s = null;
 			d.privateFieldRegex = s;
 			save(project, d);
 		});
-		privateFieldRegexInput = el.querySelectorAuto("input");
+		
+		el = Preferences.addRegexPatternInput(fs,
+			"Regex for determining that global variables are private (e.g. `^_` for anything starting with an underscore)",
+			d.privateGlobalRegex,
+		function(s) {
+			d.privateGlobalRegex = s;
+			save(project, d);
+		});
 		
 		//
 		el = addGmlNameInput(fs, "Template string script name", d.templateStringScript, function(s) {

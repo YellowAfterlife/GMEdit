@@ -10,6 +10,7 @@ import gml.GmlNamespace;
 import gml.file.GmlFileKindTools;
 import gml.type.GmlType;
 import gml.Project;
+import gml.type.GmlTypeCanCastTo;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterInit;
@@ -77,12 +78,12 @@ class GmlLinter {
 	var context(default, set):String = "";
 	public function set_context(ctx:String):String {
 		context = ctx;
-		if (setLocalVars) {
+		if (setLocalVars || setLocalTypes) {
 			if ((editor.kind is file.kind.gml.KGmlEvents) && ctx == "properties") {
 				// don't re-index properties
 			} else {
-				editor.locals[ctx] = new GmlLocals(ctx);
-				getImports(true).localTypes = new Dictionary();
+				if (setLocalVars) editor.locals[ctx] = new GmlLocals(ctx);
+				if (setLocalTypes) getImports(true).localTypes = new Dictionary();
 			}
 		}
 		return ctx;
@@ -710,7 +711,7 @@ class GmlLinter {
 			case KNot, KBitNot: {
 				rc(readExpr(newDepth));
 				if (nk == KNot) {
-					checkTypeCast(readExpr_currType, GmlTypeDef.bool, "!");
+					checkTypeCastBoolOp(readExpr_currType, "!");
 					currType = GmlTypeDef.bool;
 				} else {
 					checkTypeCast(readExpr_currType, GmlTypeDef.int, "~");
@@ -1002,10 +1003,10 @@ class GmlLinter {
 					rc(readTypeName());
 					var asType = GmlTypeDef.parse(readTypeName_typeStr);
 					if (!hasFlag(IsCast)) {
-						var ex = GmlTypeTools.canCastTo_explicit;
-						GmlTypeTools.canCastTo_explicit = true;
+						var ex = GmlTypeCanCastTo.isExplicit;
+						GmlTypeCanCastTo.isExplicit = true;
 						checkTypeCast(currType, asType, "as");
-						GmlTypeTools.canCastTo_explicit = ex;
+						GmlTypeCanCastTo.isExplicit = ex;
 					}
 					currType = asType;
 					currFunc = null;
@@ -1158,6 +1159,13 @@ class GmlLinter {
 		addWarning(m);
 		return false;
 	}
+	function checkTypeCastBoolOp(source:GmlType, ?ctx:String):Bool {
+		var wasBoolOp = GmlTypeCanCastTo.isBoolOp;
+		GmlTypeCanCastTo.isBoolOp = true;
+		var result = checkTypeCast(source, GmlTypeDef.bool, ctx);
+		GmlTypeCanCastTo.isBoolOp = wasBoolOp;
+		return result;
+	}
 	
 	function checkTypeCastOp(left:GmlType, right:GmlType, op:GmlLinterKind, opv:String):GmlType {
 		switch (op) {
@@ -1169,8 +1177,8 @@ class GmlLinter {
 				}
 			};
 			case KBoolAnd, KBoolOr, KBoolXor: {
-				checkTypeCast(left, GmlTypeDef.bool, opv);
-				checkTypeCast(right, GmlTypeDef.bool, opv);
+				checkTypeCastBoolOp(left, opv);
+				checkTypeCastBoolOp(right, opv);
 				return GmlTypeDef.bool;
 			};
 			case KEQ, KNE, KSet: {
@@ -1382,16 +1390,19 @@ class GmlLinter {
 		}
 		switch (nk) {
 			case KMFuncDecl, KMacro: {};
-			case KArgs: {};
 			case KEnum: rc(readEnum(newDepth));
-			case KVar, KConst, KLet, KGlobalVar: {
-				//z = nk == KArgs;
+			case KVar, KConst, KLet, KGlobalVar, KArgs: {
+				var isArgs = nk == KArgs;
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
 				var found = 0;
+				var startRow = reader.row;
 				while (q.loop) {
 					nk = peek();
-					//if (z && nk == KQMark) { skip(); nk = peek(); }
+					// #args-specific: quit on linebreak, allow ?arg:
+					if (isArgs && __peekReader.row > startRow) break;
+					if (isArgs && nk == KQMark) { skip(); nk = peek(); }
+					//
 					if (!skipIf(nk == KIdent)) break;
 					var varName = nextVal;
 					if (mainKind != KGlobalVar) {
@@ -1489,7 +1500,7 @@ class GmlLinter {
 			case KIf: {
 				rc(readExpr(newDepth));
 				checkParens();
-				checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an if condition");
+				checkTypeCastBoolOp(readExpr_currType, "an if condition");
 				skipIf(peek() == KThen);
 				if (skipIf(peek() == KSemico)) {
 					return readError("You have a semicolon before your then-expression.");
@@ -1501,7 +1512,7 @@ class GmlLinter {
 				rc(readExpr(newDepth));
 				checkParens();
 				switch (nk) {
-					case KWhile: checkTypeCast(readExpr_currType, GmlTypeDef.bool, "a while-loop condition");
+					case KWhile: checkTypeCastBoolOp(readExpr_currType, "a while-loop condition");
 					case KRepeat: checkTypeCast(readExpr_currType, GmlTypeDef.number, "a repeat-loop count");
 					default:
 				}
@@ -1533,7 +1544,7 @@ class GmlLinter {
 					case KUntil, KWhile: {
 						rc(readExpr(newDepth));
 						checkParens();
-						checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an do-loop condition");
+						checkTypeCastBoolOp(readExpr_currType, "an do-loop condition");
 					};
 					default: return readExpect("an `until` or `while` for a do-loop");
 				}
@@ -1545,7 +1556,7 @@ class GmlLinter {
 				}
 				if (!skipIf(peek() == KSemico)) { // condition
 					rc(readExpr(newDepth));
-					checkTypeCast(readExpr_currType, GmlTypeDef.bool, "an if condition");
+					checkTypeCastBoolOp(readExpr_currType, "an if condition");
 					skipIf(peek() == KSemico);
 				}
 				if (!skipIf(peek() == KParClose)) { // post
@@ -1700,9 +1711,9 @@ class GmlLinter {
 		function addMarker(text:String, pos:AcePos, isError:Bool) {
 			var line = session.getLine(pos.row);
 			var range = new AceRange(0, pos.row, line.length, pos.row);
-			session.gmlErrorMarkers.push(
-				session.addMarker(range, isError ? "ace_error-line" : "ace_warning-line", "fullLine")
-			);
+			var clazz = isError ? "ace_error-line" : "ace_warning-line";
+			var marker = new ace.gml.AceGmlWarningMarker(session, pos.row, clazz);
+			session.gmlErrorMarkers.push(marker.addTo(session));
 			annotations.push({
 				row: pos.row, column: pos.column, type: isError ? "error" : "warning", text: text
 			});

@@ -1,7 +1,7 @@
 package gml.file;
 
 /**
- * ...
+ * Additional metadata, mostly for "combined view"
  * @author YellowAfterlife
  */
 class GmlFileExtra {

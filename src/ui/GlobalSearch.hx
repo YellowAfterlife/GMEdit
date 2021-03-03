@@ -27,7 +27,8 @@ import file.kind.gml.*;
 using tools.HtmlTools;
 
 /**
- * ...
+ * The little dialog that pops up when you press Ctrl+Shift+F
+ * and the unforeseen complexity that comes from having all those checkboxes.
  * @author YellowAfterlife
  */
 @:keep class GlobalSearch {

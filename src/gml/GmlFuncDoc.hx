@@ -15,7 +15,8 @@ using StringTools;
 using tools.NativeString;
 
 /**
- * ...
+ * Stores argument names, types (if any), return type (if any), and prefix/suffix for a function.
+ * Used for displaying information in the status bar and by the linter.
  * @author YellowAfterlife
  */
 class GmlFuncDoc {

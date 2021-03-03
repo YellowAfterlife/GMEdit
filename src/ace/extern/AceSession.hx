@@ -1,7 +1,9 @@
 package ace.extern;
+import ace.extern.AceMarker;
 import ace.extern.AcePos;
 import ace.extern.AceRange;
 import haxe.extern.EitherType;
+import tools.IntDictionary;
 
 /**
  * ...
@@ -47,7 +49,10 @@ import haxe.extern.EitherType;
 	public function clearAnnotations():Void;
 	//
 	public function addMarker(range:Dynamic, style:String, kind:String):AceMarker;
+	public function addDynamicMarker<T:IAceDynamicMarker>(marker:T, ?inFront:Bool):T;
 	public function removeMarker(mk:AceMarker):Void;
+	@:native("$frontMarkers") var __frontMarkers:IntDictionary<IAceMarker>;
+	@:native("$backMarkers") var __backMarkers:IntDictionary<IAceMarker>;
 	//
 	public function getUndoManager():AceUndoManager;
 	public function setUndoManager(m:AceUndoManager):Void;

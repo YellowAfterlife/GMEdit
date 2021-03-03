@@ -20,7 +20,7 @@ import Main.aceEditor;
 import gml.Project;
 
 /**
- * ...
+ * Handles logic for middle-clicking identifiers or pressing F1 when your cursor is at one.
  * @author YellowAfterlife
  */
 class OpenDeclaration {

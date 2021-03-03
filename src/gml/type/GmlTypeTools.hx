@@ -3,6 +3,7 @@ import ace.AceGmlTools;
 import gml.GmlAPI;
 import gml.GmlNamespace;
 import gml.type.GmlType;
+import gml.type.GmlTypeCanCastTo;
 import haxe.ds.ReadOnlyArray;
 import js.lib.RegExp;
 import parsers.GmlReader;
@@ -206,142 +207,8 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
-	static function canCastToAnyOf(from:GmlType, toArr:ReadOnlyArray<GmlType>, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
-		for (to in toArr) if (canCastTo(from, to, tpl, imp)) return true;
-		return false;
-	}
-	
-	public static var canCastTo_explicit:Bool = false;
-	public static var canCastTo_voidCast:Bool = false;
-	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
-		var kfrom = getKind(from), kto = getKind(to);
-		if (!canCastTo_voidCast) {
-			if (kfrom == KVoid || kto == KVoid) return false;
-		}
-		
-		if (from == to) return true;
-		if (from == null || to == null) return true;
-		if (kfrom == KAny || kto == KAny) return true;
-		
-		if (from.equals(to, tpl)) return true;
-		
-		if (kto == KNullable) {
-			// undefined -> number?
-			if (kfrom == KUndefined) return true;
-			// number -> number?
-			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl, imp)) return true;
-		}
-		
-		if (canCastTo_explicit) {
-			if (kfrom == KNullable) {
-				if (from.unwrapParam().canCastTo(to, tpl, imp)) return true;
-			} else switch (from) {
-				case TEither(et1): {
-					for (t in et1) if (canCastTo(t, to, tpl, imp)) return true;
-				};
-				default:
-			}
-		}
-		
-		if (kto == KStruct) switch (from) {
-			case TInst(name, _, _):
-				if (!canCastTo(from, GmlTypeDef.asset, tpl, imp)) {
-					var ns = GmlAPI.gmlNamespaces[name];
-					if (JsTools.nca(ns, ns.canCastToStruct)) return true;
-				}
-			case TAnon(_): return true;
-			default:
-		}
-		
-		if (tpl != null) {
-			to = mapTemplateTypes(to, tpl);
-			if (to == null) return false;
-		}
-		
-		switch ([from, to]) {
-			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to
-				for (t1 in et1) if (!canCastToAnyOf(t1, et2, tpl, imp)) return false;
-				return true;
-			}
-			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl, imp);
-			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
-				switch (k2) {
-					// allow bool<->number casts:
-					case KNumber: if (k1 == KBool) return true;
-					case KBool: if (k1 == KNumber) return true;
-					case KArray: // var v:Enum should be allowed for array access
-						if (p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;
-					case KObject:
-						var ns = GmlAPI.gmlNamespaces[n1];
-						if (JsTools.nca(ns, ns.isObject)) return true;
-						if (GmlAPI.gmlKind[n1] == "asset.object") return true;
-					case KAsset:
-						var ns = GmlAPI.gmlNamespaces[n1];
-						if (JsTools.nca(ns, ns.isObject)) return true;
-						var nk = GmlAPI.gmlKind[n1];
-						if (nk != null && nk.startsWith("asset.")) return true;
-					case KFunction:
-						if (k1 != KFunction) return false;
-						var i = p2.length;
-						if (i == 0 || p1.length == 0) return true; // any-functions
-						if (p1.length != i) return false;
-						if (--i >= 0) { // return value
-							var couldVoidCast = canCastTo_voidCast;
-							canCastTo_voidCast = true;
-							var ok = p1[i].canCastTo(p2[i], tpl, imp);
-							canCastTo_voidCast = couldVoidCast;
-							if (!ok) return false;
-						}
-						while (--i >= 0) { // arguments
-							if (!p1[i].canCastTo(p2[i], tpl, imp)) return false;
-						}
-						return true;
-					default:
-				}
-				
-				if (k1 == k2 && (k1 != KCustom || n1 == n2)) {
-					// allow Array<T>->Array or Array<T>->Array<?>:
-					var i = p1.length;
-					while (--i >= 0) if (p2[i] != null) break;
-					if (i < 0) return true;
-					// and Array<?>->Array<T>?
-					i = p2.length;
-					while (--i >= 0) if (p1[i] != null) break;
-					if (i < 0) return true;
-				}
-				
-				if (AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
-					var depth = 0;
-					var found = false;
-					while (ns != null && ++depth < GmlNamespace.maxDepth) {
-						for (itf in ns.interfaces) {
-							if (itf.name == n2) { found = true; break; }
-						}
-						if (found) break;
-						ns = ns.parent;
-						if (JsTools.nca(ns, ns.name == n2)) { found = true; break; }
-					}
-					return found;
-				})) return true;
-			};
-			case [TAnon(a1), TInst(n2, [], KCustom)]: {
-				var ns = GmlAPI.gmlNamespaces[n2];
-				if (ns != null) {
-					var ok = true;
-					for (fdc in ns.getInstComp(0, false)) {
-						var fd = fdc.name;
-						var af = a1.fields[fd];
-						if (af == null || !af.type.canCastTo(ns.getInstType(fd))) {
-							ok = false;
-							break;
-						}
-					}
-					if (ok) return true;
-				}
-			}
-			default:
-		}
-		return false;
+	public static inline function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
+		return GmlTypeCanCastTo.canCastTo(from, to, tpl, imp);
 	}
 	
 	public static function toString(type:GmlType, ?tpl:Array<GmlType>):String {

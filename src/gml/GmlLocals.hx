@@ -4,7 +4,7 @@ import ace.extern.*;
 import tools.Dictionary;
 
 /**
- * ...
+ * Represents local variables specific to a scope
  * @author YellowAfterlife
  */
 class GmlLocals {
@@ -12,7 +12,13 @@ class GmlLocals {
 	//
 	public var name:String;
 	public var comp:AceAutoCompleteItems = [];
+	
+	/**
+	 * Generally token types are "local" and "sublocal",
+	 * but can technically be also used for little hacks.
+	 */
 	public var kind:Dictionary<AceTokenType> = new Dictionary();
+	
 	/**
 	 * Indicates that this local scope contains a with-block
 	 * Implications: we can no longer "just" assume that `ident` is self-access

@@ -2,7 +2,7 @@ package ui;
 import js.html.Element;
 
 /**
- * ...
+ * A very tiny extern for the JS class.
  * @author YellowAfterlife
  */
 @:native("GMEdit_Splitter")

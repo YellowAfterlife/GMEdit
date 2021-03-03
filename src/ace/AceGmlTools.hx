@@ -160,7 +160,7 @@ using StringTools;
 				case _ if (tk.isIdent()): {
 					if (depth == 0 && tkType == "keyword") {
 						switch (tk.value) {
-							case "self", "other": {}
+							case "self", "other", "global": {}
 							case "cast", "as": break;
 							default: { // that's no good!
 								iter.stepForwardNonText();

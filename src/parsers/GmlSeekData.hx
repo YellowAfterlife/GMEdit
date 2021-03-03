@@ -9,6 +9,7 @@ import synext.GmlExtCoroutines;
 import synext.GmlExtMFunc;
 import tools.ArrayMap;
 import tools.Dictionary;
+import tools.JsTools;
 using tools.NativeString;
 using tools.NativeArray;
 
@@ -180,18 +181,18 @@ class GmlSeekData {
 			if (next.globalFields[g.name] == g) continue;
 			if (--g.refs <= 0) {
 				GmlAPI.gmlGlobalFieldMap.remove(g.name);
-				GmlAPI.gmlGlobalFieldComp.remove(g.comp);
+				if (!g.hidden) GmlAPI.gmlGlobalFieldComp.remove(g.comp);
 				GmlAPI.gmlGlobalFullMap.remove(g.name);
-				GmlAPI.gmlGlobalFullComp.remove(g.fullComp);
+				if (!g.hidden) GmlAPI.gmlGlobalFullComp.remove(g.fullComp);
 			}
 		}
 		for (g in next.globalFields) {
 			if (prev.globalFields[g.name] == g) continue;
 			if (++g.refs == 1) {
 				GmlAPI.gmlGlobalFieldMap.set(g.name, g);
-				GmlAPI.gmlGlobalFieldComp.push(g.comp);
+				if (!g.hidden) GmlAPI.gmlGlobalFieldComp.push(g.comp);
 				GmlAPI.gmlGlobalFullMap.set(g.name, g);
-				GmlAPI.gmlGlobalFullComp.push(g.fullComp);
+				if (!g.hidden) GmlAPI.gmlGlobalFullComp.push(g.fullComp);
 			}
 		}
 		
@@ -243,7 +244,9 @@ class GmlSeekData {
 			var ns = GmlAPI.ensureNamespace(nsName);
 			var arr0 = prev.namespaceImplements[nsName];
 			for (impName in arr1) {
-				if (arr0 != null && arr0.contains(impName)) continue;
+				if (arr0 != null && arr0.contains(impName)
+					&& ns.interfaces.exists(impName)
+				) continue;
 				var impSpace = GmlAPI.ensureNamespace(impName);
 				ns.interfaces.addn(impSpace);
 			}
@@ -314,9 +317,9 @@ class GmlSeekDataHint {
 		this.key = namespace + (isInst ? ":" : ".") + field;
 	}
 	public function merge(hint:GmlSeekDataHint, ?preferExisting:Bool) {
-		var cd1 = hint.comp.doc;
+		var cd1:String = JsTools.ncf(hint.comp.doc);
 		if (cd1 != null) {
-			var cd0 = comp.doc;
+			var cd0 = JsTools.ncf(comp.doc);
 			var cdp = field + "(";
 			if (cd0 == null) {
 				comp.doc = cd1;

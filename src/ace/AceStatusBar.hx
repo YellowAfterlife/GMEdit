@@ -78,7 +78,7 @@ class AceStatusBar {
 		if (f != null) {
 			return f(ctx);
 		} else if (Std.is(ctx.session.gmlFile.kind, file.kind.KGml)) {
-			ctx.docs = GmlNamespace.blank;
+			ctx.docs = {};
 			return true;
 		} else return false;
 	}
@@ -305,6 +305,7 @@ typedef AceStatusBarDocSearch = {
 	docs:Dictionary<GmlFuncDoc>,
 	doc:GmlFuncDoc,
 	?type:GmlType,
+	/** Used by tooltips */
 	?typeText:String,
 	tk:AceToken,
 	session:AceSession,

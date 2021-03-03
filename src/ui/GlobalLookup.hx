@@ -15,7 +15,7 @@ import tools.macros.SynSugar;
 using tools.HtmlTools;
 
 /**
- * ...
+ * The thing you see when you press Ctrl+T
  * @author YellowAfterlife
  */
 class GlobalLookup {

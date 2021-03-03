@@ -12,7 +12,7 @@ import tools.JsTools.or;
 using tools.NativeString;
 
 /**
- * ...
+ * Handles that "Show extension API" context menu option.
  * @author YellowAfterlife
  */
 class GmlExtensionAPI {

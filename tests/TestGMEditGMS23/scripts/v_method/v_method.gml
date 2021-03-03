@@ -1,3 +1,4 @@
+// Context: method() rebinds `self` but should keep function information if available.
 function v_method() {
 	let a = function(_a/*:int*/) {}
 	let b = function(_b/*:string*/) {}

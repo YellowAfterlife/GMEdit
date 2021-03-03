@@ -10,7 +10,7 @@ import js.html.Element;
 import js.html.HTMLDocument;
 
 /**
- * ...
+ * Handles theme state and loading.
  * @author YellowAfterlife
  */
 class Theme {

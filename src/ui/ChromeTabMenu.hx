@@ -10,7 +10,7 @@ import file.kind.yy.*;
 using tools.HtmlTools;
 
 /**
- * ...
+ * The little context menu that you see when you right-click a tab.
  * @author YellowAfterlife
  */
 class ChromeTabMenu {

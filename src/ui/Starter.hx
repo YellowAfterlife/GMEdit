@@ -9,7 +9,11 @@ import haxe.Json;
 import js.Browser.window;
 
 /**
- * ...
+ * A lightweight (~25KB) application that loads your preferences
+ * and theme before the actual GMEdit files start loading.
+ * 
+ * Prevents you from seeing GMEdit pop from default theme to selected one
+ * if JS files take long enough to compile.
  * @author YellowAfterlife
  */
 class Starter {

@@ -92,12 +92,17 @@ class AceStatusBarImports {
 							&& (cast ns:GmlImportNamespace).longen.exists(name)
 						) argStart = 1;
 					}
-					if (fieldTypeText == null) {
-						var comp = ns.getInstCompItem(name);
-						if (comp != null) fieldTypeText = comp.doc;
-					}
 					if (fieldType == null) {
 						fieldType = ns.getInstType(name);
+					}
+					if (fieldTypeText == null) {
+						var comp = ns.getInstCompItem(name);
+						if (comp != null) {
+							fieldTypeText = comp.doc;
+						} else {
+							fieldTypeText = ns.getInstTypeText(name);
+							if (fieldTypeText != null) fieldTypeText += "\n" + "unlisted";
+						}
 					}
 					return false;
 				});

@@ -6,5 +6,7 @@
         "specTypeLet": true
     },
     "nullConditionalSet": "nc_set",
-    "nullConditionalVal": "nc_val"
+    "nullConditionalVal": "nc_val",
+    "privateFieldRegex": "^__",
+    "privateGlobalRegex": "^__"
 }

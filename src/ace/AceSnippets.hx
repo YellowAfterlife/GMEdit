@@ -95,6 +95,12 @@ class AceSnippetCompleterProxy extends AceWrapCompleter {
 			return;
 		}
 		//
+		var ml = procMinLength();
+		if (prefix.length < ml || !modeFilter(session)) {
+			callback(null, AceWrapCompleter.noItems);
+			return;
+		}
+		//
 		var tk:AceToken = session.getTokenAtPos(pos);
 		var tkf:Bool = tokenFilter.exists(JsTools.nca(tk, tk.type));
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
