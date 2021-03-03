@@ -127,7 +127,7 @@ class SpriteResourceFramesImpl {
 		}
 	}
 
-	public var onFramesReplaced: EventHandler<Void> = new EventHandler();
+	public var onFramesReplaced: EventHandler<Array<SpriteResourceFrame>> = new EventHandler();
 	/**
 	 * Replace all frames in the resource with new ones. Basically clearing the old images and adding new ones.	
 	 */
@@ -137,6 +137,7 @@ class SpriteResourceFramesImpl {
 		for (i in 0 ... this.spriteData.frames.length) {
 			this.array.push(new SpriteResourceFrame(spriteData, i));
 		}
+		onFramesReplaced.invoke(this.array);
 	}
 
 	public var onFrameAdded: EventHandler<{frame:SpriteResourceFrame, index:Int}> = new EventHandler();

@@ -28,14 +28,11 @@ import Lambda;
 class EditSprite extends Editor {
 	var sprite:SpriteResource;
 	var panner:Panner;
+	var framesContainer: DivElement;
 	var frameCount:Int = 0;
 	var currentFrame:Int = 0;
 	var currentFrameElement:DivElement;
-	var frameURLs:Array<String> = [];
-	var framePaths:Array<String> = [];
-	var frameElements:Array<DivElement> = [];
-	var frameTimes:Array<Float> = [];
-	var interval:Null<Int> = null;
+	var framesData: Array<FrameData> = [];
 	var playbackDelta:Int = 1;
 	var recenter = true;
 	var animToggle:InputElement;
@@ -61,13 +58,7 @@ class EditSprite extends Editor {
 			}
 		});
 	}
-	override public function destroy():Void {
-		super.destroy();
-		if (interval != null) {
-			window.clearInterval(interval);
-			interval = null;
-		}
-	}
+
 	function checkRecenter() {
 		if (!recenter) return;
 		panner.recenter();
@@ -79,12 +70,12 @@ class EditSprite extends Editor {
 	}
 	//
 	function setCurrentFrameElement(i:Int, ?frame:DivElement):DivElement {
-		if (frame == null) frame = frameElements[i];
+		if (frame == null) frame = framesData[i].element;
 		if (currentFrameElement == frame) return frame;
 		currentFrameElement.classList.remove("current");
 		frame.classList.add("current");
 		currentFrameElement = frame;
-		panner.image.src = frameURLs[i];
+		panner.image.src = framesData[i].url;
 		return frame;
 	}
 	function adjustCurrentFrame(delta:Int):DivElement {
@@ -161,14 +152,11 @@ class EditSprite extends Editor {
 				return;
 			}
 			
-			var measurePromises = [];
+			
 			// Measure the new sprites, abort if their size differ
-			for (newFile in newFiles) {
-				measurePromises.push( SpriteManipulator.MeasureSpriteAsync(newFile) );
+			var measurePromises = [for (newFile in newFiles) SpriteManipulator.MeasureSpriteAsync(newFile)];
 
-			}
-
-			Promise.all(measurePromises).then(promiseResult -> {
+			Promise.all(measurePromises).then(promiseResult -> { // Start of measure promise. Purposefully not indented
 			var newFileMeasurements:Array<{width: Int, height: Int}> = cast promiseResult;
 			
 			var width = newFileMeasurements[0].width;
@@ -229,7 +217,7 @@ class EditSprite extends Editor {
 			boundingBoxMeasurer.onMeasured.add(onSpriteInitialMeasureReady);
 			boundingBoxMeasurer.start();
 
-			}); // Close measure all promise
+			}); // End of measure promise. Purposefully not indented
 
 		});
 	}
@@ -322,59 +310,24 @@ class EditSprite extends Editor {
 		var previewContainer = document.createDivElement();
 		previewContainer.classList.add("resinfo");
 		previewContainer.classList.add("sprite");
+
+
 		{
-			var pannerContainer = document.createDivElement();
-			pannerContainer.classList.add("sprite-info");
+			var spriteInfoContainer = document.createDivElement();
+			spriteInfoContainer.classList.add("sprite-info");
 
 			//
-			var frames = document.createDivElement();
-			frames.classList.add("frames");
-			frameCount = sprite.frames.length;
-			frameElements = [];
-			frameURLs = [];
-			framePaths = [];
-			frameTimes = [];
-			for (frame in sprite.frames) {
-				var framePath = getImagePath(frame);
-				var url = FileWrap.getImageURL(framePath);
-				var frame = document.createDivElement();
-				var index = frameElements.length;
-				if (index == 0) {
-					currentFrameElement = frame;
-					frame.classList.add("current");
-				}
-				frame.title = "" + index;
-				frameElements.push(frame);
-				frameURLs.push(url);
-				framePaths.push(framePath);
-				frameTimes.push(FileWrap.mtimeSync(framePath));
-				//
-				frame.classList.add("frame");
-				if (sprite.width > 48 || sprite.height > 48) {
-					frame.style.backgroundSize = "contain";
-				}
-				// something isn't right here, why do we only need to escape this here of all places?
-				url = StringTools.replace(url, " ", "%20");
-				//
-				frame.style.backgroundImage = 'url($url)';
-				if (sprite.width <= 24 && sprite.height <= 24) {
-					frame.style.backgroundSize = '${sprite.width * 2}px ${sprite.height * 2}px';
-					frame.classList.add("zoomed");
-				}
-				frame.onclick = function(_) {
-					currentFrame = index;
-					setCurrentFrameElement(index, frame);
-				}
-				frame.ondblclick = function(_) {
-					Shell.openExternal(url);
-				};
-				frames.appendChild(frame);
-			}
+			framesContainer = document.createDivElement();
+			framesContainer.classList.add("frames");
+
+			spriteInfoContainer.appendChild(framesContainer);
+				
+			previewContainer.appendChild(spriteInfoContainer);
 			
-			pannerContainer.appendChild(frames);
-			
-			previewContainer.appendChild(pannerContainer);
+			fillFrameContainerContent();
+			sprite.frames.onFramesReplaced.add( (_) -> fillFrameContainerContent());
 		}
+
 		{
 			var pan = document.createDivElement();
 
@@ -413,9 +366,54 @@ class EditSprite extends Editor {
 			panner = new Panner(pan, imgCtr);
 			previewContainer.appendChild(pan);
 		}
-		//
 
 		element.appendChild(previewContainer);
+	}
+
+	private function fillFrameContainerContent() {
+		framesData = [];
+		framesContainer.clearInner();
+
+		for (frame in sprite.frames) {
+			var framePath = getImagePath(frame);
+			var url = FileWrap.getImageURL(framePath);
+			var frame = document.createDivElement();
+			var index = framesData.length;
+			if (index == 0) {
+				currentFrameElement = frame;
+				frame.classList.add("current");
+			}
+			frame.title = "" + index;
+			framesData.push({
+				element: frame,
+				url: url,
+				path: framePath,
+				importTime: FileWrap.mtimeSync(framePath)
+			});
+
+			//
+			frame.classList.add("frame");
+			if (sprite.width > 48 || sprite.height > 48) {
+				frame.style.backgroundSize = "contain";
+			}
+			// something isn't right here, why do we only need to escape this here of all places?
+			url = StringTools.replace(url, " ", "%20");
+			//
+			frame.style.backgroundImage = 'url($url)';
+			if (sprite.width <= 24 && sprite.height <= 24) {
+				frame.style.backgroundSize = '${sprite.width * 2}px ${sprite.height * 2}px';
+				frame.classList.add("zoomed");
+			}
+			frame.onclick = function(_) {
+				currentFrame = index;
+				setCurrentFrameElement(index, frame);
+			}
+			frame.ondblclick = function(_) {
+				Shell.openExternal(url);
+			};
+			framesContainer.appendChild(frame);
+		}
+		
 	}
 
 	private function buildOriginCross(): Element {
@@ -476,4 +474,11 @@ class EditSprite extends Editor {
 
 		return originCross;
 	}
+}
+
+typedef FrameData = {
+	var url: String;
+	var path: String;
+	var element: DivElement;
+	var importTime: Float;
 }
