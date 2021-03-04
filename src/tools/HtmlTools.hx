@@ -97,11 +97,24 @@ class HtmlTools {
 		} else el.scrollIntoView();
 	}
 
+	/** Set the selected value for a select element to the provided value */
 	public static function setSelectedValue(element: SelectElement, selectedValue: String) {
 		var value:OptionElement = cast element.querySelector('option[value="${selectedValue}"]');
 		if (value != null) {
 			value.selected = true;
 		}
+	}
+
+	public static function prettifyInputRange(element: InputElement) {
+		var event = () -> {
+			var min = Std.parseFloat(element.min);
+			var max = Std.parseFloat(element.max);
+			var value = Std.parseFloat(element.value);
+			var percentage = (value-min)/(max-min)*100;
+			element.style.background = 'linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ' + percentage + '%, rgba(128, 128, 128, 0.5) ' + percentage + '%, rgba(128, 128, 128, 0.5) 100%)';
+		};
+		element.addEventListener('input', event);
+		event();
 	}
 }
 extern class ElementList implements ArrayAccess<Element> {

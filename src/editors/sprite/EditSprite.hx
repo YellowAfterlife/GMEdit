@@ -331,7 +331,7 @@ class EditSprite extends Editor {
 			sprite.onEdgeFilteringChanged
 		);
 
-
+		HtmlTools.prettifyInputRange( cast element.querySelector("#option-bbox-tolerance") );
 	}
 
 	private function buildOptions() {
@@ -399,7 +399,7 @@ class EditSprite extends Editor {
 				
 				<div class="one-line">
 					<label>Mode</label>
-					<select id="bbox-mode" class="float-right">
+					<select id="option-bbox-mode" class="float-right">
 						<option>Automatic</option>
 						<option>Full Image</option>
 						<option>Manual</option>
@@ -408,7 +408,7 @@ class EditSprite extends Editor {
 
 				<div class="one-line">
 					<label>Type</label>
-					<select id="bbox-type" class="float-right">
+					<select id="option-bbox-type" class="float-right">
 						<option>Rectangle</option>
 						<option>Rectangle</option>
 						<option>Ellipse</option>
@@ -420,7 +420,7 @@ class EditSprite extends Editor {
 
 				<div class="one-line">
 					<label>Tolerance</label>
-					<input type="range" class="float-right" id="sound-bbox-tolerance-slider" min="0" max="255" step="1"/>
+					<input type="range" id="option-bbox-tolerance" class="float-right" min="0" max="255" step="1"/>
 				</div>
 				<div class="one-line">
 					<label class="short-label">Left</label>

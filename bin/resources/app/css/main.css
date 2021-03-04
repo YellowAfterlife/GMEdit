@@ -1,3 +1,6 @@
+*:focus {
+    outline-style: solid;
+}
 html, body {
     padding: 0;
 	margin: 0;
@@ -400,7 +403,18 @@ https://stackoverflow.com/a/36247448/5578773
 	width: 150px;
 	float: right;
 }
-
+#sprite-options h4 {
+	margin-bottom: 0px;
+}
+#sprite-options #option-origin-type {
+	margin-bottom: 3px;
+	margin-top: 3px;
+}
+#sprite-options #option-origin-x, #sprite-options #option-origin-y {
+	margin-left: 0px;
+	margin-right: 0px;
+	width: 40px;
+}
 
 /* Sprite preview/panner box */
 .resinfo.sprite {

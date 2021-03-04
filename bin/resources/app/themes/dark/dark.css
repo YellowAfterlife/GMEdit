@@ -33,6 +33,7 @@ input[type=text], input[type=number] {
 }
 
 input[type=checkbox], input[type=radio] {
+	vertical-align: top;
     width: 13px;
     height: 13px;
     -webkit-appearance: none;
@@ -73,8 +74,9 @@ input[type=radio]:checked:before {
 }
 input[type=range] {
 	-webkit-appearance: none;
-	background: transparent;
-	overflow: hidden;
+	background: red; /* Only showes up if you forget to prettify it */
+	margin-top: 10px;
+	margin-bottom: 10px;;
 }
 input[type=range]::-webkit-slider-thumb {
 	-webkit-appearance: none;
@@ -84,16 +86,17 @@ input[type=range]::-webkit-slider-thumb {
 	border-radius: 10px;
 	margin-top: -6px;
 }
+
 input[type=range]::-webkit-slider-runnable-track {
 	width: 100%;
 	cursor: pointer;
 	height: 3px;
-  
 	/* Hides the slider so custom styles can be added */
-	background: rgba(255, 255, 255, 0.7); 
 	border-color: transparent;
 	color: transparent;
 }
+
+
 
 
 select {
@@ -105,7 +108,8 @@ select {
 * {
     -webkit-tap-highlight-color: var(--color-primary) !important;
     -webkit-focus-ring-color:var(--color-primary) !important;
-} 
+}
+
 *:focus {
 	outline-color: var(--color-primary) !important;
 }

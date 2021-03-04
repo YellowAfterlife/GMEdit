@@ -215,6 +215,7 @@ class EditSound extends Editor {
 		soundVolumeSlider = cast element.querySelector("#sound-volume-slider");
 		soundVolumeSlider.addEventListener("change", onVolumeSliderChanged);
 		soundVolumeSlider.addEventListener("input", onVolumeSliderInput);
+		HtmlTools.prettifyInputRange(soundVolumeSlider);
 
 		soundVolumeText = cast element.querySelector("#sound-volume-text");
 		soundVolumeText.addEventListener("change", onVolumeTextChanged);
