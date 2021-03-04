@@ -374,7 +374,7 @@ class YyManipV22 {
 					var fp1 = fd1 + fn1 + ".";
 					for (tab in ChromeTabs.impl.tabEls){
 						var tp = tab.gmlFile.path;
-						if (!NativeString.startsWith(tp, fd0)) continue;
+						if (tp == null || !NativeString.startsWith(tp, fd0)) continue;
 						if (NativeString.startsWith(tp, fp0)) {
 							tp = fp1 + tp.substring(fp0.length);
 						} else {
