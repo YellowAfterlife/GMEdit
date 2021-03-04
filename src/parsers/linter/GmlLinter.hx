@@ -162,6 +162,7 @@ class GmlLinter {
 	var optSpecTypeConst:Bool;
 	var optSpecTypeMisc:Bool;
 	var optRequireFields:Bool;
+	var optImplicitNullableCast:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
@@ -178,7 +179,8 @@ class GmlLinter {
 		optSpecTypeMisc = getOption((q) -> q.specTypeMisc);
 		optRequireFields = getOption((q) -> q.requireFields);
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
-		GmlTypeCanCastTo.allowImplicitNullCast = getOption((q) -> q.implicitNullableCasts);
+		optImplicitNullableCast = getOption((q) -> q.implicitNullableCasts);
+		GmlTypeCanCastTo.allowImplicitNullCast = optImplicitNullableCast;
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -880,7 +882,7 @@ class GmlLinter {
 					var isNull = nk == KNullSqb;
 					
 					// extract `Type` from `Type?` when doing `v?[indexer]`
-					if (isNull && currType.isNullable()) currType = currType.unwrapParam();
+					if ((isNull || optImplicitNullableCast) && currType.isNullable()) currType = currType.unwrapParam();
 					
 					var isArray = false;
 					var isLiteral = false;
