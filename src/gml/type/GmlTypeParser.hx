@@ -95,7 +95,9 @@ class GmlTypeParser {
 					}
 					if (isTIN) warnAboutMissing = typeWarn;
 				}
-				if (kind == KTemplateItem) {
+				if (name == "either") { // Either<A,B> -> (A|B)
+					result = TEither(params);
+				} else if (kind == KTemplateItem) {
 					if (params.length < 2) return parseError("Malformed parameters for " + GmlTypeTools.templateItemName, q);
 					var tn = switch (params[0]) {
 						case null: "?";
