@@ -374,6 +374,7 @@ https://stackoverflow.com/a/36247448/5578773
 #sprite-editor {
 	display: flex;
 	flex-direction: row;
+	outline: none;
 }
 #sprite-editor #sprite-options {
 	width: 300px;
@@ -385,6 +386,7 @@ https://stackoverflow.com/a/36247448/5578773
 #sprite-options {
 	margin-left: 15px;
 	overflow-y: auto;
+	border-right: solid 1px rgba(128,128,128,0.75);
 }
 #sprite-options .one-line {
 	width: 100%;
@@ -446,6 +448,18 @@ https://stackoverflow.com/a/36247448/5578773
 	height: var(--main-height-vh);
 	padding: 0;
 	outline: 0 solid transparent;
+}
+.sprite-frame-wrapper {
+	width: 100%;
+}
+.resinfo.sprite .playback-control {
+	text-align: center;
+	height: 20px;
+}
+.resinfo.sprite #play-button {
+	font-size: 15px;
+	margin-top: 5px;
+	cursor: pointer;
 }
 .resinfo.sprite .sprite-info {
 	display: flex;

@@ -1,5 +1,7 @@
 package editors.sprite;
 
+import js.Browser;
+import yy.YySequence.PlaybackSpeedType;
 import yy.YySprite.SpriteBboxMode;
 import tools.EventHandler;
 import js.lib.Promise;
@@ -31,18 +33,18 @@ class EditSprite extends Editor {
 	var sprite:SpriteResource;
 	var panner:Panner;
 	var framesContainer: DivElement;
-	var frameCount:Int = 0;
 	var currentFrame:Int = 0;
 	var currentFrameElement:DivElement;
 	var framesData: Array<FrameData> = [];
-	var playbackDelta:Int = 1;
+	var playingBack = false;
 	var recenter = true;
-	var animToggle:InputElement;
+	var playButton: SpanElement;
 	var boundingBoxMeasurer: BoundingBoxMeasurer;
 	var spriteManipulatorBusy = false;
 	var spriteManipulator: SpriteManipulator;
 	/** If we should perform a save when measurement is complete*/
 	var saveMeasurement: Bool = false;
+	var projectRoomSpeed: Int = 60;
 
 	public function new(file:GmlFile) {
 		super(file);
@@ -57,12 +59,13 @@ class EditSprite extends Editor {
 			if (document.activeElement.nodeName == "INPUT") return;
 			
 			// animation controls:
-			if (frameCount > 1) switch (e.key) {
+			if (framesData.length > 1) switch (e.key) {
 				case "ArrowLeft": adjustCurrentFrame( -1).scrollIntoView();
 				case "ArrowRight": adjustCurrentFrame(1).scrollIntoView();
-				case " ": animToggle.click();
+				case " ": playButton.click();
 			}
 		});
+		projectRoomSpeed = Project.current.getFrameRate();
 	}
 
 	function checkRecenter() {
@@ -85,9 +88,9 @@ class EditSprite extends Editor {
 		return frame;
 	}
 	function adjustCurrentFrame(delta:Int):DivElement {
-		if (frameCount <= 1) return null;
-		currentFrame = (currentFrame + delta) % frameCount;
-		if (currentFrame < 0) currentFrame += frameCount;
+		if (framesData.length <= 1) return null;
+		currentFrame = (currentFrame + delta) % framesData.length;
+		if (currentFrame < 0) currentFrame += framesData.length;
 		return setCurrentFrameElement(currentFrame);
 	}
 	override public function load(data:Dynamic):Void {
@@ -156,6 +159,26 @@ class EditSprite extends Editor {
 				if (currentFrameElement == frame.element) panner.image.src = url;
 			}
 		}
+	}
+
+	private function moveToNextFrame() {
+		if (!playingBack) {
+			return;
+		}
+		if ( document.body.contains(element) == false) {
+			return;
+		}
+
+		adjustCurrentFrame(1);
+
+		var fps;
+		if  (sprite.playbackSpeedType == PlaybackSpeedType.FramesPerSecond) {
+			fps = sprite.playbackSpeed;
+		} else {
+			fps = sprite.playbackSpeed * projectRoomSpeed;
+		}
+
+		Browser.window.setTimeout(moveToNextFrame, 1000/fps);
 	}
 
 	private function onSpriteImport() {
@@ -270,7 +293,7 @@ class EditSprite extends Editor {
 	}
 
 	private function bindOptions() {
-
+		/// Header settings
 		{
 			var title = element.querySelector("#sprite-title");
 			title.innerText = sprite.name;
@@ -289,6 +312,7 @@ class EditSprite extends Editor {
 			importButton.addEventListener('click', onSpriteImport);
 		}
 
+		/// Origin settings
 		function bindToNumberBox(checkboxId: String, startValue: Int, setter: (Int) -> Void, event: EventHandler<Int>) {
 			var inputElement:InputElement = cast element.querySelector("#" + checkboxId);
 			inputElement.value = Std.string(startValue);
@@ -308,14 +332,38 @@ class EditSprite extends Editor {
 			newValue -> sprite.originY = newValue,
 			sprite.onOriginYChanged
 		);
-
-
 		{
 			var originTypeElement:SelectElement = cast element.querySelector("#option-origin-type");
 			HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType));
 			originTypeElement.addEventListener('change', () -> sprite.setOriginType(cast Std.parseInt(originTypeElement.value)));
 			sprite.onOriginTypeChanged.add(x -> HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType)));
 		}
+
+		/// Playback speed settings
+		bindToNumberBox("option-playback-speed",
+			cast sprite.playbackSpeed,
+			newValue -> sprite.playbackSpeed = newValue,
+			cast sprite.onPlaybackSpeedChanged
+		);
+		{
+			var playbackTypeSelect = cast element.querySelector("#option-playback-speed-type");
+			HtmlTools.setSelectedValue(playbackTypeSelect, Std.string(sprite.playbackSpeedType));
+			playbackTypeSelect.addEventListener('change', () -> {
+				var newValue: PlaybackSpeedType = cast Std.parseInt(playbackTypeSelect.value);
+				if (newValue == sprite.playbackSpeedType) {
+					return;
+				}
+				var newSpeed = newValue == PlaybackSpeedType.FramesPerSecond ?
+					sprite.playbackSpeed * projectRoomSpeed :
+					sprite.playbackSpeed / projectRoomSpeed;
+
+				sprite.playbackSpeed = newSpeed;
+				sprite.playbackSpeedType = newValue;
+			});
+			sprite.onPlaybackSpeedTypeChanged.add(x -> HtmlTools.setSelectedValue(playbackTypeSelect, Std.string(sprite.playbackSpeedType)));
+		}
+
+		/// Texture settings
 		{
 			var textureGroupElement:SelectElement = cast element.querySelector("#option-texture-group");
 			for (textureGroup in Project.current.yyTextureGroups) {
@@ -362,6 +410,7 @@ class EditSprite extends Editor {
 			sprite.onEdgeFilteringChanged
 		);
 
+		/// Bounding box settings
 		{
 			var modeSelect: SelectElement = cast element.querySelector("#option-bbox-mode");
 			HtmlTools.setSelectedValue(modeSelect, Std.string(sprite.bboxMode));
@@ -482,7 +531,7 @@ class EditSprite extends Editor {
 			<div>
 				<h4>Playback Speed</h4>
 				<div class="one-line">
-					<input type="number" id="option-playback-speed"/>
+					<input type="number" id="option-playback-speed" min="0"/>
 					<select id="option-playback-speed-type">
 						<option value="0">Frames per Second</option>
 						<option value="1">Frames per Game Frame</option>
@@ -546,7 +595,7 @@ class EditSprite extends Editor {
 				<div class="one-line" style="margin-top: 10px">
 					<label>Tolerance</label>
 					<input type="range" id="option-bbox-tolerance-slider" min="0" max="255" step="1"/>
-					<input type="number" id="option-bbox-tolerance-box"/>
+					<input type="number" id="option-bbox-tolerance-box" min="0" max="255"/>
 				</div>
 				<div style="margin-top: 10px">
 					<div class="one-line">
@@ -578,17 +627,43 @@ class EditSprite extends Editor {
 		{
 			var spriteInfoContainer = document.createDivElement();
 			spriteInfoContainer.classList.add("sprite-info");
+			
+			var framesWrapper = document.createDivElement();
+			framesWrapper.classList.add("sprite-frame-wrapper");
+			
+			{
+				framesContainer = document.createDivElement();
+				framesContainer.classList.add("frames");
+				fillFrameContainerContent();
+							
+				sprite.frames.onFramesReplaced.add( (_) -> fillFrameContainerContent());
+				framesWrapper.appendChild(framesContainer);
+			}
 
-			//
-			framesContainer = document.createDivElement();
-			framesContainer.classList.add("frames");
+			{
+				var playbackControls = document.createDivElement();
+				playbackControls.classList.add("playback-control");
+				
+				playButton = document.createSpanElement();
+				playButton.id = "play-button";
+				playButton.innerText = "▶";
 
-			spriteInfoContainer.appendChild(framesContainer);
+				playButton.addEventListener("click", () -> {
+					playingBack = !playingBack;
+					playButton.innerText = playingBack ? "❚❚" : "▶";
+					moveToNextFrame();
+				});
+
+				playbackControls.appendChild(playButton);
+
+				framesWrapper.appendChild(playbackControls);
+			}
+
+
+			spriteInfoContainer.appendChild(framesWrapper);
 				
 			previewContainer.appendChild(spriteInfoContainer);
-			
-			fillFrameContainerContent();
-			sprite.frames.onFramesReplaced.add( (_) -> fillFrameContainerContent());
+
 		}
 
 		{
