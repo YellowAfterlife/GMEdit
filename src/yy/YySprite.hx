@@ -48,8 +48,8 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 		var spriteReference:YyResourceRef = {name: name, path: spritePath};
 		
 		return {
-			"bboxMode": 0,
-			"collisionKind": 1,
+			"bboxMode": cast 0,
+			"collisionKind": cast 1,
 			"type": 0,
 			"origin": cast 0,
 			"preMultiplyAlpha": false,
@@ -118,8 +118,8 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 
 typedef YySprite23Impl = {
 	>YyResource,
-	bboxMode:Int,
-	collisionKind:Int,
+	bboxMode:SpriteBboxMode,
+	collisionKind:SpriteBboxType,
 	type:Int,
 	origin:SpriteOriginType,
 	preMultiplyAlpha:Bool,
@@ -146,6 +146,22 @@ typedef YySprite23Impl = {
 	frames:Array<YySprite23Frame>,
 	layers:Array<YySprite23Layer>
 }
+
+enum abstract SpriteBboxMode(Int) {
+	var Automatic = 0;
+	var FullImage = 1;
+	var Manual = 2;
+}
+
+enum abstract SpriteBboxType(Int) {
+	var Precise = 0;
+	var Rectangle = 1;
+	var Ellipse = 2;
+	var Diamond = 3;
+	var PrecisePerFrame = 4;
+	var RectangleWithRotation = 5;
+}
+
 
 enum abstract SpriteOriginType(Int) {
 	var TopLeft = 0;

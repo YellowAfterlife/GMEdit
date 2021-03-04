@@ -4,7 +4,8 @@ import yy.YyGUID;
 import yy.YySequence.PlaybackSpeedType;
 import tools.EventHandler;
 import yy.YySprite;
-
+import yy.YySprite.SpriteBboxMode;
+import yy.YySprite.SpriteBboxType;
 
 /** Wrapper around a YySprite. It contains subscribeable events so it can be used almost like a ViewModel */
 @:build(tools.EventBuildingMacro.build())
@@ -81,6 +82,12 @@ class SpriteResource {
 	@:observable(spriteData.sequence.playbackSpeed, unsavedChanges = true)
 	var playbackSpeed: Float;
 
+	@:observable(spriteData.bboxMode, unsavedChanges = true)
+	var bboxMode: SpriteBboxMode;
+
+	@:observable(spriteData.collisionKind, unsavedChanges = true)
+	var bboxType: SpriteBboxType;
+
 	@:observable(spriteData.bbox_left, unsavedChanges = true)
 	var bboxLeft: Int;
 
@@ -92,6 +99,9 @@ class SpriteResource {
 
 	@:observable(spriteData.bbox_bottom, unsavedChanges = true)
 	var bboxBottom: Int;
+
+	@:observable(spriteData.collisionTolerance, unsavedChanges = true)
+	var bboxTolerance: Int;
 
 	@:observable(spriteData.HTile, unsavedChanges = true)
 	var tiledHorizontal: Bool;
@@ -107,8 +117,21 @@ class SpriteResource {
 
 	@:observable(spriteData.edgeFiltering, unsavedChanges = true)
 	var edgeFiltering: Bool;
-
 	
+	public var onTextureGroupChanged: EventHandler<String> = new EventHandler();
+	public var textureGroup(get, set): String;
+	private function get_textureGroup(): String {
+		return spriteData.textureGroupId.name;
+	}
+	private function set_textureGroup(newValue: String): String {
+		if (spriteData.textureGroupId.name == newValue) {
+			return newValue;
+		}
+		spriteData.textureGroupId = {name: newValue, path: "texturegroups/"+newValue};
+		unsavedChanges = true;
+		onTextureGroupChanged.invoke(newValue);
+		return newValue;
+	}
 
 	/** Layer 0, the layer most people use*/
 	public var defaultLayer(get, null): String;

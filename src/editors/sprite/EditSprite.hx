@@ -1,5 +1,6 @@
 package editors.sprite;
 
+import yy.YySprite.SpriteBboxMode;
 import tools.EventHandler;
 import js.lib.Promise;
 import resource.SpriteManipulator;
@@ -40,6 +41,8 @@ class EditSprite extends Editor {
 	var boundingBoxMeasurer: BoundingBoxMeasurer;
 	var spriteManipulatorBusy = false;
 	var spriteManipulator: SpriteManipulator;
+	/** If we should perform a save when measurement is complete*/
+	var saveMeasurement: Bool = false;
 
 	public function new(file:GmlFile) {
 		super(file);
@@ -47,6 +50,8 @@ class EditSprite extends Editor {
 		element.id = "sprite-editor";
 
 		spriteManipulator = new SpriteManipulator();
+		boundingBoxMeasurer = new BoundingBoxMeasurer(spriteManipulator);
+		boundingBoxMeasurer.onMeasured.add(onSpriteMeasureReady);
 		element.tabIndex = 0;
 		element.addEventListener("keydown", function(e:KeyboardEvent) {
 			if (document.activeElement.nodeName == "INPUT") return;
@@ -94,12 +99,30 @@ class EditSprite extends Editor {
 			file.changed = x;
 		});
 
+		var triggerBboxCheck = (_: Dynamic) -> {
+
+			if (sprite.bboxMode == SpriteBboxMode.Automatic) {
+				var spriteFrames = [for (frame in sprite.frames) frame];
+				boundingBoxMeasurer.start(spriteFrames.map(x -> getImagePath(x)), sprite.bboxTolerance);
+			} else if (sprite.bboxMode == SpriteBboxMode.FullImage) {
+				sprite.bboxTop = 0;
+				sprite.bboxLeft = 0;
+				sprite.bboxRight = sprite.width-1;
+				sprite.bboxBottom = sprite.height-1;
+			}
+		}
+
+		// On bbox requiring changing
+		sprite.onBboxToleranceChanged.add(triggerBboxCheck);
+		sprite.onBboxModeChanged.add(triggerBboxCheck);
+
 		buildHtml();
 	}
 
 	public override function save(): Bool {
 		var newSpriteJson = YyJson.stringify(sprite.getUnderlyingData(), Project.current.yyExtJson);
 		file.writeContent(newSpriteJson);
+		file.time = FileWrap.mtimeSync(file.path);
 		sprite.unsavedChanges = false;
 
 		return true;
@@ -112,7 +135,7 @@ class EditSprite extends Editor {
 	
 	override public function checkChanges():Void {
 		if (!Path.isAbsolute(file.path)) return;
-		/*
+		
 		var t1 = FileWrap.mtimeSync(file.path);
 		if (t1 != file.time) {
 			file.time = t1;
@@ -122,17 +145,17 @@ class EditSprite extends Editor {
 		
 		// if a single frame of the sprite is updated,
 		// we might as well just update that element+URL:
-		for (i in 0 ... frameTimes.length) {
-			var framePath = framePaths[i];
+		for (frame in framesData) {
+			var framePath = frame.path;
 			t1 = FileWrap.mtimeSync(framePath);
-			if (t1 != frameTimes[i]) {
-				frameTimes[i] = t1;
-				var url = FileWrap.getImageURL(framePaths[i]);
-				frameURLs[i] = url;
-				frameElements[i].style.backgroundImage = 'url($url)';
-				if (currentFrame == i) panner.image.src = url;
+			if (t1 != frame.importTime) {
+				frame.importTime = t1;
+				var url = FileWrap.getImageURL(frame.path);
+				frame.url = url;
+				frame.element.style.backgroundImage = 'url($url)';
+				if (currentFrameElement == frame.element) panner.image.src = url;
 			}
-		}*/
+		}
 	}
 
 	private function onSpriteImport() {
@@ -214,28 +237,28 @@ class EditSprite extends Editor {
 			var spriteFrames = [for (frame in sprite.frames) frame];
 
 			spriteManipulatorBusy = true;
-			boundingBoxMeasurer = new BoundingBoxMeasurer(spriteFrames.map(x -> getImagePath(x)), spriteManipulator);
-			boundingBoxMeasurer.onMeasured.add(onSpriteInitialMeasureReady);
-			boundingBoxMeasurer.start();
+			saveMeasurement = true;
+			boundingBoxMeasurer.start(spriteFrames.map(x -> getImagePath(x)), sprite.bboxTolerance);
 
 			}); // End of measure promise. Purposefully not indented
 
 		});
 	}
 
-	private function onSpriteInitialMeasureReady(_) {
-		var bbox = spriteManipulator.getBoundingBox();
-
+	private function onSpriteMeasureReady( bbox: SpriteBoundingBox ) {
 		sprite.bboxBottom = bbox.bottom;
 		sprite.bboxLeft = bbox.left;
 		sprite.bboxTop = bbox.top;
 		sprite.bboxRight = bbox.right;
 
-		save();
+		if (saveMeasurement) {
+			save();
+			saveMeasurement = false;
+		}
 	
 		spriteManipulatorBusy = false;
-		spriteManipulator.onReady.remove(onSpriteInitialMeasureReady);
 	}
+
 
 	private function buildHtml() {
 		element.clearInner();
@@ -265,23 +288,28 @@ class EditSprite extends Editor {
 			var importButton = element.querySelector("#import-button");
 			importButton.addEventListener('click', onSpriteImport);
 		}
-		{
-			var originXElement:InputElement = cast element.querySelector("#option-origin-x");
-			originXElement.value = Std.string(sprite.originX);
-			var xUpdate = () -> sprite.originX = cast originXElement.valueAsNumber;
-			originXElement.addEventListener('change', xUpdate);
-			originXElement.addEventListener('input', xUpdate);
-			sprite.onOriginXChanged.add(x -> originXElement.value = Std.string(x));
+
+		function bindToNumberBox(checkboxId: String, startValue: Int, setter: (Int) -> Void, event: EventHandler<Int>) {
+			var inputElement:InputElement = cast element.querySelector("#" + checkboxId);
+			inputElement.value = Std.string(startValue);
+			var update = () -> setter(cast inputElement.valueAsNumber);
+			inputElement.addEventListener('change', update);
+			inputElement.addEventListener('input', update);
+			event.add(newValue -> inputElement.value = Std.string(newValue));
 		}
-		{
-			var originYElement:InputElement = cast element.querySelector("#option-origin-y");
-			originYElement.value = Std.string(sprite.originY);
-			var yUpdate = () -> sprite.originY = cast originYElement.valueAsNumber;
-			originYElement.addEventListener('change', yUpdate);
-			originYElement.addEventListener('input', yUpdate);
-			sprite.onOriginYChanged.add(y -> originYElement.value = Std.string(y));
-			
-		}
+
+		bindToNumberBox("option-origin-x", 
+			sprite.originX,
+			newValue -> sprite.originX = newValue,
+			sprite.onOriginXChanged
+		);
+		bindToNumberBox("option-origin-y", 
+			sprite.originY,
+			newValue -> sprite.originY = newValue,
+			sprite.onOriginYChanged
+		);
+
+
 		{
 			var originTypeElement:SelectElement = cast element.querySelector("#option-origin-type");
 			HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType));
@@ -293,9 +321,12 @@ class EditSprite extends Editor {
 			for (textureGroup in Project.current.yyTextureGroups) {
 				var option = document.createOptionElement();
 				option.innerText = textureGroup;
+				option.value = textureGroup;
 				textureGroupElement.appendChild(option);
 			}
-			
+			HtmlTools.setSelectedValue(textureGroupElement, sprite.textureGroup);
+			textureGroupElement.addEventListener('change', () -> sprite.textureGroup = textureGroupElement.value);
+			sprite.onOriginTypeChanged.add(x -> HtmlTools.setSelectedValue(textureGroupElement, sprite.textureGroup));
 		}
 
 		function bindToCheckbox(checkboxId: String, startValue: Bool, setter: (Bool) -> Void, event: EventHandler<Bool>) {
@@ -331,13 +362,96 @@ class EditSprite extends Editor {
 			sprite.onEdgeFilteringChanged
 		);
 
-		HtmlTools.prettifyInputRange( cast element.querySelector("#option-bbox-tolerance") );
+		{
+			var modeSelect: SelectElement = cast element.querySelector("#option-bbox-mode");
+			HtmlTools.setSelectedValue(modeSelect, Std.string(sprite.bboxMode));
+			modeSelect.addEventListener('change', () -> sprite.bboxMode = cast Std.parseInt(modeSelect.value));
+			sprite.onBboxModeChanged.add(x -> HtmlTools.setSelectedValue(modeSelect, Std.string(sprite.bboxMode)));
+		}
+		{
+			var typeSelect: SelectElement = cast element.querySelector("#option-bbox-type");
+			HtmlTools.setSelectedValue(typeSelect, Std.string(sprite.bboxType));
+			typeSelect.addEventListener('change', () -> sprite.bboxType = cast Std.parseInt(typeSelect.value));
+			sprite.onBboxTypeChanged.add(x -> HtmlTools.setSelectedValue(typeSelect, Std.string(sprite.bboxType)));
+		}
+
+		{
+			var sliderElement: InputElement = cast element.querySelector("#option-bbox-tolerance-slider");
+			sliderElement.valueAsNumber = sprite.bboxTolerance;
+			sprite.onBboxToleranceChanged.add(x -> {
+				sliderElement.valueAsNumber = x;
+							
+				// Hack to trigger event so slider updates
+				var event = document.createEvent("HTMLEvents");
+				event.initEvent("input", false, true);
+				sliderElement.dispatchEvent(event);
+			});
+			sliderElement.addEventListener('change', () -> sprite.bboxTolerance = cast sliderElement.valueAsNumber);
+			HtmlTools.prettifyInputRange( sliderElement );
+		}
+		
+		// Disable some of them depending on what's active
+		{
+			var numberElements = element.querySelectorAll(".option-bbox-edge");
+			var toleranceSlider:InputElement = cast element.querySelector("#option-bbox-tolerance-slider");
+			var toleranceBox:InputElement = cast element.querySelector("#option-bbox-tolerance-box");
+
+			var update = _ -> {
+				var numbersEnabled = false;
+				var toleranceEnabled = false;
+				if (sprite.bboxMode == SpriteBboxMode.Automatic) {
+					toleranceEnabled = true;
+				} else if (sprite.bboxMode == SpriteBboxMode.Manual) {
+					numbersEnabled = true;
+				}
+
+				toleranceSlider.disabled = !toleranceEnabled;
+				toleranceBox.disabled = !toleranceEnabled;
+				
+				for (numberElement in numberElements) {
+					var numberInput: InputElement = cast numberElement;
+					numberInput.disabled = !numbersEnabled;
+				}
+			};
+
+			sprite.onBboxModeChanged.add(update);
+			update(null);
+		}
+		
+		bindToNumberBox("option-bbox-tolerance-box", 
+			sprite.bboxTolerance,
+			newValue -> sprite.bboxTolerance = newValue,
+			sprite.onBboxToleranceChanged
+		);
+		
+
+		bindToNumberBox("option-bbox-left", 
+			sprite.bboxLeft,
+			newValue -> sprite.bboxLeft = newValue,
+			sprite.onBboxLeftChanged
+		);
+		bindToNumberBox("option-bbox-right", 
+			sprite.bboxRight,
+			newValue -> sprite.bboxRight = newValue,
+			sprite.onBboxRightChanged
+		);
+		bindToNumberBox("option-bbox-top", 
+			sprite.bboxTop,
+			newValue -> sprite.bboxTop = newValue,
+			sprite.onBboxTopChanged
+		);
+		bindToNumberBox("option-bbox-bottom", 
+			sprite.bboxBottom,
+			newValue -> sprite.bboxBottom = newValue,
+			sprite.onBboxBottomChanged
+		);
+
 	}
 
 	private function buildOptions() {
 		var options = document.createDivElement();
 		options.id = "sprite-options";
-
+		// Lots of information is duplicated in this tree, like number to origin type etc. I wonder if there's a better way to do it...
 		options.innerHTML = SynSugar.xmls(<html>
 			<h2 id="sprite-title">SpriteName</h2>
 			<p id="sprite-width-height">WIDTHxHEIGHT</p>
@@ -359,12 +473,23 @@ class EditSprite extends Editor {
 					<option value="8">Bottom Right</option>
 				</select>
 				<div>
-					<input type="number" id="option-origin-x"></input>
+					<input type="number" id="option-origin-x"/>
 					<span>x</span>
-					<input type="number" id="option-origin-y"></input>
+					<input type="number" id="option-origin-y"/>
 				</div>
 			</div>
 			
+			<div>
+				<h4>Playback Speed</h4>
+				<div class="one-line">
+					<input type="number" id="option-playback-speed"/>
+					<select id="option-playback-speed-type">
+						<option value="0">Frames per Second</option>
+						<option value="1">Frames per Game Frame</option>
+					</select>
+				</div>
+			</div>
+
 			<div>
 				<h4>Texture Settings</h4>
 				<div class="one-line">
@@ -373,26 +498,26 @@ class EditSprite extends Editor {
 					</select>
 				</div>
 				<div class="one-line">
-					<input type="checkbox" id="option-tiled-horizontally"></input>
+					<input type="checkbox" id="option-tiled-horizontally"/>
 					<label for="option-tiled-horizontally">Tiled Horizontally</label>
 				</div>
 				<div class="one-line">
-					<input type="checkbox" id="option-tiled-vertically"></input>
+					<input type="checkbox" id="option-tiled-vertically"/>
 					<label for="option-tiled-vertically">Tiled Vertically</label>
 				</div>
 				<div class="one-line">
-					<input type="checkbox" id="option-seperate-texture-page"></input>
+					<input type="checkbox" id="option-seperate-texture-page"/>
 					<label for="option-seperate-texture-page">Seperate Texture Page</label>
 				</div>
 				<div class="one-line">
-					<input type="checkbox" id="option-premultiplied-alpha"></input>
+					<input type="checkbox" id="option-premultiplied-alpha"/>
 					<label for="option-premultiplied-alpha">Premultiplied Alpha</label>
 				</div>
 				<div class="one-line">
-					<input type="checkbox" id="option-edge-filtering"></input>
+					<input type="checkbox" id="option-edge-filtering"/>
 					<label for="option-edge-filtering">Edge Filtered</label>
 				</div>
-			<div>
+			</div>
 
 			<div>
 				<h4>Collision Mask</h4>
@@ -400,39 +525,42 @@ class EditSprite extends Editor {
 				<div class="one-line">
 					<label>Mode</label>
 					<select id="option-bbox-mode" class="float-right">
-						<option>Automatic</option>
-						<option>Full Image</option>
-						<option>Manual</option>
+						<option value="0">Automatic</option>
+						<option value="1">Full Image</option>
+						<option value="2">Manual</option>
 					</select>
 				</div>
 
 				<div class="one-line">
 					<label>Type</label>
 					<select id="option-bbox-type" class="float-right">
-						<option>Rectangle</option>
-						<option>Rectangle</option>
-						<option>Ellipse</option>
-						<option>Diamond</option>
-						<option>Precise</option>
-						<option>Precise Per Frame</option>
+						<option value="1">Rectangle</option>
+						<option value="5">Rectangle with Rotation</option>
+						<option value="2">Ellipse</option>
+						<option value="3">Diamond</option>
+						<option value="0">Precise</option>
+						<option value="4">Precise per Frame</option>
 					</select>
 				</div>
 
-				<div class="one-line">
+				<div class="one-line" style="margin-top: 10px">
 					<label>Tolerance</label>
-					<input type="range" id="option-bbox-tolerance" class="float-right" min="0" max="255" step="1"/>
+					<input type="range" id="option-bbox-tolerance-slider" min="0" max="255" step="1"/>
+					<input type="number" id="option-bbox-tolerance-box"/>
 				</div>
-				<div class="one-line">
-					<label class="short-label">Left</label>
-					<input type="number"></input>
-					<label class="short-label">Right</label>
-					<input type="number"></input>
-				</div>
-				<div class="one-line">
-					<label class="short-label">Top</label>
-					<input type="number"></input>
-					<label class="short-label">Bottom</label>
-					<input type="number"></input>
+				<div style="margin-top: 10px">
+					<div class="one-line">
+						<label for="option-bbox-left" class="short-label">Left</label>
+						<input id="option-bbox-left" type="number" class="option-bbox-edge"/>
+						<label for="option-bbox-right" class="short-label">Right</label>
+						<input id="option-bbox-right" type="number" class="option-bbox-edge"/>
+					</div>
+					<div class="one-line">
+						<label for="option-bbox-top" class="short-label">Top</label>
+						<input id="option-bbox-top" type="number" class="option-bbox-edge"/>
+						<label for="option-bbox-bottom" class="short-label">Bottom</label>
+						<input id="option-bbox-bottom" type="number" class="option-bbox-edge"/>
+					</div>
 				</div>
 			</div>
 
@@ -477,6 +605,10 @@ class EditSprite extends Editor {
 				var framePath = getImagePath(sprite.frames[0]);
 				img.src = FileWrap.getImageURL(framePath);
 				imgCtr.appendChild(img);
+				sprite.frames.onFramesReplaced.add(_ -> {
+					panner.image.src = framesData[0].url;
+					setCurrentFrameElement(0);
+				});
 			}
 			{
 				var spriteBorder = document.createDivElement();

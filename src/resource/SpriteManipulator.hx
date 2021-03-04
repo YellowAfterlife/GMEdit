@@ -50,7 +50,7 @@ class SpriteManipulator {
 		return image.height;
 	}
 
-	public function getBoundingBox(): SpriteBoundingBox {
+	public function getBoundingBox(tolerance: Int): SpriteBoundingBox {
 
 		var imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -65,7 +65,7 @@ class SpriteManipulator {
 		for (y in 0...height) {
 			for (x in 0...width) {
 				var index = (y * width + x)*4;
-				if (imageData.data[index+3] > 0) {
+				if (imageData.data[index+3] > tolerance) {
 					maxX = cast Math.max(maxX, x);
 					maxY = cast Math.max(maxY, y);
 					minX = cast Math.min(minX, x);
@@ -75,7 +75,7 @@ class SpriteManipulator {
 		}
 
 		// Nothing was found, big sad
-		if (minX == width && minY == width && maxX == 0 && maxY == 0) {
+		if (minX == width && minY == height && maxX == 0 && maxY == 0) {
 			minX = 0;
 			minY = 0;
 			maxX = 0;

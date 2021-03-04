@@ -1,5 +1,7 @@
 *:focus {
-    outline-style: solid;
+	outline-style: solid;
+	outline-width: 2px;
+	outline-offset: -1px;
 }
 html, body {
     padding: 0;
@@ -382,17 +384,20 @@ https://stackoverflow.com/a/36247448/5578773
 }
 #sprite-options {
 	margin-left: 15px;
+	overflow-y: auto;
 }
 #sprite-options .one-line {
 	width: 100%;
-	display: block;
-	overflow: hidden;
+    display: flex;
+    align-items: center;
+	overflow: auto;
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
+
 #sprite-options .one-line .short-label {
-	width: 50px;
 	display: inline-block;
+	width: 50px;
 }
 #sprite-options input[type="number"] {
 	width: 60px;
@@ -402,17 +407,34 @@ https://stackoverflow.com/a/36247448/5578773
 	margin-right: 30px;
 	width: 150px;
 	float: right;
+	order: 2;
+    margin-left: auto;
 }
+
 #sprite-options h4 {
 	margin-bottom: 0px;
 }
+#sprite-options #sprite-title {
+	margin-bottom: 0px;
+}
+#sprite-options #sprite-width-height {
+	margin-top: 0px;
+	opacity: 0.75;
+}
 #sprite-options #option-origin-type {
-	margin-bottom: 3px;
+	margin-bottom: 5px;
 	margin-top: 3px;
 }
 #sprite-options #option-origin-x, #sprite-options #option-origin-y {
 	margin-left: 0px;
 	margin-right: 0px;
+	width: 50px;
+}
+#sprite-options #option-bbox-tolerance-slider {
+	width: 126px;
+	margin-left: 20px;
+}
+#sprite-options #option-bbox-tolerance-box {
 	width: 40px;
 }
 
@@ -427,7 +449,7 @@ https://stackoverflow.com/a/36247448/5578773
 }
 .resinfo.sprite .sprite-info {
 	display: flex;
-	width: var(--main-width);
+	width: 100%
 }
 .resinfo.sprite .sprite-info-text {
 	padding: 0.3em;
@@ -696,7 +718,7 @@ https://stackoverflow.com/a/36247448/5578773
 }
 #sound-editor #sound-volume-slider {
 	width: 100%;
-	padding-right: 10px;
+	margin-right: 10px;
 }
 #sound-editor #sound-volume-text {
 	width: 50px;
