@@ -79,6 +79,9 @@ class GmlTypeCanCastTo {
 			}
 			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl, imp);
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
+				// allow function->script casts
+				if (k1 == KFunction && n2 == "script") return true;
+				
 				switch (k2) {
 					// allow bool<->number casts:
 					case KNumber: if (k1 == KBool) return true;
