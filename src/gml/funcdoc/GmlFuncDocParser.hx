@@ -25,52 +25,76 @@ class GmlFuncDocParser {
 		":([^=]+)", // pretty `:type` (as with @hint)
 	].join("|") + ")");
 	
-	public static function parse(s:String, ?out:GmlFuncDoc):GmlFuncDoc {
-		s = GmlFuncDoc.patchArrow(s);
-		var parOpenAt = s.indexOf("(");
-		var parCloseAt = s.indexOf(")", parOpenAt);
-		var name:String, pre:String, post:String, args:Array<String>, rest:Bool;
+	public static function parse(str:String, ?out:GmlFuncDoc):GmlFuncDoc {
+		str = GmlFuncDoc.patchArrow(str);
+		var name = str;
+		var pre = str;
+		var post = "";
+		var args = [];
+		var rest = false;
 		var argTypes:Array<GmlType> = null;
 		var templateItems:Array<GmlTypeTemplateItem> = null;
-		if (parOpenAt >= 0 && parCloseAt >= 0) {
-			pre = s.substring(0, parOpenAt + 1);
-			name = s.substring(0, parOpenAt); {
+		var parOpenAt = str.indexOf("(");
+		if (parOpenAt >= 0) {
+			pre = str.substring(0, parOpenAt + 1);
+			name = str.substring(0, parOpenAt); { // parse func<T>:
 				var mt = rxTemplate.exec(pre);
 				if (mt != null) {
 					name = mt[1];
 					templateItems = GmlTypeTemplateItem.parseSplit(mt[2]);
 				}
 			}
-			var sw = s.substring(parOpenAt + 1, parCloseAt).trimBoth();
-			post = s.substring(parCloseAt);
-			if (sw != "") {
-				args = sw.splitRx(JsTools.rx(~/,\s*/g));
-				var rxt = rxArgType;
-				var showArgTypes = Preferences.current.showArgTypesInStatusBar;
-				for (i in 0 ... args.length) {
-					var arg = args[i];
-					var hadBrackets = !showArgTypes && arg.startsWith("[") && arg.endsWith("]");
-					if (hadBrackets) arg = arg.substring(1, arg.length - 1);
-					arg = arg.replaceExt(rxt, function(str, t1, t2) {
-						var typeStr = JsTools.or(t1, t2).trimRight();
-						if (templateItems != null) {
-							typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
-						}
-						if (argTypes == null) argTypes = NativeArray.create(args.length);
-						argTypes[i] = GmlTypeDef.parse(typeStr);
-						return showArgTypes ? str : "";
-					});
-					if (hadBrackets) arg = "[" + arg + "]";
-					args[i] = arg;
+			//
+			var depth = 1;
+			var pos = parOpenAt + 1;
+			var len = str.length;
+			var argStart = pos;
+			var argSpace = true;
+			inline function flushArg() {
+				args.push(str.substring(argStart, pos - 1));
+			}
+			while (pos < len) {
+				var c = str.fastCodeAt(pos++);
+				if (pos == argStart) {
+					if (c.isSpace0()) argStart++;
 				}
-			} else args = [];
-			rest = sw.contains("...");
-		} else {
-			name = s;
-			pre = s;
-			post = "";
-			args = [];
-			rest = false;
+				switch (c) {
+					case "[".code, "(".code, "{".code: depth++;
+					case "]".code, ")".code, "}".code:
+						if (--depth <= 0) {
+							if (args.length > 0 || pos - 1 > argStart) flushArg();
+							post = str.substring(pos - 1);
+							break;
+						}
+					case ",".code if (depth == 1):
+						flushArg();
+						argStart = pos;
+						argSpace = true;
+					case ".".code:
+						if (!rest
+							&& str.fastCodeAt(pos) == ".".code
+							&& str.fastCodeAt(pos + 1) == ".".code
+						) rest = true;
+				}
+			}
+			//
+			var rxt = rxArgType;
+			var showArgTypes = Preferences.current.showArgTypesInStatusBar;
+			for (i => arg in args) {
+				var hadBrackets = !showArgTypes && arg.startsWith("[") && arg.endsWith("]");
+				if (hadBrackets) arg = arg.substring(1, arg.length - 1);
+				arg = arg.replaceExt(rxt, function(str, t1, t2) {
+					var typeStr = JsTools.or(t1, t2).trimRight();
+					if (templateItems != null) {
+						typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
+					}
+					if (argTypes == null) argTypes = NativeArray.create(args.length);
+					argTypes[i] = GmlTypeDef.parse(typeStr);
+					return showArgTypes ? str : "";
+				});
+				if (hadBrackets) arg = "[" + arg + "]";
+				args[i] = arg;
+			}
 		}
 		if (out != null) {
 			@:privateAccess out.minArgsCache = null;
