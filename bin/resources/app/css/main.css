@@ -382,6 +382,7 @@ https://stackoverflow.com/a/36247448/5578773
 }
 #sprite-editor .resinfo.sprite {
 	width: 100%;
+	min-width: 0;
 }
 #sprite-options {
 	margin-left: 15px;
