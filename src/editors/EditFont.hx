@@ -305,7 +305,7 @@ class EditFont extends Editor {
 		// Can't remove what's already gone *taps forehead*
 		{
 			var closeButton = document.createButtonElement();
-			closeButton.innerHTML = "x";
+			closeButton.innerText = "x";
 			closeButton.title = "Remove range";
 			closeButton.addEventListener("click", function() {
 				font.ranges.remove(range);
@@ -480,7 +480,7 @@ class EditFont extends Editor {
 	/**Builds the HTML page*/
 	private function buildPage() {
 		var header = document.createElement("h2");
-		header.innerHTML = file.name;
+		header.innerText = file.name;
 		element.appendChild(header);
 
 		var container = document.createDivElement();
@@ -493,7 +493,7 @@ class EditFont extends Editor {
 			function addOptionElement(name: String, element: Element) {
 				var headerDiv = document.createDivElement();
 				var paragraph = document.createParagraphElement();
-				paragraph.innerHTML = name;
+				paragraph.innerText = name;
 				headerDiv.appendChild(paragraph);
 				headerDiv.appendChild(element);
 				headerDiv.classList.add("option");
@@ -566,7 +566,7 @@ class EditFont extends Editor {
 				addRangeDiv.id = "add-range";
 				{
 					var newButton = document.createButtonElement();
-					newButton.innerHTML = "Add range";
+					newButton.innerText = "Add range";
 					newButton.addEventListener("click", function() {
 						moreRangeOptionsDiv.style.display = "none";
 						var newRange = {lower: 0x10FFFF, upper: 0x10FFFF};
@@ -584,7 +584,7 @@ class EditFont extends Editor {
 	
 				{
 					var moreOptionsButton = document.createButtonElement();
-					moreOptionsButton.innerHTML = "▼";
+					moreOptionsButton.innerText = "▼";
 					moreOptionsButton.classList.add("more-options");
 					moreOptionsButton.addEventListener("click", function() {
 						moreRangeOptionsDiv.style.display = moreRangeOptionsDiv.style.display == "block" ? "none" : "block";
@@ -599,7 +599,7 @@ class EditFont extends Editor {
 				moreRangeOptionsDiv.classList.add("more-options-list");
 				{
 					var addCharacters = document.createButtonElement();
-					addCharacters.innerHTML = "Add characters...";
+					addCharacters.innerText = "Add characters...";
 					addCharacters.addEventListener("click", function() {
 						Dialog.showPrompt("Characters to add to font:", "", function(newCharacters) {
 							font.addCharacters(newCharacters);
@@ -613,7 +613,7 @@ class EditFont extends Editor {
 	
 				{
 					var addAscii = document.createButtonElement();
-					addAscii.innerHTML = "Add ASCII range";
+					addAscii.innerText = "Add ASCII range";
 					addAscii.addEventListener("click", function() {
 						font.addRange({lower: 32, upper: 255});
 	
@@ -625,7 +625,7 @@ class EditFont extends Editor {
 	
 				{
 					var addAscii = document.createButtonElement();
-					addAscii.innerHTML = "Add digits range";
+					addAscii.innerText = "Add digits range";
 					addAscii.addEventListener("click", function() {
 						font.addRange({lower: 48, upper: 57});
 	
@@ -637,7 +637,7 @@ class EditFont extends Editor {
 	
 				{
 					var addLetters = document.createButtonElement();
-					addLetters.innerHTML = "Add letters range";
+					addLetters.innerText = "Add letters range";
 					addLetters.addEventListener("click", function() {
 						font.addRange({lower: 'A'.code, upper: 'Z'.code});
 						font.addRange({lower: 'a'.code, upper: 'z'.code});
@@ -655,7 +655,7 @@ class EditFont extends Editor {
 			{
 				needsRegenerationWarning = document.createParagraphElement();
 				needsRegenerationWarning.classList.add("regeneration-warning"); // straight outta doctor who
-				needsRegenerationWarning.innerHTML = "The generated font file does not exist on disk. It is necessary to run the project inside GameMaker to create it.";	
+				needsRegenerationWarning.innerText = "The generated font file does not exist on disk. It is necessary to run the project inside GameMaker to create it.";	
 				onImagefileChanged();
 	
 				optionsDiv.append(needsRegenerationWarning);
@@ -680,7 +680,7 @@ class EditFont extends Editor {
 			{
 				var previewHint = document.createParagraphElement();
 				previewHint.classList.add("hint");
-				previewHint.innerHTML = "Tip: Changing the characters inside this preview box will also change the font's included characters";
+				previewHint.innerText = "Tip: Changing the characters inside this preview box will also change the font's included characters";
 				previewArea.appendChild(previewHint);
 			}
 

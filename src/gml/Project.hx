@@ -87,7 +87,9 @@ import ui.treeview.TreeViewElement;
 	public var yySpriteURLs:Dictionary<String>;
 	/** Resource name -> 2.3 order */
 	public var yyOrder:Dictionary<Int>;
-	
+	/** Texture groups */
+	public var yyTextureGroups:Array<String>;
+
 	/** Whether this is a new-format GMS2.3 project */
 	public var isGMS23:Bool = false;
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
@@ -665,10 +667,10 @@ import ui.treeview.TreeViewElement;
 		}
 	}
 	//
-	public function mkdirSync(path:String) {
+	public function mkdirSync(path:String, ?options:{?recursive: Bool, ?mode: Int}) {
 		var full = fullPath(path);
 		if (!FileSystem.existsSync(full)) {
-			FileSystem.mkdirSync(full);
+			FileSystem.mkdirSync(full, options);
 		}
 	}
 	public function rmdirSync(path:String) {
@@ -677,25 +679,9 @@ import ui.treeview.TreeViewElement;
 			FileSystem.rmdirSync(full);
 		}
 	}
-	/** Recursive directory removal. Not too smart, won't retry */
-	public function rmdirRecSync(path:String):Bool {
-		var ok = true;
-		for (pair in readdirSync(path)) {
-			if (pair.isDirectory) {
-				if (!rmdirRecSync(pair.relPath)) ok = false;
-			} else try {
-				unlinkSync(pair.relPath);
-			} catch (x:Dynamic) {
-				Main.console.warn(x);
-				ok = false;
-			}
-		}
-		if (ok) try {
-			rmdirSync(dir);
-		} catch (x:Dynamic) {
-			Main.console.warn(x);
-		}
-		return ok;
+	/** Recursive directory removal */
+	public function rmdirRecSync(path:String) {
+		FileSystem.rmdirSync(fullPath(path), {recursive: true});
 	}
 	public function readdir(path:String, fn:Error->Array<ProjectDirInfo>->Void):Void {
 		FileSystem.readdir(path, function(e, rels) {

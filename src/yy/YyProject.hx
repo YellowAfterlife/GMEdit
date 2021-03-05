@@ -9,13 +9,26 @@ typedef YyProject = {
 	>YyBase,
 	resources:Array<YyProjectResource>,
 	//
+	/** Exists 2.3 and forward */
 	?Folders:Array<YyProjectFolder>,
+	/** Exists 2.3 and forward */
+	?TextureGroups:Array<YyTextureGroup>,
 };
 typedef YyProjectFolder = {
 	>YyBase,
 	folderPath:String,
 	order:Int,
 	name:String,
+}
+typedef YyTextureGroup = {
+	>YyBase,
+	name: String,
+	isScaled:Bool,
+	autocrop:Bool,
+	border:Int,
+	mipsToGenerate:Int,
+	groupParent:String,
+	targets:Int,
 }
 typedef YyAssetBrowserData = {
 	AssetColours:Array<YyAssetBrowserAssetColour>,

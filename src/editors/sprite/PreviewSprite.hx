@@ -1,4 +1,4 @@
-package editors;
+package editors.sprite;
 
 import editors.Editor;
 import electron.FileSystem;
@@ -25,7 +25,7 @@ import electron.Shell;
  * This is a big mess as for something that's just an image strip viewer.
  * @author YellowAfterlife
  */
-class EditSprite extends Editor {
+class PreviewSprite extends Editor {
 	var image:ImageElement;
 	var panner:Panner;
 	var frameCount:Int = 0;
@@ -73,8 +73,8 @@ class EditSprite extends Editor {
 		checkRecenter();
 	}
 	//
-	function getData1(data:String):EditSpriteData {
-		var d = new EditSpriteData();
+	function getData1(data:String):PreviewSpriteData {
+		var d = new PreviewSpriteData();
 		var pj = Project.current;
 		var q:SfGmx = FileWrap.readGmxFileSync(file.path);
 		d.xorig = q.findFloat("xorig");
@@ -90,8 +90,8 @@ class EditSprite extends Editor {
 		d.frameCount = d.frameURLs.length;
 		return d;
 	}
-	function getData2(q:YySprite):EditSpriteData {
-		var d = new EditSpriteData();
+	function getData2(q:YySprite):PreviewSpriteData {
+		var d = new PreviewSpriteData();
 		d.xorig = q.xorig;
 		d.yorig = q.yorig;
 		d.width = q.width;
@@ -99,7 +99,6 @@ class EditSprite extends Editor {
 		d.playbackLegacy = q.playbackSpeedType != 0;
 		d.playbackSpeed = q.playbackSpeed;
 		var dir = Path.directory(file.path);
-		var pj = Project.current;
 		for (frame in q.frames) {
 			var fid = frame.name;
 			if (fid == null) fid = frame.id;
@@ -129,7 +128,7 @@ class EditSprite extends Editor {
 	override public function load(data:Dynamic):Void {
 		var v2 = Std.is(file.kind, KYySprite);
 		if (v2 && data == null) data = FileWrap.readYyFileSync(file.path);
-		var d:EditSpriteData = v2 ? getData2(data) : getData1(data);
+		var d:PreviewSpriteData = v2 ? getData2(data) : getData1(data);
 		element.clearInner();
 		//
 		var ctr = document.createDivElement();
@@ -317,7 +316,7 @@ class EditSprite extends Editor {
 		}
 	}
 }
-class EditSpriteData {
+class PreviewSpriteData {
 	public var xorig:Float;
 	public var yorig:Float;
 	public var width:Float;

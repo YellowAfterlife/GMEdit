@@ -180,6 +180,10 @@ class YyLoader {
 		for (resource in yyProject.resources) {
 			GmlSeeker.run(resource.id.path, resource.id.name, KYyUnknown.inst);
 		}
+		project.yyTextureGroups = new Array();
+		for (texturepage in yyProject.TextureGroups) {
+			project.yyTextureGroups.push(texturepage.name);
+		}
 	}
 }
 private class YyLoaderFolder {

@@ -103,6 +103,7 @@ class YyLoaderV22 {
 		project.yyObjectNames = objectNames;
 		project.yyObjectGUIDs = objectGUIDs;
 		project.lambdaMap = new Dictionary();
+		project.yyTextureGroups = new Array();
 		var scriptLambdas = project.properties.lambdaMode == Scripts;
 		if (scriptLambdas) {
 			GmlExtLambda.seekData = new parsers.GmlSeekData(KGmlLambdas.inst);
