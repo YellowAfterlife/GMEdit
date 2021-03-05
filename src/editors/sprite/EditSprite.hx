@@ -49,7 +49,7 @@ class EditSprite extends Editor {
 	public function new(file:GmlFile) {
 		super(file);
 		element = document.createDivElement();
-		element.id = "sprite-editor";
+		element.classList.add("sprite-editor");
 
 		spriteManipulator = new SpriteManipulator();
 		boundingBoxMeasurer = new BoundingBoxMeasurer(spriteManipulator);
@@ -295,11 +295,11 @@ class EditSprite extends Editor {
 	private function bindOptions() {
 		/// Header settings
 		{
-			var title = element.querySelector("#sprite-title");
+			var title = element.querySelector(".sprite-title");
 			title.innerText = sprite.name;
 		}
 		{
-			var widthHeight = element.querySelector("#sprite-width-height");
+			var widthHeight = element.querySelector(".sprite-width-height");
 			var onWidthHeightChanged = (_) -> {
 				widthHeight.innerText = '${sprite.width}x${sprite.height}';
 			}
@@ -308,13 +308,13 @@ class EditSprite extends Editor {
 			sprite.onWidthChanged.add(onWidthHeightChanged);
 		}
 		{
-			var importButton = element.querySelector("#import-button");
+			var importButton = element.querySelector(".import-button");
 			importButton.addEventListener('click', onSpriteImport);
 		}
 
 		/// Origin settings
 		function bindToNumberBox(checkboxId: String, startValue: Int, setter: (Int) -> Void, event: EventHandler<Int>) {
-			var inputElement:InputElement = cast element.querySelector("#" + checkboxId);
+			var inputElement:InputElement = cast element.querySelector("." + checkboxId);
 			inputElement.value = Std.string(startValue);
 			var update = () -> setter(cast inputElement.valueAsNumber);
 			inputElement.addEventListener('change', update);
@@ -333,7 +333,7 @@ class EditSprite extends Editor {
 			sprite.onOriginYChanged
 		);
 		{
-			var originTypeElement:SelectElement = cast element.querySelector("#option-origin-type");
+			var originTypeElement:SelectElement = cast element.querySelector(".option-origin-type");
 			HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType));
 			originTypeElement.addEventListener('change', () -> sprite.setOriginType(cast Std.parseInt(originTypeElement.value)));
 			sprite.onOriginTypeChanged.add(x -> HtmlTools.setSelectedValue(originTypeElement, Std.string(sprite.originType)));
@@ -346,7 +346,7 @@ class EditSprite extends Editor {
 			cast sprite.onPlaybackSpeedChanged
 		);
 		{
-			var playbackTypeSelect = cast element.querySelector("#option-playback-speed-type");
+			var playbackTypeSelect = cast element.querySelector(".option-playback-speed-type");
 			HtmlTools.setSelectedValue(playbackTypeSelect, Std.string(sprite.playbackSpeedType));
 			playbackTypeSelect.addEventListener('change', () -> {
 				var newValue: PlaybackSpeedType = cast Std.parseInt(playbackTypeSelect.value);
@@ -365,7 +365,7 @@ class EditSprite extends Editor {
 
 		/// Texture settings
 		{
-			var textureGroupElement:SelectElement = cast element.querySelector("#option-texture-group");
+			var textureGroupElement:SelectElement = cast element.querySelector(".option-texture-group");
 			for (textureGroup in Project.current.yyTextureGroups) {
 				var option = document.createOptionElement();
 				option.innerText = textureGroup;
@@ -378,7 +378,7 @@ class EditSprite extends Editor {
 		}
 
 		function bindToCheckbox(checkboxId: String, startValue: Bool, setter: (Bool) -> Void, event: EventHandler<Bool>) {
-			var inputElement: InputElement = cast element.querySelector("#"+checkboxId);
+			var inputElement: InputElement = cast element.querySelector("."+checkboxId);
 			inputElement.checked = startValue;
 			inputElement.addEventListener('change', () -> { setter(inputElement.checked); });
 			event.add(newValue -> inputElement.checked = newValue);
@@ -412,20 +412,20 @@ class EditSprite extends Editor {
 
 		/// Bounding box settings
 		{
-			var modeSelect: SelectElement = cast element.querySelector("#option-bbox-mode");
+			var modeSelect: SelectElement = cast element.querySelector(".option-bbox-mode");
 			HtmlTools.setSelectedValue(modeSelect, Std.string(sprite.bboxMode));
 			modeSelect.addEventListener('change', () -> sprite.bboxMode = cast Std.parseInt(modeSelect.value));
 			sprite.onBboxModeChanged.add(x -> HtmlTools.setSelectedValue(modeSelect, Std.string(sprite.bboxMode)));
 		}
 		{
-			var typeSelect: SelectElement = cast element.querySelector("#option-bbox-type");
+			var typeSelect: SelectElement = cast element.querySelector(".option-bbox-type");
 			HtmlTools.setSelectedValue(typeSelect, Std.string(sprite.bboxType));
 			typeSelect.addEventListener('change', () -> sprite.bboxType = cast Std.parseInt(typeSelect.value));
 			sprite.onBboxTypeChanged.add(x -> HtmlTools.setSelectedValue(typeSelect, Std.string(sprite.bboxType)));
 		}
 
 		{
-			var sliderElement: InputElement = cast element.querySelector("#option-bbox-tolerance-slider");
+			var sliderElement: InputElement = cast element.querySelector(".option-bbox-tolerance-slider");
 			sliderElement.valueAsNumber = sprite.bboxTolerance;
 			sprite.onBboxToleranceChanged.add(x -> {
 				sliderElement.valueAsNumber = x;
@@ -442,8 +442,8 @@ class EditSprite extends Editor {
 		// Disable some of them depending on what's active
 		{
 			var numberElements = element.querySelectorAll(".option-bbox-edge");
-			var toleranceSlider:InputElement = cast element.querySelector("#option-bbox-tolerance-slider");
-			var toleranceBox:InputElement = cast element.querySelector("#option-bbox-tolerance-box");
+			var toleranceSlider:InputElement = cast element.querySelector(".option-bbox-tolerance-slider");
+			var toleranceBox:InputElement = cast element.querySelector(".option-bbox-tolerance-box");
 
 			var update = _ -> {
 				var numbersEnabled = false;
@@ -499,17 +499,17 @@ class EditSprite extends Editor {
 
 	private function buildOptions() {
 		var options = document.createDivElement();
-		options.id = "sprite-options";
+		options.classList.add("sprite-options");
 		// Lots of information is duplicated in this tree, like number to origin type etc. I wonder if there's a better way to do it...
 		options.innerHTML = SynSugar.xmls(<html>
-			<h2 id="sprite-title">SpriteName</h2>
-			<p id="sprite-width-height">WIDTHxHEIGHT</p>
+			<h2 class="sprite-title">SpriteName</h2>
+			<p class="sprite-width-height">WIDTHxHEIGHT</p>
 			
-			<button id="import-button" class="highlighted-button">Import Images</button>
+			<button class="highlighted-button import-button" title="Replace the current sprite images and import new ones.">Import Images</button>
 			
 			<div>
 				<h4>Origin</h4>
-				<select id="option-origin-type">
+				<select class="option-origin-type">
 					<option value="9">Custom</option>
 					<option value="0">Top Left</option>
 					<option value="1">Top Centre</option>
@@ -522,17 +522,17 @@ class EditSprite extends Editor {
 					<option value="8">Bottom Right</option>
 				</select>
 				<div>
-					<input type="number" id="option-origin-x"/>
+					<input type="number" class="option-origin-x"/>
 					<span>x</span>
-					<input type="number" id="option-origin-y"/>
+					<input type="number" class="option-origin-y"/>
 				</div>
 			</div>
 			
 			<div>
 				<h4>Playback Speed</h4>
 				<div class="one-line">
-					<input type="number" id="option-playback-speed" min="0"/>
-					<select id="option-playback-speed-type">
+					<input type="number" title="How fast the sprite is played in game." class="option-playback-speed" min="0"/>
+					<select class="option-playback-speed-type">
 						<option value="0">Frames per Second</option>
 						<option value="1">Frames per Game Frame</option>
 					</select>
@@ -541,29 +541,29 @@ class EditSprite extends Editor {
 
 			<div>
 				<h4>Texture Settings</h4>
-				<div class="one-line">
+				<div title="The group that the sprite should be packed together with once it's put on a texture page." class="one-line">
 					<label>Texture Group</label>
-					<select id="option-texture-group" class="float-right">
+					<select class="option-texture-group float-right">
 					</select>
 				</div>
-				<div class="one-line">
-					<input type="checkbox" id="option-tiled-horizontally"/>
+				<div class="one-line" title="If the sprite is used as a horizontal tile, this should be ticked. This option may correct some visual bugs.">
+					<input type="checkbox" class="option-tiled-horizontally"/>
 					<label for="option-tiled-horizontally">Tiled Horizontally</label>
 				</div>
-				<div class="one-line">
-					<input type="checkbox" id="option-tiled-vertically"/>
+				<div class="one-line" title="If the sprite is used as a vertical tile, this should be ticked. This option may correct some visual bugs.">
+					<input type="checkbox" class="option-tiled-vertically"/>
 					<label for="option-tiled-vertically">Tiled Vertically</label>
 				</div>
-				<div class="one-line">
-					<input type="checkbox" id="option-seperate-texture-page"/>
+				<div class="one-line" title="If checked, the sprite will be put on it's own texture page. This is usually not desired.">
+					<input type="checkbox" class="option-seperate-texture-page"/>
 					<label for="option-seperate-texture-page">Seperate Texture Page</label>
 				</div>
-				<div class="one-line">
-					<input type="checkbox" id="option-premultiplied-alpha"/>
+				<div class="one-line" title="Multiplies the alpha into the sprite ahead of time.">
+					<input type="checkbox" class="option-premultiplied-alpha"/>
 					<label for="option-premultiplied-alpha">Premultiplied Alpha</label>
 				</div>
-				<div class="one-line">
-					<input type="checkbox" id="option-edge-filtering"/>
+				<div class="one-line" title="If checked, fixes some visual bugs that may appear on edges of scaled sprites.">
+					<input type="checkbox" class="option-edge-filtering"/>
 					<label for="option-edge-filtering">Edge Filtered</label>
 				</div>
 			</div>
@@ -571,18 +571,18 @@ class EditSprite extends Editor {
 			<div>
 				<h4>Collision Mask</h4>
 				
-				<div class="one-line">
+				<div class="one-line" title="What mode the collision mask should use to determine it's size.">
 					<label>Mode</label>
-					<select id="option-bbox-mode" class="float-right">
-						<option value="0">Automatic</option>
-						<option value="1">Full Image</option>
-						<option value="2">Manual</option>
+					<select class="float-right option-bbox-mode">
+						<option value="0" title="Determine the collision mask based on the visible pixels of the sprite.">Automatic</option>
+						<option value="1" title="Use the full sprite size for the collision.">Full Image</option>
+						<option value="2" title="Manually set the size of the collision mask.">Manual</option>
 					</select>
 				</div>
 
 				<div class="one-line">
 					<label>Type</label>
-					<select id="option-bbox-type" class="float-right">
+					<select class="float-right option-bbox-type">
 						<option value="1">Rectangle</option>
 						<option value="5">Rectangle with Rotation</option>
 						<option value="2">Ellipse</option>
@@ -592,23 +592,23 @@ class EditSprite extends Editor {
 					</select>
 				</div>
 
-				<div class="one-line" style="margin-top: 10px">
+				<div class="one-line" style="margin-top: 10px" title="How visible the transparency of a pixel must be to count as part of the collision mask.">
 					<label>Tolerance</label>
-					<input type="range" id="option-bbox-tolerance-slider" min="0" max="255" step="1"/>
-					<input type="number" id="option-bbox-tolerance-box" min="0" max="255"/>
+					<input type="range" class="option-bbox-tolerance-slider" min="0" max="255" step="1"/>
+					<input type="number" class="option-bbox-tolerance-box" min="0" max="255"/>
 				</div>
 				<div style="margin-top: 10px">
 					<div class="one-line">
 						<label for="option-bbox-left" class="short-label">Left</label>
-						<input id="option-bbox-left" type="number" class="option-bbox-edge"/>
+						<input name="option-bbox-left" type="number" class="option-bbox-edge option-bbox-left"/>
 						<label for="option-bbox-right" class="short-label">Right</label>
-						<input id="option-bbox-right" type="number" class="option-bbox-edge"/>
+						<input name="option-bbox-right" type="number" class="option-bbox-edge option-bbox-right"/>
 					</div>
 					<div class="one-line">
 						<label for="option-bbox-top" class="short-label">Top</label>
-						<input id="option-bbox-top" type="number" class="option-bbox-edge"/>
+						<input name="option-bbox-top" type="number" class="option-bbox-edge option-bbox-top"/>
 						<label for="option-bbox-bottom" class="short-label">Bottom</label>
-						<input id="option-bbox-bottom" type="number" class="option-bbox-edge"/>
+						<input name="option-bbox-bottom" type="number" class="option-bbox-edge option-bbox-bottom"/>
 					</div>
 				</div>
 			</div>
@@ -645,7 +645,7 @@ class EditSprite extends Editor {
 				playbackControls.classList.add("playback-control");
 				
 				playButton = document.createSpanElement();
-				playButton.id = "play-button";
+				playButton.classList.add("play-button");
 				playButton.innerText = "▶";
 
 				playButton.addEventListener("click", () -> {
