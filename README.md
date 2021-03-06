@@ -34,7 +34,7 @@ Same page also houses screenshots and development log.
 
 ### First time setup
 * Download/clone the repository
-* Download [a pre-built 7.x Electron binary](https://github.com/electron/electron/releases)
+* Download [a pre-built 11.x Electron binary](https://github.com/electron/electron/releases)
   and extract the files into bin/ directory (so that you have `bin/electron.exe` on Windows or `bin/electron` on Mac/Linux).
 
   You can find which exact version GMEdit is using by evaluating `process.versions.electron` in the JS console (Ctrl+Shift+I).
@@ -65,7 +65,7 @@ Same page also houses screenshots and development log.
 * Dark theme tree icons: [Font Awesome](https://fontawesome.com/)
 * zlib decompression: [pako](https://github.com/nodeca/pako)
 * Windows title bar color detection: [this library](https://github.com/loilo/windows-titlebar-color)
-* System font enumerator for the font editor: [font-scanner](https://www.npmjs.com/package/font-scanner)
+* System font enumerator for the font editor: [font-scanner](https://www.npmjs.com/package/font-scanner) (slightly edited)
 
 ### License
 

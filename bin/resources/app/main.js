@@ -25,7 +25,7 @@ function createWindow(first) {
 			nodeIntegration: true
 		},
 		show: !showOnceReady,
-		icon: __dirname + '/icon.png'
+		icon: __dirname + '/favicon.' + (process.platform == "win32" ? "ico" : "png")
 	})
 	activeWindows.push(wnd)
 	if (showOnceReady) {
