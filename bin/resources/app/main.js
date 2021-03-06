@@ -1,4 +1,19 @@
 const electron = require('electron')
+
+{ // validate Electron version
+	const wantVersion = 11
+	let version = process.versions.electron
+	let pos = version.indexOf(".")
+	if (pos >= 0) version = version.substr(0, pos)
+	version = parseInt(version)
+	if (version && version < wantVersion) throw new Error([
+		"Hey, this Electron version is too old!",
+		`GMEdit needs at least Electron ${wantVersion}.x, but you have ${process.versions.electron}.`,
+		"If you are downloading GMEdit-App-Only.zip, please download a full release to update Electron.",
+		"If you are building GMEdit from source code, grab a newer Electron binary as per README instructions."
+	].join("\n"))
+}
+
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
@@ -106,7 +121,7 @@ app.on('activate', function () {
 
 // https://github.com/electron/electron/issues/4349
 electron.ipcMain.on('shell-open', (e, path) => {
-	electron.shell.openItem(path)
+	electron.shell.openPath(path)
 })
 
 // https://github.com/electron/electron/issues/11617
@@ -133,6 +148,3 @@ app.on('window-all-closed', function () {
 		app.quit()
 	}
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
