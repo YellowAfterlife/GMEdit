@@ -302,7 +302,7 @@ using tools.NativeArray;
 					rtk("text", mt[4]),
 					rtk("punctuation.operator", mt[5]),
 				];
-			}, ~/(\?)(\s*)(\w+)(\s*)(:)/),
+			}, ~/(\?)(\s*)([a-zA-Z_]\w*)(\s*)(:)/),
 			rxMatch(function(value, state, stack, line, row) {
 				var mt = jsThisAsRule.splitRegex.exec(value);
 				var idt = AceGmlHighlightIdents.matchIdent(editor, row, mt[3], fieldDef, false);
@@ -313,7 +313,7 @@ using tools.NativeArray;
 					rtk("text", mt[4]),
 					rtk("punctuation.operator", mt[5]),
 				];
-			}, ~/(case)(\s+)(\w+)(\s*)(:)/),
+			}, ~/(case)(\s+)([a-zA-Z_]\w*)(\s*)(:)/),
 			rxMatch(function(value, state, stack, line, row) {
 				var mt = jsThisAsRule.splitRegex.exec(value);
 				var idt = AceGmlHighlightIdents.matchIdent(editor, row, mt[1], fieldDef, false);
@@ -323,7 +323,7 @@ using tools.NativeArray;
 					rtk("text", mt[2]),
 					rtk("punctuation.operator", mt[3]),
 				];
-			}, ~/(\w+)(\s*)(:)/),
+			}, ~/([a-zA-Z_]\w*)(\s*)(:)/),
 			//
 			rIdentPair,
 			rIdentLocal,
