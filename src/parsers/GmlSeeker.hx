@@ -145,11 +145,14 @@ class GmlSeeker {
 		+ "@is(?:s)?"
 		+ "\\b\\s*\\{(.+?)\\}"
 	);
-	private static var jsDoc_is_line = new RegExp("^\\s*(?:" + [
-		"globalvar\\s+(\\w+)", // globalvar name
-		"global\\s*\\.\\s*(\\w+)\\s*=", // global.name=
-		"(\\w+)\\s*=" // name=
-	].join("|") + ")");
+	private static var jsDoc_is_line = (function() {
+		var id = "[_a-zA-Z]\\w*";
+		return new RegExp("^\\s*(?:" + [
+			'globalvar\\s+($id(?:\\s*,\\s*$id)*)', // globalvar name[, name2]
+			'global\\s*\\.\\s*($id)\\s*=', // global.name=
+			'($id)\\s*=' // name=
+		].join("|") + ")");
+	})();
 	private static var jsDoc_template = new RegExp("^///\\s*"
 		+ "@template\\b\\s*"
 		+ "(?:\\{(.*?)\\}\\s*)?"
@@ -654,10 +657,12 @@ class GmlSeeker {
 					var name:String;
 					var type = GmlTypeDef.parse(typeStr);
 					if (lineMatch[1] != null) {
-						name = lineMatch[1];
-						out.globalVarTypes[name] = type;
-						var comp = out.comps[name];
-						if (comp != null) comp.setDocTag("type", typeStr);
+						tools.RegExpTools.each(JsTools.rx(~/\w+/g), lineMatch[1], function(mt) {
+							name = mt[0];
+							out.globalVarTypes[name] = type;
+							var comp = out.comps[name];
+							if (comp != null) comp.setDocTag("type", typeStr);
+						});
 					} else if (lineMatch[2] != null) {
 						name = lineMatch[2];
 						out.globalTypes[name] = type;
