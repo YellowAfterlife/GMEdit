@@ -61,6 +61,9 @@ import ace.extern.AceSession;
 	 * implements AceDynamicMarker
 	 */
 	public function update(html:AceMarkerBuf, markerLayer:AceMarkerLayer, session:AceSession, config:AceMarkerConfig):Void {
-		markerLayer.drawFullLineMarker(html, __range, __clazz, config, "position: absolute");
+		var range = __range.clipRows(config.firstRow, config.lastRow);
+		if (range.isEmpty()) return;
+		range = range.toScreenRange(session);
+		markerLayer.drawFullLineMarker(html, range, __clazz, config, "position: absolute");
 	}
 }

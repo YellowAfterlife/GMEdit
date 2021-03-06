@@ -9,7 +9,8 @@ extern class AceMarker {
 	// it's actually just an int id
 }
 extern class AceMarkerConfig {
-	//
+	var firstRow:Int;
+	var lastRow:Int;
 }
 extern class AceMarkerBuf {
 	// technically unused

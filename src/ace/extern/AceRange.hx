@@ -23,9 +23,12 @@ import ace.extern.AceToken;
 	}
 }
 @:native("AceRange") private extern class AceRangeImpl {
-	public var start:AcePos;
-	public var end:AcePos;
-	public function new(startRow:Int, startCol:Int, endRow:Int, endCol:Int):Void;
-	public function extend(row:Int, col:Int):AceRange;
-	public function isMultiLine():Bool;
+	var start:AcePos;
+	var end:AcePos;
+	function new(startRow:Int, startCol:Int, endRow:Int, endCol:Int):Void;
+	function extend(row:Int, col:Int):AceRange;
+	function isEmpty():Bool;
+	function isMultiLine():Bool;
+	function clipRows(firstRow:Int, lastRow:Int):AceRange;
+	function toScreenRange(session:AceSession):AceRange;
 }
