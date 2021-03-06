@@ -1,4 +1,5 @@
 package yy;
+import yy.YyResourceRef;
 import haxe.DynamicAccess;
 
 /**
@@ -20,3 +21,10 @@ typedef YyBase = {
 	?hxOrder:Array<String>,
 	?hxDigits:DynamicAccess<Int>,
 };
+
+typedef YyBase23 = {
+	name: String,
+	resourceType:String,
+	resourceVersion:String,
+	tags:Array<String>,
+}

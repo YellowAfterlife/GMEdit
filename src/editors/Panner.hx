@@ -1,4 +1,5 @@
 package editors;
+import js.html.Element;
 import js.Browser;
 import js.html.DivElement;
 import js.html.ImageElement;
@@ -13,14 +14,20 @@ class Panner {
 	public var mult:Float = 1;
 	public var ctr:DivElement;
 	public var image:ImageElement;
+	private var rootElement:Element;
 	private var zoomed:Bool = null;
 	private var mouseX:Float = 0;
 	private var mouseY:Float = 0;
 	private var mouseDown:Bool = false;
-	public function new(el:DivElement, img:ImageElement) {
+	public function new(el:DivElement, rootElement: Element) {
 		ctr = el;
 		ctr.classList.add("panner");
-		image = img;
+		if (rootElement.tagName == "IMG") {
+			image = cast rootElement;
+		} else {
+			image = cast rootElement.querySelector("IMG");
+		}
+		this.rootElement = rootElement;
 		pan = { x: 0, y: 0, z: 0 };
 		el.addEventListener("mousedown", onmousedown);
 		el.addEventListener("mousewheel", onmousewheel);
@@ -37,7 +44,7 @@ class Panner {
 			} else ctr.classList.remove("zoomed");
 		}
 		ctr.setAttribute("data-zoom", Math.round(mult * 100) + "%");
-		image.style.transform = 'matrix($mult,0,0,$mult,${-pan.x},${-pan.y})';
+		rootElement.style.transform = 'matrix($mult,0,0,$mult,${-pan.x},${-pan.y})';
 	}
 	public function forceUpdate() {
 		mult = Math.pow(2, pan.z);
@@ -102,6 +109,7 @@ class Panner {
 		if (cw <= 0 || ch <= 0) return;
 		var qw:Float = image.width;
 		var qh:Float = image.height;
+
 		if (qw <= 0 || qh <= 0) return;
 		var z = 0;
 		while (qw < cw && qh < ch) {

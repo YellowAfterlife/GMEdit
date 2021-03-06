@@ -21,6 +21,7 @@ function createWindow(first) {
 		backgroundColor: "#889EC5",
 		title: "GMEdit",
 		webPreferences: {
+			enableRemoteModule: true,
 			nodeIntegration: true
 		},
 		show: !showOnceReady,
@@ -30,7 +31,7 @@ function createWindow(first) {
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
 	}
-	
+	app.allowRendererProcessReuse = false;
 	// https://github.com/electron/electron/issues/19789#issuecomment-559825012
 	electron.protocol.interceptFileProtocol('file', (request, cb) => {
 		//const show = request.url.includes("index")

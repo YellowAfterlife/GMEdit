@@ -319,7 +319,7 @@ class YyZip extends Project {
 		}
 		return out;
 	}
-	override public function mkdirSync(path:String) {
+	override public function mkdirSync(path:String, ?options:{?recursive: Bool, ?mode: Int}) {
 		// (directories are implicit in ZIP)
 	}
 	override public function rmdirSync(path:String) {

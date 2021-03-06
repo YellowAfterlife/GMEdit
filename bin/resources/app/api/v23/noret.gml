@@ -766,8 +766,6 @@ gesture_rotate_angle
 gesture_tap_count
 keyboard_virtual_show
 keyboard_virtual_hide
-keyboard_virtual_status
-keyboard_virtual_height
 layer_sequence_destroy
 layer_sequence_x
 layer_sequence_y

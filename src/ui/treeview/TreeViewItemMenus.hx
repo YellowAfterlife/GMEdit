@@ -1,4 +1,5 @@
 package ui.treeview;
+import ui.preferences.PrefData.PrefAssetOrder23;
 import gml.file.GmlFile;
 import ui.ChromeTabs.ChromeTab;
 import electron.Dialog;
@@ -421,7 +422,16 @@ class TreeViewItemMenus {
 		for (orderInd in 0 ... 3) {
 			var order = orders[orderInd];
 			var submenu = new Menu();
-			for (dat in ["script", "object", "shader", "font", "sound"]) {
+
+			var resourceTypes = ["sprite", "sound", "script", "shader", "font", "object"];
+
+			if (Preferences.current.assetOrder23 == PrefAssetOrder23.Ascending) {
+				resourceTypes.sort((a,b) -> a < b ? -1 : 1);
+			} else if (Preferences.current.assetOrder23 == PrefAssetOrder23.Descending) {
+				resourceTypes.sort((a,b) -> a > b ? -1 : 1);
+			}
+
+			for (dat in resourceTypes) {
 				var pair = dat.split("|");
 				var kind = pair[0];
 				var label = pair[1];

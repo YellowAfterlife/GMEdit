@@ -103,8 +103,8 @@ class EditSound extends Editor {
 
 	private function importSound() {
 		Dialog.showOpenDialog({
-			title: "title goes here",
-			buttonLabel: "button label",
+			title: "Open",
+			buttonLabel: "Import",
 			filters: [
 				new DialogFilter( "Audio files", ["mp3", "ogg", "wav", "wma"])
 			]
@@ -215,6 +215,7 @@ class EditSound extends Editor {
 		soundVolumeSlider = cast element.querySelector("#sound-volume-slider");
 		soundVolumeSlider.addEventListener("change", onVolumeSliderChanged);
 		soundVolumeSlider.addEventListener("input", onVolumeSliderInput);
+		HtmlTools.prettifyInputRange(soundVolumeSlider);
 
 		soundVolumeText = cast element.querySelector("#sound-volume-text");
 		soundVolumeText.addEventListener("change", onVolumeTextChanged);
@@ -241,7 +242,7 @@ class EditSound extends Editor {
 	/**Updates all values on the page to reflect whatever is inside the current sound*/
 	private function setOptionValues() {
 		var header = element.querySelector("h2");
-		header.innerHTML = sound.name;
+		header.innerText = sound.name;
 
 		soundVolumeSlider.value = Std.string(sound.volume);
 

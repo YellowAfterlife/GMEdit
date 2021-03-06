@@ -1,4 +1,6 @@
 package yy;
+import electron.FileSystem;
+import yy.YySprite.YySprite23;
 import ace.extern.AceAutoCompleteItem;
 import electron.Dialog;
 import file.FileKind;
@@ -216,6 +218,16 @@ class YyManip {
 				case "sound": {
 					var sound:YySound = YySound.generateDefault(yyParent, name);
 					yyResource = sound;
+				}
+				case "sprite": {
+					var sprite = YySprite23.generateDefault(yyParent, name);
+					yyResource = sprite;
+					var framePath = sprite.frames[0].name;
+					var layerPath = sprite.layers[0].name;
+					FileSystem.copyFileSync( Main.relPath("misc/default_sprite.png"), pj.fullPath('${dir}/${framePath}.png' ) );
+					var layerDir = '${dir}/layers/${framePath}';
+					if (!pj.existsSync(layerDir)) pj.mkdirSync(layerDir, {recursive: true});
+					FileSystem.copyFileSync( Main.relPath("misc/default_sprite.png"), pj.fullPath('${layerDir}/${layerPath}.png' ) );
 				}
 				default: {
 					Dialog.showError('No idea how to create type=`$kind`, sorry');
