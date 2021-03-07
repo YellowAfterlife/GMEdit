@@ -453,6 +453,7 @@ class GmlLinter {
 		// figure out min/max argument counts:
 		var minArgs:Int, maxArgs:Int;
 		if (doc != null) {
+			currName = doc.name;
 			minArgs = doc.minArgs;
 			maxArgs = doc.maxArgs;
 			
