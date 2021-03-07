@@ -102,20 +102,33 @@ class GmlLinterIdent {
 			}
 			
 			var t = linter.getSelfType();
-			var tn = t.getNamespace();
-			if (tn != null) {
-				var wantWarn = false;
-				var found = AceGmlTools.findNamespace(tn, imp, function(ns:GmlNamespace) {
-					wantWarn = true;
-					if (ns.getInstKind(currName) != null) {
-						currType = ns.getInstType(currName);
-						currFunc = ns.getInstDoc(currName);
-						return true;
-					} else return false;
-				});
-				if (!found && wantWarn && linter.optRequireFields) {
-					linter.addWarning('Variable $currName is not part of $tn');
-				}
+			switch (t) {
+				case null: {};
+				case TAnon(inf): {
+					var fd = inf.fields[currName];
+					if (fd != null) {
+						currType = fd.type;
+						currFunc = fd.doc;
+					} else if (linter.optRequireFields) {
+						linter.addWarning('Variable $currName is not part of anonymous struct '
+							+ t.toString());
+					}
+				};
+				case TInst(tn, _, KCustom): {
+					var wantWarn = false;
+					var found = AceGmlTools.findNamespace(tn, imp, function(ns:GmlNamespace) {
+						wantWarn = true;
+						if (ns.getInstKind(currName) != null) {
+							currType = ns.getInstType(currName);
+							currFunc = ns.getInstDoc(currName);
+							return true;
+						} else return false;
+					});
+					if (!found && wantWarn && linter.optRequireFields) {
+						linter.addWarning('Variable $currName is not part of $tn');
+					}
+				};
+				default:
 			}
 		} while (false);
 		type = currType;
