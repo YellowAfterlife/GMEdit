@@ -544,6 +544,7 @@ using tools.NativeArray;
 			"gml.comment.doc.curly": [
 				rxRule(function(id) {
 					if (GmlAPI.gmlNamespaces.exists(id)) return "namespace";
+					if (id == "function") return "namespace";
 					return JsTools.or(GmlTypeTools.kindMap[id], "identifier");
 				}, ~/\w+/),
 				rxRule("punctuation.operator", ~/[,?]/),
