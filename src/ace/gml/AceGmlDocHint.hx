@@ -64,6 +64,7 @@ class AceGmlDocHint {
 		var c:CharCode;
 		var typeParams:Dictionary<AceTokenType> = new Dictionary();
 		function getIdentType(name:String):AceTokenType {
+			if (name == "function") return "namespace";
 			return GmlAPI.gmlNamespaces.exists(name) ? "namespace" : typeParams.defget(name, "typeerror");
 		}
 		function procType():FoundError {
