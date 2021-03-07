@@ -25,6 +25,8 @@ const url = require('url')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let activeWindows = []
+const isWindows = process.platform == "win32";
+const isMac = process.platform == "darwin";
 
 function createWindow(first) {
 	// Create the browser window.
@@ -40,7 +42,7 @@ function createWindow(first) {
 			nodeIntegration: true
 		},
 		show: !showOnceReady,
-		icon: __dirname + '/favicon.' + (process.platform == "win32" ? "ico" : "png")
+		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
 	})
 	activeWindows.push(wnd)
 	if (showOnceReady) {
@@ -71,10 +73,6 @@ function createWindow(first) {
 	
 	if (first) {
 		let args = process.argv
-		let openArg = 1
-		
-		// https://apple.stackexchange.com/questions/207895/app-gets-in-commandline-parameter-psn-0-nnnnnn-why
-		if (process.platform === 'darwin' && openArg < args.length && args[openArg].startsWith("-psn")) openArg += 1
 		
 		//
 		if (args.includes("--liveweb")) {
@@ -84,7 +82,16 @@ function createWindow(first) {
 				slashes: true
 			})
 		}
-		let openArgs = args.slice(1).filter((arg) => !arg.startsWith("--"))
+		
+		let openArgs = args.slice(1).filter(function(arg) {
+			// various --flags
+			if (arg.startsWith("--")) return false
+			
+			// https://apple.stackexchange.com/questions/207895/app-gets-in-commandline-parameter-psn-0-nnnnnn-why
+			if (isMac && arg.startsWith("-psn")) return false
+			
+			return true
+		})
 		if (openArgs.length > 0) index_url += "?open=" + encodeURIComponent(openArgs[0])
 	}
 	
