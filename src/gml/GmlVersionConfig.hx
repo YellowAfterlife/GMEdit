@@ -1,5 +1,6 @@
 package gml;
 import js.lib.RegExp;
+import tools.Dictionary;
 
 /**
  * A typedef for versions' JSON files describing supported features and so on.
@@ -38,6 +39,9 @@ typedef GmlVersionConfig = {
 	
 	/** Additional keywords (if any) */
 	var additionalKeywords:Array<String>;
+	
+	/** Filled out from above for quick lookups */
+	var ?additionalKeywordsMap:Dictionary<Bool>;
 	
 	/** Whether you can do `#define name(a, b)` */
 	var hasDefineArgs:Bool;

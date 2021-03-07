@@ -187,10 +187,9 @@ class GmlSeeker {
 		var canLam = notLam && project.canLambda();
 		var canDefineComp = Std.is(kind, KGml) ? (cast kind:KGml).canDefineComp : false;
 		var cubDepth:Int = 0; // depth of {}
-		var hasFunctionLiterals = {
-			var kws = version.config.additionalKeywords;
-			kws != null && kws.contains("function");
-		};
+		var additionalKeywordsMap = version.config.additionalKeywordsMap;
+		var hasFunctionLiterals = additionalKeywordsMap.exists("function");
+		var hasTryCatch = additionalKeywordsMap.exists("catch");
 		var specTypeInst = GmlLinter.getOption((p) -> p.specTypeInst);
 		var funcsAreGlobal = GmlFileKindTools.functionsAreGlobal(kind);
 		var isObject = Std.is(kind, KGmlEvents);
@@ -1148,6 +1147,10 @@ class GmlSeeker {
 							if (!hide) out.globalFieldComp.push(gfd.comp);
 						}
 					}
+				};
+				case "catch" if (hasTryCatch): {
+					name = find(Ident);
+					locals.add(name, localKind, "try-catch");
 				};
 				case "var": {
 					while (q.loop) {

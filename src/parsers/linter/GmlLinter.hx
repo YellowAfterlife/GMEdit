@@ -1528,7 +1528,19 @@ class GmlLinter {
 			case KTry: {
 				rc(readStat(newDepth));
 				rc(readCheckSkip(KCatch, "a `catch` after a `try` block"));
-				rc(readExpr(newDepth));
+				// catch (<name>)
+				var hasPar = skipIf(peek() == KParOpen);
+				rc(readCheckSkip(KIdent, "an exception name"));
+				var varName = nextVal;
+				localKinds[varName] = mainKind;
+				if (setLocalVars && mainKind != KGlobalVar) {
+					var locals = editor.locals[context];
+					if (!locals.kind.exists(varName)) {
+						locals.add(varName, localVarTokenType, "try-catch");
+					}
+				}
+				if (hasPar) rc(readCheckSkip(KParClose, "a closing `)`"));
+				//
 				rc(readStat(newDepth)); // catch-block
 				if (skipIf(peek() == KFinally)) {
 					rc(readStat(newDepth));

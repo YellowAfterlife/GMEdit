@@ -179,6 +179,10 @@ class GmlVersion {
 				}
 			}
 			//
+			if (selfConf.additionalKeywords == null) selfConf.additionalKeywords = [];
+			selfConf.additionalKeywordsMap = new Dictionary();
+			for (kw in selfConf.additionalKeywords) selfConf.additionalKeywordsMap[kw] = true;
+			//
 			selfConf.projectModeId = switch (selfConf.projectMode) {
 				case "gms1": GMS1;
 				case "gms2": GMS2;
