@@ -39,6 +39,7 @@ class GmlTypeAnonField {
 }
 
 enum abstract GmlTypeKind(Int) {
+	// Core types:
 	var KAny = 0x01;
 	var KCustom = 0x02;
 	var KNullable = 0x03; // T?
@@ -66,4 +67,7 @@ enum abstract GmlTypeKind(Int) {
 	var KObject = 0x30; // any object type casts to this
 	var KStruct = 0x31; // non-object namespaces cast to this
 	var KAsset = 0x32; // any asset types and objects cast to this
+	
+	// Special:
+	var KMethodSelf = 0x40; // used exclusively by linter to redirect `self` in second arg
 }

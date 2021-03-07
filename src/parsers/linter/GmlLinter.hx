@@ -365,6 +365,10 @@ class GmlLinter {
 			argTypes = null;
 			argTypeLast = 0;
 		}
+		//
+		var isMethod = !sqb && (selfType:GmlType).getKind() == KMethodSelf;
+		var methodSelf:GmlType = null;
+		//
 		var itemType:GmlType = null;
 		while (q.loop) {
 			switch (peek()) {
@@ -388,7 +392,15 @@ class GmlLinter {
 				default: {
 					if (seenComma) {
 						seenComma = false;
-						if (readExpr(newDepth)) return -1;
+						if (isMethod && argc == 1) {
+							var lso = readLambda_selfOverride;
+							readLambda_selfOverride = methodSelf;
+							var foundError = readExpr(newDepth);
+							readLambda_selfOverride = lso;
+							if (foundError) return -1;
+						} else {
+							if (readExpr(newDepth)) return -1;
+						}
 						if (sqb) {
 							if (argc == 0) {
 								itemType = readExpr_currType;
@@ -408,6 +420,7 @@ class GmlLinter {
 								);
 							}
 						}
+						if (isMethod && argc == 0) methodSelf = readExpr_currType;
 						argc++;
 					} else {
 						readExpect("a comma in values list");
@@ -712,7 +725,8 @@ class GmlLinter {
 					}
 					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
-					var argc = readArgs(newDepth, false, currFunc, selfType);
+					var argsSelf = currKind == KIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
+					var argc = readArgs(newDepth, false, currFunc, argsSelf);
 					rc(argc < 0);
 					if (currFunc != null) {
 						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
@@ -1186,6 +1200,7 @@ class GmlLinter {
 	}
 	
 	static var readLambda_doc:GmlFuncDoc;
+	static var readLambda_selfOverride:GmlType;
 	function readLambda(oldDepth:Int, isFunc:Bool, isStat:Bool):FoundError {
 		var name = "function";
 		var isTopLevel = isFunc && isStat && oldDepth == 2 && functionsAreGlobal;
@@ -1261,7 +1276,19 @@ class GmlLinter {
 		currFuncRetStatus = nextFuncRetStatus;
 		localVarTokenType = nextLocalType;
 		
-		rc(readStat(0));
+		var selfOverride = readLambda_selfOverride;
+		if (selfOverride != null) {
+			var self0z = __selfType_set;
+			var self0t = __selfType_type;
+			__selfType_set = true;
+			__selfType_type = selfOverride;
+			var foundError = readStat(0);
+			__selfType_set = self0z;
+			__selfType_type = self0t;
+			rc(foundError);
+		} else {
+			rc(readStat(0));
+		}
 		
 		switch (currFuncRetStatus) {
 			case HasReturn:

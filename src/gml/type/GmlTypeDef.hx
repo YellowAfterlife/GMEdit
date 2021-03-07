@@ -21,6 +21,7 @@ class GmlTypeDef {
 	public static var asset:GmlType = TInst("asset", [], KCustom);
 	public static var global:GmlType = TInst("global", [], KGlobal);
 	public static var anyFunction:GmlType = TInst("function", [], KFunction);
+	public static var methodSelf:GmlType = TInst("methodSelf", [], KMethodSelf);
 	
 	public static inline function array(itemType:GmlType):GmlType {
 		return TInst("array", [itemType], KArray);
