@@ -209,7 +209,7 @@ enum abstract GmlLinterKind(Int) {
 	public inline function canSet() return __canSet[this];
 	
 	static var __isStat = new GmlLinterKindSet([
-		KSet, KCall, KInc, KDec, KFunction,
+		KSet, KCall, KInc, KDec, KFunction, KNew,
 	]);
 	public inline function isStat() return __isStat[this];
 	
