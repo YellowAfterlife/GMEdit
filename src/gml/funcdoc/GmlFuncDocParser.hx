@@ -35,6 +35,7 @@ class GmlFuncDocParser {
 		var argTypes:Array<GmlType> = null;
 		var templateItems:Array<GmlTypeTemplateItem> = null;
 		var parOpenAt = str.indexOf("(");
+		var hasReturn:Bool = null;
 		if (parOpenAt >= 0) {
 			pre = str.substring(0, parOpenAt + 1);
 			name = str.substring(0, parOpenAt); { // parse func<T>:
@@ -63,6 +64,10 @@ class GmlFuncDocParser {
 					case "]".code, ")".code, "}".code:
 						if (--depth <= 0) {
 							if (args.length > 0 || pos - 1 > argStart) flushArg();
+							if (str.charAt(pos) == GmlFuncDoc.retArrow) {
+								hasReturn = str.substr(pos + 1, 4) != "void"
+									|| str.fastCodeAt(pos + 5).isIdent1_ni();
+							}
 							post = str.substring(pos - 1);
 							break;
 						}
@@ -108,6 +113,7 @@ class GmlFuncDocParser {
 		}
 		out.argTypes = argTypes;
 		out.templateItems = templateItems;
+		out.hasReturn = hasReturn;
 		return out;
 	}
 }
