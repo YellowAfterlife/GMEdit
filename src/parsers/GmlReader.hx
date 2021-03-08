@@ -463,7 +463,8 @@ using tools.NativeString;
 					default:
 				};
 				case "(".code, "[".code, "{".code: depth += 1;
-				case ")".code, "]".code, "}".code: depth -= 1;
+				case ")".code, "]".code, "}".code:
+					if (--depth < 0) { pos = p; break; }
 				case ";".code: pos = p; break;
 				case '"'.code, "'".code, "@".code, "`".code: skipStringAuto(c, v);
 				case "#".code: if (p == 0 || get(p - 1) == "\n".code) {
