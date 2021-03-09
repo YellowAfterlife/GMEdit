@@ -30,6 +30,7 @@ class GmlTypeParser {
 		r["Int"] = KNumber;
 		r["number"] = KNumber;
 		r["Number"] = KNumber;
+		r["real"] = KNumber;
 		r["string"] = KString;
 		r["String"] = KString;
 		r["bool"] = KBool;
