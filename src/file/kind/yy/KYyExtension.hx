@@ -73,9 +73,9 @@ class KYyExtension extends FileKind {
 						sub: name,
 						row: 0,
 					});
-					GmlSeeker.run(filePath, "", KGmlExtension.inst);
 				}
 			}
+			if (isGmlFile) GmlSeeker.run(filePath, "", KGmlExtension.inst);
 			for (mcr in file.constants) {
 				var name = mcr.name;
 				if (!rxValidName.test(name)) continue;
