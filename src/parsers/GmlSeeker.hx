@@ -1421,6 +1421,8 @@ class GmlSeeker {
 							switch (ident) {
 								case "function":
 									// OK!
+								case "undefined", "noone":
+									continue;
 								case "new" if (hasFunctionLiterals):
 									if (specTypeInst) {
 										q.skipSpaces1();
