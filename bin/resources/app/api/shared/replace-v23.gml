@@ -105,7 +105,7 @@ audio_system()&->void
 
 #region 9.6
 
-script_execute_ext(ind:script,args:any[],offset:int=0,num_args:int=array_length(args)-offset)->any
+script_execute_ext(ind:script,args:any[],offset:int=0,num_args:int=args_length-offset)->any
 
 #endregion
 
