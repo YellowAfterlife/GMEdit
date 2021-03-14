@@ -731,6 +731,13 @@ class GmlLinter {
 					rc(argc < 0);
 					if (currFunc != null) {
 						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
+
+						// Check that the function's self doc matches the current context
+						if (currFunc.selfType != null) {
+							if (GmlTypeTools.canCastTo(getSelfType(), currFunc.selfType) == false) {
+								addWarning('${currFunc.name} expects to be executed in the context of a ${currFunc.selfType.toString()}' );
+							}
+						}
 					}
 					statKind = currKind = KCall;
 					currType = readArgs_outType;
