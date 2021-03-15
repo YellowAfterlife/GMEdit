@@ -14,6 +14,7 @@ import js.html.FormElement;
 import js.html.InputElement;
 import js.html.Blob;
 import tools.Dictionary;
+import tools.JsTools;
 using tools.NativeString;
 using haxe.io.Path;
 using tools.PathTools;
@@ -200,9 +201,11 @@ class YyZip extends Project {
 	}
 	override public function readTextFile(path:String, fn:Error->String->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];
-		if (file != null) {
-			fn(null, file.getText());
-		} else fn(new Error("File not found: " + path), null);
+		JsTools.setImmediate(function() {
+			if (file != null) {
+				fn(null, file.getText());
+			} else fn(new Error("File not found: " + path), null);
+		});
 	}
 	override public function readTextFileSync(path:String):String {
 		var file = yyzFileMap[fixSlashes(path)];
@@ -226,9 +229,11 @@ class YyZip extends Project {
 	}
 	override public function readJsonFile<T:{}>(path:String, fn:Error->T->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];
-		if (file != null) {
-			fn(null, Json.parse(file.getText()));
-		} else fn(new Error("File not found: " + path), null);
+		JsTools.setImmediate(function() {
+			if (file != null) {
+				fn(null, Json.parse(file.getText()));
+			} else fn(new Error("File not found: " + path), null);
+		});
 	}
 	override public function readJsonFileSync<T>(path:String):T {
 		var file = yyzFileMap[fixSlashes(path)];
@@ -246,9 +251,11 @@ class YyZip extends Project {
 	
 	override public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];
-		if (file != null) {
-			fn(null, SfGmx.parse(file.getText()));
-		} else fn(new Error("File not found: " + path), null);
+		JsTools.setImmediate(function() {
+			if (file != null) {
+				fn(null, SfGmx.parse(file.getText()));
+			} else fn(new Error("File not found: " + path), null);
+		});
 	}
 	override public function readGmxFileSync(path:String):SfGmx {
 		var file = yyzFileMap[fixSlashes(path)];

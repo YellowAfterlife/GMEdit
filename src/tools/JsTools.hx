@@ -1,4 +1,5 @@
 package tools;
+import haxe.Rest;
 import haxe.macro.Expr;
 import haxe.macro.Context;
 
@@ -65,4 +66,18 @@ class JsTools {
 			default: throw Context.error("Expected a regexp literal", p);
 		}
 	}
+	
+	#if !macro
+	@:noUsing public static function setImmediate(fn:haxe.Constraints.Function, rest:Rest<Any>):Void {
+		var args = rest.toArray();
+		if ((cast Main.window).setImmediate) {
+			args.unshift(fn);
+			(cast Main.window).setImmediate.apply(js.Lib.nativeThis, args);
+		} else {
+			args.unshift(0);
+			args.unshift(fn);
+			(cast Main.window.setTimeout:js.lib.Function).apply(js.Lib.nativeThis, args);
+		}
+	}
+	#end
 }
