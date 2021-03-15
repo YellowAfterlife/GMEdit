@@ -18,6 +18,7 @@ import tools.JsTools;
 using tools.NativeString;
 using haxe.io.Path;
 using tools.PathTools;
+using tools.NativeArray;
 
 /**
  * Allows manipulation of YYZ files and virtual projects in general.
@@ -26,14 +27,35 @@ using tools.PathTools;
 class YyZip extends Project {
 	private var yyzFileList:Array<YyZipFile> = [];
 	private var yyzFileMap:Dictionary<YyZipFile> = new Dictionary();
-	private static var rxBackslash = new RegExp("\\\\", "g");
+	private var yyzDirMap:Dictionary<YyZipDir> = new Dictionary();
+	private function yyzGetParentDir(path:String):YyZipDir {
+		var parts = path.split("/");
+		var fname = parts.pop();
+		var prefixes = [for (i => _ in parts) parts.slice(0, i + 1).join("/")];
+		var dir:YyZipDir = yyzDirMap[""];
+		for (i => dirPath in prefixes) {
+			var parent = dir;
+			dir = yyzDirMap[dirPath];
+			if (dir != null) continue;
+			dir = new YyZipDir(dirPath);
+			yyzDirMap[dirPath] = dir;
+			parent.entries.push(dir);
+		}
+		return dir;
+	}
+	private function yyzAddFile(file:YyZipFile):Void {
+		yyzFileList.push(file);
+		yyzFileMap.set(file.path.replaceExt(rxBackslash, "/"), file);
+		yyzGetParentDir(file.path).entries.push(file);
+	}
+	private static var rxBackslash:RegExp = JsTools.rx(~/\\/g);
 	//
 	public function new(path:String, main:String, entries:Array<YyZipFile>) {
 		super(main);
 		isVirtual = true;
-		yyzFileList = entries;
+		yyzDirMap[""] = new YyZipDir("");
 		for (entry in entries) {
-			yyzFileMap.set(entry.path.replaceExt(rxBackslash, "/"), entry);
+			yyzAddFile(entry);
 		}
 	}
 	private static function locateMain(entries:Array<YyZipFile>) {
@@ -45,6 +67,7 @@ class YyZip extends Project {
 			if (pair.version != GmlVersion.none) {
 				var depth = path.ptDepth();
 				if (main == null || depth < mainDepth) {
+					// top-level files are preferred
 					main = path;
 					mainDepth = depth;
 				}
@@ -135,7 +158,7 @@ class YyZip extends Project {
 				// crop it off:
 				var start = dir.length;
 				i = entries.length;
-				while (--i >= 0) entries[i].path = entries[i].path.substring(start);
+				while (--i >= 0) entries[i].trimStart(start);
 				main = main.substring(start);
 			} while (false);
 			//
@@ -185,7 +208,8 @@ class YyZip extends Project {
 		return s.replaceExt(rxBackslash, "/");
 	}
 	override public function existsSync(path:String):Bool {
-		return yyzFileMap[fixSlashes(path)] != null;
+		path = fixSlashes(path);
+		return yyzFileMap.exists(path) || yyzDirMap.exists(path);
 	}
 	override public function mtimeSync(path:String):Null<Float> {
 		var file = yyzFileMap[fixSlashes(path)];
@@ -197,6 +221,19 @@ class YyZip extends Project {
 		if (file != null) {
 			yyzFileMap.remove(path);
 			yyzFileList.remove(file);
+			var dir = yyzDirMap[file.dir];
+			if (dir != null) {
+				dir.entries.remove(file);
+				// no need to unlink empty directories since we don't save them to ZIP anyway
+			}
+			return;
+		}
+		var dir = yyzDirMap[path];
+		if (dir != null) {
+			for (entry in dir.entries) unlinkSync(entry.path);
+			yyzDirMap.remove(path);
+			var par = yyzDirMap[dir.dir];
+			if (par != null) par.entries.remove(dir);
 		}
 	}
 	override public function readTextFile(path:String, fn:Error->String->Void):Void {
@@ -222,6 +259,7 @@ class YyZip extends Project {
 			file.setText(text);
 			yyzFileMap.set(fwpath, file);
 			yyzFileList.push(file);
+			yyzGetParentDir(fwpath).entries.push(file);
 		} else {
 			file.setText(text);
 			file.time = t;
@@ -272,57 +310,35 @@ class YyZip extends Project {
 	override public function renameSync(prev:String, next:String) {
 		prev = fixSlashes(prev);
 		next = fixSlashes(next);
-		var file = yyzFileMap[prev];
+		var file:YyZipFile = yyzFileMap[prev];
 		if (file != null) {
-			file.path = next;
+			var dir = yyzDirMap[file.dir];
+			if (dir != null) dir.entries.remove(file);
+			file.setPath(next);
 			yyzFileMap.remove(prev);
 			yyzFileMap.set(next, file);
+			yyzGetParentDir(next).entries.push(file);
 		} else {
-			var rx = new RegExp("^" + NativeString.escapeRx(prev) + "([/\\\\].+)$");
-			for (file in yyzFileList) {
-				var mt = rx.exec(file.path);
-				if (mt == null) continue;
-				yyzFileMap.remove(file.path);
-				file.path = next + mt[1];
-				yyzFileMap.set(file.path, file);
+			var dir = yyzDirMap[prev];
+			if (dir != null) {
+				dir.setPath(next);
+				for (entry in dir.entries) {
+					renameSync(entry.path, next + "/" + entry.fname);
+				}
 			}
 		}
 	}
 	override public function readdirSync(path:String):Array<ProjectDirInfo> {
+		var dir = yyzDirMap[fixSlashes(path)];
+		if (dir == null) return [];
 		var out = [];
-		var foundDirs = new Dictionary();
-		var full = fixSlashes(path);
-		var prefix = full != "" ? full + "/" : ""; // -> "a/b/"
-		var prefixLen = prefix.length;
-		for (file in yyzFileList) {
-			var filePath = file.path; // -> "a/b/f.x"|"a/b/c/f.y"
-			if (filePath.startsWith(prefix)) {
-				if (Path.directory(filePath) == full) {
-					var cut = Path.withoutDirectory(filePath);
-					if (cut != "") out.push({
-						fileName: cut,
-						relPath: path + "/" + cut,
-						fullPath: filePath,
-						isDirectory: false
-					});
-				} else {
-					var cut = filePath.substring(prefixLen); // "a/b/f.x" -> "f.x"
-					// "c/f.y" -> "c":
-					var ofs = cut.indexOf("/");
-					if (ofs >= 0) {
-						var dir = cut.substring(0, ofs);
-						if (!foundDirs.exists(dir)) {
-							foundDirs.set(dir, true);
-							out.push({
-								fileName: dir,
-								relPath: path + "/" + dir,
-								fullPath: path + "/" + dir,
-								isDirectory: true
-							});
-						}
-					}
-				}
-			}
+		for (entry in dir.entries) {
+			out.push({
+				fileName: entry.fname,
+				relPath: entry.path,
+				fullPath: entry.path,
+				isDirectory: (entry is YyZipDir),
+			});
 		}
 		return out;
 	}
@@ -354,8 +370,31 @@ class YyZip extends Project {
 		
 	}
 }
-class YyZipFile {
-	public var path:String;
+class YyZipBase {
+	/** relative to zip root, forward slashes only! */
+	public var path(default, null):String;
+	/** path without extension */
+	public var fname(default, null):String;
+	/** directory */
+	public var dir(default, null):String;
+	public function new(_path:String) {
+		inline setPath(_path);
+	}
+	public function rename(_fname:String) {
+		fname = _fname;
+		path = dir + "/" + _fname;
+	}
+	public function setPath(_path:String) {
+		path = _path;
+		fname = _path.ptNoDir();
+		dir = _path.ptDir();
+	}
+	public function trimStart(len:Int) {
+		path = path.substring(len);
+		dir = dir.substring(len);
+	}
+}
+class YyZipFile extends YyZipBase {
 	/** last change time */
 	public var time:Float;
 	private var bytes:Bytes;
@@ -364,7 +403,7 @@ class YyZipFile {
 	private var text:String;
 	private var dataURL:String = null;
 	public function new(path:String, time:Float) {
-		this.path = path;
+		super(path);
 		this.time = time;
 	}
 	private function uncompress() {
@@ -407,4 +446,8 @@ class YyZipFile {
 		compressed = false;
 		dataURL = null;
 	}
+}
+class YyZipDir extends YyZipBase {
+	/** Files/directories inside this directory */
+	public var entries:Array<YyZipBase> = [];
 }
