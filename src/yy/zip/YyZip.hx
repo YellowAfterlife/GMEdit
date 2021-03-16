@@ -1,4 +1,4 @@
-package yy;
+package yy.zip;
 import gml.GmlVersion;
 import gml.Project;
 import gmx.SfGmx;
@@ -15,6 +15,7 @@ import js.html.InputElement;
 import js.html.Blob;
 import tools.Dictionary;
 import tools.JsTools;
+import yy.zip.YyZipTools;
 using tools.NativeString;
 using haxe.io.Path;
 using tools.PathTools;
@@ -25,6 +26,9 @@ using tools.NativeArray;
  * @author YellowAfterlife
  */
 class YyZip extends Project {
+	/** Full path */
+	public var yyzPath:String;
+	
 	private var yyzFileList:Array<YyZipFile> = [];
 	private var yyzFileMap:Dictionary<YyZipFile> = new Dictionary();
 	private var yyzDirMap:Dictionary<YyZipDir> = new Dictionary();
@@ -51,6 +55,7 @@ class YyZip extends Project {
 	private static var rxBackslash:RegExp = JsTools.rx(~/\\/g);
 	//
 	public function new(path:String, main:String, entries:Array<YyZipFile>) {
+		yyzPath = path;
 		super(main);
 		isVirtual = true;
 		yyzDirMap[""] = new YyZipDir("");
@@ -58,23 +63,7 @@ class YyZip extends Project {
 			yyzAddFile(entry);
 		}
 	}
-	private static function locateMain(entries:Array<YyZipFile>) {
-		var main = null;
-		var mainDepth = 0;
-		for (entry in entries) {
-			var path = entry.path;
-			var pair = path.ptDetectProject();
-			if (pair.version != GmlVersion.none) {
-				var depth = path.ptDepth();
-				if (main == null || depth < mainDepth) {
-					// top-level files are preferred
-					main = path;
-					mainDepth = depth;
-				}
-			}
-		}
-		return main;
-	}
+	
 	/** Opens a YYZ/ZIP file */
 	public static function open(path:String, bytes:Bytes) {
 		var fileName = null;
@@ -86,7 +75,7 @@ class YyZip extends Project {
 				file.setBytes(entry.data, entry.compressed);
 				entries.push(file);
 			}
-			var main = locateMain(entries);
+			var main = YyZipTools.locateMain(entries);
 			if (main == null) {
 				Main.window.alert("The archive contains no project files.");
 				return false;
@@ -119,89 +108,6 @@ class YyZip extends Project {
 		//
 		writer.write(entries);
 		return output.getBytes().sub(0, output.length);
-	}
-	//
-	private static var directoryDialog_form:FormElement = null;
-	private static var directoryDialog_input:InputElement;
-	private static function directoryDialog_init() {
-		var form = Main.document.createFormElement();
-		var input = Main.document.createInputElement();
-		input.setAttribute("webkitdirectory", "");
-		input.setAttribute("mozdirectory", "");
-		input.type = "file";
-		input.addEventListener("change", directoryDialog_check);
-		form.appendChild(input);
-		Main.document.body.appendChild(form);
-		directoryDialog_form = form;
-		directoryDialog_input = input;
-	}
-	private static function directoryDialog_check(_) {
-		var main = null;
-		var entries:Array<YyZipFile> = [];
-		var left = 1;
-		function next() {
-			if (--left > 0) return;
-			var main = locateMain(entries);
-			if (main == null) {
-				Main.window.alert("Couldn't find any project files in directory");
-				return;
-			}
-			// unpack entries from directory, where possible:
-			do {
-				var mt = new RegExp("^.+?[\\/]").exec(main);
-				if (mt == null) break;
-				var dir = mt[0];
-				// ensure that all entries start with this path:
-				var i = entries.length;
-				while (--i >= 0) if (!entries[i].path.startsWith(dir)) break;
-				if (i >= 0) break;
-				// crop it off:
-				var start = dir.length;
-				i = entries.length;
-				while (--i >= 0) entries[i].trimStart(start);
-				main = main.substring(start);
-			} while (false);
-			//
-			Project.current = new YyZip(main, main, entries);
-		}
-		//
-		var files = directoryDialog_input.files;
-		if (files.length == 0) return;
-		var status = "Loading " + files.length + " file";
-		if (files.length != 1) status += "s";
-		tools.HtmlTools.setInnerText(Project.nameNode, status + "...");
-		//
-		for (file in files) {
-			var rel = untyped file.webkitRelativePath;
-			if (main == null) {
-				var ext = Path.extension(rel);
-				if (ext.toLowerCase() != "yyp") {
-					ext = Path.extension(Path.withoutExtension(rel)).toLowerCase();
-					if (ext.toLowerCase() != "project") {
-						var lqr = Path.withoutDirectory(rel).toLowerCase();
-						if (lqr == "main.txt" || lqr == "main.cfg") main = rel;
-					} else main = rel;
-				} else main = rel;
-			}
-			//
-			var reader = new js.html.FileReader();
-			reader.onloadend = function(_) {
-				var abuf:js.lib.ArrayBuffer = reader.result;
-				var bytes = haxe.io.Bytes.ofData(abuf);
-				var zipFile = new YyZipFile(rel, file.lastModified);
-				zipFile.setBytes(bytes);
-				entries.push(zipFile);
-				next();
-			};
-			left += 1;
-			reader.readAsArrayBuffer(file);
-		}
-		next();
-	}
-	public static function directoryDialog() {
-		if (directoryDialog_form == null) directoryDialog_init();
-		directoryDialog_form.reset();
-		directoryDialog_input.click();
 	}
 	//
 	static inline function fixSlashes(s:String) {
@@ -370,84 +276,5 @@ class YyZip extends Project {
 		
 	}
 }
-class YyZipBase {
-	/** relative to zip root, forward slashes only! */
-	public var path(default, null):String;
-	/** path without extension */
-	public var fname(default, null):String;
-	/** directory */
-	public var dir(default, null):String;
-	public function new(_path:String) {
-		inline setPath(_path);
-	}
-	public function rename(_fname:String) {
-		fname = _fname;
-		path = dir + "/" + _fname;
-	}
-	public function setPath(_path:String) {
-		path = _path;
-		fname = _path.ptNoDir();
-		dir = _path.ptDir();
-	}
-	public function trimStart(len:Int) {
-		path = path.substring(len);
-		dir = dir.substring(len);
-	}
-}
-class YyZipFile extends YyZipBase {
-	/** last change time */
-	public var time:Float;
-	private var bytes:Bytes;
-	/** whether .bytes are compressed */
-	private var compressed:Bool = false;
-	private var text:String;
-	private var dataURL:String = null;
-	public function new(path:String, time:Float) {
-		super(path);
-		this.time = time;
-	}
-	private function uncompress() {
-		bytes = tools.BufferTools.inflate(bytes);
-		compressed = false;
-	}
-	public function getBytes():Bytes {
-		if (bytes == null) {
-			bytes = Bytes.ofString(text);
-		}
-		return bytes;
-	}
-	public function getText():String {
-		if (text == null) {
-			if (compressed) uncompress();
-			text = bytes.toString();
-		}
-		return text;
-	}
-	public function getDataURL():String {
-		if (bytes != null) {
-			if (compressed) uncompress();
-			var kind = switch (Path.extension(path).toLowerCase()) {
-				case "png": "image/png";
-				default: "application/octet-stream";
-			}
-			return "data:" + kind + ";base64,"
-				+ tools.BufferTools.toBase64(bytes, 0, bytes.length);
-		} else return "";
-	}
-	public function setBytes(b:Bytes, ?isCompressed:Bool) {
-		bytes = b;
-		compressed = isCompressed;
-		text = null;
-		dataURL = null;
-	}
-	public function setText(s:String) {
-		text = s;
-		bytes = null;
-		compressed = false;
-		dataURL = null;
-	}
-}
-class YyZipDir extends YyZipBase {
-	/** Files/directories inside this directory */
-	public var entries:Array<YyZipBase> = [];
-}
+
+

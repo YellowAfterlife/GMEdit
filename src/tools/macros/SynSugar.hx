@@ -8,6 +8,13 @@ using StringTools;
  * @author YellowAfterlife
  */
 class SynSugar {
+	public static macro function This():Expr {
+		var m = Context.getLocalModule();
+		var p = m.lastIndexOf(".");
+		if (p >= 0) m = m.substring(p + 1);
+		return { expr: ExprDef.EConst(CIdent(m)), pos: Context.currentPos() };
+	}
+	
 	public static macro function cfor(init, cond, post, expr) {
 		#if !display
 		var func = null;

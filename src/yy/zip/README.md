@@ -1,0 +1,1 @@
+Allows opening YYZ/ZIP archives with projects inside as projects.

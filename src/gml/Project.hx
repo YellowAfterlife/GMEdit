@@ -32,6 +32,7 @@ import tools.HtmlTools;
 import tools.NativeString;
 import ui.ChromeTabs;
 import ui.Preferences;
+import yy.zip.YyZip;
 using tools.PathTools;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
@@ -262,9 +263,12 @@ import ui.treeview.TreeViewElement;
 			displayName = pair.name;
 		}
 	}
-	public static function open(path:String) {
+	public static function setCurrent(project:Project):Void {
 		if (current != null) current.close();
-		current = new Project(path);
+		current = project;
+	}
+	public static function open(path:String) {
+		setCurrent(new Project(path));
 		if (path != "") ui.RecentProjects.add(current.path != null ? current.path : path);
 	}
 	

@@ -11,6 +11,7 @@ import haxe.io.Path;
 import gml.Project;
 import gml.file.GmlFile;
 import file.kind.misc.KExtern;
+import yy.zip.YyZip;
 
 /**
  * This little class allows you to drag and drop files onto GMEdit window.
@@ -55,13 +56,13 @@ class FileDrag {
 					reader.onloadend = function(_) {
 						var abuf:js.lib.ArrayBuffer = reader.result;
 						var bytes = haxe.io.Bytes.ofData(abuf);
-						yy.YyZip.open(name, bytes);
+						yy.zip.YyZip.open(path, bytes);
 					};
 					reader.readAsArrayBuffer(file);
 				} else {
 					var data = FileSystem.readFileSync(path);
 					var bytes = haxe.io.Bytes.ofData(data);
-					yy.YyZip.open(name, bytes);
+					yy.zip.YyZip.open(path, bytes);
 				}
 			};
 			default: {

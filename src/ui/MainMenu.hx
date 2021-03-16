@@ -8,7 +8,7 @@ import haxe.io.Path;
 import tools.NativeString;
 import ui.liveweb.*;
 import ui.project.ProjectProperties;
-import yy.YyZip;
+import yy.zip.YyZip;
 import Main.window;
 
 /**
@@ -43,7 +43,7 @@ class MainMenu {
 			menu.append(new MenuItem({ label: "Open directory...",
 				id: "open-directory",
 				click: function() {
-					YyZip.directoryDialog();
+					yy.zip.YyZipDirectoryDialog.open();
 				}
 			}));
 			//
@@ -108,7 +108,11 @@ class MainMenu {
 			menu.append(new MenuItem({
 				id: "show-in-directory",
 				label: "Show in directory",
-				click: function() electron.Shell.showItemInFolder(Project.current.path)
+				click: function() {
+					var pj = Project.current;
+					var path = pj is YyZip ? (cast pj:YyZip).yyzPath : pj.path;
+					electron.Shell.showItemInFolder(path);
+				}
 			}));
 			menu.append(new MenuItem({
 				id: "new-ide",
