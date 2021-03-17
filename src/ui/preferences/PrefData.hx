@@ -52,6 +52,12 @@ import haxe.DynamicAccess;
 		tooltipKind: Custom,
 		linterPrefs: {},
 		customizedKeybinds: {},
+		
+		app: {
+			windowWidth: 960,
+			windowHeight: 720,
+			windowFrame: false,
+		}
 	};
 }
 typedef PrefDataImpl = {
@@ -108,6 +114,12 @@ typedef PrefDataImpl = {
 	
 	/** section -> commandName -> keybinds */
 	customizedKeybinds:DynamicAccess<DynamicAccess<Array<String>>>,
+	
+	app: {
+		windowWidth:Int,
+		windowHeight:Int,
+		windowFrame:Bool,
+	}
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {
 	var Custom = 0;

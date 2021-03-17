@@ -16,6 +16,7 @@ class PrefMenu {
 		PrefNav.build(out);
 		PrefLinter.build(out, null);
 		PrefMagic.build(out);
+		PrefApp.build(out);
 		PrefBackups.build(out);
 		PrefPlugins.build(out);
 		if (electron.Electron.isAvailable()) {

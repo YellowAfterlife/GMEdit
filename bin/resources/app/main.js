@@ -21,6 +21,7 @@ const BrowserWindow = electron.BrowserWindow
 
 const path = require('path')
 const url = require('url')
+const fs = require('fs')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -29,12 +30,25 @@ const isWindows = process.platform == "win32";
 const isMac = process.platform == "darwin";
 
 function createWindow(first) {
+	//
+	let windowWidth = 960, windowHeight = 720, windowFrame = false;
+	try {
+		const configPath = app.getPath("userData") + "/GMEdit/config/user-preferences.json"
+		if (fs.existsSync(configPath)) {
+			const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+			windowWidth = config.app?.windowWidth ?? windowWidth
+			windowHeight = config.app?.windowHeight ?? windowHeight
+			windowFrame = config.app?.windowFrame ?? windowFrame
+		}
+	} catch (x) {
+		console.warn('Error reading preferences:', x)
+	}
 	// Create the browser window.
 	const showOnceReady = false
 	let wnd = new BrowserWindow({
-		width: 960,
-		height: 720,
-		frame: false,
+		width: windowWidth,
+		height: windowHeight,
+		frame: windowFrame,
 		backgroundColor: "#889EC5",
 		title: "GMEdit",
 		webPreferences: {
@@ -44,6 +58,7 @@ function createWindow(first) {
 		show: !showOnceReady,
 		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
 	})
+	if (!isMac) wnd.removeMenu()
 	activeWindows.push(wnd)
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
@@ -71,6 +86,8 @@ function createWindow(first) {
 		slashes: true
 	})
 	
+	let params = []
+	if (windowFrame) params.push("electron-window-frame")
 	if (first) {
 		let args = process.argv
 		
@@ -92,8 +109,9 @@ function createWindow(first) {
 			
 			return true
 		})
-		if (openArgs.length > 0) index_url += "?open=" + encodeURIComponent(openArgs[0])
+		if (openArgs.length > 0) params.push("open=" + encodeURIComponent(openArgs[0]))
 	}
+	if (params.length > 0) index_url += "?" + params.join("&")
 	
 	wnd.loadURL(index_url)
 
@@ -126,26 +144,38 @@ app.on('activate', function () {
 	}
 })
 
-// https://github.com/electron/electron/issues/4349
-electron.ipcMain.on('shell-open', (e, path) => {
-	electron.shell.openPath(path)
-})
-
-// https://github.com/electron/electron/issues/11617
-electron.ipcMain.on('shell-show', (e, path) => {
-	if (process.platform.startsWith("win")) path = path.replace(/\//g, "\\")
-	electron.shell.showItemInFolder(path)
-})
-
-electron.ipcMain.on('new-ide', (e) => {
-	createWindow();
-})
-
-//
-electron.ipcMain.on('set-taskbar-icon', (e, path, text) => {
-	let wnd = BrowserWindow.fromWebContents(e.sender)
-	wnd.setOverlayIcon(path, text)
-})
+{
+	const ipc = electron.ipcMain
+	// https://github.com/electron/electron/issues/4349
+	ipc.on('shell-open', (e, path) => {
+		electron.shell.openPath(path)
+	})
+	
+	// https://github.com/electron/electron/issues/11617
+	ipc.on('shell-show', (e, path) => {
+		if (process.platform.startsWith("win")) path = path.replace(/\//g, "\\")
+		electron.shell.showItemInFolder(path)
+	})
+	
+	ipc.on('new-ide', (e) => {
+		createWindow()
+	})
+	
+	ipc.on('set-taskbar-icon', (e, path, text) => {
+		let wnd = BrowserWindow.fromWebContents(e.sender)
+		wnd.setOverlayIcon(path, text)
+	})
+	
+	ipc.on('resize-window', (e, width, height) => {
+		let wnd = BrowserWindow.fromWebContents(e.sender)
+		if (width == null || height == null) {
+			let size = wnd.getSize()
+			width ??= size[0]
+			height ??= size[1]
+		}
+		wnd.setSize(width, height)
+	})
+}
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {

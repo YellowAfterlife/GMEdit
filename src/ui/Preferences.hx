@@ -365,12 +365,25 @@ class Preferences {
 		if (pref == null) {
 			pref = def;
 			doSave = true;
-		} else NativeObject.forField(def, function(k) {
-			if (Reflect.field(pref, k) == null) {
-				Reflect.setField(pref, k, Reflect.field(def, k));
-				doSave = true;
+		} else {
+			function isStruct(v:Any) {
+				if (v is String) return false;
+				if (v is Array) return false;
+				return Reflect.isObject(v);
 			}
-		});
+			function mergeRec(cur:DynamicAccess<Dynamic>, def:DynamicAccess<Dynamic>) {
+				for (k => vd in def) {
+					var vc = cur[k];
+					if (vc != null) {
+						if (isStruct(vd) && isStruct(vc)) mergeRec(vc, vd);
+					} else {
+						cur[k] = vd;
+						doSave = true;
+					}
+				}
+			}
+			mergeRec(cast pref, cast def);
+		}
 		//
 		current = pref;
 		if (doSave) save();

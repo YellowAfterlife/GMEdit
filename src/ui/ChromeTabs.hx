@@ -77,7 +77,7 @@ class ChromeTabs {
 	}
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
-		if (electron.Electron == null) {
+		if (electron.Electron == null || Main.moduleArgs.exists("electron-window-frame")) {
 			element.classList.remove("has-system-buttons");
 			for (btn in document.querySelectorAll(".system-button:not(.preferences)")) {
 				btn.parentElement.removeChild(btn);
