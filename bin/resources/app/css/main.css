@@ -249,6 +249,9 @@ https://stackoverflow.com/a/36247448/5578773
 	align-items: center;
 	justify-content: center;
 }
+html.starter-loading .system-button {
+	display: none;
+}
 .system-button.maximize {
 	right: 36px;
 }

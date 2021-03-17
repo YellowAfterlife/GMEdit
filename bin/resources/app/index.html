@@ -155,6 +155,7 @@
 <script type="text/javascript">(function() {
 	var files = window.__starterFiles;
 	if (files == null) return;
+	document.documentElement.classList.add("starter-loading");
 	for (var i = 0; i < files.length; i++) {
 		document.writeln('<scr' + 'ipt'
 			+ ' type="text/javascript"'
@@ -162,5 +163,6 @@
 			+ ' charset="utf-8"'
 		+ '></scr' + 'ipt>');
 	}
+	document.documentElement.classList.remove("starter-loading");
 })()</script>
 </body>

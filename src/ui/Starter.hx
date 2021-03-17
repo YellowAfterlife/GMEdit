@@ -110,7 +110,9 @@ class Starter {
 		}
 		var cc = new ChainCall();
 		for (file in files) cc.call(addScript, file, function(_) {});
+		window.document.documentElement.classList.add("starter-loading");
 		cc.call(function(_, _) {
+			window.document.documentElement.classList.remove("starter-loading");
 			Console.log("ready!");
 		}, null, function(_) {});
 	}
