@@ -963,6 +963,9 @@ class GmlLinter {
 					var tnp = q.pos;
 					rc(readTypeName());
 					var asType = GmlTypeDef.parse(readTypeName_typeStr);
+					if (currType.equals(asType)) {
+						addWarning('Redundant cast, ${currType.toString()} is already of type ${asType.toString()}');
+					}
 					if (!hasFlag(IsCast)) {
 						var ex = GmlTypeCanCastTo.isExplicit;
 						GmlTypeCanCastTo.isExplicit = true;

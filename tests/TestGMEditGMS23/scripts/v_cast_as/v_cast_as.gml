@@ -19,4 +19,7 @@ function v_cast_as() {
 	i = si /*#as int*/; // allowed - explicit cast
 	s = si; ///want_warn "Can't cast"
 	s = si /*#as string*/; // allowed - explicit cast
+	
+	var a0 = 5 /*#as int*/; ///want_warn "Redundant cast"
+	var a1 = random(1) /*#as int*/; ///want_warn "Redundant cast"
 }
