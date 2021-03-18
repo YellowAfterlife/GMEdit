@@ -1,8 +1,10 @@
 package gml;
 import electron.Dialog;
 import haxe.io.Path;
+import js.lib.Error;
 import js.lib.RegExp;
 import tools.Dictionary;
+import tools.JsTools;
 import tools.NativeObject;
 import gml.GmlVersionConfig;
 import electron.Electron;
@@ -17,7 +19,11 @@ import electron.FileWrap;
  * @author YellowAfterlife
  */
 class GmlVersion {
-	public static var none:GmlVersion = new GmlVersion("none", "api/none", false);
+	public static var none:GmlVersion = (function() {
+		var v = new GmlVersion("none", "api/none", false);
+		v.load();
+		return v;
+	})();
 	public static var v1:GmlVersion;
 	public static var v2:GmlVersion;
 	//
@@ -43,8 +49,11 @@ class GmlVersion {
 		this.name = name;
 		this.dir = dir;
 		this.isCustom = isCustom;
+	}
+	public function load(?callback:Error->GmlVersion->Void) {
 		if (dir == "api/none") {
 			config = GmlVersionConfigDefaults.get(true);
+			if (callback != null) JsTools.setImmediate(callback, null, this);
 		} else {
 			#if lwedit
 			config = GmlVersionConfigDefaults.get(false);
@@ -52,11 +61,13 @@ class GmlVersion {
 			config.hasTernaryOperator = true;
 			config.hasDefineArgs = true;
 			config.additionalKeywords = ["in"];
+			if (callback != null) JsTools.setImmediate(callback, null, this);
 			#else
+			var path = dir + "/config.json";
 			if (Electron.isAvailable()) {
-				var path = dir + "/config.json";
 				try {
 					config = FileSystem.readJsonFileSync(path);
+					if (callback != null) JsTools.setImmediate(callback, null, this);
 				} catch (x:Dynamic) {
 					config = GmlVersionConfigDefaults.get(true);
 					switch (Dialog.showMessageBox({
@@ -81,9 +92,19 @@ class GmlVersion {
 							}
 						};
 					}
+					if (callback != null) JsTools.setImmediate(callback, cast x, this);
 				}
 			} else {
 				config = GmlVersionConfigDefaults.get(name == "v2");
+				FileSystem.readJsonFile(path, function(e, c) {
+					if (e == null) {
+						config = c;
+						Console.log('Loaded config for $name');
+					} else {
+						Console.error('Failed to load config for $name:', e);
+					}
+					if (callback != null) callback(e, this);
+				});
 			}
 			#end
 		}
@@ -105,37 +126,7 @@ class GmlVersion {
 	public function resetOnDefine() return config.resetLineCounterOnDefine;
 	public function getName() return name;
 	//
-	public static function init() {
-		#if lwedit
-		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
-		list.push(new GmlVersion("gmlivejs-v2", Main.relPath("api/gmlivejs-v2"), false));
-		#else
-		if (Electron.isAvailable()) {
-			// Allow overriding built-in APIs via user directory:
-			var found = new Dictionary();
-			function procDir(dir:String, isCustom:Bool):Void {
-				for (id in FileSystem.readdirSync(dir)) {
-					if (found.exists(id)) continue;
-					var full = dir + "/" + id;
-					if (!FileSystem.existsSync(full + "/config.json")) continue;
-					found[id] = true;
-					list.push(new GmlVersion(id, full, isCustom));
-				}
-			}
-			procDir(FileWrap.userPath + "/api", true);
-			procDir(Main.relPath("api"), false);
-			// but show built-in APIs in front:
-			var l1 = [];
-			for (isCustom in [false, true]) for (v in list) {
-				if (v.isCustom == isCustom) l1.push(v);
-			}
-			list = l1;
-		} else {
-			list.push(new GmlVersion("v1", Main.relPath("api/v1"), false));
-			list.push(new GmlVersion("v2", Main.relPath("api/v2"), false));
-		}
-		#end
-		
+	static function init_1() {
 		// load versions and their dependencies:
 		for (v in list) map[v.name] = v;
 		function loadVer(v:GmlVersion) {
@@ -200,6 +191,48 @@ class GmlVersion {
 		#else
 		v1 = map["v1"];
 		v2 = map["v2"];
+		#end
+	}
+	public static function init() {
+		#if lwedit
+		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
+		list.push(new GmlVersion("gmlivejs-v2", Main.relPath("api/gmlivejs-v2"), false));
+		init_1();
+		#else
+		if (Electron.isAvailable()) {
+			// Allow overriding built-in APIs via user directory:
+			var found = new Dictionary();
+			function procDir(dir:String, isCustom:Bool):Void {
+				for (id in FileSystem.readdirSync(dir)) {
+					if (found.exists(id)) continue;
+					var full = dir + "/" + id;
+					if (!FileSystem.existsSync(full + "/config.json")) continue;
+					found[id] = true;
+					var v = new GmlVersion(id, full, isCustom);
+					v.load();
+					list.push(v);
+				}
+			}
+			procDir(FileWrap.userPath + "/api", true);
+			procDir(Main.relPath("api"), false);
+			// but show built-in APIs in front:
+			var l1 = [];
+			for (isCustom in [false, true]) for (v in list) {
+				if (v.isCustom == isCustom) l1.push(v);
+			}
+			list = l1;
+			init_1();
+		} else {
+			var ids = ["v1", "v2", "v23"];
+			var left = ids.length;
+			for (id in ids) {
+				var v = new GmlVersion(id, Main.relPath("api/" + id), false);
+				v.load(function(e, v) {
+					if (--left == 0) init_1();
+				});
+				list.push(v);
+			}
+		}
 		#end
 	}
 	public static function detect(gml:String):GmlVersion {
