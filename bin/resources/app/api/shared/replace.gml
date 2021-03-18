@@ -1745,7 +1745,7 @@ ef_snow#:effect_kind
 
 part_type_create()->particle
 part_type_destroy(ind:particle)->void
-part_type_exists(ind:particle)->void
+part_type_exists(ind:particle)->bool
 part_type_clear(ind:particle)->void
 part_type_shape(ind:particle,shape:particle_shape)->void
 part_type_sprite(ind:particle,sprite:sprite,animat:bool,stretch:bool,random:bool)->void
