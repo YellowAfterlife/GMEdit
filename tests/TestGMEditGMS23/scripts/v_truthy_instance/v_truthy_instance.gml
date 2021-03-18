@@ -11,7 +11,7 @@ function v_truthy_instance() {
     if (a ^^ b) {}
     while (a) break;
     for (;a;) break;
-    do {break} until (a);
+    do {break;} until (a);
     let i = a + 1; ///want_warn "to number"
     if (a < 0) {} ///want_warn "to number" - unsafe as of 2.3 due to struct-refs
 }

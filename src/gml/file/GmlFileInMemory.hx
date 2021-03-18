@@ -24,8 +24,9 @@ class GmlFileInMemory extends GmlFile {
 		return true;
 	}
 
-	override public function writeContent(code : GmlCode) {
+	override public function writeContent(code : GmlCode): Bool {
 		content = code;
+		return true;
 	}
 
 	override public function readContent() : GmlCode {
