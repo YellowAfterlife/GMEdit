@@ -28724,7 +28724,9 @@ plugins_PluginManager.init = function() {
 			}
 		}
 	} else {
-		list = ["plugins/enum-names","plugins/show-aside","plugins/outline-view"];
+		list = ["outline-view","image-viewer","ini-editor","gen-enum-names","show-aside"];
+		var _g = 0;
+		while(_g < list.length) plugins_PluginManager.pluginDir[list[_g++]] = "plugins";
 	}
 	var _g = 0;
 	while(_g < list.length) plugins_PluginManager.load(list[_g++]);
@@ -37624,11 +37626,15 @@ $hxClasses["ui.KeyboardShortcuts"] = ui_KeyboardShortcuts;
 ui_KeyboardShortcuts.__name__ = "ui.KeyboardShortcuts";
 ui_KeyboardShortcuts.initCommands = function() {
 	ui_KeyboardShortcuts.hashHandler = new AceHashHandler();
+	var isWeb = Electron_API == null;
 	var rxMod = new RegExp("\\bmod\\-");
+	var rxWebMod = new RegExp("\\bmodw\\-");
 	var hh = ui_KeyboardShortcuts.hashHandler;
 	var keyToCommandKey = function(key) {
 		if(rxMod.test(key)) {
 			return { win : key.replace(rxMod,"ctrl-"), mac : key.replace(rxMod,"cmd-")};
+		} else if(rxWebMod.test(key)) {
+			return { win : key.replace(rxWebMod,isWeb ? "alt-" : "ctrl-"), mac : key.replace(rxWebMod,isWeb ? "ctrl-" : "cmd-")};
 		} else {
 			return key;
 		}
@@ -37673,19 +37679,18 @@ ui_KeyboardShortcuts.initCommands = function() {
 			next.click();
 		}
 	});
-	addCommand("toggleDevTools","mod-shift-i",function() {
-		if(Electron_API == null) {
-			return;
-		}
-		Electron_API.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
-	});
-	lcmd.description = "Only works in standalone version.";
+	if(!isWeb) {
+		addCommand("toggleDevTools","mod-shift-i",function() {
+			Electron_API.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+		});
+		lcmd.description = "Only works in standalone version.";
+	}
 	addCommand("reloadProject","mod-r",function() {
 		if(gml_Project.current != null) {
 			gml_Project.current.reload();
 		}
 	});
-	addCommand("closeTab","mod-w",function() {
+	addCommand("closeTab","modw-w",function() {
 		var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
 		if(q != null) {
 			q.click();
@@ -37737,11 +37742,10 @@ ui_KeyboardShortcuts.initCommands = function() {
 			ui_treeview_TreeView.showElement(item,true);
 		}
 	});
-	var lookupPre = Electron_API != null ? "mod" : "alt";
-	addCommand("globalLookup","" + lookupPre + "-t",function() {
+	addCommand("globalLookup","modw-t",function() {
 		ui_GlobalLookup.toggle();
 	});
-	addCommand("commandPalette","" + lookupPre + "-shift-t",function() {
+	addCommand("commandPalette","modw-shift-t",function() {
 		ui_GlobalLookup.toggle(">");
 	});
 	addCommand("reloadGMEdit","",function() {
