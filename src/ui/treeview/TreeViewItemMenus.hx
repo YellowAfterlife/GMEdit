@@ -231,7 +231,6 @@ class TreeViewItemMenus {
 
 		var targetData = getItemData(target);
 		var targetTV:TreeViewItem = cast target;
-		Console.log(targetTV);
 		var mkdir = kind == "dir";
 
 		var args:TreeViewItemCreate = {

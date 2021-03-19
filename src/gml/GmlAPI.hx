@@ -117,18 +117,23 @@ class GmlAPI {
 		
 		stdNamespaceDefs.resize(0);
 		stdFieldHints.resize(0);
+		
 		var sk = new Dictionary();
-		inline function add(s:String) {
-			sk.set(s, "keyword");
-		}
-		for (s in kwList) add(s);
+		for (s in kwList) sk[s] = "keyword";
+		
 		var kw2 = version.config.additionalKeywords;
-		if (kw2 != null) for (s in kw2) add(s);
-		if (Preferences.current.importMagic) add("new");
+		if (kw2 != null) for (s in kw2) sk[s] = "keyword";
+		
+		if (Preferences.current.importMagic) sk["new"] = "keyword";
+		
 		if (Preferences.current.castOperators) {
-			add("cast");
-			add("as");
+			sk["cast"] = "keyword";
+			sk["as"] = "keyword";
 		}
+		
+		sk["true"] = "constant.boolean";
+		sk["false"] = "constant.boolean";
+		
 		for (k in GmlTypeTools.builtinTypes) {
 			switch (k) {
 				case "string", "bool": continue;

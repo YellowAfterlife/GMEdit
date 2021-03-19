@@ -39,6 +39,7 @@
     {"id":{"name":"v_self","path":"scripts/v_self/v_self.yy",},"order":4,},
     {"id":{"name":"obj_self_object","path":"objects/obj_self_object/obj_self_object.yy",},"order":4,},
     {"id":{"name":"obj_not_self_object","path":"objects/obj_not_self_object/obj_not_self_object.yy",},"order":5,},
+    {"id":{"name":"v_ternary_ident","path":"scripts/v_ternary_ident/v_ternary_ident.yy",},"order":2,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
