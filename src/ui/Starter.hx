@@ -69,7 +69,7 @@ class Starter {
 			if (FileSystemMin.existsSync(full)) try {
 				prefText = FileSystemMin.readTextFileSync(full);
 			} catch (_:Dynamic) {}
-		} else prefText = window.localStorage.getItem(prefName);
+		} else prefText = window.localStorage.getItem("config/" + prefName);
 		//
 		var pref:PrefData = null;
 		if (prefText != null) try {
