@@ -1,6 +1,7 @@
 package ui;
 import ace.AceWrap;
 import ace.extern.*;
+import electron.Electron;
 import electron.FileSystem;
 import gml.file.GmlFile;
 import file.kind.misc.KPlain;
@@ -24,7 +25,8 @@ class WelcomePage {
 			file = new GmlFile("WelcomePage", null, KPlain.inst, "");
 			GmlFile.current = file;
 			session = file.codeEditor.session;
-			FileSystem.readTextFile(Main.relPath("misc/welcome.txt"), function(err, text) {
+			var rel = Electron != null ? "misc/welcome.txt" : "misc/welcome-web.txt";
+			FileSystem.readTextFile(Main.relPath(rel), function(err, text) {
 				text = tools.NativeString.replaceExt(text, "%%VERSION%%", ace.AceMacro.timestamp());
 				session.setValue(text);
 			});
