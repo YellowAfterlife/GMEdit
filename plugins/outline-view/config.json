@@ -1,0 +1,6 @@
+{
+	"name": "outline-view",
+	"description": "Adds a sidebar for quick reference and navigation between 'landmarks' in open tabs.",
+	"scripts": ["outline-view.js"],
+	"stylesheets": ["outline-view.css"]
+}

@@ -1,0 +1,303 @@
+#source, #main .ace_editor {
+	/*font-size: 9pt;*/
+	line-height: 1.35;
+}
+textarea#source {
+	border: 0;
+	flex-grow: 1;
+}
+.ace_container {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+}
+.ace_container > .ace_editor {
+	flex-grow: 1;
+}
+#source, #output, #main .ace_editor {
+	font-family: Consolas, Ubuntu Mono, monospace;
+	width: 100%;
+}
+#main .ace_status-bar {
+	width: 100%;
+	max-width: var(--main-width);
+	line-height: 24px;
+	height: 24px;
+	border-top: 1px solid #CCCCCC;
+	padding: 0 5px;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
+	display: flex;
+}
+#main .ace_status-bar .ace_status-hint {
+	padding-right: 5px;
+}
+#main .ace_status-bar .row,
+#main .ace_status-bar .col {
+	display: inline-block;
+	text-align: right;
+	min-width: 24px;
+}
+#main .ace_status-comp {
+	overflow: hidden;
+	position: relative;
+}
+#main .ace_status-comp,
+#main .ace_status-bar .context-pre {
+	border-left: 1px solid #bbb;
+	padding-left: 5px;
+}
+#main .ace_status-bar .context {
+	position: relative;
+	display: inline-block;
+	vertical-align: bottom;
+	max-width: 100px;
+	overflow: hidden;
+	cursor: pointer;
+}
+#main .ace_status-bar .context-txt {
+	float: right;
+}
+#main .ace_status-comp.active {
+	color: rgb(250, 50, 50);
+	cursor: pointer;
+}
+#main .ace_status-comp .argument.current {
+	color: rgb(250, 50, 50);
+}
+
+#main .ace_gutter {
+	background: #F8F8F8;
+	color: #666;
+	border-right: 1px solid #ccc;
+}
+#main .ace_gutter-active-line {
+	background-color: #EFEAE8;
+}
+
+.ace_scroller {
+    box-shadow: 17px 0 16px -16px rgba(0, 0, 0, 0.0) inset;
+	transition: box-shadow 0.3s ease-in-out;
+}
+
+/*#main .ace_line {
+	position: relative;
+}*/
+#main .ace_active-line {
+	background: rgba(255, 253, 205, 0.5);
+}
+#app .ace-tm .ace_comment,
+#app .ace-tm .ace_eventtext {
+	color: #008000;
+	/*font-style: italic;*/
+}
+#app .ace-tm .ace_comment.ace_link {
+	color: #0000FF;
+}
+#app .ace-tm .ace_comment.ace_link.ace_url {
+	text-decoration: underline;
+}
+#app .ace-tm .ace_comment.ace_meta {
+	color: #914BAF;
+}
+/*#main .ace-tm .ace_comment.ace_doc,
+#main .ace-tm .ace_regionname,
+#main .ace-tm .ace_sectionname {
+	color: #008080;
+}*/
+#app .ace-tm .ace_regionname,
+#app .ace-tm .ace_sectionname,
+#app .ace-tm .ace_momentname,
+#app .ace-tm .ace_scriptname,
+#app .ace-tm .ace_eventname,
+#app .ace-tm .ace_eventkeyname {
+	color: #308;
+}
+#app .ace-tm .ace_function,
+#app .ace-tm .ace_variable,
+#app .ace-tm .ace_constant,
+#app .ace-tm .ace_macro,
+#app .ace-tm .ace_globalvar,
+#app .ace-tm .ace_extfunction,
+#app .ace-tm .ace_extmacro,
+#app .ace-tm .ace_macroname,
+#app .ace-tm .ace_configname,
+#app .ace-tm .ace_enum,
+#app .ace-tm .ace_enumfield,
+#app .ace-tm .ace_actionname,
+#app .ace-tm .ace_namespace {
+	color: #990000;
+}
+#app .ace-tm .ace_local,
+#app .ace-tm .ace_flowlabel {
+	color: #748;
+}
+#app .ace-tm .ace_sublocal {
+	color: #764;
+}
+#app .ace-tm .ace_enumerror,
+#app .ace-tm .ace_typeerror {
+	color: #888;
+}
+#app .ace-tm .ace_asset,
+#app .ace_autocomplete .ace_asset,
+#app .ace_autocomplete .ace_object {
+	color: rgb(0, 128, 160);
+}
+#app .ace-tm .ace_script {
+	color: #990099;
+}
+#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_quasi.ace_paren {
+	color: #00379B;
+	font-weight: bold;
+}
+#app .ace-tm .ace_preproc {
+	/*color: rgb(0, 120, 170);*/
+	/*color: #7A81A9;*/
+	color: #768;
+}
+#app .ace-tm .ace_numeric,
+#app .ace-tm .ace_momenttime {
+	color: #00f;
+}
+#app .ace-tm .ace_string {
+	color: #00f;
+}
+#main .ace_warning-line {
+	position: absolute;
+	background-color: rgba(255, 200, 79, 0.15);
+}
+#main .ace_error-line {
+	position: absolute;
+	background-color: rgba(233, 115, 111, 0.35);
+}
+.ace_tooltip {
+	font: 10pt sans-serif;
+}
+
+/** markdown-specific */
+.ace-tm .ace_md-escape {
+	color: red;
+}
+.ace-tm .ace_md-italic {
+	font-style:italic;
+}
+.ace-tm .ace_md-bold {
+	font-weight:bold;
+}
+.ace-tm .ace_md-tt {
+	color: blue;
+}
+.ace-tm .ace_md-href {
+	border-bottom: 1px solid currentColor;
+	padding-bottom: 1px;
+	margin-bottom: -2px;
+}
+.ace-tm .ace_md-section,
+.ace-tm .ace_md-section-start,
+.ace-tm .ace_md-section-end {
+	color: #F08;
+}
+.ace-tm .ace_md-pre,
+.ace-tm .ace_md-pre-start,
+.ace-tm .ace_md-pre-end {
+	color: blue;
+}
+.ace-tm .ace_md-url {
+	color: rgb(0, 120, 170);
+}
+
+/** underline the define-line */
+#main .ace_gutter-define:not(:first-child) {
+	box-shadow: 0 1px 0px #d0d0d0 inset;
+}
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_define::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_section::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_event::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_action::after,
+#main .ace-tm .ace_line:not(:first-child) .ace_preproc.ace_target::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_define::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_section::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_event::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_action::after,
+#main .ace-tm .ace_line_group:not(:first-child) .ace_preproc.ace_target::after {
+    content: "";
+    left: -4px;
+    /*bottom: -1px;*/
+	top: 0;
+    right: 0;
+    height: 1px;
+    position: absolute;
+    display: block;
+    background: #E8E8E8;
+}
+
+.ace_search_field:first-child:last-child {
+	border-radius: 3px;
+}
+
+/** autocomplete tweaks */
+.ace_editor.ace_autocomplete {
+	font-family: sans-serif;
+	overflow: visible;
+}
+.ace_editor.ace_autocomplete .ace_text-layer {
+	margin-left: 0!important;
+}
+.ace_editor.ace_autocomplete .ace_completion-meta {
+	opacity: 1;
+	margin: 0;
+	display: inline-block;
+	width: 68px;
+	vertical-align: bottom;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
+	position: relative;
+	padding-left: 4px;
+	margin-right: 4px;
+}
+.ace_editor.ace_autocomplete .ace_completion-meta::before {
+	opacity: 0.1;
+	background: currentColor;
+	display: inline-block;
+	content: "";
+	position: absolute;
+	top: 0; bottom: 0; left: 0; right: 0;
+}
+
+.ace_editor.ace_autocomplete[data-self-type]::after {
+	content: attr(data-self-type);
+	background: #fefefe;
+	color: #111;
+	border: 1px lightgray solid;
+	top: 100%;
+	position: absolute;
+	padding: 0 4px;
+	box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	right: -1px;
+}
+
+
+.ace_editor .debugShowToken {
+	position: absolute;
+	margin: -1px 0 0 -1px;
+	border: 1px solid #f0c;
+	background: #ff00cc10;
+}
+
+#ace_settingsmenu #more-controls {
+	width: 100%;
+}
+#ace_settingsmenu #controls > .ace_optionsMenuEntry td > input[type="text"]:only-child,
+#ace_settingsmenu #controls > .ace_optionsMenuEntry td > input[type="number"]:only-child,
+#ace_settingsmenu #controls > .ace_optionsMenuEntry td > select:only-child {
+	width: 100% !important;
+	box-sizing: border-box;
+}

@@ -1,0 +1,125 @@
+#outline-view {
+	overflow: auto;
+}
+#outline-view.popout-window {
+	right: 20px;
+	top: 40px;
+	bottom: 44px;
+	width: 224px;
+	padding: 0;
+}
+#outline-view .treeview {
+	min-height: 100%;
+	box-sizing: border-box;
+}
+#outline-view .treeview:empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 0.25em;
+}
+#outline-view .treeview:empty:after {
+	content: "Hello! Outline view will show here once you have any tabs open. Feel free to toggle it any time via Ctrl+Shift+T ➜ 'Toggle outline view'!";
+}
+#app.liveweb #outline-view .treeview:empty:after {
+	content: "Hello! Outline view will show here once you have any tabs open. Feel free to toggle it any time via Alt+T ➜ 'Toggle outline view'!";
+}
+#outline-view .treeview:empty:not(:hover):after {
+	opacity: 0.5;
+}
+#outline-view .item, #outline-view .items, #outline-view .treeview > div {
+	margin-top: 0;
+}
+#outline-view .treeview > .outline-item > .items {
+	border-left: 0;
+}
+#outline-view .treeview > div:not(.dir) > .header {
+	border-left: 0;
+}
+
+#outline-view .outline-current-file > .header span {
+	text-decoration: underline;
+}
+#outline-view .outline-current-file .outline-current-item > .header span {
+	text-decoration: underline;
+}
+
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file {
+	/*background: rgba(0,0,0,0.07);*/
+}
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file .item,
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file .items {
+	border-left-color: #fcb;
+}
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-current-file .outline-current-item > .header {
+	border-left-color: #721;
+}
+
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file {
+	/*background: rgba(255,255,255,0.07);*/
+}
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file .item,
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file .items {
+	border-left-color: #899097; /* a990d7 */
+}
+#main.chrome-tabs-dark-theme #outline-view .outline-current-file .outline-current-item > .header {
+	border-left-color: white;
+}
+#outline-view .caption {
+	font-size: 13px;
+}
+#outline-view .outline-item:not(.open) > .items {
+	display: none;
+}
+#main:not(.chrome-tabs-dark-theme) #outline-view .outline-item > .header:not([data-ident]):before {
+	filter: invert(100%);
+}
+#outline-view .outline-item > .header:not([data-ident]):before {
+	background: url(icons.png) -2px -2px no-repeat;
+}
+#outline-view .outline-dir:not(.open) > .header:not([data-ident]):hover::before {
+	background-position: -142px -2px;
+}
+#outline-view .outline-dir.open > .header:not([data-ident]):hover::before {
+	background-position: -122px -2px;
+}
+#outline-view .outline-item:not(.open) > .header:not([data-ident])::before {
+	opacity: 0.5;
+}
+#outline-view .outline-item[outline-ctx] > .header:before {
+	background-position: -22px -2px;
+}
+#outline-view .outline-item[outline-data="gml_properties"] > .header:before {
+	background-position: -102px -2px;
+}
+#outline-view .outline-item[outline-data="gml_create"] > .header:before {
+	background-position: -42px -2px;
+}
+#outline-view .outline-item[outline-data="gml_destroy"] > .header:before {
+	background-position: -62px -2px;
+}
+#outline-view .outline-item[outline-data="gml_cleanup"] > .header:before {
+	background-position: -82px -2px;
+}
+#outline-view .outline-item[outline-data^="gml_alarm"] > .header:before {
+	background-position: -2px -22px;
+}
+#outline-view .outline-item[outline-data="gml_step"] > .header:before {
+	background-position: -22px -22px;
+}
+#outline-view .outline-item[outline-data="gml_step_begin"] > .header:before {
+	background-position: -42px -22px;
+}
+#outline-view .outline-item[outline-data="gml_step_end"] > .header:before {
+	background-position: -62px -22px;
+}
+#outline-view .outline-item[outline-data^="gml_collision"] > .header:before {
+	background-position: -2px -62px;
+}
+#outline-view .outline-item[outline-data^="gml_async"] > .header:before {
+	background-position: -22px -62px;
+}
+#outline-view .outline-item[outline-data^="gml_draw"] > .header:before {
+	background-position: -2px -42px;
+}

@@ -1,0 +1,232 @@
+.popout-window {
+	position: absolute;
+	background: #fdfdfd;
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+	border: 1px solid #999;
+	z-index: 1000;
+	overflow-y: auto;
+	padding: 4px;
+	box-sizing: border-box;
+}
+/* */
+
+#global-lookup {
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	width: 300px;
+	height: 200px;
+	resize: both;
+	display: flex;
+	flex-direction: column;
+}
+#global-lookup > div {
+	margin-bottom: 4px;
+	display: flex;
+}
+#global-lookup > div > label {
+	margin-left: 6px;
+	display: flex;
+	align-items: center;
+}
+#global-lookup > select {
+	flex-grow: 1;
+	overflow-y: auto;
+}
+/* */
+#global-search {
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	width: 520px;
+	height: 170px;
+	resize: horizontal;
+	display: flex;
+}
+#global-search .search-main {
+	flex-grow: 1;
+	padding-right: 2px;
+}
+#global-search .search-options {
+	margin: 0;
+	width: 160px;
+}
+#global-search .search-options-2 {
+	margin: 0;
+	width: 120px;
+}
+#global-search .search-options fieldset {
+	height: 100%;
+	box-sizing: border-box;
+}
+/* */
+#preferences-window {
+	right: 20px;
+	top: 40px;
+	bottom: 40px;
+	width: 224px;
+	overflow-y: auto;
+}
+#preferences-window div.input label {
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	display: block;
+	width: 100%;
+	white-space: nowrap;
+}
+#preferences-editor, .project-properties, #keybindings-editor {
+	position: inherit;
+	padding: 0.5em;
+	padding-bottom: 1em;
+	border: 0;
+	box-shadow: none;
+	z-index: inherit;
+}
+
+#preferences-editor fieldset + fieldset,
+.project-properties fieldset + fieldset {
+	margin-top: 0.5em;
+}
+#preferences-editor > fieldset + fieldset,
+.project-properties > fieldset + fieldset {
+	margin-top: 1em;
+}
+#preferences-editor fieldset,
+.project-properties > fieldset {
+	padding: 0.5em;
+	padding-top: 0em;
+}
+#preferences-editor label[title],
+.project-properties label[title],
+#preferences-editor div[title] label,
+.project-properties div[title] label {
+	cursor: help;
+}
+/* */
+.popout-window .plaintext {
+	white-space: pre-wrap;
+}
+.popout-window div:not(:first-child) {
+	margin-top: 4px;
+}
+.popout-window fieldset {
+	border: 1px solid #999;
+	padding: 4px;
+	-webkit-padding-before: 0;
+}
+.popout-window fieldset.collapsed,
+#preferences-editor fieldset.collapsed,
+.project-properties > fieldset.collapsed {
+	opacity: 0.7;
+	padding-bottom: 3px;
+}
+.popout-window fieldset.collapsed > *:not(legend) {
+	display: none;
+}
+.popout-window input[type="radio"],
+.popout-window input[type="checkbox"] {
+	margin: 0;
+	vertical-align: bottom;
+	margin-right: 2px;
+}
+.popout-window input[type="text"],
+.popout-window select option {
+	padding-left: 2px;
+	position: relative;
+}
+.popout-window select option[hint]:after {
+	content: attr(hint);
+	position: absolute;
+	right: 2px;
+	font-size: 85%;
+	bottom: calc(50% - 0.425em);
+	--top: calc(50% - 0.425em);
+}
+.popout-window input[type="text"],
+.popout-window select {
+	width: 100%;
+	box-sizing: border-box;
+}
+.popout-window input[type="text"].error {
+	border-color: rgb(250, 50, 50);
+}
+.popout-window label.error {
+	color: rgb(250, 50, 50);
+}
+.plugin-description:empty,
+.plugin-settings:empty {
+	margin: 0;
+}
+/* */
+.ace_closeButton {
+	display: none;
+}
+html #ace_settingsmenu {
+	top: 36px;
+}
+#ace_settingsmenu div[contains="setMode"],
+#ace_settingsmenu div[contains="setTheme"] {
+	display: none;
+}
+
+.popout-menu {
+	z-index: 1000;
+	position: absolute;
+	overflow: hidden;
+	border: 1px solid #BABABA;
+	background: #fdfdfd;
+	white-space: nowrap;
+	color: black;
+	box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+	list-style: none;
+	margin: 0;
+	padding: 2px 0;
+	font: 9pt "Segoe UI", sans-serif;
+}
+.popout-menu li {
+	padding: 4px 20px;
+	cursor: default;
+}
+.popout-menu li[disabled] {
+	color: #999;
+}
+.popout-menu .popout-menu-separator {
+	background: #E9E9E9;
+	height: 1px;
+	padding: 0;
+	margin: 5px 1px;
+}
+.popout-menu li:not([disabled]):not(.popout-menu-separator):hover {
+	background: #EBEBEB;
+}
+
+#keybindings-editor {
+	padding: 0.5em;
+	overflow: auto;
+}
+#keybindings-editor table {
+	width: 100%;
+}
+#keybindings-editor input[type="text"] {
+	width: 100%;
+}
+/*#keybindings-editor td:first-child {
+	width: 33%;
+}
+#keybindings-editor td:last-child {
+	width: 50%;
+}
+#keybindings-editor td:nth-child(2) {
+	width: 0px;
+}*/
+#keybindings-editor thead td {
+	font-size: 125%;
+	border-bottom: 1px solid currentColor;
+}
+#keybindings-editor td[title] {
+	text-decoration: underline dotted;
+}

@@ -1,0 +1,77 @@
+.chrome-tabs {
+	z-index: 10;
+}
+.chrome-tabs,
+.chrome-tabs.chrome-tabs-dark-theme,
+#splitter-td:before {
+	background: var(--titlebar-background-color);
+	color: var(--titlebar-foreground-color);
+}
+#main .splitter-td {
+	border: 0;
+	position: relative;
+}
+#splitter-td:before {
+	content: "";
+	display: block;
+	height: 32px;
+	box-shadow: 0 -0.05em rgba(0,0,0,0.175) inset;
+	border-left: 1px solid rgba(0, 0, 0, 0.2);
+	--border-top: 30px solid transparent;
+	box-sizing: border-box;
+}
+.splitter-td:after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0; right: 0;
+	top: 36px; bottom: 0;
+	border: 1px solid #CCCCCC;
+	box-sizing: border-box;
+	border-top: 0;
+	border-bottom: 0;
+}
+.splitter-td:not(#splitter-td) {
+	z-index: 10;
+}
+.splitter-td:not(#splitter-td):after {
+	top: 0px;
+}
+
+/* light foreground controls */
+html[titlebar-foreground-is-light="true"] #splitter-td:before {
+	border-left-color: rgba(255,255,255,0.2);
+}
+html[titlebar-foreground-is-light="true"] .system-button:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+html[titlebar-foreground-is-light="true"] .system-button:active {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+html[titlebar-foreground-is-light="true"] .system-button.close svg polygon,
+html[titlebar-foreground-is-light="true"] .system-button.minimize svg rect,
+html[titlebar-foreground-is-light="true"] .system-button.preferences svg rect {
+	fill: white;
+}
+html[titlebar-foreground-is-light="true"] .system-button.maximize svg rect {
+	stroke: white;
+}
+
+/* dark foreground controls */
+html[titlebar-foreground-is-light="false"] #splitter-td:before {
+	border-left-color: rgba(0,0,0,0.2);
+}
+html[titlebar-foreground-is-light="false"] .system-button:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+html[titlebar-foreground-is-light="false"] .system-button:active {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+html[titlebar-foreground-is-light="false"] .system-button.close svg polygon,
+html[titlebar-foreground-is-light="false"] .system-button.minimize svg rect,
+html[titlebar-foreground-is-light="false"] .system-button.preferences svg rect {
+	fill: black;
+}
+html[titlebar-foreground-is-light="false"] .system-button.maximize svg rect {
+	stroke: black;
+}

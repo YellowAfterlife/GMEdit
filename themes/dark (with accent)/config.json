@@ -1,0 +1,8 @@
+{
+	"parentTheme": "dark",
+	"windowsAccentColors": true,
+	"stylesheets": [
+		"../default (with accent)/accent-colored.css",
+		"accent-dark.css"
+	]
+}

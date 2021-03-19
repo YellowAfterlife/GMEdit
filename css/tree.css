@@ -1,0 +1,131 @@
+.treeview {
+	line-height: 1.35;
+	overflow: auto;
+	--treeview-background-color: white;
+}
+.treeview .dir .header {
+	-webkit-user-select: none;
+	user-select: none;
+}
+.treeview .dir .header,
+.treeview .item,
+.treeview .items {
+	border-left: 2px solid #f3f3f3;
+	-webkit-user-select: none;
+	user-select: none;
+}
+/*.treeview .items > div {
+	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAACAQMAAABWsa/UAAAAA1BMVEXz8/ML3eGLAAAACklEQVQI12MAAwAABgAB6AoqpAAAAABJRU5ErkJggg==') 0px 9px no-repeat;
+}*/
+.treeview .show-in-treeview-flash {
+	box-shadow: 0 0 4px red inset;
+}
+.treeview .dir.selected > .header,
+.treeview .item.selected {
+	background: #0078D7;
+	color: white;
+}
+.treeview .dir > .header,
+.treeview .item {
+	display: block;
+	outline: none;
+	text-decoration: none;
+	margin: 0;
+	font-size: 13px;
+	padding-left: 4px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	cursor: pointer;
+	white-space: nowrap;
+	position: relative;
+}
+.treeview .dir[data-gmlive] > .header:after,
+.treeview .item[data-gmlive]:after {
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #FF7C3C;
+	border: 1px solid rgba(0, 0, 0, 0.7);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+	top: 11px;
+	left: 14px;
+}
+.treeview .dir > .header:before,
+.treeview .item:before {
+	display: inline-block;
+	content: "";
+	width: 16px;
+	height: 16px;
+	background: url(tree.png) no-repeat;
+	margin-right: 2px;
+	vertical-align: middle;
+	position: relative;
+	top: -2px;
+}
+.treeview .item[data-thumb]:before {
+	/*background-image: attr(data-thumb url);*/ /* if only */
+	background-position: center;
+	background-size: 100%;
+	background-size: contain;
+	/*image-rendering: pixelated;*/
+}
+.treeview .item[data-kind="project"][data-missing] {
+	opacity: 0.5;
+}
+.treeview .header > span,
+.treeview .item > span {
+	display: inline-block;
+	pointer-events: none;
+	/*width: 100%;*/
+}
+.treeview .dir > .header:before {
+	background-position: -20px 0;
+}
+.treeview .dir.open > .header:before {
+	background-position: -40px 0;
+}
+.treeview .header:not(:active):hover,
+.treeview .header:not(:active):hover > span,
+.treeview .item:not(:active):hover,
+.treeview .item:not(:active):hover > span {
+	background: #f3f3f3;
+}
+.treeview .header.drop-before,
+.treeview .item.drop-before {
+	box-shadow: 0 -1px 0 red;
+}
+.treeview .header.drop-after,
+.treeview .item.drop-after {
+	box-shadow: 0 -1px 0 red inset;
+}
+.treeview .header.drop-into,
+.treeview .item.drop-into {
+	box-shadow: 0 0 2px red inset;
+}
+.treeview .dir:not(.open) > .items {
+	display: none;
+}
+.treeview .items {
+	padding-left: 9px;
+}
+.treeview > .dir > .header,
+.treeview > .dir > .items {
+	border-left: none;
+}
+/* oddish: if a header is hidden, child items don't get a step-in border */
+.treeview .dir .header.hidden {
+	display: none;
+}
+.treeview .dir .header.hidden + .items {
+	border-left: 0;
+	padding-left: 0;
+}
+
+/* Can't use attr() in background-color AND can't specify two background colors, gosh darn */
+.treeview div[data-color] {
+	background-image:
+		linear-gradient(var(--data-color), var(--data-color)),
+		linear-gradient(var(--treeview-background-color), var(--treeview-background-color));
+}

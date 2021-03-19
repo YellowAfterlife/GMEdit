@@ -1,0 +1,1 @@
+asset_background#:asset_type

@@ -1,0 +1,13 @@
+Hello!
+
+Drag and drop a project file onto here to load it.
+Ctrl+R to reload the project.
+
+No matter what,
+MAKE FREQUENT BACKUPS
+
+Editor compiled at %%VERSION%%.
+Current versions can be found at
+https://yellowafterlife.itch.io/gmedit
+
+Have fun!

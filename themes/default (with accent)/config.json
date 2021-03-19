@@ -1,0 +1,5 @@
+{
+	"parentTheme": "default",
+	"windowsAccentColors": true,
+	"stylesheets": ["accent-colored.css"]
+}

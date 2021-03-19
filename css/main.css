@@ -1,0 +1,743 @@
+*:focus {
+	outline-style: solid;
+	outline-width: 2px;
+	outline-offset: -1px;
+}
+html, body {
+    padding: 0;
+	margin: 0;
+	height: 100%;
+}
+body {
+	font: 11pt sans-serif;
+	box-sizing: border-box;
+	overflow: hidden;
+	background: white;
+}
+/* */
+#main {
+	width: 100%;
+	height: 100vh;
+	display: flex;
+	--main-height: calc(100% - 36px);
+	--main-height-vh: calc(100vh - 36px);
+}
+/*
+min-width:0 / min-height:0 in the following few are required
+to prevent inner elements (such as status bars, code editors, other UI)
+from overflowing the outer UI. A decent explanation:
+https://stackoverflow.com/a/36247448/5578773
+*/
+#main > div {
+	padding: 0;
+	box-sizing: border-box;
+	position: relative;
+	min-width: 0;
+	min-height: 0;
+}
+#splitter-td, .splitter-td {
+	border-right: 1px solid;
+	border-left: 1px solid;
+	border-color: #BCBBBC;
+	background: #f2f2f2;
+	width: 5px;
+	flex: 0 0 5px;
+	cursor: e-resize;
+}
+#main #editor-td {
+	flex-grow: 1;
+	padding: 0px;
+}
+#main #editor-td .bottom {
+	display: flex;
+	position: relative;
+}
+#main #editor-td .bottom > div {
+	min-width: 0;
+	min-height: 0;
+}
+#main #editor-td .bottom > .tabview {
+	flex-grow: 1;
+	display: flex;
+	position: relative;
+}
+#main #editor-td .bottom > .tabview > div {
+	flex-grow: 1;
+	min-width: 0;
+	min-height: 0;
+}
+.resinfo {
+	padding: 0.5em;
+	box-sizing: border-box;
+}
+
+
+.panner {
+	overflow: hidden;
+	outline: 0 solid transparent;
+	cursor: move;
+	width: 100%;
+	position: relative;
+	/* blue/dark blue checkerboard */
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAABlBMVEVqhrdHXILSZs3zAAAAE0lEQVQI12P4/5+BgZoEA3VNBADtvT/BrQ+bEwAAAABJRU5ErkJggg==)
+}
+.panner img, .panner > div {
+	transform-origin: left top 0px;
+	position: absolute;
+	pointer-events: none;
+}
+.panner .panner-element {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+.panner.zoomed img, .resinfo.sprite .frame.zoomed {
+	-ms-interpolation-mode: nearest-neighbor;
+	image-rendering: optimizeSpeed;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: -o-crisp-edges;
+	image-rendering: pixelated;
+}
+.panner::after {
+	content: attr(data-zoom);
+	color: white;
+	display: inline-block;
+	padding: 1px 2px;
+	background: rgba(0, 0, 0, 0.4);
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#game-td .chrome-tabs {
+	padding-bottom: 9px;
+	padding-left: 4px;
+}
+#game-td .chrome-tabs input,
+#game-td .chrome-tabs select {
+	box-sizing: border-box;
+	height: 100%;
+	margin: 0;
+	border: 1px solid #aaa;
+	padding: 1px 5px;
+	vertical-align: middle;
+}
+#game-td .chrome-tabs input[type="button"] {
+	background: #f0f0f0;
+}
+#game-td .chrome-tabs input[type="button"]:hover {
+	background: #fff;
+}
+#game-td .chrome-tabs select {
+	background-color: white;
+	background-position: center right 6px;
+	background-image: url(data:image/bmp;base64,Qk1mAAAAAAAAADYAAAAoAAAABQAAAAMAAAABABgAAAAAAAAAAADDDgAAww4AAAAAAAAAAAAA////////AAAA/////////////wAAAAAAAAAAAP////8AAAAAAAAAAAAAAAAAAAD/);
+	background-repeat: no-repeat;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	padding-right: 16px;
+}
+#main.resizing #game {
+	pointer-events: none;
+}
+
+.lw_modal > * {
+	z-index: 100;
+}
+.lw_modal .overlay {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	height: 100vh;
+	left: 0; top: 0; right: 0; bottom: 0;
+	margin: auto;
+	background: rgba(0, 0, 0, 0.6);
+}
+.lw_modal .window {
+	position: absolute;
+	width: 400px;
+	height: 100px;
+	left: 0; top: 0; right: 0; bottom: 0;
+	margin: auto;
+	background: white;
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
+	box-sizing: border-box;
+	padding: 10px;
+	line-height: 20px;
+	overflow: hidden;
+	resize: both;
+}
+#lw_prompt .window {
+	resize: horizontal;
+}
+.lw_modal textarea {
+	box-sizing: border-box;
+	width: 100%;
+	height: calc(100% - 20px);
+	resize: none;
+}
+#lw_prompt input[type="text"] {
+	box-sizing: border-box;
+	width: 100%;
+	height: 20px;
+	margin-top: 5px;
+	margin-bottom: 11px;
+}
+#lw_prompt .buttons {
+	text-align: right;
+}
+
+/* */
+.chrome-tabs {
+	border-radius: 0;
+	height: 36px;
+	padding-top: 4px;
+	-webkit-user-select: none;
+	z-index: 7;
+}
+.chrome-tabs .chrome-tab.chrome-tab-currently-dragged .chrome-tab-close {
+	pointer-events: none;
+}
+#app:not(.app-browser) .chrome-tabs::before {
+	content: "";
+	display: block;
+	position: absolute;
+	left: 2px; top: 8px; right: 2px; bottom: 2px;
+	-webkit-app-region: drag;
+}
+.chrome-tabs .chrome-tab-title {
+	max-width: calc(100% - 4em);
+}
+.chrome-tabs .chrome-tab-title-text {
+	float: right;
+}
+.chrome-tabs .chrome-tab,
+.system-button,
+.chrome-tabs .lw-controls {
+	-webkit-app-region: no-drag;
+}
+.chrome-tabs.has-lw-buttons {
+	display: flex;
+}
+#app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
+	display: none;
+}
+.chrome-tabs.has-lw-buttons .app-region-drag {
+	-webkit-app-region: drag;
+	flex-grow: 1;
+}
+#game-td .chrome-tabs.has-lw-buttons > input,
+#game-td .chrome-tabs.has-lw-buttons > select {
+	margin-right: 2px;
+}
+#app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
+	left: 230px;
+}
+#tabs.chrome-tabs.has-system-buttons {
+	padding-right: 108px;
+}
+.system-button {
+	width: 36px;
+	height: 28px;
+	position: absolute;
+	right: 0; top: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+html.starter-loading .system-button {
+	display: none;
+}
+.system-button.maximize {
+	right: 36px;
+}
+.system-button.minimize {
+	right: 72px;
+}
+.system-button:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.system-button:active {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+.system-button.close:hover {
+	background-color: rgba(250, 80, 80, 0.9);
+}
+.system-button.close:active {
+	background-color: rgba(250, 80, 80, 1.0);
+}
+.system-button.close:hover svg polygon {
+	fill: white;
+}
+.chrome-tabs .chrome-tab .chrome-tab-background > svg .chrome-tab-background {
+	/*transition: fill ease-in-out 0.1s;*/
+}
+.chrome-tabs .chrome-tab:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
+	fill: #d7d7d7;
+}
+.chrome-tab .chrome-tab-favicon {
+	width: 0;
+}
+.chrome-tab-changed .chrome-tab-close::before,
+.chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-changed .chrome-tab-close:not(:hover)::before {
+	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="%235198D9"/></svg>');
+}
+.chrome-tabs-hint {
+	position: absolute;
+	top: 36px;
+	display: none;
+	z-index: 1000;
+	color: white;
+	background: rgba(0,0,0,0.7);
+	padding: 1px 4px;
+	border-radius: 2px;
+	pointer-events: none;
+}
+.chrome-tabs-hint:before {
+	position: absolute;
+	left: calc(50% - 4px);
+	top: -8px;
+	content: "";
+	border: 4px solid transparent;
+	border-bottom-color: rgba(0,0,0,0.7);
+}
+
+.project-name {
+	line-height: 36px;
+	padding-top: 0;
+	position: relative;
+}
+#project-name {
+	font-size: 14px;
+	width: calc(100% - 28px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
+}
+/* */
+.top, .bottom {
+	width: 100%;
+	box-sizing: border-box;
+}
+.top {
+	height: 36px;
+	margin-bottom: 1px;
+	overflow: hidden;
+}
+/* */
+#source, #output, .ace_editor, .ace_status-bar {
+	box-sizing: border-box;
+	/*border: 1px solid #aaa;*/
+}
+#game, #game-fallback, .ace_editor {
+	margin: 0;
+	resize: none;
+}
+#game {
+	width: 100%;
+}
+#game, .bottom {
+	height: calc(100% - 36px);
+	height: calc(100vh - 36px);
+	height: var(--main-height);
+	height: var(--main-height-vh);
+}
+#misc-td {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	min-height: 0;
+}
+#misc-select {
+	width: 100%;
+	border: 0;
+	line-height: 1.5;
+	height: 1.5em;
+	box-shadow: 0 -1px 0 rgba(0,0,0,0.1) inset;
+}
+#misc-panel {
+	position: relative;
+	flex-grow: 1;
+	display: flex;
+	min-height: 0;
+}
+#misc-panel > div {
+	flex-grow: 1;
+}
+
+
+/* Sprite editor */
+
+.sprite-editor {
+	display: flex;
+	flex-direction: row;
+	outline: none;
+}
+.sprite-editor .sprite-options {
+	width: 300px;
+	flex-shrink: 0;
+}
+.sprite-editor .resinfo.sprite {
+	width: 100%;
+	min-width: 0;
+}
+.sprite-options {
+	margin-left: 15px;
+	overflow-y: auto;
+	border-right: solid 1px rgba(128,128,128,0.75);
+}
+.sprite-options .one-line {
+	width: 100%;
+    display: flex;
+    align-items: center;
+	overflow: auto;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.sprite-options .one-line .short-label {
+	display: inline-block;
+	width: 50px;
+}
+.sprite-options input[type="number"] {
+	width: 60px;
+	margin-right: 20px;
+}
+.sprite-options .float-right {
+	margin-right: 30px;
+	width: 150px;
+	float: right;
+	order: 2;
+    margin-left: auto;
+}
+
+.sprite-options h4 {
+	margin-bottom: 0px;
+}
+.sprite-options .sprite-title {
+	margin-bottom: 0px;
+}
+.sprite-options .sprite-width-height {
+	margin-top: 0px;
+	opacity: 0.75;
+}
+.sprite-options .option-origin-type {
+	margin-bottom: 5px;
+	margin-top: 3px;
+}
+.sprite-options .option-origin-x, .sprite-options .option-origin-y {
+	margin-left: 0px;
+	margin-right: 0px;
+	width: 50px;
+}
+.sprite-options .option-bbox-tolerance-slider {
+	width: 126px;
+	margin-left: 20px;
+}
+.sprite-options .option-bbox-tolerance-box {
+	width: 40px;
+}
+
+/* Sprite preview/panner box */
+.resinfo.sprite {
+	display: flex;
+	flex-direction: column;
+	height: var(--main-height);
+	height: var(--main-height-vh);
+	padding: 0;
+	outline: 0 solid transparent;
+}
+.sprite-frame-wrapper {
+	width: 100%;
+}
+.resinfo.sprite .playback-control {
+	text-align: center;
+	height: 20px;
+}
+.resinfo.sprite #play-button {
+	font-size: 15px;
+	margin-top: 5px;
+	cursor: pointer;
+}
+.resinfo.sprite .sprite-info {
+	display: flex;
+	width: 100%
+}
+.resinfo.sprite .sprite-info-text {
+	padding: 0.3em;
+	min-width: 7em;
+}
+.resinfo.sprite .sprite-info-text input {
+	vertical-align: middle;
+}
+.resinfo.sprite .frames {
+	overflow-x: scroll;
+	overflow-y: hidden;
+	white-space: nowrap;
+	font-size: 0;
+	flex-grow: 1;
+}
+.resinfo.sprite .frame {
+	width: 48px;
+	height: 48px;
+	display: inline-block;
+	background-color: #6A86B7;
+	background-repeat: no-repeat;
+	background-position: center center;
+	margin: 2px;
+	position: relative;
+	font-size: 10px;
+}
+.resinfo.sprite .frame.current:after {
+	content: attr(title);
+	left: 0; bottom: 0;
+	position: absolute;
+	color: white;
+	background: rgba(0, 0, 0, 0.7);
+	padding: 1px 2px;
+}
+.resinfo.sprite input.error {
+	outline: 2px solid red;
+}
+.resinfo.sprite .frame.current {
+	outline: 2px solid red;
+}
+.resinfo.sprite .panner {
+	flex-grow: 1;
+}
+
+.panner-element.origin {
+	transform: translate(-50%, -50%);
+	color: rgba(255, 255, 255, 0.5);
+	font-size: 15px;
+	cursor: grab;
+	pointer-events: initial;
+	content: "+";
+}
+
+
+/* Font editor */
+#font-editor {
+	width: 100%;
+	padding-left: 30px;
+	padding-right: 30px;
+	display: flex;
+    flex-direction: column;
+}
+
+#font-editor > div {
+	height: 100%;
+	display: flex;
+}
+
+#font-editor > h2 {
+	font-weight: 400;
+	margin-bottom: 5px;
+}
+
+#font-editor #font-options {
+	max-width: 300px;
+	min-width: 200px;
+	width: 50%;
+	float: left;
+	height: 100%;
+}
+
+#font-editor .hint {
+	opacity: .5;
+	margin: 3px;
+}
+
+#font-options .option {
+	width: 100%;
+}
+
+#font-options .regeneration-warning {
+	color: rgb(224, 55, 26);
+	margin-top: 20px;
+}
+
+#font-options .option > p {
+	margin-bottom: 2px;
+}
+
+#font-options .option input, #font-editor #font-options .option select {
+	width: 100%;
+}
+
+#font-ranges {
+	overflow-y: auto;
+    max-height: 200px;
+}
+
+#font-ranges .font-range {
+	width: 100%;
+	position: relative;
+	margin: 5px;
+	margin-left: 0px;
+}
+#font-ranges .font-range:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+#font-ranges .font-range input {
+	border: none;
+	cursor: pointer;
+	background: none;
+	margin-left: 5px;
+	width: 125px;
+	padding: 5px;
+}
+
+#font-ranges .font-range button {
+	position: absolute;
+	right: 0px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	z-index: 1;
+	opacity: 0.7;
+}
+
+#font-options #add-range {
+	margin-top: 15px;
+	margin-left: 10px;
+	padding: 3px;
+	border: rgba(0, 0, 0, 0.4) 1px;
+	border-style: solid;
+	width: 200px;
+	padding: 0px;
+}
+
+#font-options #add-range button {
+	border: none;
+	opacity: 0.8;
+	background: none;
+	margin: 3px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+#font-options #add-range button:first {
+	margin-right: 20px;
+	height: max-content;
+}
+
+
+#font-options #add-range .more-options {
+	border: rgba(0, 0, 0, 0.4) 1px;
+	border-style: none none none solid;
+	margin: 0px;
+	float: right;
+	height: 25px;
+	width: 25px;
+	font-size: 10px;
+}
+
+#font-options .more-options-list {
+	display: none;
+	width: 182px;
+	padding: 10px;
+	margin-left: 10px;
+	background-color: rgb(250, 250, 250);
+}
+#font-options .more-options-list button {
+	border: none;
+	opacity: 0.8;
+	background: none;
+	padding: 5px;
+	font-weight: 600;
+	cursor: pointer;
+	width: 100%;
+	text-align: left;
+}
+#font-options .more-options-list button:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+#font-preview {
+	height: 100%;
+	width: 100%;
+	padding-left: 25px;
+	display: flex;
+    flex-direction: column;
+}
+
+#font-preview textarea {
+	width: 100%;
+	margin-top: 4px;
+	height: calc(100% - 50px);
+	resize: none;
+}
+
+
+/* Sound editor */
+#sound-editor > div {
+	margin-left: 25px;
+}
+
+#sound-editor h2 {
+	font-weight: 400;
+	margin-bottom: 5px;
+}
+
+#sound-editor .option {
+	display: block;
+	margin-top: 10px;
+}
+
+#sound-editor .option #sound-compress-type label {
+	display: inline;
+}
+
+#sound-editor .option label {
+	display: block;
+}
+
+#sound-editor #import-button {
+	display: block;
+	margin-bottom: 20px;
+	margin-top: 30px;
+}
+
+#sound-editor #sound-playback {
+	height: 25px;
+	width: 400px;
+	max-width: calc(100% - 10px);
+	margin-top: 0px;
+	display:block;
+}
+
+/* Removes mute-button */
+#sound-playback::-webkit-media-controls-volume-slider-container,
+#sound-playback::-webkit-media-controls-volume-slider,
+#sound-playback::-webkit-media-controls-mute-button {
+	display: none;
+}
+#sound-playback::-webkit-media-controls-panel {
+	padding: 0px;
+	background-color: #FFFFFF;
+}
+#sound-playback:focus {
+	border: none;
+	outline: none;
+}
+
+#sound-editor #sound-volume-container {
+	width: 400px;
+	max-width: calc(100% - 10px);
+	display: flex;
+}
+#sound-editor #sound-volume-slider {
+	width: 100%;
+	margin-right: 10px;
+}
+#sound-editor #sound-volume-text {
+	width: 50px;
+}
