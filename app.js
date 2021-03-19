@@ -39144,7 +39144,7 @@ ui_WelcomePage.init = function(e) {
 	ui_WelcomePage.file = new gml_file_GmlFile("WelcomePage",null,file_kind_misc_KPlain.inst,"");
 	gml_file_GmlFile.set_current(ui_WelcomePage.file);
 	session = ui_WelcomePage.file.codeEditor.session;
-	Electron_FS.readFile(haxe_io_Path.join([Main.modulePath,"misc/welcome.txt"]),"utf8",function(err,text) {
+	Electron_FS.readFile(haxe_io_Path.join([Main.modulePath,Electron_API != null ? "misc/welcome.txt" : "misc/welcome-web.txt"]),"utf8",function(err,text) {
 		text = text.replace("%%VERSION%%","Mar 19, 2021");
 		session.setValue(text);
 	});

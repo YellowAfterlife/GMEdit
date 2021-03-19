@@ -734,7 +734,7 @@ ui_Starter.initPreferences = function() {
 			}
 		}
 	} else {
-		prefText = window.localStorage.getItem("user-preferences");
+		prefText = window.localStorage.getItem("config/" + "user-preferences");
 	}
 	var pref = null;
 	if(prefText != null) {

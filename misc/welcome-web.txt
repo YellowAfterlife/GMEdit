@@ -1,0 +1,14 @@
+Hello!
+
+Drag and drop a YYZ or ZIP file onto here to load the project inside.
+Pick menu->"Load directory" to load an unpacked project.
+Pick menu->"Export project" to save a ZIP back to disk.
+Press Ctrl+R to reload the project.
+
+Don't forget to backup your work!
+
+Editor compiled at %%VERSION%%.
+Offline versions can be found at
+https://yellowafterlife.itch.io/gmedit
+
+Have fun!
