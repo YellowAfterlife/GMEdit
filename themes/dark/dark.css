@@ -13,6 +13,7 @@ input {
 }
 
 input[type=button], button {
+	background-color: #222222;
 	background-color: var(--color-hightlight-background);
 	border: none;
 	color: white;
@@ -22,10 +23,12 @@ input[type=button], button {
 	cursor: pointer;
 }
 input[type="button"]:hover {
-	outline: 1px solid var(--color-primary);
+	outline: 1px solid #5584d4;
+	outline-color: var(--color-primary);
 }
 input[type="button"]:active {
-	background: var(--color-primary);
+	background-color: #5584d4;
+	background-color: var(--color-primary);
 }
 
 input[type=text], input[type=number] {
@@ -60,6 +63,7 @@ input[type=checkbox]:checked:before, input[type=radio]:checked:before {
 }
 
 input[type=checkbox]:checked {
+	background-color: #5584d4;
 	background-color: var(--color-primary);
 }
 input[type=checkbox]:checked:before {
@@ -71,6 +75,7 @@ input[type=radio] {
 	border-radius: 10px;
 }
 input[type=radio]:checked {
+	background-color: #5584d4;
 	background-color: var(--color-primary);
 	text-align: center;
 }
@@ -90,6 +95,7 @@ input[type=range]:disabled {
 }
 input[type=range]::-webkit-slider-thumb {
 	-webkit-appearance: none;
+	background-color: #5584d4;
 	background-color: var(--color-primary);
 	width: 16px;
 	height: 16px;
@@ -127,6 +133,7 @@ select {
 
 input[type=button].highlighted_button, button.highlighted_button, .highlighted-button,
 button[type=button].highlighted-button {
+	background-color: #5584d4;
 	background-color: var(--color-primary);
 	font-weight: 600;
 }
@@ -205,6 +212,9 @@ button[type=button].highlighted-button {
 	color: #c0c0c0;
 	box-shadow: 0px 0px 11px 0px rgba(0,0,0,0.45);
 }
+.popout-window legend {
+	color: inherit;
+}
 .popout-window fieldset {
 	border: 1px solid #495057;
 }
@@ -218,6 +228,7 @@ button[type=button].highlighted-button {
 }
 
 #preferences-editor, #keybindings-editor {
+	background-color: #222222;
 	background-color: var(--color-background);
 }
 #preferences-editor input[type="text"],
@@ -242,10 +253,12 @@ button[type=button].highlighted-button {
 	box-shadow: none;
 }
 .ace_optionsMenuEntry button:hover {
+	box-shadow: #5584d4 0 0 2px inset;
 	box-shadow: var(--color-primary) 0 0 2px inset;
 }
 .ace_optionsMenuEntry button[ace_selected_button=true] {
-	background: var(--color-primary);
+	background-color: #5584d4;
+	background-color: var(--color-primary);
 }
 
 /* gutter */

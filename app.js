@@ -12060,8 +12060,13 @@ electron_MenuItemFallback.__name__ = "electron.MenuItemFallback";
 electron_MenuItemFallback.prototype = {
 	__update: function() {
 		this.__element.style.display = this.visible ? "" : "none";
-		if(this.__label != null && this.label != this.__label.innerText) {
-			tools_HtmlTools.setInnerText(this.__label,this.label);
+		if(this.__label != null) {
+			if(this.__label.parentElement == null) {
+				this.__element.prepend(this.__label);
+			}
+			if(this.label != this.__label.innerText) {
+				tools_HtmlTools.setInnerText(this.__label,this.label);
+			}
 		}
 		tools_HtmlTools.setAttributeFlag(this.__element,"disabled",!this.enabled);
 		if(this.checked != null) {
@@ -28492,8 +28497,8 @@ ui_Sidebar.sync = function() {
 		ui_Sidebar.sizer.style.display = v;
 		ui_Sidebar.outer.style.display = v;
 		GMEdit_Splitter.syncMain();
-		var e = new CustomEvent("resize");
-		e.initEvent("resize");
+		var e = document.createEvent("UIEvents");
+		e.initUIEvent("resize",true,false,window,0);
 		window.dispatchEvent(e);
 	}
 	ui_Sidebar.select.style.display = n <= 1 ? "none" : "";
@@ -36011,6 +36016,10 @@ tools_HtmlTools.prettifyInputRange = function(element) {
 	element.addEventListener("input",event);
 	event();
 };
+tools_HtmlTools.moveOffScreen = function(element) {
+	element.style.position = "absolute";
+	element.style.top = "-99999px";
+};
 var tools_JsTools = function() { };
 $hxClasses["tools.JsTools"] = tools_JsTools;
 tools_JsTools.__name__ = "tools.JsTools";
@@ -36019,15 +36028,14 @@ tools_JsTools.setImmediate = function(fn) {
 	var rest = new Array($l>1?$l-1:0);
 	for(var $i=1;$i<$l;++$i){rest[$i-1]=arguments[$i];}
 	var args = rest.slice();
-	if(window.setImmediate) {
+	var dynWindow = window;
+	if(dynWindow.setImmediate) {
 		args.unshift(fn);
-		var tmp = window.setImmediate;
-		var tmp1 = this;
-		tmp.apply(tmp1,args);
+		dynWindow.setImmediate.apply(dynWindow,args);
 	} else {
 		args.unshift(0);
 		args.unshift(fn);
-		($_=window,$bind($_,$_.setTimeout)).apply(this,args);
+		($_=window,$bind($_,$_.setTimeout)).apply(dynWindow,args);
 	}
 };
 var tools_NativeArray = function() { };
@@ -38032,6 +38040,7 @@ ui_MainMenu.__name__ = "ui.MainMenu";
 ui_MainMenu.addProjectItems = function(menu) {
 	if(Electron_API == null) {
 		var form = document.createElement("form");
+		tools_HtmlTools.moveOffScreen(form);
 		var input = document.createElement("input");
 		input.type = "file";
 		input.accept = ".zip,.yyz";
@@ -38048,9 +38057,11 @@ ui_MainMenu.addProjectItems = function(menu) {
 			form.reset();
 			input.click();
 		}}));
-		menu.append(new Electron_MenuItem({ label : "Open directory...", id : "open-directory", click : function() {
-			yy_zip_YyZipDirectoryDialog.open();
-		}}));
+		if(yy_zip_YyZipDirectoryDialog.isAvailable()) {
+			menu.append(new Electron_MenuItem({ label : "Open directory...", id : "open-directory", click : function() {
+				yy_zip_YyZipDirectoryDialog.open();
+			}}));
+		}
 	} else {
 		menu.append(new Electron_MenuItem({ label : "Open...", id : "open-dialog", click : function() {
 			electron_Dialog.showOpenDialog({ filters : [{ name : "GameMaker files", extensions : ["gmx","yy","yyp","yyz","gml"]},{ name : "Other supported files", extensions : ["js","md","dmd","txt"]},{ name : "All files", extensions : ["*"]}]},function(paths) {
@@ -44963,11 +44974,14 @@ yy_zip_YyZipDir.prototype = $extend(yy_zip_YyZipBase.prototype,{
 var yy_zip_YyZipDirectoryDialog = function() { };
 $hxClasses["yy.zip.YyZipDirectoryDialog"] = yy_zip_YyZipDirectoryDialog;
 yy_zip_YyZipDirectoryDialog.__name__ = "yy.zip.YyZipDirectoryDialog";
+yy_zip_YyZipDirectoryDialog.isAvailable = function() {
+	return ((document.createElement("input").webkitdirectory) !== undefined);
+};
 yy_zip_YyZipDirectoryDialog.init = function() {
 	var form = document.createElement("form");
+	tools_HtmlTools.moveOffScreen(form);
 	var input = document.createElement("input");
 	input.setAttribute("webkitdirectory","");
-	input.setAttribute("mozdirectory","");
 	input.type = "file";
 	input.addEventListener("change",yy_zip_YyZipDirectoryDialog.check);
 	form.appendChild(input);
