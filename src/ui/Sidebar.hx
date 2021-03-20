@@ -2,8 +2,10 @@ package ui;
 import js.html.CustomEvent;
 import js.html.DivElement;
 import js.html.Element;
+import js.html.Event;
 import js.html.OptionElement;
 import js.html.SelectElement;
+import js.html.UIEvent;
 import tools.Dictionary;
 using tools.HtmlTools;
 
@@ -27,8 +29,8 @@ using tools.HtmlTools;
 			outer.style.display = v;
 			Splitter.syncMain();
 			// force Ace to note changes:
-			var e = new CustomEvent("resize");
-			e.initEvent("resize");
+			var e:UIEvent = cast Main.document.createEvent('UIEvents');
+			e.initUIEvent('resize', true, false, Main.window, 0); 
 			Main.window.dispatchEvent(e);
 		}
 		select.style.display = n <= 1 ? "none" : "";

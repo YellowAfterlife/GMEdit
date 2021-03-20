@@ -14,7 +14,7 @@
 	<meta property="og:description" content="An open-source code editor for GameMaker!" />
 	<meta property="twitter:description" content="An open-source code editor for GameMaker!" />
 	<meta property="twitter:card" content="summary_large_image" />
-		<meta property="og:image" content="https://yellowafterlife.github.io/GMEdit/opengraph.png" />
+	<meta property="og:image" content="https://yellowafterlife.github.io/GMEdit/opengraph.png" />
 	<meta property="og:image:width" content="1280" />
 	<meta property="og:image:height" content="800" />
 	<meta property="twitter:image" content="https://yellowafterlife.github.io/GMEdit/opengraph.png" />
@@ -26,7 +26,6 @@
 	<link rel="stylesheet" href="chrome-tabs/chrome-tabs.css" />
     <link rel="stylesheet" href="chrome-tabs/chrome-tabs-dark-theme.css" />
 	<script src="chrome-tabs/draggabilly.pkgd.min.js"></script>
-	<script src="chrome-tabs/chrome-tabs.js"></script>
 	<link rel="stylesheet" href="css/main.css" />
 	<link rel="stylesheet" href="css/popouts.css" />
 	<link rel="stylesheet" href="css/ace.css" />
@@ -162,9 +161,16 @@
 <input type="color" id="color-picker" style="display:none"/>
 <!-- -->
 <script type="text/javascript" id="gmcr_script" async></script>
+<script type="text/javascript">window.__chromeTabs_es5 = true;</script>
+<script type="text/javascript">(function() {
+	window.__chromeTabs_es5 = false;
+	return `OK!`
+})()</script>
 <script type="text/javascript">window.__starterFiles = [
+	"./chrome-tabs/chrome-tabs" + (window.__chromeTabs_es5 ? ".es5.js" : ".js"),
 	"./ace/src-noconflict/ace.js",
 	"./ace/src-noconflict/ext-language_tools.js",
+	"./misc/polyfills.js",
 	"./misc/pako_inflate.min.js",
 	"./misc/splitter.js",
 	"./ace/mode-gml.js",

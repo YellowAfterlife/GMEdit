@@ -149,8 +149,14 @@ using tools.HtmlTools;
 	public function __update() {
 		__element.style.display = visible ? "" : "none";
 		
-		if (__label != null && label != __label.innerText) {
-			__label.setInnerText(label);
+		if (__label != null) {
+			if (__label.parentElement == null) {
+				// labels somehow go missing in IE11..?
+				__element.prepend(__label);
+			}
+			if (label != __label.innerText) {
+				__label.setInnerText(label);
+			}
 		}
 		__element.setAttributeFlag("disabled", !enabled);
 		

@@ -1,9 +1,12 @@
 package yy.zip;
 import gml.Project;
 import haxe.io.Path;
+import js.Lib;
+import js.Syntax;
 import js.lib.RegExp;
 import js.html.FormElement;
 import js.html.InputElement;
+import tools.HtmlTools;
 import yy.zip.YyZip;
 using tools.NativeString;
 
@@ -14,11 +17,15 @@ using tools.NativeString;
 class YyZipDirectoryDialog {
 	private static var form:FormElement = null;
 	private static var input:InputElement;
+	public static function isAvailable():Bool {
+		var q:Dynamic = Main.document.createInputElement();
+		return Syntax.strictNeq(q.webkitdirectory, Lib.undefined);
+	}
 	private static function init() {
 		var form = Main.document.createFormElement();
+		HtmlTools.moveOffScreen(form);
 		var input = Main.document.createInputElement();
 		input.setAttribute("webkitdirectory", "");
-		input.setAttribute("mozdirectory", "");
 		input.type = "file";
 		//var v:Project
 		input.addEventListener("change", check);

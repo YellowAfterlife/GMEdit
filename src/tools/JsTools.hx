@@ -70,13 +70,14 @@ class JsTools {
 	#if !macro
 	@:noUsing public static function setImmediate(fn:haxe.Constraints.Function, rest:Rest<Any>):Void {
 		var args = rest.toArray();
-		if ((cast Main.window).setImmediate) {
+		var dynWindow:Dynamic = Main.window;
+		if (dynWindow.setImmediate) {
 			args.unshift(fn);
-			(cast Main.window).setImmediate.apply(js.Lib.nativeThis, args);
+			dynWindow.setImmediate.apply(dynWindow, args);
 		} else {
 			args.unshift(0);
 			args.unshift(fn);
-			(cast Main.window.setTimeout:js.lib.Function).apply(js.Lib.nativeThis, args);
+			(cast Main.window.setTimeout:js.lib.Function).apply(dynWindow, args);
 		}
 	}
 	#end
