@@ -3156,6 +3156,8 @@ gml_GmlAPI.stdClear = function() {
 		sk["cast"] = "keyword";
 		sk["as"] = "keyword";
 	}
+	sk["true"] = "constant.boolean";
+	sk["false"] = "constant.boolean";
 	var _g = 0;
 	var _g1 = gml_type_GmlTypeTools.builtinTypes;
 	while(_g < _g1.length) {
@@ -3325,7 +3327,7 @@ gml_GmlAPI.init = function() {
 				}
 			} catch( _g ) {
 				var _g1 = haxe_Exception.caught(_g).unwrap();
-				haxe_Log.trace("Couldn't parse help index:",{ fileName : "./gml/GmlAPI.hx", lineNumber : 369, className : "gml.GmlAPI", methodName : "init", customParams : [_g1]});
+				haxe_Log.trace("Couldn't parse help index:",{ fileName : "./gml/GmlAPI.hx", lineNumber : 374, className : "gml.GmlAPI", methodName : "init", customParams : [_g1]});
 			}
 		});
 	}
@@ -39149,7 +39151,7 @@ ui_WelcomePage.init = function(e) {
 	gml_file_GmlFile.set_current(ui_WelcomePage.file);
 	session = ui_WelcomePage.file.codeEditor.session;
 	Electron_FS.readFile(haxe_io_Path.join([Main.modulePath,Electron_API != null ? "misc/welcome.txt" : "misc/welcome-web.txt"]),"utf8",function(err,text) {
-		text = text.replace("%%VERSION%%","Mar 19, 2021");
+		text = text.replace("%%VERSION%%","Mar 20, 2021");
 		session.setValue(text);
 	});
 	return session;
@@ -40887,7 +40889,6 @@ ui_treeview_TreeViewItemMenus.createImpl = function(kind,order) {
 	var dir = ui_treeview_TreeViewMenus.target;
 	var targetData = ui_treeview_TreeViewItemMenus.getItemData(ui_treeview_TreeViewMenus.target);
 	var targetTV = ui_treeview_TreeViewMenus.target;
-	console.log(targetTV);
 	var mkdir = kind == "dir";
 	var result = ui_treeview_TreeViewItemMenus.createImplTV({ prefix : targetData.prefix, plural : targetData.plural, single : targetData.single, tvDir : order == 0 ? targetTV : ui_treeview__$TreeViewElement_TreeViewElementTools.getTreeParentDir(targetTV), tvRef : dir, chain : targetData.chain, last : targetData.last, name : "", kind : kind != "auto" && !mkdir ? kind : targetData.filter, order : order, mkdir : mkdir});
 	result.setAttribute("data-rel-path","");
