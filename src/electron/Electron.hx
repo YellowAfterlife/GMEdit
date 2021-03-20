@@ -66,8 +66,8 @@ import haxe.extern.EitherType;
 			set("Electron_FS", FileSystem.FileSystemBrowser);
 			blank("Electron_IPC");
 			blank("Electron_Shell");
-			set("Electron_Menu", Menu.MenuFallback);
-			set("Electron_MenuItem", Menu.MenuItemFallback);
+			set("Electron_Menu", MenuFallback);
+			set("Electron_MenuItem", MenuFallback.MenuItemFallback);
 			blank("Electron_App");
 			set("libFontScanner", FontScannerFallback);
 		}

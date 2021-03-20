@@ -176,7 +176,6 @@ html #ace_settingsmenu {
 .popout-menu {
 	z-index: 1000;
 	position: absolute;
-	overflow: hidden;
 	border: 1px solid #BABABA;
 	background: #fdfdfd;
 	white-space: nowrap;
@@ -202,6 +201,28 @@ html #ace_settingsmenu {
 }
 .popout-menu li:not([disabled]):not(.popout-menu-separator):hover {
 	background: #EBEBEB;
+}
+.popout-menu .popout-menu-submenu {
+	position: relative;
+}
+.popout-menu .popout-menu-submenu::after {
+	content: "";
+	border: 4px solid transparent;
+	border-left-color: #626365;
+	position: absolute;
+	right: 3px;
+	top: 50%;
+	margin-top: -4px;
+	transform: scaleX(1.25);
+	transform-origin: center;
+}
+.popout-menu .popout-menu-submenu > .popout-menu {
+	position: absolute;
+	left: 100%;
+	top: -3px;
+}
+.popout-menu .popout-menu-submenu:not(:hover) > .popout-menu {
+	display: none;
 }
 
 #keybindings-editor {

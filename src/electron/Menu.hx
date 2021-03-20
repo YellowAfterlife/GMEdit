@@ -43,70 +43,6 @@ using tools.HtmlTools;
 	//
 	static function setApplicationMenu(menu:Menu):Void;
 }
-@:keep class MenuFallback {
-	public static var contextEvent:MouseEvent = null;
-	public var currentCallback:Void->Void;
-	public var items:Array<MenuItemFallback> = [];
-	public var element:UListElement;
-	//
-	public function new() {
-		element = document.createUListElement();
-		element.classList.add("popout-menu");
-	}
-	//
-	public function clear():Void {
-		tools.NativeArray.clear(items);
-		HtmlTools.clearInner(element);
-	}
-	public function append(item:MenuItemFallback):Void {
-		item.parent = this;
-		items.push(item);
-		element.appendChild(item.element);
-	}
-	public static function appendOpt(menu:Menu, opt:MenuItemOptions):MenuItem {
-		var item = new MenuItem(opt);
-		menu.append(item);
-		return item;
-	}
-	public static function appendSep(menu:Menu, ?id:String):MenuItem {
-		var item = new MenuItem({ type:Sep, id:id });
-		menu.append(item);
-		return item;
-	}
-	public function insert(pos:Int, item:MenuItemFallback):Void {
-		item.parent = this;
-		items.insert(pos, item);
-	}
-	private function outerClick(e:MouseEvent) {
-		var el:Element = cast e.target;
-		while (el != null) {
-			if (el == element) return;
-			el = el.parentElement;
-		}
-		hide();
-	}
-	public function hide() {
-		document.removeEventListener("mousedown", outerClick);
-		if (element.parentElement != null) {
-			element.parentElement.removeChild(element);
-		}
-		var cb = currentCallback;
-		if (cb != null) {
-			currentCallback = null;
-			cb();
-		}
-	}
-	public function popup(?opt:MenuPopupOptions):Void {
-		currentCallback = opt != null ? opt.callback : null;
-		if (contextEvent != null) {
-			element.style.left = contextEvent.pageX + "px";
-			element.style.top = contextEvent.pageY + "px";
-		}
-		for (item in items) item.update();
-		document.addEventListener("mousedown", outerClick);
-		document.body.appendChild(element);
-	}
-}
 typedef MenuPopupOptions = {
 	?x:Int,
 	?y:Int,
@@ -122,57 +58,6 @@ typedef MenuPopupOptions = {
 	var label:String;
 	var click:Function;
 	var submenu:Menu;
-}
-@:keep class MenuItemFallback {
-	public var enabled:Bool;
-	public var visible:Bool;
-	public var checked:Bool;
-	public var label:String;
-	public var click:Function;
-	//
-	public var element:LIElement;
-	public var labelEl:SpanElement;
-	public var parent:MenuFallback = null;
-	private var currLabel:String;
-	//
-	public function new(opt:MenuItemOptions) {
-		enabled = opt.enabled != false;
-		visible = opt.visible != false;
-		checked = opt.checked;
-		label = opt.label;
-		click = opt.click;
-		element = document.createLIElement();
-		element.classList.add("popout-menu-" + (opt.type != null ? opt.type : MenuItemType.Normal));
-		if (opt.label != null) {
-			currLabel = opt.label;
-			labelEl = document.createSpanElement();
-			labelEl.appendChild(document.createTextNode(opt.label));
-			element.appendChild(labelEl);
-		}
-		if (click != null) element.addEventListener("click", function(e:MouseEvent) {
-			if (!enabled) return;
-			if (parent != null) parent.hide();
-			if (click != null) click();
-		});
-		if (opt.submenu != null) {
-			var submenu:MenuFallback;
-			if (Std.is(opt.submenu, Array)) {
-				var opts:Array<MenuItemOptions> = opt.submenu;
-				submenu = new MenuFallback();
-				for (init in opts) submenu.append(new MenuItemFallback(init));
-			} else submenu = cast opt.submenu;
-			element.appendChild(submenu.element);
-		}
-	}
-	public function update() {
-		element.style.display = visible ? "" : "none";
-		if (label != currLabel) {
-			currLabel = label;
-			labelEl.setInnerText(label);
-		}
-		element.setAttributeFlag("disabled", !enabled);
-		if (checked != null) element.setAttributeFlag("checked", checked);
-	}
 }
 typedef MenuItemOptions = {
 	?click:Function,
