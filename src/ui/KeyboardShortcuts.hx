@@ -102,7 +102,7 @@ class KeyboardShortcuts {
 		}
 		//
 		#if !lwedit
-		addCommand("reloadProject", "mod-r", function() {
+		addCommand("reloadProject", "modw-r", function() {
 			if (Project.current != null) {
 				Project.current.reload();
 			}
