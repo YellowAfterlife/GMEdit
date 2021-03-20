@@ -193,7 +193,9 @@ class GmlSeeker {
 		var specTypeInst = GmlLinter.getOption((p) -> p.specTypeInst);
 		var funcsAreGlobal = GmlFileKindTools.functionsAreGlobal(kind);
 		var isObject = Std.is(kind, KGmlEvents);
-		var isCreateEvent = isObject && locals.name == "create";
+		var isCreateEvent = isObject && (locals.name == "create"
+			|| JsTools.rx(~/\/\/\/\s*@init\b/).test(src)
+		);
 		var __objectName:String = null;
 		function getObjectName():String {
 			if (__objectName == null) {
