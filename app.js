@@ -1153,6 +1153,7 @@ ace_AceCtxMenu.prototype = {
 		electron_MenuFallback.appendSep(this.menu,"sep-select");
 		this.menu.append(cmdItem("selectall","Select all"));
 		editor.container.addEventListener("contextmenu",function(ev) {
+			ev.preventDefault();
 			pos = editor.getCursorPosition();
 			tk = editor.getSession().getTokenAt(pos.row,pos.column);
 			var um = editor.getSession().getUndoManager();
@@ -7113,7 +7114,7 @@ ace_AceWrapCommonCompleters.prototype = {
 			}
 		});
 		this.completers.push(this.keywordCompleterStat);
-		var jsDocItems = [{ name : "param", value : "param", score : 0, meta : "keyword", doc : "@param [{Type}] name [description]\nMark a script argument"},{ name : "returns", value : "returns", score : 0, meta : "keyword", doc : "@returns {Type} [description]\nSets return type"},{ name : "self", value : "self", score : 0, meta : "keyword", doc : "@self {Type}\nSets the type of `self`"},{ name : "is", value : "is", score : 0, meta : "keyword", doc : "@is {Type}\nHint types of non-local variables"},{ name : "interface", value : "interface", score : 0, meta : "keyword", doc : "@interface [{Name}]\nMark a script as an interface"},{ name : "implements", value : "implements", score : 0, meta : "keyword", doc : "@implements [{Name}]\nImplement an interface"},{ name : "hint", value : "hint", score : 0, meta : "keyword", doc : "(see wiki)\nHint types/variables/methods"},{ name : "template", value : "template", score : 0, meta : "keyword", doc : "@template [{Constraint}] Type\nDeclare type parameters"}];
+		var jsDocItems = [{ name : "param", value : "param", score : 0, meta : "keyword", doc : "@param [{Type}] name [description]\nMark a script argument"},{ name : "returns", value : "returns", score : 0, meta : "keyword", doc : "@returns {Type} [description]\nSets return type"},{ name : "self", value : "self", score : 0, meta : "keyword", doc : "@self {Type}\nSets the type of `self`"},{ name : "is", value : "is", score : 0, meta : "keyword", doc : "@is {Type}\nHint types of non-local variables"},{ name : "interface", value : "interface", score : 0, meta : "keyword", doc : "@interface [{Name}]\nMark a script as an interface"},{ name : "implements", value : "implements", score : 0, meta : "keyword", doc : "@implements [{Name}]\nImplement an interface"},{ name : "hint", value : "hint", score : 0, meta : "keyword", doc : "(see wiki)\nHint types/variables/methods"},{ name : "template", value : "template", score : 0, meta : "keyword", doc : "@template [{Constraint}] Type\nDeclare type parameters"},{ name : "init", value : "init", score : 0, meta : "keyword", doc : "@init\nMarks a non-Create event as a variable/function source"}];
 		this.jsDocCompleter = new ace_AceWrapCompleter([],["comment.meta"],false,$bind(this,this.gmlOnly));
 		var _g = 0;
 		while(_g < jsDocItems.length) this.jsDocCompleter.items.push(jsDocItems[_g++]);
@@ -11931,8 +11932,9 @@ electron_FontScannerFallback.getAvailableFontsSync = function() {
 };
 var electron_MenuFallback = function() {
 	this.items = [];
-	this.element = document.createElement("ul");
-	this.element.classList.add("popout-menu");
+	this.__element = document.createElement("ul");
+	this.__element.gmlMenu = this;
+	this.__element.classList.add("popout-menu");
 };
 $hxClasses["electron.MenuFallback"] = electron_MenuFallback;
 electron_MenuFallback.__name__ = "electron.MenuFallback";
@@ -11949,75 +11951,93 @@ electron_MenuFallback.appendSep = function(menu,id) {
 electron_MenuFallback.prototype = {
 	clear: function() {
 		this.items.length = 0;
-		tools_HtmlTools.clearInner(this.element);
+		tools_HtmlTools.clearInner(this.__element);
 	}
 	,append: function(item) {
-		item.parent = this;
+		item.__parent = this;
 		this.items.push(item);
-		this.element.appendChild(item.element);
+		this.__element.appendChild(item.__element);
 	}
 	,insert: function(pos,item) {
-		item.parent = this;
+		item.__parent = this;
 		this.items.splice(pos,0,item);
 	}
-	,outerClick: function(e) {
+	,__hide: function() {
+		var par = this.__element.parentElement;
+		if(par != null && par.tagName == "LI") {
+			par.parentElement.gmlMenu.__hide();
+			return;
+		}
+		document.removeEventListener("mousedown",$bind(this,this.__outerClick));
+		if(par != null) {
+			par.removeChild(this.__element);
+		}
+		var cb = this.__then;
+		if(cb != null) {
+			this.__then = null;
+			cb();
+		}
+	}
+	,__outerClick: function(e) {
 		var el = e.target;
 		while(el != null) {
-			if(el == this.element) {
+			if(el == this.__element) {
 				return;
 			}
 			el = el.parentElement;
 		}
-		this.hide();
+		this.__hide();
 	}
-	,hide: function() {
-		document.removeEventListener("mousedown",$bind(this,this.outerClick));
-		if(this.element.parentElement != null) {
-			this.element.parentElement.removeChild(this.element);
-		}
-		var cb = this.currentCallback;
-		if(cb != null) {
-			this.currentCallback = null;
-			cb();
+	,__update: function() {
+		tools_HtmlTools.clearInner(this.__element);
+		var _g = 0;
+		var _g1 = this.items;
+		while(_g < _g1.length) {
+			var item = _g1[_g];
+			++_g;
+			item.__parent = this;
+			item.__update();
+			this.__element.appendChild(item.__element);
 		}
 	}
 	,popup: function(opt) {
-		this.currentCallback = opt != null ? opt.callback : null;
+		this.__then = opt != null ? opt.callback : null;
 		if(electron_MenuFallback.contextEvent != null) {
-			this.element.style.left = electron_MenuFallback.contextEvent.pageX + "px";
-			this.element.style.top = electron_MenuFallback.contextEvent.pageY + "px";
+			this.__element.style.left = electron_MenuFallback.contextEvent.pageX + "px";
+			this.__element.style.top = electron_MenuFallback.contextEvent.pageY + "px";
 		}
-		var _g = 0;
-		var _g1 = this.items;
-		while(_g < _g1.length) _g1[_g++].update();
-		document.addEventListener("mousedown",$bind(this,this.outerClick));
-		document.body.appendChild(this.element);
+		this.__update();
+		document.addEventListener("mousedown",$bind(this,this.__outerClick));
+		document.body.appendChild(this.__element);
 	}
 	,__class__: electron_MenuFallback
 };
 var electron_MenuItemFallback = function(opt) {
-	this.parent = null;
+	this.__parent = null;
 	var _gthis = this;
 	this.enabled = opt.enabled != false;
 	this.visible = opt.visible != false;
 	this.checked = opt.checked;
 	this.label = opt.label;
 	this.click = opt.click;
-	this.element = document.createElement("li");
-	this.element.classList.add("popout-menu-" + (opt.type != null ? opt.type : "normal"));
+	this.type = opt.type;
+	if(this.type == null) {
+		this.type = "normal";
+	}
+	this.__element = document.createElement("li");
+	this.__element.classList.add("popout-menu-" + (opt.type != null ? opt.type : "normal"));
 	if(opt.label != null) {
-		this.currLabel = opt.label;
-		this.labelEl = document.createElement("span");
-		this.labelEl.appendChild(document.createTextNode(opt.label));
-		this.element.appendChild(this.labelEl);
+		this.__label = document.createElement("span");
+		this.__label.appendChild(document.createTextNode(opt.label));
+		this.__element.appendChild(this.__label);
 	}
 	if(this.click != null) {
-		this.element.addEventListener("click",function(e) {
+		this.__element.addEventListener("click",function(e) {
 			if(!_gthis.enabled) {
 				return;
 			}
-			if(_gthis.parent != null) {
-				_gthis.parent.hide();
+			if(_gthis.__parent != null) {
+				_gthis.__parent.__hide();
 			}
 			if(_gthis.click != null) {
 				_gthis.click();
@@ -12025,30 +12045,37 @@ var electron_MenuItemFallback = function(opt) {
 		});
 	}
 	if(opt.submenu != null) {
-		var submenu;
 		if(((opt.submenu) instanceof Array)) {
 			var opts = opt.submenu;
-			submenu = new electron_MenuFallback();
+			this.submenu = new electron_MenuFallback();
 			var _g = 0;
-			while(_g < opts.length) submenu.append(new electron_MenuItemFallback(opts[_g++]));
+			while(_g < opts.length) this.submenu.append(new electron_MenuItemFallback(opts[_g++]));
 		} else {
-			submenu = opt.submenu;
+			this.submenu = opt.submenu;
 		}
-		this.element.appendChild(submenu.element);
 	}
 };
 $hxClasses["electron.MenuItemFallback"] = electron_MenuItemFallback;
 electron_MenuItemFallback.__name__ = "electron.MenuItemFallback";
 electron_MenuItemFallback.prototype = {
-	update: function() {
-		this.element.style.display = this.visible ? "" : "none";
-		if(this.label != this.currLabel) {
-			this.currLabel = this.label;
-			tools_HtmlTools.setInnerText(this.labelEl,this.label);
+	__update: function() {
+		this.__element.style.display = this.visible ? "" : "none";
+		if(this.__label != null && this.label != this.__label.innerText) {
+			tools_HtmlTools.setInnerText(this.__label,this.label);
 		}
-		tools_HtmlTools.setAttributeFlag(this.element,"disabled",!this.enabled);
+		tools_HtmlTools.setAttributeFlag(this.__element,"disabled",!this.enabled);
 		if(this.checked != null) {
-			tools_HtmlTools.setAttributeFlag(this.element,"checked",this.checked);
+			tools_HtmlTools.setAttributeFlag(this.__element,"checked",this.checked);
+		}
+		if(this.submenu != null) {
+			this.submenu.__update();
+			var submenuNode = this.submenu.__element;
+			if(submenuNode.parentElement != this.__element) {
+				if(submenuNode.parentElement != null) {
+					submenuNode.parentElement.removeChild(submenuNode);
+				}
+				this.__element.appendChild(submenuNode);
+			}
 		}
 	}
 	,__class__: electron_MenuItemFallback
@@ -15662,7 +15689,7 @@ gml_file_GmlFile.open = function(name,path,nav) {
 		kind = kd.kind;
 		data = kd.data;
 	}
-	if(nav != null && nav.noExtern && ((kind) instanceof file_kind_misc_KExtern)) {
+	if(((kind) instanceof file_kind_misc_KExtern) && (Electron_API == null || nav != null && nav.noExtern)) {
 		kind = file_kind_misc_KPlain.inst;
 	}
 	return kind.create(name,path,data,nav);
@@ -23430,7 +23457,7 @@ parsers_GmlSeeker.runSyncImpl = function(orig,src,main,out,locals,kind) {
 	});
 	var funcsAreGlobal = ((kind) instanceof file_kind_gml_KGmlScript) && kind.isScript;
 	var isObject = ((kind) instanceof file_kind_gml_KGmlEvents);
-	var isCreateEvent = isObject && locals.name == "create";
+	var isCreateEvent = isObject && (locals.name == "create" || /\/\/\/\s*@init\b/.test(src));
 	var __objectName = null;
 	var getObjectName = function() {
 		if(__objectName == null) {
@@ -37687,7 +37714,7 @@ ui_KeyboardShortcuts.initCommands = function() {
 		});
 		lcmd.description = "Only works in standalone version.";
 	}
-	addCommand("reloadProject","mod-r",function() {
+	addCommand("reloadProject","modw-r",function() {
 		if(gml_Project.current != null) {
 			gml_Project.current.reload();
 		}
@@ -41294,9 +41321,11 @@ ui_treeview_TreeViewMenus.showDirMenu = function(el,ev) {
 	ui_treeview_TreeViewMenus.items.changeOpenIcon.visible = true;
 	ui_treeview_TreeViewMenus.items.resetOpenIcon.visible = true;
 	ui_treeview_TreeViewMenus.items.openCustomCSS.visible = true;
-	var isFileDir = ui_treeview_TreeViewMenus.target.getAttribute("data-filter") == "file";
-	ui_treeview_TreeViewMenus.items.openExternally.visible = isFileDir;
-	ui_treeview_TreeViewMenus.items.openDirectory.visible = isFileDir;
+	if(Electron_API != null) {
+		var isFileDir = ui_treeview_TreeViewMenus.target.getAttribute("data-filter") == "file";
+		ui_treeview_TreeViewMenus.items.openExternally.visible = isFileDir;
+		ui_treeview_TreeViewMenus.items.openDirectory.visible = isFileDir;
+	}
 	if(gml_Project.current.isGMS23) {
 		ui_treeview_TreeViewMenus.items.showAPI.visible = el.getAttribute("data-filter") == "extension";
 	} else {
@@ -41334,8 +41363,10 @@ ui_treeview_TreeViewMenus.showItemMenu = function(el,ev) {
 	z = kind == "project";
 	ui_treeview_TreeViewMenus.items.removeFromRecentProjects.visible = z;
 	ui_treeview_TreeViewMenus.items.openCustomCSS.visible = !z;
-	ui_treeview_TreeViewMenus.items.openExternally.visible = true;
-	ui_treeview_TreeViewMenus.items.openDirectory.visible = true;
+	if(Electron_API != null) {
+		ui_treeview_TreeViewMenus.items.openExternally.visible = true;
+		ui_treeview_TreeViewMenus.items.openDirectory.visible = true;
+	}
 	ui_treeview_TreeViewMenus.items.changeOpenIcon.visible = false;
 	ui_treeview_TreeViewMenus.items.resetOpenIcon.visible = false;
 	ui_treeview_TreeViewMenus.items.objectInfo.visible = kind == "object";
@@ -41365,10 +41396,18 @@ ui_treeview_TreeViewMenus.initIconMenu = function() {
 	}});
 	ui_treeview_TreeViewMenus.items.openCustomCSS = ui_treeview_TreeViewMenus.add(iconMenu,{ id : "open-css", label : "Open custom CSS file", click : function() {
 		var path = gml_Project.current.path + ".css";
-		if(!Electron_FS.existsSync(path)) {
-			Electron_FS.writeFileSync(path,"");
+		if(Electron_API != null) {
+			if(!Electron_FS.existsSync(path)) {
+				Electron_FS.writeFileSync(path,"");
+			}
+			Electron_IPC.send("shell-open",path);
+		} else {
+			var project = gml_Project.current;
+			if(!project.existsSync(path)) {
+				project.writeTextFileSync(path,"/* write your custom CSS here! */");
+			}
+			gml_file_GmlFile.open(haxe_io_Path.withoutDirectory(path),path);
 		}
-		Electron_IPC.send("shell-open",path);
 	}});
 	return new Electron_MenuItem({ id : "sub-custom-icon", label : "Custom icon", type : "submenu", submenu : iconMenu});
 };
@@ -44839,17 +44878,25 @@ yy_zip_YyZip.prototype = $extend(gml_Project.prototype,{
 		next = next.replace(yy_zip_YyZip.rxBackslash,"/");
 		var file = this.yyzFileMap[prev];
 		if(file != null) {
-			var dir = this.yyzDirMap[file.dir];
-			if(dir != null) {
-				HxOverrides.remove(dir.entries,file);
-			}
+			var _file_dir = file.dir;
 			file.setPath(next);
 			delete this.yyzFileMap[prev];
 			this.yyzFileMap[next] = file;
-			this.yyzGetParentDir(next).entries.push(file);
+			if(file.dir != _file_dir) {
+				var dir = this.yyzDirMap[_file_dir];
+				if(dir != null) {
+					HxOverrides.remove(dir.entries,file);
+				}
+				dir = this.yyzGetParentDir(next);
+				if(dir.entries.indexOf(file) < 0) {
+					dir.entries.push(file);
+				}
+			}
 		} else {
 			var dir = this.yyzDirMap[prev];
 			if(dir != null) {
+				delete this.yyzDirMap[prev];
+				this.yyzDirMap[next] = dir;
 				dir.setPath(next);
 				var _g = 0;
 				var _g1 = dir.entries;
