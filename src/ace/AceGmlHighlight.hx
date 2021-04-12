@@ -275,7 +275,7 @@ using tools.NativeArray;
 		var rParOpen:AceLangRule;
 		if (Preferences.current.hashColorLiterals) {
 			rBase = rBase.concat([
-				rxRule(["square.paren.lparen", "text"], ~/\[#/),
+				rxRule(["square.paren.lparen", "text"], ~/(\[)(#)/),
 				rxRule("numeric", ~/#[0-9a-fA-F]{6,6}\b/)
 			]);
 		}
