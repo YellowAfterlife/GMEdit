@@ -2520,7 +2520,7 @@ steam_get_user_steam_id()->int // gimped steam_id, dont really have a good way t
 steam_user_owns_dlc(dlc_id:int)->bool
 steam_user_installed_dlc(dlc_id:int)->bool
 steam_set_achievement(ach_name:string)->void
-steam_get_achievement(ach_name:string)->void
+steam_get_achievement(ach_name:string)->bool
 steam_clear_achievement(ach_name:string)->void
 steam_set_stat_int(stat_name:string,value:int)->void
 steam_set_stat_float(stat_name:string,value:number)->void
