@@ -387,7 +387,7 @@ class YyManipV22 {
 				};
 				//
 				var curr_yy = Path.join([ndir, rel]);
-				var next_yy = Path.join([ndir, q.name + ".yy"]);
+				var next_yy = ndir + "\\" + q.name + ".yy";
 				pair.resourcePath = next_yy;
 				pj.renameSync(curr_yy, next_yy);
 				var next_res:YyResource = pj.readYyFileSync(next_yy);
