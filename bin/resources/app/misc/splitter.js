@@ -64,6 +64,10 @@ function Splitter(sizer) {
 		if (nw < q.minWidth) nw = q.minWidth;
 		q.setWidth(nw);
 		if (q.updateTabs && window.$gmedit) $gmedit["ui.ChromeTabs"].impl.layoutTabs()
+		
+		var e = new CustomEvent("resize");
+		e.initEvent("resize");
+		window.dispatchEvent(e);
 	};
 	sp_mouseup = function(e) {
 		document.removeEventListener("mousemove", sp_mousemove);
