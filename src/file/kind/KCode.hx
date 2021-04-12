@@ -19,6 +19,12 @@ class KCode extends FileKind {
 	/// whether to do a GmlSeeker pass after saving to update definitions
 	public var indexOnSave:Bool = false;
 	
+	/**
+	 * Whether to set GmlFile.changed when code gets changed
+	 * @see AceStatusBar.update
+	 */
+	public var setChangedOnEdits:Bool = true;
+	
 	public function new() {
 		super();
 	}
