@@ -81,6 +81,7 @@ typedef display_orientation
 typedef window_cursor
 typedef buffer_kind //buffer_grow etc
 typedef buffer_type //buffer_s8 etc
+typedef buffer_auto_type // magic - picks up the type from the nearby buffer_type argument
 typedef sprite_speed_type
 typedef asset_type
 typedef file_attribute : int

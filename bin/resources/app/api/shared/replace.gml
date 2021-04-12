@@ -2428,8 +2428,8 @@ network_config_disable_reliable_udp#:network_config
 #region Buffers
 
 buffer_create(size:int, buffer_kind:buffer_kind, alignment:int)->buffer
-buffer_write(buffer:buffer, type:buffer_type, value:number|string|bool)->int
-buffer_read(buffer:buffer, type:buffer_type)->number|string|bool
+buffer_write(buffer:buffer, type:buffer_type, value:buffer_auto_type)->int
+buffer_read(buffer:buffer, type:buffer_type)->buffer_auto_type
 buffer_seek(buffer:buffer, base:buffer_seek_base, offset:int)->void
 buffer_get_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
 buffer_set_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
@@ -2437,15 +2437,15 @@ buffer_delete(buffer:buffer)->void
 buffer_exists(buffer:buffer)->bool
 buffer_get_type(buffer:buffer)->buffer_kind
 buffer_get_alignment(buffer:buffer)->int
-buffer_poke(buffer:buffer, offset:int, type:buffer_type, value:number|string|bool)->void
-buffer_peek(buffer:buffer, offset:int, type:buffer_type)->number|string|bool
+buffer_poke(buffer:buffer, offset:int, type:buffer_type, value:buffer_auto_type)->void
+buffer_peek(buffer:buffer, offset:int, type:buffer_type)->buffer_auto_type
 buffer_save(buffer:buffer, filename:string)->void
 buffer_save_ext(buffer:buffer, filename:string, offset:int, size:int)->void
 buffer_load(filename:string)->buffer
 buffer_load_ext(buffer:buffer, filename:string, offset:int)->void
 buffer_load_partial(buffer:buffer, filename:string, src_offset:int, src_len:int, dest_offset:int)->void
 buffer_copy(src_buffer:buffer, src_offset:int, size:int, dest_buffer:buffer, dest_offset:int)->void
-buffer_fill(buffer:buffer, offset:int, type:buffer_type, value:number|string|bool, size:int)->void
+buffer_fill(buffer:buffer, offset:int, type:buffer_type, value:buffer_auto_type, size:int)->void
 buffer_get_size(buffer:buffer)->int
 buffer_tell(buffer:buffer)->int
 buffer_resize(buffer:buffer, newsize:int)->void
