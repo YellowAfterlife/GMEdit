@@ -1,9 +1,11 @@
 package ui.preferences;
 import electron.Electron;
+import electron.FileWrap;
 import js.html.Element;
 import ui.Preferences.*;
 import gml.GmlAPI;
 import gml.Project;
+import ui.RecentProjects;
 
 /**
  * ...
@@ -89,6 +91,10 @@ class PrefNav {
 		});
 		addIntInput(out, "Max recent project count:", current.recentProjectCount, function(v) {
 			current.recentProjectCount = v; save();
+		});
+		
+		addButton(out, "Clear recent projects", function() {
+			RecentProjects.clear();
 		});
 		//
 		var fileChangeActions = [

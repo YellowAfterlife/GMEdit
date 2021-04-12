@@ -1,4 +1,6 @@
 package ui;
+import electron.AppTools;
+import electron.Electron;
 import electron.FileSystem;
 import electron.FileWrap;
 import haxe.Json;
@@ -21,13 +23,18 @@ class RecentProjects {
 		} catch (_:Dynamic) return [];
 	}
 	private static function set(list:Array<String>) {
-		FileWrap.writeConfigSync("session",  "recent-projects", list);
+		FileWrap.writeConfigSync("session", "recent-projects", list);
+	}
+	public static function clear():Void {
+		set([]);
+		if (Electron.isAvailable()) AppTools.clearRecentDocuments();
 	}
 	public static function add(path:String) {
 		var curr = get();
 		curr.remove(path);
 		curr.unshift(path);
 		if (curr.length > Preferences.current.recentProjectCount) curr.pop();
+		if (Electron.isAvailable()) AppTools.addRecentDocument(path);
 		set(curr);
 	}
 	public static function remove(path:String) {
