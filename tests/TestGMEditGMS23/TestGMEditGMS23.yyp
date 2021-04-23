@@ -42,6 +42,7 @@
     {"id":{"name":"v_ternary_ident","path":"scripts/v_ternary_ident/v_ternary_ident.yy",},"order":2,},
     {"id":{"name":"obj_user_event_init","path":"objects/obj_user_event_init/obj_user_event_init.yy",},"order":6,},
     {"id":{"name":"v_buffer_read","path":"scripts/v_buffer_read/v_buffer_read.yy",},"order":3,},
+    {"id":{"name":"obj_misc_completion","path":"objects/obj_misc_completion/obj_misc_completion.yy",},"order":7,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

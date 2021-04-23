@@ -28,6 +28,7 @@ import synext.GmlExtMFunc;
 import tools.CharCode;
 import tools.Dictionary;
 import tools.Aliases;
+import tools.IntDictionary;
 import tools.JsTools;
 import tools.RegExpCache;
 import ui.Preferences;
@@ -220,6 +221,7 @@ class GmlSeeker {
 			if (s != mainTop) GmlAPI.gmlLookupText += s + "\n";
 		}
 		if (main != null) setLookup(main);
+		var commentLineJumps = new IntDictionary<Int>();
 		/**
 		 * A lazy parser.
 		 * You tell it what you're looking for, and it reads the input till it finds any of that.
@@ -259,6 +261,7 @@ class GmlSeeker {
 						case "/".code: {
 							q.skip();
 							q.skipLine();
+							commentLineJumps[q.pos - 1] = start;
 							if (q.get(start + 2) == "!".code && q.get(start + 3) == "#".code) {
 								if (q.substring(start + 4, start + 9) == "mfunc") do {
 									//  01234567890
@@ -1294,6 +1297,8 @@ class GmlSeeker {
 					var isDot = false; {
 						var dp = q.pos - s.length;
 						while (--dp >= 0) {
+							var jump = commentLineJumps[dp];
+							if (jump != null) { dp = jump; continue; }
 							var c = q.get(dp);
 							if (c == ".".code) {
 								isDot = true;
@@ -1366,10 +1371,14 @@ class GmlSeeker {
 								var c = q_swap.get(k - 1);
 								if (c.isIdent1()) k--; else break;
 							}
-							while (--k >= 0) switch (q_swap.get(k)) {
-								case " ".code, "\t".code, "\r".code, "\n".code: { };
-								case ",".code, "{".code: skip = false; break;
-								default: break;
+							while (--k >= 0) {
+								var jump = commentLineJumps[k];
+								if (jump != null) { k = jump; continue; }
+								switch (q_swap.get(k)) {
+									case " ".code, "\t".code, "\r".code, "\n".code: { };
+									case ",".code, "{".code: skip = false; break;
+									default: break;
+								}
 							}
 							break;
 						};
