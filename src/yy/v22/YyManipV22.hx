@@ -244,7 +244,7 @@ class YyManipV22 {
 				GmlAPI.gmlComp.push(new AceAutoCompleteItem(args.name, kind));
 				GmlAPI.gmlKind.set(args.name, "asset." + kind);
 				GmlAPI.gmlLookup.set(args.name, { path: args.npath, row: 0 });
-				GmlAPI.gmlLookupText += args.name + "\n";
+				GmlAPI.gmlLookupList.push(args.name);
 				var fk:FileKind = switch (kind) {
 					case "object": file.kind.yy.KYyEvents.inst;
 					case "shader": null;

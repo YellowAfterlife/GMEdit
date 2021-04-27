@@ -59,7 +59,7 @@ class RawLoader {
 				sub: null,
 				row: 0,
 			});
-			GmlAPI.gmlLookupText += rel + "\n";
+			GmlAPI.gmlLookupList.push(rel);
 			if (!wantIndex || full.ptExt() != "gml") continue;
 			// is a script
 			var name = full.ptNoDir().ptNoExt();

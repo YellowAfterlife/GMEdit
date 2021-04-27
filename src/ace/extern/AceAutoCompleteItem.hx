@@ -82,7 +82,7 @@ typedef AceAutoCompleteItemImpl = {
 	var value:String;
 	
 	/** Ace.js supports ordering items by scores but this goes completely unused in GMEdit. */
-	var score:Int;
+	var ?score:Int;
 	
 	/** Item "kind" that makes for a separate column in auto-completion menu. */
 	var meta:String;
@@ -93,23 +93,23 @@ typedef AceAutoCompleteItemImpl = {
 	 * todo: apparently can also be {?docText, ?docHTML} - can show sprite previews right in AC?
 	 * However, handling HTML+text means that changing/concatenating doc is suddenly complicated.
 	 */
-	var doc:String;
+	var ?doc:String;
 	
 	/** Mostly used for setting a separate snippet title? */
-	@:optional var caption:String;
+	var ?caption:String;
 	
 	/** For snippets, this is the snippet string to insert */
-	@:optional var snippet:String;
+	var ?snippet:String;
 	
 	/**
 	 * Used internally for ordering items in "smart completion" mode.
 	 * Items that start with the query string are prioritized.
 	 */
-	@:optional var exactMatch:Bool;
+	var ?exactMatch:Bool;
 	
 	/**
 	 * Used internally by "smart completion" mode to highlight individual matched letters.
 	 * One bit per letter, and if your names are longer than 32 chars, that's on you.
 	 */
-	@:optional var matchMask:Int;
+	var ?matchMask:Int;
 };

@@ -218,7 +218,7 @@ class GmlSeeker {
 		}
 		inline function setLookup(s:String, eol:Bool = false):Void {
 			GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: eol ? null : 0 });
-			if (s != mainTop) GmlAPI.gmlLookupText += s + "\n";
+			if (s != mainTop) GmlAPI.gmlLookupList.push(s);
 		}
 		if (main != null) setLookup(main);
 		var commentLineJumps = new IntDictionary<Int>();

@@ -56,7 +56,7 @@ class GmxLoader {
 						}
 					};
 				}
-				GmlAPI.gmlLookupText += name + "\n";
+				GmlAPI.gmlLookupList.push(name);
 				if (index) GmlSeeker.run(full, _main, kind);
 				var item = TreeView.makeAssetItem(name, path, full, one);
 				if (one == "sprite") ths.push({path:full, item:item, name:name});
@@ -180,7 +180,7 @@ class GmxLoader {
 						if (help != null && help != "") {
 							GmlAPI.extCompAdd(new AceAutoCompleteItem(name, "function", help));
 							GmlAPI.extDoc.set(name, GmlFuncDoc.parse(help));
-							if (isGmlFile) GmlAPI.gmlLookupText += name + "\n";
+							if (isGmlFile) GmlAPI.gmlLookupList.push(name);
 						}
 						if (isGmlFile) {
 							GmlAPI.gmlLookup.set(name, {

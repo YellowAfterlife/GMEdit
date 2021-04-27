@@ -226,6 +226,10 @@ button[type=button].highlighted-button {
 .popout-window select {
 	background: #444;
 }
+.popout-window select option[hint]:after {
+	background: #111;
+	color: white;
+}
 
 #preferences-editor, #keybindings-editor {
 	background-color: #222222;

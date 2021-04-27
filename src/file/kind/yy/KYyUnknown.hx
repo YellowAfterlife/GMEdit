@@ -75,7 +75,7 @@ class KYyUnknown extends FileKind {
 					"GMObject", "GMRoom"
 				: {
 					GmlAPI.gmlKind.set(name, "asset." + kind);
-					GmlAPI.gmlLookupText += name + "\n";
+					GmlAPI.gmlLookupList.push(name);
 					if (resType != "GMScript") {
 						// since 2.3 scripts contain function definitions,
 						// why would we care about the script resource itself?

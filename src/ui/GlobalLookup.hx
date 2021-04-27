@@ -1,4 +1,7 @@
 package ui;
+import ace.extern.AceAutoCompleteItem;
+import ace.extern.AceFilteredList;
+import ace.extern.AcePopup;
 import electron.Dialog;
 import js.lib.RegExp;
 import js.html.Element;
@@ -12,10 +15,14 @@ import tools.NativeString;
 import ace.AceMacro;
 import gml.GmlAPI;
 import tools.macros.SynSugar;
+import ui.CommandPalette;
+import ui.Preferences;
 using tools.HtmlTools;
 
 /**
  * The thing you see when you press Ctrl+T
+ * 
+ * todo: perhaps use AcePopup for this?
  * @author YellowAfterlife
  */
 class GlobalLookup {
@@ -25,6 +32,8 @@ class GlobalLookup {
 	private static var pool:Array<Element> = [];
 	private static var updateTimer:Int = null;
 	private static var current:String = "";
+	static var filteredList:AceFilteredList;
+	static var filteredListCmd:Bool = null;
 	
 	public static var useFilters:InputElement;
 	private static var kindFiltersArr:Array<String> = null;
@@ -51,14 +60,40 @@ class GlobalLookup {
 		}
 		//
 		if (filter.length >= 2 || isCmd) {
-			var pattern = NativeString.escapeRx(filter);
 			var selection = list.selectedOptions.length > 0
 				? list.selectedOptions[0].textContent : null;
 			var found = 0;
 			var foundMap = new Dictionary<Bool>();
 			list.selectedIndex = -1;
-			var data = isCmd ? CommandPalette.lookupText : GmlAPI.gmlLookupText;
+			var arr = isCmd ? CommandPalette.lookupList : GmlAPI.gmlLookupList;
+			var matchMode = Preferences.current.globalLookup.matchMode;
+			if (filteredList == null || filteredListCmd != isCmd) {
+				filteredList = new AceFilteredList(arr.map(function(name):AceAutoCompleteItem {
+					return cast {value:name};
+				}), filter);
+				filteredList.gmlMatchMode = matchMode;
+				filteredListCmd = isCmd;
+			}
 			//
+			function addOption_1(ind:Int, name:String, title:String, hint:String):Element {
+				var option = cast list.children[ind];
+				if (option == null || (cast option).noCache) {
+					var orig = option;
+					option = pool.pop();
+					if (option == null) option = document.createOptionElement();
+					if (orig != null) {
+						list.replaceChild(option, orig);
+					} else list.appendChild(option);
+				}
+				//
+				if (hint != null) {
+					option.setAttribute("hint", hint);
+				} else option.removeAttribute("hint");
+				option.title = title != null ? title : "";
+				//
+				option.textContent = name;
+				return option;
+			}
 			function addOption(name:String):Void {
 				//
 				var hint:String, title:String;
@@ -92,62 +127,45 @@ class GlobalLookup {
 					title = null;
 				}
 				//
-				var option = list.children[found];
-				if (option == null) {
-					option = pool.pop();
-					if (option == null) option = document.createOptionElement();
-					list.appendChild(option);
-				}
-				//
-				if (hint != null) {
-					option.setAttribute("hint", hint);
-				} else option.removeAttribute("hint");
-				option.title = title != null ? title : "";
-				//
-				option.textContent = name;
-				if (name == selection) list.selectedIndex = found;
+				var option = addOption_1(found, name, title, hint);
+				if (matchMode != AceSmart && name == selection) list.selectedIndex = found;
 				found += 1;
 			}
 			//
-			if (pattern != "") {
-				var directMatch = new RegExp('^$pattern$', 'gmi').exec(data);
-				if (directMatch != null) {
-					foundMap.set(directMatch[0], true);
-					addOption(directMatch[0]);
-				}
+			filteredList.shouldSort = true;
+			filteredList.setFilter(filter);
+			var maxCount = Preferences.current.globalLookup.maxCount;
+			if (filteredList.filtered.length > maxCount + 1) {
+				var show = filteredList.filtered.slice(0, maxCount);
+				var hide = filteredList.filtered.slice(maxCount);
+				for (item in show) addOption(item.value);
 				//
-				for (iter in 0 ... 2) {
-					var ipatt = iter == 0 ? '^($pattern.*)$' : '^(.+$pattern.*)$';
-					var regex = new RegExp(ipatt, 'gmi');
-					var match = regex.exec(data);
-					while (match != null) {
-						var name = match[1];
-						if (!foundMap[name]) {
-							foundMap.set(name, true);
-							addOption(name);
-						}
-						match = regex.exec(data);
-					}
+				var more_txt = hide.length + ' more items...';
+				var more = addOption_1(found++, more_txt, "", null);
+				(cast more).noCache = true;
+				more.onclick = function(_) {
+					found = maxCount; // causes "more" to be replaced
+					for (item in hide) addOption(item.value);
 				}
 			} else {
-				for (v in CommandPalette.lookupList) addOption(v);
+				for (item in filteredList.filtered) addOption(item.value);
 			}
-			//
+			// remove extra items:
 			i = list.children.length;
 			while (--i >= found) {
 				el = list.children[i];
 				list.removeChild(el);
-				pool.push(el);
+				if (!(cast el).noCache) pool.push(el);
 			}
 			//
 			if (list.selectedIndex < 0) list.selectedIndex = 0;
-		} else {
+		} else { // remove everything
 			list.selectedIndex = -1;
 			i = list.children.length;
 			while (--i >= 0) {
 				el = list.children[i];
 				list.removeChild(el);
-				pool.push(el);
+				if (!(cast el).noCache) pool.push(el);
 			}
 		}
 	}
@@ -158,6 +176,8 @@ class GlobalLookup {
 		if (element.style.display == "none") {
 			element.style.display = "";
 			if (initialText == null) initialText = aceEditor.getSelectedText();
+			filteredList = null;
+			filteredListCmd = null;
 			field.value = initialText;
 			field.focus();
 			updateImpl();
@@ -194,9 +214,14 @@ class GlobalLookup {
 			};
 			case KeyboardEvent.DOM_VK_RETURN: {
 				e.preventDefault();
-				var term = list.value;
-				if (term == "") term = field.value;
-				if (openTerm(term)) toggle();
+				var selectedOption = list.selectedOptions[0];
+				if (selectedOption != null && selectedOption.onclick != null) {
+					selectedOption.click();
+				} else {
+					var term = list.value;
+					if (term == "") term = field.value;
+					if (openTerm(term)) toggle();
+				}
 			};
 			case KeyboardEvent.DOM_VK_ESCAPE: {
 				toggle();
@@ -204,6 +229,7 @@ class GlobalLookup {
 		}
 	}
 	public static function init() {
+		filteredList = new AceFilteredList([]);
 		element = document.createFormElement();
 		element.id = "global-lookup";
 		element.classList.add("popout-window");

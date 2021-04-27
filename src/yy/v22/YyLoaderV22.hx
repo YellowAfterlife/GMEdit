@@ -182,7 +182,7 @@ class YyLoaderV22 {
 							var atype = type.substring(2).toLowerCase();
 							GmlAPI.gmlKind.set(name, "asset." + atype);
 							if (type != "GMScript") { // scripts have custom logic below
-								GmlAPI.gmlLookupText += name + "\n";
+								GmlAPI.gmlLookupList.push(name);
 							}
 							var next = new AceAutoCompleteItem(name, atype);
 							comp.push(next);
@@ -195,7 +195,7 @@ class YyLoaderV22 {
 							full = Path.withoutExtension(full) + ".gml";
 							// we'll index lambda scripts on demand
 							if (!scriptLambdas || !NativeString.startsWith(name, GmlExtLambda.lfPrefix)) {
-								GmlAPI.gmlLookupText += name + "\n";
+								GmlAPI.gmlLookupList.push(name);
 								GmlSeeker.run(full, name, KGmlScript.inst);
 							}
 						};
@@ -259,7 +259,7 @@ class YyLoaderV22 {
 											name, "function", help
 										));
 										GmlAPI.extDoc.set(name, gml.GmlFuncDoc.parse(help));
-										if (isGmlFile) GmlAPI.gmlLookupText += name + "\n";
+										if (isGmlFile) GmlAPI.gmlLookupList.push(name);
 									}
 									if (isGmlFile) {
 										GmlAPI.gmlLookup.set(name, {

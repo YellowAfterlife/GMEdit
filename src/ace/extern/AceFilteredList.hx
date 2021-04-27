@@ -1,6 +1,7 @@
 package ace.extern;
 import ace.AceMacro.jsOrx;
 import tools.CharCode;
+import ui.preferences.PrefData.PrefMatchMode;
 using StringTools;
 
 /**
@@ -8,8 +9,12 @@ using StringTools;
  * @author YellowAfterlife
  */
 @:native("AceFilteredList") extern class AceFilteredList {
+	var all:AceAutoCompleteItems;
+	var filtered:AceAutoCompleteItems;
 	var filterText:String;
 	var exactMatch:Bool;
+	var shouldSort:Bool;
+	var gmlMatchMode:PrefMatchMode;
 	
 	function new(array:AceAutoCompleteItems, ?filterText:String):Void;
 	function setFilter(str:String):Void;
@@ -23,8 +28,9 @@ private class AceFilteredListImpl {
 	public static function init(flProto:Dynamic):Void {
 		var orig:js.lib.Function = flProto.filterCompletions;
 		flProto.filterCompletions = function(items:AceAutoCompleteItems, needle:String):AceAutoCompleteItems {
-			var mode = ui.Preferences.current.compMatchMode;
-			var _this:AceAutocomplete = AceMacro.jsThis;
+			var _this:AceFilteredList = AceMacro.jsThis;
+			var mode = _this.gmlMatchMode;
+			if (mode == null) mode = ui.Preferences.current.compMatchMode;
 			switch (mode) {
 				case StartsWith, AceSmart: {
 					_this.exactMatch = (mode == StartsWith);

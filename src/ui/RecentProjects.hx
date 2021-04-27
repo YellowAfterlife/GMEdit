@@ -45,11 +45,11 @@ class RecentProjects {
 	public static function show() {
 		TreeView.clear();
 		var el = TreeView.element;
-		var lookup = "";
+		var lookup = [];
 		if (electron.Electron != null) for (path in get()) {
 			var pair = tools.PathTools.ptDetectProject(path);
 			var name = pair.name;
-			lookup += name + "\n";
+			lookup.push(name);
 			var pj = TreeView.makeProject(name, path);
 			FileSystem.access(path, FileSystemAccess.Exists, function(e) {
 				if (e == null) {
@@ -63,6 +63,6 @@ class RecentProjects {
 			});
 			el.appendChild(pj);
 		}
-		gml.GmlAPI.gmlLookupText = lookup;
+		gml.GmlAPI.gmlLookupList = lookup;
 	}
 }
