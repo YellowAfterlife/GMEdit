@@ -129,7 +129,7 @@ lengthdir_y(len:number,dir:number)->number
 real(val:string)->number
 bool(val:number)->bool
 string(val:any)->string
-int64(val:number)->int
+int64(val:number|string|pointer)->int
 ptr(val:number|string)->pointer
 string_format(val:number,total:int,dec:int)->string
 chr(val:int)->string
