@@ -1730,7 +1730,7 @@ var FilteredList = function(array, filterText) {
         if (this.shouldSort) { // GMEdit: only sort if requested
             matches = matches.sort(function(a, b) {
                 return b.exactMatch - a.exactMatch || b.$score - a.$score 
-                    || (a.caption || a.value) < (b.caption || b.value);
+                    || ((a.caption || a.value) < (b.caption || b.value) ? -1 : 1); // GMEdit: use instead of localeCompare
             });
         }
         var prev = null;
