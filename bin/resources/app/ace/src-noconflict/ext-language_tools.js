@@ -1747,7 +1747,12 @@ var FilteredList = function(array, filterText) {
         var results = [];
         var upper = needle.toUpperCase();
         var lower = needle.toLowerCase();
-        loop: for (var i = 0, item; item = items[i]; i++) {
+        //{ GMEdit: use a regex instead of toLowerCase():
+        var needlePattern = needle.replace(/([.*+?^${}()|[\]\/\\])/g, "\\$1");
+        var needleRegex = new RegExp(needlePattern, "i");
+        //}
+        loop: for (var i = 0; i < items.length; i++) {
+            var item = items[i];
             var caption = item.caption || item.value || item.snippet;
             if (!caption) continue;
             var lastIndex = -1;
@@ -1759,7 +1764,7 @@ var FilteredList = function(array, filterText) {
                 if (needle !== caption.substr(0, needle.length))
                     continue loop;
             } else {
-                var fullMatchIndex = caption.toLowerCase().indexOf(lower);
+                var fullMatchIndex = caption.search(needleRegex); // GMEdit: use the said regex
                 if (fullMatchIndex > -1) {
                     penalty = fullMatchIndex;
                 } else {
