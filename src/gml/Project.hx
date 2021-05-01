@@ -652,7 +652,7 @@ import ui.treeview.TreeViewElement;
 						);
 						readYyFile(spritePath, function(e, sprite:YySprite) {
 							var r:String;
-							if (e == null) {
+							if (e == null && sprite.frames != null) {
 								var frame = sprite.frames[0];
 								if (frame != null) {
 									var fid = frame.name;

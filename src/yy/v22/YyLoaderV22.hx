@@ -307,7 +307,37 @@ class YyLoaderV22 {
 					// a thumbnail if we may:
 					if (ui.Preferences.current.assetThumbs)
 					switch (type) {
-						case "GMSprite": TreeView.setThumbSprite(full, name, item);
+						case "GMSprite": { // fetch thumbnail and validate
+							var spritePath = res.Value.resourcePath;
+							project.readYyFile(spritePath, function(e, sprite:YySprite) {
+								var url:String;
+								if (e == null && sprite.frames != null) {
+									// fetch first frame URL:
+									var frame = sprite.frames[0];
+									if (frame != null) {
+										var fid = frame.id;
+										var spriteDir = Path.directory(spritePath);
+										var framePath = spriteDir + "/" + fid + ".png";
+										url = project.getImageURL(framePath);
+									} else url = null;
+									
+									// validate for frame ID collisions
+									var found = new Dictionary<Int>();
+									for (i => frame in sprite.frames) {
+										var fid = frame.id;
+										if (found.exists(fid)) {
+											Console.error('GUID $fid (frame $i)'
+												+ ' is already being used by frame ' + found[fid]
+												+ ' in sprite ' + sprite.name
+												+ '! GMS2 IDE may decline to load your project.'
+											);
+										} else found[fid] = i;
+									}
+								} else url = null;
+								project.yySpriteURLs[res.Key] = url;
+								TreeView.setThumb(full, url, item);
+							});
+						};
 					}
 					//
 					out.appendChild(item);
