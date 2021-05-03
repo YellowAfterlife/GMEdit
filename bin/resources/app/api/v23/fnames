@@ -36,7 +36,6 @@ other#
 all#
 noone#
 global#
-local#
 undefined#
 pointer_invalid#
 pointer_null#
@@ -448,6 +447,8 @@ game_save(filename)
 game_save_buffer(buffer)
 game_load_buffer(buffer)
 
+scheduler_resolution_set(milliseconds)
+scheduler_resolution_get()
 
 // section 3.9
 
@@ -644,7 +645,7 @@ show_debug_message(str)
 show_debug_overlay(enable)
 debug_mode*
 debug_event(str)
-debug_get_callstack()
+debug_get_callstack([maxdepth],...)
 alarm_get(index)
 alarm_set(index,count)
 
@@ -849,11 +850,14 @@ c_aqua#
 c_black#
 c_blue#
 c_dkgray#
+c_dkgrey#
 c_fuchsia#
 c_gray#
+c_grey#
 c_green#
 c_lime#
 c_ltgray#
+c_ltgrey#
 c_maroon#
 c_navy#
 c_olive#
@@ -882,7 +886,6 @@ color_get_blue(col)$
 color_get_hue(col)$
 color_get_saturation(col)$
 color_get_value(col)$
-merge_color(col1,col2,amount)$
 screen_save(fname)
 screen_save_part(fname,x,y,w,h)
 gif_open(width,height,...)
@@ -1321,6 +1324,10 @@ sprite_set_speed(ind,speed,type)
 sprite_get_speed_type(ind)
 sprite_get_speed(ind)
 
+sprite_get_nineslice(ind)
+sprite_set_nineslice(ind,nineslice)
+sprite_nineslice_create()
+
 texture_is_ready(tex_id)
 texture_prefetch(tex_id_or_groupname)
 texture_flush(tex_id_or_groupname)
@@ -1661,8 +1668,8 @@ ds_map_replace_map(id,key,value)
 ds_map_replace_list(id,key,value)
 ds_map_delete(id,key)
 ds_map_exists(id,key)
-ds_map_values_to_array(id,[array])
-ds_map_keys_to_array(id,[array])
+ds_map_values_to_array(id,array*,...)
+ds_map_keys_to_array(id,array*,...)
 ds_map_find_value(id,key)
 ds_map_is_map(id,key)
 ds_map_is_list(id,key)
@@ -1707,7 +1714,6 @@ ds_grid_resize(id,w,h)
 ds_grid_width(id)
 ds_grid_height(id)
 ds_grid_clear(id,val)
-ds_grid_set(id,x,y,val)
 ds_grid_add(id,x,y,val)
 ds_grid_multiply(id,x,y,val)
 ds_grid_set_region(id,x1,y1,x2,y2,val)
@@ -1719,7 +1725,6 @@ ds_grid_multiply_disk(id,xm,ym,r,val)
 ds_grid_set_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
 ds_grid_add_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
 ds_grid_multiply_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
-ds_grid_get(id,x,y)
 ds_grid_get_sum(id,x1,y1,x2,y2)
 ds_grid_get_max(id,x1,y1,x2,y2)
 ds_grid_get_min(id,x1,y1,x2,y2)
@@ -2272,7 +2277,7 @@ base64_decode(string)
 md5_string_unicode(string)
 md5_string_utf8(string)
 md5_file(fname)
-os_is_network_connected(attempt_connection*)
+os_is_network_connected(attempt_connection,...)
 sha1_string_unicode(string)
 sha1_string_utf8(string)
 sha1_file(fname)
@@ -2644,8 +2649,8 @@ buffer_create(size, buffer_type, alignment)
 buffer_write(buffer, type, value)
 buffer_read(buffer, type)
 buffer_seek(buffer, base, offset)
-buffer_get_surface(buffer, surface, offset)
-buffer_set_surface(buffer, surface, offset)
+buffer_get_surface(buffer, surface,offset)
+buffer_set_surface(buffer, surface,offset)
 buffer_delete(buffer)
 buffer_exists(buffer)
 buffer_get_type(buffer)
@@ -3401,6 +3406,19 @@ os_permission_denied_dont_request#
 os_permission_denied#
 os_permission_granted#
 
+nineslice_left#
+nineslice_top#
+nineslice_right#
+nineslice_bottom#
+nineslice_centre#
+nineslice_center#
+
+nineslice_stretch#
+nineslice_repeat#
+nineslice_mirror#
+nineslice_blank#
+nineslice_hide#
+
 //tags
 tag_get_asset_ids(tags,asset_type)
 tag_get_assets(tags)
@@ -3446,8 +3464,6 @@ layer_sequence_is_finished(sequence_element_id)
 layer_sequence_get_speedscale(sequence_element_id)
 
 layer_sequence_get_length(sequence_element_id)
-
-sequence_exists(sequence_struct_id)
 
 // Animation Curves
 animcurve_get(curve_id)
