@@ -51,7 +51,7 @@ class GmlTypeDef {
 		return t;
 	}
 	//
-	public static inline function parse(typeString:String):GmlType {
-		return GmlTypeParser.parse(typeString);
+	public static inline function parse(typeString:String, ?ctx:String):GmlType {
+		return GmlTypeParser.parse(typeString, ctx);
 	}
 }

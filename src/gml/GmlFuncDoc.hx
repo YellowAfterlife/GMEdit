@@ -97,7 +97,7 @@ class GmlFuncDoc {
 			if (templateItems != null) {
 				str = GmlTypeTools.patchTemplateItems(str, templateItems);
 			}
-			type = GmlTypeDef.parse(str);
+			type = GmlTypeDef.parse(str, name);
 		} else type = null;
 		__returnType_cache_post = post;
 		__returnType_cache_type = type;

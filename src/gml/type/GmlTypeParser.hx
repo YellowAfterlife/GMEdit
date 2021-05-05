@@ -51,12 +51,15 @@ class GmlTypeParser {
 		return r;
 	})();
 	public static var warnAboutMissing:Array<String> = null;
-	static function parseError(s:String, q:GmlReader, ?pos:Int):GmlType {
+	static function parseError(s:String, q:GmlReader, ctx:String, ?pos:Int):GmlType {
 		if (pos == null) pos = q.pos - 1;
-		Console.warn("Type parse error in `" + q.source.insert(pos, '¦') + "`: " + s);
+		Console.warn("Type parse error in `" + q.source.insert(pos, '¦') + '` (`$ctx`): ' + s);
 		return null;
 	}
-	public static function parseRec(q:GmlReader, flags:GmlTypeParserFlags = FNone):GmlType {
+	public static function parseRec(q:GmlReader, ctx:String, flags:GmlTypeParserFlags = FNone):GmlType {
+		inline function parseError(err:String, ?pos:Int):GmlType {
+			return GmlTypeParser.parseError(err, q, ctx, pos);
+		}
 		// also see GmlReader.skipType, GmlLinter.readTypeName
 		q.skipSpaces0_local();
 		var start = q.pos;
@@ -64,10 +67,10 @@ class GmlTypeParser {
 		var result:GmlType;
 		switch (c) {
 			case "(".code:
-				result = parseRec(q);
+				result = parseRec(q, ctx);
 				if (result == null) return null;
 				q.skipSpaces0_local();
-				if (q.read() != ")".code) return parseError("Unclosed ()", q, start);
+				if (q.read() != ")".code) return parseError("Unclosed ()", start);
 			case _ if (c.isIdent0()):
 				q.skipIdent1();
 				q.skipSpaces0_local();
@@ -83,7 +86,7 @@ class GmlTypeParser {
 					while (q.loop) {
 						// disable warnings for name and _index
 						warnAboutMissing = (isTIN && params.length < 2) ? null : typeWarn;
-						var t = parseRec(q);
+						var t = parseRec(q, ctx);
 						if (t == null) return null;
 						params.push(t);
 						q.skipSpaces0_local();
@@ -91,7 +94,7 @@ class GmlTypeParser {
 						switch (c) {
 							case ">".code: break;
 							case ",".code, ";".code: // OK!
-							default: return parseError("Expected a `,`/`;` or a `>` in `<>`", q);
+							default: return parseError("Expected a `,`/`;` or a `>` in `<>`");
 						}
 					}
 					if (isTIN) warnAboutMissing = typeWarn;
@@ -99,7 +102,7 @@ class GmlTypeParser {
 				if (name == "either") { // Either<A,B> -> (A|B)
 					result = TEither(params);
 				} else if (kind == KTemplateItem) {
-					if (params.length < 2) return parseError("Malformed parameters for " + GmlTypeTools.templateItemName, q);
+					if (params.length < 2) return parseError("Malformed parameters for " + GmlTypeTools.templateItemName);
 					var tn = switch (params[0]) {
 						case null: "?";
 						case TInst(s, [], KCustom): s;
@@ -110,7 +113,7 @@ class GmlTypeParser {
 						case TInst(s, [], KCustom) if (s.fastCodeAt(0) == "_".code): Std.parseInt(s.substr(1));
 						default: null;
 					}
-					if (ti == null) return parseError("Malformed index for " + GmlTypeTools.templateItemName, q);
+					if (ti == null) return parseError("Malformed index for " + GmlTypeTools.templateItemName);
 					result = TTemplate(tn, ti, params[2]);
 				} else {
 					if (typeWarn != null
@@ -121,7 +124,7 @@ class GmlTypeParser {
 					result = TInst(name, params, kind);
 				}
 			default:
-				return parseError("Expected a type name", q);
+				return parseError("Expected a type name");
 		}
 		
 		// postfixes:
@@ -130,7 +133,7 @@ class GmlTypeParser {
 			switch (q.peek()) {
 				case "[".code:
 					q.skip();
-					if (q.read() != "]".code) return parseError("Expected a `]` in `[]`", q);
+					if (q.read() != "]".code) return parseError("Expected a `]` in `[]`");
 					result = TInst("Array", [result], KArray);
 				case "?".code:
 					q.skip();
@@ -140,7 +143,7 @@ class GmlTypeParser {
 					q.skip();
 					var et = [result];
 					while (q.loop) {
-						var t = parseRec(q, FNoEither);
+						var t = parseRec(q, ctx, FNoEither);
 						if (t == null) return null;
 						et.push(t);
 						q.skipSpaces0_local();
@@ -154,15 +157,15 @@ class GmlTypeParser {
 	}
 	
 	static var cache:Dictionary<GmlType> = new Dictionary();
-	public static function parse(s:String):GmlType {
+	public static function parse(s:String, ctx:String):GmlType {
 		if (s == null) return null;
 		var t = cache[s];
 		if (t != null) return t;
 		var q = new GmlReader(s);
-		t = parseRec(q);
+		t = parseRec(q, ctx);
 		q.skipSpaces0();
 		if (q.loopLocal) Console.warn("Type parse warning in `"
-			+ s.insert(q.pos, "¦") + "`: Trailing data");
+			+ s.insert(q.pos, "¦") + '` (`$ctx`): Trailing data');
 		cache[s] = t;
 		return t;
 	}
