@@ -2326,10 +2326,10 @@ phy_dynamic*@:bool
 phy_kinematic*@:bool
 phy_sleeping*@:bool
 phy_collision_points*@:int
-phy_collision_x*@:number
-phy_collision_y*@:number
-phy_col_normal_x*@:number
-phy_col_normal_y*@:number
+phy_collision_x*@:number[]
+phy_collision_y*@:number[]
+phy_col_normal_x*@:number[]
+phy_col_normal_y*@:number[]
 phy_position_xprevious*@:number
 phy_position_yprevious*@:number
 
