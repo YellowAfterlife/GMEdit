@@ -7,6 +7,7 @@ import tools.NativeString;
 import tools.NativeArray;
 import ui.Preferences;
 import gml.GmlAPI;
+import synext.GmlExtArgsAce;
 
 /**
  * Handles conversion from/to #args magic.
