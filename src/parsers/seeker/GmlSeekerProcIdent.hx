@@ -72,8 +72,12 @@ class GmlSeekerProcIdent {
 		var kind = GmlAPI.stdKind[s];
 		var addInstField:Bool;
 		if (kind != null) {
-			var ns = GmlAPI.gmlNamespaces[s];
-			addInstField = ns == null || ns.noTypeRef;
+			if (kind == "keyword") {
+				return;
+			} else {
+				var ns = GmlAPI.gmlNamespaces[s];
+				addInstField = ns == null || ns.noTypeRef;
+			}
 		} else addInstField = true;
 		
 		if (!addInstField && (
