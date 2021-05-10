@@ -95,7 +95,7 @@ class GmlSeekerProcDefine {
 				//
 				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.getObjectName(), true, fname, args, null, null, argTypes, true);
 			} else procFuncLiteralArgs(seeker);
-			jsDoc.reset(); // discard any collected JSDoc
+			jsDoc.reset(false); // discard any collected JSDoc
 			return;
 		}
 		

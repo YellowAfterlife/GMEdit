@@ -34,7 +34,7 @@
     {"id":{"name":"v_hint_override","path":"scripts/v_hint_override/v_hint_override.yy",},"order":3,},
     {"id":{"name":"v_literal_fields","path":"scripts/v_literal_fields/v_literal_fields.yy",},"order":1,},
     {"id":{"name":"v_constructor_inner_args","path":"scripts/v_constructor_inner_args/v_constructor_inner_args.yy",},"order":2,},
-    {"id":{"name":"v_private_fields","path":"scripts/v_private_fields/v_private_fields.yy",},"order":3,},
+    {"id":{"name":"v_private_fields","path":"scripts/v_private_fields/v_private_fields.yy",},"order":4,},
     {"id":{"name":"v_truthy_instance","path":"scripts/v_truthy_instance/v_truthy_instance.yy",},"order":2,},
     {"id":{"name":"v_self","path":"scripts/v_self/v_self.yy",},"order":4,},
     {"id":{"name":"obj_self_object","path":"objects/obj_self_object/obj_self_object.yy",},"order":4,},
@@ -43,6 +43,7 @@
     {"id":{"name":"obj_user_event_init","path":"objects/obj_user_event_init/obj_user_event_init.yy",},"order":6,},
     {"id":{"name":"v_buffer_read","path":"scripts/v_buffer_read/v_buffer_read.yy",},"order":3,},
     {"id":{"name":"obj_misc_completion","path":"objects/obj_misc_completion/obj_misc_completion.yy",},"order":7,},
+    {"id":{"name":"v_constructor_implements","path":"scripts/v_constructor_implements/v_constructor_implements.yy",},"order":3,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

@@ -28,16 +28,18 @@ class GmlSeekerJSDoc {
 	public var implementsNames:Array<String> = null;
 	public var templateItems:Array<GmlTypeTemplateItem> = null;
 	
-	public function reset():Void {
+	public function reset(resetInterf = true):Void {
 		args = null;
 		types = null;
 		rest = null;
 		self = null;
 		returns = null;
-		isInterface = false;
-		interfaceName = null;
-		implementsNames = null;
-		templateItems = null;
+		if (resetInterf) {
+			isInterface = false;
+			interfaceName = null;
+			implementsNames = null;
+			templateItems = null;
+		}
 	}
 	
 	public function new() {
@@ -241,7 +243,8 @@ class GmlSeekerJSDoc {
 			
 			var info = hr.source.substring(hr.pos);
 			
-			GmlSeekerProcField.addFieldHint(seeker, isNew, nsName, isInst, fdName, args, info, GmlTypeDef.parse(typeStr, mt[0]), null, false);
+			GmlSeekerProcField.addFieldHint(seeker, isNew, nsName, isInst, fdName, args,
+				info, GmlTypeDef.parse(typeStr, mt[0]), null, false);
 			var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
 			if (addFieldHint_doc != null) {
 				if (ctrReturn != null) addFieldHint_doc.returnTypeString = ctrReturn;
