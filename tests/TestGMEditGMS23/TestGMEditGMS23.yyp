@@ -1,6 +1,7 @@
 {
   "resources": [
     {"id":{"name":"obj_test","path":"objects/obj_test/obj_test.yy",},"order":0,},
+    {"id":{"name":"obj_variable_definitions","path":"objects/obj_variable_definitions/obj_variable_definitions.yy",},"order":8,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":0,},
     {"id":{"name":"v_doc_template","path":"scripts/v_doc_template/v_doc_template.yy",},"order":0,},
     {"id":{"name":"v_doc_implements","path":"scripts/v_doc_implements/v_doc_implements.yy",},"order":1,},
@@ -55,6 +56,10 @@
     {"name":"Main","path":"options/main/options_main.yy",},
     {"name":"tvOS","path":"options/tvos/options_tvos.yy",},
     {"name":"Windows","path":"options/windows/options_windows.yy",},
+    {"name":"PlayStation 4","path":"options/ps4/options_ps4.yy",},
+    {"name":"Switch","path":"options/switch/options_switch.yy",},
+    {"name":"Windows UWP","path":"options/windowsuap/options_windowsuap.yy",},
+    {"name":"Xbox One","path":"options/xboxone/options_xboxone.yy",},
   ],
   "isDnDProject": false,
   "isEcma": false,
@@ -99,7 +104,7 @@
   ],
   "IncludedFiles": [],
   "MetaData": {
-    "IDEVersion": "2.3.1.542",
+    "IDEVersion": "2.3.2.560",
   },
   "resourceVersion": "1.4",
   "name": "TestGMEditGMS23",
