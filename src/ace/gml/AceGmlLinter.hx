@@ -47,7 +47,9 @@ class AceGmlLinter {
 	
 	public function onLinterDelay() {
 		// switched tabs?:
-		if (editor.session != onLinterDelay_session) return;
+		var session = editor.session;
+		if (session != onLinterDelay_session) return;
+		if (!canRunLinterFor(session)) return;
 		
 		runLinter(onLinterDelay_session, true);
 	}
