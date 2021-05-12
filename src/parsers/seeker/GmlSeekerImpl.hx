@@ -38,8 +38,7 @@ class GmlSeekerImpl {
 	public var project:Project;
 	
 	public var reader:GmlReaderExt;
-	
-	public var swapReader:GmlReaderExt = null;
+	public var swapReader:GmlReaderExt;
 	public function saveReader():Void {
 		if (swapReader == null) swapReader = new GmlReaderExt(src);
 		swapReader.setTo(reader);
@@ -117,6 +116,7 @@ class GmlSeekerImpl {
 		project = Project.current;
 		version = project.version;
 		reader = new GmlReaderExt(code, version);
+		swapReader = new GmlReaderExt(code, version);
 		
 		notLam = !(kind is KGmlLambdas);
 		canLam = !notLam && project.canLambda();
@@ -203,16 +203,30 @@ class GmlSeekerImpl {
 				};
 				case "globalvar": {
 					while (q.loop) {
-						s = find(Ident | Semico);
-						if (s == null || s == ";" || GmlAPI.kwFlow.exists(s)) break;
-						var g = new GmlGlobalVar(s, orig);
-						out.globalVars[s] = g;
-						if (privateGlobalRegex == null || !privateGlobalRegex.test(s)) {
-							out.comps[s] = g.comp;
+						saveReader();
+						q.skipSpaces1();
+						if (!q.peek().isIdent0_ni()) break;
+						var name = q.readIdent();
+						if (GmlAPI.kwFlow.exists(name)) {
+							restoreReader();
+							break;
 						}
-						out.kindList.push(s);
-						out.kindMap.set(s, "globalvar");
-						setLookup(s);
+						
+						var g = new GmlGlobalVar(name, orig);
+						out.globalVars[name] = g;
+						if (privateGlobalRegex == null || !privateGlobalRegex.test(name)) {
+							out.comps[name] = g.comp;
+						}
+						out.kindList.push(name);
+						out.kindMap.set(name, "globalvar");
+						setLookup(name);
+						
+						saveReader();
+						q.skipSpaces1();
+						if (q.peek() != ",".code) {
+							restoreReader();
+							break;
+						} else q.skip();
 					}
 				};
 				case "global": {
