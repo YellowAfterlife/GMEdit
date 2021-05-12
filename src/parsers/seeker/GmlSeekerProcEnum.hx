@@ -46,7 +46,7 @@ class GmlSeekerProcEnum {
 			en.compList.push(ac);
 			en.fieldComp.push(acf);
 			en.compMap.set(s, ac);
-			en.fieldLookup.set(s, { path: orig, sub: sub, row: seeker.row, col: 0, });
+			en.fieldLookup.set(s, { path: orig, sub: sub, row: q.row, col: 0, });
 			s = seeker.find(Comma | SetOp | Cub1);
 			if (s == "=") {
 				//

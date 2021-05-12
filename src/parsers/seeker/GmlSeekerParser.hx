@@ -17,7 +17,7 @@ class GmlSeekerParser {
 			switch (c) {
 				case "\r".code: if (flags.has(Line)) return "\n";
 				case "\n".code: {
-					seeker.row += 1;
+					q.row += 1;
 					if (flags.has(Line)) return "\n";
 				};
 				case ",".code: if (flags.has(Comma)) return ",";
@@ -75,7 +75,7 @@ class GmlSeekerParser {
 					};
 					case "*".code: {
 						q.skip();
-						seeker.row += q.skipComment();
+						q.skipComment();
 						if (flags.has(ComBlock)) {
 							return q.substring(start, q.pos);
 						}
@@ -83,7 +83,7 @@ class GmlSeekerParser {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: {
-					seeker.row += q.skipStringAuto(c, seeker.version);
+					q.skipStringAuto(c, seeker.version);
 				};
 				case "#".code: {
 					q.skipIdent1();

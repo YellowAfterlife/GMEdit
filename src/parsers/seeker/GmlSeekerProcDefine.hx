@@ -112,7 +112,7 @@ class GmlSeekerProcDefine {
 		}
 		seeker.start = q.pos;
 		seeker.sub = main;
-		seeker.row = isFunc ? -1 : 0;
+		seeker.reader.row = isFunc ? -1 : 0;
 		seeker.setLookup(main, true);
 		var locals = new GmlLocals(main);
 		seeker.locals = locals;

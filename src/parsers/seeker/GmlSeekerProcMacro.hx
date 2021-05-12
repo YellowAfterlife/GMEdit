@@ -38,7 +38,7 @@ class GmlSeekerProcMacro {
 				expr += q.substring(p, q.pos - 1) + "\n";
 				q.skipLineEnd();
 				p = q.pos;
-				seeker.row += 1;
+				q.row += 1;
 			} else break;
 		} while (q.loopLocal);
 		expr += q.substring(p, q.pos);
@@ -64,7 +64,7 @@ class GmlSeekerProcMacro {
 				seeker.setLookup(name, true);
 			} else {
 				// adjust for mfunc rows being hidden
-				seeker.row -= 1;
+				q.row -= 1;
 			}
 			//
 			out.macros[name] = m;

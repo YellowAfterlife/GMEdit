@@ -53,7 +53,6 @@ class GmlSeekerImpl {
 	public var main:String;
 	public var mainTop:GmlName;
 	public var sub:String = null;
-	public var row:Int = 0;
 	public var doc:GmlFuncDoc = null;
 	public var docIsAutoFunc = false;
 	public var mainComp:AceAutoCompleteItem;
@@ -154,7 +153,7 @@ class GmlSeekerImpl {
 	
 	public function setLookup(s:String, eol:Bool = false):Void {
 		var col = eol ? null : 0;
-		GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: row, col: col });
+		GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: reader.row, col: col });
 		if (s != mainTop) GmlAPI.gmlLookupList.push(s);
 	}
 	
