@@ -20,7 +20,7 @@ class GmlSeekerProcDoc {
 			// no doc yet, but there should be, so let's scrap what we may
 			doc = out.docs[main];
 			if (doc == null) {
-				doc = GmlFuncDoc.create(main);
+				seeker.doc = doc = GmlFuncDoc.create(main);
 				seeker.linkDoc();
 			}
 			updateComp = true;
