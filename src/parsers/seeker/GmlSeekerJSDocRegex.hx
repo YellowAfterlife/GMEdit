@@ -29,8 +29,9 @@ class GmlSeekerJSDocRegex {
 	public static var jsDoc_hint_extimpl = new RegExp("^///\\s*"
 		+ "@hint\\b\\s*"
 		+ "(\\w+)" // name
+		+ "(?:<.*?>)?" // type params
 		+ "\\b\\s*"
-		+ "(extends|implementsNames)"
+		+ "(extends|implements)"
 		+ "\\b\\s*"
 		+ "(\\w+)" // name
 	);
