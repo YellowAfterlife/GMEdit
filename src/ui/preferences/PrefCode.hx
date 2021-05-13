@@ -3,6 +3,7 @@ import js.html.Element;
 import ui.Preferences.*;
 import gml.GmlAPI;
 import gml.file.GmlFile;
+import ui.preferences.PrefData;
 using tools.HtmlTools;
 import js.html.SelectElement;
 import file.kind.misc.KSnippets;
@@ -26,12 +27,7 @@ class PrefCode {
 		});
 		
 		//
-		var compMatchModes = [
-			"Start of string (GMS1 style)",
-			"Containing (GMS2 style)",
-			"Smart (`icl` -> `io_clear`)",
-			"Per-section (`icl` -> `instance_create_layer`)",
-		];
+		var compMatchModes = PrefMatchMode.names;
 		var el = addDropdown(out, "Auto-completion mode", compMatchModes[current.compMatchMode], compMatchModes, function(s) {
 			current.compMatchMode = compMatchModes.indexOf(s);
 			save();

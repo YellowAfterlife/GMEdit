@@ -42,7 +42,9 @@ class KeyboardShortcuts {
 	static function initCommands():Void {
 		hashHandler = new AceHashHandler();
 		//
+		var isWeb = Electron == null;
 		var rxMod = new RegExp("\\bmod\\-");
+		var rxWebMod = new RegExp("\\bmodw\\-");
 		var hh = hashHandler;
 		function keyToCommandKey(key:String):AceCommandKey {
 			if (rxMod.test(key)) {
@@ -50,7 +52,13 @@ class KeyboardShortcuts {
 					win: key.replaceExt(rxMod, "ctrl-"),
 					mac: key.replaceExt(rxMod, "cmd-"),
 				};
-			} else return key;
+			} else if (rxWebMod.test(key)) {
+				return {
+					win: key.replaceExt(rxWebMod, isWeb ? "alt-" : "ctrl-"),
+					mac: key.replaceExt(rxWebMod, isWeb ? "ctrl-" : "cmd-"),
+				};
+			}
+			else return key;
 		}
 		//
 		var lcmd:AceCommand = null;
@@ -86,21 +94,22 @@ class KeyboardShortcuts {
 			if (next == null) next = tab.parentElement.firstElementChild;
 			if (next != null) next.click();
 		});
-		addCommand("toggleDevTools", "mod-shift-i", function() {
-			if (Electron == null) return;
-			Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
-		});
-		lcmd.description = "Only works in standalone version.";
+		if (!isWeb) {
+			addCommand("toggleDevTools", "mod-shift-i", function() {
+				Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+			});
+			lcmd.description = "Only works in standalone version.";
+		}
 		//
 		#if !lwedit
-		addCommand("reloadProject", "mod-r", function() {
+		addCommand("reloadProject", "modw-r", function() {
 			if (Project.current != null) {
 				Project.current.reload();
 			}
 		});
 		#end
 		//
-		addCommand("closeTab", "mod-w", function() {
+		addCommand("closeTab", "modw-w", function() {
 			var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
 			if (q != null) {
 				q.click();
@@ -152,11 +161,10 @@ class KeyboardShortcuts {
 		#end
 		//}
 		
-		var lookupPre = Electron != null ? "mod" : "alt";
-		addCommand("globalLookup", '$lookupPre-t', function() {
+		addCommand("globalLookup", 'modw-t', function() {
 			GlobalLookup.toggle();
 		});
-		addCommand("commandPalette", '$lookupPre-shift-t', function() {
+		addCommand("commandPalette", 'modw-shift-t', function() {
 			GlobalLookup.toggle(">");
 		});
 		addCommand("reloadGMEdit", "", function() {

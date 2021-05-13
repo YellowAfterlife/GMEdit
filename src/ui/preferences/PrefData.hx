@@ -57,6 +57,10 @@ import haxe.DynamicAccess;
 			windowWidth: 960,
 			windowHeight: 720,
 			windowFrame: false,
+		},
+		globalLookup: {
+			matchMode: AceSmart,
+			maxCount: 100,
 		}
 	};
 }
@@ -119,6 +123,10 @@ typedef PrefDataImpl = {
 		windowWidth:Int,
 		windowHeight:Int,
 		windowFrame:Bool,
+	},
+	globalLookup: {
+		matchMode:PrefMatchMode,
+		maxCount:Int,
 	}
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {
@@ -135,6 +143,12 @@ enum abstract PrefMatchMode(Int) from Int to Int {
 	var AceSmart = 2;
 	/// "icl" for "[i]nstance_[c]reate_[l]ayer"
 	var SectionStart = 3;
+	public static var names:Array<String> = [
+		"Start of string (GMS1 style)",
+		"Containing (GMS2 style)",
+		"Smart (`icl` -> `io_clear`)",
+		"Per-section (`icl` -> `instance_create_layer`)",
+	];
 }
 @:enum abstract PrefTooltipKind(Int) from Int to Int {
 	var None = 0;

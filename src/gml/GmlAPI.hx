@@ -117,18 +117,23 @@ class GmlAPI {
 		
 		stdNamespaceDefs.resize(0);
 		stdFieldHints.resize(0);
+		
 		var sk = new Dictionary();
-		inline function add(s:String) {
-			sk.set(s, "keyword");
-		}
-		for (s in kwList) add(s);
+		for (s in kwList) sk[s] = "keyword";
+		
 		var kw2 = version.config.additionalKeywords;
-		if (kw2 != null) for (s in kw2) add(s);
-		if (Preferences.current.importMagic) add("new");
+		if (kw2 != null) for (s in kw2) sk[s] = "keyword";
+		
+		if (Preferences.current.importMagic) sk["new"] = "keyword";
+		
 		if (Preferences.current.castOperators) {
-			add("cast");
-			add("as");
+			sk["cast"] = "keyword";
+			sk["as"] = "keyword";
 		}
+		
+		sk["true"] = "constant.boolean";
+		sk["false"] = "constant.boolean";
+		
 		for (k in GmlTypeTools.builtinTypes) {
 			switch (k) {
 				case "string", "bool": continue;
@@ -219,8 +224,12 @@ class GmlAPI {
 	/** Used for F12/middle-click */
 	public static var gmlLookup:Dictionary<GmlLookup> = new Dictionary();
 	
-	/** `\n` separated asset names for regular expression search */
-	public static var gmlLookupText:String = "";
+	/**
+	 * Asset names for GlobalLookup (Ctrl+T)
+	 * NB! If an asset is hidden (e.g. an unlisted extension function), it can be in gmlLookup
+	 * but not in here.
+	 */
+	public static var gmlLookupList:Array<String> = [];
 	
 	/** @hint and other namespaces collected across the code */
 	public static var gmlNamespaces:Dictionary<GmlNamespace> = new Dictionary();
@@ -275,7 +284,7 @@ class GmlAPI {
 		gmlInstFieldMap = new Dictionary();
 		gmlInstFieldComp.clear();
 		gmlLookup = new Dictionary();
-		gmlLookupText = "";
+		gmlLookupList.resize(0);
 		gmlNamespaces = new Dictionary();
 		gmlNamespaceComp.clear();
 		for (type in gmx.GmxLoader.assetTypes) {

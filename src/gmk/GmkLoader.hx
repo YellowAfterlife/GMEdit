@@ -41,7 +41,7 @@ class GmkLoader {
 				rel += suffix;
 				var full = project.fullPath(rel);
 				//
-				GmlAPI.gmlLookupText += name + "\n";
+				GmlAPI.gmlLookupList.push(name);
 				if (name == fname) { // valid identifier
 					GmlAPI.gmlKind[name] = "asset." + kind;
 					var ac = new AceAutoCompleteItem(name, kind);

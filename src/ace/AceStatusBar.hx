@@ -245,7 +245,12 @@ class AceStatusBar {
 			}
 		}
 		// move this elsewhere maybe
-		if (file != null && file != ui.WelcomePage.file) file.changed = !session.getUndoManager().isClean();
+		if (file != null && codeEditor != null
+			&& file != ui.WelcomePage.file
+			&& (cast file.kind:file.kind.KCode).setChangedOnEdits
+		) {
+			file.changed = !session.getUndoManager().isClean();
+		}
 		//
 		var ctr = statusSpan, s:String;
 		function set(q:String, v:String) {

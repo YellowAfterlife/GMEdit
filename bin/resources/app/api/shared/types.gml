@@ -86,6 +86,7 @@ typedef buffer_kind : uncompareable//buffer_grow etc
 typedef buffer_type : uncompareable //buffer_s8 etc
 typedef sprite_speed_type : uncompareable
 typedef asset_type : uncompareable
+typedef buffer_auto_type // magic - picks up the type from the nearby buffer_type argument
 typedef file_attribute : int
 typedef particle_shape : uncompareable
 typedef particle_distribution : uncompareable

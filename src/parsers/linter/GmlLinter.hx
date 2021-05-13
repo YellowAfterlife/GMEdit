@@ -369,6 +369,28 @@ class GmlLinter {
 		var isMethod = !sqb && (selfType:GmlType).getKind() == KMethodSelf;
 		var methodSelf:GmlType = null;
 		//
+		var hasBufferAutoType:Bool = false;
+		var bufferAutoType:GmlType = null;
+		var bufferAutoTypeRet = false;
+		if (doc != null && argTypes != null && doc.name.contains("buffer_")) {
+			for (argType in argTypes) {
+				switch (argType) {
+					case null:
+					case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
+						hasBufferAutoType = true;
+						break;
+					default:
+				}
+			}
+			if (!hasBufferAutoType) switch (doc.returnType) {
+				case null:
+				case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
+					hasBufferAutoType = true;
+					bufferAutoTypeRet = true;
+				default:
+			}
+		}
+		//
 		var itemType:GmlType = null;
 		while (q.loop) {
 			switch (peek()) {
@@ -390,29 +412,55 @@ class GmlLinter {
 					}
 				};
 				default: {
-					if (seenComma) {
-						seenComma = false;
-						if (isMethod && argc == 1) {
-							var lso = readLambda_selfOverride;
-							readLambda_selfOverride = methodSelf;
-							var foundError = readExpr(newDepth);
-							readLambda_selfOverride = lso;
-							if (foundError) return -1;
-						} else {
-							if (readExpr(newDepth)) return -1;
+					if (!seenComma) {
+						readExpect("a comma in values list");
+						return -1;
+					}
+					seenComma = false;
+					
+					if (sqb) { // array literal logic
+						if (readExpr(newDepth)) return -1;
+						if (argc == 0) {
+							itemType = readExpr_currType;
+						} else if (itemType != null) {
+							// turn mixed-type array literals into array<any>
+							if (!readExpr_currType.canCastTo(itemType)) itemType = null;
+							// tuples require passing the supposed destination type to readExpr.
 						}
-						if (sqb) {
-							if (argc == 0) {
-								itemType = readExpr_currType;
-							} else if (itemType != null) {
-								// turn mixed-type array literals into array<any>
-								if (!readExpr_currType.canCastTo(itemType)) itemType = null;
-								// tuples require passing the supposed destination type to readExpr.
+						argc++;
+						continue;
+					}
+					
+					// read the next argument:
+					if (isMethod && argc == 1) {
+						// rewrite `self` for `method()`'s `fn` argument
+						var lso = readLambda_selfOverride;
+						readLambda_selfOverride = methodSelf;
+						var foundError = readExpr(newDepth);
+						readLambda_selfOverride = lso;
+						if (foundError) return -1;
+					} else {
+						if (readExpr(newDepth)) return -1;
+					}
+					
+					if (argTypes != null && readExpr_currType != null) {
+						var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
+						var argType = argTypes[argTypeInd];
+						if (argType != null) {
+							if (hasBufferAutoType) {
+								switch (argType) {
+									case null:
+									case TInst(typeName, [], KCustom):
+										if (typeName == "buffer_auto_type") {
+											argType = bufferAutoType;
+										} else if (typeName == "buffer_type") {
+											var btmap = parsers.linter.misc.GmlLinterBufferAutoType.map;
+											bufferAutoType = btmap[readExpr_currName];
+										}
+									default:
+								}
 							}
-						} else if (argTypes != null && readExpr_currType != null) {
-							var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
-							var argType = argTypes[argTypeInd];
-							if (argType != null && !readExpr_currType.canCastTo(argType, templateTypes, getImports())) {
+							if (!readExpr_currType.canCastTo(argType, templateTypes, getImports())) {
 								var argName = JsTools.or(doc.args[argTypeInd], "?");
 								addWarning("Can't cast " + readExpr_currType.toString(templateTypes)
 									+ " to " + argType.toString(templateTypes)
@@ -420,20 +468,22 @@ class GmlLinter {
 								);
 							}
 						}
-						if (isMethod && argc == 0) methodSelf = readExpr_currType;
-						argc++;
-					} else {
-						readExpect("a comma in values list");
-						return -1;
 					}
+					
+					// store `self` type for `method()`:
+					if (isMethod && argc == 0) methodSelf = readExpr_currType;
+					
+					argc++;
 				};
 			}
-		}
+		} // while (q.loop), can continue
 		if (sqb) {
 			readArgs_outType = itemType;
 		} else {
 			if (doc != null) {
-				readArgs_outType = doc.returnType.mapTemplateTypes(templateTypes);
+				var retType = doc.returnType;
+				if (bufferAutoTypeRet) retType = bufferAutoType;
+				readArgs_outType = retType.mapTemplateTypes(templateTypes);
 			} else readArgs_outType = null;
 		}
 		if (!closed) {

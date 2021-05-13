@@ -153,7 +153,7 @@ ds_map_is_list<K;V>(map:ds_map<K;V>,key:K)->bool
 // Chapter 415
 //////////////
 
-event_data*:ds_map<string, any>
+event_data*:ds_map<string,any>
 
 json_stringify<T:struct|array|number|string|undefined>(val:T)->string
 json_parse(json:string)->any

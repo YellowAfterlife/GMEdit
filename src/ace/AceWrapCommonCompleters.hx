@@ -170,6 +170,7 @@ class AceWrapCommonCompleters {
 			new AceAutoCompleteItem("implements", jsk, "@implements [{Name}]\nImplement an interface"),
 			new AceAutoCompleteItem("hint", jsk, "(see wiki)\nHint types/variables/methods"),
 			new AceAutoCompleteItem("template", jsk, "@template [{Constraint}] Type\nDeclare type parameters"),
+			new AceAutoCompleteItem("init", jsk, "@init\nMarks a non-Create event as a variable/function source"),
 		];
 		jsDocCompleter = new AceWrapCompleter([], ["comment.meta"], false, gmlOnly);
 		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case

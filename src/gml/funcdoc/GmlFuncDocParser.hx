@@ -88,14 +88,14 @@ class GmlFuncDocParser {
 			for (i => arg in args) {
 				var hadBrackets = !showArgTypes && arg.startsWith("[") && arg.endsWith("]");
 				if (hadBrackets) arg = arg.substring(1, arg.length - 1);
-				arg = arg.replaceExt(rxt, function(str, t1, t2) {
+				arg = arg.replaceExt(rxt, function(argStr, t1, t2) {
 					var typeStr = JsTools.or(t1, t2).trimRight();
 					if (templateItems != null) {
 						typeStr = GmlTypeTools.patchTemplateItems(typeStr, templateItems);
 					}
 					if (argTypes == null) argTypes = NativeArray.create(args.length);
-					argTypes[i] = GmlTypeDef.parse(typeStr);
-					return showArgTypes ? str : "";
+					argTypes[i] = GmlTypeDef.parse(typeStr, str);
+					return showArgTypes ? argStr : "";
 				});
 				if (hadBrackets) arg = "[" + arg + "]";
 				args[i] = arg;

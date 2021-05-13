@@ -104,7 +104,7 @@ class GmlParseAPI {
 				return;
 			}
 			var typeStr = mt[2];
-			var type = GmlTypeDef.parse(typeStr);
+			var type = GmlTypeDef.simple(typeStr);
 			var cinf = "from " + currStruct;
 			if (typeStr != null) cinf += "\ntype " + typeStr;
 			var comp = new AceAutoCompleteItem(name, "variable", cinf);
@@ -222,7 +222,7 @@ class GmlParseAPI {
 			var type:GmlType = null;
 			if (NativeString.contains(flags, "&")) return;
 			if (typeStr != null && stdTypes != null) {
-				type = GmlTypeDef.parse(typeStr);
+				type = GmlTypeDef.parse(typeStr, mt[0]);
 				stdTypes[name] = type;
 				for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in ${mt[0]}');
 				typeWarn.clear();

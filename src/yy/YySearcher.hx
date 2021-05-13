@@ -160,16 +160,18 @@ class YySearcher {
 					ensureName();
 					var rccName = "roomCreationCodes(" + resName + ")";
 					var rccPath = Path.directory(resPath) + "\\RoomCreationCode.gml";
-					filesLeft += 1;
-					pj.readTextFile(rccPath, function(error, code) {
-						if (error == null) {
-							var gml1 = fn(rccName, rccPath, code);
-							if (gml1 != null && gml1 != code) {
-								FileWrap.writeTextFileSync(rccPath, gml1);
-							}
-						} else Main.console.warn(error);
-						next();
-					});
+					if (pj.existsSync(rccPath)) {
+						filesLeft += 1;
+						pj.readTextFile(rccPath, function(error, code) {
+							if (error == null) {
+								var gml1 = fn(rccName, rccPath, code);
+								if (gml1 != null && gml1 != code) {
+									FileWrap.writeTextFileSync(rccPath, gml1);
+								}
+							} else Main.console.warn(error);
+							next();
+						});
+					}
 				};
 			} // switch (can continue)
 		} // for

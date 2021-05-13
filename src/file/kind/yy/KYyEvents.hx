@@ -119,14 +119,14 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 						if (YyObjectProperties.isAllAssetTypes23(filters)) return GmlTypeDef.asset;
 						for (ft in prop.filters) {
 							ft = NativeString.trimBoth(ft);
-							et.push(GmlTypeDef.parse(ft.substring(2).toLowerCase()));
+							et.push(GmlTypeDef.simple(ft.substring(2).toLowerCase()));
 						}
 					} else {
 						var flags = prop.resourceFilter;
 						if (flags == 1023) return GmlTypeDef.asset;
 						for (tp in YyObjectProperties.assetTypes) {
 							if ((flags & tp.flag) == 0) continue;
-							et.push(GmlTypeDef.parse(tp.name));
+							et.push(GmlTypeDef.simple(tp.name));
 						}
 					}
 					if (et.length > 1) {
@@ -134,7 +134,7 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 					} else if (et.length == 1) {
 						return et[0];
 					} else return null;
-				case TColor: return GmlTypeDef.parse("color");
+				case TColor: return GmlTypeDef.simple("color");
 				default: return null;
 			}
 		}

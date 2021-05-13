@@ -94,12 +94,12 @@ using StringTools;
 	}
 	public static inline function getSelfTypeForFile(gmlFile:GmlFile, scope:String):GmlType {
 		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
-			return GmlTypeDef.parse(gmlFile.name);
+			return GmlTypeDef.simple(gmlFile.name);
 		} else {
 			var scopeDoc = GmlAPI.gmlDoc[scope];
 			if (scopeDoc != null) {
 				if (scopeDoc.isConstructor) {
-					return GmlTypeDef.parse(scope);
+					return GmlTypeDef.simple(scope);
 				} else return scopeDoc.selfType;
 			} else return null;
 		}

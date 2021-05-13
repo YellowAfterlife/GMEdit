@@ -26,12 +26,12 @@ const fs = require('fs')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let activeWindows = []
-const isWindows = process.platform == "win32";
-const isMac = process.platform == "darwin";
+const isWindows = process.platform == "win32"
+const isMac = process.platform == "darwin"
 
 function createWindow(first) {
 	//
-	let windowWidth = 960, windowHeight = 720, windowFrame = false;
+	let windowWidth = 960, windowHeight = 720, windowFrame = false
 	try {
 		const configPath = app.getPath("userData") + "/GMEdit/config/user-preferences.json"
 		if (fs.existsSync(configPath)) {
@@ -63,7 +63,8 @@ function createWindow(first) {
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
 	}
-	app.allowRendererProcessReuse = false;
+	app.allowRendererProcessReuse = false
+	
 	// https://github.com/electron/electron/issues/19789#issuecomment-559825012
 	electron.protocol.interceptFileProtocol('file', (request, cb) => {
 		//const show = request.url.includes("index")
@@ -153,7 +154,7 @@ app.on('activate', function () {
 	
 	// https://github.com/electron/electron/issues/11617
 	ipc.on('shell-show', (e, path) => {
-		if (process.platform.startsWith("win")) path = path.replace(/\//g, "\\")
+		if (isWindows) path = path.replace(/\//g, "\\")
 		electron.shell.showItemInFolder(path)
 	})
 	
@@ -175,6 +176,33 @@ app.on('activate', function () {
 		}
 		wnd.setSize(width, height)
 	})
+	
+	ipc.on('add-recent-document', (e, path) => {
+		if (isWindows) path = path.replace(/\//g, "\\")
+		app.addRecentDocument(path)
+	})
+	
+	ipc.on('clear-recent-documents', (e) => {
+		app.clearRecentDocuments()
+	})
+}
+
+{
+	let tasks = []
+	let execPath = process.execPath
+	tasks.push({
+		program: execPath,
+		arguments: "",
+		iconPath: execPath,
+		iconIndex: 0,
+		title: "New window",
+		description: "",
+	})
+	try {
+		app.setUserTasks(tasks)
+	} catch (e) {
+		console.error(e)
+	}
 }
 
 // Quit when all windows are closed.

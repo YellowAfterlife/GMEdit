@@ -165,11 +165,20 @@ class PluginManager {
 					pluginDir.set(name, dir);
 				}
 			}
-		} else list = [ // base package for web version
-			"plugins/enum-names",
-			"plugins/show-aside",
-			"plugins/outline-view",
-		];
+		} else { // base package for web version
+			list = [
+				"outline-view",
+				#if !lwedit
+				"image-viewer",
+				"ini-editor",
+				#end
+				"gen-enum-names",
+				"show-aside",
+			];
+			for (name in list) {
+				pluginDir[name] = "plugins";
+			}
+		}
 		//
 		for (name in list) load(name);
 		ready = true;

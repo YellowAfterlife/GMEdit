@@ -116,6 +116,11 @@ class HtmlTools {
 		element.addEventListener('input', event);
 		event();
 	}
+	
+	public static function moveOffScreen(element:Element) {
+		element.style.position = "absolute";
+		element.style.top = "-99999px";
+	}
 }
 extern class ElementList implements ArrayAccess<Element> {
 	public var length(default, never):Int;

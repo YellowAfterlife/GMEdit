@@ -5,6 +5,15 @@ if (!String.prototype.startsWith) {
 	};
 }
 
+/// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
+if (!String.prototype.includes) {
+	String.prototype.includes = function(search, start) {
+		'use strict';
+		if (start === undefined) { start = 0; }
+		return this.indexOf(search, start) !== -1;
+	};
+}
+
 /// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
 if (!String.prototype.endsWith) {
   String.prototype.endsWith = function(search, this_len) {
@@ -120,6 +129,29 @@ if (!String.prototype.repeat) {
   }
 }
 
+/**
+ * String.prototype.trimStart() polyfill
+ * Adapted from polyfill.io
+ */
+if (!String.prototype.trimStart) {
+	String.prototype.trimStart = function () {
+		return this.replace(new RegExp('^' + /[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/.source, 'g'), '');
+	};
+}
+if (!String.prototype.trimLeft) String.prototype.trimLeft = String.prototype.trimStart;
+
+/**
+ * String.prototype.trimEnd() polyfill
+ * Adapted from polyfill.io
+ * https://vanillajstoolkit.com/polyfills/stringtrimend/
+ */
+if (!String.prototype.trimEnd) {
+	String.prototype.trimEnd = function () {
+		return this.replace(new RegExp(/[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/.source + '$', 'g'), '');
+	};
+}
+if (!String.prototype.trimRight) String.prototype.trimRight = String.prototype.trimEnd;
+
 // Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/prepend()/prepend().md
 (function (arr) {
   arr.forEach(function (item) {
@@ -140,6 +172,31 @@ if (!String.prototype.repeat) {
         });
 
         this.insertBefore(docFrag, this.firstChild);
+      }
+    });
+  });
+})([Element.prototype, Document.prototype, DocumentFragment.prototype]);
+
+// Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/append()/append().md
+(function (arr) {
+  arr.forEach(function (item) {
+    if (item.hasOwnProperty('append')) {
+      return;
+    }
+    Object.defineProperty(item, 'append', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: function append() {
+        var argArr = Array.prototype.slice.call(arguments),
+          docFrag = document.createDocumentFragment();
+
+        argArr.forEach(function (argItem) {
+          var isNode = argItem instanceof Node;
+          docFrag.appendChild(isNode ? argItem : document.createTextNode(String(argItem)));
+        });
+
+        this.appendChild(docFrag);
       }
     });
   });

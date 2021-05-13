@@ -1,4 +1,6 @@
 package ui;
+import electron.AppTools;
+import electron.Electron;
 import electron.FileSystem;
 import electron.FileWrap;
 import haxe.Json;
@@ -21,13 +23,18 @@ class RecentProjects {
 		} catch (_:Dynamic) return [];
 	}
 	private static function set(list:Array<String>) {
-		FileWrap.writeConfigSync("session",  "recent-projects", list);
+		FileWrap.writeConfigSync("session", "recent-projects", list);
+	}
+	public static function clear():Void {
+		set([]);
+		if (Electron.isAvailable()) AppTools.clearRecentDocuments();
 	}
 	public static function add(path:String) {
 		var curr = get();
 		curr.remove(path);
 		curr.unshift(path);
 		if (curr.length > Preferences.current.recentProjectCount) curr.pop();
+		if (Electron.isAvailable()) AppTools.addRecentDocument(path);
 		set(curr);
 	}
 	public static function remove(path:String) {
@@ -38,11 +45,11 @@ class RecentProjects {
 	public static function show() {
 		TreeView.clear();
 		var el = TreeView.element;
-		var lookup = "";
+		var lookup = [];
 		if (electron.Electron != null) for (path in get()) {
 			var pair = tools.PathTools.ptDetectProject(path);
 			var name = pair.name;
-			lookup += name + "\n";
+			lookup.push(name);
 			var pj = TreeView.makeProject(name, path);
 			FileSystem.access(path, FileSystemAccess.Exists, function(e) {
 				if (e == null) {
@@ -56,6 +63,6 @@ class RecentProjects {
 			});
 			el.appendChild(pj);
 		}
-		gml.GmlAPI.gmlLookupText = lookup;
+		gml.GmlAPI.gmlLookupList = lookup;
 	}
 }

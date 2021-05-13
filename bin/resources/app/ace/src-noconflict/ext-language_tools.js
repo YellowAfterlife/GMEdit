@@ -1545,20 +1545,15 @@ var Autocomplete = function() {
             return;
         }
         var _id = this.gatherCompletionsId;
-        this.gatherCompletions(this.editor, function(err, results) {
-            var detachIfFinished = function() {
-                if (!results.finished) return;
-                return this.detach();
-            }.bind(this);
-
+        //{ GMEdit: Only filter once for completers that return their results immediately
+        var detachIfFinished = function(results) { // GMEdit: relocated here, now has `results` arg
+            if (!results.finished) return;
+            return this.detach();
+        }.bind(this);
+        
+        var update = function(results) {
             var prefix = results.prefix;
-            var matches = results && results.matches;
-
-            if (!matches || !matches.length)
-                return detachIfFinished();
-            if (prefix.indexOf(results.prefix) !== 0 || _id != this.gatherCompletionsId)
-                return;
-
+            var matches = results.matches;
             this.completions = new FilteredList(matches);
 
             if (this.exactMatch)
@@ -1567,14 +1562,41 @@ var Autocomplete = function() {
             this.completions.setFilter(prefix);
             var filtered = this.completions.filtered;
             if (!filtered.length)
-                return detachIfFinished();
+                return detachIfFinished(results);
             if (filtered.length == 1 && filtered[0].value == prefix && !filtered[0].snippet)
-                return detachIfFinished();
+                return detachIfFinished(results);
             if (this.autoInsert && filtered.length == 1 && results.finished)
                 return this.insertMatch(filtered[0]);
 
             this.openPopup(this.editor, prefix, keepPopupPosition);
+        }.bind(this);
+        
+        var isSync = true;
+        var syncResults = null;
+        this.gatherCompletions(this.editor, function(err, results) {
+            var prefix = results.prefix;
+            var matches = results && results.matches;
+
+            if (!matches || !matches.length)
+                return detachIfFinished(results);
+            if (prefix.indexOf(results.prefix) !== 0 || _id != this.gatherCompletionsId)
+                return;
+
+            if (isSync) {
+                syncResults = results;
+                return;
+            }
+            // GMEdit: further code relocated into update() above
+            update(results)
         }.bind(this));
+        
+        isSync = false;
+        if (syncResults) {
+            var results = syncResults;
+            syncResults = null;
+            update(results);
+        }
+        //}
     };
 
     this.cancelContextMenu = function() {
@@ -1708,7 +1730,7 @@ var FilteredList = function(array, filterText) {
         if (this.shouldSort) { // GMEdit: only sort if requested
             matches = matches.sort(function(a, b) {
                 return b.exactMatch - a.exactMatch || b.$score - a.$score 
-                    || (a.caption || a.value) < (b.caption || b.value);
+                    || ((a.caption || a.value) < (b.caption || b.value) ? -1 : 1); // GMEdit: use instead of localeCompare
             });
         }
         var prev = null;
@@ -1725,7 +1747,12 @@ var FilteredList = function(array, filterText) {
         var results = [];
         var upper = needle.toUpperCase();
         var lower = needle.toLowerCase();
-        loop: for (var i = 0, item; item = items[i]; i++) {
+        //{ GMEdit: use a regex instead of toLowerCase():
+        var needlePattern = needle.replace(/([.*+?^${}()|[\]\/\\])/g, "\\$1");
+        var needleRegex = new RegExp(needlePattern, "i");
+        //}
+        loop: for (var i = 0; i < items.length; i++) {
+            var item = items[i];
             var caption = item.caption || item.value || item.snippet;
             if (!caption) continue;
             var lastIndex = -1;
@@ -1737,7 +1764,7 @@ var FilteredList = function(array, filterText) {
                 if (needle !== caption.substr(0, needle.length))
                     continue loop;
             } else {
-                var fullMatchIndex = caption.toLowerCase().indexOf(lower);
+                var fullMatchIndex = caption.search(needleRegex); // GMEdit: use the said regex
                 if (fullMatchIndex > -1) {
                     penalty = fullMatchIndex;
                 } else {

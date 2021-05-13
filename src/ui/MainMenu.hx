@@ -5,6 +5,7 @@ import electron.Dialog;
 import electron.Electron;
 import gml.Project;
 import haxe.io.Path;
+import tools.HtmlTools;
 import tools.NativeString;
 import ui.liveweb.*;
 import ui.project.ProjectProperties;
@@ -22,6 +23,7 @@ class MainMenu {
 		#if !lwedit
 		if (Electron == null) {
 			var form = Main.document.createFormElement();
+			HtmlTools.moveOffScreen(form);
 			var input = Main.document.createInputElement();
 			input.type = "file";
 			input.accept = ".zip,.yyz";
@@ -40,6 +42,7 @@ class MainMenu {
 				}
 			}));
 			//
+			if (yy.zip.YyZipDirectoryDialog.isAvailable())
 			menu.append(new MenuItem({ label: "Open directory...",
 				id: "open-directory",
 				click: function() {

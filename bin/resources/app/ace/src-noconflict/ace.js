@@ -15604,7 +15604,7 @@ var Gutter = function(parentEl) {
             className += decorations[row];
         if (this.$annotations[row])
             className += this.$annotations[row].className;
-        if (this.gmlResetOnDefine) { // GMEdit
+        if (this.isGML) { // GMEdit
             className = this.gmlCellClass(row, className);
             firstLineNumber = session.$firstLineNumber;
         }

@@ -172,7 +172,9 @@ class GmlFile {
 			kind = kd.kind;
 			data = kd.data;
 		}
-		if (nav != null && nav.noExtern && Std.is(kind, file.kind.misc.KExtern)) {
+		if ((kind is file.kind.misc.KExtern) && (
+			!electron.Electron.isAvailable() || nav != null && nav.noExtern
+		)) {
 			kind = file.kind.misc.KPlain.inst;
 		}
 		return kind.create(name, path, data, nav);

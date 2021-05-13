@@ -517,7 +517,7 @@ class GmlExtImport {
 								q.skipSpaces1x(cmtEnd);
 								if (q.pos == cmtEnd - 2) {
 									var typeStr = q.substring(p, cmtEnd - 2);
-									var type = GmlTypeDef.parse(typeStr);
+									var type = GmlTypeDef.parse(typeStr, q.getPos(p).toString());
 									if (type != null) {
 										flush(p - 3);
 										out += ":";
@@ -641,7 +641,7 @@ class GmlExtImport {
 								if (d.typeStr != null) {
 									out += ":";
 									procSegment(d.typeStart, d.typeEnd, true);
-									var varType = GmlTypeDef.parse(d.typeStr);
+									var varType = GmlTypeDef.parse(d.typeStr, q.getPos(q.pos).toString());
 									imp.localTypes.set(d.name, varType);
 									var tn = varType.getNamespace();
 									if (imp.kind[tn] == "enum") {

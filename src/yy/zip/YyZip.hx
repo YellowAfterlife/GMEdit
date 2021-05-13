@@ -218,15 +218,24 @@ class YyZip extends Project {
 		next = fixSlashes(next);
 		var file:YyZipFile = yyzFileMap[prev];
 		if (file != null) {
-			var dir = yyzDirMap[file.dir];
-			if (dir != null) dir.entries.remove(file);
+			var _file_dir = file.dir;
 			file.setPath(next);
 			yyzFileMap.remove(prev);
 			yyzFileMap.set(next, file);
-			yyzGetParentDir(next).entries.push(file);
+			if (file.dir != _file_dir) {
+				var dir = yyzDirMap[_file_dir];
+				if (dir != null) dir.entries.remove(file);
+				
+				dir = yyzGetParentDir(next);
+				if (dir.entries.indexOf(file) < 0) {
+					dir.entries.push(file);
+				}
+			}
 		} else {
 			var dir = yyzDirMap[prev];
 			if (dir != null) {
+				yyzDirMap.remove(prev);
+				yyzDirMap[next] = dir;
 				dir.setPath(next);
 				for (entry in dir.entries) {
 					renameSync(entry.path, next + "/" + entry.fname);

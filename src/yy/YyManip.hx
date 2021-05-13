@@ -274,7 +274,7 @@ class YyManip {
 				GmlAPI.gmlComp.push(new AceAutoCompleteItem(name, kind));
 				GmlAPI.gmlKind.set(name, "asset." + kind);
 				GmlAPI.gmlLookup.set(name, { path: yyPath, row: 0 });
-				GmlAPI.gmlLookupText += name + "\n";
+				GmlAPI.gmlLookupList.push(name);
 				var fk:FileKind = switch (kind) {
 					case "object": KYyEvents.inst;
 					case "shader": null;
@@ -481,7 +481,10 @@ class YyManip {
 				lookup.path = newPath;
 				GmlAPI.gmlLookup.move(curName, newName);
 				var rxLookup = new RegExp('^$curName$', 'm');
-				GmlAPI.gmlLookupText = GmlAPI.gmlLookupText.replaceExt(rxLookup, newName);
+				var i = GmlAPI.gmlLookupList.indexOf(curName);
+				if (i >= 0) {
+					GmlAPI.gmlLookupList[i] = newName;
+				} else GmlAPI.gmlLookupList.push(newName);
 			}
 			if (args.kind == "sprite") pj.spriteURLs.move(curName, newName);
 			//

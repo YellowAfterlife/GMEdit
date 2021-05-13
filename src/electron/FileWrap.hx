@@ -107,6 +107,9 @@ import tools.PathTools;
 	
 	public static var isMac:Bool = false;
 	public static var isUnix:Bool = false;
+	public static var isWindows(get, never):Bool;
+	private static inline function get_isWindows() return !isUnix;
+	
 	public static var userPath:String = null;
 	
 	//{ Configuration file helpers

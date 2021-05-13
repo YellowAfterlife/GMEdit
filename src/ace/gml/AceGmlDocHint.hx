@@ -165,8 +165,25 @@ class AceGmlDocHint {
 			procSpaces();
 			if (q.peek() == "<".code) {
 				if (procTypeParams()) return finish();
+				procSpaces();
 			}
 			c = q.peek();
+		}
+		
+		if (c == "e".code && q.peekstr(7) == "extends" && !q.peek(7).isIdent1_ni()) {
+			q.pos += 7;
+			addShift("keyword", "extends");
+			procSpaces();
+			procType();
+			return finish();
+		}
+		
+		if (c == "i".code && q.peekstr(10) == "implements" && !q.peek(10).isIdent1_ni()) {
+			q.pos += 10;
+			addShift("keyword", "implements");
+			procSpaces();
+			procType();
+			return finish();
 		}
 		
 		var hasField = (c == ":".code || c == ".".code);

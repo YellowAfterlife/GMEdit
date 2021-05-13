@@ -47,7 +47,9 @@ class AceGmlLinter {
 	
 	public function onLinterDelay() {
 		// switched tabs?:
-		if (editor.session != onLinterDelay_session) return;
+		var session = editor.session;
+		if (session != onLinterDelay_session) return;
+		if (!canRunLinterFor(session)) return;
 		
 		runLinter(onLinterDelay_session, true);
 	}
@@ -56,7 +58,9 @@ class AceGmlLinter {
 	
 	public function onAfterExec(e:AfterExecArgs) {
 		if (e.command.name != "insertstring") return;
-		if (!canRunLinterFor(e.editor.session)) return;
+		var session = e.editor.session;
+		if (onLinterDelay_session != session) return;
+		if (!canRunLinterFor(session)) return;
 		switch (e.args) {
 			case ";":
 				if (!inline GmlLinter.getOption((p) -> p.liveCheckOnSemico)) return;
@@ -65,7 +69,7 @@ class AceGmlLinter {
 			default:
 				return;
 		}
-		runLinter(e.editor.session, false);
+		runLinter(session, false);
 	}
 	
 	public function onKeyboardActivity(_) {

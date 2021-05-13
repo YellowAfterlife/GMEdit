@@ -164,6 +164,7 @@ class AceCtxMenu {
 		menu.append(cmdItem("selectall", "Select all"));
 		//
 		editor.container.addEventListener("contextmenu", function(ev) {
+			ev.preventDefault();
 			pos = editor.getCursorPosition();
 			tk = editor.session.getTokenAtPos(pos);
 			var um = editor.session.getUndoManager();

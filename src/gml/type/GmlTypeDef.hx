@@ -1,5 +1,6 @@
 package gml.type;
 import gml.type.GmlType;
+import tools.JsTools;
 
 /**
  * Helpers for grabbing specific type definitions
@@ -35,7 +36,8 @@ class GmlTypeDef {
 		if (name == null) return null;
 		var t = GmlTypeParser.cache[name];
 		if (t == null) {
-			t = TInst(name, [], KCustom);
+			var kind = JsTools.or(GmlTypeParser.kindMeta[name], KCustom);
+			t = TInst(name, [], kind);
 			GmlTypeParser.cache[name] = t;
 		}
 		return t;
@@ -45,13 +47,14 @@ class GmlTypeDef {
 		if (name == null) return null;
 		var t = GmlTypeParser.cache[name];
 		if (t == null) {
-			t = TInst(name, [], KCustom);
+			var kind = JsTools.or(GmlTypeParser.kindMeta[name], KCustom);
+			t = TInst(name, [], kind);
 			GmlTypeParser.cache[name] = t;
 		}
 		return t;
 	}
 	//
-	public static inline function parse(typeString:String):GmlType {
-		return GmlTypeParser.parse(typeString);
+	public static inline function parse(typeString:String, ?ctx:String):GmlType {
+		return GmlTypeParser.parse(typeString, ctx);
 	}
 }

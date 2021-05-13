@@ -9,6 +9,7 @@
 /// @hint {T} HintArray<T>:defValue
 /// @hint HintArray.create<T>(size:int, ?value:T)->HintArray<T>
 /// @hint HintArray<T>.create2(size:int, ?value:T)->HintArray<T>
+/// @hint HintArray implements IArrayAccess
 
 function v_hint_template() {
 	var arr/*:HintArray<int>*/;
@@ -30,4 +31,6 @@ function v_hint_template() {
 	i = arr.fwd(1, ""); ///want_warn
 	i = arr.defValue;
 	s = arr.defValue; ///want_warn
+	var iac/*:IArrayAccess*/ = arr;
+	var etc/*:ISomethingElse*/ = arr; ///want_warn
 }

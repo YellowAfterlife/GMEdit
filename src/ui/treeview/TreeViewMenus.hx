@@ -1,4 +1,5 @@
 package ui.treeview;
+import electron.Electron;
 import electron.FileSystem;
 import electron.FileWrap;
 import electron.Menu;
@@ -173,9 +174,11 @@ class TreeViewMenus {
 		items.changeOpenIcon.visible = true;
 		items.resetOpenIcon.visible = true;
 		items.openCustomCSS.visible = true;
-		var isFileDir = target.getAttribute(TreeView.attrFilter) == "file";
-		items.openExternally.visible = isFileDir;
-		items.openDirectory.visible = isFileDir;
+		if (Electron.isAvailable()) {
+			var isFileDir = target.getAttribute(TreeView.attrFilter) == "file";
+			items.openExternally.visible = isFileDir;
+			items.openDirectory.visible = isFileDir;
+		}
 		if (Project.current.isGMS23) {
 			items.showAPI.visible = el.getAttribute(TreeView.attrFilter) == "extension";
 		} else items.showAPI.visible = switch (Project.current.version.config.projectModeId) {
@@ -198,8 +201,10 @@ class TreeViewMenus {
 		items.removeFromRecentProjects.visible = z;
 		items.openCustomCSS.visible = !z;
 		//
-		items.openExternally.visible = true;
-		items.openDirectory.visible = true;
+		if (Electron.isAvailable()) {
+			items.openExternally.visible = true;
+			items.openDirectory.visible = true;
+		}
 		//
 		items.changeOpenIcon.visible = false;
 		items.resetOpenIcon.visible = false;
@@ -227,8 +232,16 @@ class TreeViewMenus {
 		});
 		items.openCustomCSS = addLink(iconMenu, "open-css", "Open custom CSS file", function() {
 			var path = ProjectStyle.getPath();
-			if (!FileSystem.existsSync(path)) FileSystem.writeFileSync(path, "");
-			electron.Shell.openItem(path);
+			if (Electron.isAvailable()) {
+				if (!FileSystem.existsSync(path)) FileSystem.writeFileSync(path, "");
+				electron.Shell.openItem(path);
+			} else {
+				var project = Project.current;
+				if (!project.existsSync(path)) {
+					project.writeTextFileSync(path, "/* write your custom CSS here! */");
+				}
+				GmlFile.open(Path.withoutDirectory(path), path);
+			}
 		});
 		return new MenuItem({
 			id: "sub-custom-icon",

@@ -1,4 +1,5 @@
 {
+    "indentWithTabs": true,
     "linterPrefs": {
         "requireFields": true,
         "specTypeConst": true,

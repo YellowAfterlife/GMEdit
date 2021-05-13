@@ -206,8 +206,8 @@
 ];</script>
 <script type="text/javascript" src="./app-starter.js" id="starter_script"></script>
 <script type="text/javascript">(function() {
+	if (window.__hasStarter) return;
 	var files = window.__starterFiles;
-	if (files == null) return;
 	document.documentElement.classList.add("starter-loading");
 	for (var i = 0; i < files.length; i++) {
 		document.writeln('<scr' + 'ipt'

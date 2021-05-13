@@ -242,6 +242,11 @@ class ChromeTabs {
 		else window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
 			#if lwedit
 			LiveWebState.save();
+			#else
+			if (Project.current.path != "") { // not just sitting on "recent projects"
+				e.preventDefault();
+				e.returnValue = cast "";
+			}
 			#end
 		});
 		//
