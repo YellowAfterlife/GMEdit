@@ -1123,6 +1123,14 @@ class GmlLinter {
 		addWarning(m);
 		return false;
 	}
+	function checkTypeCastEq(source:GmlType, target:GmlType, ?ctx:String):Bool {
+		var unassignable = GmlTypeDef.parse("uncompareable"); // caches
+		if (source.canCastTo(unassignable) && target.canCastTo(unassignable)) {
+			if (source.canCastTo(target, null, getImports())) return true;
+			addWarning("Can't compare a " + source.toString() + " to a " + target.toString());
+		}
+		return true;
+	}
 	function checkTypeCastBoolOp(source:GmlType, ?ctx:String):Bool {
 		var wasBoolOp = GmlTypeCanCastTo.isBoolOp;
 		GmlTypeCanCastTo.isBoolOp = true;
@@ -1146,7 +1154,7 @@ class GmlLinter {
 				return GmlTypeDef.bool;
 			};
 			case KEQ, KNE, KSet: {
-				// GML lets you compare anything to anything and that's okay
+				checkTypeCastEq(left, right, opv);
 				return GmlTypeDef.bool;
 			};
 			case KLT, KLE, KGT, KGE: {
