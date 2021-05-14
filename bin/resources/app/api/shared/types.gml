@@ -59,69 +59,72 @@ typedef shader_uniform
 typedef vertex_format
 typedef vertex_buffer
 
+// Things inheriting from uncompareable shouldn't be compared to each other
+typedef uncompareable
+
 // Dumb types, only used as function arguments, can't be created
-typedef timezone_type
-typedef gamespeed_type
-typedef path_endaction
-typedef event_type
-typedef event_number
-typedef mouse_button
-typedef bbox_mode
-typedef bbox_kind
-typedef horizontal_alignment
-typedef vertical_alignment
-typedef primitive_type
-typedef blendmode
-typedef blendmode_ext
-typedef texture_mip_filter
-typedef texture_mip_state
-typedef audio_falloff_model
-typedef audio_sound_channel
-typedef display_orientation
-typedef window_cursor
-typedef buffer_kind //buffer_grow etc
-typedef buffer_type //buffer_s8 etc
+typedef timezone_type : uncompareable
+typedef gamespeed_type : uncompareable
+typedef path_endaction : uncompareable
+typedef event_type : uncompareable
+typedef event_number : uncompareable
+typedef mouse_button : uncompareable
+typedef bbox_mode : uncompareable
+typedef bbox_kind : uncompareable
+typedef horizontal_alignment : uncompareable
+typedef vertical_alignment : uncompareable
+typedef primitive_type : uncompareable
+typedef blendmode : uncompareable
+typedef blendmode_ext : uncompareable
+typedef texture_mip_filter : uncompareable
+typedef texture_mip_state : uncompareable
+typedef audio_falloff_model : uncompareable
+typedef audio_sound_channel : uncompareable
+typedef display_orientation : uncompareable
+typedef window_cursor : uncompareable
+typedef buffer_kind : uncompareable//buffer_grow etc
+typedef buffer_type : uncompareable //buffer_s8 etc
+typedef sprite_speed_type : uncompareable
+typedef asset_type : uncompareable
 typedef buffer_auto_type // magic - picks up the type from the nearby buffer_type argument
-typedef sprite_speed_type
-typedef asset_type
 typedef file_attribute : int
-typedef particle_shape
-typedef particle_distribution
-typedef particle_region_shape
-typedef effect_kind
-typedef matrix_type
-typedef os_type
-typedef browser_type
-typedef device_type
-typedef openfeint_challenge
-typedef achievement_leaderboard_filter
-typedef achievement_challenge_type
-typedef achievement_async_id
-typedef achievement_show_type
-typedef iap_system_status
-typedef iap_order_status
-typedef iap_async_id
-typedef iap_async_storeload
-typedef gamepad_button
+typedef particle_shape : uncompareable
+typedef particle_distribution : uncompareable
+typedef particle_region_shape : uncompareable
+typedef effect_kind : uncompareable
+typedef matrix_type : uncompareable
+typedef os_type : uncompareable
+typedef browser_type : uncompareable
+typedef device_type : uncompareable
+typedef openfeint_challenge : uncompareable
+typedef achievement_leaderboard_filter : uncompareable
+typedef achievement_challenge_type : uncompareable
+typedef achievement_async_id : uncompareable
+typedef achievement_show_type : uncompareable
+typedef iap_system_status : uncompareable
+typedef iap_order_status : uncompareable
+typedef iap_async_id : uncompareable
+typedef iap_async_storeload : uncompareable
+typedef gamepad_button : uncompareable
 typedef physics_debug_flag : int
 typedef physics_joint_value
 typedef physics_particle_flag : int
 typedef physics_particle_data_flag : int
 typedef physics_particle_group_flag : int
-typedef network_type
-typedef network_config
-typedef network_async_id
-typedef buffer_seek_base
-typedef steam_overlay_page
-typedef steam_leaderboard_sort_type
-typedef steam_leaderboard_display_type
-typedef steam_ugc_type
-typedef steam_ugc_async_result
-typedef steam_ugc_visibility
-typedef steam_ugc_query_type
-typedef steam_ugc_query_list_type
-typedef steam_ugc_query_match_type
-typedef steam_ugc_query_sort_order
-typedef vertex_type
-typedef vertex_usage
-typedef layer_element_type
+typedef network_type : uncompareable
+typedef network_config : uncompareable
+typedef network_async_id : uncompareable
+typedef buffer_seek_base : uncompareable
+typedef steam_overlay_page : uncompareable
+typedef steam_leaderboard_sort_type : uncompareable
+typedef steam_leaderboard_display_type : uncompareable
+typedef steam_ugc_type : uncompareable
+typedef steam_ugc_async_result : uncompareable
+typedef steam_ugc_visibility : uncompareable
+typedef steam_ugc_query_type : uncompareable
+typedef steam_ugc_query_list_type : uncompareable
+typedef steam_ugc_query_match_type : uncompareable
+typedef steam_ugc_query_sort_order : uncompareable
+typedef vertex_type : uncompareable
+typedef vertex_usage : uncompareable
+typedef layer_element_type : uncompareable

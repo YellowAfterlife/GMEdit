@@ -40,6 +40,7 @@
     {"id":{"name":"v_self","path":"scripts/v_self/v_self.yy",},"order":4,},
     {"id":{"name":"obj_self_object","path":"objects/obj_self_object/obj_self_object.yy",},"order":4,},
     {"id":{"name":"obj_not_self_object","path":"objects/obj_not_self_object/obj_not_self_object.yy",},"order":5,},
+    {"id":{"name":"v_comparisons","path":"scripts/v_comparisons/v_comparisons.yy",},"order":3,},
     {"id":{"name":"v_ternary_ident","path":"scripts/v_ternary_ident/v_ternary_ident.yy",},"order":2,},
     {"id":{"name":"obj_user_event_init","path":"objects/obj_user_event_init/obj_user_event_init.yy",},"order":6,},
     {"id":{"name":"v_buffer_read","path":"scripts/v_buffer_read/v_buffer_read.yy",},"order":3,},
