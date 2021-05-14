@@ -1,4 +1,7 @@
 package ace.extern;
+import ace.extern.AceAnchor;
+import ace.extern.AceAnnotation;
+import ace.extern.AceDocument;
 import ace.extern.AceMarker;
 import ace.extern.AcePos;
 import ace.extern.AceRange;
@@ -24,6 +27,7 @@ import tools.IntDictionary;
 	public function setScrollTop(top:Float):Void;
 	//
 	public var doc:AceDocument;
+	//
 	public var foldWidgets:Array<String>;
 	public function getFoldWidget(row:Int):String;
 	public function getFoldAt(row:Int, col:Int):Dynamic;
@@ -47,6 +51,7 @@ import tools.IntDictionary;
 	//
 	public function setAnnotations(arr:Array<AceAnnotation>):Void;
 	public function clearAnnotations():Void;
+	@:native("$annotations") public var __annotations:IntDictionary<AceAnnotationPerRow>;
 	//
 	public function addMarker(range:Dynamic, style:String, kind:String):AceMarker;
 	public function addDynamicMarker<T:IAceDynamicMarker>(marker:T, ?inFront:Bool):T;

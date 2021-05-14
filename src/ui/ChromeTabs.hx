@@ -71,6 +71,7 @@ class ChromeTabs {
 					}
 				}, 0);
 			}
+			ui.ext.Bookmarks.onFileOpen(gmlFile);
 			PluginEvents.fileOpen({file:gmlFile});
 		}
 		PluginEvents.activeFileChange({file:gmlFile});
@@ -190,6 +191,7 @@ class ChromeTabs {
 			var closedFile = closedTab.gmlFile;
 			if (closedFile != null) {
 				closedFile.close();
+				ui.ext.Bookmarks.onFileClose(closedFile);
 				PluginEvents.fileClose({ file: closedFile, tab: closedTab });
 			}
 			//

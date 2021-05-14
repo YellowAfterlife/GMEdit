@@ -3,6 +3,7 @@ import ace.extern.*;
 import electron.FileSystem;
 import electron.Electron;
 import electron.FileWrap;
+import gml.project.ProjectState;
 import gml.project.ProjectStateManager;
 import haxe.DynamicAccess;
 import haxe.Json;
@@ -32,6 +33,8 @@ import tools.HtmlTools;
 import tools.NativeString;
 import ui.ChromeTabs;
 import ui.Preferences;
+import ui.ext.Bookmarks;
+import ui.ext.GMLive;
 import yy.zip.YyZip;
 using tools.PathTools;
 import gml.file.GmlFile;
@@ -292,6 +295,7 @@ import ui.treeview.TreeViewElement;
 			treeviewOpenNodes: TreeView.openPaths,
 			tabPaths: tabPaths,
 			activeTab: activeTab,
+			bookmarks: Bookmarks.getStates(),
 		};
 		PluginEvents.projectStateSave({project:this, state:data});
 		ProjectStateManager.set(path, data);
@@ -299,7 +303,7 @@ import ui.treeview.TreeViewElement;
 	public var firstLoadState:ProjectState = null;
 	public function finishedIndexing() {
 		nameNode.innerText = displayName;
-		if (current.hasGMLive) ui.GMLive.updateAll();
+		if (current.hasGMLive) GMLive.updateAll();
 		//
 		if (isGMS23) {
 			@:privateAccess YyLoader.folderMap = null;
@@ -385,6 +389,7 @@ import ui.treeview.TreeViewElement;
 				GmlAPI.forceTemplateStrings = properties.templateStringScript != null;
 				GmlSeekData.map = new Dictionary();
 				state = ProjectStateManager.get(path);
+				if (state != null) Bookmarks.setStates(state.bookmarks);
 			} else {
 				TreeView.saveOpen();
 				if (Preferences.current.clearAssetThumbsOnRefresh) {
@@ -731,13 +736,6 @@ import ui.treeview.TreeViewElement;
 }
 /** (name, path, code) */
 typedef ProjectSearcher = String->String->String->Null<String>;
-typedef ProjectState = {
-	treeviewScrollTop:Int,
-	treeviewOpenNodes:Array<String>,
-	tabPaths:Array<String>,
-	?activeTab:Int,
-	?mtime:Float,
-}
 typedef ProjectDirInfo = {
 	fileName:String,
 	relPath:String,

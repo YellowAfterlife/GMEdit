@@ -8,6 +8,7 @@ import tools.CharCode;
 import tools.NativeString;
 import ui.CommandPalette;
 import ace.extern.AceCommand;
+import ui.ext.Bookmarks;
 using StringTools;
 
 /**
@@ -263,6 +264,24 @@ using StringTools;
 				});
 			}
 		}, "Go to line...");
+		//
+		for (i in 0 ... 9) {
+			var d = (i + 1) % 10;
+			add({
+				name: 'gotoBookmark$i',
+				bindKey: wm('Alt-$d', 'Ctrl-$d'),
+				exec: function(editor:AceWrap) {
+					Bookmarks.open(editor, i);
+				}
+			}, 'Go to bookmark ${i+1}');
+			add({
+				name: 'toggleBookmark$i',
+				bindKey: wm('Alt-Shift-$d', 'Ctrl-Shift-$d'),
+				exec: function(editor:AceWrap) {
+					Bookmarks.toggle(editor, i);
+				}
+			}, 'Toggle bookmark ${i+1}');
+		}
 		//
 		show("showSettingsMenu", "Code editor preferences");
 	}

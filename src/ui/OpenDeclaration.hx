@@ -61,7 +61,7 @@ class OpenDeclaration {
 		openLocal(name, pos, nav);
 		return true;
 	}
-	static function openLookup(lookup:GmlLookup, ?nav:GmlFileNav) {
+	public static function openLookup(lookup:GmlLookup, ?nav:GmlFileNav) {
 		if (lookup == null) return false;
 		var path = lookup.path;
 		var el = TreeView.find(true, { path: path });

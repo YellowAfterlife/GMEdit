@@ -398,15 +398,25 @@ Gutter.prototype.$renderLines = function(config, firstRow, lastRow) {
 var rxArgsLine = /^\s*#args\s+(.+)/;
 var rxMFunc = /^\s*#mfunc\s+(\w+)/;
 /**
- * With few minor changes to ace.js, $renderCell will call $gmlCellClass
- * if gmlResetOnDefine == true, and this is where we reset line number
+ * With few minor changes to ace.js, Gutter:$renderCell will call $gmlCellClass
+ * if Gutter:isGML == true, and this is where we reset line number
  * and set the magic variable to replace 0/etc. for it by a "#"
  */
 Gutter.prototype.gmlCellClass = function(row, className) {
 	var session = this.session;
+	var doc = session.getDocument();
 	var rowText = session.getLine(row);
 	var mt, mf, hiddenLines;
 	var full = className != null;
+	if (full) {
+		var bookmarks = doc.gmlBookmarks;
+		if (bookmarks) for (var i = 0; i < bookmarks.length; i++) {
+			if (bookmarks[i].row == row) {
+				className += " ace_gutter-bookmark";
+				break;
+			}
+		}
+	}
 	if (this.gmlResetOnDefine
 		&& rxDefine.test(rowText)
 	) {
@@ -414,11 +424,11 @@ Gutter.prototype.gmlCellClass = function(row, className) {
 		if (rxLine1.test(rowText)) session.$firstLineNumber += 1;
 		if (full) {
 			this.$gmlCellText = "#";
-			className += "ace_gutter-define "; // ... and override its line number to "#"
+			className += " ace_gutter-define"; // ... and override its line number to "#"
 		}
 	}
 	else if (rxSection.test(rowText)) { // show as "#" but don't reset line number
-		if (full) className += "ace_gutter-define ";
+		if (full) className += " ace_gutter-define";
 	}
 	else if (this.gmlHasArgs
 		&& (mt = rxArgsLine.exec(rowText))

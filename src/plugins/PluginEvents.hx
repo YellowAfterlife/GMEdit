@@ -1,6 +1,7 @@
 package plugins;
 import gml.file.GmlFile;
 import gml.Project;
+import gml.project.ProjectState;
 import js.html.Element;
 import js.html.MouseEvent;
 import ui.ChromeTabs;

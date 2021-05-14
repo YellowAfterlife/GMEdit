@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.extern.AceAnchor;
 
 /**
  * ...
@@ -10,4 +11,8 @@ extern class AceDocument {
 	function replace(range:AceRange, text:String):Void;
 	function remove(range:AceRange):Void;
 	function insertMergedLines(pos:AcePos, lines:Array<String>):Void;
+	function createAnchor(row:Int, column:Int):AceAnchor;
+	
+	// non-standard:
+	var gmlBookmarks:Array<AceAnchor>;
 }

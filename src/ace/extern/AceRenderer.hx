@@ -11,4 +11,5 @@ extern class AceRenderer {
 	var scroller:Element;
 	var scrollBar:{element:Element};
 	var lineHeight(default, never):Int;
+	@:native("$gutterLayer") var __gutter:Dynamic;
 }

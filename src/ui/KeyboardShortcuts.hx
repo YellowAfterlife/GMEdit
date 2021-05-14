@@ -39,27 +39,29 @@ class KeyboardShortcuts {
 	static var ctrlAltTimestamp = 0.;
 	static var currentEvent:KeyboardEvent;
 	
+	static var rxMod = new RegExp("\\bmod\\-");
+	static var rxWebMod = new RegExp("\\bmodw\\-");
+	public static function keyToCommandKey(key:String):AceCommandKey {
+		if (rxMod.test(key)) {
+			return {
+				win: key.replaceExt(rxMod, "ctrl-"),
+				mac: key.replaceExt(rxMod, "cmd-"),
+			};
+		} else if (rxWebMod.test(key)) {
+			var isWeb = Electron == null;
+			return {
+				win: key.replaceExt(rxWebMod, isWeb ? "alt-" : "ctrl-"),
+				mac: key.replaceExt(rxWebMod, isWeb ? "ctrl-" : "cmd-"),
+			};
+		}
+		else return key;
+	}
+	
 	static function initCommands():Void {
 		hashHandler = new AceHashHandler();
 		//
 		var isWeb = Electron == null;
-		var rxMod = new RegExp("\\bmod\\-");
-		var rxWebMod = new RegExp("\\bmodw\\-");
 		var hh = hashHandler;
-		function keyToCommandKey(key:String):AceCommandKey {
-			if (rxMod.test(key)) {
-				return {
-					win: key.replaceExt(rxMod, "ctrl-"),
-					mac: key.replaceExt(rxMod, "cmd-"),
-				};
-			} else if (rxWebMod.test(key)) {
-				return {
-					win: key.replaceExt(rxWebMod, isWeb ? "alt-" : "ctrl-"),
-					mac: key.replaceExt(rxWebMod, isWeb ? "ctrl-" : "cmd-"),
-				};
-			}
-			else return key;
-		}
 		//
 		var lcmd:AceCommand = null;
 		function addCommand(name:String, keys:EitherType<String, Array<String>>, exec:Void->Void):AceCommand {

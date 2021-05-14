@@ -3227,6 +3227,16 @@ function GutterHandler(mouseHandler) {
     function showTooltip() {
         var row = mouseEvent.getDocumentPosition().row;
         var annotation = gutter.$annotations[row];
+        if (!annotation) { // GMEdit
+            var bookmarks = mouseEvent.editor.session.doc.gmlBookmarks;
+            if (bookmarks) for (var i = 0; i < bookmarks.length; i++) {
+                var anchor = bookmarks[i];
+                if (anchor.row == row) {
+                    annotation = { text: [anchor.bookmarkName] };
+                    break;
+                }
+            }
+        }
         if (!annotation)
             return hideTooltip();
 
@@ -15364,7 +15374,10 @@ var Gutter = function(parentEl) {
                 rowInfo.text.push(annoText);
 
             var type = annotation.type;
-            if (type == "error")
+            var className = annotation.className;
+            if (className) 
+                rowInfo.className = className;
+            else if (type == "error")
                 rowInfo.className = " ace_error";
             else if (type == "warning" && rowInfo.className != " ace_error")
                 rowInfo.className = " ace_warning";
