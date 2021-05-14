@@ -26,6 +26,7 @@ import tools.Aliases;
 import tools.IntDictionary;
 import tools.JsTools;
 import tools.RegExpCache;
+import ui.ext.GMLive;
 using tools.NativeArray;
 using tools.NativeString;
 
@@ -271,6 +272,6 @@ class GmlSeekerImpl {
 		doLoop();
 		flushDoc();
 		//
-		if (project.hasGMLive) out.hasGMLive = out.hasGMLive || ui.GMLive.check(src);
+		if (project.hasGMLive) out.hasGMLive = out.hasGMLive || ui.ext.GMLive.check(src);
 	}
 }

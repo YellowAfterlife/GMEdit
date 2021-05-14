@@ -10,6 +10,7 @@ import synext.GmlExtMFunc;
 import tools.ArrayMap;
 import tools.Dictionary;
 import tools.JsTools;
+import ui.ext.GMLive;
 using tools.NativeString;
 using tools.NativeArray;
 
@@ -266,7 +267,7 @@ class GmlSeekData {
 		}
 		
 		if (prev.hasGMLive || next.hasGMLive) {
-			ui.GMLive.update(path, next.hasGMLive);
+			ui.ext.GMLive.update(path, next.hasGMLive);
 		}
 		
 		var file = gml.file.GmlFile.current;

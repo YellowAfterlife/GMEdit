@@ -1,4 +1,4 @@
-package ui;
+package ui.ext;
 import gml.Project;
 import js.lib.RegExp;
 import parsers.GmlReader;
