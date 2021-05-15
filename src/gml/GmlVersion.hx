@@ -56,11 +56,13 @@ class GmlVersion {
 			if (callback != null) JsTools.setImmediate(callback, null, this);
 		} else {
 			#if lwedit
-			config = GmlVersionConfigDefaults.get(false);
+			var vc = name.charAt(name.length - 1);
+			config = GmlVersionConfigDefaults.get(vc == "2");
 			config.resetLineCounterOnDefine = false;
 			config.hasTernaryOperator = true;
 			config.hasDefineArgs = true;
 			config.additionalKeywords = ["in"];
+			config.docMode = "gms" + vc;
 			if (callback != null) JsTools.setImmediate(callback, null, this);
 			#else
 			var path = dir + "/config.json";
@@ -197,6 +199,7 @@ class GmlVersion {
 		#if lwedit
 		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
 		list.push(new GmlVersion("gmlivejs-v2", Main.relPath("api/gmlivejs-v2"), false));
+		for (v in list) v.load();
 		init_1();
 		#else
 		if (Electron.isAvailable()) {

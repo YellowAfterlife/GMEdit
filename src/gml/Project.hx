@@ -366,6 +366,7 @@ import ui.treeview.TreeViewElement;
 			});
 		} else open("");
 		#else
+		GmlAPI.version = GmlVersion.v2;
 		current = new YyZip("", "", []);
 		#end
 	}
