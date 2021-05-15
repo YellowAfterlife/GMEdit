@@ -29,14 +29,18 @@ class GmlSeeker {
 		itemsLeft++;
 		FileWrap.readTextFile(item.path, function ready(err:Error, text:String) {
 			if (err != null) {
-				Main.console.error("Can't index ", item.path, err);
+				if ((cast err).errno == -4058) {
+					Main.console.warn("Can't index `" + item.path + "` - file is missing.");
+				} else {
+					Main.console.error("Can't index `" + item.path + "`:", err);
+				}
 				runNext();
 			} else try {
 				if (runSync(item.path, text, item.main, item.kind)) {
 					runNext();
 				}
-			} catch (err:Dynamic) {
-				Main.console.error("Can't index ", item.path, err);
+			} catch (ex:Dynamic) {
+				Main.console.error("Can't index `" + item.path + "`:", ex);
 				runNext();
 			}
 		});
