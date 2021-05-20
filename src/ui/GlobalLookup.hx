@@ -94,6 +94,14 @@ class GlobalLookup {
 				option.textContent = name;
 				return option;
 			}
+			inline function getHint(name:String) {
+				var ac = GmlAPI.gmlAssetComp[name];
+				if (ac != null) {
+					return ac.meta;
+				} else {
+					return tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
+				}
+			}
 			function addOption(name:String):Void {
 				//
 				var hint:String, title:String;
@@ -107,23 +115,7 @@ class GlobalLookup {
 						title = null;
 					}
 				} else {
-					var ac = GmlAPI.gmlAssetComp[name];
-					if (ac != null) {
-						hint = ac.meta;
-					} else {
-						hint = tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
-					}
-					if (kindFilters != null) {
-						if (hint == null) return;
-						var skip = true;
-						for (kindFilter in kindFilters) {
-							if (NativeString.contains(hint, kindFilter)) {
-								skip = false;
-								break;
-							}
-						}
-						if (skip) return;
-					}
+					hint = getHint(name);
 					title = null;
 				}
 				//
@@ -134,10 +126,20 @@ class GlobalLookup {
 			//
 			filteredList.shouldSort = true;
 			filteredList.setFilter(filter);
+			var filteredItems = filteredList.filtered;
+			if (kindFilters != null) filteredItems = filteredItems.filter(function(item) {
+				var hint = getHint(item.value);
+				if (hint == null) return false;
+				for (kindFilter in kindFilters) {
+					if (NativeString.contains(hint, kindFilter)) return true;
+				}
+				return false;
+			});
+			//
 			var maxCount = Preferences.current.globalLookup.maxCount;
-			if (filteredList.filtered.length > maxCount + 1) {
-				var show = filteredList.filtered.slice(0, maxCount);
-				var hide = filteredList.filtered.slice(maxCount);
+			if (filteredItems.length > maxCount + 1) {
+				var show = filteredItems.slice(0, maxCount);
+				var hide = filteredItems.slice(maxCount);
 				for (item in show) addOption(item.value);
 				//
 				var more_txt = hide.length + ' more items...';
@@ -148,7 +150,7 @@ class GlobalLookup {
 					for (item in hide) addOption(item.value);
 				}
 			} else {
-				for (item in filteredList.filtered) addOption(item.value);
+				for (item in filteredItems) addOption(item.value);
 			}
 			// remove extra items:
 			i = list.children.length;
