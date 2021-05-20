@@ -130,6 +130,7 @@ class YyLoader {
 				Main.console.log("Folder without parent", folderPath);
 				continue;
 			}
+			if (parentDir == pair.dir) continue;
 			TreeView.insertSorted(parentDir, pair.dir);
 		}
 		if (true) {
