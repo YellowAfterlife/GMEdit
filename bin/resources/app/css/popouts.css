@@ -63,6 +63,15 @@
 	height: 100%;
 	box-sizing: border-box;
 }
+
+#global-search-info {
+	left: 0;
+	right: 0;
+	margin: auto;
+	top: 40px;
+	width: 8em;
+	text-align: center;
+}
 /* */
 #preferences-window {
 	right: 20px;

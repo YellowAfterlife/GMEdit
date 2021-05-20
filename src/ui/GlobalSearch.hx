@@ -20,6 +20,7 @@ import tools.Dictionary;
 import tools.GmlCodeTools;
 import tools.NativeObject;
 import tools.NativeString;
+import tools.macros.SynSugar;
 import ui.GlobalSeachData;
 import haxe.extern.EitherType;
 import haxe.Constraints.Function;
@@ -33,6 +34,7 @@ using tools.HtmlTools;
  */
 @:keep class GlobalSearch {
 	public static var element:Element;
+	public static var infoElement:Element;
 	public static var fdFind:InputElement;
 	public static var fdReplace:InputElement;
 	public static var btFind:InputElement;
@@ -320,6 +322,9 @@ using tools.HtmlTools;
 		}, opt);
 	}
 	public static function findReferences(id:String, ?extra:GlobalSearchOpt) {
+		if (!isVisible()) {
+			infoElement.style.display = "";
+		}
 		var opt:GlobalSearchOpt = {
 			find: id,
 			wholeWord: true,
@@ -340,11 +345,17 @@ using tools.HtmlTools;
 		if (extra != null) {
 			NativeObject.fillDefaults(extra, opt);
 		} else extra = opt;
-		run(extra);
+		run(extra, function() {
+			infoElement.style.display = "none";
+		});
+	}
+	public static inline function isVisible() {
+		return element.style.display != "none";
 	}
 	public static function toggle() {
-		if (element.style.display == "none") {
+		if (!isVisible()) {
 			element.style.display = "";
+			infoElement.style.display = "none";
 			divSearching.style.display = "none";
 			var s = aceEditor.getSelectedText();
 			if (s != "" && s != null) fdFind.value = s;
@@ -391,6 +402,7 @@ using tools.HtmlTools;
 		divSearching.style.display = "";
 		run(opt, function() {
 			element.style.display = "none";
+			infoElement.style.display = "none";
 		});
 	}
 	public static function findAuto(?opt:GlobalSearchOpt) {
@@ -421,8 +433,76 @@ using tools.HtmlTools;
 		runAuto(opt);
 	}
 	public static function init() {
-		//{
         element = Main.document.querySelector("#global-search");
+		element.innerHTML = SynSugar.xmls(<form>
+			<div class="search-main">
+				<div>
+					Find what:
+					<input type="text" name="find-text" />
+				</div>
+				<div>
+					Replace with:
+					<input type="text" name="replace-text" />
+				</div>
+				<div>
+					<input type="button" class="highlighted_button" name="find" value="Find All" />
+					<input type="button" class="highlighted_button" name="replace" value="Replace All" title="Replace items across the project" />
+					<input type="button" class="highlighted_button" name="cancel" value="Cancel" /><br/>
+				</div>
+				<div>
+					<input type="button" class="highlighted_button" name="preview" value="Preview 'Replace All'" title="Preview replace operation without modifications" />
+				</div>
+				<div style="display:none" class="searching-text">
+					Searching...
+				</div>
+			</div>
+			<div class="search-options">
+				<fieldset>
+					<legend>Options</legend>
+					<input    id="global-search-whole-word" type="checkbox"
+					/><label for="global-search-whole-word">Whole word</label><br/>
+					<input    id="global-search-match-case" type="checkbox"
+					/><label for="global-search-match-case">Match case</label><br/>
+					<input    id="global-search-check-comments" type="checkbox" checked
+					/><label for="global-search-check-comments">Look in comments</label><br/>
+					<input    id="global-search-check-strings" type="checkbox" checked
+					/><label for="global-search-check-strings">Look in strings</label><br/>
+					<input    id="global-search-check-headers" type="checkbox"
+					/><label for="global-search-check-headers" title="Will show results inside #event/etc. lines">Look in headers</label><br/>
+					<input    id="global-search-expand-lambdas" type="checkbox" checked
+					/><label for="global-search-expand-lambdas" title="If enabled, will show results inside inline functions at place of declaration rather than inside their extension">Expand #lambdas</label><br/>
+					<input    id="global-search-regexp" type="checkbox"
+					/><label for="global-search-regexp" title="Also lets you use $0,$1,$2,etc. in 'replace by'">RegExp search</label><br/>
+					<input    id="global-search-unique" type="checkbox"
+					/><label for="global-search-unique" title="When using regexp search, only shows unique matches">Unique match</label>
+				</fieldset>
+			</div>
+			<div class="search-options search-options-2">
+				<fieldset>
+					<legend>Look in</legend>
+					<input    id="global-search-check-scripts"    type="checkbox" checked
+					/><label for="global-search-check-scripts">Scripts</label><br/>
+					<input    id="global-search-check-objects"    type="checkbox" checked
+					/><label for="global-search-check-objects">Objects</label><br/>
+					<input    id="global-search-check-timelines"  type="checkbox" checked
+					/><label for="global-search-check-timelines">Timelines</label><br/>
+					<input    id="global-search-check-macros"     type="checkbox" checked
+					/><label for="global-search-check-macros">Macros</label><br/>
+					<input    id="global-search-check-rooms" type="checkbox" checked
+					/><label for="global-search-check-rooms">Rooms</label><br/>
+					<input    id="global-search-check-shaders"    type="checkbox"
+					/><label for="global-search-check-shaders">Shaders</label><br/>
+					<input    id="global-search-check-extensions" type="checkbox"
+					/><label for="global-search-check-extensions">Extensions</label><br/>
+				</fieldset>
+			</div>
+		</form>);
+		//
+		infoElement = Main.document.querySelector("#global-search-info");
+		infoElement.innerHTML = SynSugar.xmls(<html>
+			Searching...
+		</html>);
+		//{
         fdFind = element.querySelectorAuto('input[name="find-text"]');
         fdReplace = element.querySelectorAuto('input[name="replace-text"]');
         btFind = element.querySelectorAuto('input[name="find"]');
