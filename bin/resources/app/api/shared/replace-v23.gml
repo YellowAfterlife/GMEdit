@@ -62,6 +62,7 @@ caption_health&
 
 #region 3.11
 
+debug_get_callstack(?maxDepth:int)->string[]
 font_texture_page_size:int
 
 #endregion
