@@ -67,6 +67,7 @@ using tools.NativeString;
 		rBase.push(rxPush("md-pre-start", ~/```hlsl\b/, "md.hlsl"));
 		rBase.push(rxPush("md-pre-start", ~/```/, "md.pre"));
 		rBase.push(rxPush("md-tt", ~/`/, "md.tt"));
+		rBase.push(rxPush("comment", ~/<!--/, "md.comment"));
 		//
 		function rcct(r:Array<AceLangRule>, d:AceLangRule):Array<AceLangRule> {
 			r = r.concat(rBase);
@@ -98,6 +99,10 @@ using tools.NativeString;
 			], rdef("md-bold"));
 		}
 		//
+		rules["md.comment"] = [
+			rxRule("comment", ~/-->/, "pop"),
+			rdef("comment"),
+		];
 		rules["md.url"] = [rEsc,
 			rxRule(["md-url-end", "md-href-start"], ~/(\])(\()/, "md.href"),
 			rxRule("md-url-end", ~/(?:\]|$)/, "pop"),
