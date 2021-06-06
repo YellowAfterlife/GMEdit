@@ -162,11 +162,12 @@ class YyObjectProperties {
 			}
 			switch (prop.varType) {
 				case TReal, TInt: {
-					out += prop.varType == TInt ? "int" : "real";
+					var isInt = prop.varType == TInt;
+					out += isInt ? "int" : "real";
 					if (prop.rangeEnabled) {
 						out += '<' + prop.rangeMin + ', ' + prop.rangeMax + '>';
 					}
-					out += ' = ' + prop.value;
+					out += ' = ' + (isInt ? prop.value : printExpr(prop.value));
 				};
 				case TString: out += 'string = ' + Json.stringify(prop.value);
 				case TBool: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
@@ -400,7 +401,7 @@ class YyObjectProperties {
 							rangeEnabled: rangeEnabled,
 							rangeMax: rangeMax,
 							rangeMin: rangeMin,
-							value: Json.stringify(asInt ? int(value) : real(value)),
+							value: asInt ? Json.stringify(int(value)) : expr(value),
 							varType: asInt ? TInt : TReal,
 						});
 					};
