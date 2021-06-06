@@ -1315,8 +1315,8 @@ class GmlLinter {
 			var awaitArgName = true;
 			while (reader.loop) {
 				switch (next()) {
-					case KParOpen: depth++;
-					case KParClose: if (--depth <= 0) break;
+					case KParOpen, KSqbOpen, KCubOpen: depth++;
+					case KParClose, KSqbClose, KCubClose: if (--depth <= 0) break;
 					case KIdent: {
 						if (awaitArgName) {
 							var argName = nextVal;

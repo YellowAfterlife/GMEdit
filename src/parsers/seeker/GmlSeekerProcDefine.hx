@@ -122,13 +122,29 @@ class GmlSeekerProcDefine {
 			s = seeker.find(isFunc ? Par0 : Line | Par0);
 			if (s == "(") {
 				var openPos = q.pos;
-				var flags = Ident | Par1 | (isFunc ? 0 : Line);
-				var foundArg = false;
+				var depth = 1;
+				var awaitArgName = true;
 				while (q.loop) {
-					s = seeker.find(flags);
-					if (s == ")" || s == "\n" || s == null) break;
-					locals.add(s, seeker.localKind);
-					foundArg = true;
+					var c = q.read();
+					switch (c) {
+						case "(".code, "{".code, "[".code: depth++;
+						case ")".code, "}".code, "]".code: if (--depth <= 0) break;
+						case ",".code: if (depth == 1) awaitArgName = true;
+						case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, q.version);
+						case "/".code: switch (q.peek()) {
+							case "/".code: q.skipLine();
+							case "*".code: q.skip(); q.skipComment();
+							default:
+						};
+						case _ if (c.isIdent0()): {
+							if (awaitArgName) {
+								awaitArgName = false;
+								q.pos--;
+								var name = q.readIdent();
+								locals.add(name, seeker.localKind);
+							}
+						};
+					}
 				}
 				if (isDefine && jsDoc.args != null) {
 					// `@param` override the parsed arguments
