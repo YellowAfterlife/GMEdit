@@ -269,7 +269,7 @@ import ace.extern.AceTokenType;
 	}
 	
 	public static function patchTemplateItems(s:String, templateItems:Array<GmlTypeTemplateItem>):String {
-		if (templateItems == null) return s;
+		if (s == null || templateItems == null) return s;
 		for (i => tn in templateItems) {
 			s = s.replaceExt(tn.regex, function() {
 				var ct = tn.constraint;
