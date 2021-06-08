@@ -27,29 +27,20 @@ class GmlExtensionAPI {
 	}
 	//
 	static function procFn(name:String, exname:String, help:String, args:Array<String>, hidden:Bool):String {
-		var r = help;
-		if (r == "") {
-			r = name + "(";
+		var r:String = help;
+		function getBaseHelp() {
+			var r = name + "(";
 			var sep = false;
 			for (arg in args) {
 				if (sep) r += ", "; else sep = true;
 				r += arg;
 			}
-			r += ")";
+			return r + ")";
+		}
+		if (r == "") {
+			r = getBaseHelp();
 		} else {
-			var p = r.indexOf(")");
-			if (p >= 0 && ++p < r.length) {
-				var rest = r.substring(p).trimLeft();
-				if (rest.charAt(0) == ":" && StringTools.isSpace(rest, 1)) {
-					// `func() : desc` -> `func() // desc`
-					rest = rest.substring(2);
-				}
-				if (rest.startsWith("//")) {
-					// `// desc` -> `desc`
-					rest = rest.substring(2).trimLeft();
-				}
-				r = r.substring(0, p) + " // " + rest;
-			}
+			if (!r.startsWith(name + "(")) r = getBaseHelp() + " " + r;
 		}
 		//if (hidden) r += " // hidden";
 		if (exname != name) r += "\n// external: " + exname;
@@ -67,6 +58,12 @@ class GmlExtensionAPI {
 		if (Preferences.current.extensionAPIOrder == 1) {
 			lines.sort(procSort);
 		}
+	}
+	static function procInitFinal(sInit:String, sFinal:String) {
+		var r = "";
+		if (sInit != null && sInit != "") r += "\n// init: " + sInit;
+		if (sFinal != null && sFinal != "") r += "\n// final: " + sFinal;
+		return r;
 	}
 	//
 	public static function get1(src:String):String {
@@ -103,6 +100,9 @@ class GmlExtensionAPI {
 			procSortAuto(linesShow);
 			if (out != "") out += "\n";
 			out += "#section " + file.findText("filename");
+			//
+			out += procInitFinal(file.findText("init"), file.findText("final"));
+			//
 			for (line in linesShow) out += "\n" + line;
 			//
 			if (linesHide.length > 0) {
@@ -136,6 +136,9 @@ class GmlExtensionAPI {
 			procSortAuto(linesShow);
 			if (out != "") out += "\n";
 			out += "#section " + file.filename;
+			//
+			out += procInitFinal(file.init, Reflect.field(file, "final"));
+			//
 			for (line in linesShow) out += "\n" + line;
 			//
 			if (linesHide.length > 0) {
