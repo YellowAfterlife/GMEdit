@@ -84,8 +84,7 @@ class AceGmlDocHint {
 					var name = q.substring(p, q.pos);
 					addShift(getIdentType(name), name);
 					procSpaces();
-					if (q.peek() == "<".code) {
-						q.skip();
+					if (q.skipIfEquals("<".code)) {
 						addShift(ttOperator, "<");
 						var closed = false;
 						while (q.loopLocal) {
@@ -96,10 +95,28 @@ class AceGmlDocHint {
 								case ">".code:
 									q.skip();
 									addShift(ttOperator, ">");
+									procSpaces();
 									closed = true;
 									break;
 								default: return true;
 							}
+						}
+					}
+					while (q.loopLocal) {
+						c = q.peek();
+						switch (c) {
+							case "[".code:
+								q.skip();
+								addShift("square.paren.lparen", "[");
+								procSpaces();
+								if (!q.skipIfEquals("]".code)) return true;
+								addShift("square.paren.rparen", "]");
+								procSpaces();
+							case "?".code:
+								q.skip();
+								addShift(ttOperator, "?");
+								procSpaces();
+							default: break;
 						}
 					}
 				default:
