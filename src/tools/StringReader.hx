@@ -53,6 +53,13 @@ using tools.NativeString;
 		pos += num;
 	}
 	
+	public function skipIfEquals(c:CharCode):Bool {
+		if (peek() == c) {
+			skip();
+			return true;
+		} else return false;
+	}
+	
 	public inline function get(p:Int):CharCode {
 		return source.fastCodeAt(p);
 	}
