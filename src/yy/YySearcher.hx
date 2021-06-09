@@ -73,16 +73,16 @@ class YySearcher {
 					pj.readTextFile(resPath, function(error, data) {
 						if (error == null) try {
 							var obj:YyObject = YyJson.parse(data, !v22);
-							var code = obj.getCode(resFull);
+							var code = obj.getCode(resPath);
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
-								if (obj.setCode(resFull, gml1)) {
-									// OK!
+								if (obj.setCode(resPath, gml1)) {
+									pj.writeJsonFileSync(resPath, obj);
 								} else addError("Failed to modify " + resName
 									+ ":\n" + YyObject.errorText);
 							}
 						} catch (x:Dynamic) {
-							Main.console.warn(x);
+							addError("Failed to modify " + resName + ":\n" + x);
 						} else Main.console.warn(error);
 						next();
 					});
@@ -96,8 +96,8 @@ class YySearcher {
 							var code = tl.getCode(resFull);
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
-								if (tl.setCode(resFull, gml1)) {
-									// OK!
+								if (tl.setCode(resPath, gml1)) {
+									pj.writeJsonFileSync(resPath, tl);
 								} else addError("Failed to modify " + resName
 									+ ":\n" + YyObject.errorText);
 							}

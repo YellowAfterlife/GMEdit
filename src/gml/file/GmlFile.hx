@@ -29,7 +29,7 @@ import tools.Dictionary;
 import tools.NativeString;
 import tools.StringBuilder;
 import yy.*;
-import ui.GlobalSeachData;
+import ui.search.GlobalSeachData;
 import ui.Preferences;
 using tools.HtmlTools;
 

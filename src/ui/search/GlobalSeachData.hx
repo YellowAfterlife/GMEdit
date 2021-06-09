@@ -1,4 +1,4 @@
-package ui;
+package ui.search;
 import ace.AceWrap;
 import gml.file.GmlFile;
 import js.lib.RegExp;
@@ -49,7 +49,7 @@ class GlobalSeachData {
 	}
 	public function save(file:GmlFile) {
 		if (saving) return false;
-		sync((cast file.editor:editors.EditCode).session.getValue());
+		sync(file.codeEditor.session.getValue());
 		var project = gml.Project.current;
 		var version = project.version;
 		var errors = "";
