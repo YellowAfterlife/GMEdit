@@ -49,7 +49,7 @@ class Bookmarks {
 		var bm = current[index];
 		if (bm == null) return;
 		sync(bm);
-		Console.log(bm);
+		//Console.log(bm);
 		OpenDeclaration.openLookup(bm);
 	}
 	
