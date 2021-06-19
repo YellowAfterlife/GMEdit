@@ -10,6 +10,9 @@ using StringTools;
  * @author YellowAfterlife
  */
 class YyJson {
+	/**
+	 * How this works: backtracks to last ] or } and checks that there's a trailing , before it
+	 */
 	static function isExtJson(src:String):Bool {
 		var p = src.length - 1;
 		while (p >= 0) {

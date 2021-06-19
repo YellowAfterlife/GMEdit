@@ -84,6 +84,7 @@ class Main {
 			Reflect.callMethod(console, console.log, out);
 		};
 		Electron.init();
+		yy.YyJsonPrinter.init();
 		if (Electron == null) {
 			document.querySelector("#app").classList.add("app-browser");
 		}
