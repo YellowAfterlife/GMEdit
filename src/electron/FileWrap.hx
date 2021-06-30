@@ -58,19 +58,24 @@ import tools.PathTools;
 		writeTextFileSync(path, NativeString.yyJson(value));
 	}
 	/** The difference is that YY may contain off-spec JSON */
-	public static function readYyFileSync<T>(path:String, ?c:Class<T>):T {
+	public static function readYyFileSync<T>(path:String, ?c:Class<T>, ?extJson:Bool):T {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.readYyFileSync(path);
 		} else return Project.current.readYyFileSync(path);
 	}
-	public static function writeYyFileSync<T>(path:String, value:T):Void {
-		writeTextFileSync(path, yy.YyJson.stringify(value));
+	public static function writeYyFileSync<T>(path:String, value:T, ?extJson:Bool):Void {
+		writeTextFileSync(path, yy.YyJson.stringify(value, extJson));
 	}
 	//
 	public static function readGmxFileSync(path:String):SfGmx {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.readGmxFileSync(path);
 		} else return Project.current.readGmxFileSync(path);
+	}
+	public static function writeGmxFileSync(path:String, gmx:SfGmx) {
+		if (Path.isAbsolute(path)) {
+			FileSystem.writeFileSync(path, gmx.toGmxString());
+		} else Project.current.writeGmxFileSync(path, gmx);
 	}
 	public static function mkdirSync(path:String):Void {
 		if (Path.isAbsolute(path)) {

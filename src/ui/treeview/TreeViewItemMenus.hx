@@ -288,6 +288,14 @@ class TreeViewItemMenus {
 		}
 		if (mode == null) mode = Dialog.showConfirmWarn(msg) ? 0 : 2;
 		if (mode == 2) return;
+		if (target.getAttribute(TreeView.attrKind) == "extfile") {
+			if (Project.current.version.config.projectModeId == 2) {
+				var tvDir:TreeViewDir = cast target.parentElement.parentElement;
+				yy.shared.YyManipExtension.deleteFile(tvDir.treeFullPath, d.last);
+				target.parentElement.removeChild(target);
+			}
+			return;
+		}
 		if (d.filter == "file") {
 			try {
 				var path0 = target.getAttribute(TreeView.attrRel);

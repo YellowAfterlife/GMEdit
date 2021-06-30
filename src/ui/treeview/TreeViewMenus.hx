@@ -14,6 +14,7 @@ import js.html.Element;
 import gml.file.*;
 import js.html.MouseEvent;
 import ui.treeview.TreeView;
+import ui.treeview.TreeViewElement;
 using tools.HtmlTools;
 using tools.NativeString;
 using tools.NativeArray;
@@ -166,6 +167,19 @@ class TreeViewMenus {
 			target.getAttribute(TreeView.attrIdent)
 		);
 	}
+	public static function addExtensionFile() {
+		var path = target.getAttribute(TreeView.attrPath);
+		Dialog.showOpenDialog({ properties: [multiSelections] }, function(paths:Array<String>) {
+			if (paths == null) return;
+			var tvDir:TreeViewDir = cast target;
+			var pj = Project.current;
+			if (pj.isGMS23 || pj.version.config.projectModeId == 2) {
+				yy.shared.YyManipExtension.addFiles(cast target, path, paths);
+			} else {
+				gmx.GmxManip.addExtensionFile(path, paths);
+			}
+		});
+	}
 	//
 	public static function showDirMenu(el:Element, ev:MouseEvent) {
 		target = el;
@@ -180,10 +194,16 @@ class TreeViewMenus {
 			items.openDirectory.visible = isFileDir;
 		}
 		if (Project.current.isGMS23) {
-			items.showAPI.visible = el.getAttribute(TreeView.attrFilter) == "extension";
-		} else items.showAPI.visible = switch (Project.current.version.config.projectModeId) {
-			case 1, 2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
-			default: false;
+			var isExt = el.getAttribute(TreeView.attrFilter) == "extension";
+			items.showAPI.visible = isExt;
+			items.addExtensionFile.visible = isExt;
+		} else {
+			var isExt = switch (Project.current.version.config.projectModeId) {
+				case 1, 2: el.getAttribute(TreeView.attrRel).startsWith("Extensions/");
+				default: false;
+			};
+			items.showAPI.visible = isExt;
+			items.addExtensionFile.visible = isExt;
 		}
 		TreeViewItemMenus.update(true);
 		TreeView.signal("dirMenu", { element: el, event: ev });
@@ -294,6 +314,7 @@ class TreeViewMenus {
 		dirMenu = new Menu();
 		addLink(dirMenu, "expand-all", "Expand all", expandAll);
 		addLink(dirMenu, "collapse-all", "Collapse all", collapseAll);
+		items.addExtensionFile = addLink(dirMenu, "add-extension-file", "Add file(s)", addExtensionFile);
 		items.showAPI = addLink(dirMenu, "show-extension-api", "Show API", showAPI);
 		items.openAll = addLink(dirMenu, "open-all-items", "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "open-combined-view", "Open combined view", openCombined);
@@ -316,6 +337,7 @@ private class TreeViewMenuData {
 	public var objectInfo:MenuItem;
 	public var findReferences:MenuItem;
 	public var showAPI:MenuItem;
+	public var addExtensionFile:MenuItem;
 	//
 	public var changeOpenIcon:MenuItem;
 	public var resetOpenIcon:MenuItem;

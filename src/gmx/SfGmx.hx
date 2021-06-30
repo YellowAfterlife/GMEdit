@@ -32,7 +32,7 @@ class SfGmx {
 	public inline function addChild(q:SfGmx):Void {
 		children.push(q);
 	}
-	public function addTextChild(name:String, value:String):SfGmx {
+	public function addTextChild(name:String, ?value:String):SfGmx {
 		var r = new SfGmx(name, value);
 		addChild(r);
 		return r;

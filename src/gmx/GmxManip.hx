@@ -1,6 +1,9 @@
 package gmx;
 import electron.Dialog;
+import electron.FileSystem;
+import electron.FileWrap;
 import gml.Project;
+import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
 import ui.ChromeTabs;
@@ -281,5 +284,61 @@ void main()
 		d.pj.writeTextFileSync(d.pj.name, d.root.toGmxString());
 		yy.YyManip.moveTV(q);
 		return true;
+	}
+	public static function addExtensionFile(extensionPath:String, filePaths:Array<String>) {
+		var ext = FileWrap.readGmxFileSync(extensionPath);
+		var extDir = Path.directory(extensionPath);
+		var changed = false;
+		var extFileRoot = ext.find("files");
+		var extFiles = extFileRoot.findAll("file");
+		var firstFile = extFiles[0];
+		var firstFileConfigs = firstFile != null ? firstFile.find("ConfigOptions").findAll("Config") : null;
+		for (srcFull in filePaths) {
+			var rel = Path.withoutDirectory(srcFull);
+			var dstFull = extDir + "/" + rel;
+			
+			try {
+				FileSystem.copyFileSync(srcFull, dstFull);
+			} catch (x:Dynamic) {
+				Console.error(x);
+			}
+			
+			var ref = extFiles.findFirst(function(file) {
+				return file.findText("filename") == rel;
+			});
+			if (ref != null) {
+				// trying to add the file that's already here?
+				if (Path.normalize(srcFull) == Path.normalize(dstFull)) continue;
+				continue;
+			}
+			
+			var file = extFileRoot.addTextChild("file");
+			file.addTextChild("filename", rel);
+			file.addTextChild("origname", "extensions\\" + rel);
+			file.addTextChild("init", "");
+			file.addTextChild("final", "");
+			file.addTextChild("kind", "" + yy.YyExtension.YyExtensionFileKind.detect(srcFull));
+			file.addTextChild("uncompress", "0");
+			var configOptions = file.addTextChild("ConfigOptions", null);
+			if (firstFileConfigs != null) {
+				for (oldConfig in firstFileConfigs) {
+					var config = configOptions.addTextChild("Config", null);
+					config.set("name", oldConfig.get("name"));
+					config.addTextChild("CopyToMask", "9223372036854775807");
+				}
+			} else {
+				var config = configOptions.addTextChild("Config", null);
+				config.set("name", "Default");
+				config.addTextChild("CopyToMask", "9223372036854775807");
+			}
+			file.addTextChild("ProxyFiles");
+			file.addTextChild("functions");
+			file.addTextChild("constants");
+			changed = true;
+		}
+		if (changed) {
+			FileWrap.writeGmxFileSync(extensionPath, ext);
+			Project.current.reload();
+		}
 	}
 }
