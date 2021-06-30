@@ -74,10 +74,12 @@ class Bookmarks {
 			sync(curr);
 			wantAdd = (curr.path != file.path || curr.row != lead.row);
 			
-			curr.anchor.detach();
-			var doc = curr.anchor.getDocument();
-			if (doc.gmlBookmarks != null) {
-				doc.gmlBookmarks.remove(curr.anchor);
+			if (curr.anchor != null) {
+				curr.anchor.detach();
+				var doc = curr.anchor.getDocument();
+				if (doc.gmlBookmarks != null) {
+					doc.gmlBookmarks.remove(curr.anchor);
+				}
 			}
 		}
 		if (wantAdd) {
