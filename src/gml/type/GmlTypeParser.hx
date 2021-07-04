@@ -43,6 +43,9 @@ class GmlTypeParser {
 		r["ds_grid"] = KGrid;
 		r["ds_map"] = KMap;
 		//
+		r["ckarray"] = KCustomKeyArray;
+		r["CustomKeyArray"] = KCustomKeyArray;
+		//
 		r["object"] = KObject;
 		r["instance"] = KObject;
 		r["struct"] = KStruct;

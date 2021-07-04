@@ -11,6 +11,10 @@ typedef ds_queue;
 typedef ds_grid;
 typedef ds_priority;
 
+// e.g. CustomKeyArray<object, bool> allows arr[obj_some]
+typedef ckarray
+typedef CustomKeyArray
+
 // Asset types
 typedef asset;
 typedef sprite : asset;

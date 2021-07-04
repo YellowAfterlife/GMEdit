@@ -982,11 +982,18 @@ class GmlLinter {
 					} else {
 						currKind = isNull ? KNullArray : KArray;
 						if (isArray) {
-							if (arrayType1 != null) checkTypeCast(arrayType1, GmlTypeDef.number);
-							if (arrayType2 != null) checkTypeCast(arrayType2, GmlTypeDef.number);
-							if (checkTypeCast(currType, GmlTypeDef.anyArray)) {
-								currType = currType.unwrapParam(0);
-							} else currType = null;
+							if (currType != null && currType.getKind() == KCustomKeyArray) {
+								var indexType = currType.unwrapParam(0);
+								if (arrayType1 != null) checkTypeCast(arrayType1, indexType);
+								if (arrayType2 != null) checkTypeCast(arrayType2, indexType);
+								currType = currType.unwrapParam(1);
+							} else {
+								if (arrayType1 != null) checkTypeCast(arrayType1, GmlTypeDef.number);
+								if (arrayType2 != null) checkTypeCast(arrayType2, GmlTypeDef.number);
+								if (checkTypeCast(currType, GmlTypeDef.anyArray)) {
+									currType = currType.unwrapParam(0);
+								} else currType = null;
+							}
 						}
 					}
 				};

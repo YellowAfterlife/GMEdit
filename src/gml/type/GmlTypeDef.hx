@@ -17,6 +17,7 @@ class GmlTypeDef {
 	public static var ds_list:GmlType = TInst("ds_list", [], KList);
 	public static var ds_grid:GmlType = TInst("ds_grid", [], KGrid);
 	public static var anyArray:GmlType = TInst("array", [], KArray);
+	public static var anyCustomKeyArray:GmlType = TInst("ckarray", [], KCustomKeyArray);
 	public static var void:GmlType = TInst("void", [], KVoid);
 	public static var forbidden:GmlType = TInst("forbidden", [], KVoid);
 	public static var asset:GmlType = TInst("asset", [], KCustom);
