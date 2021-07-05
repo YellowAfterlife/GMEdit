@@ -34,7 +34,7 @@ private class AceFilteredListImpl {
 			switch (mode) {
 				case StartsWith, AceSmart: {
 					_this.exactMatch = (mode == StartsWith);
-					_this.shouldSort = (mode == AceSmart);
+					_this.shouldSort = (mode == AceSmart && needle.length > 0);
 					return orig.call(AceMacro.jsThis, items, needle);
 				};
 				case Includes: {
