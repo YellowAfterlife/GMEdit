@@ -78,6 +78,9 @@ class GmlTypeCanCastTo {
 				return true;
 			}
 			case [_, TEither(et2)]: return canCastToAnyOf(from, et2, tpl, imp);
+			case [TEither(et1), _]: // each member of from must cast to
+				for (t1 in et1) if (!canCastTo(t1, to, tpl, imp)) return false;
+				return true;
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
 				// allow function->script casts
 				if (k1 == KFunction && n2 == "script") return true;
@@ -86,6 +89,7 @@ class GmlTypeCanCastTo {
 					// allow bool<->number casts:
 					case KNumber: if (k1 == KBool) return true;
 					case KBool: if (k1 == KNumber) return true;
+					
 					case KArray: // var v:Enum should be allowed for array access
 						if (p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;
 					case KObject:

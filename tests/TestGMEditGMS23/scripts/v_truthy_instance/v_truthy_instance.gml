@@ -4,6 +4,7 @@
 function v_truthy_instance() {
 	let a = instance_nearest(0, 0, obj_test);
 	let b = instance_nearest(0, 0, obj_test) /*#as object*/;
+	if (collision_point(0, 0, id, false, false)) {}
 	if (a) {}
 	if (!a) {}
 	if (a && b) {}
