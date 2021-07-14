@@ -96,7 +96,7 @@ using StringTools;
 		if (gmlFile != null && (gmlFile.kind is file.kind.gml.KGmlEvents)) {
 			return GmlTypeDef.simple(gmlFile.name);
 		} else {
-			var scopeDoc = GmlAPI.gmlDoc[scope];
+			var scopeDoc = GmlAPI.gmlDoc[JsTools.or(scope, gmlFile.name)];
 			if (scopeDoc != null) {
 				if (scopeDoc.isConstructor) {
 					return GmlTypeDef.simple(scope);
