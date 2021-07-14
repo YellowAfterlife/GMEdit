@@ -80,14 +80,15 @@ class KGmlMultifile extends KGml {
 		var errors = "";
 		for (item in next) {
 			var itemPath = map0[item.name];
+			var itemCode = item.code;
 			if (itemPath != null) {
-				var itemCode = item.code;
 				FileWrap.writeTextFileSync(itemPath, itemCode);
 				GmlSeeker.runSync(itemPath, itemCode, item.name, KGmlScript.inst);
 			} else if (tools.JsTools.rx(~/^\w+$/).test(item.name)) {
 				var dir = file.multidata.tvDir;
 				var args = TreeViewItemMenus.createImplBoth("auto", 0, dir, item.name, function(q) {
 					q.openFile = false;
+					q.gmlCode = itemCode;
 					return q;
 				});
 				if (args != null) {
