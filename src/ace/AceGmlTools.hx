@@ -208,6 +208,24 @@ using StringTools;
 	/** Given a "Type", returns the argument info to be used when doing `var v:Type; v(` */
 	public static function findSelfCallDoc(type:GmlType, imp:GmlImports):GmlFuncDoc {
 		if (type == null) return null;
+		if (type.getKind() == KFunction) {
+			var params = type.unwrapParams();
+			var args = [];
+			var n = params.length - 1;
+			for (i in 0 ... n) {
+				var param = params[i], arg;
+				if (param.getKind() == KRest) {
+					arg = "..." + param.unwrapParam().toString();
+				} else arg = param.toString();
+				args.push(arg);
+			}
+			var rest = n > 0 && params[n - 1].getKind() == KRest;
+			var doc = new GmlFuncDoc("function", "function(", GmlFuncDoc.parRetArrow + params[n].toString(), args, rest);
+			doc.argTypes = params.slice(0, n).map(function(t) {
+				return t.getKind() == KRest ? t.unwrapParam() : t;
+			});
+			return doc;
+		}
 		var ns = type.getNamespace();
 		if (ns == null) return null;
 		return findNamespace(ns, imp, function(ns) {

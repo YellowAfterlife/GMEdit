@@ -77,6 +77,14 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
+	public static function unwrapParams(t:GmlType):ReadOnlyArray<GmlType> {
+		return switch (t) {
+			case null: null;
+			case TInst(_, p, _): p;
+			default: null;
+		}
+	}
+	
 	/**
 	 * Runs f on each element of array and returns an updated immutable array.
 	 * Unchanged elements will be reused and changing nothing will return back the array.

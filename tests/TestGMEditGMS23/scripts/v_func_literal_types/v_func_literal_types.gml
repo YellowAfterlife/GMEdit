@@ -9,4 +9,16 @@ function v_func_literal_types() {
 	array_sort(arr, function(a, b)/*->string*/ { return ":)" }); ///want_warn
 	array_sort(arr, function(a/*:string*/, b/*:string*/)/*->int*/ { return a - b }); ///want_warn
 	array_sort(arr, function(a/*:string*/, b/*:string*/)/*->int*/ { return 0 }); ///want_warn
+	
+	let fii = function(a/*:int*/, b/*:int*/) {}
+	fii(1, 2);
+	fii("a", "b");
+	
+	let firs/*:function<int, rest<string>, void>*/ = /*#cast*/ function() {}
+	firs(); ///want_warn
+	firs("no"); ///want_warn
+	firs(1, "a");
+	firs(1, "a", "b");
+	firs(1, 2); ///want_warn
+	firs(1, "2", 3); ///want_warn
 }

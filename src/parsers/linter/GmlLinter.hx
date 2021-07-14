@@ -13,6 +13,7 @@ import gml.Project;
 import gml.type.GmlTypeCanCastTo;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
+import haxe.ds.ReadOnlyArray;
 import parsers.linter.GmlLinterInit;
 import parsers.linter.GmlLinterReadFlags;
 import tools.Aliases;
@@ -24,6 +25,7 @@ import ace.extern.*;
 import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
+using gml.type.GmlTypeTools;
 using tools.NativeArray;
 using tools.NativeString;
 
@@ -338,18 +340,20 @@ class GmlLinter {
 	 * @param	sqb Whether this is a [...args]
 	 * @return	number of arguments read, -1 on error
 	 */
-	function readArgs(oldDepth:Int, sqb:Bool, ?doc:GmlFuncDoc, ?selfType:GmlType):Int {
+	function readArgs(oldDepth:Int, sqb:Bool, ?doc:GmlFuncDoc, ?selfType:GmlType, ?fnType:GmlType):Int {
 		var newDepth = oldDepth + 1;
 		var q = reader;
 		seqStart.setTo(reader);
 		var seenComma = true;
 		var closed = false;
 		var argc = 0;
-		var argTypes:Array<GmlType>, argTypeLast:Int;
+		var argTypes:ReadOnlyArray<GmlType>, argTypeClamp:Int, argTypesLen:Int;
 		var templateTypes:Array<GmlType> = null;
+		var isFuncValue = false;
 		if (doc != null) {
 			argTypes = doc.argTypes;
-			argTypeLast = doc.rest && argTypes != null ? argTypes.length - 1 : 0x7fffffff;
+			argTypesLen = argTypes != null ? argTypes.length : 0;
+			argTypeClamp = doc.rest && argTypes != null ? argTypesLen - 1 : 0x7fffffff;
 			if (doc.templateItems != null) {
 				templateTypes = NativeArray.create(doc.templateItems.length);
 			}
@@ -361,9 +365,16 @@ class GmlLinter {
 					);
 				}
 			}
+		} else if (fnType != null && fnType.getKind() == KFunction) {
+			isFuncValue = true;
+			argTypes = fnType.unwrapParams();
+			argTypesLen = argTypes.length - 1;
+			var isRest = argTypesLen > 0 && argTypes[argTypesLen - 1].getKind() == KRest;
+			argTypeClamp = isRest ? argTypesLen - 1 : 0x7fffffff;
 		} else {
 			argTypes = null;
-			argTypeLast = 0;
+			argTypesLen = 0;
+			argTypeClamp = 0;
 		}
 		//
 		var isMethod = !sqb && (selfType:GmlType).getKind() == KMethodSelf;
@@ -444,9 +455,11 @@ class GmlLinter {
 					}
 					
 					if (argTypes != null && readExpr_currType != null) {
-						var argTypeInd = argc > argTypeLast ? argTypeLast : argc;
-						var argType = argTypes[argTypeInd];
+						var argTypeInd = argc;
+						if (argTypeInd > argTypeClamp) argTypeInd = argTypeClamp;
+						var argType = argTypeInd >= argTypesLen ? null : argTypes[argTypeInd];
 						if (argType != null) {
+							if (isFuncValue && argTypeInd == argTypeClamp) argType = argType.unwrapParam();
 							if (hasBufferAutoType) {
 								switch (argType) {
 									case null:
@@ -461,7 +474,10 @@ class GmlLinter {
 								}
 							}
 							if (!readExpr_currType.canCastTo(argType, templateTypes, getImports())) {
-								var argName = JsTools.or(doc.args[argTypeInd], "?");
+								var argName:String;
+								if (doc != null) {
+									argName = JsTools.or(doc.args[argTypeInd], "?");
+								} else argName = null;
 								addWarning("Can't cast " + readExpr_currType.toString(templateTypes)
 									+ " to " + argType.toString(templateTypes)
 									+ ' for ' + argName + "#" + argc
@@ -477,6 +493,7 @@ class GmlLinter {
 				};
 			}
 		} // while (q.loop), can continue
+		
 		if (sqb) {
 			readArgs_outType = itemType;
 		} else {
@@ -484,6 +501,8 @@ class GmlLinter {
 				var retType = doc.returnType;
 				if (bufferAutoTypeRet) retType = bufferAutoType;
 				readArgs_outType = retType.mapTemplateTypes(templateTypes);
+			} else if (isFuncValue != null) {
+				readArgs_outType = argTypes[argTypesLen];
 			} else readArgs_outType = null;
 		}
 		if (!closed) {
@@ -777,7 +796,7 @@ class GmlLinter {
 					if (hasFlag(NoSfx)) return readError("Can't call this");
 					skip();
 					var argsSelf = currKind == KIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
-					var argc = readArgs(newDepth, false, currFunc, argsSelf);
+					var argc = readArgs(newDepth, false, currFunc, argsSelf, currType);
 					rc(argc < 0);
 					if (currFunc != null) {
 						checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
