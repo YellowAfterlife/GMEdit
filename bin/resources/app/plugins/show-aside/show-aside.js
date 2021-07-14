@@ -105,9 +105,11 @@
 		while (insertAt < mainMenu.items.length) {
 			if (mainMenu.items[insertAt++].aceCommand == "selectall") break;
 		}
-		mainMenu.insert(insertAt, new MenuItem({type:"separator"}));
+		mainMenu.insert(insertAt, new MenuItem({type:"separator", id:"show-aside-sep"}));
 		mainMenu.insert(insertAt + 1, new MenuItem({
 			label: "Show aside",
+			id: "show-aside",
+			icon: __dirname + "/icons/silk/application_split_vertical.png",
 			click: function() {
 				show(aceEditor.session.gmlFile);
 			}

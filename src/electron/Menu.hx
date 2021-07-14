@@ -15,6 +15,13 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 @:native("Electron_Menu") extern class Menu {
+	/**
+	 * Just about every GMEdit icon is in the same directory so I'd rather have a shortcut.
+	 */
+	public static inline function silkIcon(name:String):String {
+		return Main.modulePath + ("/icons/silk/" + name + ".png");
+	}
+	
 	function new():Void;
 	//
 	function clear():Void;

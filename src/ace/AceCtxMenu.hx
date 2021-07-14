@@ -49,11 +49,13 @@ class AceCtxMenu {
 				commandAccels.set(cmdName, k);
 			}
 		}
-		function cmdItem(cmd:String, label:String):MenuItem {
+		function cmdItem(cmd:String, label:String, ?silkIcon:String):MenuItem {
+			var icon = silkIcon != null ? Menu.silkIcon(silkIcon) : null;
 			var item = new MenuItem({
 				id: cmd,
 				accelerator: commandAccels[cmd],
 				label: label,
+				icon: icon,
 				click: function() {
 					editor.execCommand(cmd);
 				}
@@ -72,17 +74,18 @@ class AceCtxMenu {
 		});
 		//
 		var search:Menu = searchMenu = new Menu();
-		search.append(cmdItem("find", "Quick find"));
-		search.append(cmdItem("replace", "Find and replace..."));
+		search.append(cmdItem("find", "Quick find", "page_white_find"));
+		search.append(cmdItem("replace", "Find and replace...", "magnifier"));
 		search.appendOpt({
 			id: "global-search",
 			label: "Global find and replace...",
+			icon: Menu.silkIcon("folder_explore"),
 			accelerator: "CommandOrControl+Shift+F",
 			click: function() GlobalSearch.toggle()
 		});
-		search.append(cmdItem("gotoline", "Goto line..."));
-		search.append(cmdItem("gotoPreviousFoldRegion", "Goto previous fold"));
-		search.append(cmdItem("gotoNextFoldRegion", "Goto next fold"));
+		search.append(cmdItem("gotoline", "Goto line...", "arrow_right"));
+		search.append(cmdItem("gotoPreviousFoldRegion", "Goto previous fold", "arrow_up"));
+		search.append(cmdItem("gotoNextFoldRegion", "Goto next fold", "arrow_down"));
 		menu.appendOpt({
 			id: "sub-search",
 			type: Sub,
@@ -101,6 +104,7 @@ class AceCtxMenu {
 		var findRefs = menu.appendOpt({
 			id: "open-definition",
 			label: "Open definition",
+			icon: Menu.silkIcon("brick_go"),
 			accelerator: "F1",
 			click: function() {
 				autofixToken();
@@ -110,6 +114,7 @@ class AceCtxMenu {
 		var findRefs = menu.appendOpt({
 			id: "find-references",
 			label: "Find references",
+			icon: Menu.silkIcon("find_references"),
 			accelerator: "Shift+F1",
 			click: function() {
 				autofixToken();
@@ -118,9 +123,9 @@ class AceCtxMenu {
 		});
 		//
 		menu.appendSep("sep-history");
-		var undo = cmdItem("undo", "Undo");
+		var undo = cmdItem("undo", "Undo", "arrow_undo");
 		menu.append(undo);
-		var redo = cmdItem("redo", "Redo");
+		var redo = cmdItem("redo", "Redo", "arrow_redo");
 		menu.append(redo);
 		//
 		if (Electron != null) {
@@ -129,6 +134,7 @@ class AceCtxMenu {
 				id: "cut",
 				label: "Cut",
 				role: "cut",
+				icon: Menu.silkIcon("cut"),
 				accelerator: "CommandOrControl+X",
 				click: function() { // used in web
 					if (!editor.selection.isEmpty()) {
@@ -141,6 +147,7 @@ class AceCtxMenu {
 				id: "copy",
 				label: "Copy",
 				role: "copy",
+				icon: Menu.silkIcon("page_copy"),
 				accelerator: "CommandOrControl+C",
 				click: function() { // used in web
 					if (!editor.selection.isEmpty()) {
@@ -153,6 +160,7 @@ class AceCtxMenu {
 				id: "paste",
 				label: "Paste",
 				role: "paste",
+				icon: Menu.silkIcon("page_paste"),
 				accelerator: "CommandOrControl+V",
 				click: function() { // used in web
 					editor.execCommand("paste", cb().readText());

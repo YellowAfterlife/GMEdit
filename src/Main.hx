@@ -90,7 +90,10 @@ class Main {
 		}
 		//
 		modulePath = untyped window.__dirname;
-		if (modulePath == null) modulePath = ".";
+		if (modulePath == null) {
+			modulePath = ".";
+			untyped window.__dirname = ".";
+		}
 		Preferences.init();
 		file.FileKind.initStatic();
 		file.kind.KGml.initSyntaxExtensions();

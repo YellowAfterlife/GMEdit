@@ -106,6 +106,7 @@ class ChromeTabMenu {
 		menu.append(showInDirectoryItem = new MenuItem({
 			id: "show-in-directory",
 			label: "Show in directory",
+			icon: Menu.silkIcon("folder_explore"),
 			click: function() {
 				electron.FileWrap.showItemInFolder(target.gmlFile.path);
 			}
@@ -114,6 +115,7 @@ class ChromeTabMenu {
 		menu.append(showInTreeItem = new MenuItem({
 			id: "show-in-tree",
 			label: "Show in tree",
+			icon: Menu.silkIcon("application_side_tree_show"),
 			click: function() {
 				var item = TreeView.find(true, { path: target.gmlFile.path });
 				if (item != null) TreeView.showElement(item, true);
@@ -122,11 +124,13 @@ class ChromeTabMenu {
 		menu.append(findReferences = new MenuItem({
 			id: "find-references",
 			label: "Find references",
+			icon: Menu.silkIcon("find_references"),
 			click: function() GlobalSearch.findReferences(target.gmlFile.name)
 		}));
 		menu.append(showObjectInfo = new MenuItem({
 			id: "object-information",
 			label: "Object information",
+			icon: Menu.silkIcon("information"),
 			click: function() {
 				var file = target.gmlFile;
 				gml.GmlObjectInfo.showFor(file.path, file.name);

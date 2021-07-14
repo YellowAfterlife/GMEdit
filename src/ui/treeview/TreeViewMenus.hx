@@ -190,8 +190,9 @@ class TreeViewMenus {
 		items.openCustomCSS.visible = true;
 		if (Electron.isAvailable()) {
 			var isFileDir = target.getAttribute(TreeView.attrFilter) == "file";
-			items.openExternally.visible = isFileDir;
-			items.openDirectory.visible = isFileDir;
+			var hasFullPath = target.hasAttribute(TreeView.attrPath);
+			items.openExternally.visible = isFileDir || hasFullPath;
+			items.openDirectory.visible = isFileDir || hasFullPath;
 		}
 		if (Project.current.isGMS23) {
 			var isExt = el.getAttribute(TreeView.attrFilter) == "extension";
@@ -276,10 +277,12 @@ class TreeViewMenus {
 		m.append(r);
 		return r;
 	}
-	public static inline function addLink(m:Menu, id:String, label:String, click:Void->Void) {
+	public static inline function addLink(m:Menu, id:String, label:String, click:Void->Void, ?silkIcon:String) {
+		var icon = silkIcon != null ? Menu.silkIcon(silkIcon) : null;
 		return add(m, {
 			id: id,
 			label: label,
+			icon: icon,
 			click: click
 		});
 	}
@@ -297,25 +300,25 @@ class TreeViewMenus {
 		];
 		if (isNative) {
 			items.openExternally = addLink(itemMenu, "open-external", "Open externally", openExternal);
-			items.openDirectory = addLink(itemMenu, "show-in-directory", "Show in directory", openDirectory);
+			items.openDirectory = addLink(itemMenu, "show-in-directory", "Show in directory", openDirectory, "folder_explore");
 		}
 		addLink(itemMenu, "open-here", "Open here", openHere);
-		items.objectInfo = addLink(itemMenu, "object-info", "Object information", openObjectInfo);
-		items.findReferences = addLink(itemMenu, "find-references", "Find references", findReferences);
+		items.objectInfo = addLink(itemMenu, "object-info", "Object information", openObjectInfo, "information");
+		items.findReferences = addLink(itemMenu, "find-references", "Find references", findReferences, "find_references");
 		items.removeFromRecentProjects = addLink(itemMenu,
 			"remove-from-recent-projects",
 			"Remove from Recent projects",
-			removeFromRecentProjects);
+			removeFromRecentProjects, "delete");
 		itemMenu.appendSep("sep-manip");
 		for (q in items.manipOuter) itemMenu.append(q);
 		itemMenu.append(iconItem);
 		//}
 		//{
 		dirMenu = new Menu();
-		addLink(dirMenu, "expand-all", "Expand all", expandAll);
-		addLink(dirMenu, "collapse-all", "Collapse all", collapseAll);
-		items.addExtensionFile = addLink(dirMenu, "add-extension-file", "Add file(s)", addExtensionFile);
-		items.showAPI = addLink(dirMenu, "show-extension-api", "Show API", showAPI);
+		addLink(dirMenu, "expand-all", "Expand all", expandAll, "bullet_toggle_plus");
+		addLink(dirMenu, "collapse-all", "Collapse all", collapseAll, "bullet_toggle_minus");
+		items.addExtensionFile = addLink(dirMenu, "add-extension-file", "Add file(s)", addExtensionFile, "page_white_add");
+		items.showAPI = addLink(dirMenu, "show-extension-api", "Show API", showAPI, "application_view_list");
 		items.openAll = addLink(dirMenu, "open-all-items", "Open all", openAll);
 		items.openCombined = addLink(dirMenu, "open-combined-view", "Open combined view", openCombined);
 		if (isNative) {

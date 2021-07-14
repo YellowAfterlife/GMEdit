@@ -429,7 +429,9 @@ class TreeViewItemMenus {
 		for (orderInd in 0 ... 3) {
 			var order = orders[orderInd];
 			var submenu = new Menu();
-
+			
+			// NB! You'll need to add a "resource_<name>_add.png" to /icons/silk
+			// when you add new resource types here.
 			var resourceTypes = ["sprite", "sound", "script", "shader", "font", "object"];
 
 			if (Preferences.current.assetOrder23 == PrefAssetOrder23.Ascending) {
@@ -445,7 +447,7 @@ class TreeViewItemMenus {
 				if (label == null) label = kind.capitalize();
 				addLink(submenu, "create-" + kind, label, function() {
 					createImpl(kind, orderInd - 1);
-				});
+				}, "resource_" + kind + "_add");
 			}
 			//
 			var subitem = createMenu.appendOpt({
@@ -506,17 +508,20 @@ class TreeViewItemMenus {
 		var createItem = new MenuItem({
 			id: "sub-create",
 			label: "Create",
+			icon: Menu.silkIcon("add"),
 			type: Sub,
 			submenu: createMenu
 		});
 		var removeItem = new MenuItem({
 			id: "remove",
 			label: "Delete",
+			icon: Menu.silkIcon("stop_close"),
 			click: removeImpl
 		});
 		var renameItem = new MenuItem({
 			id: "rename",
 			label: "Rename",
+			icon: Menu.silkIcon("textfield_rename"),
 			click: renameImpl
 		});
 		items.manipCreate = createItem;
