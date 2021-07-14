@@ -199,6 +199,9 @@ html #ace_settingsmenu {
 }
 .popout-menu li {
 	padding: 4px 20px;
+	padding-left: 34px;
+	background-position: 8px center;
+	background-repeat: no-repeat;
 	cursor: default;
 }
 .popout-menu li[disabled] {
@@ -211,7 +214,7 @@ html #ace_settingsmenu {
 	margin: 5px 1px;
 }
 .popout-menu li:not([disabled]):not(.popout-menu-separator):hover {
-	background: #EBEBEB;
+	background-color: #EBEBEB;
 }
 .popout-menu .popout-menu-submenu {
 	position: relative;

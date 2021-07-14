@@ -113,6 +113,7 @@ using tools.HtmlTools;
 	public var type:MenuItemType;
 	//
 	public var __element:LIElement;
+	public var __icon:SpanElement;
 	public var __label:SpanElement;
 	public var __parent:MenuFallback = null;
 	//
@@ -127,6 +128,9 @@ using tools.HtmlTools;
 		//
 		__element = document.createLIElement();
 		__element.classList.add("popout-menu-" + (opt.type != null ? opt.type : MenuItemType.Normal));
+		if (opt.icon != null && Std.is(opt.icon, String)) {
+			__element.style.backgroundImage = "url(" + opt.icon + ")";
+		}
 		if (opt.label != null) {
 			__label = document.createSpanElement();
 			__label.appendChild(document.createTextNode(opt.label));
