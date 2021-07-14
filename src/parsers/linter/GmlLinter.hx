@@ -1041,9 +1041,22 @@ class GmlLinter {
 					currType = readExpr_currType;
 					rc(readCheckSkip(KColon, "a colon in a ternary operator"));
 					rc(readExpr(newDepth));
+					var elseType = readExpr_currType;
 					if (currType != null) {
-						checkTypeCast(readExpr_currType, currType, "ternary else-value");
-					} else currType = readExpr_currType;
+						if (elseType == null) {
+							// shrug
+						} else if (elseType.getKind() == KUndefined) { // ? type : undefined
+							if (!currType.canCastTo(elseType)) {
+								currType = GmlTypeDef.nullable(currType);
+							}
+						} else if (currType.getKind() == KUndefined) { // ? undefined : type
+							if (!elseType.canCastTo(currType)) {
+								currType = GmlTypeDef.nullable(elseType);
+							}
+						} else {
+							checkTypeCast(readExpr_currType, currType, "ternary else-value");
+						}
+					} else currType = elseType;
 					currKind = KQMark;
 				};
 				case KNullCoalesce: { // x ?? y

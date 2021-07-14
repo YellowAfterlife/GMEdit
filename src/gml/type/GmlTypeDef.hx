@@ -54,6 +54,10 @@ class GmlTypeDef {
 		}
 		return t;
 	}
+	
+	public static function nullable(type:GmlType):GmlType {
+		return TInst("Nullable", [type], KNullable);
+	}
 	//
 	public static inline function parse(typeString:String, ?ctx:String):GmlType {
 		return GmlTypeParser.parse(typeString, ctx);

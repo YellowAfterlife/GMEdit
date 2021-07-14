@@ -140,7 +140,7 @@ class GmlTypeParser {
 					result = TInst("Array", [result], KArray);
 				case "?".code:
 					q.skip();
-					if (!result.isNullable()) result = TInst("Nullable", [result], KNullable);
+					if (!result.isNullable()) result = GmlTypeDef.nullable(result);
 				case "|".code:
 					if ((flags & FNoEither) != 0) break;
 					q.skip();

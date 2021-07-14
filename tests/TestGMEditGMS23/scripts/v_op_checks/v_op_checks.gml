@@ -32,4 +32,9 @@ function v_op_checks() {
 	
 	d = choose(1, 2, 3) + "b"; ///want_warn
 	s = string(choose(1, 2, 3)) + "b";
+	
+	let zi = z ? i : undefined;
+	i = zi; ///want_warn - zi is null<int>
+	let zi2 = z ? undefined : i;
+	i = zi2; ///want_warn - zi2 is null<int>
 }
