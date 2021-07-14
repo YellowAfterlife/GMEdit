@@ -43,7 +43,7 @@ class GmlExtensionAPI {
 			if (!r.startsWith(name + "(")) r = getBaseHelp() + " " + r;
 		}
 		//if (hidden) r += " // hidden";
-		if (exname != name) r += "\n// external: " + exname;
+		if (exname != name) r += "\n// ^ external: " + exname;
 		return r;
 	}
 	static function procMc(name:String, val:String, hidden:Bool):String {
