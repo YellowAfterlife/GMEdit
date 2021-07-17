@@ -52,6 +52,7 @@ class MainMenu {
 			//
 		} else menu.append(new MenuItem({ label: "Open...",
 			id: "open-dialog",
+			icon: Menu.silkIcon("folder_page"),
 			click: function() {
 				Dialog.showOpenDialog({
 					filters: [
@@ -69,12 +70,14 @@ class MainMenu {
 		menu.append(new MenuItem({
 			id: "reload-project",
 			label: "Reload project",
+			icon: Menu.silkIcon("arrow_refresh"),
 			accelerator: "CommandOrControl+R",
 			click: function() gml.Project.current.reload()
 		}));
 		exportItem = new MenuItem({
 			id: "export-project",
 			label: "Export project...",
+			icon: Menu.silkIcon("folder_go"),
 			click: function() {
 				var pj = Project.current;
 				var yyz:YyZip = cast pj;
@@ -111,6 +114,7 @@ class MainMenu {
 			menu.append(new MenuItem({
 				id: "show-in-directory",
 				label: "Show in directory",
+				icon: Menu.silkIcon("show_in_directory"),
 				click: function() {
 					var pj = Project.current;
 					var path = pj is YyZip ? (cast pj:YyZip).yyzPath : pj.path;
@@ -120,6 +124,7 @@ class MainMenu {
 			menu.append(new MenuItem({
 				id: "new-ide",
 				label: "New IDE",
+				icon: Menu.silkIcon("application_add"),
 				click: function() electron.IPC.send("new-ide")
 			}));
 		}
@@ -167,6 +172,7 @@ class MainMenu {
 		menu.append(new MenuItem({
 			id: "help",
 			label: "Help",
+			icon: Menu.silkIcon("help"),
 			click: function() {
 				var url:String = "https://github.com/GameMakerDiscord/GMEdit/wiki";
 				#if lwedit
@@ -180,11 +186,13 @@ class MainMenu {
 		menu.append(new MenuItem({
 			id: "project-properties",
 			label: "Project properties",
+			icon: Menu.silkIcon("project_properties"),
 			click: function() ProjectProperties.open()
 		}));
 		menu.append(new MenuItem({
 			id: "preferences",
 			label: "Preferences",
+			icon: Menu.silkIcon("preferences"),
 			click: function() Preferences.open()
 		}));
 		if (Electron != null && window.location.host == "") menu.append(new MenuItem({

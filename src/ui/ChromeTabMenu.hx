@@ -106,7 +106,7 @@ class ChromeTabMenu {
 		menu.append(showInDirectoryItem = new MenuItem({
 			id: "show-in-directory",
 			label: "Show in directory",
-			icon: Menu.silkIcon("folder_explore"),
+			icon: Menu.silkIcon("show_in_directory"),
 			click: function() {
 				electron.FileWrap.showItemInFolder(target.gmlFile.path);
 			}

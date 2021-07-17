@@ -300,7 +300,7 @@ class TreeViewMenus {
 		];
 		if (isNative) {
 			items.openExternally = addLink(itemMenu, "open-external", "Open externally", openExternal);
-			items.openDirectory = addLink(itemMenu, "show-in-directory", "Show in directory", openDirectory, "folder_explore");
+			items.openDirectory = addLink(itemMenu, "show-in-directory", "Show in directory", openDirectory, "show_in_directory");
 		}
 		addLink(itemMenu, "open-here", "Open here", openHere);
 		items.objectInfo = addLink(itemMenu, "object-info", "Object information", openObjectInfo, "information");
