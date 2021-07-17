@@ -176,10 +176,10 @@ cull_counterclockwise#:gpu_cullmode
 
 gpu_set_zwriteenable(enable:bool)->void
 //gpu_set_lightingenable(enable)
-gpu_set_fog(array_or_enable:bool|any[],?col:number,?start:number,?end:number)->void
+gpu_set_fog(array_or_enable:bool|tuple<bool;int;number;number>,?col:number,?start:number,?end:number)->void
 gpu_set_blendmode(mode:blendmode)->void
-gpu_set_blendmode_ext(src:blendmode_ext,dest:blendmode_ext)->void
-gpu_set_blendmode_ext_sepalpha(src:blendmode_ext,dest:blendmode_ext,srcalpha:blendmode_ext,destalpha:blendmode_ext)->void
+gpu_set_blendmode_ext(src:blendmode_ext|tuple<blendmode_ext;blendmode_ext>,?dest:blendmode_ext)->void
+gpu_set_blendmode_ext_sepalpha(src:blendmode_ext|tuple<blendmode_ext;blendmode_ext;blendmode_ext;blendmode_ext>,?dest:blendmode_ext,?srcalpha:blendmode_ext,?destalpha:blendmode_ext)->void
 gpu_set_colorwriteenable(red_or_array:bool|bool[],?green*:bool,?blue*:bool,?alpha*:bool)$->void
 gpu_set_colourwriteenable(red_or_array:bool|bool[],?green*:bool,?blue*,?alpha*:bool)£->void
 gpu_set_alphatestenable(enable:bool)->void
@@ -210,10 +210,10 @@ gpu_get_blendenable()->bool
 gpu_get_ztestenable()->bool
 gpu_get_zwriteenable()->bool
 //gpu_get_lightingenable()
-gpu_get_fog()->any[]
+gpu_get_fog()->tuple<bool,int,number,number>
 gpu_get_blendmode()->blendmode
-gpu_get_blendmode_ext()->blendmode_ext[]
-gpu_get_blendmode_ext_sepalpha()->blendmode_ext[]
+gpu_get_blendmode_ext()->tuple<blendmode_ext,blendmode_ext>
+gpu_get_blendmode_ext_sepalpha()->tuple<blendmode_ext,blendmode_ext,blendmode_ext,blendmode_ext>
 gpu_get_blendmode_src()->blendmode_ext
 gpu_get_blendmode_dest()->blendmode_ext
 gpu_get_blendmode_srcalpha()->blendmode_ext
