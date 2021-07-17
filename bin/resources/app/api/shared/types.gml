@@ -12,8 +12,11 @@ typedef ds_grid;
 typedef ds_priority;
 
 // e.g. CustomKeyArray<object, bool> allows arr[obj_some]
-typedef ckarray
-typedef CustomKeyArray
+typedef ckarray;
+typedef CustomKeyArray;
+
+// tuple<int, string> accepts [1, "2"]
+typedef tuple;
 
 // Asset types
 typedef asset;

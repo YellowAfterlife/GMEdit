@@ -64,6 +64,7 @@ enum abstract GmlTypeKind(Int) {
 	var KGrid = 0x23;
 	
 	var KCustomKeyArray = 0x28;
+	var KTuple = 0x29;
 	
 	// Constraints:
 	var KObject = 0x30; // any object type casts to this

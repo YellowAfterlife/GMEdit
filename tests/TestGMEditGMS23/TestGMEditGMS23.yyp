@@ -48,6 +48,7 @@
     {"id":{"name":"v_constructor_implements","path":"scripts/v_constructor_implements/v_constructor_implements.yy",},"order":3,},
     {"id":{"name":"v_func_arg_values","path":"scripts/v_func_arg_values/v_func_arg_values.yy",},"order":1,},
     {"id":{"name":"obj_rename_event","path":"objects/obj_rename_event/obj_rename_event.yy",},"order":9,},
+    {"id":{"name":"v_tuples","path":"scripts/v_tuples/v_tuples.yy",},"order":4,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
