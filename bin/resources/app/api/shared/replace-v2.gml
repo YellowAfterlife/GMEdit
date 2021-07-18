@@ -427,7 +427,7 @@ layer_tile_get_blend(tile_element_id:layer_tile_legacy)->int
 layer_tile_get_alpha(tile_element_id:layer_tile_legacy)->number
 layer_tile_get_x(tile_element_id:layer_tile_legacy)->number
 layer_tile_get_y(tile_element_id:layer_tile_legacy)->number
-layer_tile_get_region(tile_element_id:layer_tile_legacy)->number[]
+layer_tile_get_region(tile_element_id:layer_tile_legacy)->tuple<number,number,number,number>
 layer_tile_get_visible(tile_element_id:layer_tile_legacy)->bool
 
 #region Instance element functions

@@ -116,6 +116,8 @@ class AceWrapCommonCompleters {
 	/** Suggests `@meta`s inside JSDocs */
 	public var jsDocCompleter:AceWrapCompleter;
 	
+	public var tupleCompleter:AceWrapCompleter;
+	
 	/** These have their items updated by AceStatusBar on context navigation */
 	function initLocal() {
 		localCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
@@ -372,6 +374,10 @@ class AceWrapCommonCompleters {
 		initEnum();
 		initShaders();
 		initSnippets();
+		tupleCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
+		tupleCompleter.minLength = 0;
+		tupleCompleter.sqbKind = SKTuple;
+		completers.push(tupleCompleter);
 	}
 	
 	function openAC(editor:AceWrap, ?eraseSelfDot:Bool) {
@@ -425,7 +431,7 @@ class AceWrapCommonCompleters {
 	/**
 	 * Automatically open completion when typing things like "global.|"
 	 */
-	function onDot(editor:AceWrap) {
+	function onDot(editor:AceWrap, canEraseSelfDot:Bool = true) {
 		var session = editor.session;
 		if (!gmlOnly(editor.session)) return;
 		var lead = session.selection.lead;
@@ -456,7 +462,7 @@ class AceWrapCommonCompleters {
 			open = true;
 			eraseSelfDot = true;
 		}
-		if (open) openAC(editor, eraseSelfDot);
+		if (open) openAC(editor, canEraseSelfDot && eraseSelfDot);
 	}
 	
 	function onColon(editor:AceWrap) {
@@ -491,6 +497,7 @@ class AceWrapCommonCompleters {
 			var c = e.editor.completer;
 			switch (e.args) {
 				case ".": onDot(e.editor);
+				case "[": onDot(e.editor, false);
 				case ":": onColon(e.editor);
 				case " ": onSpace(e.editor);
 				case "@": onAtSign(e.editor);

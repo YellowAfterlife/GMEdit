@@ -22,4 +22,5 @@ function v_tuples() {
 		[3, 4], ///want_warn
 		[5], ///want_warn
 	];
+	// typing `t[` should pop up a menu with field list
 }

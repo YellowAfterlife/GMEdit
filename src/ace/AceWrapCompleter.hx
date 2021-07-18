@@ -40,6 +40,7 @@ using tools.NativeString;
 	/** Used for some dotKinds */
 	public var dotKindMeta:Dynamic = null;
 	public var colKind:AceWrapCompletionColKind = CKNone;
+	public var sqbKind:AceWrapCompletionSqbKind = SKNone;
 	public var identifierRegexps:Array<RegExp>;
 	
 	public function new(
@@ -278,6 +279,31 @@ using tools.NativeString;
 			proc(false);
 			return;
 		}
+		else if (sqbKind != SKNone) {
+			do { // once
+				if (tk == null) continue;
+				if (tk.type != "square.paren.lparen") continue;
+				if (tk.value != "[") continue;
+				
+				var scope = session.gmlScopes.get(pos.row);
+				if (scope == null) continue;
+				
+				var end = pos.add( -1, 0);
+				var start = AceGmlTools.skipDotExprBackwards(session, end);
+				var snip = session.getTextRange(AceRange.fromPair(start, end));
+				var type = GmlLinter.getType(snip, session.gmlEditor, scope, pos).type;
+				
+				if (type.getKind() != KTuple) continue;
+				var comps:AceAutoCompleteItems = [];
+				for (i => tp in type.unwrapParams()) {
+					comps.push(new AceAutoCompleteItem("" + i, "index", tp.toString()));
+				}
+				callback(null, comps);
+				return;
+			} while (false);
+			proc(false);
+			return;
+		}
 		//
 		var tkf:Bool = tokenFilter.exists(JsTools.nca(tk, tk.type));
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
@@ -334,4 +360,8 @@ enum abstract AceWrapCompletionColKind(Int) {
 	var CKNone = 0;
 	var CKNamespaces = 1;
 	var CKEnums = 2;
+}
+enum abstract AceWrapCompletionSqbKind(Int) {
+	var SKNone = 0;
+	var SKTuple = 1;
 }
