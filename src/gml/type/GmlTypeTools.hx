@@ -146,7 +146,22 @@ import ace.extern.AceTokenType;
 		if (++depth >= 128) return null;
 		switch (self) {
 			case null: return null;
-			case THint(hint, type): return type;
+			case THint(hint, type): return resolve(type, depth);
+			case TInst(name, params, kind):
+				var td = kind == KCustom ? GmlAPI.gmlTypedefs[name] : null;
+				if (td != null) {
+					return mapTemplateTypes(td, params);
+				}
+				return self;
+			default: return self;
+		}
+	}
+	
+	public static function resolveRec(self:GmlType, depth:Int = 0):GmlType {
+		if (++depth >= 128) return null;
+		switch (self) {
+			case null: return null;
+			case THint(hint, type): return resolve(type, depth);
 			case TInst(name, params, kind):
 				var td = kind == KCustom ? GmlAPI.gmlTypedefs[name] : null;
 				if (td != null) {

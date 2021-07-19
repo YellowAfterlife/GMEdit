@@ -489,17 +489,17 @@ using tools.NativeString;
 	 * this"var a:Map¦<Int>" -> this"var a:Map<Int>¦"
 	 * this"var a:Map¦<=" -> this"var a:Map¦<="
 	 */
-	public function skipTypeParams(?till:Int):Success {
+	public function skipTypeParams(?till:Int, open:CharCode = "<".code, close:CharCode = ">".code):Success {
 		if (till == null) till = length;
 		var p2 = pos;
 		var depth = 1;
 		skip();
 		while (pos < till) {
 			var c:CharCode = read();
-			switch (c) {
-				case "<".code: depth++;
-				case ">".code: if (--depth <= 0) break;
-				default:
+			if (c == open) {
+				depth++;
+			} else if (c == close) {
+				if (--depth <= 0) break;
 			}
 		}
 		if (depth > 0) {

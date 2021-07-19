@@ -77,6 +77,21 @@ class GmlTypeParser {
 		var c = q.read();
 		var result:GmlType;
 		switch (c) {
+			case "[".code:
+				var params = [];
+				while (q.loop) {
+					var t = parseRec(q, ctx, FCanAlias);
+					if (t == null) return null;
+					params.push(t);
+					q.skipSpaces0_local();
+					c = q.read();
+					switch (c) {
+						case "]".code: break;
+						case ",".code, ";".code: // OK!
+						default: return parseError("Expected a `,`/`;` or a `]` in `[]`");
+					}
+				}
+				result = TInst("tuple",  params, KTuple);
 			case "(".code:
 				result = parseRec(q, ctx, FCanAlias);
 				if (result == null) return null;
@@ -194,6 +209,27 @@ class GmlTypeParser {
 					return null;
 				}
 				typeStr = '($t)';
+			case KSqbOpen:
+				typeStr = "[";
+				var depth = 1;
+				seqStart.setTo(reader);
+				while (reader.loop) {
+					switch (self.next()) {
+						case KSqbOpen:
+							typeStr += "[";
+							depth += 1;
+						case KSqbClose:
+							typeStr += "]";
+							depth -= 1;
+							if (depth <= 0) break;
+						default:
+							typeStr += self.nextVal;
+					}
+				}
+				if (depth > 0) {
+					self.readSeqStartError("Unclosed tuple parameters");
+					return null;
+				}
 			case KIdent, KUndefined, KFunction:
 				typeStr = self.nextVal;
 				if (self.skipIf(self.peek() == KLT)) {
@@ -254,11 +290,14 @@ class GmlTypeParser {
 		q.skipSpaces1x(till);
 		var c = q.read();
 		switch (c) {
-			case "(".code:
+			case "(".code: // (group)
 				if (!q.skipType(till)) return rewind();
 				q.skipSpaces1x(till);
 				if (q.read() != ")".code) return rewind();
-			case _ if (c.isIdent0()):
+			case "[".code: // [...tuple params]
+				q.skip();
+				if (!q.skipTypeParams(till, "[".code, "]".code)) return rewind();
+			case _ if (c.isIdent0()): // name<...params>
 				q.skipIdent1();
 				start = q.pos;
 				q.skipSpaces1x(till);

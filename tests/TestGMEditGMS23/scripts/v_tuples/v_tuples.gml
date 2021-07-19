@@ -1,5 +1,5 @@
 function v_tuples() {
-	var t/*:tuple<int, string>*/ = [1, "hi"];
+	var t/*:[int, string]*/ = [1, "hi"];
 	t = [2, "3"];
 	t = [1, 2]; ///want_warn
 	t = [1]; ///want_warn - too few items
@@ -17,10 +17,12 @@ function v_tuples() {
 	s = t[1];
 	i = t[1]; ///want_warn
 	
-	var tups/*:tuple<int, string>[]*/ = [
+	var tups/*:[int, string][]*/ = [
 		[1, "2"],
 		[3, 4], ///want_warn
 		[5], ///want_warn
 	];
-	// typing `t[` should pop up a menu with field list
+	
+	var named/*:[x:number, y:number, z:number]*/ = [1, 2, 3];
+	// typing `named[` should pop up a menu with field list
 }
