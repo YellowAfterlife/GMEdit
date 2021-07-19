@@ -292,7 +292,7 @@ using tools.NativeString;
 				var start = AceGmlTools.skipDotExprBackwards(session, end);
 				var snip = session.getTextRange(AceRange.fromPair(start, end));
 				var type = GmlLinter.getType(snip, session.gmlEditor, scope, pos).type;
-				
+				type = type.resolve();
 				if (type.getKind() != KTuple) continue;
 				var comps:AceAutoCompleteItems = [];
 				for (i => tp in type.unwrapParams()) {

@@ -25,6 +25,8 @@ class GmlTypeCanCastTo {
 	public static var allowImplicitNullCast:Bool = false;
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
+		from = from.resolve();
+		to = to.resolve();
 		var kfrom:GmlTypeKind = GmlTypeTools.getKind(from);
 		var kto:GmlTypeKind = GmlTypeTools.getKind(to);
 		if (!allowVoidCast) {

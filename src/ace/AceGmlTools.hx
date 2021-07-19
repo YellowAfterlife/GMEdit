@@ -208,21 +208,24 @@ using StringTools;
 	/** Given a "Type", returns the argument info to be used when doing `var v:Type; v(` */
 	public static function findSelfCallDoc(type:GmlType, imp:GmlImports):GmlFuncDoc {
 		if (type == null) return null;
+		type = type.resolve();
 		if (type.getKind() == KFunction) {
 			var params = type.unwrapParams();
 			var args = [];
 			var n = params.length - 1;
+			var rest = false;
 			for (i in 0 ... n) {
 				var param = params[i], arg;
-				if (param.getKind() == KRest) {
-					arg = "..." + param.unwrapParam().toString();
+				var pres = param.resolve();
+				if (pres.getKind() == KRest) {
+					rest = true;
+					arg = "..." + pres.unwrapParam().toString();
 				} else arg = param.toString();
 				args.push(arg);
 			}
-			var rest = n > 0 && params[n - 1].getKind() == KRest;
 			var doc = new GmlFuncDoc("function", "function(", GmlFuncDoc.parRetArrow + params[n].toString(), args, rest);
 			doc.argTypes = params.slice(0, n).map(function(t) {
-				return t.getKind() == KRest ? t.unwrapParam() : t;
+				return t.resolve().getKind() == KRest ? t.unwrapParam() : t;
 			});
 			return doc;
 		}

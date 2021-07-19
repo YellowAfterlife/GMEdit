@@ -362,11 +362,11 @@ class GmlLinter {
 					);
 				}
 			}
-		} else if (fnType != null && fnType.getKind() == KFunction) {
+		} else if (fnType != null && (fnType = fnType.resolve()).getKind() == KFunction) {
 			isFuncValue = true;
 			argTypes = fnType.unwrapParams();
 			argTypesLen = argTypes.length - 1;
-			var isRest = argTypesLen > 0 && argTypes[argTypesLen - 1].getKind() == KRest;
+			var isRest = argTypesLen > 0 && argTypes[argTypesLen - 1].resolve().getKind() == KRest;
 			argTypeClamp = isRest ? argTypesLen - 1 : 0x7fffffff;
 		} else {
 			argTypes = null;
@@ -619,56 +619,8 @@ class GmlLinter {
 	}
 	
 	function readTypeName():FoundError {
-		// also see: GmlTypeParser, GmlReader.skipType
-		var start = reader.pos;
-		var startDepth = reader.depth;
-		var typeStr:String;
-		switch (next()) {
-			case KParOpen:
-				seqStart.setTo(reader);
-				rc(readTypeName());
-				if (next() != KParClose) return readSeqStartError("Unclosed type ()");
-				typeStr = '($readTypeName_typeStr)';
-			case KIdent, KUndefined, KFunction:
-				typeStr = nextVal;
-				if (skipIf(peek() == KLT)) {
-					var depth = 1;
-					typeStr += "<";
-					seqStart.setTo(reader);
-					while (reader.loop) {
-						switch (next()) {
-							case KLT:
-								typeStr += "<";
-								depth += 1;
-							case KGT:
-								typeStr += ">";
-								depth -= 1;
-								if (depth <= 0) break;
-							default:
-								typeStr += nextVal;
-						}
-					}
-					if (depth > 0) return readSeqStartError("Unclosed type parameters");
-				}
-			default: return readExpect("a type name");
-		}
-		while (reader.loop) {
-			switch (peek()) {
-				case KSqbOpen:
-					skip();
-					readCheckSkip(KSqbClose, "a closing `]`");
-					typeStr += "[]";
-				case KQMark:
-					skip();
-					typeStr += "?";
-				case KOr:
-					skip();
-					rc(readTypeName());
-					typeStr += "|" + readTypeName_typeStr;
-				default: break;
-			}
-		}
-		// todo: maybe just form the type name here too
+		var typeStr = gml.type.GmlTypeParser.readNameForLinter(this);
+		if (typeStr == null) return true;
 		readTypeName_typeStr = typeStr;
 		return false;
 	}

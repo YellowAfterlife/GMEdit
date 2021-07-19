@@ -1,6 +1,8 @@
 package gml.type;
 import gml.type.GmlType;
 import parsers.GmlReader;
+import parsers.linter.GmlLinter;
+import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
 using tools.NativeString;
@@ -60,18 +62,23 @@ class GmlTypeParser {
 		Console.warn("Type parse error in `" + q.source.insert(pos, '¦') + '` (`$ctx`): ' + s);
 		return null;
 	}
+	
+	/**
+	 * This function is used by type parser itself.
+	 * It is the most accurate of three.
+	 */
 	public static function parseRec(q:GmlReader, ctx:String, flags:GmlTypeParserFlags = FNone):GmlType {
 		inline function parseError(err:String, ?pos:Int):GmlType {
 			return GmlTypeParser.parseError(err, q, ctx, pos);
 		}
-		// also see GmlReader.skipType, GmlLinter.readTypeName
+		// also see functions below this one
 		q.skipSpaces0_local();
 		var start = q.pos;
 		var c = q.read();
 		var result:GmlType;
 		switch (c) {
 			case "(".code:
-				result = parseRec(q, ctx);
+				result = parseRec(q, ctx, FCanAlias);
 				if (result == null) return null;
 				q.skipSpaces0_local();
 				if (q.read() != ")".code) return parseError("Unclosed ()", start);
@@ -79,6 +86,12 @@ class GmlTypeParser {
 				q.skipIdent1();
 				q.skipSpaces0_local();
 				var name = q.substring(start, q.pos);
+				
+				if ((flags & FCanAlias) != 0 && q.peek() == ":".code) {
+					q.skip();
+					return THint(name, parseRec(q, ctx, flags));
+				}
+				
 				var kind = JsTools.or(kindMeta[name], KCustom);
 				var params = [];
 				//
@@ -90,7 +103,7 @@ class GmlTypeParser {
 					while (q.loop) {
 						// disable warnings for name and _index
 						warnAboutMissing = (isTIN && params.length < 2) ? null : typeWarn;
-						var t = parseRec(q, ctx);
+						var t = parseRec(q, ctx, FCanAlias);
 						if (t == null) return null;
 						params.push(t);
 						q.skipSpaces0_local();
@@ -160,6 +173,119 @@ class GmlTypeParser {
 		return result;
 	}
 	
+	/**
+	 * This function is used by the linter.
+	 * It forms a type name string and supports all the various linter tricks
+	 * (like #import name rewriting)
+	 */
+	public static function readNameForLinter(self:GmlLinter):String @:privateAccess {
+		var reader = self.reader;
+		var seqStart = self.seqStart;
+		var start = reader.pos;
+		var startDepth = reader.depth;
+		var typeStr:String;
+		switch (self.next()) {
+			case KParOpen:
+				seqStart.setTo(reader);
+				var t = readNameForLinter(self);
+				if (t == null) return null;
+				if (self.next() != KParClose) {
+					self.readSeqStartError("Unclosed type ()");
+					return null;
+				}
+				typeStr = '($t)';
+			case KIdent, KUndefined, KFunction:
+				typeStr = self.nextVal;
+				if (self.skipIf(self.peek() == KLT)) {
+					var depth = 1;
+					typeStr += "<";
+					seqStart.setTo(reader);
+					while (reader.loop) {
+						switch (self.next()) {
+							case KLT:
+								typeStr += "<";
+								depth += 1;
+							case KGT:
+								typeStr += ">";
+								depth -= 1;
+								if (depth <= 0) break;
+							default:
+								typeStr += self.nextVal;
+						}
+					}
+					if (depth > 0) {
+						self.readSeqStartError("Unclosed type parameters");
+						return null;
+					}
+				}
+			default: self.readExpect("a type name"); return null;
+		}
+		while (reader.loop) {
+			switch (self.peek()) {
+				case KSqbOpen:
+					self.skip();
+					if (self.readCheckSkip(KSqbClose, "a closing `]`")) return null;
+					typeStr += "[]";
+				case KQMark:
+					self.skip();
+					typeStr += "?";
+				case KOr:
+					self.skip();
+					var t = readNameForLinter(self);
+					if (t == null) return null;
+					typeStr += "|" + t;
+				default: break;
+			}
+		}
+		return typeStr;
+	}
+	
+	/**
+	 * This function skips over a type name without really paying attention or anything.
+	 * It's cheaper than the other two, but may totally miss some type errors.
+	 */
+	public static function skipTypeName(q:GmlReader, ?till:Int) {
+		if (till == null) till = q.length;
+		var start = q.pos;
+		inline function rewind():Success {
+			q.pos = start;
+			return false;
+		}
+		q.skipSpaces1x(till);
+		var c = q.read();
+		switch (c) {
+			case "(".code:
+				if (!q.skipType(till)) return rewind();
+				q.skipSpaces1x(till);
+				if (q.read() != ")".code) return rewind();
+			case _ if (c.isIdent0()):
+				q.skipIdent1();
+				start = q.pos;
+				q.skipSpaces1x(till);
+				if (q.peek() == "<".code) {
+					q.skip();
+					if (!q.skipTypeParams(till)) return rewind();
+				} else q.pos = start;
+			default: return rewind();
+		}
+		//
+		start = q.pos;
+		while (q.loop) {
+			q.skipSpaces1x(till);
+			switch (q.peek()) {
+				case "[".code if (q.peek(1) == "]".code): q.skip(2);
+				case "?".code: q.skip();
+				case "|".code:
+					q.skip();
+					if (!q.skipType(till)) return rewind();
+				default: break;
+			}
+			start = q.pos;
+		}
+		q.pos = start;
+		return true;
+	}
+	
 	static var cache:Dictionary<GmlType> = new Dictionary();
 	public static function parse(s:String, ctx:String):GmlType {
 		if (s == null) return null;
@@ -180,4 +306,5 @@ class GmlTypeParser {
 enum abstract GmlTypeParserFlags(Int) from Int to Int {
 	var FNone = 0;
 	var FNoEither = 1;
+	var FCanAlias = 2;
 }

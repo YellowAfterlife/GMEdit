@@ -180,6 +180,9 @@ class GmlAPI {
 	/** for global identifiers */
 	public static var gmlTypes:Dictionary<GmlType> = new Dictionary();
 	
+	/** */
+	public static var gmlTypedefs:Dictionary<GmlType> = new Dictionary();
+	
 	/** array of auto-completion items */
 	public static var gmlComp:AceAutoCompleteItems = [];
 	
@@ -269,6 +272,7 @@ class GmlAPI {
 		gmlDoc = new Dictionary();
 		gmlKind = new Dictionary();
 		gmlTypes = new Dictionary();
+		gmlTypedefs = new Dictionary();
 		gmlComp.clear();
 		gmlEnums = new Dictionary();
 		gmlEnumTypeComp.clear();

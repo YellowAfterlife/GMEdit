@@ -70,6 +70,8 @@ class GmlSeekData {
 	/** namespace -> implements-list */
 	public var namespaceImplements:Dictionary<Array<String>> = new Dictionary();
 	
+	public var typedefs:ArrayMap<GmlType> = new ArrayMap();
+	
 	// features
 	public var imports:Dictionary<GmlImports> = null;
 	public var hasCoroutines:Bool = false;
@@ -252,6 +254,15 @@ class GmlSeekData {
 				ns.interfaces.addn(impSpace);
 			}
 		}
+		
+		prev.typedefs.forEach((tn, _) -> {
+			if (next.typedefs.exists(tn)) return;
+			GmlAPI.gmlTypedefs.remove(tn);
+		});
+		next.typedefs.forEach((tn, td) -> {
+			GmlAPI.gmlTypedefs[tn] = td;
+			GmlAPI.ensureNamespace(tn);
+		});
 		
 		for (hint in prev.fieldHints) {
 			var ns = GmlAPI.gmlNamespaces[hint.namespace];

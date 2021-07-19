@@ -72,6 +72,12 @@ class GmlSeekerJSDocRegex {
 		+ "(?:\\{(.*?)\\}\\s*)?"
 		+ "(\\S+)"
 	);
+	public static var jsDoc_typedef = new RegExp("^///\\s*"
+		+ "@typedef\\b\\s*"
+		+ "\\{(.*?)\\}\\s*"
+		+ "(\\w+)\\s*"
+		+ "(?:<(.*?)>)?"
+	);
 	
 	public static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");
 }

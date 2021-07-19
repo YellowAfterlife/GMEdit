@@ -19,10 +19,13 @@ class GmlLinterArrayLiteral {
 		var itemType:GmlType = null;
 		if (targetType == null) {
 			// OK!
-		} else if (targetType.getKind() == KTuple) {
-			tupleTypes = targetType.unwrapParams();
-		} else if (targetType.canCastTo(GmlTypeDef.anyArray)) {
-			itemType = targetType.unwrapParam();
+		} else {
+			targetType = targetType.resolve();
+			if (targetType.getKind() == KTuple) {
+				tupleTypes = targetType.unwrapParams();
+			} else if (targetType.canCastTo(GmlTypeDef.anyArray)) {
+				itemType = targetType.unwrapParam();
+			}
 		}
 		
 		var closed = false;

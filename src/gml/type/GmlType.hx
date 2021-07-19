@@ -24,6 +24,9 @@ enum GmlType {
 	 * fn(m:array<TemplateItem<T, _0>>):TemplateItem<T, _0>
 	 */
 	TTemplate(name:String, ind:Int, constraint:GmlType);
+	
+	/** hint:type, e.g. in tuple<x:number, y:number> */
+	THint(hint:String, type:GmlType);
 }
 class GmlTypeAnon {
 	public var fields:Dictionary<GmlTypeAnonField> = new Dictionary();

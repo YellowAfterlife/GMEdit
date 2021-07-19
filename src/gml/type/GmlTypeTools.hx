@@ -117,6 +117,9 @@ import ace.extern.AceTokenType;
 				var et2 = mapArray(et1, f);
 				return et2 != et1 ? TEither(et2) : t;
 			};
+			case THint(hint, t1):
+				var t2 = map(t1, f);
+				return t2 != t1 ? THint(hint, t2) : t;
 			default: return t;
 		}
 	}
@@ -139,9 +142,45 @@ import ace.extern.AceTokenType;
 		return f(t);
 	}
 	
+	public static function resolve(self:GmlType, depth:Int = 0):GmlType {
+		if (++depth >= 128) return null;
+		switch (self) {
+			case null: return null;
+			case THint(hint, type): return type;
+			case TInst(name, params, kind):
+				var td = kind == KCustom ? GmlAPI.gmlTypedefs[name] : null;
+				if (td != null) {
+					var resolvedParams = params.map((p) -> resolve(p, depth));
+					return mapTemplateTypes(td, resolvedParams);
+				}
+				var newParams = null;
+				for (i => p0 in params) {
+					var p1 = resolve(p0, depth);
+					if (p1 != p0) {
+						if (newParams == null) newParams = params.copy();
+						newParams[i] = p1;
+					}
+				}
+				return newParams != null ? TInst(name, newParams, kind) : self;
+			case TEither(types):
+				var newTypes = null;
+				for (i => p0 in types) {
+					var p1 = resolve(p0, depth);
+					if (p1 != p0) {
+						if (newTypes == null) newTypes = types.copy();
+						newTypes[i] = p1;
+					}
+				}
+				return newTypes != null ? TEither(newTypes) : self;
+			default: return self;
+		}
+	}
+	
 	public static function equals(a:GmlType, b:GmlType, ?tpl:Array<GmlType>):Bool {
+		a = resolve(a); b = resolve(b);
 		switch (b) {
 			case null:
+			case THint(_, type): return equals(a, type, tpl);
 			case TInst(_, bp, KTemplateSelf):
 				switch (a) {
 					case null: return true;
@@ -167,6 +206,7 @@ import ace.extern.AceTokenType;
 		}
 		switch (a) {
 			case null, TInst(_, _, KAny): return inline isAny(b);
+			case THint(_, type): return equals(type, b, tpl);
 			case TInst(n1, tp1, k1):
 				switch (b) {
 					case null: return false;
@@ -222,6 +262,7 @@ import ace.extern.AceTokenType;
 	public static function toString(type:GmlType, ?tpl:Array<GmlType>):String {
 		switch (type) {
 			case null: return "?";
+			case THint(hint, type): return hint + ":" + toString(type, tpl);
 			case TInst(_, [p], KNullable): return toString(p, tpl) + "?";
 			case TInst(_, p, KTemplateItem):
 				return p.length < 3 ? toString(p[0]) : "(" + toString(p[0]) + ":" + toString(p[2]) + ")";

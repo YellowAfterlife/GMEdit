@@ -40,6 +40,7 @@ class GmlLinterArrayAccess {
 			case KQMark: { // map[?k]
 				self.skip();
 				rc(self.readExpr(newDepth));
+				currType = currType.resolve();
 				if (self.checkTypeCast(currType, GmlTypeDef.ds_map)) {
 					self.checkTypeCast(self.readExpr_currType, currType.unwrapParam(0), "map key");
 					currType = currType.unwrapParam(1);
@@ -51,6 +52,7 @@ class GmlLinterArrayAccess {
 				rc(self.readExpr(newDepth));
 				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, "list index");
 				
+				currType = currType.resolve();
 				if (self.checkTypeCast(currType, GmlTypeDef.ds_list)) {
 					currType = currType.unwrapParam(0);
 				} else currType = null;
@@ -75,6 +77,7 @@ class GmlLinterArrayAccess {
 				rc(self.readExpr(newDepth));
 				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, "grid Y");
 				
+				currType = currType.resolve();
 				if (self.checkTypeCast(currType, GmlTypeDef.ds_grid)) {
 					currType = currType.unwrapParam(0);
 				} else currType = null;
@@ -122,9 +125,11 @@ class GmlLinterArrayAccess {
 		} else {
 			currKind = isNull ? KNullArray : KArray;
 			if (isArray) {
+				currType = currType.resolve();
 				var ck = currType.getKind();
 				switch (ck) {
 					case KCustomKeyArray: {
+						currType = currType.resolve();
 						var indexType = currType.unwrapParam(0);
 						if (arrayType1 != null) self.checkTypeCast(arrayType1, indexType);
 						if (arrayType2 != null) self.checkTypeCast(arrayType2, indexType);
@@ -149,6 +154,7 @@ class GmlLinterArrayAccess {
 					default: {
 						if (arrayType1 != null) self.checkTypeCast(arrayType1, GmlTypeDef.number);
 						if (arrayType2 != null) self.checkTypeCast(arrayType2, GmlTypeDef.number);
+						currType = currType.resolve();
 						if (self.checkTypeCast(currType, GmlTypeDef.anyArray)) {
 							currType = currType.unwrapParam(0);
 						} else currType = null;

@@ -508,47 +508,8 @@ using tools.NativeString;
 		} else return true;
 	}
 	
-	public function skipType(?till:Int):Success {
-		// also see GmlTypeParser.parseRec, GmlLinter.readTypeName
-		if (till == null) till = length;
-		var start = pos;
-		inline function rewind():Success {
-			pos = start;
-			return false;
-		}
-		skipSpaces1x(till);
-		var c = read();
-		switch (c) {
-			case "(".code:
-				if (!skipType(till)) return rewind();
-				skipSpaces1x(till);
-				if (read() != ")".code) return rewind();
-			case _ if (c.isIdent0()):
-				skipIdent1();
-				start = pos;
-				skipSpaces1x(till);
-				if (peek() == "<".code) {
-					skip();
-					if (!skipTypeParams(till)) return rewind();
-				} else pos = start;
-			default: return rewind();
-		}
-		//
-		start = pos;
-		while (loop) {
-			skipSpaces1x(till);
-			switch (peek()) {
-				case "[".code if (peek(1) == "]".code): skip(2);
-				case "?".code: skip();
-				case "|".code:
-					skip();
-					if (!skipType(till)) return rewind();
-				default: break;
-			}
-			start = pos;
-		}
-		pos = start;
-		return true;
+	@:keep public inline function skipType(?till:Int):Success {
+		return gml.type.GmlTypeParser.skipTypeName(this, till);
 	}
 	
 	/** Skips comments and strings. Returns >= 0 if something was skipped, -1 otherwise. */

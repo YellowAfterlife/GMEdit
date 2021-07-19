@@ -141,6 +141,18 @@ class GmlSeekerJSDoc {
 			return;
 		}
 		
+		mt = jsDoc_typedef.exec(s);
+		if (mt != null) {
+			var typeStr = mt[1];
+			var name = mt[2];
+			var paramsStr = mt[3];
+			var params = paramsStr != null ? GmlTypeTemplateItem.parseSplit(paramsStr) : null;
+			if (params != null) typeStr = GmlTypeTools.patchTemplateItems(typeStr, params);
+			var type = GmlTypeDef.parse(typeStr);
+			out.typedefs[name] = type;
+			return;
+		}
+		
 		mt = jsDoc_hint_extimpl.exec(s);
 		if (mt != null) {
 			var name = mt[1];
