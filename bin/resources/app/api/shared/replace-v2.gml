@@ -278,7 +278,7 @@ gamepad_get_option(gamepad_id:int, option_key:string)->any
 #region Layer functions!
 
 layer_get_id(layer_name:string)->layer
-layer_get_id_at_depth(depth:int)->layer
+layer_get_id_at_depth(depth:int)->layer[]
 layer_get_depth(layer_id:layer|string)->int
 layer_create(depth:int,?name:string)->layer
 layer_destroy(layer_id:layer|string)->void
