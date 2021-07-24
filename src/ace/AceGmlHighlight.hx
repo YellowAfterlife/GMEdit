@@ -280,7 +280,8 @@ using tools.NativeArray;
 			]);
 		}
 		rBase = rBase.concat([ //{
-			rxRule("numeric", ~/(?:\$|0x)[0-9a-fA-F]*/), // $c0ffee
+			rxRule("numeric", ~/\$[0-9a-fA-F]+/), // $c0ffee
+			rxRule("numeric", ~/0x[0-9a-fA-F]*/), // 0xc0ffee
 			rxRule("numeric", ~/\d+(?:\.\d*)?/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxPush(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "gml.enum"),
