@@ -10,6 +10,7 @@ textarea#source {
 	flex-grow: 1;
 	display: flex;
 	flex-direction: column;
+	min-width: 12em;
 }
 .ace_container > .ace_editor {
 	flex-grow: 1;
