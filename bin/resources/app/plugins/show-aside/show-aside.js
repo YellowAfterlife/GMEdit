@@ -22,6 +22,7 @@
 		mainCont.removeChild(container);
 		gmlFile = null;
 		forceUpdate();
+		setTimeout(() => aceEditor.focus());
 	}
 	function show(file) {
 		if (!file.codeEditor) return;
@@ -96,6 +97,21 @@
 				hide();
 			}
 		}));
+		//
+		editor.commands.addCommand({
+			name: "saveFile",
+			bindKey: {win: "Ctrl-S", mac: "Command-S"},
+			exec: function(e) {
+				let file = e.session.gmlFile;
+				if (file && file.save()) {
+					setTimeout(() => {
+						if (file.codeEditor.session.getUndoManager().isClean()) {
+							e.session.getUndoManager().markClean();
+						}
+					});
+				}
+			}
+		});
 	}
 	//
 	function init() {
