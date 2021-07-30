@@ -19,7 +19,7 @@ abstract Dictionary<T>(Dynamic) from Dynamic {
 		NativeObject.forField(this, function(s) {
 			dict[s] = get(s);
 		});
-		return copy;
+		return dict;
 	}
 	public static function fromKeys<T>(keys:Array<String>, val:T):Dictionary<T> {
 		var out = new Dictionary();
