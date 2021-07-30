@@ -267,6 +267,19 @@ import ace.extern.AceTokenType;
 				}
 				return n1 == fm2.fields.size();
 			case TTemplate(i1, _): return false;
+			case TSpecifiedMap(m1):
+				var m2 = switch (b) {
+					case null: return false;
+					case TSpecifiedMap(m): m;
+					default: return false;
+				}
+				if (m1.fieldList.length != m2.fieldList.length) return false;
+				for (f1 in m1.fieldList) {
+					var f2 = m2.fieldMap[f1.name];
+					if (f2 == null) return false;
+					if (!equals(f1.type, f2.type, tpl)) return false;
+				}
+				return equals(m1.defaultType, m2.defaultType, tpl);
 		}
 	}
 	
@@ -320,15 +333,27 @@ import ace.extern.AceTokenType;
 				if (sep) s += " ";
 				return s + "}";
 			};
-		case TTemplate(name, ind, c):
-			var tt = JsTools.nca(tpl, tpl[ind]);
-			if (tt != null) return toString(tt);
-			var s = name;
-			#if debug
-			s += "#" + ind;
-			#end
-			if (c != null) s = '($s:' + c.toString() + ')';
-			return s;
+			case TTemplate(name, ind, c): {
+				var tt = JsTools.nca(tpl, tpl[ind]);
+				if (tt != null) return toString(tt);
+				var s = name;
+				#if debug
+				s += "#" + ind;
+				#end
+				if (c != null) s = '($s:' + c.toString() + ')';
+				return s;
+			}
+			case TSpecifiedMap(meta): {
+				var s = "specified_map<";
+				var sep = false;
+				for (i => f in meta.fieldList) {
+					if (sep) s += ", "; else sep = true;
+					s += f.name + ":" + f.type.toString();
+				}
+				if (sep) s += ", ";
+				s += meta.defaultType.toString();
+				return s + ">";
+			};
 		}
 	}
 	

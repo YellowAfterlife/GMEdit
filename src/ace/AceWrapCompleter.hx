@@ -142,166 +142,11 @@ using tools.NativeString;
 			return;
 		}
 		else if (dotKind != DKNone) {
-			do { // once
-				if (tk == null) continue;
-				var iter:AceTokenIterator = null;
-				inline function initIter():AceTokenIterator {
-					return new AceTokenIterator(session, pos.row, pos.column);
-				}
-				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) {
-					if (dotKind == DKEnum) {
-						if (tk.type == "enumerror") {
-							iter = initIter();
-							tk = iter.stepBackward();
-						}
-					} else if (dotKind == DKGlobal) {
-						if (tk.type == "globalfield") {
-							iter = initIter();
-							tk = iter.stepBackward();
-						}
-					}
-				}
-				if (tk.type != "punctuation.operator" || !tk.value.contains(".")) continue;
-				
-				var dotPos:AcePos;
-				if (dotKind == DKSmart) {
-					if (iter == null) iter = initIter();
-					dotPos = iter.getCurrentTokenPosition();
-				} else dotPos = null;
-				
-				if (editor.completer.eraseSelfDot) {
-					tk = { type: "keyword", value: "self" };
-				} else {
-					if (iter == null) iter = initIter();
-					tk = iter.stepBackward();
-				}
-				
-				switch (dotKind) {
-					case DKNamespace: { // NameSpace.staticField
-						if (tk.type != "namespace") continue;
-						var scope = session.gmlScopes.get(pos.row);
-						if (scope == null) continue;
-						var imp = GmlFile.current.codeEditor.imports[scope];
-						var ns:GmlNamespace;
-						if (dotKindMeta) {
-							ns = GmlAPI.gmlNamespaces[tk.value];
-						} else {
-							if (imp == null) continue;
-							ns = imp.namespaces[tk.value];
-						}
-						if (ns == null) continue;
-						callback(null, ns.compStatic.array);
-						return;
-					};
-					case DKSmart: {
-						var scope = session.gmlScopes.get(pos.row);
-						if (scope == null) continue;
-						var isGlobal = dotKindMeta;
-						
-						var type:GmlType;
-						if (!isGlobal) {
-							// some special cases where we know that we don't have to parse anything:
-							var snip:GmlCode = null;
-							switch (tk.type) {
-								case "local", "sublocal", "asset.object", "namespace", "enum": {
-									snip = tk.value;
-								};
-								case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
-								default:
-							}
-							// ... unless they are preceded by "as", of course
-							if (snip != null) {
-								var btk = iter.peekBackwardNonText();
-								if (btk != null && btk.ncType == "keyword") switch (btk.value) {
-									case "as", "cast": snip = null;
-								}
-							}
-							if (snip == null) {
-								var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
-								snip = session.getTextRange(AceRange.fromPair(from, dotPos));
-							}
-							
-							type = GmlLinter.getType(snip, session.gmlEditor, scope, dotPos).type;
-							dkSmart_type = type;
-							
-							var ctr = editor.completer.getPopup().container;
-							if (type != null) ctr.setAttribute("data-self-type", type.toString());
-						} else type = dkSmart_type;
-						
-						if (type == null) continue;
-						
-						var isStatic = type.isType();
-						if (isStatic) type = type.unwrapParam();
-						
-						var imp:GmlImports;
-						if (!isGlobal) {
-							imp = GmlFile.current.codeEditor.imports[scope];
-							if (imp == null) continue;
-						} else imp = null;
-						
-						var tn = type.getNamespace();
-						var ns = dotKindMeta ? GmlAPI.gmlNamespaces[tn] : imp.namespaces[tn];
-						if (ns != null) {
-							callback(null, isStatic ? ns.compStatic.array : ns.getInstComp());
-							return;
-						} else if (!isGlobal) {
-							var en = GmlAPI.gmlEnums[tn];
-							if (en == null) continue;
-							callback(null, isStatic ? en.compList : en.fieldComp);
-							return;
-						}
-					};
-					case DKGlobal: { // global.variable
-						proc(tk.value == "global");
-					};
-					case DKEnum: { // Enum.Construct
-						if (tk.type != "enum") continue;
-						var name = tk.value;
-						// expand imports:
-						var scope = session.gmlScopes.get(pos.row);
-						if (scope != null) {
-							var imp = GmlFile.current.codeEditor.imports[scope];
-							if (imp != null) {
-								var s = imp.longenEnum[name];
-								if (s != null) name = s;
-							}
-						}
-						//
-						var en = GmlAPI.gmlEnums[name];
-						if (en != null) {
-							callback(null, en.fieldComp);
-							return;
-						}
-					};
-					default:
-				}
-			} while (false);
-			proc(false);
+			getCompletions_dotKind(editor, session, pos, prefix, callback, tk);
 			return;
 		}
 		else if (sqbKind != SKNone) {
-			do { // once
-				if (tk == null) continue;
-				if (tk.type != "square.paren.lparen") continue;
-				if (tk.value != "[") continue;
-				
-				var scope = session.gmlScopes.get(pos.row);
-				if (scope == null) continue;
-				
-				var end = pos.add( -1, 0);
-				var start = AceGmlTools.skipDotExprBackwards(session, end);
-				var snip = session.getTextRange(AceRange.fromPair(start, end));
-				var type = GmlLinter.getType(snip, session.gmlEditor, scope, pos).type;
-				type = type.resolve();
-				if (type.getKind() != KTuple) continue;
-				var comps:AceAutoCompleteItems = [];
-				for (i => tp in type.unwrapParams()) {
-					comps.push(new AceAutoCompleteItem("" + i, "index", tp.toString()));
-				}
-				callback(null, comps);
-				return;
-			} while (false);
-			proc(false);
+			getCompletions_sqbKind(editor, session, pos, prefix, callback, tk);
 			return;
 		}
 		//
@@ -309,6 +154,195 @@ using tools.NativeString;
 		if (!tkf && tokenFilterComment && tk.type.startsWith("comment")) tkf = true;
 		proc(tkf != tokenFilterNot);
 	}
+	
+	function getCompletions_dotKind(
+		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb, tk:AceToken
+	):Void {
+		inline function proc(show:Bool) {
+			callback(null, show ? items : noItems);
+		}
+		do { // once
+			if (tk == null) continue;
+			var iter:AceTokenIterator = null;
+			inline function initIter():AceTokenIterator {
+				return new AceTokenIterator(session, pos.row, pos.column);
+			}
+			if (tk.type != "punctuation.operator" || !tk.value.contains(".")) {
+				if (dotKind == DKEnum) {
+					if (tk.type == "enumerror") {
+						iter = initIter();
+						tk = iter.stepBackward();
+					}
+				} else if (dotKind == DKGlobal) {
+					if (tk.type == "globalfield") {
+						iter = initIter();
+						tk = iter.stepBackward();
+					}
+				}
+			}
+			if (tk.type != "punctuation.operator" || !tk.value.contains(".")) continue;
+			
+			var dotPos:AcePos;
+			if (dotKind == DKSmart) {
+				if (iter == null) iter = initIter();
+				dotPos = iter.getCurrentTokenPosition();
+			} else dotPos = null;
+			
+			if (editor.completer.eraseSelfDot) {
+				tk = { type: "keyword", value: "self" };
+			} else {
+				if (iter == null) iter = initIter();
+				tk = iter.stepBackward();
+			}
+			
+			switch (dotKind) {
+				case DKNamespace: { // NameSpace.staticField
+					if (tk.type != "namespace") continue;
+					var scope = session.gmlScopes.get(pos.row);
+					if (scope == null) continue;
+					var imp = GmlFile.current.codeEditor.imports[scope];
+					var ns:GmlNamespace;
+					if (dotKindMeta) {
+						ns = GmlAPI.gmlNamespaces[tk.value];
+					} else {
+						if (imp == null) continue;
+						ns = imp.namespaces[tk.value];
+					}
+					if (ns == null) continue;
+					callback(null, ns.compStatic.array);
+					return;
+				};
+				case DKSmart: {
+					var scope = session.gmlScopes.get(pos.row);
+					if (scope == null) continue;
+					var isGlobal = dotKindMeta;
+					
+					var type:GmlType;
+					if (!isGlobal) {
+						// some special cases where we know that we don't have to parse anything:
+						var snip:GmlCode = null;
+						switch (tk.type) {
+							case "local", "sublocal", "asset.object", "namespace", "enum": {
+								snip = tk.value;
+							};
+							case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
+							default:
+						}
+						// ... unless they are preceded by "as", of course
+						if (snip != null) {
+							var btk = iter.peekBackwardNonText();
+							if (btk != null && btk.ncType == "keyword") switch (btk.value) {
+								case "as", "cast": snip = null;
+							}
+						}
+						if (snip == null) {
+							var from = AceGmlTools.skipDotExprBackwards(session, dotPos);
+							snip = session.getTextRange(AceRange.fromPair(from, dotPos));
+						}
+						
+						type = GmlLinter.getType(snip, session.gmlEditor, scope, dotPos).type;
+						dkSmart_type = type;
+						
+						var ctr = editor.completer.getPopup().container;
+						if (type != null) ctr.setAttribute("data-self-type", type.toString());
+					} else type = dkSmart_type;
+					
+					if (type == null) continue;
+					
+					var isStatic = type.isType();
+					if (isStatic) type = type.unwrapParam();
+					
+					var imp:GmlImports;
+					if (!isGlobal) {
+						imp = GmlFile.current.codeEditor.imports[scope];
+						if (imp == null) continue;
+					} else imp = null;
+					
+					var tn = type.getNamespace();
+					var ns = dotKindMeta ? GmlAPI.gmlNamespaces[tn] : imp.namespaces[tn];
+					if (ns != null) {
+						callback(null, isStatic ? ns.compStatic.array : ns.getInstComp());
+						return;
+					} else if (!isGlobal) {
+						var en = GmlAPI.gmlEnums[tn];
+						if (en == null) continue;
+						callback(null, isStatic ? en.compList : en.fieldComp);
+						return;
+					}
+				};
+				case DKGlobal: { // global.variable
+					proc(tk.value == "global");
+				};
+				case DKEnum: { // Enum.Construct
+					if (tk.type != "enum") continue;
+					var name = tk.value;
+					// expand imports:
+					var scope = session.gmlScopes.get(pos.row);
+					if (scope != null) {
+						var imp = GmlFile.current.codeEditor.imports[scope];
+						if (imp != null) {
+							var s = imp.longenEnum[name];
+							if (s != null) name = s;
+						}
+					}
+					//
+					var en = GmlAPI.gmlEnums[name];
+					if (en != null) {
+						callback(null, en.fieldComp);
+						return;
+					}
+				};
+				default:
+			}
+		} while (false);
+		proc(false);
+	}
+	
+	function getCompletions_sqbKind(
+		editor:AceEditor, session:AceSession, pos:AcePos, prefix:String, callback:AceAutoCompleteCb, tk:AceToken
+	):Void {
+		inline function proc(show:Bool) {
+			callback(null, show ? items : noItems);
+		}
+		do { // once
+			if (tk == null) continue;
+			if (tk.type != "square.paren.lparen") continue;
+			if (tk.value != "[") continue;
+			
+			var scope = session.gmlScopes.get(pos.row);
+			if (scope == null) continue;
+			
+			var end = pos.add( -1, 0);
+			var start = AceGmlTools.skipDotExprBackwards(session, end);
+			var snip = session.getTextRange(AceRange.fromPair(start, end));
+			var origType = GmlLinter.getType(snip, session.gmlEditor, scope, pos).type;
+			
+			var ctr = editor.completer.getPopup().container;
+			if (origType != null) ctr.setAttribute("data-self-type", origType.toString());
+			
+			var type = origType.resolve();
+			var comps:AceAutoCompleteItems = [];
+			switch (type) {
+				case null: continue;
+				case TSpecifiedMap(mapMeta):
+					for (mapField in mapMeta.fieldList) {
+						var snip = '?"' + mapField.name + '"';
+						var comp = new AceAutoCompleteItem(snip, "key", mapField.type.toString());
+						comp.caption = mapField.name;
+						comps.push(comp);
+					}
+				case TInst(_, params, KTuple):
+					for (i => tp in type.unwrapParams()) {
+						comps.push(new AceAutoCompleteItem("" + i, "index", tp.toString()));
+					}
+				default: continue;
+			}
+			callback(null, comps);
+			return;
+		} while (false);
+		proc(false);
+	}
+	
 	static var dkSmart_type:GmlType;
 	public function getDocTooltip(item:AceAutoCompleteItem):String {
 		return item.doc;

@@ -41,7 +41,26 @@ class GmlLinterArrayAccess {
 				self.skip();
 				rc(self.readExpr(newDepth));
 				currType = currType.resolve();
-				if (self.checkTypeCast(currType, GmlTypeDef.ds_map)) {
+				var mapMeta = switch (currType) {
+					case null: null;
+					case TSpecifiedMap(mm): mm;
+					default: null;
+				}
+				if (mapMeta != null) {
+					switch (self.readExpr_currValue) {
+						case VString(_, k):
+							try {
+								k = haxe.Json.parse(k);
+								var mapField = mapMeta.fieldMap[k];
+								currType = mapField != null ? mapField.type : mapMeta.defaultType;
+							} catch (_) {
+								currType = mapMeta.defaultType;
+							}
+						default:
+							self.checkTypeCast(self.readExpr_currType, GmlTypeDef.string, "map key");
+							currType = mapMeta.defaultType;
+					}
+				} else if (self.checkTypeCast(currType, GmlTypeDef.ds_map)) {
 					self.checkTypeCast(self.readExpr_currType, currType.unwrapParam(0), "map key");
 					currType = currType.unwrapParam(1);
 				} else currType = null;

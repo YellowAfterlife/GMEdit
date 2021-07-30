@@ -2,6 +2,7 @@ package gml.type;
 import gml.GmlFuncDoc;
 import haxe.ds.ReadOnlyArray;
 import tools.Dictionary;
+import tools.ReadOnlyDictionary;
 
 /**
  * Represents a reference to a GML type.
@@ -27,6 +28,8 @@ enum GmlType {
 	
 	/** hint:type, e.g. in tuple<x:number, y:number> */
 	THint(hint:String, type:GmlType);
+	
+	TSpecifiedMap(meta:GmlTypeMap);
 }
 class GmlTypeAnon {
 	public var fields:Dictionary<GmlTypeAnonField> = new Dictionary();
@@ -38,6 +41,29 @@ class GmlTypeAnonField {
 	public function new(t:GmlType, d:GmlFuncDoc) {
 		this.type = t;
 		this.doc = d;
+	}
+}
+
+class GmlTypeMap {
+	public var fieldMap(default, null):ReadOnlyDictionary<GmlTypeMapField>;
+	public var fieldList(default, null):ReadOnlyArray<GmlTypeMapField>;
+	public var defaultType(default, null):GmlType;
+	public function new(
+		fieldMap:ReadOnlyDictionary<GmlTypeMapField>,
+		fieldList:ReadOnlyArray<GmlTypeMapField>,
+		defaultType:GmlType
+	) {
+		this.fieldMap = fieldMap;
+		this.fieldList = fieldList;
+		this.defaultType = defaultType;
+	}
+}
+class GmlTypeMapField {
+	public var name(default, null):String;
+	public var type(default, null):GmlType;
+	public function new(name:String, type:GmlType) {
+		this.name = name;
+		this.type = type;
 	}
 }
 

@@ -18,6 +18,8 @@ typedef CustomKeyArray;
 // tuple<int, string> accepts [1, "2"]
 typedef tuple;
 
+// specified_map<a:int, b:string, void> allows only map[?"a"] and map[?"b"]
+typedef specified_map;
 // Asset types
 typedef asset;
 typedef sprite : asset;

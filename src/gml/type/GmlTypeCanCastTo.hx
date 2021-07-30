@@ -83,6 +83,17 @@ class GmlTypeCanCastTo {
 			case [TEither(et1), _]: // each member of from must cast to
 				for (t1 in et1) if (!canCastTo(t1, to, tpl, imp)) return false;
 				return true;
+			case [TSpecifiedMap(mapMeta), TInst(_, p, KMap)]: {
+				if (p.length == 0) return true;
+				if (!canCastTo(p[0], GmlTypeDef.string, tpl, imp)) return false;
+				var vt = p[1];
+				if (!canCastTo(mapMeta.defaultType, vt, tpl, imp)) return false;
+				for (mapField in mapMeta.fieldList) {
+					if (!canCastTo(mapField.type, vt)) return false;
+				}
+				return true;
+			};
+			case [TInst(_, [], KMap), TSpecifiedMap(_)]: return true;
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
 				// allow function->script casts
 				if (k1 == KFunction && n2 == "script") return true;

@@ -63,6 +63,27 @@ class GmlTypeParser {
 		return null;
 	}
 	
+	static function parseRec_skip(q:GmlReader) {
+		while (q.loopLocal) {
+			switch (q.peek()) {
+				case " ".code, "\t".code, "\r".code, "\n".code: {
+					q.skip();
+					continue;
+				};
+				case "/".code: {
+					switch (q.peek(1)) {
+						case "/".code:
+							q.skipLine();
+							continue;
+						case "*".code:
+							q.skip(2);
+							q.skipComment();
+							continue;
+					}
+				};
+			}; break;
+		}
+	}
 	/**
 	 * This function is used by type parser itself.
 	 * It is the most accurate of three.
@@ -72,7 +93,7 @@ class GmlTypeParser {
 			return GmlTypeParser.parseError(err, q, ctx, pos);
 		}
 		// also see functions below this one
-		q.skipSpaces0_local();
+		parseRec_skip(q);
 		var start = q.pos;
 		var c = q.read();
 		var result:GmlType;
@@ -83,7 +104,7 @@ class GmlTypeParser {
 					var t = parseRec(q, ctx, FCanAlias);
 					if (t == null) return null;
 					params.push(t);
-					q.skipSpaces0_local();
+					parseRec_skip(q);
 					c = q.read();
 					switch (c) {
 						case "]".code: break;
@@ -95,12 +116,12 @@ class GmlTypeParser {
 			case "(".code:
 				result = parseRec(q, ctx, FCanAlias);
 				if (result == null) return null;
-				q.skipSpaces0_local();
+				parseRec_skip(q);
 				if (q.read() != ")".code) return parseError("Unclosed ()", start);
 			case _ if (c.isIdent0()):
 				q.skipIdent1();
-				q.skipSpaces0_local();
 				var name = q.substring(start, q.pos);
+				parseRec_skip(q);
 				
 				if ((flags & FCanAlias) != 0 && q.peek() == ":".code) {
 					q.skip();
@@ -121,7 +142,7 @@ class GmlTypeParser {
 						var t = parseRec(q, ctx, FCanAlias);
 						if (t == null) return null;
 						params.push(t);
-						q.skipSpaces0_local();
+						parseRec_skip(q);
 						c = q.read();
 						switch (c) {
 							case ">".code: break;
@@ -133,7 +154,30 @@ class GmlTypeParser {
 				}
 				if (name == "either") { // Either<A,B> -> (A|B)
 					result = TEither(params);
-				} else if (kind == KTemplateItem) {
+				}
+				else if (name == "specified_map") {
+					var fieldList = [];
+					var fieldMap = new Dictionary<GmlTypeMapField>();
+					var defaultType = null;
+					for (param in params) {
+						switch (param) {
+							case THint(name, type):
+								if (fieldMap.exists(name)) {
+									return parseError('Redefinition of field $name');
+								} else {
+									var field = new GmlTypeMapField(name, type);
+									fieldList.push(field);
+									fieldMap[name] = field;
+								}
+							default:
+								if (defaultType != null) {
+									return parseError('Redefinition of default type');
+								} else defaultType = param;
+						}
+					}
+					result = TSpecifiedMap(new GmlTypeMap(fieldMap, fieldList, defaultType));
+				}
+				else if (kind == KTemplateItem) {
 					if (params.length < 2) return parseError("Malformed parameters for " + GmlTypeTools.templateItemName);
 					var tn = switch (params[0]) {
 						case null: "?";
@@ -147,7 +191,8 @@ class GmlTypeParser {
 					}
 					if (ti == null) return parseError("Malformed index for " + GmlTypeTools.templateItemName);
 					result = TTemplate(tn, ti, params[2]);
-				} else {
+				}
+				else {
 					if (typeWarn != null
 						&& !GmlAPI.stdKind.exists(name)
 						&& !GmlTypeTools.kindMap.exists(name)
@@ -161,7 +206,7 @@ class GmlTypeParser {
 		
 		// postfixes:
 		while (q.loop) {
-			q.skipSpaces0_local();
+			parseRec_skip(q);
 			switch (q.peek()) {
 				case "[".code:
 					q.skip();
@@ -178,7 +223,7 @@ class GmlTypeParser {
 						var t = parseRec(q, ctx, FNoEither);
 						if (t == null) return null;
 						et.push(t);
-						q.skipSpaces0_local();
+						parseRec_skip(q);
 						if (q.peek() == "|".code) q.skip(); else break;
 					}
 					result = TEither(et);
