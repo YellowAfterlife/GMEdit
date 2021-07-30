@@ -183,6 +183,7 @@ class GmlLinter {
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 		optImplicitNullableCast = getOption((q) -> q.implicitNullableCasts);
 		GmlTypeCanCastTo.allowImplicitNullCast = optImplicitNullableCast;
+		GmlTypeCanCastTo.allowImplicitBoolIntCasts = getOption((q) -> q.implicitBoolIntCasts);
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;

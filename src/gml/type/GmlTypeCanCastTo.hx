@@ -23,6 +23,7 @@ class GmlTypeCanCastTo {
 	public static var isBoolOp:Bool = false;
 	/** Note: linter updates this in the constructor */
 	public static var allowImplicitNullCast:Bool = false;
+	public static var allowImplicitBoolIntCasts:Bool = false;
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		from = from.resolve();
@@ -100,8 +101,8 @@ class GmlTypeCanCastTo {
 				
 				switch (k2) {
 					// allow bool<->number casts:
-					case KNumber: if (k1 == KBool) return true;
-					case KBool: if (k1 == KNumber) return true;
+					case KNumber: if (k1 == KBool) return allowImplicitBoolIntCasts || isExplicit;
+					case KBool: if (k1 == KNumber) return allowImplicitBoolIntCasts || isExplicit;
 					
 					case KArray: // var v:Enum should be allowed for array access
 						if (p2.length == 0 && GmlAPI.gmlEnums.exists(n1)) return true;

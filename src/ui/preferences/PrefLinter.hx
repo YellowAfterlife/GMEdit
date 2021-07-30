@@ -133,6 +133,7 @@ class PrefLinter {
 		out = addGroup(orig, "Misc.");
 		addf(aBool, "Warn about missing fields on a.b access", opt.requireFields);
 		addf(aBool, "Allow implicitly casting Type? to Type", opt.implicitNullableCasts);
+		addf(aBool, "Allow implicitly casting between bool and int", opt.implicitBoolIntCasts);
 		
 		out = addGroup(orig, "Block scoping");
 		el = addf(aBool, "Treat `var` as block-scoped", opt.blockScopedVar);

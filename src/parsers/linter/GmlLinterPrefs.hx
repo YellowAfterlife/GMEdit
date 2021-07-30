@@ -23,6 +23,7 @@ package parsers.linter;
 		specTypeInst: false,
 		requireFields: false,
 		implicitNullableCasts: false,
+		implicitBoolIntCasts: true,
 		
 		liveCheckOnEnter: false,
 		liveCheckOnSemico: false,
@@ -50,7 +51,12 @@ typedef GmlLinterPrefsImpl = {
 	?specTypeMisc:Bool,
 	?specTypeInst:Bool,
 	?requireFields:Bool,
+	
+	/** Whether to allow implicit T?->T casts */
 	?implicitNullableCasts:Bool,
+	
+	/** Whether to allow implicit bool<->int casts */
+	?implicitBoolIntCasts:Bool,
 	
 	?liveCheckOnEnter:Bool,
 	?liveCheckOnSemico:Bool,
