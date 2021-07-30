@@ -32,6 +32,7 @@ class GmlParseAPI {
 		comp:AceAutoCompleteItems,
 		?types:Dictionary<GmlType>,
 		?namespaceDefs:Array<GmlNamespaceDef>,
+		?typedefs:Dictionary<GmlType>,
 		?ukSpelling:Bool,
 		?version:GmlVersion,
 		?kindPrefix:String,
@@ -60,6 +61,7 @@ class GmlParseAPI {
 		var instKind = data.instKind;
 		var instType = data.instType;
 		var namespaceDefs = data.namespaceDefs;
+		var typedefs = data.typedefs;
 		var fieldHints = data.fieldHints;
 		#if lwedit
 		var lwArg0 = data.lwArg0;
@@ -75,13 +77,22 @@ class GmlParseAPI {
 			+ "typedef\\s+"
 			+ "(\\w+)"
 			+ "(?:\\s*:\\s*(\\w+))?" // : parent
+			+ "(?:\\s*=\\s*(" + [
+				"\\w+<\\s*" + "(?:\r?\n.*?)*?" + "\r?\n\\s*>",
+				".+",
+			].join("|") + "))?" // = impl
 		+ "", "gm");
-		if (namespaceDefs != null) rxTypedef.each(src, function(mt:RegExpMatch) {
+		if (namespaceDefs != null || typedefs != null) rxTypedef.each(src, function(mt:RegExpMatch) {
 			var name = mt[1];
 			var parent = mt[2];
-			namespaceDefs.push({ name: name, parent: parent });
+			var def = mt[3];
 			stdKind[name] = "namespace";
 			stdComp.push(new AceAutoCompleteItem(name, "namespace", "type\nbuilt-in"));
+			if (def != null) {
+				if (typedefs != null) typedefs[name] = GmlTypeDef.parse(def, mt[0]);
+			} else {
+				if (namespaceDefs != null) namespaceDefs.push({ name: name, parent: parent });
+			}
 		});
 		
 		// struct types

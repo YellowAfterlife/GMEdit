@@ -20,6 +20,70 @@ typedef tuple;
 
 // specified_map<a:int, b:string, void> allows only map[?"a"] and map[?"b"]
 typedef specified_map;
+
+// GMEdit will auto-pick these for async_load based on event name
+typedef async_load_http = specified_map<
+	id:int,
+	status:int,
+	result:string,
+	url:string,
+	http_status:int,
+	contentLength:int,
+	sizeDownloaded:int,
+	void
+>;
+
+typedef async_load_audio_playback = specified_map<
+	queue_id:sound_play_queue,
+	buffer_id:buffer,
+	queue_shutdown:int,
+	void
+>;
+
+typedef async_load_audio_recording = specified_map<
+	channel_index:int,
+	buffer_id:buffer,
+	data_len:int,
+	void
+>;
+
+typedef async_load_cloud = specified_map<
+	id:int,
+	status:int,
+	description:string,
+	resultString:string,
+	errorString:string,
+	void
+>;
+
+typedef async_load_dialog = specified_map<
+	id:int,
+	status:int,
+	// get_string
+	result:string,
+	// get_integer
+	value:int,
+	// get_login:
+	username:string,
+	password:string,
+	//
+	void
+>;
+
+typedef async_load_network = specified_map<
+	id:network_socket,
+	type:network_async_id,
+	ip:string,
+	port:int,
+	socket:network_socket, // in connect/disconnect
+	succeeded:bool, // in non-blocking connect
+	buffer:buffer, // in data
+	size:int, // in data
+	void,
+>;
+
+// todo: more async events
+
 // Asset types
 typedef asset;
 typedef sprite : asset;

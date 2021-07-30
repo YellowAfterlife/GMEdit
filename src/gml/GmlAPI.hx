@@ -105,6 +105,9 @@ class GmlAPI {
 	public static var stdNamespaceDefs:Array<GmlNamespaceDef> = [];
 	public static var stdFieldHints:Array<GmlSeekDataHint> = [];
 	
+	/** for @typedef */
+	public static var stdTypedefs:Dictionary<GmlType> = new Dictionary();
+	
 	public static function stdClear() {
 		stdDoc = new Dictionary();
 		stdTypes = new Dictionary();
@@ -114,6 +117,7 @@ class GmlAPI {
 		stdInstCompMap = new Dictionary();
 		stdInstKind = new Dictionary();
 		stdInstType = new Dictionary();
+		stdTypedefs = new Dictionary();
 		
 		stdNamespaceDefs.resize(0);
 		stdFieldHints.resize(0);
@@ -180,7 +184,7 @@ class GmlAPI {
 	/** for global identifiers */
 	public static var gmlTypes:Dictionary<GmlType> = new Dictionary();
 	
-	/** */
+	/** for @typedef */
 	public static var gmlTypedefs:Dictionary<GmlType> = new Dictionary();
 	
 	/** array of auto-completion items */
@@ -396,6 +400,7 @@ class GmlAPI {
 			comp: stdComp,
 			types: stdTypes,
 			namespaceDefs: stdNamespaceDefs,
+			typedefs: stdTypedefs,
 			fieldHints: stdFieldHints,
 			instComp: stdInstComp,
 			instCompMap: stdInstCompMap,

@@ -35,6 +35,15 @@ class GmlLinterIdent {
 				case "true", "false":
 					currType = GmlTypeDef.bool;
 					break;
+				case "async_load":
+					var ctx = linter.context;
+					if (ctx.startsWith("async_")) {
+						var defName = "async_load_" + ctx.substring(6);
+						if (GmlAPI.stdTypedefs.exists(defName) || GmlAPI.gmlTypedefs.exists(defName)) {
+							currType = GmlTypeDef.simple(defName);
+							break;
+						}
+					}
 			}
 			
 			var imp:GmlImports = linter.getImports();

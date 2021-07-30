@@ -147,14 +147,12 @@ import ace.extern.AceTokenType;
 		switch (self) {
 			case null: return null;
 			case THint(hint, type): return resolve(type, depth);
-			case TInst(name, params, kind):
-				var td = kind == KCustom ? GmlAPI.gmlTypedefs[name] : null;
-				if (td != null) {
-					return mapTemplateTypes(td, params);
-				}
-				return self;
-			default: return self;
+			case TInst(name, params, KCustom):
+				var td = JsTools.or(GmlAPI.gmlTypedefs[name], GmlAPI.stdTypedefs[name]);
+				if (td != null) return mapTemplateTypes(td, params);
+			default:
 		}
+		return self;
 	}
 	
 	public static function resolveRec(self:GmlType, depth:Int = 0):GmlType {
