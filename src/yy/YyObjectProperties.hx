@@ -4,6 +4,7 @@ import haxe.extern.EitherType;
 import js.lib.RegExp;
 import parsers.GmlObjectProperties;
 import tools.JsTools;
+import tools.NativeObject;
 import tools.NativeString;
 import yy.YyJson;
 import yy.YyObject;
@@ -139,27 +140,27 @@ class YyObjectProperties {
 			addPrim("physics_shape_data", '"' + pts.join(";") + '"');
 		}
 		//
+		function printExpr(x:String):String {
+			if (rxLString.test(x)) {
+				return x;
+			} else if (rxJSONish.test(x)) {
+				try {
+					Json.parse(x);
+					return x;
+				} catch (_:Dynamic) { }
+			}
+			//
+			var q = new GmlReader(x, gml.GmlVersion.v2);
+			q.skipVarExpr(gml.GmlVersion.v2, ",".code);
+			if (q.eof) {
+				return "(" + x + ")";
+			} else {
+				return "#" + Json.stringify(x);
+			}
+		}
 		if (o.properties != null) for (prop in o.properties) {
 			out += '\n' + (v22 ? prop.varName : prop.name) + ':';
 			var found = true;
-			function printExpr(x:String):String {
-				if (rxLString.test(x)) {
-					return x;
-				} else if (rxJSONish.test(x)) {
-					try {
-						Json.parse(x);
-						return x;
-					} catch (_:Dynamic) { }
-				}
-				//
-				var q = new GmlReader(x, gml.GmlVersion.v2);
-				q.skipVarExpr(gml.GmlVersion.v2, ",".code);
-				if (q.eof) {
-					return "(" + x + ")";
-				} else {
-					return "#" + Json.stringify(x);
-				}
-			}
 			switch (prop.varType) {
 				case TReal, TInt: {
 					var isInt = prop.varType == TInt;
@@ -232,6 +233,9 @@ class YyObjectProperties {
 			}
 			out += v22 ? '; // ' + prop.id : ';';
 		}
+		if (!v22 && o.overriddenProperties != null) for (ov in o.overriddenProperties) {
+			out += "\n" + ov.objectId.name + "." +ov.propertyId.name + " = " + printExpr(ov.value) + ";";
+		}
 		//
 		return out;
 	}
@@ -240,6 +244,9 @@ class YyObjectProperties {
 		"rangeEnabled", "rangeMin", "rangeMax",
 		"listItems", "multiselect",
 		"filters",
+	].concat(YyJsonPrinter.mvcOrder23);
+	static var overPropFieldOrder23:Array<String> = [
+		"propertyId", "objectId", "value",
 	].concat(YyJsonPrinter.mvcOrder23);
 	static var digitCount23:DynamicAccess<Int> = { "rangeMin": 1, "rangeMax": 1 };
 	public static function set(o:YyObject, code:String) {
@@ -323,6 +330,7 @@ class YyObjectProperties {
 		}
 		//
 		var props:Array<YyObjectProperty> = [];
+		var overProps:Array<YyObjectPropertyOverride> = [];
 		function propProc(name:String, type:String, guid:YyGUID, params:Array<GmlObjectPropertiesValue>, value:GmlObjectPropertiesValue):ErrorText {
 			try {
 				var orig:YyObjectProperty = null;
@@ -354,7 +362,7 @@ class YyObjectProperties {
 							prop.tags = [];
 							prop.filters = [];
 						} else {
-							tools.NativeObject.fillDefaults(prop, orig);
+							NativeObject.fillDefaults(prop, orig);
 						}
 					}
 					props.push(prop);
@@ -579,8 +587,43 @@ class YyObjectProperties {
 				return Std.string(x);
 			}
 		}
-		var error = GmlObjectProperties.parse(code, gml.GmlVersion.v2, varProc, propProc);
+		function overProc(object:String, field:String, val:GmlObjectPropertiesValue):ErrorText {
+			try {
+				if (v22) return "Property overrides are not supported for GMS2.2";
+				var ovpOrig:YyObjectPropertyOverride = null;
+				if (o.overriddenProperties != null) for (ovp in o.overriddenProperties) {
+					if (ovp.objectId.name != object) continue;
+					if (ovp.propertyId.name != field) continue;
+					ovpOrig = ovp;
+					break;
+				}
+				var path = 'objects/$object/$object.yy';
+				var ovp:YyObjectPropertyOverride = {
+					propertyId: {
+						name: field,
+						path: path,
+					},
+					objectId: {
+						name: object,
+						path: path,
+					},
+					value: expr(val),
+					resourceVersion: "1.0",
+					resourceType: "GMOverriddenProperty"
+				};
+				if (ovpOrig == null) {
+					ovp.name = "";
+					ovp.tags = [];
+				} else NativeObject.fillDefaults(ovp, ovpOrig);
+				overProps.push(ovp);
+				return null;
+			} catch (x:Dynamic) {
+				return Std.string(x);
+			}
+		}
+		var error = GmlObjectProperties.parse(code, gml.GmlVersion.v2, varProc, propProc, overProc);
 		o.properties = props.length > 0 ? props : (v22 ? null : []);
+		o.overriddenProperties = overProps;
 		return error;
 	}
 }

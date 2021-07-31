@@ -268,7 +268,7 @@ typedef YyObjectImpl = {
 	visible:Bool,
 	persistent:Bool,
 	properties:Array<YyObjectProperty>,
-	overriddenProperties:Array<Dynamic>,
+	overriddenProperties:Array<YyObjectPropertyOverride>,
 	physicsObject:Bool,
 	
 	physicsDensity:Float,
@@ -306,6 +306,12 @@ typedef YyObjectProperty = YyBase & {
 	?varName:String,
 	/** 2.3 */
 	?name:String,
+};
+typedef YyObjectPropertyOverride = YyBase & {
+	propertyId:YyResourceRef,
+	objectId:YyResourceRef,
+	value:String,
+	?name:String, // unused
 };
 enum abstract YyObjectPropertyType(Int) {
 	var TReal = 0;

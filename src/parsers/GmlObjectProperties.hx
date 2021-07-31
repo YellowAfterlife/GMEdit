@@ -12,19 +12,27 @@ class GmlObjectProperties {
 	public static inline var name:String = "properties";
 	public static inline var header = '#event $name (no comments/etc. here are saved)';
 	//
-	public static function parse(code:String, v:GmlVersion, fn:GmlObjectPropertiesFn, ?vfn:GmlObjectPropertiesVarFn):ErrorText {
+	public static function parse(code:String, v:GmlVersion,
+		fn:GmlObjectPropertiesFn,
+		?vfn:GmlObjectPropertiesVarFn,
+		?ovfn:GmlObjectPropertiesOverrideFn
+	):ErrorText {
 		var q = new GmlReader(code);
 		inline function error(p:Int, s:String):ErrorText {
 			//js.Syntax.code("debugger");
 			return NativeString.offsetToPos(code, p).toString() + " " + s;
 		}
 		var state:GmlObjectPropertiesState = WantName;
-		var key:String = null, type:String = null;
+		var key:String = null, type:String = null, object:String = null;
 		var params:Array<GmlObjectPropertiesValue> = null;
 		var err:ErrorText, val:GmlObjectPropertiesValue, s:String;
 		//
 		function call(v:GmlObjectPropertiesValue) {
-			if (type != null) {
+			if (object != null) {
+				if (ovfn != null) {
+					err = ovfn(object, key, v);
+				}
+			} else if (type != null) {
 				var guid = null;
 				while (q.loop) {
 					switch (q.peek()) {
@@ -45,45 +53,46 @@ class GmlObjectProperties {
 				err = vfn(key, type, guid, params, v);
 			} else err = fn(key, v);
 		}
-		while (q.loop) {
-			var c = q.peek(), start:Int;
-			/// changes val
-			function readString():ErrorText {
-				var c = q.peek();
-				start = q.pos++;
-				var s = null;
-				val = null;
-				switch (c) {
-					case '"'.code: {
-						if (v.hasStringEscapeCharacters()) {
-							q.skipString2();
-							s = code.substring(start, q.pos);
-							try {
-								s = haxe.Json.parse(s);
-							} catch (x:Dynamic) {
-								return error(start, "Invalid string, " + x);
-							}
-						} else q.skipString1('"'.code);
-					};
-					case "'".code: {
-						if (v.hasSingleQuoteStrings()) {
-							q.skipString1("'".code);
-						} else return error(start, "Unexpected '");
-					};
-					case "@".code: {
-						if (v.hasLiteralStrings()) {
-							start++;
-							c = q.read();
-							if (c == '"'.code || c == "'".code) {
-								q.skipString1(c);
-							} else return error(start, "Unexpected " + String.fromCharCode(c));
-						} else return error(start, "Unexpected @");
-					};
-				}
-				if (s == null) s = code.substring(start + 1, q.pos - 1);
-				val = CString(s);
-				return null;
+		var c:CharCode, start:Int;
+		/// changes val
+		function readString():ErrorText {
+			var c = q.peek();
+			start = q.pos++;
+			var s = null;
+			val = null;
+			switch (c) {
+				case '"'.code: {
+					if (v.hasStringEscapeCharacters()) {
+						q.skipString2();
+						s = code.substring(start, q.pos);
+						try {
+							s = haxe.Json.parse(s);
+						} catch (x:Dynamic) {
+							return error(start, "Invalid string, " + x);
+						}
+					} else q.skipString1('"'.code);
+				};
+				case "'".code: {
+					if (v.hasSingleQuoteStrings()) {
+						q.skipString1("'".code);
+					} else return error(start, "Unexpected '");
+				};
+				case "@".code: {
+					if (v.hasLiteralStrings()) {
+						start++;
+						c = q.read();
+						if (c == '"'.code || c == "'".code) {
+							q.skipString1(c);
+						} else return error(start, "Unexpected " + String.fromCharCode(c));
+					} else return error(start, "Unexpected @");
+				};
 			}
+			if (s == null) s = code.substring(start + 1, q.pos - 1);
+			val = CString(s);
+			return null;
+		}
+		while (q.loop) {
+			c = q.peek();
 			//
 			switch (c) {
 				case " ".code, "\t".code, "\r".code, "\n".code, ";".code: {
@@ -223,7 +232,25 @@ class GmlObjectProperties {
 						q.skip();
 					} else return error(q.pos, "Unexpected ,");
 				};
+				case ".".code: {
+					switch (state) {
+						case WantSetOrType: {
+							state = WantObjectFieldName;
+							object = key;
+							key = null;
+							q.skip();
+						};
+						default: return error(q.pos, "Unexpected .");
+					}
+				};
 				default: {
+					inline function wantIdent():Bool {
+						return switch (state) {
+							case WantValue, WantName, WantType,
+								WantParams, WantObjectFieldName: true;
+							default: false;
+						}
+					}
 					if ((c.isDigit() || c == ".".code || c == "-".code) && (state == WantValue || state == WantParams)) {
 						start = q.pos;
 						q.skip();
@@ -242,9 +269,7 @@ class GmlObjectProperties {
 							key = null;
 						}
 					}
-					else if (c.isIdent0() && (state == WantValue || state == WantName
-						|| state == WantType || state == WantParams
-					)) {
+					else if (c.isIdent0() && wantIdent()) {
 						start = q.pos++;
 						while (q.loop) {
 							c = q.peek();
@@ -254,6 +279,10 @@ class GmlObjectProperties {
 						}
 						s = code.substring(start, q.pos);
 						switch (state) {
+							case WantObjectFieldName: {
+								key = s;
+								state = WantSet;
+							};
 							case WantValue: {
 								val = Ident(s);
 								call(val);
@@ -293,6 +322,7 @@ enum GmlObjectPropertiesValue {
 }
 typedef GmlObjectPropertiesFn = (key:String, val:GmlObjectPropertiesValue)->ErrorText;
 typedef GmlObjectPropertiesVarFn = (name:String, type:String, guid:yy.YyGUID, params:Array<GmlObjectPropertiesValue>, val:GmlObjectPropertiesValue)->ErrorText;
+typedef GmlObjectPropertiesOverrideFn = (object:String, field:String, val:GmlObjectPropertiesValue)->ErrorText;
 private enum abstract GmlObjectPropertiesState(Int) {
 	var WantName = 1;
 	var WantSet = 2;
@@ -302,4 +332,5 @@ private enum abstract GmlObjectPropertiesState(Int) {
 	var WantParamsOrSet = 6;
 	var WantParams = 7;
 	var WantParamsComma = 8;
+	var WantObjectFieldName = 9;
 }
