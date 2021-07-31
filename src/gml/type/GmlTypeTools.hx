@@ -33,7 +33,7 @@ import ace.extern.AceTokenType;
 	public static function getNamespace(t:GmlType):String {
 		return switch (t) {
 			case null: null;
-			case TInst(name, _, KCustom): name;
+			case TInst(name, _, _): name;
 			default: null;
 		}
 	}
