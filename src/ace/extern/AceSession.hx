@@ -2,6 +2,7 @@ package ace.extern;
 import ace.extern.AceAnchor;
 import ace.extern.AceAnnotation;
 import ace.extern.AceDocument;
+import ace.extern.AceLangRule.AceLangRuleState;
 import ace.extern.AceMarker;
 import ace.extern.AcePos;
 import ace.extern.AceRange;
@@ -25,6 +26,7 @@ import tools.IntDictionary;
 	public function setScrollLeft(left:Float):Void;
 	public function getScrollTop():Float;
 	public function setScrollTop(top:Float):Void;
+	public function getState(row:Int):AceLangRuleState;
 	//
 	public var doc:AceDocument;
 	//

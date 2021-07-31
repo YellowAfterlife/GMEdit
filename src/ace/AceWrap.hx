@@ -161,6 +161,7 @@ extern class AceEditor {
 	public function focus():Void;
 	//
 	public function on(ev:String, fn:Dynamic):Void;
+	public function off(ev:String, fn:Dynamic):Void;
 	//
 	public function getOption(name:String):Dynamic;
 	public function setOption(name:String, val:Dynamic):Void;
