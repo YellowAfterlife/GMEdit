@@ -24,29 +24,51 @@ import haxe.DynamicAccess;
 	@:native("$tokenIndex") var __tokenIndex:Int;
 }
 class AceTokenIteratorTools {
-	public static function isEOL(it:AceTokenIterator):Bool {
-		return it.__tokenIndex >= it.__rowTokens.length;
-	}
 	public static function copy(it:AceTokenIterator):AceTokenIterator {
 		var ci = new AceTokenIterator(it.__session, it.__row, 0);
 		ci.__tokenIndex = it.__tokenIndex;
 		return ci;
 	}
+	
+	public static function isEOL(it:AceTokenIterator):Bool {
+		return it.__tokenIndex >= it.__rowTokens.length;
+	}
+	
+	public static function canStepBackward(it:AceTokenIterator):Bool {
+		return it.__row > 0 || it.__tokenIndex > 0;
+	}
+	public static function canStepForward(it:AceTokenIterator):Bool {
+		return it.__row < it.__session.getLength() || it.__tokenIndex < it.__rowTokens.length - 1;
+	}
+	
+	// like normal stepBackward/Forward, but these cannot result in out-of-bounds position
+	public static function stepBackwardSafe(it:AceTokenIterator):AceToken {
+		if (inline it.canStepBackward()) {
+			return it.stepBackward();
+		} else return null;
+	}
+	public static function stepForwardSafe(it:AceTokenIterator):AceToken {
+		if (inline it.canStepForward()) {
+			return it.stepForward();
+		} else return null;
+	}
+	
 	public static function stepBackwardNonText(it:AceTokenIterator):AceToken {
 		var tk:AceToken;
 		do {
-			tk = it.stepBackward();
+			tk = it.stepBackwardSafe();
 		} while (tk != null && tk.type == "text");
 		return tk;
 	}
 	public static function stepForwardNonText(it:AceTokenIterator):AceToken {
 		var tk:AceToken;
 		do {
-			tk = it.stepForward();
+			tk = it.stepForwardSafe();
 		} while (tk != null && tk.type == "text");
 		return tk;
 	}
 	
+	// todo: make these two better
 	public static function peekBackward(it:AceTokenIterator):AceToken {
 		var tk = it.stepBackward();
 		it.stepForward();
@@ -57,6 +79,7 @@ class AceTokenIteratorTools {
 		it.stepForward();
 		return tk;
 	}
+	
 	public static function peekBackwardNonText(it:AceTokenIterator):AceToken {
 		var row = it.__row;
 		var rowTokens = it.__rowTokens;

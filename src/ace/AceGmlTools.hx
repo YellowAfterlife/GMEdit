@@ -121,7 +121,7 @@ using StringTools;
 		var depth = 0;
 		var tk:AceToken;
 		if (!iter.isEOL()) iter.stepForward();
-		while ((tk = iter.stepBackward()) != null) {
+		while ((tk = iter.stepBackwardSafe()) != null) {
 			var tkType = tk.type;
 			switch (tkType) {
 				case "text": // OK!
