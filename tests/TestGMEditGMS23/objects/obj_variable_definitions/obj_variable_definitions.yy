@@ -26,6 +26,15 @@
     {"varType":2,"value":"hello!","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"a_string","tags":[],"resourceType":"GMObjectProperty",},
     {"varType":3,"value":"True","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"a_bool","tags":[],"resourceType":"GMObjectProperty",},
     {"varType":4,"value":"1+5","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"an_expr","tags":[],"resourceType":"GMObjectProperty",},
+    {"varType":6,"value":"1, \"two\"","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[
+        "1",
+        "\"two\"",
+        "2+1",
+      ],"multiselect":true,"filters":[],"resourceVersion":"1.0","name":"multi_select","tags":[],"resourceType":"GMObjectProperty",},
+    {"varType":6,"value":"\"two\"","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[
+        "1",
+        "\"two\"",
+      ],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"single_select","tags":[],"resourceType":"GMObjectProperty",},
   ],
   "overriddenProperties": [],
   "parent": {

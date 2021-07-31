@@ -106,7 +106,12 @@ class GmlLinterParser {
 							}
 						}
 					}
-					if (c.isIdent0()) {
+					if (c == '"'.code && l.isProperties) {
+						q.skip();
+						q.skipString2();
+						return retv(KString, q.substr(p, q.pos));
+					}
+					else if (c.isIdent0()) {
 						p++;
 						q.skipIdent1();
 						nv = q.substring(p, q.pos);

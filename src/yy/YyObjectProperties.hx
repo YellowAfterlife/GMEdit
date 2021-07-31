@@ -31,7 +31,7 @@ class YyObjectProperties {
 	public static var typeList:Array<String> = [
 		"unknown",
 		"real", "int", "string", "bool",
-		"expr", "asset", "list", "color",
+		"expr", "asset", "list", "mlist", "color",
 	];
 	public static var assetTypes:Array<YyObjectPropertiesAssetFlag> = [
 		new YyObjectPropertiesAssetFlag(1, "tileset"),
@@ -153,7 +153,7 @@ class YyObjectProperties {
 				}
 				//
 				var q = new GmlReader(x, gml.GmlVersion.v2);
-				q.skipVarExpr(gml.GmlVersion.v2, -1);
+				q.skipVarExpr(gml.GmlVersion.v2, ",".code);
 				if (q.eof) {
 					return "(" + x + ")";
 				} else {
@@ -211,37 +211,14 @@ class YyObjectProperties {
 					out += ' = ' + prop.value;
 				};
 				case TList: {
-					out += 'list<';
+					out += prop.multiselect ? 'mlist<' : 'list<';
 					var sep = false;
 					for (item in prop.listItems) {
 						if (sep) out += ', '; else sep = true;
 						out += printExpr(item);
 					}
 					out += '> = ';
-					if (prop.multiselect) {
-						out += '[';
-						var q = new GmlReader(prop.value);
-						var sep = false;
-						while (q.loop) {
-							var start = q.pos;
-							do {
-								q.skipVarExpr(gml.GmlVersion.v2, ','.code);
-								if (q.loop) {
-									if (q.peek() == ",".code) {
-										break;
-									} else q.skip();
-								}
-							} while (q.loop);
-							var expr = q.substring(start, q.pos);
-							if (q.loop && q.peek() == ",".code) {
-								q.skip();
-								if (q.peek() == " ".code) q.skip();
-							}
-							if (sep) out += ', '; else sep = true;
-							out += printExpr(expr);
-						}
-						out += ']';
-					} else out += printExpr(prop.value);
+					out += printExpr(prop.value);
 				};
 				case TColor: {
 					out += 'color = "' + prop.value + '"';
@@ -489,24 +466,13 @@ class YyObjectProperties {
 							default: throw 'Expected a JSON string, got $value';
 						}
 					};
-					case "list": {
+					case "list", "mlist": {
+						var multi = type == "mlist";
 						if (params == null) throw "List requires option parameters";
 						var items = [];
 						for (param in params) items.push(expr(param));
 						//
-						var multi = false;
-						var out = "";
-						switch (value) {
-							case Values(a): {
-								multi = true;
-								var sep = false;
-								for (v in a) {
-									if (sep) out += ", "; else sep = true;
-									out += expr(v);
-								}
-							};
-							default: out = expr(value);
-						}
+						var out = expr(value);
 						//
 						addProp({
 							listItems: items,
