@@ -9,6 +9,7 @@ import haxe.extern.EitherType;
 import tools.Dictionary;
 import ace.extern.*;
 import ui.ScrollMode;
+using tools.HtmlTools;
 
 /**
  * A big, ugly pile of random handwritten externs for Ace components.
@@ -19,6 +20,21 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 	static var vimReady:Bool = false;
 	public function new(el:EitherType<String, Element>, ?o:AceWrapOptions) {
 		this = AceEditor.edit(el);
+		
+		(cast this.container).aceEditor = this;
+		var self = this;
+		this.on("focus", function() {
+			Main.window.setTimeout(function() {
+				Main.console.warn(Date.now().getTime(), "Focus for ", self, self.container);
+				for (el in HtmlTools.querySelectorEls(Main.document, "pre.ace_editor")) {
+					if (el.classList.contains("ace_focus")) continue;
+					for (cursor in el.querySelectorEls(".ace_cursor-layer")) {
+						cursor.classList.remove("ace_animate-blinking");
+					}
+				}
+			}, 1);
+		});
+		
 		untyped {
 			this.$blockScrolling = Infinity;
 			this.getFontFamily = function() return this.getOption("fontFamily");
