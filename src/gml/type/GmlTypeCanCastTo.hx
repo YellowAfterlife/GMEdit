@@ -88,6 +88,7 @@ class GmlTypeCanCastTo {
 				if (p.length == 0) return true;
 				if (!canCastTo(p[0], GmlTypeDef.string, tpl, imp)) return false;
 				var vt = p[1];
+				if (vt == null || vt.getKind() == KAny) return true;
 				if (!canCastTo(mapMeta.defaultType, vt, tpl, imp)) return false;
 				for (mapField in mapMeta.fieldList) {
 					if (!canCastTo(mapField.type, vt)) return false;
