@@ -58,7 +58,7 @@ class YySearcher {
 						var gmlPath = Path.withExtension(resPath, "gml");
 						pj.readTextFile(gmlPath, function(error, code) {
 							if (error == null) {
-								var gml1 = fn(resName, resFull, code);
+								var gml1 = fn(resName, gmlPath, code);
 								if (gml1 != null && gml1 != code) {
 									pj.writeTextFileSync(gmlPath, gml1);
 								}

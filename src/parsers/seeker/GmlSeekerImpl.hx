@@ -154,8 +154,16 @@ class GmlSeekerImpl {
 	
 	public function setLookup(s:String, eol:Bool = false):Void {
 		var col = eol ? null : 0;
-		GmlAPI.gmlLookup.set(s, { path: orig, sub: sub, row: reader.row, col: col });
-		if (s != mainTop) GmlAPI.gmlLookupList.push(s);
+		var row = reader.row;
+		if (!GmlAPI.gmlLookup.exists(s)) {
+			if (s != mainTop) GmlAPI.gmlLookupList.push(s);
+		}
+		var lookup:GmlLookup = { path: orig, sub: sub, row: row, col: col };
+		if (project.isGMS23 && s == mainTop) {
+			lookup.sub = null;
+			lookup.row = 0;
+		}
+		GmlAPI.gmlLookup[s] = lookup;
 	}
 	
 	public function linkDoc():Void {
