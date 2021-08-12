@@ -1210,7 +1210,9 @@ class GmlLinter {
 		}
 		var t = Main.window.performance.now();
 		var code = JsTools.ncf(opt.code);
-		if (code == null) code = session.getValue();
+		if (code == null) {
+			code = synext.SyntaxExtension.postprocForLinterArray(editor, session.getValue(), file.kind.KGml.syntaxExtensions);
+		}
 		var ohno = q.run(code, editor, gml.Project.current.version);
 		t = (Main.window.performance.now() - t);
 		//
