@@ -290,6 +290,17 @@ class GmlTypeParser {
 								typeStr += ">";
 								depth -= 1;
 								if (depth <= 0) break;
+							case KShr:
+								if (depth == 1) {
+									reader.pos--;
+									typeStr += ">";
+									depth = 0;
+									break;
+								} else {
+									typeStr += ">>";
+									depth -= 2;
+									if (depth <= 0) break;
+								}
 							default:
 								typeStr += self.nextVal;
 						}
