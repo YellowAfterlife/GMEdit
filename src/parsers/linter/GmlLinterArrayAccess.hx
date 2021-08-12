@@ -143,20 +143,20 @@ class GmlLinterArrayAccess {
 			currKind = KQMark;
 		} else {
 			currKind = isNull ? KNullArray : KArray;
-			if (isArray) {
+			if (isArray) for (pass in 0 ... (isArray2d ? 2 : 1)) {
+				var arrayType = pass > 0 ? arrayType2 : arrayType1;
 				currType = currType.resolve();
 				var ck = currType.getKind();
 				switch (ck) {
 					case KCustomKeyArray: {
 						currType = currType.resolve();
 						var indexType = currType.unwrapParam(0);
-						if (arrayType1 != null) self.checkTypeCast(arrayType1, indexType);
-						if (arrayType2 != null) self.checkTypeCast(arrayType2, indexType);
+						if (arrayType != null) self.checkTypeCast(arrayType, indexType);
 						currType = currType.unwrapParam(1);
 					};
 					case KTuple: {
 						if (self.readExpr_currValue == null) {
-							self.checkTypeCast(arrayType1, GmlTypeDef.number);
+							self.checkTypeCast(arrayType, GmlTypeDef.number);
 							if (isArray2d) self.addWarning("2d array access on a tuple");
 							currType = null;
 						} else switch (self.readExpr_currValue) {
@@ -171,8 +171,7 @@ class GmlLinterArrayAccess {
 						}
 					};
 					default: {
-						if (arrayType1 != null) self.checkTypeCast(arrayType1, GmlTypeDef.number);
-						if (arrayType2 != null) self.checkTypeCast(arrayType2, GmlTypeDef.number);
+						if (arrayType != null) self.checkTypeCast(arrayType, GmlTypeDef.number);
 						currType = currType.resolve();
 						if (self.checkTypeCast(currType, GmlTypeDef.anyArray)) {
 							currType = currType.unwrapParam(0);
