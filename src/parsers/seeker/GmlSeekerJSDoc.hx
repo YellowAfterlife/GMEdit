@@ -91,6 +91,13 @@ class GmlSeekerJSDoc {
 		mt = jsDoc_is.exec(s);
 		if (mt != null) {
 			var typeStr = mt[1];
+			var doc = mt[2];
+			inline function procComp(comp:AceAutoCompleteItem):Void {
+				if (comp != null) {
+					comp.setDocTag("type", typeStr);
+					if (doc != null) comp.setDocTag("ℹ", doc);
+				}
+			}
 			var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
 			var lineText = q.source.substring(lineStart, q.pos);
 			var lineMatch = jsDoc_is_line.exec(lineText);
@@ -102,15 +109,14 @@ class GmlSeekerJSDoc {
 				tools.RegExpTools.each(JsTools.rx(~/\w+/g), lineMatch[1], function(mt) {
 					name = mt[0];
 					out.globalVarTypes[name] = type;
-					var comp = out.comps[name];
-					if (comp != null) comp.setDocTag("type", typeStr);
+					procComp(out.comps[name]);
 				});
 			} else if (lineMatch[2] != null) {
 				name = lineMatch[2];
 				out.globalTypes[name] = type;
 				var globalField = out.globalFields[name];
-				if (globalField != null && globalField.comp != null) {
-					globalField.comp.setDocTag("type", typeStr);
+				if (globalField != null) {
+					procComp(globalField.comp);
 				}
 			} else {
 				name = lineMatch[3];
@@ -124,7 +130,7 @@ class GmlSeekerJSDoc {
 				var hint = out.fieldHints[namespace + ":" + name];
 				if (hint != null) {
 					hint.type = type;
-					if (hint.comp != null) hint.comp.setDocTag("type", typeStr);
+					procComp(hint.comp);
 				}
 			}
 			return;

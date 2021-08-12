@@ -58,6 +58,7 @@ class GmlSeekerJSDocRegex {
 	public static var jsDoc_is = new RegExp("^///\\s*"
 		+ "@is(?:s)?"
 		+ "\\b\\s*\\{(.+?)\\}"
+		+ "\\s*(.*)"
 	);
 	public static var jsDoc_is_line = (function() {
 		var id = "[_a-zA-Z]\\w*";
