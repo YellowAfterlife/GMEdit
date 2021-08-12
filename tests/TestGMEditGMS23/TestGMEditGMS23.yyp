@@ -55,6 +55,7 @@
     {"id":{"name":"obj_async_load","path":"objects/obj_async_load/obj_async_load.yy",},"order":11,},
     {"id":{"name":"v_bool_int_cast","path":"scripts/v_bool_int_cast/v_bool_int_cast.yy",},"order":4,},
     {"id":{"name":"v_imp_basic","path":"scripts/v_imp_basic/v_imp_basic.yy",},"order":0,},
+    {"id":{"name":"v_buffer_auto_type","path":"scripts/v_buffer_auto_type/v_buffer_auto_type.yy",},"order":2,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
