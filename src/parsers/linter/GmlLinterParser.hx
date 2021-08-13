@@ -303,7 +303,18 @@ class GmlLinterParser {
 									case "const": return retv(KConst, nv);
 									case "let": return retv(KLet, nv);
 								}
-								q.pushSource(mcr.expr, mcr.name);
+								var expr = l.macroCache[nv];
+								if (expr == null) {
+									var imp = synext.GmlExtImport.inst;
+									var _on = imp.enabled;
+									imp.enabled = false;
+									expr = synext.SyntaxExtension.preprocArray(
+										l.editor, mcr.expr, file.kind.KGml.syntaxExtensions
+									);
+									imp.enabled = _on;
+									l.macroCache[nv] = expr;
+								}
+								q.pushSource(expr, mcr.name);
 								break;
 							}
 							switch (nv) {

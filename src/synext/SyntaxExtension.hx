@@ -9,6 +9,7 @@ import tools.JsTools;
  * @author YellowAfterlife
  */
 @:keep class SyntaxExtension {
+	public var enabled:Bool;
 	public var name:String;
 	public var displayName:String;
 	/** If returning null from preproc/postproc, this should indicate why you did so */
@@ -49,6 +50,7 @@ import tools.JsTools;
 		var loop:Bool;
 		while (forward ? index < sxs.length : index >= 0) {
 			var sx = sxs[forward ? index++ : index--];
+			if (!sx.enabled) continue;
 			inline function proc():Bool {
 				if (sx.check(editor, code)) {
 					code = func(sx, editor, code);

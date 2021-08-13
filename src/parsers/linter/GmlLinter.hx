@@ -72,6 +72,7 @@ class GmlLinter {
 	
 	var editor:EditCode;
 	var functionsAreGlobal:Bool;
+	var macroCache:Dictionary<GmlCode> = new Dictionary();
 	
 	/**
 	 * Context name - such as current script name or event name.
