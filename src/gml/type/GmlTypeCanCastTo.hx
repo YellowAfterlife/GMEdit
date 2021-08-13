@@ -132,6 +132,8 @@ class GmlTypeCanCastTo {
 							if (!p1[i].canCastTo(p2[i], tpl, imp)) return false;
 						}
 						return true;
+					case KCustomKeyArray if (k1 == KArray):
+						if (p1[0].isAny()) return true;
 					default:
 				}
 				
