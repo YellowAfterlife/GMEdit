@@ -9,7 +9,7 @@ import tools.JsTools;
  * @author YellowAfterlife
  */
 @:keep class SyntaxExtension {
-	public var enabled:Bool;
+	public var enabled:Bool = true;
 	public var name:String;
 	public var displayName:String;
 	/** If returning null from preproc/postproc, this should indicate why you did so */
