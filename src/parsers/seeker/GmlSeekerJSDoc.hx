@@ -95,7 +95,7 @@ class GmlSeekerJSDoc {
 			inline function procComp(comp:AceAutoCompleteItem):Void {
 				if (comp != null) {
 					comp.setDocTag("type", typeStr);
-					if (doc != null) comp.setDocTag("ℹ", doc);
+					if (doc != null && doc.trimBoth() != "") comp.setDocTag("ℹ", doc);
 				}
 			}
 			var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
