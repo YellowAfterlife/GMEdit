@@ -100,14 +100,14 @@ typedef audio_group : asset;
 // Types that generally have some data attached to them
 typedef datetime
 typedef pointer
-typedef mp_grid
-typedef buffer
-typedef surface
-typedef texture
-typedef audio_emitter
-typedef sound_instance
-typedef sound_sync_group
-typedef sound_play_queue
+typedef mp_grid : minus1able
+typedef buffer : minus1able
+typedef surface : minus1able
+typedef texture : minus1able
+typedef audio_emitter : minus1able
+typedef sound_instance : minus1able
+typedef sound_sync_group : minus1able
+typedef sound_play_queue : minus1able
 typedef html_clickable
 typedef html_clickable_tpe
 typedef texture_group
@@ -121,16 +121,16 @@ typedef physics_fixture
 typedef physics_joint
 typedef physics_particle
 typedef physics_particle_group
-typedef network_socket
-typedef network_server
+typedef network_socket : minus1able
+typedef network_server : minus1able
 typedef vertex_buffer
 typedef steam_id
 typedef steam_ugc
 typedef steam_ugc_query
 typedef shader_sampler
 typedef shader_uniform
-typedef vertex_format
-typedef vertex_buffer
+typedef vertex_format : minus1able
+typedef vertex_buffer : minus1able
 
 // Things inheriting from uncompareable shouldn't be compared to each other
 typedef uncompareable
