@@ -3,13 +3,13 @@ typedef external_value_type;
 typedef external_function;
 
 //
-typedef ds_type;
-typedef ds_map;
-typedef ds_list;
-typedef ds_stack;
-typedef ds_queue;
-typedef ds_grid;
-typedef ds_priority;
+typedef ds_type : minus1able;
+typedef ds_map : minus1able;
+typedef ds_list : minus1able;
+typedef ds_stack : minus1able;
+typedef ds_queue : minus1able;
+typedef ds_grid : minus1able;
+typedef ds_priority : minus1able;
 
 // e.g. CustomKeyArray<object, bool> allows arr[obj_some]
 typedef ckarray;
@@ -85,7 +85,7 @@ typedef async_load_network = specified_map<
 // todo: more async events
 
 // Asset types
-typedef asset;
+typedef asset : minus1able;
 typedef sprite : asset;
 typedef sound : asset;
 typedef path : asset;

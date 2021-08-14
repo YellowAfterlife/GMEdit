@@ -54,9 +54,9 @@ class GmlLinterArrayLiteral {
 					rc(self.readExpr(newDepth, None, null, itemType));
 					
 					if (tupleTypes != null) {
-						self.checkTypeCast(self.readExpr_currType, tupleTypes[index]);
+						self.checkTypeCast(self.readExpr_currType, tupleTypes[index], "tuple literal", self.readExpr_currValue);
 					} else if (itemType != null) {
-						self.checkTypeCast(self.readExpr_currType, itemType);
+						self.checkTypeCast(self.readExpr_currType, itemType, "array literal", self.readExpr_currValue);
 					} else if (index == 0) {
 						autoType = self.readExpr_currType;
 					} else if (autoType != null) {

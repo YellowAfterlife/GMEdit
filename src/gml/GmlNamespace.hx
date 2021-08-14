@@ -45,6 +45,9 @@ class GmlNamespace {
 	 */
 	public var interfaces:ArrayMap<GmlNamespace> = new ArrayMap();
 	
+	/** Whether -1 can be assigned to this type - used for built-in index-based types */
+	public var minus1able:Bool = false;
+	
 	public var staticKind:Dictionary<AceTokenType> = new Dictionary();
 	public var staticTypes:Dictionary<GmlType> = new Dictionary();
 	/** static (`Buffer.ptr`) completions */

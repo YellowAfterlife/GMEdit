@@ -312,17 +312,19 @@ class GmlAPI {
 			var ns = ensureNamespace(pair.name);
 			ns.canCastToStruct = false;
 			ns.noTypeRef = true;
-			switch (pair.parent) {
-				case null: // OK!
+			for (parent in pair.parents) switch (parent) {
 				case "struct":
 					ns.canCastToStruct = true;
 				case "bitflags":
 					ns.interfaces["bitflags"] = ensureNamespace("bitflags");
+				case "minus1able":
+					ns.minus1able = true;
 				default:
-					ns.parent = gmlNamespaces[pair.parent];
+					if (ns.parent != null) Console.warn('Re-assigning parent for ${pair.name}');
+					ns.parent = gmlNamespaces[parent];
 					if (ns.parent != null) {
 						ns.canCastToStruct = ns.parent.canCastToStruct;
-					} else Console.warn('Parent ${pair.parent} is missing for ${pair.name}');
+					} else Console.warn('Parent ${parent} is missing for ${pair.name}');
 			}
 		}
 		gml.type.GmlTypeParser.clear();
@@ -589,4 +591,8 @@ typedef GmlConfig = {
 	?apiFiles:Array<String>,
 	?assetFiles:Array<String>,
 };
-typedef GmlNamespaceDef = {name:String, ?parent:String};
+class GmlNamespaceDef {
+	public var name:String;
+	public var parents:Array<String>;
+	public function new() {}
+}

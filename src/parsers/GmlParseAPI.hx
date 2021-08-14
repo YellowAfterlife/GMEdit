@@ -76,9 +76,9 @@ class GmlParseAPI {
 		var rxTypedef = new RegExp("^"
 			+ "typedef\\s+"
 			+ "(\\w+)"
-			+ "(?:\\s*:\\s*(\\w+))?" // : parent
+			+ "(?:\\s*:\\s*(" + "\\w+(?:\\s*,\\s*\\w+)*" + "))?" // : parent(s)
 			+ "(?:\\s*=\\s*(" + [
-				"\\w+<\\s*" + "(?:\r?\n.*?)*?" + "\r?\n\\s*>",
+				"\\w+<\\s*" + "(?:\r?\n.*?)*?" + "\r?\n\\s*>", // multi-line declaration for specified_map or tuples
 				".+",
 			].join("|") + "))?" // = impl
 		+ "", "gm");
@@ -91,7 +91,12 @@ class GmlParseAPI {
 			if (def != null) {
 				if (typedefs != null) typedefs[name] = GmlTypeDef.parse(def, mt[0]);
 			} else {
-				if (namespaceDefs != null) namespaceDefs.push({ name: name, parent: parent });
+				if (namespaceDefs != null) {
+					var def = new GmlNamespaceDef();
+					def.name = name;
+					def.parents = parent != null ? parent.splitRx(tools.JsTools.rx(~/\s*,\s*/)) : [];
+					namespaceDefs.push(def);
+				}
 			}
 		});
 		

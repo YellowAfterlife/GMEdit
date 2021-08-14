@@ -116,6 +116,7 @@ class GmlLinterExpr {
 				if (self.next() != KParClose) return self.readExpect("a `)`");
 				currType = self.readExpr_currType;
 				currFunc = self.readExpr_currFunc;
+				currValue = self.readExpr_currValue;
 			};
 			case KNew: {
 				rc(self.readExpr(newDepth, IsNew));
@@ -132,16 +133,30 @@ class GmlLinterExpr {
 			case KNot, KBitNot: {
 				rc(self.readExpr(newDepth));
 				if (nk == KNot) {
-					self.checkTypeCastBoolOp(self.readExpr_currType, "!");
+					self.checkTypeCastBoolOp(self.readExpr_currType, self.readExpr_currValue, "!");
 					currType = GmlTypeDef.bool;
+					switch (self.readExpr_currValue) {
+						case null:
+						case GmlLinterValue.VNumber(f, _):
+							var v = f > 0.5 ? 0 : 1;
+							currValue = VNumber(v, "" + v);
+						default:
+					}
 				} else {
-					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.int, "~");
+					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.int, "~", self.readExpr_currValue);
 					currType = GmlTypeDef.int;
+					switch (self.readExpr_currValue) {
+						case null:
+						case GmlLinterValue.VNumber(f, _):
+							var i = ~Std.int(f);
+							currValue = VNumber(i, "" + i);
+						default:
+					}
 				}
 			};
 			case KInc, KDec: {
 				rc(self.readExpr(newDepth, HasPrefix));
-				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KInc ? "++" : "--");
+				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KInc ? "++" : "--", self.readExpr_currValue);
 				currType = GmlTypeDef.number;
 			};
 			case KSqbOpen: {
@@ -187,8 +202,19 @@ class GmlLinterExpr {
 			default: {
 				if (nk.isUnOp()) { // +v or -v
 					rc(self.readExpr(newDepth));
-					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KAdd ? "+" : "-");
+					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KAdd ? "+" : "-", self.readExpr_currValue);
 					currType = GmlTypeDef.number;
+					if (nk == KAdd) {
+						currValue = self.readExpr_currValue;
+					} else {
+						switch (self.readExpr_currValue) {
+							case null:
+							case VNumber(f, _):
+								f = -f;
+								currValue = VNumber(f, "" + f);
+							default:
+						}
+					}
 				}
 				else return invalid();
 			};
@@ -204,7 +230,7 @@ class GmlLinterExpr {
 						flags.remove(AsStat);
 						statKind = KSet;
 						rc(self.readExpr(newDepth, None, null, currType));
-						self.checkTypeCast(self.readExpr_currType, currType);
+						self.checkTypeCast(self.readExpr_currType, currType, "assignment", self.readExpr_currValue);
 						currType = null;
 					} else {
 						if (hasFlag(NoOps)) break;
@@ -212,7 +238,7 @@ class GmlLinterExpr {
 							self.addWarning("Using single `=` as a comparison operator");
 						}
 						self.skip();
-						rc(self.readOps(newDepth, currType, nk, "="));
+						rc(self.readOps(newDepth, currType, currValue, nk, "="));
 						flags.add(NoSfx);
 						currType = self.readExpr_currType;
 					}
@@ -334,7 +360,7 @@ class GmlLinterExpr {
 				};
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					self.skip();
-					rc(GmlLinterArrayAccess.read(self, nk, newDepth, currType, currKind));
+					rc(GmlLinterArrayAccess.read(self, nk, newDepth, currType, currKind, currValue));
 					currKind = GmlLinterArrayAccess.outKind;
 					currType = GmlLinterArrayAccess.outType;
 				};
@@ -367,7 +393,7 @@ class GmlLinterExpr {
 					if (!hasFlag(IsCast)) {
 						var ex = GmlTypeCanCastTo.isExplicit;
 						GmlTypeCanCastTo.isExplicit = true;
-						self.checkTypeCast(currType, asType, "as");
+						self.checkTypeCast(currType, asType, "as", currValue);
 						GmlTypeCanCastTo.isExplicit = ex;
 					}
 					currType = asType;
@@ -376,7 +402,7 @@ class GmlLinterExpr {
 				};
 				case KQMark: { // x ? y : z
 					if (hasFlag(NoOps)) break;
-					self.checkTypeCast(currType, GmlTypeDef.bool, "ternary condition");
+					self.checkTypeCast(currType, GmlTypeDef.bool, "ternary condition", currValue);
 					self.skip();
 					rc(self.readExpr(newDepth));
 					currType = self.readExpr_currType;
@@ -395,7 +421,7 @@ class GmlLinterExpr {
 								currType = GmlTypeDef.nullable(elseType);
 							}
 						} else {
-							self.checkTypeCast(self.readExpr_currType, currType, "ternary else-value");
+							self.checkTypeCast(self.readExpr_currType, currType, "ternary else-value", self.readExpr_currValue);
 						}
 					} else currType = elseType;
 					currKind = KQMark;
@@ -405,7 +431,7 @@ class GmlLinterExpr {
 					self.skip();
 					rc(self.readExpr(newDepth));
 					if (currType.isNullable()) currType = currType.unwrapParam();
-					self.checkTypeCast(self.readExpr_currType, currType, "?? operator value");
+					self.checkTypeCast(self.readExpr_currType, currType, "?? operator value", self.readExpr_currValue);
 					currKind = KNullCoalesce;
 				};
 				default: {
@@ -418,7 +444,7 @@ class GmlLinterExpr {
 						rc(self.readExpr(newDepth, None, null, currType));
 						if (currType != null) {
 							var opk:GmlLinterKind = opv == "+=" ? KAdd : KSub;
-							self.checkTypeCastOp(currType, self.readExpr_currType, opk, opv);
+							self.checkTypeCastOp(currType, currValue, self.readExpr_currType, self.readExpr_currValue, opk, opv);
 						}
 						currType = null;
 						flags.add(NoSfx);
@@ -426,7 +452,7 @@ class GmlLinterExpr {
 					else if (nk.isBinOp()) {
 						if (hasFlag(NoOps)) break;
 						self.skip();
-						rc(self.readOps(newDepth, currType, nk, self.nextVal));
+						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal));
 						currType = self.readExpr_currType;
 						flags.add(NoSfx);
 					}
