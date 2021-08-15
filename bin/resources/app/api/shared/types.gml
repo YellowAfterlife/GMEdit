@@ -79,7 +79,7 @@ typedef async_load_network = specified_map<
 	succeeded:bool, // in non-blocking connect
 	buffer:buffer, // in data
 	size:int, // in data
-	void,
+	void
 >;
 
 // todo: more async events
