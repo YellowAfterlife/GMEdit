@@ -164,6 +164,7 @@ class YyLoader {
 		project.yySpriteURLs = new Dictionary();
 		project.yyResourceTypes = new Dictionary();
 		project.yyOrder = new Dictionary();
+		project.resourceTypes = new Dictionary();
 		for (resource in yyProject.resources) {
 			var resPath = resource.id.path;
 			var resName = resource.id.name;
@@ -171,6 +172,7 @@ class YyLoader {
 			// get rid of this mess later
 			project.yyResources[resName] = resource;
 			project.yyResourceGUIDs[resName] = cast resName;
+			project.setResourceTypeFromPath(resPath, resName);
 			//
 			if (resPath.startsWith("objects/")) {
 				project.yyObjectNames[resName] = resName;

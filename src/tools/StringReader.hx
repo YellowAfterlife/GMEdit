@@ -59,6 +59,12 @@ using tools.NativeString;
 			return true;
 		} else return false;
 	}
+	public function skipIfStrEquals(s:String):Bool {
+		if (peekstr(s.length) == s) {
+			skip(s.length);
+			return true;
+		} else return false;
+	}
 	
 	public inline function get(p:Int):CharCode {
 		return source.fastCodeAt(p);

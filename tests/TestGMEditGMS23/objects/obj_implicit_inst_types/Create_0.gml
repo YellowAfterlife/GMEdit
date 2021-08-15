@@ -18,3 +18,10 @@ a_map = ds_map_create();
 a_map = 0; ///want_warn
 an_array2 = array_create(0, 1); ///note: gets typed to just `array`
 an_array2 = 0; ///want_warn
+a_sprite = spr_blank;
+a_sprite2 = -1 /*#as sprite*/;
+if (false) {
+	a_sprite = 0; ///want_warn
+	a_sprite2 = spr_blank;
+	a_sprite2 = 0; ///want_warn
+}

@@ -36,6 +36,8 @@ class GmxLoader {
 		TreeView.clear();
 		var tv = TreeView.element;
 		var ths = [];
+		var seekSoon = [];
+		project.resourceTypes = new Dictionary();
 		function loadrec(gmx:SfGmx, out:Element, one:String, path:String) {
 			if (gmx.name == one) {
 				var path = gmx.text;
@@ -56,8 +58,9 @@ class GmxLoader {
 						}
 					};
 				}
+				project.setResourceTypeFromPath(path);
 				GmlAPI.gmlLookupList.push(name);
-				if (index) GmlSeeker.run(full, _main, kind);
+				if (index) seekSoon.push({ full: full, main: _main, kind: kind});
 				var item = TreeView.makeAssetItem(name, path, full, one);
 				if (one == "sprite") ths.push({path:full, item:item, name:name});
 				out.appendChild(item);
@@ -100,6 +103,9 @@ class GmxLoader {
 		}
 		for (th in ths) {
 			TreeView.setThumb(th.path, project.getSpriteURL(th.name), th.item);
+		}
+		for (item in seekSoon) {
+			GmlSeeker.run(item.full, item.main, item.kind);
 		}
 		//
 		function loadinc(gmx:SfGmx, out:Element, path:String) {

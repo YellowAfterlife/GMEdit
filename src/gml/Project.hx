@@ -77,6 +77,33 @@ import ui.treeview.TreeViewElement;
 	/** for room speed detection */
 	public var gmxFirstRoomName:String = null;
 	
+	/** "scr_some" -> "script" */
+	public var resourceTypes:Dictionary<String>;
+	public function setResourceTypeFromPath(resPath:String, ?resName:String) {
+		var fsAt = resPath.indexOf("/");
+		var bsAt = resPath.indexOf("\\");
+		var slashAt:Int;
+		if (fsAt < 0) {
+			if (bsAt < 0) return;
+			slashAt = bsAt;
+		} else {
+			if (bsAt >= 0) {
+				slashAt = bsAt < fsAt ? bsAt : fsAt;
+			} else slashAt = fsAt;
+		}
+		var prefix = resPath.substring(0, slashAt);
+		switch (prefix) {
+			case "sprites", "backgrounds", "tilesets", "sounds", "paths",
+				"scripts", "shaders", "fonts", "objects", "rooms", "sequences", "animcurves"
+			:
+				if (resName == null) {
+					resName = (new Path(resPath)).file;
+				}
+				resourceTypes[resName] = prefix.substring(0, prefix.length - 1);
+			default:
+		}
+	}
+	
 	/** Object GUID -> object name */
 	public var yyObjectNames:Dictionary<String>;
 	/** Object name -> object GUID */

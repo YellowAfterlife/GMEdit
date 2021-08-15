@@ -58,6 +58,7 @@
     {"id":{"name":"v_buffer_auto_type","path":"scripts/v_buffer_auto_type/v_buffer_auto_type.yy",},"order":2,},
     {"id":{"name":"v_array_access","path":"scripts/v_array_access/v_array_access.yy",},"order":3,},
     {"id":{"name":"v_minus1able","path":"scripts/v_minus1able/v_minus1able.yy",},"order":5,},
+    {"id":{"name":"spr_blank","path":"sprites/spr_blank/spr_blank.yy",},"order":0,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

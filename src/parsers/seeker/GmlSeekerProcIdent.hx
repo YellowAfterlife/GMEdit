@@ -149,7 +149,26 @@ class GmlSeekerProcIdent {
 						if (specTypeInst) fieldType = GmlTypeDef.string;
 						continue;
 					case "-".code, "+".code:
-						if (specTypeInst) fieldType = GmlTypeDef.number;
+						if (specTypeInst) {
+							fieldType = GmlTypeDef.number;
+							var start = q.pos++;
+							q.skipSpaces1_local();
+							if (c == "-".code && q.peek().isDigit()) {
+								q.skipDigits();
+								if (q.skipIfEquals(".".code)) {
+									q.skipDigits();
+								}
+								if (Std.parseFloat(q.substring(start, q.pos)) == -1) {
+									q.skipSpaces1_local();
+									if (q.skipIfStrEquals("/*#as ")) {
+										start = q.pos;
+										q.skipComment();
+										var typeStr = q.substring(start, q.pos - 2);
+										fieldType = GmlTypeDef.parse(typeStr, seeker.mainTop + " offset " + start);
+									}
+								}
+							}
+						}
 						continue;
 					case _ if (c.isDigit()):
 						if (specTypeInst) fieldType = GmlTypeDef.number;
@@ -188,6 +207,10 @@ class GmlSeekerProcIdent {
 							} else switch (q.peek()) {
 								case "\r".code, "\n".code, ";".code:
 									fieldType = GmlAPI.stdTypes[ident];
+									if (fieldType == null) {
+										var resType = gml.Project.current.resourceTypes[ident];
+										if (resType != null) fieldType = GmlTypeDef.parse(resType);
+									}
 								default:
 							}
 						}

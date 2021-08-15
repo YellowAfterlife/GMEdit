@@ -286,6 +286,14 @@ using tools.NativeString;
 		if (peek().isIdent0()) inline skipIdent1();
 	}
 	
+	public function skipDigits() {
+		while (loopLocal) {
+			if (peek().isDigit()) {
+				skip();
+			} else break;
+		}
+	}
+	
 	public function skipIdent1() {
 		while (loopLocal) {
 			if (peek().isIdent1()) {

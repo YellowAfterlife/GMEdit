@@ -23,6 +23,8 @@ class GmkLoader {
 		GmlAPI.gmlClear();
 		GmlAPI.extClear();
 		//
+		project.resourceTypes = new tools.Dictionary();
+		var seekSoon = [];
 		function loadRec(dir:FullPath, kind:String, suffix:String, parDir:TreeViewDir):Void {
 			var rxml = '$dir/_resources.list.xml';
 			if (!project.existsSync(rxml)) return;
@@ -38,6 +40,7 @@ class GmkLoader {
 					parDir.treeItems.appendChild(tvDir);
 					continue;
 				}
+				project.resourceTypes[name] = kind;
 				rel += suffix;
 				var full = project.fullPath(rel);
 				//
@@ -59,7 +62,7 @@ class GmkLoader {
 					case "sprite": full = Path.withExtension(full, "images");
 					case "background": full = Path.withExtension(full, "png");
 				}
-				if (indexKind != null) GmlSeeker.run(full, name, indexKind);
+				if (indexKind != null) seekSoon.push({ full: full, name: name, kind: indexKind });
 				//
 				var tvItem = TreeView.makeAssetItem(name, rel, full, kind);
 				if (openAs != null) tvItem.yyOpenAs = openAs;
@@ -92,6 +95,9 @@ class GmkLoader {
 		loadRecRoot("Time Lines", "timeline", ".xml");
 		loadRecRoot("Objects", "object", ".xml");
 		loadRecRoot("Rooms", "room", ".xml");
+		for (item in seekSoon) {
+			GmlSeeker.run(item.full, item.name, item.kind);
+		}
 		//
 	}
 }

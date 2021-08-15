@@ -48,6 +48,7 @@ class YyLoaderV22 {
 			} else map[key] = item;
 		}
 		//
+		project.resourceTypes = new Dictionary();
 		for (res in yyProject.resources) {
 			var key = res.Key;
 			var val = res.Value;
@@ -89,6 +90,8 @@ class YyLoaderV22 {
 					if (slash < 0) slash = path.indexOf("/");
 					roomViews.set(path.substring(slash + 1, path.length - 8), view);
 				}
+			} else {
+				project.setResourceTypeFromPath(path);
 			}
 		}
 		if (rootView == null) return "Couldn't find a top-level view in project.";

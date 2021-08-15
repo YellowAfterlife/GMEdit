@@ -201,7 +201,7 @@ class GmlLinterExpr {
 			};
 			default: {
 				if (nk.isUnOp()) { // +v or -v
-					rc(self.readExpr(newDepth));
+					rc(self.readExpr(newDepth, NoOps));
 					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KAdd ? "+" : "-", self.readExpr_currValue);
 					currType = GmlTypeDef.number;
 					if (nk == KAdd) {
@@ -382,7 +382,7 @@ class GmlLinterExpr {
 					currKind = KLiveIn;
 				};
 				case KAs: { // <expr> as <type>
-					if (hasFlag(NoSfx)) break;
+					if (hasFlag(NoOps)) break;
 					self.skip();
 					var tnp = q.pos;
 					rc(self.readTypeName());
