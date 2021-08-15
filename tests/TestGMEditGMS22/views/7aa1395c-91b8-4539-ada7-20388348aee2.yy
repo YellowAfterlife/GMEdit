@@ -11,7 +11,12 @@
         "75ac291e-7061-4bcb-8e8a-3b3545332d41",
         "cc98d028-7bdd-4680-85f3-c87a7baa481e",
         "f418569b-3bdd-4706-a0e4-364317f54032",
-        "a9188620-a624-4a5a-83ae-a1b53faf038b"
+        "a9188620-a624-4a5a-83ae-a1b53faf038b",
+        "3a5af38c-757d-41ae-98c0-5d4b09e14e6a",
+        "f85efd3d-bcec-4ec0-8226-da808afda79d",
+        "7e093a2a-e51c-4a1e-9a53-f9080d38730b",
+        "a128950b-5063-4876-b4a6-b99dbd2ea6d1",
+        "3a5af38c-757d-44ae-98c0-5d4b09e14e6a"
     ],
     "filterType": "GMOptions",
     "folderName": "options",

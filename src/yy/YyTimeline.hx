@@ -45,6 +45,7 @@ abstract YyTimeline(YyTimelineImpl) from YyTimelineImpl {
 			errorText = GmlTimeline.parseError;
 			return false;
 		}
+		var v23 = Project.current.isGMS23;
 		//
 		var oldList = this.momentList;
 		var oldMap = [];
@@ -57,23 +58,41 @@ abstract YyTimeline(YyTimelineImpl) from YyTimelineImpl {
 			var time = item.moment;
 			// try to reuse existing moments where possible:
 			var mm = oldMap[time];
-			if (mm == null) mm = {
-				id: new YyGUID(),
-				modelName: "GMMoment",
-				mvc: "1.0",
-				name: "",
-				moment: time,
-				evnt: {
+			if (mm == null) {
+				if (v23) mm = {
+					moment: time,
+					evnt: {
+						isDnD: false,
+						eventNum: time,
+						eventType: 0,
+						collisionObjectId: null,
+						resourceVersion: "1.0",
+						name: "",
+						tags: [],
+						resourceType: "GMEvent",
+					},
+					resourceVersion: "1.0",
+					name: "",
+					tags: [],
+					resourceType: "GMMoment",
+				}; else mm = {
 					id: new YyGUID(),
-					modelName: "GMEvent",
+					modelName: "GMMoment",
 					mvc: "1.0",
-					IsDnD: false,
-					eventtype: 0,
-					enumb: time,
-					collisionObjectId: YyGUID.zero,
-					m_owner: this.id,
-				},
-			};
+					name: "",
+					moment: time,
+					evnt: {
+						id: new YyGUID(),
+						modelName: "GMEvent",
+						mvc: "1.0",
+						IsDnD: false,
+						eventtype: 0,
+						enumb: time,
+						collisionObjectId: YyGUID.zero,
+						m_owner: this.id,
+					},
+				};
+			}
 			newMap[time] = mm;
 			newList.push({ moment: mm, code: item.code[0] });
 		}

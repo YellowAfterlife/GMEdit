@@ -60,6 +60,9 @@ import haxe.DynamicAccess;
 		q["GMEvent"] = {
 			order: ["isDnD", "eventNum", "eventType", "collisionObjectId"].concat(base),
 		};
+		q["GMMoment"] = {
+			order: ["moment", "evnt"].concat(base),
+		};
 		//{ room
 		q["GMRoom"] = {
 			order: [
