@@ -67,6 +67,15 @@ class JsTools {
 		}
 	}
 	
+	/** Compile-time string length */
+	public static macro function clen(e:ExprOf<String>):ExprOf<Int> {
+		var p = Context.currentPos();
+		switch (e.expr) {
+			case EConst(CString(s)): return macro @:pos(p) $v{s.length};
+			default: throw Context.error("Expected a string literal", p);
+		}
+	}
+	
 	#if !macro
 	@:noUsing public static function setImmediate(fn:haxe.Constraints.Function, rest:Rest<Any>):Void {
 		var args = rest.toArray();
