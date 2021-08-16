@@ -168,6 +168,11 @@ class GmlLinter {
 	var optImplicitNullableCast:Bool;
 	var optWarnAboutRedundantCasts:Bool;
 	
+	var funcLiteral:GmlLinterFuncLiteral;
+	function initModules() {
+		funcLiteral = new GmlLinterFuncLiteral(this);
+	}
+	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
 		optNoSingleEqu = getOption((q) -> q.noSingleEquals);
@@ -187,6 +192,7 @@ class GmlLinter {
 		optWarnAboutRedundantCasts = getOption((q) -> q.warnAboutRedundantCasts);
 		GmlTypeCanCastTo.allowImplicitNullCast = optImplicitNullableCast;
 		GmlTypeCanCastTo.allowImplicitBoolIntCasts = getOption((q) -> q.implicitBoolIntCasts);
+		initModules();
 	}
 	//{
 	var nextKind:GmlLinterKind = KEOF;
@@ -449,10 +455,10 @@ class GmlLinter {
 					// read the next argument:
 					if (isMethod && argc == 1) {
 						// rewrite `self` for `method()`'s `fn` argument
-						var lso = readLambda_selfOverride;
-						readLambda_selfOverride = methodSelf;
+						var lso = funcLiteral.selfOverride;
+						funcLiteral.selfOverride = methodSelf;
 						var foundError = readExpr(newDepth);
-						readLambda_selfOverride = lso;
+						funcLiteral.selfOverride = lso;
 						if (foundError) return -1;
 					} else {
 						if (readExpr(newDepth)) return -1;
@@ -783,117 +789,6 @@ class GmlLinter {
 		return readSeqStartError("Unclosed {}");
 	}
 	
-	static var readLambda_doc:GmlFuncDoc;
-	static var readLambda_selfOverride:GmlType;
-	function readLambda(oldDepth:Int, isFunc:Bool, isStat:Bool):FoundError {
-		var name = "function";
-		var isTopLevel = isFunc && isStat && oldDepth == 2 && functionsAreGlobal;
-		if (peek() == KIdent) {
-			skip();
-			name = nextVal;
-			if (isTopLevel) context = name;
-		}
-		var doc = new GmlFuncDoc(name, "(", ")", [], false);
-		var nextLocalType = isTopLevel ? "local" : "sublocal";
-		if (skipIf(peek() == KParOpen)) { // (...args)
-			var depth = 1;
-			var awaitArgName = true;
-			while (reader.loop) {
-				switch (next()) {
-					case KParOpen, KSqbOpen, KCubOpen: depth++;
-					case KParClose, KSqbClose, KCubClose: if (--depth <= 0) break;
-					case KIdent: {
-						if (awaitArgName) {
-							var argName = nextVal;
-							awaitArgName = false;
-							doc.args.push(nextVal);
-							var imp = getImports(setLocalTypes);
-							var argTypeStr = null;
-							if (skipIf(peek() == KColon)) {
-								rc(readTypeName());
-								argTypeStr = readTypeName_typeStr;
-								var t = GmlTypeDef.parse(argTypeStr);
-								if (setLocalTypes) imp.localTypes[argName] = t;
-								if (doc.argTypes == null) {
-									doc.argTypes = NativeArray.create(doc.args.length - 1);
-								}
-								doc.argTypes.push(t);
-							} else {
-								if (setLocalTypes) imp.localTypes[argName] = null;
-								if (doc.argTypes != null) doc.argTypes.push(null);
-							}
-							if (setLocalVars) editor.locals[context].add(argName, nextLocalType,
-								JsTools.nca(argTypeStr, "type " + argTypeStr)
-							);
-						}
-					};
-					case KComma: if (depth == 1) awaitArgName = true;
-					default:
-				}
-			}
-		} else if (isFunc) return readExpect("function literal arguments");
-		//
-		var nextFuncRetStatus = GmlLinterReturnStatus.NoReturn;
-		if (skipIf(peek() == KArrow)) { // `->returnType`
-			rc(readTypeName());
-			doc.returnTypeString = readTypeName_typeStr;
-			nextFuncRetStatus = (doc.returnType.getKind() == KVoid ? WantNoReturn : WantReturn);
-		}
-		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
-			readCheckSkip(KIdent, "a parent type name");
-			readCheckSkip(KParOpen, "opening bracket");
-			rc(readArgs(oldDepth + 1, false) < 0);
-		}
-		if (isFunc) { // `function() constructor`?
-			skipIf(peek() == KIdent && nextVal == "constructor");
-		}
-		//
-		var oldLocalNames = localNamesPerDepth;
-		var oldLocalKinds = localKinds;
-		var oldFuncDoc = currFuncDoc;
-		var oldFuncRetStatus = currFuncRetStatus;
-		var oldLocalTokenType = localVarTokenType;
-		
-		localNamesPerDepth = [];
-		localKinds = new Dictionary();
-		currFuncDoc = doc;
-		currFuncRetStatus = nextFuncRetStatus;
-		localVarTokenType = nextLocalType;
-		
-		var selfOverride = readLambda_selfOverride;
-		if (selfOverride != null) {
-			var self0z = __selfType_set;
-			var self0t = __selfType_type;
-			__selfType_set = true;
-			__selfType_type = selfOverride;
-			var foundError = readStat(0);
-			__selfType_set = self0z;
-			__selfType_type = self0t;
-			rc(foundError);
-		} else {
-			rc(readStat(0));
-		}
-		
-		switch (currFuncRetStatus) {
-			case HasReturn:
-				if (nextFuncRetStatus == NoReturn) doc.returnTypeString = "";
-			case WantReturn:
-				addWarning("The function is marked as having a return but does not return anything.");
-			case NoReturn:
-				doc.hasReturn = false;
-			default:
-		}
-		
-		localNamesPerDepth = oldLocalNames;
-		localKinds = oldLocalKinds;
-		currFuncDoc = oldFuncDoc;
-		currFuncRetStatus = oldFuncRetStatus;
-		localVarTokenType = oldLocalTokenType;
-		
-		readLambda_doc = doc;
-		return false;
-	}
-	
 	/**
 	 * 
 	 */
@@ -1158,7 +1053,7 @@ class GmlLinter {
 				}
 			};
 			//
-			case KLamDef: rc(readLambda(newDepth, false, true));
+			case KLamDef: rc(funcLiteral.read(newDepth, false, true));
 			default: {
 				rc(readExpr(newDepth, flags.with(AsStat), nk));
 			};

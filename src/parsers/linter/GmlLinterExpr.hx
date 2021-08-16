@@ -164,8 +164,8 @@ class GmlLinterExpr {
 				currType = GmlLinterArrayLiteral.outType;
 			};
 			case KLambda, KFunction:
-				rc(self.readLambda(newDepth, nk == KFunction, isStat()));
-				currFunc = GmlLinter.readLambda_doc;
+				rc(self.funcLiteral.read(newDepth, nk == KFunction, isStat()));
+				currFunc = self.funcLiteral.doc;
 				currType = currFunc.getFunctionType();
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
 				var anon = new GmlTypeAnon();
