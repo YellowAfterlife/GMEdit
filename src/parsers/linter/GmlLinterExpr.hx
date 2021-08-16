@@ -387,7 +387,7 @@ class GmlLinterExpr {
 					var tnp = q.pos;
 					rc(self.readTypeName());
 					var asType = GmlTypeDef.parse(GmlLinter.readTypeName_typeStr);
-					if (currType.equals(asType)) {
+					if (self.optWarnAboutRedundantCasts && currType.equals(asType)) {
 						self.addWarning('Redundant cast, ${currType.toString()} is already of type ${asType.toString()}');
 					}
 					if (!hasFlag(IsCast)) {

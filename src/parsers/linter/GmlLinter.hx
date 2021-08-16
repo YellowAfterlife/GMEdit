@@ -166,6 +166,7 @@ class GmlLinter {
 	var optSpecTypeMisc:Bool;
 	var optRequireFields:Bool;
 	var optImplicitNullableCast:Bool;
+	var optWarnAboutRedundantCasts:Bool;
 	
 	public function new() {
 		optRequireSemico = getOption((q) -> q.requireSemicolons);
@@ -183,6 +184,7 @@ class GmlLinter {
 		optRequireFields = getOption((q) -> q.requireFields);
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 		optImplicitNullableCast = getOption((q) -> q.implicitNullableCasts);
+		optWarnAboutRedundantCasts = getOption((q) -> q.warnAboutRedundantCasts);
 		GmlTypeCanCastTo.allowImplicitNullCast = optImplicitNullableCast;
 		GmlTypeCanCastTo.allowImplicitBoolIntCasts = getOption((q) -> q.implicitBoolIntCasts);
 	}
