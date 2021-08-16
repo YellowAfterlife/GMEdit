@@ -1054,7 +1054,7 @@ class GmlLinter {
 				__otherType_set = other0z;
 				__otherType_type = other0t;
 				__selfType_set = self0z;
-				__selfType_type = other0t;
+				__selfType_type = self0t;
 			};
 			case KDo: {
 				rc(readLoopStat(newDepth));
