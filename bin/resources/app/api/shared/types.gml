@@ -108,27 +108,27 @@ typedef audio_emitter : minus1able
 typedef sound_instance : minus1able
 typedef sound_sync_group : minus1able
 typedef sound_play_queue : minus1able
-typedef html_clickable
+typedef html_clickable : minus1able
 typedef html_clickable_tpe
 typedef texture_group
-typedef file_handle
-typedef binary_file_handle
-typedef particle
-typedef particle_system
-typedef particle_emitter
+typedef file_handle : minus1able
+typedef binary_file_handle : minus1able
+typedef particle : minus1able
+typedef particle_system : minus1able
+typedef particle_emitter : minus1able
 typedef virtual_key
-typedef physics_fixture
-typedef physics_joint
-typedef physics_particle
-typedef physics_particle_group
+typedef physics_fixture : minus1able
+typedef physics_joint : minus1able
+typedef physics_particle : minus1able
+typedef physics_particle_group : minus1able
 typedef network_socket : minus1able
 typedef network_server : minus1able
-typedef vertex_buffer
+typedef vertex_buffer : minus1able
 typedef steam_id
 typedef steam_ugc
 typedef steam_ugc_query
-typedef shader_sampler
-typedef shader_uniform
+typedef shader_sampler : minus1able
+typedef shader_uniform : minus1able
 typedef vertex_format : minus1able
 typedef vertex_buffer : minus1able
 
