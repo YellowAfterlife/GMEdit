@@ -133,9 +133,23 @@ class GmlSeekerProcIdent {
 			do {
 				var c = q.peek();
 				var specTypeInst = seeker.specTypeInst;
+				function procAs() {
+					q.skipSpaces1_local();
+					if (q.skipIfStrEquals("/*#as ")) {
+						var start = q.pos;
+						q.skipComment();
+						var typeStr = q.substring(start, q.pos - 2);
+						fieldType = GmlTypeDef.parse(typeStr, seeker.mainTop + " offset " + start);
+						return true;
+					} else return false;
+				}
 				switch (c) {
 					case "[".code:
-						if (specTypeInst) fieldType = GmlTypeDef.anyArray;
+						if (specTypeInst) {
+							fieldType = GmlTypeDef.anyArray;
+							q.skip(); q.skipBalancedParenExpr();
+							procAs();
+						}
 						continue;
 					case '"'.code:
 						if (specTypeInst) fieldType = GmlTypeDef.string;
@@ -149,7 +163,7 @@ class GmlSeekerProcIdent {
 						if (specTypeInst) fieldType = GmlTypeDef.string;
 						continue;
 					case "-".code, "+".code:
-						if (specTypeInst) {
+						if (specTypeInst) { // maybe "-1 as X"
 							fieldType = GmlTypeDef.number;
 							var start = q.pos++;
 							q.skipSpaces1_local();
@@ -159,13 +173,7 @@ class GmlSeekerProcIdent {
 									q.skipDigits();
 								}
 								if (Std.parseFloat(q.substring(start, q.pos)) == -1) {
-									q.skipSpaces1_local();
-									if (q.skipIfStrEquals("/*#as ")) {
-										start = q.pos;
-										q.skipComment();
-										var typeStr = q.substring(start, q.pos - 2);
-										fieldType = GmlTypeDef.parse(typeStr, seeker.mainTop + " offset " + start);
-									}
+									procAs();
 								}
 							}
 						}
@@ -185,6 +193,7 @@ class GmlSeekerProcIdent {
 					case "function":
 						// OK!
 					case "undefined", "noone":
+						if (specTypeInst) procAs();
 						continue;
 					case "new" if (seeker.hasFunctionLiterals):
 						if (specTypeInst) {
@@ -201,9 +210,10 @@ class GmlSeekerProcIdent {
 							var doc = GmlAPI.stdDoc[ident];
 							q.skipSpaces1_local();
 							if (doc != null) {
-								if (q.peek() == "(".code) {
+								if (q.skipIfEquals("(".code)) {
 									fieldType = doc.returnType.mapTemplateTypes([]);
-								}
+									q.skipBalancedParenExpr();
+								} else fieldType = doc.getFunctionType();
 							} else switch (q.peek()) {
 								case "\r".code, "\n".code, ";".code:
 									fieldType = GmlAPI.stdTypes[ident];
@@ -211,8 +221,12 @@ class GmlSeekerProcIdent {
 										var resType = gml.Project.current.resourceTypes[ident];
 										if (resType != null) fieldType = GmlTypeDef.parse(resType);
 									}
+								case "(".code:
+									q.skip();
+									q.skipBalancedParenExpr();
 								default:
 							}
+							procAs();
 						}
 						continue;
 				}
