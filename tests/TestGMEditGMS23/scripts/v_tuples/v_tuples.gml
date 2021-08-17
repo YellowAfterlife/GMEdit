@@ -25,4 +25,19 @@ function v_tuples() {
 	
 	var named/*:[x:number, y:number, z:number]*/ = [1, 2, 3];
 	// typing `named[` should pop up a menu with field list
+	
+	var multi/*:[i:int][]*/ = [[1], [2], [3]];
+	multi[0][0] = 1;
+	multi[0, 0] = 1;
+	multi[0][0] = "1"; ///want_warn
+	multi[0, 0] = "1"; ///want_warn
+	
+	var has_array/*:[name:string, arr:int[]]*/ = ["an array", [1, 2, 3]];
+	has_array[0] = ":)";
+	has_array[0] = 0; ///want_warn
+	has_array[0, 0] = 0; ///want_warn
+	has_array[1][0] = 0;
+	has_array[1, 0] = 0;
+	has_array[1][0] = ""; ///want_warn
+	has_array[1, 0] = ""; ///want_warn
 }

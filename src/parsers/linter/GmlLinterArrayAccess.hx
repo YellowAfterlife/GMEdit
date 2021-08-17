@@ -123,11 +123,13 @@ class GmlLinterArrayAccess {
 				
 				rc(self.readExpr(newDepth));
 				arrayType1 = self.readExpr_currType;
+				arrayValue1 = self.readExpr_currValue;
 				
 				if (self.skipIf(self.peek() == KComma)) {
 					isArray2d = true;
 					rc(self.readExpr(newDepth));
 					arrayType2 = self.readExpr_currType;
+					arrayValue2 = self.readExpr_currValue;
 				}
 				if (isNull && self.skipIf(self.peek() == KComma)) { // whoops, a?[b,c,d]
 					self.readArgs(newDepth, true);
@@ -159,11 +161,10 @@ class GmlLinterArrayAccess {
 						currType = currType.unwrapParam(1);
 					};
 					case KTuple: {
-						if (self.readExpr_currValue == null) {
+						if (arrayValue == null) { // unknown index
 							self.checkTypeCast(arrayType, GmlTypeDef.number, "array index", arrayValue);
-							if (isArray2d) self.addWarning("2d array access on a tuple");
 							currType = null;
-						} else switch (self.readExpr_currValue) {
+						} else switch (arrayValue) {
 							case VNumber(i, _):
 								var p = currType.unwrapParams();
 								if (i >= 0 && i < p.length) {
