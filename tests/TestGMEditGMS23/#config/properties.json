@@ -5,7 +5,8 @@
         "requireFields": true,
         "specTypeConst": true,
         "specTypeInst": true,
-        "specTypeLet": true
+        "specTypeLet": true,
+        "warnAboutRedundantCasts": true
     },
     "nullConditionalSet": "nc_set",
     "nullConditionalVal": "nc_val",
