@@ -16,6 +16,7 @@ import tools.macros.GmlLinterMacros.*;
  * ...
  * @author YellowAfterlife
  */
+@:access(parsers.linter.GmlLinter)
 class GmlLinterArrayAccess {
 	public static var outType:GmlType;
 	public static var outKind:GmlLinterKind;
@@ -25,7 +26,7 @@ class GmlLinterArrayAccess {
 		currType:GmlType,
 		currKind:GmlLinterKind,
 		currValue:GmlLinterValue
-	):FoundError @:privateAccess {
+	):FoundError {
 		var isNull = nk == KNullSqb;
 		
 		// extract `Type` from `Type?` when doing `v?[indexer]`
@@ -167,10 +168,19 @@ class GmlLinterArrayAccess {
 						} else switch (arrayValue) {
 							case VNumber(i, _):
 								var p = currType.unwrapParams();
-								if (i >= 0 && i < p.length) {
-									currType = p[Std.int(i)];
-								} else {
+								if (i < 0) {
 									currType = null;
+									self.addWarning('Out-of-bounds tuple access (index $i)');
+								} else if (i >= p.length - 1) {
+									var lastTupleType = p[p.length - 1].resolve();
+									if (lastTupleType.getKind() == KRest) {
+										currType = lastTupleType.unwrapParam();
+									} else if (i >= p.length) {
+										currType = null;
+										self.addWarning('Out-of-bounds tuple access (index $i, length is ${p.length})');
+									}
+								} else {
+									currType = p[Std.int(i)];
 								}
 							default: currType = null;
 						}

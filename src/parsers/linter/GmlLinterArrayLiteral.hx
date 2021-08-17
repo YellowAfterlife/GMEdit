@@ -10,12 +10,15 @@ import tools.macros.GmlLinterMacros.*;
  * ...
  * @author YellowAfterlife
  */
+@:access(parsers.linter.GmlLinter)
 class GmlLinterArrayLiteral {
 	public static var outType:GmlType;
-	public static function read(self:GmlLinter, oldDepth:Int, targetType:GmlType):FoundError @:privateAccess {
+	public static function read(self:GmlLinter, oldDepth:Int, targetType:GmlType):FoundError {
 		var newDepth = oldDepth + 1;
 		
 		var tupleTypes:ReadOnlyArray<GmlType> = null;
+		var tupleHasRest = false;
+		var tupleRestType:GmlType = null;
 		var itemType:GmlType = null;
 		if (targetType == null) {
 			// OK!
@@ -23,6 +26,11 @@ class GmlLinterArrayLiteral {
 			targetType = targetType.resolve();
 			if (targetType.getKind() == KTuple) {
 				tupleTypes = targetType.unwrapParams();
+				var t:GmlType = tupleTypes[tupleTypes.length - 1].resolve();
+				if (t.getKind() == KRest) {
+					tupleHasRest = true;
+					tupleRestType = t.unwrapParam();
+				}
 			} else if (targetType.canCastTo(GmlTypeDef.anyArray)) {
 				itemType = targetType.unwrapParam();
 			}
@@ -54,7 +62,9 @@ class GmlLinterArrayLiteral {
 					rc(self.readExpr(newDepth, None, null, itemType));
 					
 					if (tupleTypes != null) {
-						self.checkTypeCast(self.readExpr_currType, tupleTypes[index], "tuple literal", self.readExpr_currValue);
+						var tt = tupleTypes[index];
+						if (tupleHasRest && index >= tupleTypes.length - 1) tt = tupleRestType;
+						self.checkTypeCast(self.readExpr_currType, tt, "tuple literal", self.readExpr_currValue);
 					} else if (itemType != null) {
 						self.checkTypeCast(self.readExpr_currType, itemType, "array literal", self.readExpr_currValue);
 					} else if (index == 0) {
@@ -70,7 +80,12 @@ class GmlLinterArrayLiteral {
 		if (!closed) return self.readSeqStartError("Unclosed [] literal");
 		
 		if (tupleTypes != null) {
-			if (index != tupleTypes.length) {
+			var lastTupleType:GmlType = tupleTypes[tupleTypes.length - 1].resolve();
+			if (tupleHasRest) {
+				if (index < tupleTypes.length - 1) {
+					self.readSeqStartWarn('Expected a >=${tupleTypes.length-1}-value tuple, got a $index-value tuple');
+				}
+			} else if (index != tupleTypes.length) {
 				self.readSeqStartWarn('Expected a ${tupleTypes.length}-value tuple, got a $index-value tuple');
 			}
 			outType = targetType;

@@ -11,6 +11,8 @@ function v_tuples() {
 	t[@0] = 1;
 	t[@0] = "1"; ///want_warn
 	
+	t[2] = 0; ///want_warn
+	
 	var i/*:int*/, s/*:string*/;
 	i = t[0];
 	s = t[0]; ///want_warn
@@ -40,4 +42,17 @@ function v_tuples() {
 	has_array[1, 0] = 0;
 	has_array[1][0] = ""; ///want_warn
 	has_array[1, 0] = ""; ///want_warn
+	
+	var has_rest/*:[a:int, b:string, etc:rest<int>]*/;
+	has_rest = [1]; ///want_warn
+	has_rest = [1, "2"];
+	has_rest = [1, 2]; ///want_warn
+	has_rest = [1, "2", 3];
+	has_rest = [1, "2", "3"]; ///want_warn
+	has_rest = [1, "2", 3, 4];
+	has_rest = [1, "2", 3, "4"]; ///want_warn
+	has_rest[-1] = 0; ///want_warn
+	has_rest[2] = 0;
+	has_rest[3] = 0;
+	has_rest[4] = ""; ///want_warn
 }
