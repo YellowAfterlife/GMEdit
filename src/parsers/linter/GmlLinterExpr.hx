@@ -17,6 +17,7 @@ import tools.macros.GmlLinterMacros.*;
  * ...
  * @author YellowAfterlife
  */
+@:access(parsers.linter.GmlLinter)
 class GmlLinterExpr {
 	static function __readExpr_invalid(self:GmlLinter, flags:GmlLinterReadFlags):FoundError {
 		return @:privateAccess self.readExpect(flags.has(AsStat) ? "a statement" : "an expression");
@@ -38,7 +39,7 @@ class GmlLinterExpr {
 	
 	public static function read(
 		self:GmlLinter, oldDepth:Int, flags:GmlLinterReadFlags, _nk:GmlLinterKind, targetType:GmlType
-	):FoundError @:privateAccess {
+	):FoundError {
 		var newDepth = oldDepth + 1;
 		var q = self.reader;
 		var nk:GmlLinterKind = self.nextOr(_nk);

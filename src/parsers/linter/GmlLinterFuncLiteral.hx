@@ -22,11 +22,13 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 	public function read(oldDepth:Int, isFunc:Bool, isStat:Bool):FoundError {
 		var name = "function";
 		var isTopLevel = isFunc && isStat && oldDepth == 2 && linter.functionsAreGlobal;
-		if (peek() == KIdent) {
+		var hasName = peek() == KIdent;
+		if (hasName) {
 			skip();
 			name = nextVal;
 			if (isTopLevel) context = name;
 		}
+		var globalDoc = isTopLevel && hasName ? gml.GmlAPI.gmlDoc[name] : null;
 		var doc = new GmlFuncDoc(name, "(", ")", [], false);
 		var nextLocalType = isTopLevel ? "local" : "sublocal";
 		if (skipIf(peek() == KParOpen)) { // (...args)
@@ -40,22 +42,27 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 					case KIdent: {
 						if (awaitArgName) {
 							var argName = nextVal;
+							var argIndex = doc.args.length;
 							awaitArgName = false;
 							doc.args.push(nextVal);
 							var imp = linter.getImports(setLocalTypes);
 							var argTypeStr = null;
+							var t:GmlType;
 							if (skipIf(peek() == KColon)) {
 								rc(linter.readTypeName());
 								argTypeStr = GmlLinter.readTypeName_typeStr;
-								var t = GmlTypeDef.parse(argTypeStr);
-								if (setLocalTypes) imp.localTypes[argName] = t;
+								t = GmlTypeDef.parse(argTypeStr);
+							} else {
+								if (globalDoc != null && globalDoc.argTypes != null) {
+									t = globalDoc.argTypes[argIndex];
+								} else t = null;
+							}
+							if (setLocalTypes) imp.localTypes[argName] = t;
+							if (t != null) {
 								if (doc.argTypes == null) {
 									doc.argTypes = NativeArray.create(doc.args.length - 1);
 								}
 								doc.argTypes.push(t);
-							} else {
-								if (setLocalTypes) imp.localTypes[argName] = null;
-								if (doc.argTypes != null) doc.argTypes.push(null);
 							}
 							if (setLocalVars) editor.locals[context].add(argName, nextLocalType,
 								JsTools.nca(argTypeStr, "type " + argTypeStr)

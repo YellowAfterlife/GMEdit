@@ -39,6 +39,14 @@
             }
         },
         {
+            "Key": "102410dc-6440-4df0-89e3-20cb61fa015b",
+            "Value": {
+                "id": "6374f082-6dda-464d-bcd8-a90373aed2a7",
+                "resourcePath": "scripts\\macros\\macros.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
             "Key": "127abba8-0a51-4228-9a84-ef12cc986125",
             "Value": {
                 "id": "ccdb35ce-d2a7-40be-80bf-00614c57e59c",
@@ -132,6 +140,14 @@
                 "id": "b0b849a8-fbd8-7cd6-a69c-33bbd4c36ef5",
                 "resourcePath": "views\\532969fa-7452-4e08-82a0-17bc1c554811.yy",
                 "resourceType": "GMFolder"
+            }
+        },
+        {
+            "Key": "714ab57e-90ad-4f1a-a42e-3856d068d35a",
+            "Value": {
+                "id": "3201288b-464a-4713-9005-dcc3bbd785c2",
+                "resourcePath": "scripts\\v_args_types_jsdoc3\\v_args_types_jsdoc3.yy",
+                "resourceType": "GMScript"
             }
         },
         {
@@ -247,6 +263,14 @@
             }
         },
         {
+            "Key": "bf2c3b0b-40dc-482d-838d-e977af03b665",
+            "Value": {
+                "id": "f5d653ca-e1b6-4fd1-8b82-2c282aa290e5",
+                "resourcePath": "scripts\\v_args_types_jsdoc2\\v_args_types_jsdoc2.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
             "Key": "c0c9e6a7-900a-ee7a-5232-4560d4e153ec",
             "Value": {
                 "id": "67ed775e-14e5-6f93-6906-0ae62f4d57b1",
@@ -299,6 +323,14 @@
             "Value": {
                 "id": "c52b53de-8983-a49c-bf78-534ea3fc40ef",
                 "resourcePath": "scripts\\v_doc_returns\\v_doc_returns.yy",
+                "resourceType": "GMScript"
+            }
+        },
+        {
+            "Key": "e0f72199-af01-4d6f-afa9-9f3478044fd1",
+            "Value": {
+                "id": "f8aa866f-8501-434a-8dfc-0d78334d1099",
+                "resourcePath": "scripts\\v_args_types_jsdoc\\v_args_types_jsdoc.yy",
                 "resourceType": "GMScript"
             }
         },

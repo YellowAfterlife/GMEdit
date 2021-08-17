@@ -13,13 +13,14 @@ using tools.NativeString;
  * ...
  * @author YellowAfterlife
  */
+@:access(parsers.linter.GmlLinter)
 class GmlLinterIdent {
 	public static var type:GmlType = null;
 	public static var func:GmlFuncDoc = null;
 	public static function read(linter:GmlLinter, currName:String) {
 		var currType:GmlType = null;
 		var currFunc:GmlFuncDoc = null;
-		@:privateAccess do {
+		do {
 			switch (currName) {
 				case "self":
 					currType = linter.getSelfType();
@@ -41,6 +42,23 @@ class GmlLinterIdent {
 						var defName = "async_load_" + ctx.substring(6);
 						if (GmlAPI.stdTypedefs.exists(defName) || GmlAPI.gmlTypedefs.exists(defName)) {
 							currType = GmlTypeDef.simple(defName);
+							break;
+						}
+					}
+				case s if (s.startsWith("argument") && s.length <= JsTools.clen("argument") + 2):
+					if (s.length == JsTools.clen("argument")) {
+						var doc:GmlFuncDoc = linter.currFuncDoc;
+						if (doc != null && doc.argTypes != null) {
+							currType = GmlType.TInst("tuple", doc.argTypes, KTuple);
+						}
+						break;
+					} else {
+						var i = Std.parseInt(s.substring(JsTools.clen("argument")));
+						if (i != null && i < 16) {
+							var doc:GmlFuncDoc = linter.currFuncDoc;
+							if (doc != null && doc.argTypes != null) {
+								currType = doc.argTypes[i];
+							}
 							break;
 						}
 					}

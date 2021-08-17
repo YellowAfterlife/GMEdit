@@ -1,5 +1,9 @@
 {
     "linterPrefs": {
-        "liveCheckOnSemico": true
+        "liveCheckOnSemico": true,
+        "specTypeConst": true,
+        "specTypeInst": true,
+        "specTypeLet": true,
+        "specTypeVar": false
     }
 }

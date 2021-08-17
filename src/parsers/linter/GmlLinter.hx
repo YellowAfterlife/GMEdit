@@ -836,7 +836,7 @@ class GmlLinter {
 						}
 						localKinds[varName] = mainKind;
 					}
-					found++;
+					var argIndex = found++;
 					//
 					nk = peek();
 					var varType:GmlType, varTypeStr:String;
@@ -848,7 +848,17 @@ class GmlLinter {
 						varType = GmlTypeDef.parse(varTypeStr);
 						if (setLocalTypes) getImports(true).localTypes[varName] = varType;
 						nk = peek();
-					} else { varType = null; varTypeStr = null; }
+					} else {
+						varType = null;
+						varTypeStr = null;
+						if (isArgs && currFuncDoc != null && currFuncDoc.argTypes != null) {
+							varType = currFuncDoc.argTypes[argIndex];
+							varTypeStr = varType != null ? varType.toString() : null;
+							if (varType != null && setLocalTypes) {
+								getImports(true).localTypes[varName] = varType;
+							}
+						}
+					}
 					//
 					var typeInfo:String = null;
 					if (nk == KSet) { // `name = val`
