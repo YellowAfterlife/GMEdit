@@ -2462,9 +2462,9 @@ buffer_create_from_vertex_buffer_ext(vertex_buffer:vertex_buffer, kind:buffer_ki
 buffer_copy_from_vertex_buffer(vertex_buffer:vertex_buffer, start_vertex:int, num_vertices:int, dest_buffer:buffer, dest_offset:int)->void
 buffer_async_group_begin(groupname:string)->void
 buffer_async_group_option(optionname:string,optionvalue:number|bool|string)->void
-buffer_async_group_end()->int
-buffer_load_async(bufferid:buffer,filename:string,offset:int,size:int)->int
-buffer_save_async(bufferid:buffer,filename:string,offset:int,size:int)->int
+buffer_async_group_end()->async_save_load_id
+buffer_load_async(bufferid:buffer,filename:string,offset:int,size:int)->async_save_load_id
+buffer_save_async(bufferid:buffer,filename:string,offset:int,size:int)->async_save_load_id
 buffer_compress(bufferid:buffer,offset:int,size:int)->buffer
 buffer_decompress(bufferId:buffer)->buffer
 buffer_fixed#:buffer_kind

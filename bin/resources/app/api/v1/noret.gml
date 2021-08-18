@@ -608,7 +608,6 @@ buffer_base64_decode_ext
 buffer_copy_from_vertex_buffer
 buffer_async_group_begin
 buffer_async_group_option
-buffer_async_group_end
 gml_release_mode
 steam_activate_overlay
 steam_publish_workshop_file

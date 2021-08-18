@@ -82,6 +82,20 @@ typedef async_load_network = specified_map<
 	void
 >;
 
+typedef async_load_image = specified_map<
+	filename:string,
+	id:sprite,
+	status:int,
+	void
+>;
+
+typedef async_save_load_id : minus1able;
+typedef async_load_save_load = specified_map<
+	id:async_save_load_id,
+	status:bool,
+	void
+>;
+
 // todo: more async events
 
 // Asset types
