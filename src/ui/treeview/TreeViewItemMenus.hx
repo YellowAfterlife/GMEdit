@@ -136,7 +136,7 @@ class TreeViewItemMenus {
 		return ntv;
 	}
 	//
-	static function validate(s:String, tvDir:TreeViewDir, asDir:Bool, filter:String) {
+	static function validate(s:String, tvDir:TreeViewDir, asDir:Bool, filter:String, kind:String) {
 		if (asDir || filter == "file") {
 			for (c in tvDir.treeItems.children) {
 				if (c.getAttribute(TreeView.attrLabel) == s) {
@@ -151,7 +151,7 @@ class TreeViewItemMenus {
 				}
 			}
 		} else {
-			if (!(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
+			if (kind != "note" && !(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
 				Dialog.showError("Name contains illegal characters!");
 				return false;
 			}
@@ -177,7 +177,7 @@ class TreeViewItemMenus {
 		//
 		var mkdir = kind == "dir";
 		var tvDir:TreeViewDir = cast (order != 0 ? dir.parentElement.parentElement : dir);
-		if (!validate(s, tvDir, mkdir, d.filter)) return null;
+		if (!validate(s, tvDir, mkdir, d.filter, kind)) return null;
 		//
 		var args:TreeViewItemCreate = {
 			prefix: d.prefix,
@@ -343,7 +343,8 @@ class TreeViewItemMenus {
 			if (s == d.last || s == "" || s == null) return;
 			var el:TreeViewElement = cast target;
 			var tvDir:TreeViewDir = el.treeParentDir;
-			if (!validate(s, tvDir, d.isDir, d.filter)) return;
+			var kind = el.treeIsDir ? "dir" : el.treeKind;
+			if (!validate(s, tvDir, d.isDir, d.filter, kind)) return;
 			if (d.filter == "file") {
 				try {
 					var path0 = el.treeRelPath;
@@ -355,7 +356,6 @@ class TreeViewItemMenus {
 				}
 				return;
 			}
-			var kind = el.treeIsDir ? "dir" : el.treeKind;
 			var mode:Int = 2;
 			var dlgMode:Int = 0;
 			var wantExtras = false;
@@ -432,7 +432,7 @@ class TreeViewItemMenus {
 			
 			// NB! You'll need to add a "resource_<name>_add.png" to /icons/silk
 			// when you add new resource types here.
-			var resourceTypes = ["sprite", "sound", "script", "shader", "font", "object"];
+			var resourceTypes = ["sprite", "sound", "script", "note", "shader", "font", "object"];
 
 			if (Preferences.current.assetOrder23 == PrefAssetOrder23.Ascending) {
 				resourceTypes.sort((a,b) -> a < b ? -1 : 1);

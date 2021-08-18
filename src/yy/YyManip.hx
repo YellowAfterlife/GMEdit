@@ -211,6 +211,18 @@ class YyManip {
 					pj.writeTextFileSync(pre + ".fsh", YyShaderDefaults.baseFragGLSL);
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
 				};
+				case "note": {
+					var note:YyResource = {
+						parent: yyParent,
+						resourceVersion: "1.1",
+						name: name,
+						tags: [],
+						resourceType: "GMNotes",
+					}
+					yyResource = note;
+					pj.writeTextFileSync(pre + ".txt", "");
+					args.npath = pre + ".txt";
+				};
 				case "font": {
 					var font:YyFont = YyFont.generateDefault(yyParent, name);
 					yyResource = font;
