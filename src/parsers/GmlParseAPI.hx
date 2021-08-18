@@ -26,29 +26,7 @@ class GmlParseAPI {
 	/**
 	 * Loads definitions from fnames format used by GMS itself.
 	 */
-	public static function loadStd(src:String, data:{
-		kind:Dictionary<String>,
-		doc:Dictionary<GmlFuncDoc>,
-		comp:AceAutoCompleteItems,
-		?types:Dictionary<GmlType>,
-		?namespaceDefs:Array<GmlNamespaceDef>,
-		?typedefs:Dictionary<GmlType>,
-		?ukSpelling:Bool,
-		?version:GmlVersion,
-		?kindPrefix:String,
-		?instComp:AceAutoCompleteItems,
-		?instCompMap:Dictionary<AceAutoCompleteItem>,
-		?instKind:Dictionary<AceTokenType>,
-		?instType:Dictionary<GmlType>,
-		?fieldHints:Array<GmlSeekDataHint>,
-		#if lwedit
-		?lwArg0:Dictionary<Int>,
-		?lwArg1:Dictionary<Int>,
-		?lwConst:Dictionary<Bool>,
-		?lwFlags:Dictionary<Int>,
-		?lwInst:Dictionary<Bool>,
-		#end
-	}) {
+	public static function loadStd(src:String, data:GmlParseAPIArgs) {
 		var stdKind = data.kind;
 		var stdComp = data.comp;
 		var stdDoc = data.doc;
@@ -332,3 +310,26 @@ class GmlParseAPI {
 		});
 	}
 }
+typedef GmlParseAPIArgs = {
+	kind:Dictionary<String>,
+	doc:Dictionary<GmlFuncDoc>,
+	comp:AceAutoCompleteItems,
+	?types:Dictionary<GmlType>,
+	?namespaceDefs:Array<GmlNamespaceDef>,
+	?typedefs:Dictionary<GmlType>,
+	?ukSpelling:Bool,
+	?version:GmlVersion,
+	?kindPrefix:String,
+	?instComp:AceAutoCompleteItems,
+	?instCompMap:Dictionary<AceAutoCompleteItem>,
+	?instKind:Dictionary<AceTokenType>,
+	?instType:Dictionary<GmlType>,
+	?fieldHints:Array<GmlSeekDataHint>,
+	#if lwedit
+	?lwArg0:Dictionary<Int>,
+	?lwArg1:Dictionary<Int>,
+	?lwConst:Dictionary<Bool>,
+	?lwFlags:Dictionary<Int>,
+	?lwInst:Dictionary<Bool>,
+	#end
+};
