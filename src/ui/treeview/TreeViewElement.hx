@@ -189,8 +189,13 @@ private class TreeViewElementTools {
 
 		textInputElement.addEventListener("focusout", wrappedFinishFunction);
 		textInputElement.addEventListener("keyup", function(event:KeyboardEvent) {
-			if (event.keyCode == 13) {
+			if (event.keyCode == KeyboardEvent.DOM_VK_RETURN) {
 				event.preventDefault();
+				wrappedFinishFunction();
+			}
+			if (event.keyCode == KeyboardEvent.DOM_VK_ESCAPE) {
+				event.preventDefault();
+				textInputElement.value = "";
 				wrappedFinishFunction();
 			}
 		});
