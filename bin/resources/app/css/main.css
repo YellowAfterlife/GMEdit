@@ -196,8 +196,17 @@ https://stackoverflow.com/a/36247448/5578773
 	border-radius: 0;
 	height: 36px;
 	padding-top: 4px;
-	-webkit-user-select: none;
+	--webkit-user-select: none;
 	z-index: 7;
+}
+html:not([data-multiline-tabs]) .chrome-tabs .chrome-tab-background svg .flat {
+	display: none;
+}
+html[data-multiline-tabs] .chrome-tabs .chrome-tab-background svg .curvy {
+	display: none;
+}
+html[data-multiline-tabs] .chrome-tabs {
+	height: calc(var(--tabs-height) + 8px);
 }
 .chrome-tabs .chrome-tab.chrome-tab-currently-dragged .chrome-tab-close {
 	pointer-events: none;

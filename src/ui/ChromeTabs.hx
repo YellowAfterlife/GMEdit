@@ -85,9 +85,9 @@ class ChromeTabs {
 			}
 		}
 		impl = new ChromeTabsImpl();
-		impl.init(element, {
-			tabOverlapDistance: 14, minWidth: 45, maxWidth: 160
-		});
+		var opt:Dynamic = { tabOverlapDistance: 14 };
+		js.lib.Object.assign(opt, Preferences.current.chromeTabs);
+		impl.init(element, opt);
 		//
 		ChromeTabMenu.init();
 		//
@@ -118,11 +118,13 @@ class ChromeTabs {
 				tabEl.addEventListener("mouseenter", function(e:MouseEvent) {
 					hintEl.setInnerText(gmlFile.name);
 					hintEl.style.display = "block";
-					var x = impl.tabPositions[impl.tabEls.indexOf(tabEl)]
+					var pos = impl.tabPositions[impl.tabEls.indexOf(tabEl)];
+					hintEl.style.left = (pos.left
 						+ tabEl.offsetWidth / 2
 						+ tabEl.parentElement.offsetLeft
-						- hintEl.offsetWidth / 2;
-					hintEl.style.left = x + "px";
+						- hintEl.offsetWidth / 2
+					) + "px";
+					hintEl.style.top = (36 + pos.top) + "px";
 				});
 				tabEl.addEventListener("mouseleave", hideHint);
 				tabEl.addEventListener("mousedown", hideHint);
@@ -277,8 +279,10 @@ class ChromeTabs {
 	public function addTab(tab:Dynamic):Dynamic;
 	public function setCurrentTab(tab:Element):Void;
 	public function removeTab(tabEl:ChromeTab):Void;
+	public function layoutTabs():Void;
 	public var tabEls(default, never):Array<ChromeTab>;
-	public var tabPositions(default, never):Array<Float>;
+	public var tabPositions(default, never):Array<{left:Int, top:Int}>;
+	public var options:Dynamic;
 }
 extern class ChromeTab extends Element {
 	public var gmlFile:GmlFile;

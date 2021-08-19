@@ -52,6 +52,31 @@ class PrefNav {
 		//
 		return out;
 	}
+	static function buildChromeTabs(out:Element) {
+		var cur = current.chromeTabs;
+		out = addGroup(out, "Tabs");
+		function syncOptions() {
+			save();
+			js.lib.Object.assign(ChromeTabs.impl.options, current.chromeTabs);
+			ChromeTabs.impl.layoutTabs();
+		}
+		addIntInput(out, "Minimum width", cur.minWidth, function(v) {
+			current.chromeTabs.minWidth = v;
+			syncOptions();
+		});
+		addIntInput(out, "Maximum width", cur.maxWidth, function(v) {
+			current.chromeTabs.maxWidth = v;
+			syncOptions();
+		});
+		addCheckbox(out, "Multi-line tabs (breaks tab re-order)", cur.multiline, function(v) {
+			current.chromeTabs.multiline = v;
+			syncOptions();
+		});
+		addCheckbox(out, "AND different widths (breaks tab re-order even more)", cur.fitText, function(v) {
+			current.chromeTabs.fitText = v;
+			syncOptions();
+		});
+	}
 	static function buildFiles(out:Element) {
 		out = addGroup(out, "File handling");
 		var eventOrder = [
@@ -150,6 +175,7 @@ class PrefNav {
 		buildFiles(out);
 		#end
 		buildRecent(out);
+		buildChromeTabs(out);
 		buildMisc(out);
 	}
 }

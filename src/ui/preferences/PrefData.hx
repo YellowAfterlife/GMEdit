@@ -61,7 +61,13 @@ import haxe.DynamicAccess;
 		globalLookup: {
 			matchMode: AceSmart,
 			maxCount: 100,
-		}
+		},
+		chromeTabs: {
+			minWidth: 50,
+			maxWidth: 160,
+			multiline: false,
+			fitText: false,
+		},
 	};
 }
 typedef PrefDataImpl = {
@@ -127,7 +133,13 @@ typedef PrefDataImpl = {
 	globalLookup: {
 		matchMode:PrefMatchMode,
 		maxCount:Int,
-	}
+	},
+	chromeTabs: {
+		minWidth:Int,
+		maxWidth:Int,
+		multiline:Bool,
+		fitText:Bool,
+	},
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {
 	var Custom = 0;

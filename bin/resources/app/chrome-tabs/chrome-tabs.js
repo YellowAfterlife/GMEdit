@@ -7,7 +7,28 @@
   const tabTemplate = `
     <div class="chrome-tab">
       <div class="chrome-tab-background">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="51%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/></svg></g></svg>
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <symbol id="topleft" viewBox="0 0 214 29" >
+              <path class="curvy" d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/>
+              <rect class="flat" width="210" height="29" x="7"/>
+            </symbol>
+            <symbol id="topright" viewBox="0 0 214 29">
+              <use xlink:href="#topleft"/>
+            </symbol>
+            <clipPath id="crop">
+              <rect class="mask" width="100%" height="100%" x="0"/>
+            </clipPath>
+          </defs>
+          <svg width="51%" height="100%" transfrom="scale(-1, 1)">
+            <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/>
+            <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/>
+          </svg>
+          <g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0">
+            <use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/>
+            <use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/>
+          </svg></g>
+        </svg>
       </div>
       <div class="chrome-tab-favicon"></div>
       <div class="chrome-tab-title"><span class="chrome-tab-title-text"></span></div>
@@ -40,6 +61,7 @@
       this.layoutTabs()
       this.fixZIndexes()
       this.setupDraggabilly()
+      this.tabHeight = 28
     }
 
     emit(eventName, data) {
@@ -84,11 +106,29 @@
     get tabContentEl() {
       return this.el.querySelector('.chrome-tabs-content')
     }
+    
+    get tabsContentWidth() {
+      return this.tabContentEl.clientWidth - this.options.tabOverlapDistance
+    }
 
     get tabWidth() {
-      const tabsContentWidth = this.tabContentEl.clientWidth - this.options.tabOverlapDistance
-      const width = (tabsContentWidth / this.tabEls.length) + this.options.tabOverlapDistance
-      return Math.max(this.options.minWidth, Math.min(this.options.maxWidth, width))
+      const tabsContentWidth = this.tabsContentWidth
+      const tabCount = this.tabEls.length
+      const tabOverlapDistance = this.options.tabOverlapDistance
+      let width = (tabsContentWidth / tabCount) + tabOverlapDistance
+      const minWidth = this.options.minWidth
+      const tabEffectiveMinWidth = minWidth - tabOverlapDistance
+      width = Math.min(this.options.maxWidth, width)
+      
+      if (this.options.multiline && !this.options.fitText
+        && tabEffectiveMinWidth * tabCount > tabsContentWidth
+      ) {
+        const tabsPerRow = Math.round(tabsContentWidth / tabEffectiveMinWidth)
+        width = 0|(tabsContentWidth / tabsPerRow) + tabOverlapDistance
+        //console.log({ tabsPerRow, tabsContentWidth, width })
+        return width
+      }
+      return Math.max(minWidth, width)
     }
 
     get tabEffectiveWidth() {
@@ -96,14 +136,65 @@
     }
 
     get tabPositions() {
-      const tabEffectiveWidth = this.tabEffectiveWidth
-      let left = 0
+      const tabsContentWidth = this.tabsContentWidth
+      const tabWidth = this.tabWidth
+      const multiline = this.options.multiline
+      const fitText = multiline && this.options.fitText
+      const tabOverlapDistance = this.options.tabOverlapDistance
+      let left = 0, top = 0
+      let row = 0, column = 0
+      let tabsPerRow = 0
       let positions = []
+      //console.log(tabEffectiveWidth, tabsContentWidth)
 
       this.tabEls.forEach((tabEl, i) => {
-        positions.push(left)
-        left += tabEffectiveWidth
+        //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
+        let width
+        if (fitText) {
+          width = tabEl.querySelector('.chrome-tab-title-text').offsetWidth + 49 + tabOverlapDistance
+          width = Math.min(width, tabsContentWidth)
+        } else width = tabWidth
+        if (multiline && left + width > tabsContentWidth) {
+          if (fitText) {
+            let end = positions.length
+            let start = end
+            while (start > 0 && positions[start - 1].row == row) start--
+            let rowWidth = 0
+            for (let i = start; i < end; i++) {
+              rowWidth += positions[i].width - tabOverlapDistance
+            }
+            let rowScale = tabsContentWidth / rowWidth
+            let rowLeft = 0
+            for (let i = start; i < end; i++) {
+              let pos = positions[i]
+              pos.left = rowLeft
+              pos.width = Math.round(pos.width * rowScale)
+              rowLeft = pos.left + pos.width - tabOverlapDistance
+            }
+            if (end > start) {
+              let pos = positions[end - 1]
+              pos.width = tabsContentWidth - pos.left
+            }
+          }
+          left = 0
+          top += 28
+          row += 1
+          column = 0
+        } else if (row == 0) {
+          tabsPerRow += 1
+        }
+        positions.push({ tabEl, left, top, row, column, width })
+        left += width - tabOverlapDistance
+        column += 1
       })
+      document.documentElement.style.setProperty("--tabs-height", (top + 28) + "px")
+      if (top > 0) {
+        document.documentElement.dataset.multilineTabs = ""
+      } else {
+        delete document.documentElement.dataset.multilineTabs
+      }
+      positions.tabsPerRow = tabsPerRow
+      positions.tabRows = row + 1
       return positions
     }
 
@@ -111,14 +202,17 @@
       const tabWidth = this.tabWidth
 
       this.cleanUpPreviouslyDraggedTabs()
-      this.tabEls.forEach((tabEl) => tabEl.style.width = tabWidth + 'px')
+      if (!(this.options.multiline && this.options.fitText)) {
+        this.tabEls.forEach((tabEl) => tabEl.style.width = tabWidth + 'px')
+      }
       requestAnimationFrame(() => {
         let styleHTML = ''
-		// +y: round x
-        this.tabPositions.forEach((left, i) => {
+        // +y: round x
+        this.tabPositions.forEach((pos, i) => {
+          pos.tabEl.style.width = pos.width + "px"
           styleHTML += `
             .chrome-tabs[data-chrome-tabs-instance-id="${ this.instanceId }"] .chrome-tab:nth-child(${ i + 1 }) {
-              transform: translate3d(${ left|0 }px, 0, 0)
+              transform: translate3d(${ pos.left|0 }px, ${ pos.top|0 }px, 0)
             }
           `
         })
@@ -129,13 +223,18 @@
     fixZIndexes() {
       const bottomBarEl = this.el.querySelector('.chrome-tabs-bottom-bar')
       const tabEls = this.tabEls
+      const tabPositions = this.tabPositions
+      const tabsPerRow = tabPositions.tabsPerRow
+      const tabRows = tabPositions.tabRows
 
       tabEls.forEach((tabEl, i) => {
-        let zIndex = tabEls.length - i
+        let tabPos = tabPositions[i]
+        let zIndexBase = (tabRows - 1 - tabPos.row) * tabsPerRow
+        let zIndex = zIndexBase + tabsPerRow - tabPos.column
 
         if (tabEl.classList.contains('chrome-tab-current')) {
-          bottomBarEl.style.zIndex = tabEls.length + 1
-          zIndex = tabEls.length + 2
+          bottomBarEl.style.zIndex = zIndexBase + tabsPerRow + 1
+          zIndex = zIndexBase + tabsPerRow + 2
         }
         tabEl.style.zIndex = zIndex
       })
@@ -205,7 +304,7 @@
       this.draggabillyInstances.forEach(draggabillyInstance => draggabillyInstance.destroy())
 
       tabEls.forEach((tabEl, originalIndex) => {
-        const originalTabPositionX = tabPositions[originalIndex]
+        const originalTabPositionX = tabPositions[originalIndex].left
         const draggabillyInstance = new Draggabilly(tabEl, {
           axis: 'x',
           containment: this.tabContentEl

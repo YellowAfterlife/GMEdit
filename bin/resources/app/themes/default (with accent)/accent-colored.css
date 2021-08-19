@@ -38,6 +38,13 @@
 	top: 0px;
 }
 
+html[data-multiline-tabs] #splitter-td:before {
+	height: calc(4px + var(--tabs-height));
+}
+html[data-multiline-tabs] #splitter-td:after {
+	top: calc(8px + var(--tabs-height));
+}
+
 /* light foreground controls */
 html[titlebar-foreground-is-light="true"] #splitter-td:before {
 	border-left-color: rgba(255,255,255,0.2);
