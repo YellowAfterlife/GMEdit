@@ -192,7 +192,7 @@
 				while (--i >= 0) {
 					var group = groups[i];
 					var legend = group.querySelector("legend");
-					var label = legend.dataset.outlineViewLabel;
+					var label = group.dataset.outlineViewLabel;
 					if (group.parentElement != parent && label == null) continue;
 					if (group.offsetTop <= scrollTop) {
 						if (group.id) {
@@ -210,13 +210,14 @@
 				update(this);
 			}
 			function pref_reindex(file, ctx) {
-				var parent = pref_getRoot(file);
-				var groups = parent.querySelectorAll("fieldset");
+				var prefRoot = pref_getRoot(file);
+				var groups = prefRoot.querySelectorAll("fieldset");
+				var groupChain = [];
 				for (var i = 0; i < groups.length; i++) {
 					var group = groups[i];
 					var legend = group.querySelector("legend");
-					var label = legend.dataset.outlineViewLabel;
-					if (group.parentElement != parent && label == null) continue;
+					var label = group.dataset.outlineViewLabel;
+					if (group.parentElement != prefRoot && label == null) continue;
 					if (!label) label = legend.textContent.replace(/\(.+\)$/, "");
 					var nav = {};
 					if (group.id) {
@@ -224,7 +225,21 @@
 					} else {
 						nav.ctx = legend.textContent;
 					}
-					ctx.mark(label, label, nav);
+					while (groupChain.length > 0) {
+						var curParent = groupChain[groupChain.length - 1];
+						var inCurParent = false;
+						var parent = group.parentElement;
+						while (parent) {
+							if (parent == curParent) inCurParent = true;
+							parent = parent.parentElement;
+						}
+						if (!inCurParent) {
+							ctx.pop();
+							groupChain.pop();
+						} else break;
+					}
+					groupChain.push(group);
+					ctx.push(label, label, nav);
 				}
 				if (!file.outlineViewScroll) {
 					file.outlineViewScroll = true;
