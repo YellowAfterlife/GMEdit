@@ -136,8 +136,10 @@
     }
 
     get tabPositions() {
-      const tabsContentWidth = this.tabsContentWidth
+      let tabsContentWidth = this.tabsContentWidth
+      const tabEls = this.tabEls
       const tabWidth = this.tabWidth
+      const tabHeight = tabEls[0]?.offsetHeight
       const multiline = this.options.multiline
       const fitText = multiline && this.options.fitText
       const tabOverlapDistance = this.options.tabOverlapDistance
@@ -145,9 +147,10 @@
       let row = 0, column = 0
       let tabsPerRow = 0
       let positions = []
+      let overflow = false
       //console.log(tabEffectiveWidth, tabsContentWidth)
-
-      this.tabEls.forEach((tabEl, i) => {
+      
+      tabEls.forEach((tabEl, i) => {
         //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
         let width
         if (fitText) {
@@ -156,6 +159,7 @@
         } else width = tabWidth
         if (multiline && left + width > tabsContentWidth) {
           if (fitText) {
+            // arrange elements so that they always reach the right border
             let end = positions.length
             let start = end
             while (start > 0 && positions[start - 1].row == row) start--
@@ -168,7 +172,7 @@
             for (let i = start; i < end; i++) {
               let pos = positions[i]
               pos.left = rowLeft
-              pos.width = Math.round(pos.width * rowScale)
+              pos.width = Math.round((pos.width - tabOverlapDistance) * rowScale) + tabOverlapDistance
               rowLeft = pos.left + pos.width - tabOverlapDistance
             }
             if (end > start) {
@@ -177,9 +181,14 @@
             }
           }
           left = 0
-          top += 28
+          top += tabHeight
           row += 1
           column = 0
+          let systemButtons
+          if (row == 1 && this.options.flowAroundSystemButtons && (systemButtons = this.el.querySelector(".system-buttons"))) {
+            overflow = true
+            tabsContentWidth += systemButtons.offsetWidth;
+          }
         } else if (row == 0) {
           tabsPerRow += 1
         }
@@ -187,12 +196,17 @@
         left += width - tabOverlapDistance
         column += 1
       })
-      document.documentElement.style.setProperty("--tabs-height", (top + 28) + "px")
+      
+      // todo: maybe a clipping mask? Tabs must not overflow the buttons on the right if available
+      this.tabContentEl.style.overflow = overflow ? "initial" : "hidden";
+      
+      document.documentElement.style.setProperty("--chrome-tabs-height", (top + tabHeight) + "px")
       if (top > 0) {
         document.documentElement.dataset.multilineTabs = ""
-      } else {
-        delete document.documentElement.dataset.multilineTabs
-      }
+      } else delete document.documentElement.dataset.multilineTabs
+      if (top > 0 || this.options.boxyTabs) {
+        document.documentElement.dataset.boxyTabs = ""
+      } else delete document.documentElement.dataset.boxyTabs
       positions.tabsPerRow = tabsPerRow
       positions.tabRows = row + 1
       return positions

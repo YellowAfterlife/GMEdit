@@ -15,6 +15,7 @@ import ui.preferences.PrefData;
 class PrefNav {
 	static function buildTreeview(out:Element) {
 		out = addGroup(out, "Treeview");
+		out.dataset.outlineViewLabel = "Treeview";
 		addCheckbox(out, "Open assets with single click", current.singleClickOpen, function(z) {
 			current.singleClickOpen = z;
 			save();
@@ -53,13 +54,17 @@ class PrefNav {
 		return out;
 	}
 	static function buildChromeTabs(out:Element) {
-		var cur = current.chromeTabs;
+		var el:Element;
 		out = addGroup(out, "Tabs");
+		out.dataset.outlineViewLabel = "Tabs";
+		
 		function syncOptions() {
 			save();
 			js.lib.Object.assign(ChromeTabs.impl.options, current.chromeTabs);
 			ChromeTabs.impl.layoutTabs();
 		}
+		
+		var cur = current.chromeTabs;
 		addIntInput(out, "Minimum width", cur.minWidth, function(v) {
 			current.chromeTabs.minWidth = v;
 			syncOptions();
@@ -68,17 +73,30 @@ class PrefNav {
 			current.chromeTabs.maxWidth = v;
 			syncOptions();
 		});
-		addCheckbox(out, "Multi-line tabs (breaks tab re-order)", cur.multiline, function(v) {
+		
+		el = addCheckbox(out, "Always use rectangular tabs", cur.boxyTabs, function(v) {
+			current.chromeTabs.boxyTabs = v;
+			syncOptions();
+		});
+		el.title = "Otherwise only uses rectangular tabs when multi-line";
+		
+		var sub = addGroup(out, "Multi-line tabs (breaks tab drag'n'drop)");
+		addCheckbox(sub, "Enable", cur.multiline, function(v) {
 			current.chromeTabs.multiline = v;
 			syncOptions();
 		});
-		addCheckbox(out, "AND different widths (breaks tab re-order even more)", cur.fitText, function(v) {
+		addCheckbox(sub, "Set tab widths based on content (further breaks DnD)", cur.fitText, function(v) {
 			current.chromeTabs.fitText = v;
+			syncOptions();
+		});
+		addCheckbox(sub, "Let the buttons flow around the system buttons", cur.flowAroundSystemButtons, function(v) {
+			current.chromeTabs.flowAroundSystemButtons = v;
 			syncOptions();
 		});
 	}
 	static function buildFiles(out:Element) {
 		out = addGroup(out, "File handling");
+		out.dataset.outlineViewLabel = "";
 		var eventOrder = [
 			"As authored",
 			"By event type",
@@ -114,6 +132,7 @@ class PrefNav {
 	}
 	static function buildRecent(out:Element) {
 		out = addGroup(out, "Recent files & sessions");
+		out.dataset.outlineViewLabel = "";
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
 			current.fileSessionTime = v; save();
 		});
@@ -133,6 +152,7 @@ class PrefNav {
 	}
 	static function buildMisc(out:Element) {
 		out = addGroup(out, "Misc.");
+		out.dataset.outlineViewLabel = "Misc.";
 		addCheckbox(out, "Show taskbar overlays", current.taskbarOverlays, function(z) {
 			current.taskbarOverlays = z;
 			save();
@@ -148,6 +168,7 @@ class PrefNav {
 	}
 	static function buildLookup(out:Element) {
 		out = addGroup(out, "Global lookup (default: Ctrl+T)");
+		out.dataset.outlineViewLabel = "Global lookup";
 		var compMatchModes = PrefMatchMode.names;
 		var el:Element;
 		

@@ -67,6 +67,8 @@ import haxe.DynamicAccess;
 			maxWidth: 160,
 			multiline: false,
 			fitText: false,
+			boxyTabs: false,
+			flowAroundSystemButtons: false,
 		},
 	};
 }
@@ -139,6 +141,8 @@ typedef PrefDataImpl = {
 		maxWidth:Int,
 		multiline:Bool,
 		fitText:Bool,
+		boxyTabs:Bool,
+		flowAroundSystemButtons:Bool,
 	},
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {

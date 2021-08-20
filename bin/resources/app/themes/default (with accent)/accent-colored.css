@@ -39,10 +39,10 @@
 }
 
 html[data-multiline-tabs] #splitter-td:before {
-	height: calc(4px + var(--tabs-height));
+	height: calc(4px + var(--chrome-tabs-height));
 }
 html[data-multiline-tabs] #splitter-td:after {
-	top: calc(8px + var(--tabs-height));
+	top: calc(8px + var(--chrome-tabs-height));
 }
 
 /* light foreground controls */

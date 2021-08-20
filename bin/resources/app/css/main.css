@@ -35,6 +35,10 @@ https://stackoverflow.com/a/36247448/5578773
 	min-width: 0;
 	min-height: 0;
 }
+#main > div:not(.splitter-td) {
+	display: flex;
+	flex-direction: column;
+}
 #splitter-td, .splitter-td {
 	border-right: 1px solid;
 	border-left: 1px solid;
@@ -199,14 +203,15 @@ https://stackoverflow.com/a/36247448/5578773
 	--webkit-user-select: none;
 	z-index: 7;
 }
-html:not([data-multiline-tabs]) .chrome-tabs .chrome-tab-background svg .flat {
+html:not([data-boxy-tabs]) .chrome-tabs .chrome-tab-background svg .flat {
 	display: none;
 }
-html[data-multiline-tabs] .chrome-tabs .chrome-tab-background svg .curvy {
+html[data-boxy-tabs] .chrome-tabs .chrome-tab-background svg .curvy {
 	display: none;
 }
 html[data-multiline-tabs] .chrome-tabs {
-	height: calc(var(--tabs-height) + 8px);
+	height: calc(var(--chrome-tabs-height) + 8px);
+	max-height: calc(100vh - 100px);
 }
 .chrome-tabs .chrome-tab.chrome-tab-currently-dragged .chrome-tab-close {
 	pointer-events: none;
@@ -249,11 +254,14 @@ html[data-multiline-tabs] .chrome-tabs {
 #tabs.chrome-tabs.has-system-buttons {
 	padding-right: 108px;
 }
+.system-buttons {
+	position: absolute;
+	right: 0; top: 0;
+	display: flex;
+}
 .system-button {
 	width: 36px;
 	height: 28px;
-	position: absolute;
-	right: 0; top: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -352,10 +360,10 @@ html.starter-loading .system-button {
 	width: 100%;
 }
 #game, .bottom {
-	height: calc(100% - 36px);
-	height: calc(100vh - 36px);
-	height: var(--main-height);
-	height: var(--main-height-vh);
+	min-width: 0;
+	min-height: 0;
+	flex-grow: 1;
+	height: 0; /* ?? */
 }
 #misc-td {
 	display: flex;

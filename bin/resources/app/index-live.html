@@ -31,13 +31,15 @@
 	<div id="editor-td" style="width: 520px">
 		<div class="chrome-tabs" id="tabs" style="padding-right: 32px">
 			<div class="chrome-tabs-content"></div>
-			<span class="system-button preferences">
-				<svg width="12" height="12" viewBox="0 0 12 12">
-					<rect width="10" height="1" x="1" y="3" fill="black"></rect>
-					<rect width="10" height="1" x="1" y="6" fill="black"></rect>
-					<rect width="10" height="1" x="1" y="9" fill="black"></rect>
-				</svg>
-			</span>
+			<div class="system-buttons">
+				<span class="system-button preferences">
+					<svg width="12" height="12" viewBox="0 0 12 12">
+						<rect width="10" height="1" x="1" y="3" fill="black"></rect>
+						<rect width="10" height="1" x="1" y="6" fill="black"></rect>
+						<rect width="10" height="1" x="1" y="9" fill="black"></rect>
+					</svg>
+				</span>
+			</div>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
 		<div class="bottom gml">
@@ -83,15 +85,17 @@
 			</select>
 			<div id="project-name" style="display:none"></div>
 			<div class="app-region-drag"></div>
-			<!-- (these are close enough replicas of Win10 icons)-->
-			<div class="system-button close">
-				<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
-			</div>
-			<div class="system-button maximize">
-				<svg  width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
-			</div>
-			<div class="system-button minimize">
-				<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
+			<div class="system-buttons">
+				<!-- (these are close enough replicas of Win10 icons)-->
+				<div class="system-button minimize">
+					<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
+				</div>
+				<div class="system-button maximize">
+					<svg width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
+				</div>
+				<div class="system-button close">
+					<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
+				</div>
 			</div>
 			<script>
 			try {
