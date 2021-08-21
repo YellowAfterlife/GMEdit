@@ -135,6 +135,7 @@ class PrefLinter {
 		addf(aBool, "Allow implicitly casting Type? to Type", opt.implicitNullableCasts);
 		addf(aBool, "Allow implicitly casting between bool and int", opt.implicitBoolIntCasts);
 		addf(aBool, "Warn about redundant casts (e.g. for `4 as number`)", opt.warnAboutRedundantCasts);
+		addf(aBool, "Treat scripts without @self as having `void` self", opt.strictScriptSelf);
 		
 		out = addGroup(orig, "Block scoping");
 		el = addf(aBool, "Treat `var` as block-scoped", opt.blockScopedVar);

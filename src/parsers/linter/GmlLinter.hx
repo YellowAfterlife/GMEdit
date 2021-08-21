@@ -114,7 +114,9 @@ class GmlLinter {
 	var __selfType_type:GmlType = null;
 	function getSelfType() {
 		if (__selfType_set) return __selfType_type;
-		return AceGmlTools.getSelfTypeForFile(editor.file, context);
+		var t = AceGmlTools.getSelfTypeForFile(editor.file, context);
+		if (t == null && optStrictScriptSelf) t = GmlTypeDef.void;
+		return t;
 	}
 
 	
@@ -167,6 +169,7 @@ class GmlLinter {
 	var optRequireFields:Bool;
 	var optImplicitNullableCast:Bool;
 	var optWarnAboutRedundantCasts:Bool;
+	var optStrictScriptSelf:Bool;
 	
 	var funcLiteral:GmlLinterFuncLiteral;
 	function initModules() {
@@ -190,6 +193,7 @@ class GmlLinter {
 		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
 		optImplicitNullableCast = getOption((q) -> q.implicitNullableCasts);
 		optWarnAboutRedundantCasts = getOption((q) -> q.warnAboutRedundantCasts);
+		optStrictScriptSelf = getOption((q) -> q.strictScriptSelf);
 		GmlTypeCanCastTo.allowImplicitNullCast = optImplicitNullableCast;
 		GmlTypeCanCastTo.allowImplicitBoolIntCasts = getOption((q) -> q.implicitBoolIntCasts);
 		initModules();

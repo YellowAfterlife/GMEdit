@@ -50,7 +50,11 @@ class GmlSeekerProcDoc {
 					out.namespaceHints[jsDoc.interfaceName] = new GmlSeekDataNamespaceHint(jsDoc.interfaceName, null, null);
 				}
 			}
-			doc.selfType = GmlTypeDef.parse(jsDoc.self, doc.name);
+			if (jsDoc.self != null) {
+				doc.selfType = GmlTypeDef.parse(jsDoc.self, doc.name);
+			} else if (jsDoc.interfaceName != null) {
+				doc.selfType = GmlTypeDef.parse(jsDoc.interfaceName, doc.name);
+			} else doc.selfType = null;
 			
 			//
 			if (updateComp) {

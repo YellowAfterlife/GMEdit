@@ -6,6 +6,7 @@
         "specTypeConst": true,
         "specTypeInst": true,
         "specTypeLet": true,
+        "strictScriptSelf": true,
         "warnAboutRedundantCasts": true
     },
     "nullConditionalSet": "nc_set",

@@ -25,6 +25,7 @@ package parsers.linter;
 		implicitNullableCasts: false,
 		implicitBoolIntCasts: true,
 		warnAboutRedundantCasts: false,
+		strictScriptSelf: false,
 		
 		liveCheckOnEnter: false,
 		liveCheckOnSemico: false,
@@ -61,6 +62,9 @@ typedef GmlLinterPrefsImpl = {
 	
 	/** Whether to show warnings when trying to cast a type to something it already is */
 	?warnAboutRedundantCasts:Bool,
+	
+	/** Whether to assume scripts without a @self to have {void} @self */
+	?strictScriptSelf:Bool,
 	
 	?liveCheckOnEnter:Bool,
 	?liveCheckOnSemico:Bool,

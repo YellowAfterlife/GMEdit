@@ -258,8 +258,11 @@ class GmlLinterExpr {
 
 						// Check that the function's self doc matches the current context
 						if (currFunc.selfType != null) {
-							if (GmlTypeTools.canCastTo(self.getSelfType(), currFunc.selfType) == false) {
-								self.addWarning('${currFunc.name} expects to be executed in the context of a ${currFunc.selfType.toString()}' );
+							var currSelfType = self.getSelfType();
+							if (GmlTypeTools.canCastTo(currSelfType, currFunc.selfType) == false) {
+								self.addWarning(currFunc.name
+									+ ' expects to be executed in the context of ' + currFunc.selfType.toString()
+									+ ' (self is ' + currSelfType.toString() + ')');
 							}
 						}
 					}
