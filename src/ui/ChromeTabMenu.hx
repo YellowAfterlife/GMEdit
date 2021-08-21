@@ -57,6 +57,7 @@ class ChromeTabMenu {
 			accelerator: "CommandOrControl+Shift+W",
 			click: function() {
 			for (tab in target.parentElement.querySelectorEls(".chrome-tab")) {
+				if (tab.classList.contains("chrome-tab-pinned")) continue;
 				if (tab != target) tab.querySelector(".chrome-tab-close").click();
 			}
 		} }));

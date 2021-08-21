@@ -319,6 +319,15 @@ extern class ChromeTab extends Element {
 	private inline function get_isOpen():Bool {
 		return classList.contains("chrome-tab-current");
 	}
+	
+	public var isPinned(get, set):Bool;
+	private inline function get_isPinned():Bool {
+		return classList.contains("chrome-tab-pinned");
+	}
+	private inline function set_isPinned(z:Bool):Bool {
+		HtmlTools.setTokenFlag(classList, "chrome-tab-pinned", z);
+		return z;
+	}
 
 	public inline function refresh():Void {
 		tabText = gmlFile.name;

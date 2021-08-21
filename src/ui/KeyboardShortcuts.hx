@@ -120,9 +120,12 @@ class KeyboardShortcuts {
 			}
 		});
 		addCommand("closeOtherTabs", "mod-shift-w", function() {
-			for (q in document.querySelectorEls(
-				".chrome-tab:not(.chrome-tab-current) .chrome-tab-close"
-			)) q.click();
+			for (tab in document.querySelectorEls(
+				".chrome-tab:not(.chrome-tab-current)"
+			)) {
+				if (tab.classList.contains("chrome-tab-pinned")) continue;
+				tab.querySelector(".chrome-tab-close").click();
+			}
 		});
 		//
 		addCommand("saveTab", "mod-s", function() {

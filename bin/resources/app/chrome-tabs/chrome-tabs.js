@@ -42,6 +42,19 @@
   }
 
   let instanceId = 0
+  
+  function setDatasetValue(el, key, value) {
+    if (value == null) {
+      if (el.dataset[key] == null) return false
+      delete el.dataset[key]
+      return true
+    } else {
+      value = "" + value
+      if (el.dataset[key] == value) return false
+      el.dataset[key] = value
+      return true
+    }
+  }
 
   class ChromeTabs {
     constructor() {
@@ -74,7 +87,9 @@
     }
 
     setupEvents() {
-      window.addEventListener('resize', event => this.layoutTabs())
+      window.addEventListener('resize', event => {
+        if (!this.ignoreResize) this.layoutTabs()
+      })
 
       //this.el.addEventListener('dblclick', event => this.addTab())
       this.el.addEventListener('mouseup', ({which, target}) => {
@@ -87,9 +102,28 @@
         }
       })
 
-      this.el.addEventListener('click', ({target}) => {
+      this.el.addEventListener('click', (e) => {
+        let target = e.target
         if (target.classList.contains('chrome-tab')) {
-          this.setCurrentTab(target)
+          if (e.ctrlKey) {
+            if (target.classList.toggle("chrome-tab-pinned")) {
+              for (let tabEl of this.tabEls) {
+                if (!tabEl.classList.contains("chrome-tab-pinned")) {
+                  tabEl.before(target)
+                  break
+                }
+              }
+            } else {
+              let lastPinned = null
+              for (let tabEl of this.tabEls) {
+                if (tabEl.classList.contains("chrome-tab-pinned")) {
+                  lastPinned = tabEl
+                }
+              }
+              if (lastPinned) lastPinned.after(target)
+            }
+            this.layoutTabs()
+          } else this.setCurrentTab(target)
         } else if (target.classList.contains('chrome-tab-close')) {
           let e = new CustomEvent('tabClose', { cancelable: true, detail: { tabEl: target.parentNode } })
           if (this.el.dispatchEvent(e)) this.removeTab(target.parentNode)
@@ -139,7 +173,7 @@
       let tabsContentWidth = this.tabsContentWidth
       const tabEls = this.tabEls
       const tabWidth = this.tabWidth
-      const tabHeight = tabEls[0]?.offsetHeight
+      const tabHeight = tabEls[0]?.offsetHeight ?? 28
       const multiline = this.options.multiline
       const fitText = multiline && this.options.fitText
       const tabOverlapDistance = this.options.tabOverlapDistance
@@ -154,7 +188,10 @@
         //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
         let width
         if (fitText) {
-          width = tabEl.querySelector('.chrome-tab-title-text').offsetWidth + 49 + tabOverlapDistance
+          let titleText = (tabEl.querySelector('.chrome-tab-title-text')?.offsetWidth
+            ?? tabEl.querySelector('.chrome-tab-title').offsetWidth // compatibility with plugins that overwrite title-text
+          )
+          width = titleText.offsetWidth + 49 + tabOverlapDistance
           width = Math.min(width, tabsContentWidth)
         } else width = tabWidth
         if (multiline && left + width > tabsContentWidth) {
@@ -200,13 +237,18 @@
       // todo: maybe a clipping mask? Tabs must not overflow the buttons on the right if available
       this.tabContentEl.style.overflow = overflow ? "initial" : "hidden";
       
-      document.documentElement.style.setProperty("--chrome-tabs-height", (top + tabHeight) + "px")
-      if (top > 0) {
-        document.documentElement.dataset.multilineTabs = ""
-      } else delete document.documentElement.dataset.multilineTabs
-      if (top > 0 || this.options.boxyTabs) {
-        document.documentElement.dataset.boxyTabs = ""
-      } else delete document.documentElement.dataset.boxyTabs
+      if (tabEls.length > 0) {
+        document.documentElement.style.setProperty("--chrome-tabs-height", (top + tabHeight) + "px")
+      } else document.documentElement.style.removeProperty("--chrome-tabs-height")
+      if (setDatasetValue(document.documentElement, "multilineTabs", top > 0 ? "" : null)) {
+        var _ignore = this.ignoreResize;
+        this.ignoreResize = true;
+        var e = new CustomEvent("resize");
+        e.initEvent("resize");
+        window.dispatchEvent(e);
+        this.ignoreResize = _ignore;
+      }
+      setDatasetValue(document.documentElement, "boxyTabs", top > 0 || this.options.boxyTabs ? "" : null)
       positions.tabsPerRow = tabsPerRow
       positions.tabRows = row + 1
       return positions

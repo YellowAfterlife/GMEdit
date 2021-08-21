@@ -307,20 +307,26 @@ import ui.treeview.TreeViewElement;
 			PluginEvents.projectClose({project:current});
 		}
 		TreeView.saveOpen();
-		var tabPaths:Array<String> = [];
+		var tabs:Array<ProjectTabState> = [];
 		var activeTab:Null<Int> = null;
 		for (_tab in ChromeTabs.element.querySelectorAll(".chrome-tab")) try {
 			var tab:ChromeTab = cast _tab;
 			var path = tab.gmlFile.path;
 			if (path != null) {
-				if (tab.isOpen) activeTab = tabPaths.length;
-				tabPaths.push(path);
+				var rel = relPath(path);
+				var ts:ProjectTabState = {};
+				if (rel != path) {
+					ts.relPath = rel;
+				} else ts.fullPath = path;
+				if (tab.isPinned) ts.pinned = true;
+				if (tab.isOpen) activeTab = tabs.length;
+				tabs.push(ts);
 			}
 		} catch (_:Dynamic) { }
 		var data:ProjectState = {
 			treeviewScrollTop: TreeView.element.scrollTop,
 			treeviewOpenNodes: TreeView.openPaths,
-			tabPaths: tabPaths,
+			tabs: tabs,
 			activeTab: activeTab,
 			bookmarks: Bookmarks.getStates(),
 		};
@@ -345,20 +351,36 @@ import ui.treeview.TreeViewElement;
 		var state = firstLoadState;
 		if (state != null) {
 			firstLoadState = null;
-			var tabPaths = state.tabPaths;
-			if (tabPaths != null) {
-				var activeFile = null;
-				for (i in 0 ... tabPaths.length) try {
-					var el = TreeView.find(true, { path: tabPaths[i] });
-					if (el != null) {
-						var file = TreeView.handleItemClick(null, el, {noExtern:true});
-						if (i == state.activeTab) activeFile = file;
-					}
-				} catch (x:Dynamic) {
-					Main.console.error("Error recovering " + path + ":", x);
+			var tabs:Array<ProjectTabState> = state.tabs;
+			if (tabs == null) {
+				if (state.tabPaths != null) {
+					tabs = state.tabPaths.map(function(path):ProjectTabState {
+						return { fullPath: path };
+					});
+				} else {
+					tabs = [];
 				}
-				if (activeFile != null) activeFile.tabEl.click();
 			}
+			//
+			var activeFile = null;
+			for (i => tab in tabs) try {
+				var qry:TreeViewQuery = {};
+				if (tab.fullPath != null) {
+					qry.path = tab.fullPath;
+				} else {
+					qry.rel = tab.relPath;
+				}
+				var el = TreeView.find(true, qry);
+				if (el != null) {
+					var file = TreeView.handleItemClick(null, el, {noExtern:true});
+					if (tab.pinned) file.tabEl.classList.add("chrome-tab-pinned");
+					if (i == state.activeTab) activeFile = file;
+				}
+			} catch (x:Dynamic) {
+				Main.console.error("Error recovering " + path + ":", x);
+			}
+			if (activeFile != null) activeFile.tabEl.click();
+			//
 			PluginEvents.projectStateRestore({project:this, state:state});
 		}
 	}

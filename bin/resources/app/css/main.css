@@ -213,6 +213,20 @@ html[data-multiline-tabs] .chrome-tabs {
 	height: calc(var(--chrome-tabs-height) + 8px);
 	max-height: calc(100vh - 100px);
 }
+
+.chrome-tabs .chrome-tab.chrome-tab-pinned .chrome-tab-background > svg .chrome-tab-background {
+	fill: #DBC58A;
+}
+.chrome-tabs .chrome-tab.chrome-tab-pinned.chrome-tab-current .chrome-tab-background > svg .chrome-tab-background {
+	fill: #fff4d0;
+}
+.chrome-tabs .chrome-tab:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
+	fill: #d7d7d7;
+}
+.chrome-tabs .chrome-tab.chrome-tab-pinned:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
+	fill: #ECDCAC;
+}
+
 .chrome-tabs .chrome-tab.chrome-tab-currently-dragged .chrome-tab-close {
 	pointer-events: none;
 }
@@ -292,9 +306,6 @@ html.starter-loading .system-button {
 }
 .chrome-tabs .chrome-tab .chrome-tab-background > svg .chrome-tab-background {
 	/*transition: fill ease-in-out 0.1s;*/
-}
-.chrome-tabs .chrome-tab:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
-	fill: #d7d7d7;
 }
 .chrome-tab .chrome-tab-favicon {
 	width: 0;
