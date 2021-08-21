@@ -188,9 +188,8 @@
         //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
         let width
         if (fitText) {
-          let titleText = (tabEl.querySelector('.chrome-tab-title-text')?.offsetWidth
-            ?? tabEl.querySelector('.chrome-tab-title').offsetWidth // compatibility with plugins that overwrite title-text
-          )
+          let titleText = tabEl.querySelector('.chrome-tab-title-text')
+          if (!titleText) titleText = tabEl.querySelector('.chrome-tab-title')
           width = titleText.offsetWidth + 49 + tabOverlapDistance
           width = Math.min(width, tabsContentWidth)
         } else width = tabWidth
