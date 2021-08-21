@@ -55,6 +55,13 @@
       return true
     }
   }
+  function setTokenFlag(list, key, value) {
+    if (value) {
+      if (!list.contains(key)) list.add(key)
+    } else {
+      if (list.contains(key)) list.remove(key)
+    }
+  }
 
   class ChromeTabs {
     constructor() {
@@ -173,7 +180,19 @@
       let tabsContentWidth = this.tabsContentWidth
       const tabEls = this.tabEls
       const tabWidth = this.tabWidth
-      const tabHeight = tabEls[0]?.offsetHeight ?? 28
+      let tabHeight, tabLeft = 0, tabRight = 0
+      const first = tabEls[0]
+      if (first) {
+        tabHeight = first.offsetHeight
+        tabLeft = parseInt(getComputedStyle(first.querySelector(".chrome-tab-favicon")).marginLeft)
+        let closeBt = first.querySelector(".chrome-tab-close")
+        tabRight = parseInt(getComputedStyle(closeBt).right)
+        if (!this.el.classList.contains("chrome-tabs-auto-hide-close-buttons")) {
+          tabRight += closeBt.offsetWidth
+        }
+      } else {
+        tabHeight = this.el.querySelector(".chrome-tabs-content").offsetHeight
+      }
       const multiline = this.options.multiline
       const fitText = multiline && this.options.fitText
       const tabOverlapDistance = this.options.tabOverlapDistance
@@ -190,7 +209,7 @@
         if (fitText) {
           let titleText = tabEl.querySelector('.chrome-tab-title-text')
           if (!titleText) titleText = tabEl.querySelector('.chrome-tab-title')
-          width = titleText.offsetWidth + 49 + tabOverlapDistance
+          width = titleText.offsetWidth + tabLeft + tabRight + tabOverlapDistance
           width = Math.min(width, tabsContentWidth)
         } else width = tabWidth
         if (multiline && left + width > tabsContentWidth) {
@@ -247,7 +266,7 @@
         window.dispatchEvent(e);
         this.ignoreResize = _ignore;
       }
-      setDatasetValue(document.documentElement, "boxyTabs", top > 0 || this.options.boxyTabs ? "" : null)
+      setTokenFlag(this.el.classList, "chrome-tabs-boxy", top > 0 || this.options.boxyTabs);
       positions.tabsPerRow = tabsPerRow
       positions.tabRows = row + 1
       return positions

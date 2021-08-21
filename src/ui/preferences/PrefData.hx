@@ -69,6 +69,7 @@ import haxe.DynamicAccess;
 			fitText: false,
 			boxyTabs: false,
 			flowAroundSystemButtons: false,
+			autoHideCloseButtons: false,
 		},
 	};
 }
@@ -143,6 +144,7 @@ typedef PrefDataImpl = {
 		fitText:Bool,
 		boxyTabs:Bool,
 		flowAroundSystemButtons:Bool,
+		autoHideCloseButtons:Bool,
 	},
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {

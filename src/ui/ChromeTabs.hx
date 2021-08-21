@@ -85,9 +85,13 @@ class ChromeTabs {
 			}
 		}
 		impl = new ChromeTabsImpl();
+		var srcOpt = Preferences.current.chromeTabs;
 		var opt:Dynamic = { tabOverlapDistance: 14 };
-		js.lib.Object.assign(opt, Preferences.current.chromeTabs);
+		js.lib.Object.assign(opt, srcOpt);
 		impl.init(element, opt);
+		element.classList.setTokenFlag("chrome-tabs-auto-hide-close-buttons", srcOpt.autoHideCloseButtons);
+		element.classList.setTokenFlag("chrome-tabs-fit-text", srcOpt.fitText);
+		element.classList.setTokenFlag("chrome-tabs-boxy", srcOpt.boxyTabs);
 		//
 		ChromeTabMenu.init();
 		//
