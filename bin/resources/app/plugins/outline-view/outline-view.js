@@ -13,7 +13,14 @@
 	var Preferences = $gmedit["ui.Preferences"];
 	var FileWrap = $gmedit["electron.FileWrap"];
 	var popout = false; // show a popout instead of a sidebar
+	var displayMode = 1;
 	var currOnly = false; // original idea (only show the current file)
+	var noIndex = false;
+	function setDisplayMode(m) {
+		displayMode = m;
+		currOnly = (m == 0);
+		noIndex = (m == 3);
+	}
 	var showAtTop = true;
 	var showFuncArgs = false;
 	var tailSep = " ➜ "; // narrow space, arrow, narrow space
@@ -444,7 +451,7 @@
 				return q;
 			},
 		};
-		conf.reindex(file, ctx);
+		if (!noIndex) conf.reindex(file, ctx);
 		flushStack();
 		finishDir(ov);
 		// re-collapse:
@@ -470,6 +477,11 @@
 			var file = tabEl.gmlFile;
 			if (!file) continue;
 			if (!file.outlineView) createFor(file);
+			if (displayMode == 2) {
+				if (tabEl.classList.contains("chrome-tab-current")) {
+					file.outlineView.classList.add("open");
+				} else file.outlineView.classList.remove("open");
+			}
 			treeview.appendChild(file.outlineView);
 		}
 	}
@@ -492,6 +504,15 @@
 			}
 		} else {
 			var ov = file.outlineView;
+			if (displayMode == 2) {
+				for (var i = 0; i < treeview.children.length; i++) {
+					var dir = treeview.children[i];
+					if (!dir.classList || !dir.classList.contains("outline-dir")) continue;
+					if (dir == ov) {
+						dir.classList.add("open");
+					} else dir.classList.remove("open");
+				}
+			}
 			if (ov.scrollIntoViewIfNeeded) {
 				ov.scrollIntoViewIfNeeded();
 			} else ov.scrollIntoView();
@@ -605,8 +626,18 @@
 			var val = ov[name];
 			return val !== undefined ? val : def;
 		}
+		function prepareOV() {
+			var currOV = Preferences.current.outlineView;
+			if (!currOV) currOV = Preferences.current.outlineView = {};
+			return currOV;
+		}
 		if (!(currOV && currOV.hide)) toggle();
-		currOnly = opt(currOV, "currOnly", false);
+		function getDisplayMode(currOV) {
+			var dm = opt(currOV, "displayMode", null);
+			if (dm == null) dm = opt(currOV, "currOnly", false) ? 0 : 1;
+			return dm;
+		}
+		setDisplayMode(getDisplayMode(currOV))
 		showAtTop = opt(currOV, "showAtTop", true);
 		showFuncArgs = opt(currOV, "showFuncArgs", true);
 		//
@@ -615,31 +646,35 @@
 			var currOV = Preferences.current.outlineView;
 			var hideCtr = Preferences.addCheckbox(out, "Hide", currOV && currOV.hide, function(val) {
 				toggle();
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
+				var currOV = prepareOV();
 				currOV.hide = !visible;
 				Preferences.save();
 			});
 			toggleCheckbox = hideCtr.querySelector("input");
-			Preferences.addCheckbox(out, "Only show the currently active file", opt(currOV, "currOnly", false), function(val) {
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
-				currOnly = currOV.currOnly = val;
-				currEl = null;
+			var displayModes = [
+				"Only show the currently active document",
+				"Show all documents",
+				"Show all documents, auto-collapse inactive",
+				"Show document titles only",
+			];
+			Preferences.addDropdown(out, "Display mode", displayModes[getDisplayMode(currOV)], displayModes, function(val) {
+				var i = displayModes.indexOf(val);
+				var currOV = prepareOV();
+				currOV.displayMode = i;
+				setDisplayMode(i);
 				Preferences.save();
 				toggle_sync();
-			});
+				forceRefresh();
+			})
 			Preferences.addCheckbox(out, "Show 2.3 function arguments", opt(currOV, "showFuncArgs", true), function(val) {
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
+				var currOV = prepareOV();
 				showFuncArgs = currOV.showFuncArgs = val;
 				currEl = null;
 				Preferences.save();
 				forceRefresh();
 			});
 			Preferences.addCheckbox(out, "Scroll to top upon navigation", opt(currOV, "showAtTop", true), function(val) {
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
+				var currOV = prepareOV();
 				showAtTop = currOV.showAtTop = val;
 				currEl = null;
 				Preferences.save();
