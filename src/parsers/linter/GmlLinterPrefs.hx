@@ -16,11 +16,14 @@ package parsers.linter;
 		requireFunctions: true,
 		checkHasReturn: true,
 		checkScriptArgumentCounts: true,
+		
 		specTypeVar: false,
 		specTypeLet: false,
 		specTypeConst: false,
 		specTypeMisc: false,
 		specTypeInst: false,
+		specTypeInstSubTopLevel: false,
+		
 		requireFields: false,
 		implicitNullableCasts: false,
 		implicitBoolIntCasts: true,
@@ -52,6 +55,7 @@ typedef GmlLinterPrefsImpl = {
 	?specTypeConst:Bool,
 	?specTypeMisc:Bool,
 	?specTypeInst:Bool,
+	?specTypeInstSubTopLevel:Bool,
 	?requireFields:Bool,
 	
 	/** Whether to allow implicit T?->T casts */

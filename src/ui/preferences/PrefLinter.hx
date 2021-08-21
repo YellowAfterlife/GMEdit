@@ -149,5 +149,7 @@ class PrefLinter {
 		addf(aBool, "For `const`", opt.specTypeConst);
 		addf(aBool, "For other `var` macros", opt.specTypeMisc);
 		addf(aBool, "For simple instance/constructor variables (numbers, booleans, strings, `new`)", opt.specTypeInst);
+		el = addf(aBool, "Allow non-top-level assignments", opt.specTypeInstSubTopLevel);
+		el.title = "May mis-fire on bracket-less `with` blocks and alike";
 	}
 }

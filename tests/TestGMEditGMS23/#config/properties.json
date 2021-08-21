@@ -5,6 +5,7 @@
         "requireFields": true,
         "specTypeConst": true,
         "specTypeInst": true,
+        "specTypeInstSubTopLevel": true,
         "specTypeLet": true,
         "strictScriptSelf": true,
         "warnAboutRedundantCasts": true

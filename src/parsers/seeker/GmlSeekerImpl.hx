@@ -65,6 +65,7 @@ class GmlSeekerImpl {
 	public var out:GmlSeekData;
 	
 	public var curlyDepth:Int = 0;
+	public var withStartsAtCurlyDepth:Int = -1;
 	
 	public var localKind:AceTokenType;
 	public var subLocalDepth:Null<Int> = null;
@@ -75,6 +76,7 @@ class GmlSeekerImpl {
 	public var isObject:Bool;
 	public var isCreateEvent:Bool;
 	public var specTypeInst:Bool;
+	public var specTypeInstSubTopLevel:Bool;
 	
 	public var funcsAreGlobal:Bool;
 	public var hasFunctionLiterals:Bool;
@@ -134,6 +136,7 @@ class GmlSeekerImpl {
 		hasTryCatch = additionalKeywordsMap.exists("catch");
 		
 		specTypeInst = GmlLinter.getOption((p) -> p.specTypeInst);
+		specTypeInstSubTopLevel = GmlLinter.getOption((p) -> p.specTypeInstSubTopLevel);
 		localKind = notLam ? "local" : "sublocal";
 		if (project.properties.lambdaMode == Scripts) {
 			if (orig.contains("/" + GmlExtLambda.lfPrefix)) {
@@ -200,6 +203,9 @@ class GmlSeekerImpl {
 						flushDoc();
 						main = null;
 					}
+					if (withStartsAtCurlyDepth >= 0 && curlyDepth < withStartsAtCurlyDepth) {
+						withStartsAtCurlyDepth = -1;
+					}
 					if (exitAtCubDepth != null && curlyDepth <= exitAtCubDepth) return;
 				};
 				case "#define", "#target", "function": {
@@ -264,6 +270,7 @@ class GmlSeekerImpl {
 				case "enum": {
 					GmlSeekerProcEnum.proc(this);
 				};
+				case "with": GmlSeekerProcWith.proc(this);
 				default: { // maybe an instance field assignment
 					GmlSeekerProcIdent.proc(this, s);
 				};

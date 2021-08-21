@@ -48,10 +48,6 @@ class GmlSeekerProcIdent {
 				GmlSeekerProcVar.procLambdaIdent(seeker, s, seeker.locals);
 				return;
 			}
-			if (s == "with") {
-				seeker.locals.hasWith = true;
-				return;
-			}
 			if (GmlAPI.gmlKind[s] != null || GmlAPI.extKind[s] != null) return;
 		}
 		
@@ -59,13 +55,18 @@ class GmlSeekerProcIdent {
 		var isConstructorField:Bool;
 		if (!isDot || isDotSelf) {
 			if (seeker.jsDoc.isInterface) {
-				var wantDepth = seeker.hasFunctionLiterals && seeker.funcsAreGlobal ? 1 : 0;
-				isConstructorField = (seeker.curlyDepth == wantDepth);
+				var minDepth = seeker.hasFunctionLiterals && seeker.funcsAreGlobal ? 1 : 0;
+				if (seeker.specTypeInstSubTopLevel) {
+					isConstructorField = seeker.curlyDepth >= minDepth;
+				} else isConstructorField = seeker.curlyDepth == minDepth;
 			} else if (seeker.isCreateEvent) {
-				isConstructorField = seeker.curlyDepth == 0;
-			} else {
-				isConstructorField = seeker.curlyDepth == 1 && seeker.doc != null && seeker.doc.isConstructor;
-			}
+				isConstructorField = seeker.specTypeInstSubTopLevel || seeker.curlyDepth == 0;
+			} else if (seeker.doc != null && seeker.doc.isConstructor) {
+				if (seeker.specTypeInstSubTopLevel) {
+					isConstructorField = seeker.curlyDepth >= 1;
+				} else isConstructorField = seeker.curlyDepth == 1;
+			} else isConstructorField = false;
+			if (seeker.specTypeInstSubTopLevel && seeker.withStartsAtCurlyDepth >= 0) isConstructorField = false;
 		} else isConstructorField = false;
 		
 		// skip if we don't have anything to do:

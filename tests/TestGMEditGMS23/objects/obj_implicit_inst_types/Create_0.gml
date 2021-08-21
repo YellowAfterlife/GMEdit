@@ -25,3 +25,9 @@ if (false) {
 	a_sprite2 = spr_blank;
 	a_sprite2 = 0; ///want_warn
 }
+if (a_bool) {
+	a_nested_number = 2;
+}
+var i;
+i = my_number;
+i = not_my_number; ///want_warn
