@@ -368,7 +368,7 @@ import ui.treeview.TreeViewElement;
 				if (tab.fullPath != null) {
 					qry.path = tab.fullPath;
 				} else {
-					qry.rel = tab.relPath;
+					qry.path = fullPath(tab.relPath);
 				}
 				var el = TreeView.find(true, qry);
 				if (el != null) {
