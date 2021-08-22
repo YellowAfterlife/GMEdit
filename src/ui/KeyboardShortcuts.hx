@@ -127,6 +127,13 @@ class KeyboardShortcuts {
 				tab.querySelector(".chrome-tab-close").click();
 			}
 		});
+		addCommand("closeIdleTabs", "", function() {
+			for (tab in document.querySelectorEls(
+				".chrome-tab." + ChromeTabs.clIdle
+			)) {
+				tab.querySelector(".chrome-tab-close").click();
+			}
+		});
 		//
 		addCommand("saveTab", "mod-s", function() {
 			var q = GmlFile.current;

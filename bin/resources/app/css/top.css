@@ -18,33 +18,27 @@
 .chrome-tabs.chrome-tabs-boxy .chrome-tab-background svg .curvy {
 	display: none;
 }
+
+.chrome-tabs .chrome-tab:not(.chrome-tab-pinned) svg .chrome-tab-pinline {
+	display: none;
+}
+
+/* color of accent line on pinned tabs */
+.chrome-tabs .chrome-tab.chrome-tab-pinned svg .chrome-tab-pinline {
+	fill: #FF8129;
+}
+
+/*
+We want treeview/gameview area header to adjust to match taller tabs area when multiline
+You may reasonably remark that maybe this should be using a CSS grid, and yes - maybe.
+*/
 html[data-multiline-tabs] .chrome-tabs {
 	height: calc(var(--chrome-tabs-height) + 8px);
 	max-height: calc(100vh - 100px);
 }
 
-.chrome-tabs .chrome-tab:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
-	fill: #d7d7d7;
-}
-
-.chrome-tabs .chrome-tab.chrome-tab-pinned .chrome-tab-background > svg .chrome-tab-background {
-	fill: #DBC58A;
-}
-.chrome-tabs .chrome-tab.chrome-tab-pinned:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
-	fill: #ECDCAC;
-}
-.chrome-tabs .chrome-tab.chrome-tab-pinned.chrome-tab-current .chrome-tab-background > svg .chrome-tab-background {
-	fill: #fff4d0;
-}
-
-.chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-pinned .chrome-tab-background > svg .chrome-tab-background {
-	fill: #917D4A;
-}
-.chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-pinned:not(.chrome-tab-current):hover .chrome-tab-background > svg .chrome-tab-background {
-	fill: #AA9254;
-}
-.chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-pinned.chrome-tab-current .chrome-tab-background > svg .chrome-tab-background {
-	fill: #BA9F5A;
+.chrome-tabs .chrome-tab.chrome-tab-idle {
+	filter: brightness(0.75);
 }
 
 

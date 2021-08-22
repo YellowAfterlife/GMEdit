@@ -29,6 +29,11 @@ class ChromeTabs {
 	public static var impl:ChromeTabsImpl;
 	public static var pathHistory:Array<String> = [];
 	public static var attrContext:String = "data-context";
+	
+	public static inline var clIdle:String = "chrome-tab-idle";
+	public static inline var clCurrent:String = "chrome-tab-current";
+	public static inline var clPinned:String = "chrome-tab-pinned";
+	
 	public static inline var pathHistorySize:Int = 32;
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
@@ -39,10 +44,15 @@ class ChromeTabs {
 	public static function sync(gmlFile:GmlFile, ?isNew:Bool) {
 		var prev = GmlFile.current;
 		if (prev != WelcomePage.file) {
+			if (prev.tabEl != null) prev.tabEl.syncATime();
 			pathHistory.unshift(prev.context);
 			if (pathHistory.length > pathHistorySize) pathHistory.pop();
 		}
 		GmlFile.current = gmlFile;
+		if (gmlFile.tabEl != null) {
+			gmlFile.tabEl.syncATime();
+			gmlFile.tabEl.classList.remove(clIdle);
+		}
 		// set container attributes so that themes can style the editor per them:
 		var ctr = Main.aceEditor.container;
 		if (gmlFile != WelcomePage.file) {
@@ -76,6 +86,19 @@ class ChromeTabs {
 		}
 		PluginEvents.activeFileChange({file:gmlFile});
 	}
+	public static function idleTick() {
+		var idleTime = Preferences.current.chromeTabs.idleTime;
+		for (tab in impl.tabEls) {
+			if (tab.classList.contains(clCurrent)) {
+				tab.syncATime();
+			} else if (idleTime > 0 && !tab.classList.contains(clIdle) && !tab.isPinned) {
+				var t = tab.gmlATime;
+				if (t != null && t < js.lib.Date.now() - idleTime * 1000) {
+					tab.classList.add(clIdle);
+				}
+			}
+		}
+	}
 	public static function init() {
 		element = Main.document.querySelector("#tabs");
 		if (electron.Electron == null || Main.moduleArgs.exists("electron-window-frame")) {
@@ -94,6 +117,7 @@ class ChromeTabs {
 		element.classList.setTokenFlag("chrome-tabs-boxy", srcOpt.boxyTabs);
 		//
 		ChromeTabMenu.init();
+		window.setInterval(idleTick, 1000);
 		//
 		var hintEl = document.createDivElement();
 		hintEl.classList.add("chrome-tabs-hint");
@@ -111,7 +135,7 @@ class ChromeTabs {
 				gmlFile = GmlFile.next;
 				if (gmlFile == null) return;
 				GmlFile.next = null;
-				gmlFile.tabEl = cast tabEl;
+				gmlFile.tabEl = tabEl;
 				tabEl.gmlFile = gmlFile;
 				//tabEl.title = gmlFile.path != null ? gmlFile.path : gmlFile.name;
 				tabEl.context = gmlFile.context;
@@ -217,7 +241,7 @@ class ChromeTabs {
 				} else impl.setCurrentTab(tab);
 			}
 		});
-		#if lwedit
+		#if lwedit // double-click on empty spots to add tabs
 		element.addEventListener("dblclick", function(e:MouseEvent) {
 			if (e.target != element.querySelector(".chrome-tabs-content")) return;
 			LiveWeb.newTabDialog();
@@ -331,6 +355,12 @@ extern class ChromeTab extends Element {
 	private inline function set_isPinned(z:Bool):Bool {
 		HtmlTools.setTokenFlag(classList, "chrome-tab-pinned", z);
 		return z;
+	}
+	
+	/** Last access time, as JS Date.now() */
+	public var gmlATime:Null<Float>;
+	public inline function syncATime():Void {
+		gmlATime = js.lib.Date.now();
 	}
 
 	public inline function refresh():Void {

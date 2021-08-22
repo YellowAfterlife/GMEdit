@@ -42,10 +42,18 @@ class PrefNavTabs {
 		});
 		el.title = "Otherwise only uses rectangular tabs when multi-line";
 		
-		el = addCheckbox(out, "Auto-hide close buttons", cur.autoHideCloseButtons, function(v) {
+		el = addCheckbox(out, "Auto-hide 'close' buttons", cur.autoHideCloseButtons, function(v) {
 			current.chromeTabs.autoHideCloseButtons = v;
 			ChromeTabs.element.classList.setTokenFlag("chrome-tabs-auto-hide-close-buttons", v);
 			ChromeTabs.impl.layoutTabs();
+			save();
+		});
+		el = addIntInput(out, "Mark tabs as 'idle' after (in seconds; 0 to disable)", cur.idleTime, function(t) {
+			current.chromeTabs.idleTime = t;
+			for (tab in ChromeTabs.element.querySelectorEls(".chrome-tab." + ChromeTabs.clIdle)) {
+				tab.classList.remove(ChromeTabs.clIdle);
+			}
+			ChromeTabs.idleTick();
 			save();
 		});
 		

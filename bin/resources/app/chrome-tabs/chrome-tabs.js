@@ -13,8 +13,15 @@
               <path class="curvy" d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/>
               <rect class="flat" width="210" height="29" x="7"/>
             </symbol>
+            <symbol id="topleft-pinline">
+              <path class="curvy pinned" d="M 14.162109 0.037109375 C 14.024609 0.099609375 13.749219 0.34960938 13.199219 1.0996094 C 13.154145 1.1672199 12.840393 1.8359117 12.751953 2 L 214 2 L 214 0.099609375 L 14.300781 0.099609375 C 14.300781 0.099609375 14.299609 -0.025390625 14.162109 0.037109375 z " />
+              <rect class="flat pinned" width="210" height="2" x="7"/>
+            </symbol>
             <symbol id="topright" viewBox="0 0 214 29">
               <use xlink:href="#topleft"/>
+            </symbol>
+            <symbol id="topright-pinline" viewBox="0 0 214 29">
+              <use xlink:href="#topleft-pinline"/>
             </symbol>
             <clipPath id="crop">
               <rect class="mask" width="100%" height="100%" x="0"/>
@@ -22,10 +29,12 @@
           </defs>
           <svg width="51%" height="100%" transfrom="scale(-1, 1)">
             <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/>
+            <use xlink:href="#topleft-pinline" width="214" height="29" class="chrome-tab-pinline"/>
             <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/>
           </svg>
           <g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0">
             <use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/>
+            <use xlink:href="#topright-pinline" width="214" height="29" class="chrome-tab-pinline"/>
             <use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/>
           </svg></g>
         </svg>

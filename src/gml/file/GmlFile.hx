@@ -29,6 +29,7 @@ import tools.Dictionary;
 import tools.NativeString;
 import tools.StringBuilder;
 import yy.*;
+import ui.ChromeTabs.ChromeTab;
 import ui.search.GlobalSeachData;
 import ui.Preferences;
 using tools.HtmlTools;
@@ -94,7 +95,7 @@ class GmlFile {
 	public var codeEditor:EditCode;
 	
 	/** Associated chrome tab */
-	public var tabEl:Element;
+	public var tabEl:ChromeTab;
 	
 	/** Whether there had been changes since opening the file (setting updates tab status) */
 	public var changed(get, set):Bool;
