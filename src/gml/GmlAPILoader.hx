@@ -10,6 +10,9 @@ import tools.ChainCall;
 import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;
+#if lwedit
+import ui.liveweb.LiveWeb;
+#end
 using tools.NativeString;
 using tools.RegExpTools;
 using tools.ERegTools;
@@ -239,36 +242,46 @@ using tools.ERegTools;
 		}
 		#end
 		
+		// if we are running on Node, all of the preceding operations complete immediately,
+		// but we didn't initialize the API (in LiveWeb) yet, so might as well just
+		// delay by 1 frame instead of restructuring everything.
+		#if lwedit
+		if (FileSystem.canSync) cx.call(function(_, fn) {
+			Main.window.setTimeout(function(_) fn(null));
+		}, null, function(_) {});
+		#end
+		
 		//
 		var data = getArgs();
+		
 		cx.finish(function() {
 			GmlParseAPI.loadStd(ctx.raw, data);
 			
 			// give GMLive a copy of data
 			#if lwedit
-			if (lwArg0 != null) {
+			if (data.lwArg0 != null) {
 				if (LiveWeb.api != null) {
 					#if 0
 					var arr = [];
-					for (k => v in lwArg0) {
-						arr.push(k + ":" + v + ":" + lwArg1[k]);
+					for (k => v in data.lwArg0) {
+						arr.push(k + ":" + v + ":" + data.lwArg1[k]);
 					}
 					var init = '{\nlwArgs:"' + arr.join("|") + '",\n';
 					//
 					arr = [];
-					for (k => f in lwFlags) arr.push(k + ":" + f);
+					for (k => f in data.lwFlags) arr.push(k + ":" + f);
 					init += 'lwFlags:"' + arr.join("|") + '",\n';
 					//
 					arr = [];
-					for (k => _ in lwConst) arr.push(k);
+					for (k => _ in data.lwConst) arr.push(k);
 					init += 'lwConst:"' + arr.join("|") + '",\n';
 					//
 					arr = [];
-					for (k => _ in lwInst) arr.push(k);
+					for (k => _ in data.lwInst) arr.push(k);
 					init += 'lwInst:"' + arr.join("|") + '"\n';
 					//
 					init += "}";
-					Main.console.log(init);
+					//Main.console.log(init);
 					#end
 					LiveWeb.api.setAPI(data);
 				}

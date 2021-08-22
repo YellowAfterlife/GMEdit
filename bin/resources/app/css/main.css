@@ -210,6 +210,10 @@ https://stackoverflow.com/a/36247448/5578773
 	box-sizing: border-box;
 	/*border: 1px solid #aaa;*/
 }
+#game-td > .bottom {
+	display: flex;
+    flex-direction: column;
+}
 #game, #game-fallback, .ace_editor {
 	margin: 0;
 	resize: none;

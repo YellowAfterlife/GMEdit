@@ -18,7 +18,7 @@ import electron.FileWrap;
  * Custom dialects are also "versions"
  * @author YellowAfterlife
  */
-class GmlVersion {
+@:keep class GmlVersion {
 	public static var none:GmlVersion = (function() {
 		var v = new GmlVersion("none", "api/none", false);
 		v.load();
