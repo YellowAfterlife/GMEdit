@@ -47,8 +47,11 @@ html[data-multiline-tabs] .chrome-tabs {
 }
 
 
-.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover) .chrome-tab-close {
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover):not(.chrome-tab-changed) .chrome-tab-close {
 	display: none;
+}
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover).chrome-tab-changed .chrome-tab-close {
+	right: 1em;
 }
 
 .chrome-tabs .chrome-tab.chrome-tab-currently-dragged .chrome-tab-close {
