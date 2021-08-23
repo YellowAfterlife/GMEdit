@@ -26,6 +26,14 @@
             <clipPath id="crop">
               <rect class="mask" width="100%" height="100%" x="0"/>
             </clipPath>
+            <filter style="color-interpolation-filters:sRGB;" id="drop-highlight">
+              <feBlend mode="normal" in2="SourceGraphic" id="feBlend1156" result="result1" />
+              <feColorMatrix id="feColorMatrix1167" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0" result="fbSourceGraphic" />
+              <feColorMatrix result="fbSourceGraphicAlpha" in="fbSourceGraphic" values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0" id="feColorMatrix1233" />
+              <feFlood id="feFlood1235" flood-opacity="0.498039" flood-color="rgb(153,193,241)" result="flood" in="fbSourceGraphic" />
+              <feComposite in2="fbSourceGraphic" id="feComposite1237" in="flood" operator="in" result="composite1" />
+              <feComposite in2="result1" id="feComposite1243" operator="over" result="composite2" />
+            </filter>
           </defs>
           <svg width="51%" height="100%" transfrom="scale(-1, 1)">
             <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/>
@@ -378,6 +386,79 @@
     cleanUpPreviouslyDraggedTabs() {
       this.tabEls.forEach((tabEl) => tabEl.classList.remove('chrome-tab-just-dragged'))
     }
+    
+    simpleDragTab = null
+    simpleDragSetEvents(tabEl, enable) {
+      if (!!tabEl.chromeTabsSimpleDrag == enable) return
+      
+      let events = this.simpleDragEvents
+      if (events == null) {
+        events = {
+          'dragstart': (e) => {
+            let el = e.target
+            let dt = e.dataTransfer
+            this.simpleDragTab = el
+            el.classList.add("chrome-tab-simple-drag")
+            dt.setData('text/plain',el.querySelector('.chrome-tab-title').innerText)
+            dt.setData('application/gmedit-tab-url',el.dataset.context)
+            dt.effectAllowed = "move"
+          },
+          'dragover': (e) => {
+            if (e.dataTransfer.types.includes('application/gmedit-tab-url')) e.preventDefault()
+          },
+          'dragenter': (e) => {
+            if (e.target.classList.contains('chrome-tab')) e.target.classList.add('chrome-tab-simple-drop')
+          },
+          'dragleave': (e) => {
+            if (e.target.classList.contains('chrome-tab')) e.target.classList.remove('chrome-tab-simple-drop')
+          },
+          'drop': (e) => {
+            e.preventDefault()
+            
+            let source = this.simpleDragTab
+            if (!source) return
+            source.classList.remove('chrome-tab-simple-drag')
+            
+            let target = e.target
+            if (!target.classList.contains('chrome-tab')) return
+            target.classList.remove('chrome-tab-simple-drop')
+            
+            if (source.parentElement != target.parentElement) return
+            
+            if (source.nextElementSibling == target) {
+              let t = target
+              target = source
+              source = t
+            }
+            
+            if (source.classList.contains('chrome-tab-pinned') != target.classList.contains('chrome-tab-pinned')) {
+              for (let tabEl of this.tabEls) {
+                if (!tabEl.classList.contains('chrome-tab-pinned')) {
+                  target = tabEl
+                  break
+                }
+              }
+            }
+            
+            source.parentElement.insertBefore(source, target)
+            this.simpleDragTab = null
+            this.layoutTabs()
+          },
+        }
+        for (let prop in events) events[prop] = events[prop].bind(this)
+        this.simpleDragEvents = events;
+      }
+      
+      tabEl.chromeTabsSimpleDrag = enable
+      tabEl.draggable = enable
+      for (let prop in events) {
+        if (enable) {
+          tabEl.addEventListener(prop, events[prop])
+        } else {
+          tabEl.removeEventListener(prop, events[prop])
+        }
+      }
+    }
 
     setupDraggabilly() {
       const tabEls = this.tabEls
@@ -385,6 +466,13 @@
       const tabPositions = this.tabPositions
 
       this.draggabillyInstances.forEach(draggabillyInstance => draggabillyInstance.destroy())
+      
+      if (this.options.multiline || this.options.fitText) {
+        for (let tabEl of tabEls) this.simpleDragSetEvents(tabEl, true)
+        return
+      } else {
+        for (let tabEl of tabEls) this.simpleDragSetEvents(tabEl, false)
+      }
 
       tabEls.forEach((tabEl, originalIndex) => {
         const originalTabPositionX = tabPositions[originalIndex].left

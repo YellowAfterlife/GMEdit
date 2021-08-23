@@ -57,12 +57,12 @@ class PrefNavTabs {
 			save();
 		});
 		
-		var sub = addGroup(out, "Multi-line tabs (breaks tab drag'n'drop)");
+		var sub = addGroup(out, "Multi-line tabs");
 		addCheckbox(sub, "Enable", cur.multiline, function(v) {
 			current.chromeTabs.multiline = v;
 			syncOptions();
 		});
-		addCheckbox(sub, "Set tab widths based on content (further breaks DnD)", cur.fitText, function(v) {
+		addCheckbox(sub, "Set tab widths based on content", cur.fitText, function(v) {
 			current.chromeTabs.fitText = v;
 			ChromeTabs.element.classList.setTokenFlag("chrome-tabs-fit-text", v);
 			syncOptions();

@@ -20,12 +20,16 @@
 }
 
 .chrome-tabs .chrome-tab:not(.chrome-tab-pinned) svg .chrome-tab-pinline {
-	display: none;
+	fill: transparent;
 }
 
 /* color of accent line on pinned tabs */
 .chrome-tabs .chrome-tab.chrome-tab-pinned svg .chrome-tab-pinline {
 	fill: #FF8129;
+}
+
+.chrome-tabs .chrome-tab.chrome-tab-simple-drop svg .chrome-tab-background {
+	filter: url(#drop-highlight);
 }
 
 /*
@@ -37,6 +41,7 @@ html[data-multiline-tabs] .chrome-tabs {
 	max-height: calc(100vh - 100px);
 }
 
+/* idle tabs get darker */
 .chrome-tabs .chrome-tab.chrome-tab-idle {
 	filter: brightness(0.75);
 }
@@ -56,15 +61,29 @@ html[data-multiline-tabs] .chrome-tabs {
 	left: 2px; top: 8px; right: 2px; bottom: 2px;
 	-webkit-app-region: drag;
 }
+
 .chrome-tabs .chrome-tab-title {
 	max-width: calc(100% - 4em);
 }
+/* tab titles can be wider when the close buttons are hidden*/
 .chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover) .chrome-tab-title {
 	max-width: calc(100% - 2.6em);
 }
+
+/* auto-fit tabs very rarely overflow, so "..." is unnecessary */
+.chrome-tabs.chrome-tabs-fit-text .chrome-tab-title {
+	text-overflow: clip;
+}
+/* no need to show tab tooltips now - they are wide enough! */
+.chrome-tabs.chrome-tabs-fit-text ~ .chrome-tabs-hint {
+	visibility: hidden;
+}
+
+/* usually the trailing end of the tab text is significant */
 .chrome-tabs:not(.chrome-tabs-fit-text) .chrome-tab-title-text {
 	float: right;
 }
+
 .chrome-tabs .chrome-tab,
 .system-button,
 .chrome-tabs .lw-controls {
