@@ -52,7 +52,7 @@
   display: none;
 }
 
-#tabs > div.chrome-tabs-content > div > div.chrome-tab-background:before {
+#tabs > div.chrome-tabs-content > .chrome-tab > div.chrome-tab-background:before {
   content: '';
   position: absolute;
   top: 2px;
@@ -65,6 +65,9 @@
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
 }
+#tabs > div.chrome-tabs-content > .chrome-tab.chrome-tab-pinned > div.chrome-tab-background:before {
+  border-top: 2px solid #017E4E;
+}
 
 #tabs > div.chrome-tabs-content > div > div.chrome-tab-title {
   color: #696969;
@@ -75,7 +78,7 @@
 }
 
 .chrome-tabs.chrome-tabs-dark-theme {
-  background: linear-gradient(to right, #181818, #00A385);
+  background: linear-gradient(60deg, #181818, #00A385);
 }
 
 .project-name {
