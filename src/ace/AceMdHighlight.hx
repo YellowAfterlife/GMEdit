@@ -36,17 +36,17 @@ using tools.NativeString;
 		var rText = rxRule("text", ~/\s+/);
 		//
 		if (dmd) {
-			rBase.push(rxPush("md-section-start", ~/#\[/, "md.section"));
+			rBase.push(rxPush("md-section-start", ~/#+\[/, "md.section"));
 			rBase.push(rxPush("md-italic", ~/\b_\B/, "md.italic"));
 			rBase.push(rxPush("md-bold", ~/\*/, "md.bold"));
 		} else {
-			rBase.push(rulePairs([
-				"^\\s#+\\s*", "md-section-prefix",
-				".*$", "md-section",
-			]));
 			rBase.push(rxPush("md-italic", ~/\b(?:__|\*\*)\B/, "md.italic"));
 			rBase.push(rxPush("md-bold", ~/\b(?:_|\*)\B/, "md.bold"));
 		}
+		rBase.push(rulePairs([
+			"^\\s#+\\s*", "md-section-prefix",
+			".*$", "md-section",
+		]));
 		//
 		rBase.push(rxPush("md-url-start", ~/\[/, "md.url"));
 		if (dmd) {
