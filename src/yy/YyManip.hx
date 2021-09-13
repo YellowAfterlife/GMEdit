@@ -79,6 +79,8 @@ class YyManip {
 	}
 	static function getProjectResourceForTreeItem(py:YyProject, el:TreeViewItem):YyProjectResource {
 		var path = el.treeRelPath;
+		var pt = new Path(path);
+		if (pt.ext == "gml") { pt.ext = "yy"; path = pt.toString(); }
 		return py.resources.findFirst((r) -> r.id.path == path);
 	}
 	static function getProjectItemForTreeEl(py:YyProject, el:TreeViewElement):YyProjectFolderOrResource {
