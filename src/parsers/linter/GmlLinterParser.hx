@@ -31,7 +31,28 @@ class GmlLinterParser {
 			switch (c) {
 				case "\n".code: q.markLine();
 				case "/".code: switch (q.peek()) {
-					case "/".code: q.skipLine();
+					case "/".code: {
+						q.skip();
+						if (q.peek() == "/".code) {
+							q.skip();
+							q.skipSpaces0_local();
+							if (q.peekstr(5) == "@lint" && q.peek(5).isSpace0()) {
+								q.skip(5);
+								q.skipSpaces0_local();
+								var prop = q.readIdent();
+								q.skipSpaces0_local();
+								var valstr = q.readIdent();
+								var val:Bool = switch (valstr) {
+									case "true": true;
+									case "false": false;
+									default: null;
+								}
+								var f = parsers.linter.misc.GmlLinterJSDocFlag.map[prop];
+								if (f != null) f(l, val);
+							}
+						}
+						q.skipLine();
+					}
 					case "*".code: q.skip(); q.skipComment();
 					default: {
 						if (q.peek() == "=".code) {

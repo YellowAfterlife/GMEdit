@@ -62,6 +62,7 @@
     {"id":{"name":"spr_blank","path":"sprites/spr_blank/spr_blank.yy",},"order":0,},
     {"id":{"name":"i'm a note","path":"notes/i'm a note/i'm a note.yy",},"order":0,},
     {"id":{"name":"v_strict_self","path":"scripts/v_strict_self/v_strict_self.yy",},"order":4,},
+    {"id":{"name":"v_linter_flags","path":"scripts/v_linter_flags/v_linter_flags.yy",},"order":11,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

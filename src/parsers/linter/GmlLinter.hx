@@ -16,6 +16,7 @@ import gml.type.GmlTypeTools;
 import haxe.ds.ReadOnlyArray;
 import parsers.linter.GmlLinterInit;
 import parsers.linter.GmlLinterReadFlags;
+import parsers.linter.misc.GmlLinterPrefsState;
 import tools.Aliases;
 import tools.Dictionary;
 import editors.EditCode;
@@ -23,6 +24,7 @@ import parsers.linter.GmlLinterKind;
 import gml.GmlVersion;
 import ace.extern.*;
 import tools.JsTools;
+import tools.NativeObject;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
 using gml.type.GmlTypeTools;
@@ -60,10 +62,12 @@ class GmlLinter {
 	//
 	public var warnings:Array<GmlLinterProblem> = [];
 	function addWarning(text:String):Void {
+		if (prefs.suppressAll) return;
 		warnings.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	public var errors:Array<GmlLinterProblem> = [];
 	function addError(text:String):Void {
+		if (prefs.suppressAll) return;
 		errors.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	//
@@ -115,7 +119,7 @@ class GmlLinter {
 	function getSelfType() {
 		if (__selfType_set) return __selfType_type;
 		var t = AceGmlTools.getSelfTypeForFile(editor.file, context);
-		if (t == null && optStrictScriptSelf) t = GmlTypeDef.void;
+		if (t == null && prefs.strictScriptSelf) t = GmlTypeDef.void;
 		return t;
 	}
 
@@ -152,24 +156,13 @@ class GmlLinter {
 	
 	var version:GmlVersion;
 	
-	var optForbidNonIdentCalls:Bool;
-	
-	var optRequireSemico:Bool;
-	var optNoSingleEqu:Bool;
-	var optRequireParentheses:Bool;
-	var optBlockScopedVar:Bool;
-	var optRequireFunctions:Bool;
-	var optCheckHasReturn:Bool;
-	var optBlockScopedCase:Bool;
-	var optCheckScriptArgumentCounts:Bool;
-	var optSpecTypeVar:Bool;
-	var optSpecTypeLet:Bool;
-	var optSpecTypeConst:Bool;
-	var optSpecTypeMisc:Bool;
-	var optRequireFields:Bool;
-	var optImplicitNullableCast:Bool;
-	var optWarnAboutRedundantCasts:Bool;
-	var optStrictScriptSelf:Bool;
+	/** Current preferences state - can be modified via @lint */
+	/**
+	 * Current preferences state
+	 * These are merged from multiple 
+	 */
+	public var prefs:GmlLinterPrefsState;
+	public var options:GmlLinterOptions;
 	
 	var funcLiteral:GmlLinterFuncLiteral;
 	function initModules() {
@@ -177,25 +170,28 @@ class GmlLinter {
 	}
 	
 	public function new() {
-		optRequireSemico = getOption((q) -> q.requireSemicolons);
-		optNoSingleEqu = getOption((q) -> q.noSingleEquals);
-		optRequireParentheses = getOption((q) -> q.requireParentheses);
-		optBlockScopedVar = getOption((q) -> q.blockScopedVar);
-		optBlockScopedCase = getOption((q) -> q.blockScopedCase);
-		optRequireFunctions = getOption((q) -> q.requireFunctions);
-		optCheckHasReturn = getOption((q) -> q.checkHasReturn);
-		optCheckScriptArgumentCounts = getOption((q) -> q.checkScriptArgumentCounts);
-		optSpecTypeVar = getOption((q) -> q.specTypeVar);
-		optSpecTypeLet = getOption((q) -> q.specTypeLet);
-		optSpecTypeConst = getOption((q) -> q.specTypeConst);
-		optSpecTypeMisc = getOption((q) -> q.specTypeMisc);
-		optRequireFields = getOption((q) -> q.requireFields);
-		optForbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
-		optImplicitNullableCast = getOption((q) -> q.implicitNullableCasts);
-		optWarnAboutRedundantCasts = getOption((q) -> q.warnAboutRedundantCasts);
-		optStrictScriptSelf = getOption((q) -> q.strictScriptSelf);
-		GmlTypeCanCastTo.allowImplicitNullCast = optImplicitNullableCast;
-		GmlTypeCanCastTo.allowImplicitBoolIntCasts = getOption((q) -> q.implicitBoolIntCasts);
+		prefs = {};
+		var p1 = Project.current.properties.linterPrefs;
+		var p2 = ui.Preferences.current.linterPrefs;
+		var p3 = GmlLinterPrefs.defValue;
+		NativeObject.forField(p1, k -> {
+			Reflect.setField(prefs, k, Reflect.field(p1, k));
+		});
+		NativeObject.forField(p2, k -> {
+			if (Reflect.field(prefs, k) == null) {
+				Reflect.setField(prefs, k, Reflect.field(p2, k));
+			}
+		});
+		NativeObject.forField(p3, k -> {
+			if (Reflect.field(prefs, k) == null) {
+				Reflect.setField(prefs, k, Reflect.field(p3, k));
+			}
+		});
+		prefs.forbidNonIdentCalls = !GmlAPI.stdKind.exists("method");
+		
+		GmlTypeCanCastTo.allowImplicitNullCast = prefs.implicitNullableCasts;
+		GmlTypeCanCastTo.allowImplicitBoolIntCasts = prefs.implicitBoolIntCasts;
+		GmlTypeCanCastTo.allowNullToAny = false;
 		initModules();
 	}
 	//{
@@ -547,7 +543,7 @@ class GmlLinter {
 				if (isNew) {
 					addWarning('`$currName` is not a constructor, but is being used via `new`');
 				}
-				if (isExpr && optCheckHasReturn && doc.hasReturn == false) {
+				if (isExpr && prefs.checkHasReturn && doc.hasReturn == false) {
 					addWarning('`$currName` does not return anything, the result is unspecified');
 				}
 			}
@@ -555,7 +551,7 @@ class GmlLinter {
 			// perhaps it's a hidden extension function? we don't add them to extDoc
 			minArgs = GmlAPI.extArgc[currName];
 			if (minArgs == null) {
-				if (optRequireFunctions && optForbidNonIdentCalls) {
+				if (prefs.requireFunctions && prefs.forbidNonIdentCalls) {
 					addWarning('`$currName` doesn\'t seem to be a valid function');
 				}
 				return;
@@ -566,7 +562,7 @@ class GmlLinter {
 			} else maxArgs = minArgs;
 		}
 		//
-		if (isUserFunc && !optCheckScriptArgumentCounts) {
+		if (isUserFunc && !prefs.checkScriptArgumentCounts) {
 			// OK!
 		} else if (argc < minArgs) {
 			if (maxArgs == minArgs) {
@@ -733,7 +729,7 @@ class GmlLinter {
 		var isInCase = false;
 		inline function resetCase():Void {
 			if (isInCase) {
-				if (optBlockScopedCase) discardBlockScopes(newDepth);
+				if (prefs.blockScopedCase) discardBlockScopes(newDepth);
 				isInCase = false;
 			}
 		}
@@ -803,7 +799,7 @@ class GmlLinter {
 		var mainKind = nk;
 		var z:Bool, z2:Bool, i:Int;
 		inline function checkParens():Void {
-			if (optRequireParentheses && readExpr_currKind != KParOpen) {
+			if (prefs.requireParentheses && readExpr_currKind != KParOpen) {
 				addWarning("Expression is missing parentheses");
 			}
 		}
@@ -825,7 +821,7 @@ class GmlLinter {
 					if (!skipIf(nk == KIdent)) break;
 					var varName = nextVal;
 					if (mainKind != KGlobalVar) {
-						if (mainKind != KVar || optBlockScopedVar) {
+						if (mainKind != KVar || prefs.blockScopedVar) {
 							var lk = localKinds[varName];
 							if (lk != null && lk != KGhostVar) {
 								addWarning('Redefinition of a variable `$varName`');
@@ -875,9 +871,9 @@ class GmlLinter {
 							checkTypeCast(varExprType, varType, "variable declaration", readExpr_currValue);
 						} else if (varExprType != null) {
 							var apply = setLocalTypes && switch (mainKind) {
-								case KLet: optSpecTypeLet;
-								case KConst: optSpecTypeConst;
-								default: keywordStr == "var" ? optSpecTypeVar : optSpecTypeMisc;
+								case KLet: prefs.specTypeLet;
+								case KConst: prefs.specTypeConst;
+								default: keywordStr == "var" ? prefs.specTypeVar : prefs.specTypeMisc;
 							}
 							if (apply) {
 								var imp = getImports(true);
@@ -922,7 +918,7 @@ class GmlLinter {
 				if (!z) return readSeqStartError("Unclosed {}");
 			};
 			case KSemico: {
-				if (optRequireSemico) {
+				if (prefs.requireSemicolons) {
 					addWarning("Stray semicolon");
 				}
 			};
@@ -1075,7 +1071,7 @@ class GmlLinter {
 		//
 		if (skipIf(peek() == KSemico)) {
 			// OK!
-		} else if (optRequireSemico && mainKind.needSemico() && !flags.has(NoSemico)) {
+		} else if (prefs.requireSemicolons && mainKind.needSemico() && !flags.has(NoSemico)) {
 			switch (q.peek( -1)) {
 				case ";".code, "}".code: {}; // allowed
 				default: {

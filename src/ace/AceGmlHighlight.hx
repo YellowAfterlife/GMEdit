@@ -536,7 +536,19 @@ using tools.NativeArray;
 					var dt = commentDocLineType;
 					return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
 				}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
-				rxPush("curly.paren.lparen", ~/\{$/),
+				rxRule(function(meta, _, prop, _, val) {
+					var dt = commentDocLineType;
+					var valid = parsers.linter.misc.GmlLinterJSDocFlag.map.exists(prop);
+					var kt = valid ? "linterflag" : "linterflag.typeerror";
+					var vt = switch (val) {
+						case "true", "false": "constant.boolean";
+						case "default": "keyword";
+						default: "typeerror";
+					}
+					if (prop == "") dt = "linterflag";
+					return ["comment.meta", dt, kt, dt, vt];
+				}, ~/(@lint)(\s*)(\w*)(\s*)(\w*)/),
+				rxRule("curly.paren.lparen", ~/\{$/),
 				rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
 				rule("comment.meta", "@(?:\\w+|$)"),
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),

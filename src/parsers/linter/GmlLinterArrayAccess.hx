@@ -30,7 +30,7 @@ class GmlLinterArrayAccess {
 		var isNull = nk == KNullSqb;
 		
 		// extract `Type` from `Type?` when doing `v?[indexer]`
-		if ((isNull || self.optImplicitNullableCast) && currType.isNullable()) currType = currType.unwrapParam();
+		if ((isNull || self.prefs.implicitNullableCasts) && currType.isNullable()) currType = currType.unwrapParam();
 		
 		var isArray = false;
 		var isArray2d = false;

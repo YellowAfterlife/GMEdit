@@ -116,6 +116,9 @@ class AceWrapCommonCompleters {
 	/** Suggests `@meta`s inside JSDocs */
 	public var jsDocCompleter:AceWrapCompleter;
 	
+	/** Suggests linter flags for `@lint` */
+	public var jsDocLinterCompleter:AceWrapCompleter;
+	
 	public var tupleCompleter:AceWrapCompleter;
 	
 	/** These have their items updated by AceStatusBar on context navigation */
@@ -179,6 +182,13 @@ class AceWrapCommonCompleters {
 		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case
 		jsDocCompleter.minLength = 0;
 		completers.push(jsDocCompleter);
+		
+		jsDocLinterCompleter = new AceWrapCompleter(
+			parsers.linter.misc.GmlLinterJSDocFlag.comp,
+			["linterflag", "linterflag.typeerror"],
+			false, gmlOnly);
+		jsDocLinterCompleter.minLength = 0;
+		completers.push(jsDocLinterCompleter);
 	}
 	
 	function initHashtag() {
@@ -479,11 +489,17 @@ class AceWrapCommonCompleters {
 	function onSpace(editor:AceWrap) {
 		var session = editor.session;
 		var lead = session.selection.lead;
-		if (!NativeString.startsWith(session.getLine(lead.row), "#event")) return;
+		
 		var iter = new AceTokenIterator(editor.session, lead.row, lead.column);
 		var token = iter.stepBackward();
 		if (token == null) return;
-		if (token.type == "preproc.event") openAC(editor);
+		
+		switch (token.type) {
+			case "preproc.event" if (NativeString.startsWith(session.getLine(lead.row), "#event")):
+				openAC(editor);
+			case "comment.meta" if (token.value == "@lint"):
+				openAC(editor);
+		}
 	}
 	
 	function onAtSign(editor:AceWrap) {

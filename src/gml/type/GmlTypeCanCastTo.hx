@@ -21,9 +21,10 @@ class GmlTypeCanCastTo {
 	public static var allowVoidCast:Bool = false;
 	/** Whether this is in a boolean operator and it's okay to cast instances to it */
 	public static var isBoolOp:Bool = false;
-	/** Note: linter updates this in the constructor */
+	/** Note: linter updates these in the constructor */
 	public static var allowImplicitNullCast:Bool = false;
 	public static var allowImplicitBoolIntCasts:Bool = false;
+	public static var allowNullToAny:Bool = false;
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		from = from.resolve();
@@ -37,6 +38,7 @@ class GmlTypeCanCastTo {
 		if (from == to) return true;
 		if (from == null || to == null) return true;
 		if (kfrom == KAny || kto == KAny) return true;
+		if (kfrom == KUndefined && allowNullToAny) return true;
 		
 		if (from.equals(to, tpl)) return true;
 		
@@ -76,6 +78,9 @@ class GmlTypeCanCastTo {
 		}
 		
 		switch ([from, to]) {
+			case [TTemplate(n1, i1, c1), t]: {
+				return canCastTo(c1, t, tpl, imp);
+			};
 			case [TEither(et1), TEither(et2)]: { // each member of from must cast to some member of to
 				for (t1 in et1) if (!canCastToAnyOf(t1, et2, tpl, imp)) return false;
 				return true;

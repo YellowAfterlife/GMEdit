@@ -136,7 +136,7 @@ class GmlLinterIdent {
 					if (fd != null) {
 						currType = fd.type;
 						currFunc = fd.doc;
-					} else if (linter.optRequireFields) {
+					} else if (linter.prefs.requireFields) {
 						linter.addWarning('Variable $currName is not part of anonymous struct '
 							+ t.toString());
 					}
@@ -151,7 +151,7 @@ class GmlLinterIdent {
 							return true;
 						} else return false;
 					});
-					if (!found && wantWarn && linter.optRequireFields) {
+					if (!found && wantWarn && linter.prefs.requireFields) {
 						linter.addWarning('Variable $currName is not part of $tn');
 					}
 				};

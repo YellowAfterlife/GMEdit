@@ -235,7 +235,7 @@ class GmlLinterExpr {
 						currType = null;
 					} else {
 						if (hasFlag(NoOps)) break;
-						if (self.optNoSingleEqu) {
+						if (self.prefs.noSingleEquals) {
 							self.addWarning("Using single `=` as a comparison operator");
 						}
 						self.skip();
@@ -245,7 +245,7 @@ class GmlLinterExpr {
 					}
 				};
 				case KParOpen: { // fn(...)
-					if (self.optForbidNonIdentCalls && !currKind.canCall()) {
+					if (self.prefs.forbidNonIdentCalls && !currKind.canCall()) {
 						return self.readError('Expression ${currKind.getName()} is not callable');
 					}
 					if (hasFlag(NoSfx)) return self.readError("Can't call this");
@@ -338,7 +338,7 @@ class GmlLinterExpr {
 							if (!found) {
 								currType = null;
 								currFunc = null;
-								if (wantWarn && self.optRequireFields) {
+								if (wantWarn && self.prefs.requireFields) {
 									self.addWarning('Variable $field is not part of $ctn');
 								}
 							}
@@ -351,7 +351,7 @@ class GmlLinterExpr {
 							} else {
 								currType = null;
 								currFunc = null;
-								if (self.optRequireFields) self.addWarning(
+								if (self.prefs.requireFields) self.addWarning(
 									'Variable $field is not part of anonymous struct ' + nsType.toString()
 								);
 							}
@@ -391,7 +391,7 @@ class GmlLinterExpr {
 					var tnp = q.pos;
 					rc(self.readTypeName());
 					var asType = GmlTypeDef.parse(GmlLinter.readTypeName_typeStr);
-					if (self.optWarnAboutRedundantCasts && currType.equals(asType)) {
+					if (self.prefs.warnAboutRedundantCasts && currType.equals(asType)) {
 						self.addWarning('Redundant cast, ${currType.toString()} is already of type ${asType.toString()}');
 					}
 					if (!hasFlag(IsCast)) {
