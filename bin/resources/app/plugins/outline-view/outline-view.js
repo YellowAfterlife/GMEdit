@@ -146,6 +146,7 @@
 		})(),
 		"ace/mode/markdown": (function() {
 			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}\s])/;
+			var rxDmd2 = /^\s*(#+)(?:\[(.+)\].*|(.+))/;
 			function update_dmd(file, pos) {
 				var row = pos.row;
 				var doc = file.codeEditor.session.doc;
@@ -164,14 +165,17 @@
 				var stack = [], eos;
 				for (var row = 0; row < n; row++) {
 					var line = doc.getLine(row);
-					var mt = rxDmd.exec(line);
-					if (mt) {
+					var mt;
+					if (mt = rxDmd.exec(line)) {
 						ctx.push(mt[3], mt[2], {ctx:mt[2],ctxAfter:true});
 						if (eos) stack.push(eos);
 						eos = mt[1] + "}";
 					} else if (eos && line.startsWith(eos)) {
 						eos = stack.pop();
 						ctx.pop();
+					} else if (mt = rxDmd2.exec(line)) {
+						var name = mt[2] || mt[3];
+						ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
 					}
 				}
 			}
