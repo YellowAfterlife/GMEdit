@@ -85,15 +85,14 @@ class KYyUnknown extends FileKind {
 					}
 				};
 			}
+			// don't touch the relative YY path, rename operations rely on it
 			switch (resType) {
 				case "GMScript": {
 					full = Path.withExtension(full, "gml");
-					path = Path.withExtension(path, "gml");
 					content = electron.FileWrap.readTextFileSync(full);
 				};
 				case "GMNotes": {
 					full = Path.withExtension(full, "txt");
-					path = Path.withExtension(path, "txt");
 					content = electron.FileWrap.readTextFileSync(full);
 					detect.kind = file.kind.misc.KPlain.inst;
 				};
