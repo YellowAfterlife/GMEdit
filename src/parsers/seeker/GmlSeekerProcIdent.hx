@@ -92,11 +92,33 @@ class GmlSeekerProcIdent {
 		
 		// skip unless it's `some =` (and no `some ==`)
 		var skip = false;
+		var arrayDepth = 0;
 		seeker.saveReader();
 		while (q.loop) switch (q.read()) {
 			case " ".code, "\t".code, "\r".code, "\n".code: { };
 			case "=".code: skip = q.peek() == "=".code; break;
+			case "[".code: // go over array indices
+				var sqbDepth = 1;
+				while (q.loop) {
+					while (q.loop) {
+						if (q.skipCommon_inline() >= 0) {
+							
+						} else switch (q.read()) {
+							case "[".code: sqbDepth++;
+							case "]".code: if (--sqbDepth <= 0) break;
+							case ",".code: arrayDepth += 1;
+						}
+					}
+					arrayDepth += 1;
+					q.skipSpaces1();
+					if (!q.skipIfEquals("[".code)) break;
+				} 
+				if (q.skipIfEquals("=".code)) {
+					skip = q.peek() == "=".code;
+				} else skip = true;
+				break;
 			case ":".code: {
+				// todo: I don't remember what this is supposed to be
 				var swapReader = seeker.swapReader;
 				var k = swapReader.pos;
 				skip = true;
@@ -293,6 +315,7 @@ class GmlSeekerProcIdent {
 					isConstructor = q.substring(ctStart, q.pos) == "constructor";
 				}
 			} while (false);
+			for (_ in 0 ... arrayDepth) fieldType = GmlTypeDef.array(fieldType);
 			GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, s, args, null, fieldType, argTypes, true);
 			var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
 			if (templateSelf != null && addFieldHint_doc != null) {

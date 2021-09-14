@@ -28,7 +28,36 @@ if (false) {
 if (a_bool) {
 	a_nested_number = 2;
 }
-var i;
+var i/*:number*/, s/*:string*/;
 i = my_number;
 i = not_my_number; ///want_warn
 i = post_with;
+
+int1d_init = [];
+int2d_init = [];
+int2d_init_sub = [];
+for (i = 0; i < 10; i++) {
+	int1d[i] = 0;
+	int1d_init[i] = 0;
+	int2d[i][0] = 0;
+	int2d_init[i][0] = 0;
+	int2d_init_sub[i] = [];
+	int2d_init_sub[i][0] = 0;
+	int2d_comma[i, 0] = 0;
+}
+s = int1d[0]; ///want_warn
+i = int1d[0];
+s = int1d_init[0]; ///want_warn
+i = int1d_init[0];
+i = int2d[0]; ///want_warn
+i = int2d[0][0];
+i = int2d_init[0]; ///want_warn
+i = int2d_init[0][0];
+i = int2d_init_sub[0]; ///want_warn
+i = int2d_init_sub[0][0];
+i = int2d_comma[0]; ///want_warn
+i = int2d_comma[0][0];
+
+int1dx = [];
+int1dx[0] = 0;
+s = int1dx[0]; ///want_warn
