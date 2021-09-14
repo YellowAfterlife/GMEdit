@@ -36,8 +36,8 @@ class KYyExtension extends FileKind {
 		//
 		var treePath = parentPath + "/" + ext.name;
 		var treeDir = TreeView.makeAssetDir(ext.name, treePath, "extension");
-		treeDir.setAttribute(TreeView.attrPath, full);
-		treeDir.setAttribute(TreeView.attrIdent, ext.name);
+		treeDir.treeFullPath = full;
+		treeDir.treeIdent = ext.name;
 		@:privateAccess YyLoader.itemsToInsert.push({
 			item: treeDir,
 			dir: cast parentDir

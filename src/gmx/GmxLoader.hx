@@ -147,8 +147,8 @@ class GmxLoader {
 				var extName = extGmx.findText("name");
 				//
 				var extDir = TreeView.makeAssetDir(extName, "Extensions/" + extName + "/", "extension");
-				extDir.setAttribute(TreeView.attrPath, extFull);
-				extDir.setAttribute(TreeView.attrIdent, extName);
+				extDir.treeFullPath = extFull;
+				extDir.treeIdent = extName;
 				//
 				var lm = lz && extName.toLowerCase() == GmlExtLambda.extensionName ? project.lambdaMap : null;
 				if (lm != null) project.lambdaExt = extPath;
