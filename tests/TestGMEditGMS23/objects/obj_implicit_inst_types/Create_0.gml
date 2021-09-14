@@ -31,3 +31,4 @@ if (a_bool) {
 var i;
 i = my_number;
 i = not_my_number; ///want_warn
+i = post_with;

@@ -189,7 +189,7 @@ class GmlSeekerImpl {
 			oldSource = q.source;
 			//*/
 			var flags = Ident | Doc | Define | Macro;
-			if (exitAtCubDepth != null || funcsAreGlobal) flags |= Cub1;
+			if (exitAtCubDepth != null || funcsAreGlobal || withStartsAtCurlyDepth >= 0) flags |= Cub1;
 			var s = find(flags);
 			if (s == null) continue;
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
