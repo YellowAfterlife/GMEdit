@@ -110,8 +110,8 @@ extern class TreeViewDir extends TreeViewElement {
 	private inline function get_treeIsOpen():Bool {
 		return classList.contains(TreeView.clOpen);
 	}
-	private function set_treeIsOpen(val:Bool):Bool {
-		HtmlTools.setTokenFlag(this, TreeView.clOpen, val);
+	private inline function set_treeIsOpen(val:Bool):Bool {
+		HtmlTools.setTokenFlag(classList, TreeView.clOpen, val);
 		return val;
 	}
 	
