@@ -1366,7 +1366,7 @@ sprite_create_from_surface(id:surface,x:int,y:int,w:int,h:int,removeback:bool,sm
 sprite_add_from_surface(sprite:sprite,surface:surface,x:int,y:int,w:int,h:int,removeback:bool,smooth:bool)!->sprite
 sprite_delete(ind:sprite)!->void
 sprite_set_alpha_from_sprite(ind:sprite,spr:sprite)->void
-sprite_collision_mask(ind:sprite,sepmasks:bool,bboxmode:int,bbleft:number,bbtop:number,bbright:number,bbbottom:number,kind:bbox_kind,tolerance:int)->void
+sprite_collision_mask(ind:sprite,sepmasks:bool,bboxmode:bbox_mode|int,bbleft:number,bbtop:number,bbright:number,bbbottom:number,kind:bbox_kind,tolerance:int)->void
 
 #endregion
 
