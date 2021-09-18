@@ -36,6 +36,7 @@ using tools.NativeString;
 		var rText = rxRule("text", ~/\s+/);
 		//
 		if (dmd) {
+			rBase.push(rxPush(["text", "md-section-start"], ~/^(\s*)(#+\[)/, "md.section"));
 			rBase.push(rxPush("md-section-start", ~/#+\[/, "md.section"));
 			rBase.push(rxPush("md-italic", ~/\b_\B/, "md.italic"));
 			rBase.push(rxPush("md-bold", ~/\*/, "md.bold"));
@@ -44,7 +45,7 @@ using tools.NativeString;
 			rBase.push(rxPush("md-bold", ~/\b(?:_|\*)\B/, "md.bold"));
 		}
 		rBase.push(rulePairs([
-			"^\\s#+\\s*", "md-section-prefix",
+			"^\\s*#+\\s*", "md-section-prefix",
 			".*$", "md-section",
 		]));
 		//
