@@ -15617,6 +15617,10 @@ var Gutter = function(parentEl) {
             className += decorations[row];
         if (this.$annotations[row])
             className += this.$annotations[row].className;
+        //{ GMEdit
+        var doc = session.getDocument();
+        if (doc && doc.gmlBookmarks) className = this.addBookmarkClass(doc.gmlBookmarks, row, className);
+        //}
         if (this.isGML) { // GMEdit
             className = this.gmlCellClass(row, className);
             firstLineNumber = session.$firstLineNumber;

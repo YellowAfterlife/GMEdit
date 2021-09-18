@@ -395,6 +395,14 @@ Gutter.prototype.$renderLines = function(config, firstRow, lastRow) {
 	return Gutter_$renderLines.call(this, config, firstRow, lastRow);
 }
 
+Gutter.prototype.addBookmarkClass = function(bookmarks, row, className) {
+	for (var i = 0; i < bookmarks.length; i++) {
+		if (bookmarks[i].row == row) {
+			return className + " ace_gutter-bookmark";
+		}
+	}
+	return className;
+}
 var rxArgsLine = /^\s*#args\s+(.+)/;
 var rxMFunc = /^\s*#mfunc\s+(\w+)/;
 /**
@@ -408,15 +416,6 @@ Gutter.prototype.gmlCellClass = function(row, className) {
 	var rowText = session.getLine(row);
 	var mt, mf, hiddenLines;
 	var full = className != null;
-	if (full) {
-		var bookmarks = doc.gmlBookmarks;
-		if (bookmarks) for (var i = 0; i < bookmarks.length; i++) {
-			if (bookmarks[i].row == row) {
-				className += " ace_gutter-bookmark";
-				break;
-			}
-		}
-	}
 	if (this.gmlResetOnDefine
 		&& rxDefine.test(rowText)
 	) {
