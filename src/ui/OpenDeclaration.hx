@@ -15,6 +15,7 @@ import gml.GmlImports;
 import ui.ColorPicker;
 import ui.treeview.TreeView;
 using tools.NativeString;
+using tools.HtmlTools;
 using StringTools;
 import Main.aceEditor;
 import gml.Project;
@@ -64,22 +65,34 @@ class OpenDeclaration {
 	public static function openLookup(lookup:GmlLookup, ?nav:GmlFileNav) {
 		if (lookup == null) return false;
 		var path = lookup.path;
-		var el = TreeView.find(true, { path: path });
-		if (el != null) {
-			if (nav != null) {
-				if (nav.def == null) nav.def = lookup.sub;
-				if (nav.pos != null) {
-					nav.pos.row += lookup.row;
-					nav.pos.column += lookup.col;
-				} else nav.pos = { row: lookup.row, column: lookup.col };
-			}; else nav = {
-				def: lookup.sub,
-				pos: { row: lookup.row, column: lookup.col }
-			};
-			GmlFile.open(el.title, path, nav);
-			return true;
+		var name:String;
+		var treeEl = TreeView.find(true, { path: path });
+		if (treeEl != null) {
+			name = treeEl.title;
+		} else {
+			name = null;
+			for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
+				var gmlFile:GmlFile = untyped tabEl.gmlFile;
+				if (gmlFile != null && gmlFile.path == path) {
+					name = gmlFile.name;
+					break;
+				}
+			}
+			if (name == null) return false;
 		}
-		return false;
+		
+		if (nav != null) {
+			if (nav.def == null) nav.def = lookup.sub;
+			if (nav.pos != null) {
+				nav.pos.row += lookup.row;
+				nav.pos.column += lookup.col;
+			} else nav.pos = { row: lookup.row, column: lookup.col };
+		}; else nav = {
+			def: lookup.sub,
+			pos: { row: lookup.row, column: lookup.col }
+		};
+		GmlFile.open(name, path, nav);
+		return true;
 	}
 	public static function openLocal(name:String, pos:AcePos, ?nav:GmlFileNav):Bool {
 		if (openLookup(GmlAPI.gmlLookup[name], nav)) return true;
