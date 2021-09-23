@@ -995,15 +995,16 @@ class GmlLinter {
 				switch (peek()) {
 					case KSemico, KCubClose: skip(); flags.add(NoSemico);
 					default:
-						rc(readExpr(newDepth));
+						var retType = currFuncDoc != null ? currFuncDoc.returnType : null;
+						rc(readExpr(newDepth, None, null, retType));
 						switch (currFuncRetStatus) {
 							case NoReturn, WantReturn: currFuncRetStatus = HasReturn;
 							case WantNoReturn: 
 								addWarning("The function is marked as returning nothing but has a return statement.");
 							default:
 						}
-						if (currFuncDoc != null && readExpr_currType != null) {
-							checkTypeCast(readExpr_currType, currFuncDoc.returnType, "return", readExpr_currValue);
+						if (retType != null && readExpr_currType != null) {
+							checkTypeCast(readExpr_currType, retType, "return", readExpr_currValue);
 						}
 				}
 			};
