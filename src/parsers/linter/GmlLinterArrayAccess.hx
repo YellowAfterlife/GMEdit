@@ -178,7 +178,7 @@ class GmlLinterArrayAccess {
 									} else if (i >= p.length) {
 										currType = null;
 										self.addWarning('Out-of-bounds tuple access (index $i, length is ${p.length})');
-									}
+									} else currType = lastTupleType;
 								} else {
 									currType = p[Std.int(i)];
 								}
