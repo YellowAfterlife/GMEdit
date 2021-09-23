@@ -65,7 +65,7 @@ class GmlSeekerJSDocRegex {
 		return new RegExp("^\\s*(?:" + [
 			'globalvar\\s+($id(?:\\s*,\\s*$id)*)', // globalvar name[, name2]
 			'global\\s*\\.\\s*($id)\\s*=', // global.name=
-			'($id)\\s*=' // name=
+			'(?:static\\s+)?($id)\\s*=' // name= or static name=
 		].join("|") + ")");
 	})();
 	public static var jsDoc_template = new RegExp("^///\\s*"
