@@ -31,6 +31,11 @@ class GmlNamespace {
 	public var canCastToStruct:Bool = true;
 	
 	/**
+	 * Whether assigning `undefined` to this type is allowed.
+	 */
+	public var isNullable:Bool = false;
+	
+	/**
 	 * If set to true, you cannot reference type<> for this namespace
 	 */
 	public var noTypeRef:Bool = false;
@@ -269,5 +274,20 @@ class GmlNamespace {
 		types.remove(field);
 		var comps:ArrayMap<AceAutoCompleteItem> = isInst ? compInst : compStatic;
 		comps.remove(field);
+	}
+	
+	/**
+	 * 
+	 * @return whether a special case was applied
+	 */
+	public function procSpecialInterfaces(name:String, value:Bool) {
+		switch (name) {
+			case "struct": canCastToStruct = value;
+			case "minus1able": minus1able = value;
+			case "nullable": isNullable = value;
+			// todo: bitflags
+			default: return false;
+		}
+		return true;
 	}
 }

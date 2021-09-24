@@ -181,7 +181,6 @@ class GmlSeekerJSDoc {
 		
 		mt = jsDoc_hint.exec(s);
 		if (mt != null) { // @hint
-			var mti = 0;
 			var typeStr = mt[1];
 			var isNew = mt[2] != null;
 			var hr = new GmlReader(mt[3], seeker.version), hp:Int;
