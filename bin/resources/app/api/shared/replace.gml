@@ -1518,7 +1518,7 @@ environment_get_variable(name:string)->string
 game_id*:int
 game_display_name*:string
 game_project_name*:string
-game_save_id*:int
+game_save_id*:string
 working_directory*:string
 temp_directory*:string
 program_directory*:string
