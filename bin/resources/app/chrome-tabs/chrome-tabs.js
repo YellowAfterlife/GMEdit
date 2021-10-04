@@ -211,6 +211,7 @@
         tabHeight = this.el.querySelector(".chrome-tabs-content").offsetHeight
       }
       const multiline = this.options.multiline
+      const rowBreakAfterPinnedTabs = multiline && this.options.rowBreakAfterPinnedTabs
       const fitText = multiline && this.options.fitText
       const tabOverlapDistance = this.options.tabOverlapDistance
       let left = 0, top = 0
@@ -221,7 +222,8 @@
       let overflow = false
       //console.log(tabEffectiveWidth, tabsContentWidth)
       
-      tabEls.forEach((tabEl, i) => {
+      let wasPinned = false
+      for (let tabEl of tabEls) {
         //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
         let width
         if (fitText) {
@@ -230,8 +232,21 @@
           width = titleText.offsetWidth + tabLeft + tabRight + tabOverlapDistance
           width = Math.min(width, tabsContentWidth)
         } else width = tabWidth
-        if (multiline && left + width > tabsContentWidth) {
-          if (fitText) {
+        
+        let lineBreak = false
+        let fitToWidth = false
+        if (multiline) {
+          if (left + width > tabsContentWidth) {
+            lineBreak = true
+            fitToWidth = true
+          } else if (rowBreakAfterPinnedTabs) {
+            let isPinned = tabEl.classList.contains("chrome-tab-pinned")
+            if (!isPinned && wasPinned) lineBreak = true
+            wasPinned = isPinned
+          }
+        }
+        if (lineBreak) {
+          if (fitText && fitToWidth) {
             // arrange elements so that they always reach the right border
             let end = positions.length
             let start = end
@@ -266,13 +281,13 @@
             overflow = true
             tabsContentWidth += systemButtons.offsetWidth;
           }
-        } else if (row == 0) {
+        } else {
           tabsPerRow += 1
         }
         positions.push({ tabEl, left, top, row, column, width })
         left += width - tabOverlapDistance
         column += 1
-      })
+      }
       
       // todo: maybe a clipping mask? Tabs must not overflow the buttons on the right if available
       this.tabContentEl.style.overflow = overflow ? "initial" : "hidden";

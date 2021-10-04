@@ -70,6 +70,7 @@ import haxe.DynamicAccess;
 			boxyTabs: false,
 			flowAroundSystemButtons: false,
 			autoHideCloseButtons: false,
+			rowBreakAfterPinnedTabs: false,
 			idleTime: 0,
 		},
 	};
@@ -146,6 +147,7 @@ typedef PrefDataImpl = {
 		boxyTabs:Bool,
 		flowAroundSystemButtons:Bool,
 		autoHideCloseButtons:Bool,
+		rowBreakAfterPinnedTabs:Bool,
 		idleTime:Int,
 	},
 }

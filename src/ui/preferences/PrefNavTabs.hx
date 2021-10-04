@@ -67,6 +67,10 @@ class PrefNavTabs {
 			ChromeTabs.element.classList.setTokenFlag("chrome-tabs-fit-text", v);
 			syncOptions();
 		});
+		addCheckbox(sub, "New row after pinned tabs (Visual Studio style)", cur.rowBreakAfterPinnedTabs, function(v) {
+			current.chromeTabs.rowBreakAfterPinnedTabs = v;
+			syncOptions();
+		});
 		addCheckbox(sub, "Let the buttons flow around the system buttons", cur.flowAroundSystemButtons, function(v) {
 			current.chromeTabs.flowAroundSystemButtons = v;
 			syncOptions();
