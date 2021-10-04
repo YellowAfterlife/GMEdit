@@ -216,6 +216,7 @@
       let left = 0, top = 0
       let row = 0, column = 0
       let tabsPerRow = 0
+      let maxTabsPerRow = 0
       let positions = []
       let overflow = false
       //console.log(tabEffectiveWidth, tabsContentWidth)
@@ -256,6 +257,10 @@
           top += tabHeight
           row += 1
           column = 0
+          
+          if (tabsPerRow > maxTabsPerRow) maxTabsPerRow = tabsPerRow
+          tabsPerRow = 0
+          
           let systemButtons
           if (row == 1 && this.options.flowAroundSystemButtons && (systemButtons = this.el.querySelector(".system-buttons"))) {
             overflow = true
@@ -284,7 +289,8 @@
         this.ignoreResize = _ignore;
       }
       setTokenFlag(this.el.classList, "chrome-tabs-boxy", top > 0 || this.options.boxyTabs);
-      positions.tabsPerRow = tabsPerRow
+      if (tabsPerRow > maxTabsPerRow) maxTabsPerRow = tabsPerRow
+      positions.tabsPerRow = maxTabsPerRow
       positions.tabRows = row + 1
       return positions
     }
