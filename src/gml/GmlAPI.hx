@@ -313,19 +313,13 @@ class GmlAPI {
 			var ns = ensureNamespace(pair.name);
 			ns.canCastToStruct = false;
 			ns.noTypeRef = true;
-			for (parent in pair.parents) switch (parent) {
-				case "struct":
-					ns.canCastToStruct = true;
-				case "bitflags":
-					ns.interfaces["bitflags"] = ensureNamespace("bitflags");
-				case "minus1able":
-					ns.minus1able = true;
-				default:
-					if (ns.parent != null) Console.warn('Re-assigning parent for ${pair.name}');
-					ns.parent = gmlNamespaces[parent];
-					if (ns.parent != null) {
-						ns.canCastToStruct = ns.parent.canCastToStruct;
-					} else Console.warn('Parent ${parent} is missing for ${pair.name}');
+			for (parent in pair.parents) {
+				if (ns.procSpecialInterfaces(parent, true)) continue;
+				if (ns.parent != null) Console.warn('Re-assigning parent for ${pair.name}');
+				ns.parent = gmlNamespaces[parent];
+				if (ns.parent != null) {
+					ns.canCastToStruct = ns.parent.canCastToStruct;
+				} else Console.warn('Parent ${parent} is missing for ${pair.name}');
 			}
 		}
 		gml.type.GmlTypeParser.clear();

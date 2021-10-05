@@ -223,6 +223,7 @@ class GmlLinterExpr {
 		// suffixes:
 		while (q.loop) {
 			nk = self.peek();
+			var setValue = false;
 			switch (nk) {
 				case KSet: {
 					if (isStat()) {
@@ -286,12 +287,28 @@ class GmlLinterExpr {
 					// extract `Type` from `Type?` when doing `v?.field`
 					if (nk == KNullDot && currType.isNullable()) currType = currType.unwrapParam();
 					
+					var enumType = currKind == KIdent ? GmlAPI.gmlEnums[currName] : null;
+					
 					currKind = nk == KDot ? KField : KNullField;
-					var isStatic = currType.isType();
-					var nsType = isStatic ? currType.unwrapParam() : currType;
-					var ctn = nsType.getNamespace();
-					selfType = currType;
-					switch (nsType) {
+					var isStatic:Bool = false, nsType:GmlType = null;
+					if (enumType != null) {
+						currType = GmlTypeDef.int;
+						currFunc = null;
+						var ef = enumType.compMap[field];
+						if (ef != null && ef.doc != null) {
+							if (JsTools.rx(~/^\d+$/g).test(ef.doc)) {
+								setValue = true;
+								currValue = GmlLinterValue.VNumber(Std.parseFloat(ef.doc), ef.doc);
+							} else {
+								// todo: try to parse?
+							}
+						}
+					} else {
+						selfType = currType;
+						isStatic = currType.isType();
+						nsType = isStatic ? currType.unwrapParam() : currType;
+					}
+					if (enumType == null) switch (nsType) {
 						case null: {
 							currType = null;
 							currFunc = null;
@@ -463,7 +480,7 @@ class GmlLinterExpr {
 					else break;
 				};
 			}
-			currValue = null;
+			if (!setValue) currValue = null;
 			if (nk != KDot && nk != KNullDot) selfType = null;
 		}
 		//

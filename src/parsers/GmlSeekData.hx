@@ -240,6 +240,7 @@ class GmlSeekData {
 			var arr1 = next.namespaceImplements[nsName];
 			for (impName in arr0) {
 				if (arr1 != null && arr1.contains(impName)) continue;
+				if (ns.procSpecialInterfaces(impName, false)) continue;
 				ns.interfaces.remove(impName);
 			}
 		}
@@ -250,6 +251,7 @@ class GmlSeekData {
 				if (arr0 != null && arr0.contains(impName)
 					&& ns.interfaces.exists(impName)
 				) continue;
+				if (ns.procSpecialInterfaces(impName, true)) continue;
 				var impSpace = GmlAPI.ensureNamespace(impName);
 				ns.interfaces.addn(impSpace);
 			}

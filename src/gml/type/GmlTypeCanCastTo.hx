@@ -38,7 +38,6 @@ class GmlTypeCanCastTo {
 		if (from == to) return true;
 		if (from == null || to == null) return true;
 		if (kfrom == KAny || kto == KAny) return true;
-		if (kfrom == KUndefined && allowNullToAny) return true;
 		
 		if (from.equals(to, tpl)) return true;
 		
@@ -47,6 +46,13 @@ class GmlTypeCanCastTo {
 			if (kfrom == KUndefined) return true;
 			// number -> number?
 			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl, imp)) return true;
+		}
+		
+		if (kfrom == KUndefined) {
+			if (allowNullToAny) return true;
+			var nsName = to.getNamespace();
+			var ns = nsName != null ? GmlAPI.gmlNamespaces[nsName] : null;
+			if (ns != null && ns.isNullable) return true;
 		}
 		
 		if (isExplicit) {
