@@ -213,6 +213,7 @@
       const multiline = this.options.multiline
       const rowBreakAfterPinnedTabs = multiline && this.options.rowBreakAfterPinnedTabs
       const fitText = multiline && this.options.fitText
+      const multilineStretchStyle = multiline ? this.options.multilineStretchStyle : 0;
       const tabOverlapDistance = this.options.tabOverlapDistance
       let left = 0, top = 0
       let row = 0, column = 0
@@ -247,25 +248,32 @@
         }
         if (lineBreak) {
           if (fitText && fitToWidth) {
-            // arrange elements so that they always reach the right border
-            let end = positions.length
-            let start = end
-            while (start > 0 && positions[start - 1].row == row) start--
-            let rowWidth = 0
-            for (let i = start; i < end; i++) {
-              rowWidth += positions[i].width - tabOverlapDistance
-            }
-            let rowScale = tabsContentWidth / rowWidth
-            let rowLeft = 0
-            for (let i = start; i < end; i++) {
-              let pos = positions[i]
-              pos.left = rowLeft
-              pos.width = Math.round((pos.width - tabOverlapDistance) * rowScale) + tabOverlapDistance
-              rowLeft = pos.left + pos.width - tabOverlapDistance
-            }
-            if (end > start) {
-              let pos = positions[end - 1]
+            if (multilineStretchStyle == 2) {
+              let pos = positions[positions.length - 1]
               pos.width = tabsContentWidth - pos.left
+            } else if (multilineStretchStyle == 1) {
+              // arrange elements so that they always reach the right border
+              let end = positions.length
+              let start = end
+              while (start > 0 && positions[start - 1].row == row) start--
+              let rowWidth = 0
+              for (let i = start; i < end; i++) {
+                rowWidth += positions[i].width
+                rowWidth -= tabOverlapDistance
+              }
+              rowWidth += tabOverlapDistance
+              let rowScale = tabsContentWidth / rowWidth
+              let rowLeft = 0
+              for (let i = start; i < end; i++) {
+                let pos = positions[i]
+                pos.left = rowLeft
+                pos.width = Math.round((pos.width - tabOverlapDistance) * rowScale) + tabOverlapDistance
+                rowLeft = pos.left + pos.width - tabOverlapDistance
+              }
+              if (end > start) {
+                let pos = positions[end - 1]
+                pos.width = tabsContentWidth - pos.left
+              }
             }
           }
           left = 0

@@ -71,6 +71,7 @@ import haxe.DynamicAccess;
 			flowAroundSystemButtons: false,
 			autoHideCloseButtons: false,
 			rowBreakAfterPinnedTabs: false,
+			multilineStretchStyle: 1,
 			idleTime: 0,
 		},
 	};
@@ -149,6 +150,8 @@ typedef PrefDataImpl = {
 		autoHideCloseButtons:Bool,
 		rowBreakAfterPinnedTabs:Bool,
 		idleTime:Int,
+		/** 0: don't, 1: stretch all, 2: stretch last */
+		multilineStretchStyle:Int,
 	},
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {

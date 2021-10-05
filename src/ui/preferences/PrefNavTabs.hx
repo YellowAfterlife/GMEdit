@@ -75,5 +75,19 @@ class PrefNavTabs {
 			current.chromeTabs.flowAroundSystemButtons = v;
 			syncOptions();
 		});
+		
+		var fitToWidthOptions = [
+			"Don't",
+			"Stretch all tabs (proportionally)",
+			"Stretch last tab (VSC style)",
+		];
+		addDropdown(sub,
+			"Fit tabs to width on row overflow?",
+			fitToWidthOptions[cur.multilineStretchStyle],
+			fitToWidthOptions,
+		function(s) {
+			current.chromeTabs.multilineStretchStyle = fitToWidthOptions.indexOf(s);
+			syncOptions();
+		});
 	}
 }
