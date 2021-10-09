@@ -17,6 +17,7 @@ import file.kind.gml.*;
 import file.kind.yy.*;
 import file.kind.misc.*;
 import yy.YyProjectResource;
+import yy.v22.YyGUIDCollisionChecker;
 
 /**
  * Loads project files for GMS <= 2.2
@@ -229,6 +230,7 @@ class YyLoaderV22 {
 							extEl.setAttribute(TreeView.attrYYID, res.Key);
 							var lm = lz && ext.name.toLowerCase() == synext.GmlExtLambda.extensionName ? project.lambdaMap : null;
 							if (lm != null) project.lambdaExt = full;
+							var extColCheck = new YyGUIDCollisionChecker("extension", ext.name);
 							for (file in ext.files) {
 								var fileName = file.filename;
 								var isGmlFile = Path.extension(fileName).toLowerCase() == "gml";
@@ -237,6 +239,9 @@ class YyLoaderV22 {
 									fileName, extRel + fileName, filePath, "extfile"
 								);
 								extEl.treeItems.appendChild(fileItem);
+								//
+								extColCheck.add(file.id, "file", file.filename);
+								var fileColCheck = new YyGUIDCollisionChecker("extension", ext.name, "file", file.filename);
 								//
 								if (isGmlFile) {
 									if (lm != null) {
@@ -255,6 +260,7 @@ class YyLoaderV22 {
 								} else for (func in file.functions) {
 									var name = func.name;
 									var help = func.help;
+									fileColCheck.add(func.id, "function", name);
 									GmlAPI.extKind.set(name, "extfunction");
 									GmlAPI.extArgc[name] = func.argCount < 0 ? func.argCount : func.args.length;
 									if (help != null && help != "" && !func.hidden) {
@@ -274,6 +280,7 @@ class YyLoaderV22 {
 								}
 								for (mcr in file.constants) {
 									var name = mcr.constantName;
+									fileColCheck.add(mcr.id, "macro", name);
 									if (name.indexOf("/*") >= 0) continue;
 									GmlAPI.extKind.set(name, "extmacro");
 									if (!mcr.hidden) {
