@@ -1,4 +1,5 @@
 package parsers.linter;
+import gml.GmlAPI;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import haxe.ds.ReadOnlyArray;
@@ -26,13 +27,21 @@ class GmlLinterArrayLiteral {
 			targetType = targetType.resolve();
 			if (targetType.getKind() == KTuple) {
 				tupleTypes = targetType.unwrapParams();
+			}
+			else if (targetType.getKind() == KEnumTuple) {
+				var ename = targetType.unwrapParam().getNamespace();
+				var en = ename != null ? GmlAPI.gmlEnums[ename] : null;
+				if (en != null) tupleTypes = en.tupleTypes;
+			}
+			else if (targetType.canCastTo(GmlTypeDef.anyArray)) {
+				itemType = targetType.unwrapParam();
+			}
+			if (tupleTypes != null) {
 				var t:GmlType = tupleTypes[tupleTypes.length - 1].resolve();
 				if (t.getKind() == KRest) {
 					tupleHasRest = true;
 					tupleRestType = t.unwrapParam();
 				}
-			} else if (targetType.canCastTo(GmlTypeDef.anyArray)) {
-				itemType = targetType.unwrapParam();
 			}
 		}
 		

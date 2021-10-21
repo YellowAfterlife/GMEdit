@@ -1,9 +1,13 @@
 package parsers.seeker;
 import ace.extern.AceAutoCompleteItem;
 import gml.GmlEnum;
+import gml.type.GmlType;
+import gml.type.GmlTypeDef;
 import js.lib.RegExp;
 import parsers.seeker.GmlSeekerImpl;
+import parsers.seeker.GmlSeekerJSDocRegex;
 import parsers.seeker.GmlSeekerParser;
+import tools.JsTools;
 using tools.NativeString;
 
 /**
@@ -21,6 +25,14 @@ class GmlSeekerProcEnum {
 		return null;
 	}
 	
+	static var maxTupleTypes:Int = 256;
+	static var jsDoc_enumField_is_line = (function() {
+		var id = "[_a-zA-Z]\\w*";
+		return new RegExp("^\\s*"
+			+ '($id(?:\\s*,\\s*$id)*)'
+		);
+	})();
+	
 	public static function proc(seeker:GmlSeekerImpl) {
 		var name = seeker.find(Ident);
 		if (name == null) return;
@@ -34,10 +46,55 @@ class GmlSeekerProcEnum {
 		out.enums[name] = en;
 		out.comps[name] = new AceAutoCompleteItem(name, "enum");
 		seeker.setLookup(name);
+		
+		function checkDoc(s:String):Bool {
+			if (s == null || !s.startsWith("///")) return false;
+			var isMatch = GmlSeekerJSDocRegex.jsDoc_is.exec(s);
+			if (isMatch == null) return true;
+			var typeStr = isMatch[1];
+			var type = GmlTypeDef.parse(typeStr, "@is in enum at line " + q.row);
+			var info = isMatch[2];
+			
+			var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
+			var lineText = q.source.substring(lineStart, q.pos);
+			var lineMatch = jsDoc_enumField_is_line.exec(lineText);
+			if (lineMatch == null) return true;
+			
+			tools.RegExpTools.each(JsTools.rx(~/\w+/g), lineMatch[1], function(mt) {
+				var name = mt[0];
+				
+				var ac = en.compMap[name];
+				if (ac == null) return;
+				
+				var ind = Std.parseInt(ac.doc);
+				if (ind == null) return;
+				
+				if (en.tupleTypes == null) en.tupleTypes = [];
+				if (ind < maxTupleTypes) {
+					en.tupleTypes[ind] = type;
+				} else if (en.tupleTypes.length < maxTupleTypes) {
+					en.tupleTypes[maxTupleTypes - 1] = GmlTypeDef.rest([GmlTypeDef.any]);
+				}
+			});
+			
+			return true;
+		}
+		function next(flags:Int) {
+			flags |= Doc;
+			while (q.loop) {
+				var s = seeker.find(flags);
+				if (checkDoc(s)) continue;
+				return s;
+			}
+			return null;
+		}
+		
 		var nextVal:Null<Int> = 0;
 		while (q.loop) {
-			var s = seeker.find(Ident | Cub1);
+			var s = next(Ident | Cub1);
 			if (s == null || s == "}") break;
+			
+			var itemRow = seeker.reader.row;
 			en.lastItem = s;
 			en.names.push(s);
 			en.items.set(s, true);
@@ -47,7 +104,8 @@ class GmlSeekerProcEnum {
 			en.fieldComp.push(acf);
 			en.compMap.set(s, ac);
 			en.fieldLookup.set(s, { path: orig, sub: sub, row: q.row, col: 0, });
-			s = seeker.find(Comma | SetOp | Cub1);
+			
+			s = next(Comma | SetOp | Cub1);
 			if (s == "=") {
 				//
 				var doc = null;
@@ -69,7 +127,7 @@ class GmlSeekerProcEnum {
 				}
 				//
 				vp = q.pos;
-				s = seeker.find(Comma | Cub1);
+				s = next(Comma | Cub1);
 				var val = parseConst(q.substring(vp, q.pos - 1).trimBoth());
 				if (val != null) {
 					acf.doc = ac.doc = "" + val;
@@ -84,5 +142,18 @@ class GmlSeekerProcEnum {
 			}
 			if (s == null || s == "}") break;
 		}
+		
+		if (en.tupleTypes != null) do {
+			var ac = en.compMap[en.lastItem];
+			if (ac == null) break;
+			
+			var ind = Std.parseInt(ac.doc);
+			if (ind == null) break;
+			ind -= 1;
+			if (ind < maxTupleTypes && en.tupleTypes.length < ind) {
+				en.tupleTypes[ind] = null;
+			}
+			
+		} while (false);
 	}
 }

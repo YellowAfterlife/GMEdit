@@ -17,6 +17,8 @@ typedef CustomKeyArray;
 
 // tuple<int, string> accepts [1, "2"]
 typedef tuple;
+// enum_tuple<my_enum> uses values and metadata from my_enum
+typedef enum_tuple;
 
 // specified_map<a:int, b:string, void> allows only map[?"a"] and map[?"b"]
 typedef specified_map;

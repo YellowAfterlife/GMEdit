@@ -48,6 +48,7 @@ class GmlTypeParser {
 		r["ckarray"] = KCustomKeyArray;
 		r["CustomKeyArray"] = KCustomKeyArray;
 		r["tuple"] = KTuple;
+		r["enum_tuple"] = KEnumTuple;
 		//
 		r["object"] = KObject;
 		r["instance"] = KObject;

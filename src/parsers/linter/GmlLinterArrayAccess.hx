@@ -161,14 +161,24 @@ class GmlLinterArrayAccess {
 						if (arrayType != null) self.checkTypeCast(arrayType, indexType, "array index", arrayValue);
 						currType = currType.unwrapParam(1);
 					};
-					case KTuple: {
+					case KTuple, KEnumTuple: {
 						if (arrayValue == null) { // unknown index
 							self.checkTypeCast(arrayType, GmlTypeDef.number, "array index", arrayValue);
 							currType = null;
 						} else switch (arrayValue) {
 							case VNumber(i, _):
-								var p = currType.unwrapParams();
-								if (i < 0) {
+								var p;
+								if (ck == KTuple) {
+									p = currType.unwrapParams();
+								} else {
+									var ename = currType.unwrapParam().getNamespace();
+									var en = ename != null ? GmlAPI.gmlEnums[ename] : null;
+									p = en != null ? en.tupleTypes : null;
+								}
+								
+								if (p == null) {
+									currType = null;
+								} else if (i < 0) {
 									currType = null;
 									self.addWarning('Out-of-bounds tuple access (index $i)');
 								} else if (i >= p.length - 1) {

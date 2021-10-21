@@ -150,6 +150,11 @@ import ace.extern.AceTokenType;
 			case TInst(name, params, KCustom):
 				var td = JsTools.or(GmlAPI.gmlTypedefs[name], GmlAPI.stdTypedefs[name]);
 				if (td != null) return mapTemplateTypes(td, params);
+				
+				if (GmlAPI.gmlEnums.exists(name)) {
+					// todo: support params perhaps..?
+					return TInst("enum_tuple", [GmlTypeDef.simple(name)], KEnumTuple);
+				}
 			default:
 		}
 		return self;
