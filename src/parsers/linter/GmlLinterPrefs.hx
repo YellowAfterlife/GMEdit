@@ -22,6 +22,7 @@ package parsers.linter;
 		specTypeConst: false,
 		specTypeMisc: false,
 		specTypeInst: false,
+		specTypeColon: false,
 		specTypeInstSubTopLevel: false,
 		
 		requireFields: false,
@@ -50,12 +51,29 @@ typedef GmlLinterPrefsImpl = {
 	?requireFunctions:Bool,
 	?checkHasReturn:Bool,
 	?checkScriptArgumentCounts:Bool,
+	
+	/** auto-infer for `var` */
 	?specTypeVar:Bool,
+	
+	/** auto-infer for `let` (var macro) */
 	?specTypeLet:Bool,
+	
+	/** auto-infer for `const` (var macro) */
 	?specTypeConst:Bool,
+	
+	/** auto-infer for any other var macros */
 	?specTypeMisc:Bool,
+	
+	/** auto-infer when doing := */
+	?specTypeColon:Bool,
+	
+	/** auto-infer assignments in Create */
 	?specTypeInst:Bool,
+	
+	/** auto-infer non-top-level assignments in Create */
 	?specTypeInstSubTopLevel:Bool,
+	
+	/** warn about missing fields */
 	?requireFields:Bool,
 	
 	/** Whether to allow implicit T?->T casts */

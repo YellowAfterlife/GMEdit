@@ -584,7 +584,7 @@ using tools.NativeString;
 			// handle `:type` or `/*:type*/`:
 			skipSpaces1x(till);
 			d.rawTypeStart = pos;
-			if (peek() == ":".code) {
+			if (peek() == ":".code && peek(1) != "=".code) {
 				skip();
 				d.typeStart = pos;
 				var typeStart = pos;

@@ -9,4 +9,7 @@ function v_speculative_types() {
 		let a = undefined; ///want_warn - redefinition
 		let b;
 	}
+	
+	var cq := 2;
+	cq = ""; ///want_warn - mismatch
 }

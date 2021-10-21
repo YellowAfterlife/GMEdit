@@ -863,6 +863,7 @@ class GmlLinter {
 					var typeInfo:String = null;
 					if (nk == KSet) { // `name = val`
 						skip();
+						var setToken = nextVal;
 						rc(readExpr(newDepth, None, null, varType));
 						var varExprType = readExpr_currType;
 						if (mainKind == KGlobalVar) {
@@ -870,11 +871,13 @@ class GmlLinter {
 						} else if (varType != null) {
 							checkTypeCast(varExprType, varType, "variable declaration", readExpr_currValue);
 						} else if (varExprType != null) {
-							var apply = setLocalTypes && switch (mainKind) {
+							var apply = setLocalTypes && (
+								prefs.specTypeColon && setToken == ":="
+							|| switch (mainKind) {
 								case KLet: prefs.specTypeLet;
 								case KConst: prefs.specTypeConst;
 								default: keywordStr == "var" ? prefs.specTypeVar : prefs.specTypeMisc;
-							}
+							});
 							if (apply) {
 								var imp = getImports(true);
 								var lastVarType = imp.localTypes[varName];

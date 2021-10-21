@@ -3,10 +3,12 @@
     "linterPrefs": {
         "implicitBoolIntCasts": false,
         "requireFields": true,
+        "specTypeColon": true,
         "specTypeConst": true,
         "specTypeInst": true,
         "specTypeInstSubTopLevel": true,
         "specTypeLet": true,
+        "specTypeVar": false,
         "strictScriptSelf": true,
         "warnAboutRedundantCasts": true
     },
