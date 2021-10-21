@@ -351,8 +351,6 @@ using tools.NativeArray;
 		var rEnum = [ //{
 			rxPush(["enumfield", "text", "set.operator"], ~/(\w+)(\s*)(=)/, "gml.enumvalue"),
 			rxRule(["enumfield", "text", "punctuation.operator"], ~/(\w+)(\s*)(,)/),
-			// todo: need to make an actual push/pop system
-			rxRule("comment", ~/\/\/.*$/),
 			// todo: see if there's a better method of detecting the last item:
 			rxRule(["enumfield", "text"], ~/(\w+)(\s*)$/),
 			rxRule(["enumfield", "text", "curly.paren.rparen"], ~/(\w+)(\s*)(\})/, "pop"),
