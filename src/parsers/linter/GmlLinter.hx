@@ -996,7 +996,8 @@ class GmlLinter {
 			case KExit: {};
 			case KReturn: {
 				switch (peek()) {
-					case KSemico, KCubClose: skip(); flags.add(NoSemico);
+					case KSemico: skip(); flags.add(NoSemico);
+					case KCubClose: flags.add(NoSemico);
 					default:
 						var retType = currFuncDoc != null ? currFuncDoc.returnType : null;
 						rc(readExpr(newDepth, None, null, retType));
