@@ -1,5 +1,6 @@
 package gml.type;
 import gml.type.GmlType;
+import haxe.ds.ReadOnlyArray;
 import tools.JsTools;
 
 /**
@@ -8,6 +9,8 @@ import tools.JsTools;
  */
 class GmlTypeDef {
 	//
+	public static var any:GmlType = TInst("any", [], KAny);
+	public static var void:GmlType = TInst("void", [], KVoid);
 	public static var undefined:GmlType = TInst("undefined", [], KUndefined);
 	public static var int:GmlType = TInst("int", [], KNumber);
 	public static var number:GmlType = TInst("number", [], KNumber);
@@ -18,7 +21,6 @@ class GmlTypeDef {
 	public static var ds_grid:GmlType = TInst("ds_grid", [], KGrid);
 	public static var anyArray:GmlType = TInst("array", [], KArray);
 	public static var anyCustomKeyArray:GmlType = TInst("ckarray", [], KCustomKeyArray);
-	public static var void:GmlType = TInst("void", [], KVoid);
 	public static var forbidden:GmlType = TInst("forbidden", [], KVoid);
 	public static var asset:GmlType = TInst("asset", [], KCustom);
 	public static var global:GmlType = TInst("global", [], KGlobal);
@@ -57,6 +59,10 @@ class GmlTypeDef {
 	
 	public static function nullable(type:GmlType):GmlType {
 		return TInst("Nullable", [type], KNullable);
+	}
+	
+	public static function rest(params:ReadOnlyArray<GmlType>):GmlType {
+		return TInst("rest", params, KRest);
 	}
 	//
 	public static inline function parse(typeString:String, ?ctx:String):GmlType {

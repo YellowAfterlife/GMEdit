@@ -203,7 +203,7 @@ class GmlFuncDoc {
 			for (_ in args) params.push(null);
 		}
 		if (rest && params.length > 0) {
-			params.push(GmlType.TInst("rest", [params.pop()], KRest));
+			params.push(GmlTypeDef.rest([params.pop()]));
 		}
 		if (hasReturn) {
 			params.push(returnType);
