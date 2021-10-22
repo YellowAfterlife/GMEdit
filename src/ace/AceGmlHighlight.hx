@@ -476,6 +476,16 @@ using tools.NativeArray;
 		//
 		var rMFunc = [
 			rMFuncEOL,
+			rulePairs([
+				"///.*", "comment.line.doc",
+				"\\\\", "string.escape"
+			]),
+			rulePairs([
+				"//.*", "comment.line",
+				"\\\\", "string.escape"
+			]),
+			rxRule("comment.line.doc", ~/\/\/\/.*/, "pop"),
+			rxRule("comment.line", ~/\/\/.*/, "pop"),
 			rule(["operator", "constant"], synext.GmlExtMFunc.magicRegex),
 		].concat(rBase);
 		rMFunc.replaceOne(rIdentLocal, rIdentLocalMFunc);
