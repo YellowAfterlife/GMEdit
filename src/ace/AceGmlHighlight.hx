@@ -556,6 +556,7 @@ using tools.NativeArray;
 				rxRule(function(id) {
 					if (GmlAPI.gmlNamespaces.exists(id)) return "namespace";
 					if (id == "function") return "namespace";
+					if (GmlAPI.gmlEnums.exists(id)) return "enum";
 					return JsTools.or(GmlTypeTools.kindMap[id], "identifier");
 				}, ~/\w+/),
 				rxRule("punctuation.operator", ~/[,?]/),
