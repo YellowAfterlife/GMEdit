@@ -18,34 +18,60 @@ import tools.macros.GmlLinterMacros.*;
  * @author YellowAfterlife
  */
 @:access(parsers.linter.GmlLinter)
-class GmlLinterExpr {
-	static function __readExpr_invalid(self:GmlLinter, flags:GmlLinterReadFlags):FoundError {
-		return @:privateAccess self.readExpect(flags.has(AsStat) ? "a statement" : "an expression");
+class GmlLinterExpr extends GmlLinterHelper {
+	
+	/**
+	 * Indicates whatever it is that readExpr just parsed.
+	 * It is the right-most top-level expression, so
+	 * a.b -> KField
+	 * (a.b) -> KParOpen
+	 * (a.b).c -> KField
+	 */
+	public var currKind:GmlLinterKind;
+	
+	/** If readExpr just parsed something starting with an identifier, this holds that.  */
+	public var currName:GmlName;
+	
+	/** Resulting type of last parsed expression. Often is null. */
+	public var currType:GmlType;
+	
+	/** For `<expr>.field`, indicates type of `<expr>` */
+	public var selfType:GmlType;
+	
+	/** If the resulting expression is a function */
+	public var currFunc:GmlFuncDoc;
+	
+	/** If processed expression evaluates to a literal, this holds that */
+	public var currValue:GmlLinterValue;
+	
+	function invalid(flags:GmlLinterReadFlags):FoundError {
+		return linter.readExpect(flags.has(AsStat) ? "a statement" : "an expression");
 	}
 	
-	static function readExpr_checkConst(self:GmlLinter, currName:GmlName, currKind:GmlLinterKind) @:privateAccess {
+	function checkConst(currName:GmlName, currKind:GmlLinterKind) @:privateAccess {
 		switch (currKind) {
 			case KIdent: {
-				if (self.localKinds[currName] == KConst) {
-					self.addWarning('Assigning to a `const` local `$currName`');
+				if (linter.localKinds[currName] == KConst) {
+					linter.addWarning('Assigning to a `const` local `$currName`');
 				}
 			};
 			case KNullField, KNullArray: {
-				self.addError("Null-conditional values cannot be assigned to");
+				linter.addError("Null-conditional values cannot be assigned to");
 			};
 			default:
 		}
 	}
 	
-	public static function read(
-		self:GmlLinter, oldDepth:Int, flags:GmlLinterReadFlags, _nk:GmlLinterKind, targetType:GmlType
+	public function read(
+		oldDepth:Int, flags:GmlLinterReadFlags, _nk:GmlLinterKind, targetType:GmlType
 	):FoundError {
+		var self = linter;
 		var newDepth = oldDepth + 1;
 		var q = self.reader;
 		var nk:GmlLinterKind = self.nextOr(_nk);
 		//
 		inline function invalid():FoundError {
-			return __readExpr_invalid(self, flags);
+			return this.invalid(flags);
 		}
 		if (nk == KEOF) return invalid();
 		//
@@ -59,26 +85,27 @@ class GmlLinterExpr {
 		// the thing itself:
 		var statKind = nk;
 		var currKind = nk;
-		var currName = nk == KIdent ? self.nextVal : null;
+		var currName = nk == KIdent ? nextVal : null;
+		var isLocalIdent = false;
 		var selfType:GmlType = null;
 		var currType:GmlType = null;
 		var currFunc:GmlFuncDoc = null;
 		var currValue:GmlLinterValue = null;
 		//
 		inline function checkConst():Void {
-			readExpr_checkConst(self, currName, currKind);
+			this.checkConst(currName, currKind);
 		}
 
 		//
 		switch (nk) {
 			case KNumber: {
 				currType = GmlTypeDef.number;
-				var nv = self.nextVal;
+				var nv = nextVal;
 				currValue = VNumber(Std.parseFloat(nv), nv);
 			};
 			case KString: {
 				currType = GmlTypeDef.string;
-				var nv = self.nextVal;
+				var nv = nextVal;
 				currValue = VString(null, nv); // todo: probably parse string?
 			};
 			case KUndefined: {
@@ -87,18 +114,18 @@ class GmlLinterExpr {
 			};
 			case KIdent: {
 				if (hasFlag(HasPrefix)) checkConst();
-				if (self.localKinds[currName] == KGhostVar) {
-					self.addWarning('Trying to access a variable `$currName` outside of its scope');
+				if (linter.localKinds[currName] == KGhostVar) {
+					addWarning('Trying to access a variable `$currName` outside of its scope');
 				}
 				// linting #properties:
 				if (self.isProperties && isStat()) {
-					if (self.skipIf(self.peek() == KColon)) { // name:type
-						rc(self.readCheckSkip(KIdent, "variable type"));
-						if (self.skipIf(self.peek() == KLT)) {
+					if (skipIf(peek() == KColon)) { // name:type
+						rc(readCheckSkip(KIdent, "variable type"));
+						if (skipIf(peek() == KLT)) {
 							// we know that it's valid or else GmlObjectProperties would prevent you from saving
 							var depth = 1;
 							while (q.loop) {
-								switch (self.next()) {
+								switch (next()) {
 									case KLT: depth++;
 									case KGT: if (--depth <= 0) break;
 									default:
@@ -111,32 +138,33 @@ class GmlLinterExpr {
 				GmlLinterIdent.read(self, currName);
 				currType = GmlLinterIdent.type;
 				currFunc = GmlLinterIdent.func;
+				isLocalIdent = GmlLinterIdent.isLocal;
 			};
 			case KParOpen: {
 				rc(self.readExpr(newDepth));
-				if (self.next() != KParClose) return self.readExpect("a `)`");
-				currType = self.readExpr_currType;
-				currFunc = self.readExpr_currFunc;
-				currValue = self.readExpr_currValue;
+				if (next() != KParClose) return readExpect("a `)`");
+				currType = this.currType;
+				currFunc = this.currFunc;
+				currValue = this.currValue;
 			};
 			case KNew: {
 				rc(self.readExpr(newDepth, IsNew));
-				currType = JsTools.or(self.readExpr_currType, GmlTypeDef.simple(self.readExpr_currName));
+				currType = JsTools.or(this.currType, GmlTypeDef.simple(this.currName));
 				currFunc = currType.getSelfCallDoc(self.getImports());
 			};
 			case KCast: {
 				rc(self.readExpr(newDepth, GmlLinterReadFlags.NoOps.with(IsCast)));
-				if (self.readExpr_currKind == KAs) {
-					currType = self.readExpr_currType;
+				if (this.currKind == KAs) {
+					currType = this.currType;
 				} else currType = null;
 				currFunc = null;
 			};
 			case KNot, KBitNot: {
 				rc(self.readExpr(newDepth));
 				if (nk == KNot) {
-					self.checkTypeCastBoolOp(self.readExpr_currType, self.readExpr_currValue, "!");
+					self.checkTypeCastBoolOp(this.currType, this.currValue, "!");
 					currType = GmlTypeDef.bool;
-					switch (self.readExpr_currValue) {
+					switch (this.currValue) {
 						case null:
 						case GmlLinterValue.VNumber(f, _):
 							var v = f > 0.5 ? 0 : 1;
@@ -144,9 +172,9 @@ class GmlLinterExpr {
 						default:
 					}
 				} else {
-					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.int, "~", self.readExpr_currValue);
+					self.checkTypeCast(this.currType, GmlTypeDef.int, "~", this.currValue);
 					currType = GmlTypeDef.int;
-					switch (self.readExpr_currValue) {
+					switch (this.currValue) {
 						case null:
 						case GmlLinterValue.VNumber(f, _):
 							var i = ~Std.int(f);
@@ -157,7 +185,7 @@ class GmlLinterExpr {
 			};
 			case KInc, KDec: {
 				rc(self.readExpr(newDepth, HasPrefix));
-				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KInc ? "++" : "--", self.readExpr_currValue);
+				self.checkTypeCast(this.currType, GmlTypeDef.number, nk == KInc ? "++" : "--", this.currValue);
 				currType = GmlTypeDef.number;
 			};
 			case KSqbOpen: {
@@ -190,7 +218,7 @@ class GmlLinterExpr {
 					rc(self.readCheckSkip(KColon, "a `:` between key-value pair in {}"));
 					rc(self.readExpr(newDepth));
 					if (key != null) {
-						anonFields[key] = new GmlTypeAnonField(self.readExpr_currType, self.readExpr_currFunc);
+						anonFields[key] = new GmlTypeAnonField(this.currType, this.currFunc);
 					}
 					switch (self.peek()) {
 						case KCubClose: self.skip(); break;
@@ -203,12 +231,12 @@ class GmlLinterExpr {
 			default: {
 				if (nk.isUnOp()) { // +v or -v
 					rc(self.readExpr(newDepth, NoOps));
-					self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, nk == KAdd ? "+" : "-", self.readExpr_currValue);
+					self.checkTypeCast(this.currType, GmlTypeDef.number, nk == KAdd ? "+" : "-", this.currValue);
 					currType = GmlTypeDef.number;
 					if (nk == KAdd) {
-						currValue = self.readExpr_currValue;
+						currValue = this.currValue;
 					} else {
-						switch (self.readExpr_currValue) {
+						switch (this.currValue) {
 							case null:
 							case VNumber(f, _):
 								f = -f;
@@ -232,7 +260,7 @@ class GmlLinterExpr {
 						flags.remove(AsStat);
 						statKind = KSet;
 						rc(self.readExpr(newDepth, None, null, currType));
-						self.checkTypeCast(self.readExpr_currType, currType, "assignment", self.readExpr_currValue);
+						self.checkTypeCast(this.currType, currType, "assignment", this.currValue);
 						currType = null;
 					} else {
 						if (hasFlag(NoOps)) break;
@@ -242,7 +270,7 @@ class GmlLinterExpr {
 						self.skip();
 						rc(self.readOps(newDepth, currType, currValue, nk, "="));
 						flags.add(NoSfx);
-						currType = self.readExpr_currType;
+						currType = this.currType;
 					}
 				};
 				case KParOpen: { // fn(...)
@@ -426,10 +454,10 @@ class GmlLinterExpr {
 					self.checkTypeCast(currType, GmlTypeDef.bool, "ternary condition", currValue);
 					self.skip();
 					rc(self.readExpr(newDepth));
-					currType = self.readExpr_currType;
+					currType = this.currType;
 					rc(self.readCheckSkip(KColon, "a colon in a ternary operator"));
 					rc(self.readExpr(newDepth));
-					var elseType = self.readExpr_currType;
+					var elseType = this.currType;
 					if (currType != null) {
 						if (elseType == null) {
 							// shrug
@@ -442,7 +470,7 @@ class GmlLinterExpr {
 								currType = GmlTypeDef.nullable(elseType);
 							}
 						} else {
-							self.checkTypeCast(self.readExpr_currType, currType, "ternary else-value", self.readExpr_currValue);
+							self.checkTypeCast(this.currType, currType, "ternary else-value", this.currValue);
 						}
 					} else currType = elseType;
 					currKind = KQMark;
@@ -452,7 +480,7 @@ class GmlLinterExpr {
 					self.skip();
 					rc(self.readExpr(newDepth));
 					if (currType.isNullable()) currType = currType.unwrapParam();
-					self.checkTypeCast(self.readExpr_currType, currType, "?? operator value", self.readExpr_currValue);
+					self.checkTypeCast(this.currType, currType, "?? operator value", this.currValue);
 					currKind = KNullCoalesce;
 				};
 				default: {
@@ -465,7 +493,7 @@ class GmlLinterExpr {
 						rc(self.readExpr(newDepth, None, null, currType));
 						if (currType != null) {
 							var opk:GmlLinterKind = opv == "+=" ? KAdd : KSub;
-							self.checkTypeCastOp(currType, currValue, self.readExpr_currType, self.readExpr_currValue, opk, opv);
+							self.checkTypeCastOp(currType, currValue, this.currType, this.currValue, opk, opv);
 						}
 						currType = null;
 						flags.add(NoSfx);
@@ -474,7 +502,7 @@ class GmlLinterExpr {
 						if (hasFlag(NoOps)) break;
 						self.skip();
 						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal));
-						currType = self.readExpr_currType;
+						currType = this.currType;
 						flags.add(NoSfx);
 					}
 					else break;
@@ -489,12 +517,12 @@ class GmlLinterExpr {
 			self.nextVal = "";
 			return self.readExpect("a statement");
 		}
-		self.readExpr_currName = currKind == KIdent ? currName : null;
-		self.readExpr_currKind = currKind;
-		self.readExpr_currType = currType;
-		self.readExpr_selfType = selfType;
-		self.readExpr_currFunc = currFunc;
-		self.readExpr_currValue = currValue;
+		this.currName = currKind == KIdent ? currName : null;
+		this.currKind = currKind;
+		this.currType = currType;
+		this.selfType = selfType;
+		this.currFunc = currFunc;
+		this.currValue = currValue;
 		return false;
 	}
 }

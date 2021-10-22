@@ -73,13 +73,13 @@ class GmlLinterArrayLiteral {
 					if (tupleTypes != null) {
 						var tt = tupleTypes[index];
 						if (tupleHasRest && index >= tupleTypes.length - 1) tt = tupleRestType;
-						self.checkTypeCast(self.readExpr_currType, tt, "tuple literal", self.readExpr_currValue);
+						self.checkTypeCast(self.expr.currType, tt, "tuple literal", self.expr.currValue);
 					} else if (itemType != null) {
-						self.checkTypeCast(self.readExpr_currType, itemType, "array literal", self.readExpr_currValue);
+						self.checkTypeCast(self.expr.currType, itemType, "array literal", self.expr.currValue);
 					} else if (index == 0) {
-						autoType = self.readExpr_currType;
+						autoType = self.expr.currType;
 					} else if (autoType != null) {
-						if (!self.readExpr_currType.canCastTo(autoType)) autoType = null;
+						if (!self.expr.currType.canCastTo(autoType)) autoType = null;
 					}
 					
 					index += 1;

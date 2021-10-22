@@ -17,9 +17,11 @@ using tools.NativeString;
 class GmlLinterIdent {
 	public static var type:GmlType = null;
 	public static var func:GmlFuncDoc = null;
+	public static var isLocal:Bool = false;
 	public static function read(linter:GmlLinter, currName:String) {
 		var currType:GmlType = null;
 		var currFunc:GmlFuncDoc = null;
+		var isLocal = false;
 		do {
 			switch (currName) {
 				case "self":
@@ -67,6 +69,7 @@ class GmlLinterIdent {
 			var imp:GmlImports = linter.getImports();
 			var locals = linter.editor.locals[linter.context];
 			if (locals != null && locals.kind.exists(currName)) {
+				isLocal = true;
 				if (imp != null) {
 					currType = imp.localTypes[currName];
 					currFunc = currType.getSelfCallDoc(imp);
@@ -160,5 +163,6 @@ class GmlLinterIdent {
 		} while (false);
 		type = currType;
 		func = currFunc;
+		GmlLinterIdent.isLocal = isLocal;
 	}
 }

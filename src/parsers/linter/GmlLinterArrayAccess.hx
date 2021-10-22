@@ -49,7 +49,7 @@ class GmlLinterArrayAccess {
 					default: null;
 				}
 				if (mapMeta != null) {
-					switch (self.readExpr_currValue) {
+					switch (self.expr.currValue) {
 						case VString(_, k):
 							try {
 								k = haxe.Json.parse(k);
@@ -59,11 +59,11 @@ class GmlLinterArrayAccess {
 								currType = mapMeta.defaultType;
 							}
 						default:
-							self.checkTypeCast(self.readExpr_currType, GmlTypeDef.string, "map key", self.readExpr_currValue);
+							self.checkTypeCast(self.expr.currType, GmlTypeDef.string, "map key", self.expr.currValue);
 							currType = mapMeta.defaultType;
 					}
 				} else if (self.checkTypeCast(currType, GmlTypeDef.ds_map, "[?", currValue)) {
-					self.checkTypeCast(self.readExpr_currType, currType.unwrapParam(0), "map key", self.readExpr_currValue);
+					self.checkTypeCast(self.expr.currType, currType.unwrapParam(0), "map key", self.expr.currValue);
 					currType = currType.unwrapParam(1);
 				} else currType = null;
 			};
@@ -71,7 +71,7 @@ class GmlLinterArrayAccess {
 				self.skip();
 				
 				rc(self.readExpr(newDepth));
-				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, "list index", self.readExpr_currValue);
+				self.checkTypeCast(self.expr.currType, GmlTypeDef.number, "list index", self.expr.currValue);
 				
 				currType = currType.resolve();
 				if (self.checkTypeCast(currType, GmlTypeDef.ds_list, "[|", currValue)) {
@@ -82,7 +82,7 @@ class GmlLinterArrayAccess {
 				self.skip();
 				
 				rc(self.readExpr(newDepth));
-				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.string, "struct key", self.readExpr_currValue);
+				self.checkTypeCast(self.expr.currType, GmlTypeDef.string, "struct key", self.expr.currValue);
 				
 				if (true) { // todo: validate that object is struct-like
 					currType = currType.unwrapParam(0);
@@ -92,11 +92,11 @@ class GmlLinterArrayAccess {
 				self.skip();
 				
 				rc(self.readExpr(newDepth));
-				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, "grid X", self.readExpr_currValue);
+				self.checkTypeCast(self.expr.currType, GmlTypeDef.number, "grid X", self.expr.currValue);
 				
 				rc(self.readCheckSkip(KComma, "a comma before second index"));
 				rc(self.readExpr(newDepth));
-				self.checkTypeCast(self.readExpr_currType, GmlTypeDef.number, "grid Y", self.readExpr_currValue);
+				self.checkTypeCast(self.expr.currType, GmlTypeDef.number, "grid Y", self.expr.currValue);
 				
 				currType = currType.resolve();
 				if (self.checkTypeCast(currType, GmlTypeDef.ds_grid, "[#", currValue)) {
@@ -109,28 +109,28 @@ class GmlLinterArrayAccess {
 				checkColon = false;
 				
 				rc(self.readExpr(newDepth));
-				arrayType1 = self.readExpr_currType;
-				arrayValue1 = self.readExpr_currValue;
+				arrayType1 = self.expr.currType;
+				arrayValue1 = self.expr.currValue;
 				
 				if (self.skipIf(self.peek() == KComma)) {
 					isArray2d = true;
 					rc(self.readExpr(newDepth));
-					arrayType2 = self.readExpr_currType;
-					arrayValue2 = self.readExpr_currValue;
+					arrayType2 = self.expr.currType;
+					arrayValue2 = self.expr.currValue;
 				}
 			};
 			default: { // array[i] or array[i, k]
 				isArray = true;
 				
 				rc(self.readExpr(newDepth));
-				arrayType1 = self.readExpr_currType;
-				arrayValue1 = self.readExpr_currValue;
+				arrayType1 = self.expr.currType;
+				arrayValue1 = self.expr.currValue;
 				
 				if (self.skipIf(self.peek() == KComma)) {
 					isArray2d = true;
 					rc(self.readExpr(newDepth));
-					arrayType2 = self.readExpr_currType;
-					arrayValue2 = self.readExpr_currValue;
+					arrayType2 = self.expr.currType;
+					arrayValue2 = self.expr.currValue;
 				}
 				if (isNull && self.skipIf(self.peek() == KComma)) { // whoops, a?[b,c,d]
 					self.readArgs(newDepth, true);

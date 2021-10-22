@@ -71,7 +71,7 @@ class AceGmlContextResolver {
 					
 					// skip the expression:
 					lt.readExpr(0);
-					var type = lt.readExpr_currType;
+					var type = lt.expr.currType;
 					
 					// todo: if the next token is `{`, do a quick loop on brackets instead
 					

@@ -164,6 +164,7 @@ class GmlLinter {
 	public var prefs:GmlLinterPrefsState;
 	public var options:GmlLinterOptions;
 	
+	var expr:GmlLinterExpr;
 	var funcLiteral:GmlLinterFuncLiteral;
 	function initModules() {
 		funcLiteral = new GmlLinterFuncLiteral(this);
@@ -305,8 +306,8 @@ class GmlLinter {
 		var lvals = [firstLVal];
 		while (q.loop) {
 			rc(readExpr(newDepth, NoOps));
-			types.push(readExpr_currType);
-			lvals.push(readExpr_currValue);
+			types.push(expr.currType);
+			lvals.push(expr.currValue);
 			var nk = peek();
 			if (nk.isBinOp() || nk == KSet) {
 				skip();
@@ -341,7 +342,7 @@ class GmlLinter {
 			pmin += 1;
 		}
 		//
-		readExpr_currType = types[0];
+		expr.currType = types[0];
 		return false;
 	}
 	
@@ -442,10 +443,10 @@ class GmlLinter {
 					if (sqb) { // array literal logic
 						if (readExpr(newDepth)) return -1;
 						if (argc == 0) {
-							itemType = readExpr_currType;
+							itemType = expr.currType;
 						} else if (itemType != null) {
 							// turn mixed-type array literals into array<any>
-							if (!readExpr_currType.canCastTo(itemType)) itemType = null;
+							if (!expr.currType.canCastTo(itemType)) itemType = null;
 							// tuples require passing the supposed destination type to readExpr.
 						}
 						argc++;
@@ -464,7 +465,7 @@ class GmlLinter {
 						if (readExpr(newDepth)) return -1;
 					}
 					
-					if (argTypes != null && readExpr_currType != null) {
+					if (argTypes != null && expr.currType != null) {
 						var argTypeInd = argc;
 						if (argTypeInd > argTypeClamp) argTypeInd = argTypeClamp;
 						var argType = argTypeInd >= argTypesLen ? null : argTypes[argTypeInd];
@@ -478,17 +479,17 @@ class GmlLinter {
 											argType = bufferAutoType;
 										} else if (typeName == "buffer_type") {
 											var btmap = parsers.linter.misc.GmlLinterBufferAutoType.map;
-											bufferAutoType = btmap[readExpr_currName];
+											bufferAutoType = btmap[expr.currName];
 										}
 									default:
 								}
 							}
-							if (!readExpr_currType.canCastTo(argType, templateTypes, getImports())) {
+							if (!expr.currType.canCastTo(argType, templateTypes, getImports())) {
 								var argName:String;
 								if (doc != null) {
 									argName = JsTools.or(doc.args[argTypeInd], "?");
 								} else argName = null;
-								addWarning("Can't cast " + readExpr_currType.toString(templateTypes)
+								addWarning("Can't cast " + expr.currType.toString(templateTypes)
 									+ " to " + argType.toString(templateTypes)
 									+ ' for ' + argName + "#" + argc
 								);
@@ -497,7 +498,7 @@ class GmlLinter {
 					}
 					
 					// store `self` type for `method()`:
-					if (isMethod && argc == 0) methodSelf = readExpr_currType;
+					if (isMethod && argc == 0) methodSelf = expr.currType;
 					
 					argc++;
 				};
@@ -581,32 +582,8 @@ class GmlLinter {
 		}
 	}
 	
-	/**
-	 * Indicates whatever it is that readExpr just parsed.
-	 * It is the right-most top-level expression, so
-	 * a.b -> KField
-	 * (a.b) -> KParOpen
-	 * (a.b).c -> KField
-	 */
-	var readExpr_currKind:GmlLinterKind;
-	
-	/** If readExpr just parsed something starting with an identifier, this holds that.  */
-	var readExpr_currName:GmlName;
-	
-	/** Resulting type of last parsed expression. Often is null. */
-	var readExpr_currType:GmlType;
-	
-	/** For `<expr>.field`, indicates type of `<expr>` */
-	var readExpr_selfType:GmlType;
-	
-	/** If the resulting expression is a function */
-	var readExpr_currFunc:GmlFuncDoc;
-	
-	/** If processed expression evaluates to a literal, this holds that */
-	var readExpr_currValue:GmlLinterValue;
-	
 	@:keep inline function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind, ?targetType:GmlType):FoundError {
-		return GmlLinterExpr.read(this, oldDepth, flags, _nk, targetType);
+		return expr.read(oldDepth, flags, _nk, targetType);
 	}
 	
 	function discardBlockScopes(newDepth:Int):Void {
@@ -799,7 +776,7 @@ class GmlLinter {
 		var mainKind = nk;
 		var z:Bool, z2:Bool, i:Int;
 		inline function checkParens():Void {
-			if (prefs.requireParentheses && readExpr_currKind != KParOpen) {
+			if (prefs.requireParentheses && expr.currKind != KParOpen) {
 				addWarning("Expression is missing parentheses");
 			}
 		}
@@ -865,11 +842,11 @@ class GmlLinter {
 						skip();
 						var setToken = nextVal;
 						rc(readExpr(newDepth, None, null, varType));
-						var varExprType = readExpr_currType;
+						var varExprType = expr.currType;
 						if (mainKind == KGlobalVar) {
 							// not today
 						} else if (varType != null) {
-							checkTypeCast(varExprType, varType, "variable declaration", readExpr_currValue);
+							checkTypeCast(varExprType, varType, "variable declaration", expr.currValue);
 						} else if (varExprType != null) {
 							var apply = setLocalTypes && (
 								prefs.specTypeColon && setToken == ":="
@@ -928,7 +905,7 @@ class GmlLinter {
 			case KIf: {
 				rc(readExpr(newDepth));
 				checkParens();
-				checkTypeCastBoolOp(readExpr_currType, readExpr_currValue, "an if condition");
+				checkTypeCastBoolOp(expr.currType, expr.currValue, "an if condition");
 				skipIf(peek() == KThen);
 				if (skipIf(peek() == KSemico)) {
 					return readError("You have a semicolon before your then-expression.");
@@ -940,8 +917,8 @@ class GmlLinter {
 				rc(readExpr(newDepth));
 				checkParens();
 				switch (nk) {
-					case KWhile: checkTypeCastBoolOp(readExpr_currType, readExpr_currValue, "a while-loop condition");
-					case KRepeat: checkTypeCast(readExpr_currType, GmlTypeDef.number, "a repeat-loop count", readExpr_currValue);
+					case KWhile: checkTypeCastBoolOp(expr.currType, expr.currValue, "a while-loop condition");
+					case KRepeat: checkTypeCast(expr.currType, GmlTypeDef.number, "a repeat-loop count", expr.currValue);
 					default:
 				}
 				rc(readLoopStat(newDepth));
@@ -950,7 +927,7 @@ class GmlLinter {
 				var locals = editor.locals[context];
 				if (locals != null) locals.hasWith = true;
 				rc(readExpr(newDepth));
-				var ctxType = readExpr_currType;
+				var ctxType = expr.currType;
 				checkParens();
 				var self0z = __selfType_set;
 				var self0t = __selfType_type;
@@ -972,7 +949,7 @@ class GmlLinter {
 					case KUntil, KWhile: {
 						rc(readExpr(newDepth));
 						checkParens();
-						checkTypeCastBoolOp(readExpr_currType, readExpr_currValue, "an do-loop condition");
+						checkTypeCastBoolOp(expr.currType, expr.currValue, "an do-loop condition");
 					};
 					default: return readExpect("an `until` or `while` for a do-loop");
 				}
@@ -984,7 +961,7 @@ class GmlLinter {
 				}
 				if (!skipIf(peek() == KSemico)) { // condition
 					rc(readExpr(newDepth));
-					checkTypeCastBoolOp(readExpr_currType, readExpr_currValue, "an if condition");
+					checkTypeCastBoolOp(expr.currType, expr.currValue, "an if condition");
 					skipIf(peek() == KSemico);
 				}
 				if (!skipIf(peek() == KParClose)) { // post
@@ -1007,8 +984,8 @@ class GmlLinter {
 								addWarning("The function is marked as returning nothing but has a return statement.");
 							default:
 						}
-						if (retType != null && readExpr_currType != null) {
-							checkTypeCast(readExpr_currType, retType, "return", readExpr_currValue);
+						if (retType != null && expr.currType != null) {
+							checkTypeCast(expr.currType, retType, "return", expr.currValue);
 						}
 				}
 			};
@@ -1216,11 +1193,11 @@ class GmlLinter {
 		var ok = !q.readExpr(0);
 		q.runPost();
 		#if debug
-		Console.log(expr, q.readExpr_currType, q.readExpr_currFunc);
+		Console.log(expr, q.expr.currType, q.expr.currFunc);
 		#end
 		return {
-			type: ok ? q.readExpr_currType : null,
-			doc:  ok ? q.readExpr_currFunc : null,
+			type: ok ? q.expr.currType : null,
+			doc:  ok ? q.expr.currFunc : null,
 		}
 	}
 }
