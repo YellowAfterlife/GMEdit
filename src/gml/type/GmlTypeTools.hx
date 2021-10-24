@@ -153,7 +153,7 @@ import ace.extern.AceTokenType;
 				
 				if (GmlAPI.gmlEnums.exists(name)) {
 					// todo: support params perhaps..?
-					return TInst("enum_tuple", [GmlTypeDef.simple(name)], KEnumTuple);
+					return TEnumTuple(name);
 				}
 			default:
 		}
@@ -270,6 +270,12 @@ import ace.extern.AceTokenType;
 				}
 				return n1 == fm2.fields.size();
 			case TTemplate(i1, _): return false;
+			case TEnumTuple(ename1):
+				return switch (b) {
+					case null: return false;
+					case TEnumTuple(ename2): return ename1 == ename2;
+					default: return false;
+				}
 			case TSpecifiedMap(m1):
 				var m2 = switch (b) {
 					case null: return false;
@@ -346,6 +352,7 @@ import ace.extern.AceTokenType;
 				if (c != null) s = '($s:' + c.toString() + ')';
 				return s;
 			}
+			case TEnumTuple(ename): return 'enum_tuple<$ename>';
 			case TSpecifiedMap(meta): {
 				var s = "specified_map<";
 				var sep = false;

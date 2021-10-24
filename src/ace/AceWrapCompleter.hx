@@ -335,9 +335,7 @@ using tools.NativeString;
 					for (i => tp in type.unwrapParams()) {
 						comps.push(new AceAutoCompleteItem("" + i, "index", tp.toString()));
 					}
-				case TInst(_, [p], KEnumTuple):
-					var name = p.getNamespace();
-					if (name == null) continue;
+				case TEnumTuple(name):
 					var gmlEnum = GmlAPI.gmlEnums[name];
 					if (gmlEnum == null) continue;
 					for (item in gmlEnum.compList) comps.push(item);

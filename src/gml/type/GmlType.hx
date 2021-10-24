@@ -30,6 +30,8 @@ enum GmlType {
 	THint(hint:String, type:GmlType);
 	
 	TSpecifiedMap(meta:GmlTypeMap);
+	
+	TEnumTuple(enumName:String);
 }
 class GmlTypeAnon {
 	public var fields:Dictionary<GmlTypeAnonField> = new Dictionary();
@@ -94,7 +96,6 @@ enum abstract GmlTypeKind(Int) {
 	
 	var KCustomKeyArray = 0x28;
 	var KTuple = 0x29;
-	var KEnumTuple = 0x2A;
 	
 	// Constraints:
 	var KObject = 0x30; // any object type casts to this

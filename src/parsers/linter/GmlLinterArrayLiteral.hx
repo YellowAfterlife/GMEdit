@@ -25,13 +25,17 @@ class GmlLinterArrayLiteral {
 			// OK!
 		} else {
 			targetType = targetType.resolve();
+			if (targetType != null) switch (targetType) {
+				case TEnumTuple(ename):
+					var en = GmlAPI.gmlEnums[ename];
+					if (en != null) tupleTypes = en.tupleTypes;
+				default:
+			}
+			if (tupleTypes != null) {
+				// OK!
+			}
 			if (targetType.getKind() == KTuple) {
 				tupleTypes = targetType.unwrapParams();
-			}
-			else if (targetType.getKind() == KEnumTuple) {
-				var ename = targetType.unwrapParam().getNamespace();
-				var en = ename != null ? GmlAPI.gmlEnums[ename] : null;
-				if (en != null) tupleTypes = en.tupleTypes;
 			}
 			else if (targetType.canCastTo(GmlTypeDef.anyArray)) {
 				itemType = targetType.unwrapParam();

@@ -48,7 +48,6 @@ class GmlTypeParser {
 		r["ckarray"] = KCustomKeyArray;
 		r["CustomKeyArray"] = KCustomKeyArray;
 		r["tuple"] = KTuple;
-		r["enum_tuple"] = KEnumTuple;
 		//
 		r["object"] = KObject;
 		r["instance"] = KObject;
@@ -155,6 +154,12 @@ class GmlTypeParser {
 				}
 				if (name == "either") { // Either<A,B> -> (A|B)
 					result = TEither(params);
+				}
+				else if (name == "enum_tuple") {
+					var ename = params[0].getNamespace();
+					if (ename != null) {
+						result = TEnumTuple(ename);
+					} else result = TInst(name, params, kind);
 				}
 				else if (name == "specified_map") {
 					var fieldList = [];

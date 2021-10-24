@@ -154,6 +154,11 @@ class GmlLinterArrayAccess {
 				var arrayValue = pass > 0 ? arrayValue2 : arrayValue1;
 				currType = currType.resolve();
 				var ck = currType.getKind();
+				var enumTupleName = switch (currType) {
+					case null: null;
+					case TEnumTuple(enumName): ck = KTuple; enumName;
+					default: null;
+				};
 				switch (ck) {
 					case KCustomKeyArray: {
 						currType = currType.resolve();
@@ -161,18 +166,17 @@ class GmlLinterArrayAccess {
 						if (arrayType != null) self.checkTypeCast(arrayType, indexType, "array index", arrayValue);
 						currType = currType.unwrapParam(1);
 					};
-					case KTuple, KEnumTuple: {
+					case KTuple: {
 						if (arrayValue == null) { // unknown index
 							self.checkTypeCast(arrayType, GmlTypeDef.number, "array index", arrayValue);
 							currType = null;
 						} else switch (arrayValue) {
 							case VNumber(i, _):
 								var p;
-								if (ck == KTuple) {
+								if (enumTupleName == null) {
 									p = currType.unwrapParams();
 								} else {
-									var ename = currType.unwrapParam().getNamespace();
-									var en = ename != null ? GmlAPI.gmlEnums[ename] : null;
+									var en = GmlAPI.gmlEnums[enumTupleName];
 									p = en != null ? en.tupleTypes : null;
 								}
 								
