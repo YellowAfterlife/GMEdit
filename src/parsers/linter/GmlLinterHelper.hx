@@ -1,5 +1,6 @@
 package parsers.linter;
 
+import gml.type.GmlType;
 import tools.Aliases.FoundError;
 import editors.EditCode;
 
@@ -45,9 +46,16 @@ class GmlLinterHelper {
 	inline function readCheckSkip(kind:GmlLinterKind, expect:String):FoundError {
 		return linter.readCheckSkip(kind, expect);
 	}
+	inline function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind, ?targetType:GmlType):FoundError {
+		return linter.expr.read(oldDepth, flags, _nk, targetType);
+	}
 	inline function readStat(oldDepth:Int, flags:GmlLinterReadFlags = GmlLinterReadFlags.None, ?_nk:GmlLinterKind):FoundError {
 		return linter.readStat(oldDepth, flags, _nk);
 	}
+	
+	// modules:
+	var expr(get, never):GmlLinterExpr;
+	inline function get_expr():GmlLinterExpr return linter.expr;
 	
 	// todo: generate these with a macro instead (maybe taking an extern class?)
 	/*public static macro function __generateForward():Array<Field> {

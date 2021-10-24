@@ -85,7 +85,8 @@ import js.Syntax;
 	}
 	
 	public static function findFirst<T>(arr:Array<T>, fn:T->Bool):Null<T> {
-		for (v in arr) if (fn(v)) return v;
-		return null;
+		var result:Null<T> = null;
+		for (v in arr) if (fn(v)) { result = v; break; }
+		return result;
 	}
 }

@@ -12,6 +12,7 @@ import tools.Aliases;
 import parsers.linter.GmlLinter;
 import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
+using tools.NativeArray;
 
 /**
  * ...
@@ -44,6 +45,10 @@ class GmlLinterExpr extends GmlLinterHelper {
 	/** If processed expression evaluates to a literal, this holds that */
 	public var currValue:GmlLinterValue;
 	
+	public var isLocalIdent:Bool;
+	
+	public var nullSafety:GmlLinterLocalNullSafetyItems;
+	
 	function invalid(flags:GmlLinterReadFlags):FoundError {
 		return linter.readExpect(flags.has(AsStat) ? "a statement" : "an expression");
 	}
@@ -63,7 +68,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 	}
 	
 	public function read(
-		oldDepth:Int, flags:GmlLinterReadFlags, _nk:GmlLinterKind, targetType:GmlType
+		oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind, ?targetType:GmlType
 	):FoundError {
 		var self = linter;
 		var newDepth = oldDepth + 1;
@@ -91,6 +96,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 		var currType:GmlType = null;
 		var currFunc:GmlFuncDoc = null;
 		var currValue:GmlLinterValue = null;
+		var nullSafety:GmlLinterLocalNullSafetyItems = [];
 		//
 		inline function checkConst():Void {
 			this.checkConst(currName, currKind);
@@ -146,6 +152,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 				currType = this.currType;
 				currFunc = this.currFunc;
 				currValue = this.currValue;
+				nullSafety = this.nullSafety;
 			};
 			case KNew: {
 				rc(self.readExpr(newDepth, IsNew));
@@ -161,6 +168,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 			};
 			case KNot, KBitNot: {
 				rc(self.readExpr(newDepth));
+				nullSafety = this.nullSafety;
 				if (nk == KNot) {
 					self.checkTypeCastBoolOp(this.currType, this.currValue, "!");
 					currType = GmlTypeDef.bool;
@@ -170,6 +178,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 							var v = f > 0.5 ? 0 : 1;
 							currValue = VNumber(v, "" + v);
 						default:
+					}
+					for (nsi in nullSafety) {
+						if (nsi.status != null) nsi.status = !nsi.status;
 					}
 				} else {
 					self.checkTypeCast(this.currType, GmlTypeDef.int, "~", this.currValue);
@@ -249,6 +260,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 			};
 		}
 		// suffixes:
+		inline function mergeBinOpNullSafety():Void {
+			nullSafety.mergeItems(self.binOps.nullSafety);
+		}
 		while (q.loop) {
 			nk = self.peek();
 			var setValue = false;
@@ -268,7 +282,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 							self.addWarning("Using single `=` as a comparison operator");
 						}
 						self.skip();
-						rc(self.readOps(newDepth, currType, currValue, nk, "="));
+						var localName = currKind == KIdent && isLocalIdent ? currName : null;
+						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal, localName));
+						mergeBinOpNullSafety();
 						flags.add(NoSfx);
 						currType = this.currType;
 					}
@@ -453,9 +469,13 @@ class GmlLinterExpr extends GmlLinterHelper {
 					if (hasFlag(NoOps)) break;
 					self.checkTypeCast(currType, GmlTypeDef.bool, "ternary condition", currValue);
 					self.skip();
+					
+					nullSafety.prepatch(linter);
 					rc(self.readExpr(newDepth));
 					currType = this.currType;
 					rc(self.readCheckSkip(KColon, "a colon in a ternary operator"));
+					
+					nullSafety.elsepatch(linter);
 					rc(self.readExpr(newDepth));
 					var elseType = this.currType;
 					if (currType != null) {
@@ -473,6 +493,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 							self.checkTypeCast(this.currType, currType, "ternary else-value", this.currValue);
 						}
 					} else currType = elseType;
+					nullSafety.postpatch(linter);
 					currKind = KQMark;
 				};
 				case KNullCoalesce: { // x ?? y
@@ -501,7 +522,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 					else if (nk.isBinOp()) {
 						if (hasFlag(NoOps)) break;
 						self.skip();
-						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal));
+						var localName = currKind == KIdent && isLocalIdent ? currName : null;
+						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal, localName));
+						mergeBinOpNullSafety();
 						currType = this.currType;
 						flags.add(NoSfx);
 					}
@@ -517,12 +540,15 @@ class GmlLinterExpr extends GmlLinterHelper {
 			self.nextVal = "";
 			return self.readExpect("a statement");
 		}
+		//
 		this.currName = currKind == KIdent ? currName : null;
+		this.isLocalIdent = currKind == KIdent && isLocalIdent;
 		this.currKind = currKind;
 		this.currType = currType;
 		this.selfType = selfType;
 		this.currFunc = currFunc;
 		this.currValue = currValue;
+		this.nullSafety = nullSafety;
 		return false;
 	}
 }

@@ -64,6 +64,7 @@
     {"id":{"name":"v_strict_self","path":"scripts/v_strict_self/v_strict_self.yy",},"order":5,},
     {"id":{"name":"v_linter_flags","path":"scripts/v_linter_flags/v_linter_flags.yy",},"order":11,},
     {"id":{"name":"v_enum_tuples","path":"scripts/v_enum_tuples/v_enum_tuples.yy",},"order":1,},
+    {"id":{"name":"v_null_safety","path":"scripts/v_null_safety/v_null_safety.yy",},"order":6,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

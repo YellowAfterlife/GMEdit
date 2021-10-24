@@ -166,8 +166,11 @@ class GmlLinter {
 	
 	var expr:GmlLinterExpr;
 	var funcLiteral:GmlLinterFuncLiteral;
+	var binOps:GmlLinterBinOps;
 	function initModules() {
 		funcLiteral = new GmlLinterFuncLiteral(this);
+		expr = new GmlLinterExpr(this);
+		binOps = new GmlLinterBinOps(this);
 	}
 	
 	public function new() {
@@ -297,53 +300,8 @@ class GmlLinter {
 	//
 	
 	/** `+¦ a - b;` -> `+ a - b¦;` */
-	function readOps(oldDepth:Int, firstType:GmlType, firstLVal:GmlLinterValue, firstOp:GmlLinterKind, firstVal:String):FoundError {
-		var newDepth = oldDepth + 1;
-		var q = reader;
-		var types = [firstType];
-		var ops = [firstOp];
-		var vals = [firstVal];
-		var lvals = [firstLVal];
-		while (q.loop) {
-			rc(readExpr(newDepth, NoOps));
-			types.push(expr.currType);
-			lvals.push(expr.currValue);
-			var nk = peek();
-			if (nk.isBinOp() || nk == KSet) {
-				skip();
-				ops.push(nk);
-				vals.push(nextVal);
-			} else break;
-		}
-		//
-		var pmin = GmlLinterKind.getMaxBinPriority();
-		var pmax = 0;
-		for (op in ops) {
-			var pc = op.getBinOpPriority();
-			if (pc < pmin) pmin = pc;
-			if (pc > pmax) pmax = pc;
-		}
-		//
-		while (pmin <= pmax) {
-			var i = 0;
-			while (i < ops.length) {
-				var op = ops[i];
-				if (op.getBinOpPriority() == pmin) {
-					var t1 = types[i];
-					var t2 = types[i + 1];
-					var lv1 = lvals[i], lv2 = lvals[i + 1];
-					var tr:GmlType = null;
-					types[i] = checkTypeCastOp(t1, lv1, t2, lv2, ops[i], vals[i]);
-					types.splice(i + 1, 1);
-					vals.splice(i, 1);
-					ops.splice(i, 1);
-				} else i += 1;
-			}
-			pmin += 1;
-		}
-		//
-		expr.currType = types[0];
-		return false;
+	function readOps(oldDepth:Int, firstType:GmlType, firstLVal:GmlLinterValue, firstOp:GmlLinterKind, firstVal:String, firstLocalName:String):FoundError {
+		return binOps.read(oldDepth, firstType, firstLVal, firstOp, firstVal, firstLocalName);
 	}
 	
 	/**
@@ -903,15 +861,21 @@ class GmlLinter {
 				}
 			};
 			case KIf: {
-				rc(readExpr(newDepth));
+				rc(expr.read(newDepth));
+				var nullSafety = expr.nullSafety;
 				checkParens();
 				checkTypeCastBoolOp(expr.currType, expr.currValue, "an if condition");
 				skipIf(peek() == KThen);
 				if (skipIf(peek() == KSemico)) {
 					return readError("You have a semicolon before your then-expression.");
 				}
+				nullSafety.prepatch(this);
 				rc(readStat(newDepth));
-				if (skipIf(peek() == KElse)) rc(readStat(newDepth));
+				if (skipIf(peek() == KElse)) {
+					nullSafety.elsepatch(this);
+					rc(readStat(newDepth));
+				}
+				nullSafety.postpatch(this);
 			};
 			case KWhile, KRepeat: {
 				rc(readExpr(newDepth));
