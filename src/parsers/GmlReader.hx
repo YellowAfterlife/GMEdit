@@ -612,7 +612,8 @@ using tools.NativeString;
 			
 			// see if there's `= value`:
 			skipSpaces1x(till);
-			if (peek() == "=".code) {
+			c = peek();
+			if (c == "=".code || c == ":".code && peek(1) == "=".code) {
 				skip(); skipSpaces1();
 				d.exprStart = pos;
 				skipVarExpr(v, ",".code);
