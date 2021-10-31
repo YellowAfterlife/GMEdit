@@ -362,7 +362,7 @@ class GmlLinter {
 					default:
 				}
 			}
-			if (!hasBufferAutoType) switch (doc.returnType) {
+			switch (doc.returnType) {
 				case null:
 				case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
 					hasBufferAutoType = true;
