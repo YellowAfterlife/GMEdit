@@ -60,6 +60,9 @@ import haxe.extern.EitherType;
 	public static function access(path:String, modes:FileSystemAccess, fn:Null<Error>->Void):Void;
 	//
 	public static function existsSync(path:String):Bool;
+	public static inline function exists(path:String, fn:Null<Error>->Void):Void {
+		access(path, FileSystemAccess.Exists, fn);
+	}
 	//
 	public static function renameSync(old:String, next:String):Void;
 	//

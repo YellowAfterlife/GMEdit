@@ -5,6 +5,7 @@ import electron.FileSystem;
 import electron.FileWrap;
 import haxe.Json;
 import haxe.io.Path;
+import tools.NativeString;
 import ui.treeview.TreeView;
 
 /**
@@ -51,15 +52,23 @@ class RecentProjects {
 			var name = pair.name;
 			lookup.push(name);
 			var pj = TreeView.makeProject(name, path);
-			FileSystem.access(path, FileSystemAccess.Exists, function(e) {
-				if (e == null) {
-					var th = path + ".png";
-					FileSystem.access(th, FileSystemAccess.Exists, function(e) {
-						if (e == null) TreeView.setThumb(path, "file:///" + th);
-					});
-				} else {
+			FileSystem.exists(path, function(e) {
+				if (e != null) {
 					pj.setAttribute("data-missing", "true");
+					return;
 				}
+				if (!NativeString.startsWith(pair.version.name, "v2")) return;
+				var thumbIcon = path + ".png";
+				FileSystem.exists(thumbIcon, function(e) {
+					if (e == null) {
+						TreeView.setThumb(path, "file:///" + thumbIcon);
+						return;
+					}
+					var tplIcon = Path.directory(path) + "/options/main/template_icon.png";
+					FileSystem.exists(tplIcon, function(e) {
+						if (e == null) TreeView.setThumb(path, "file:///" + tplIcon);
+					});
+				});
 			});
 			el.appendChild(pj);
 		}
