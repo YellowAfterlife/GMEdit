@@ -404,12 +404,21 @@ class GmlLinter {
 							itemType = expr.currType;
 						} else if (itemType != null) {
 							// turn mixed-type array literals into array<any>
-							if (!expr.currType.canCastTo(itemType)) itemType = null;
+							if (!valueCanCastTo(expr.currValue, expr.currType, itemType, null)) {
+								itemType = null;
+							}
 							// tuples require passing the supposed destination type to readExpr.
 						}
 						argc++;
 						continue;
 					}
+					
+					var argType:GmlType;
+					var argTypeInd = argc;
+					if (argTypes != null) {
+						if (argTypeInd > argTypeClamp) argTypeInd = argTypeClamp;
+						argType = argTypeInd >= argTypesLen ? null : argTypes[argTypeInd];
+					} else argType = null;
 					
 					// read the next argument:
 					if (isMethod && argc == 1) {
@@ -420,13 +429,10 @@ class GmlLinter {
 						funcLiteral.selfOverride = lso;
 						if (foundError) return -1;
 					} else {
-						if (readExpr(newDepth)) return -1;
+						if (readExpr(newDepth, None, null, argType)) return -1;
 					}
 					
 					if (argTypes != null && expr.currType != null) {
-						var argTypeInd = argc;
-						if (argTypeInd > argTypeClamp) argTypeInd = argTypeClamp;
-						var argType = argTypeInd >= argTypesLen ? null : argTypes[argTypeInd];
 						if (argType != null) {
 							if (isFuncValue && argTypeInd == argTypeClamp) argType = argType.unwrapParam();
 							if (hasBufferAutoType) {
@@ -442,7 +448,10 @@ class GmlLinter {
 									default:
 								}
 							}
-							if (!expr.currType.canCastTo(argType, templateTypes, getImports())) {
+							if (!valueCanCastTo(
+								expr.currValue, expr.currType,
+								argType, templateTypes
+							)) {
 								var argName:String;
 								if (doc != null) {
 									argName = JsTools.or(doc.args[argTypeInd], "?");
@@ -574,7 +583,7 @@ class GmlLinter {
 	}
 	static var readTypeName_typeStr:String;
 	
-	function checkTypeCast(source:GmlType, target:GmlType, ctx:String, val:GmlLinterValue):Bool {
+	function valueCanCastTo(val:GmlLinterValue, valType:GmlType, target:GmlType, tpl:Array<GmlType>):Bool {
 		switch (val) {
 			case null:
 			case VNumber( -1, _):
@@ -589,7 +598,10 @@ class GmlLinter {
 				}
 			default:
 		}
-		if (source.canCastTo(target, null, getImports())) return true;
+		return valType.canCastTo(target, tpl, getImports());
+	}
+	function checkTypeCast(source:GmlType, target:GmlType, ctx:String, val:GmlLinterValue):Bool {
+		if (valueCanCastTo(val, source, target, null)) return true;
 		var m = "Can't cast " + source.toString() + " to " + target.toString();
 		if (ctx != null) m += " for " + ctx;
 		addWarning(m);

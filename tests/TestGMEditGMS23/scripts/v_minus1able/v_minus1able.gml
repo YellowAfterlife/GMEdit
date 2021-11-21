@@ -14,4 +14,6 @@ function v_minus1able() {
 	
 	let res/*:asset*/ = -1;
 	let spr/*:sprite*/ = -1;
+	
+	vertex_submit(-1, pr_linelist, -1); ///note: OK!
 }
