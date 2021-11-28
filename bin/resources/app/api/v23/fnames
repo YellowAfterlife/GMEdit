@@ -171,10 +171,6 @@ point_direction(x1,y1,x2,y2)
 lengthdir_x(len,dir)
 lengthdir_y(len,dir)
 
-weak_ref_create(thing_to_track)
-weak_ref_alive(weak_ref)
-weak_ref_any_alive(array,[index],[length])
-
 // section 2.3
 
 real(val)
@@ -465,6 +461,7 @@ caption_health&
 // section 3.10
 
 event_perform(type,numb)
+event_perform_async(type,ds_map)
 event_user(numb)
 event_perform_object(obj,type,numb)
 event_inherited()
@@ -633,6 +630,22 @@ ev_global_gesture_rotate_start#
 ev_global_gesture_rotating#
 ev_global_gesture_rotate_end#
 
+ev_async_web_image_load#
+//ev_async_web_sound_load#//event not exists
+ev_async_web#
+ev_async_dialog#
+ev_async_web_iap#
+ev_async_web_cloud#
+ev_async_web_networking#
+ev_async_web_steam#
+ev_async_social#
+ev_async_push_notification#
+ev_async_save_load#
+ev_async_audio_recording#
+ev_async_audio_playback#
+ev_async_system_event#
+//ev_async_message_event#//event not exists
+
 // section 3.11
 
 application_surface*
@@ -742,6 +755,8 @@ mb_none#
 mb_left#
 mb_right#
 mb_middle#
+mb_side1#
+mb_side2#
 mouse_check_button(button)
 mouse_check_button_pressed(button)
 mouse_check_button_released(button)
@@ -957,6 +972,8 @@ draw_vertex_color(x,y,col,alpha)$
 draw_primitive_end()
 sprite_get_uvs(spr,subimg)
 font_get_uvs(font)
+font_get_info(font)
+font_cache_glyph(font,glyphIndex)
 sprite_get_texture(spr,subimg)
 font_get_texture(font)
 texture_get_width(texid)
@@ -1057,6 +1074,7 @@ display_get_height()
 display_get_orientation()
 display_get_gui_width()
 display_get_gui_height()
+display_get_frequency()
 
 display_reset(aa_level, vsync)
 display_mouse_get_x()
@@ -1324,6 +1342,7 @@ sprite_set_speed(ind,speed,type)
 sprite_get_speed_type(ind)
 sprite_get_speed(ind)
 
+sprite_get_info(ind)
 sprite_get_nineslice(ind)
 sprite_set_nineslice(ind,nineslice)
 sprite_nineslice_create()
@@ -1429,7 +1448,7 @@ font_add_get_enable_aa()
 font_add(name,size,bold,italic,first,last)!
 font_add_sprite(spr,first,prop,sep)!
 font_add_sprite_ext(spr,mapstring,prop,sep)!
-font_replace(ind,name,size,bold,italic,first,last)!
+
 font_replace_sprite(ind,spr,first,prop,sep)!
 font_replace_sprite_ext(font,spr,string_map,prop,sep)!
 font_delete(ind)!
@@ -1921,6 +1940,9 @@ os_ps3#
 os_uwp#
 os_tvos#
 os_switch#
+os_ps5#
+os_xboxseriesxs#
+os_operagx#
 
 browser_not_a_browser#
 browser_unknown#
@@ -2153,24 +2175,6 @@ cloud_file_save(filename, description)
 cloud_string_save(data, description)
 cloud_synchronise()
 
-ads_enable(x,y,num)&
-ads_disable(num)&
-ads_setup(user_uuid,ad_app_key)&
-ads_engagement_launch()&
-ads_engagement_available()&
-ads_engagement_active()&
-ads_event(stringid)&
-ads_event_preload(stringid)&
-
-ads_set_reward_callback(callback)&
-
-
-ads_get_display_height(slotnum)&
-ads_get_display_width(slotnum)&
-ads_move(x,y,slotnum)&
-
-ads_interstitial_available()&
-ads_interstitial_display()&
 
 device_get_tilt_x()
 device_get_tilt_y()
@@ -2651,6 +2655,7 @@ buffer_read(buffer, type)
 buffer_seek(buffer, base, offset)
 buffer_get_surface(buffer, surface,offset)
 buffer_set_surface(buffer, surface,offset)
+buffer_set_used_size(buffer,size)
 buffer_delete(buffer)
 buffer_exists(buffer)
 buffer_get_type(buffer)
@@ -2756,6 +2761,21 @@ gp_axislh#
 gp_axislv#
 gp_axisrh#
 gp_axisrv#
+
+gp_axis_acceleration_x#
+gp_axis_acceleration_y#
+gp_axis_acceleration_z#
+
+gp_axis_angular_velocity_x#
+gp_axis_angular_velocity_y#
+gp_axis_angular_velocity_z#
+
+gp_axis_orientation_x#
+gp_axis_orientation_y#
+gp_axis_orientation_z#
+gp_axis_orientation_w#
+
+
 
 gml_release_mode(enable)
 gml_pragma(setting,....)
@@ -3490,6 +3510,19 @@ animcurve_exists(curve_struct_or_id)
 animcurve_channel_new()
 animcurve_point_new()
 
+// Effects functions
+fx_create(filter_or_effect_name)
+fx_get_name(filter_or_effect)
+fx_get_parameter_names(filter_or_effect)
+fx_get_parameter(filter_or_effect,parameter_name)
+fx_get_parameters(filter_or_effect)
+fx_set_parameter(filter_or_effect,parameter_name,val,...)
+fx_set_parameters(filter_or_effect,parameter_struct)
+
+layer_set_fx(layer_name_or_id,filter_or_effect)
+layer_get_fx(layer_name_or_id)
+layer_clear_fx(layer_name_or_id)
+
 
 // SequenceInstance properties
 ??SequenceInstance
@@ -3708,3 +3741,11 @@ generation_collected?
 num_generations?
 num_objects_in_generation?
 
+// weak reference functions
+weak_ref_create(thing_to_track)
+weak_ref_alive(weak_ref)
+weak_ref_any_alive(array,[index],[length])
+
+// weak reference structure
+??WeakRef
+ref?
