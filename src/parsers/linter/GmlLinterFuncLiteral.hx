@@ -84,7 +84,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 		if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
 			rc(readCheckSkip(KIdent, "a parent type name"));
 			rc(readCheckSkip(KParOpen, "opening bracket"));
-			rc(linter.readArgs(oldDepth + 1, false) < 0);
+			rc(linter.funcArgs.read(oldDepth + 1) < 0);
 		}
 		if (isFunc) { // `function() constructor`?
 			skipIf(peek() == KIdent && nextVal == "constructor");

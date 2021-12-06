@@ -133,7 +133,7 @@ class GmlLinterArrayAccess {
 					arrayValue2 = self.expr.currValue;
 				}
 				if (isNull && self.skipIf(self.peek() == KComma)) { // whoops, a?[b,c,d]
-					self.readArgs(newDepth, true);
+					GmlLinterArrayLiteral.read(self, newDepth, null);
 					isLiteral = true;
 				}
 			};

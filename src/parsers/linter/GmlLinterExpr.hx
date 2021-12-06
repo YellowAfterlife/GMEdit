@@ -296,7 +296,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					if (hasFlag(NoSfx)) return self.readError("Can't call this");
 					self.skip();
 					var argsSelf = currKind == KIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
-					var argc = self.readArgs(newDepth, false, currFunc, argsSelf, currType);
+					var argc = self.funcArgs.read(newDepth, currFunc, argsSelf, currType);
 					rc(argc < 0);
 					if (currFunc != null) {
 						self.checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
@@ -312,7 +312,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 						}
 					}
 					statKind = currKind = KCall;
-					currType = GmlLinter.readArgs_outType;
+					currType = linter.funcArgs.returnType;
 					currFunc = currType.getSelfCallDoc(self.getImports());
 				};
 				case KInc, KDec: { // x++, x--

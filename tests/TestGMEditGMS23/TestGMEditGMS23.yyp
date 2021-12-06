@@ -66,6 +66,7 @@
     {"id":{"name":"v_enum_tuples","path":"scripts/v_enum_tuples/v_enum_tuples.yy",},"order":1,},
     {"id":{"name":"v_null_safety","path":"scripts/v_null_safety/v_null_safety.yy",},"order":6,},
     {"id":{"name":"v_semicolonless_oddities","path":"scripts/v_semicolonless_oddities/v_semicolonless_oddities.yy",},"order":3,},
+    {"id":{"name":"v_func_blank_args","path":"scripts/v_func_blank_args/v_func_blank_args.yy",},"order":2,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

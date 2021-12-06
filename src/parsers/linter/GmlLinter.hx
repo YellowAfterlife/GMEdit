@@ -156,10 +156,10 @@ class GmlLinter {
 	
 	var version:GmlVersion;
 	
-	/** Current preferences state - can be modified via @lint */
 	/**
 	 * Current preferences state
-	 * These are merged from multiple 
+	 * These are merged from multiple layers of linter preferences
+	 * Can be modified via @lint
 	 */
 	public var prefs:GmlLinterPrefsState;
 	public var options:GmlLinterOptions;
@@ -167,10 +167,12 @@ class GmlLinter {
 	var expr:GmlLinterExpr;
 	var funcLiteral:GmlLinterFuncLiteral;
 	var binOps:GmlLinterBinOps;
+	var funcArgs:GmlLinterFuncArgs;
 	function initModules() {
 		funcLiteral = new GmlLinterFuncLiteral(this);
 		expr = new GmlLinterExpr(this);
 		binOps = new GmlLinterBinOps(this);
+		funcArgs = new GmlLinterFuncArgs(this);
 	}
 	
 	public function new() {
@@ -303,192 +305,6 @@ class GmlLinter {
 	function readOps(oldDepth:Int, firstType:GmlType, firstLVal:GmlLinterValue, firstOp:GmlLinterKind, firstVal:String, firstLocalName:String):FoundError {
 		return binOps.read(oldDepth, firstType, firstLVal, firstOp, firstVal, firstLocalName);
 	}
-	
-	/**
-	 * 
-	 * @param	sqb Whether this is a [...args]
-	 * @return	number of arguments read, -1 on error
-	 */
-	function readArgs(oldDepth:Int, sqb:Bool, ?doc:GmlFuncDoc, ?selfType:GmlType, ?fnType:GmlType):Int {
-		var newDepth = oldDepth + 1;
-		var q = reader;
-		seqStart.setTo(reader);
-		var seenComma = true;
-		var closed = false;
-		var argc = 0;
-		var argTypes:ReadOnlyArray<GmlType>, argTypeClamp:Int, argTypesLen:Int;
-		var templateTypes:Array<GmlType> = null;
-		var isFuncValue = false;
-		if (doc != null) {
-			argTypes = doc.argTypes;
-			argTypesLen = argTypes != null ? argTypes.length : 0;
-			argTypeClamp = doc.rest && argTypes != null ? argTypesLen - 1 : 0x7fffffff;
-			if (doc.templateItems != null) {
-				templateTypes = NativeArray.create(doc.templateItems.length);
-			}
-			if (doc.templateSelf != null) {
-				if (!GmlTypeTools.canCastTo(selfType, doc.templateSelf, templateTypes, getImports())) {
-					addWarning("Can't cast " + selfType.toString(templateTypes)
-						+ " to " + doc.templateSelf.toString(templateTypes)
-						+ ' for ' + doc.name + "#self"
-					);
-				}
-			}
-		} else if (fnType != null && (fnType = fnType.resolve()).getKind() == KFunction) {
-			isFuncValue = true;
-			argTypes = fnType.unwrapParams();
-			argTypesLen = argTypes.length - 1;
-			var isRest = argTypesLen > 0 && argTypes[argTypesLen - 1].resolve().getKind() == KRest;
-			argTypeClamp = isRest ? argTypesLen - 1 : 0x7fffffff;
-		} else {
-			argTypes = null;
-			argTypesLen = 0;
-			argTypeClamp = 0;
-		}
-		//
-		var isMethod = !sqb && (selfType:GmlType).getKind() == KMethodSelf;
-		var methodSelf:GmlType = null;
-		//
-		var hasBufferAutoType:Bool = false;
-		var bufferAutoType:GmlType = null;
-		var bufferAutoTypeRet = false;
-		if (doc != null && argTypes != null && doc.name.contains("buffer_")) {
-			for (argType in argTypes) {
-				switch (argType) {
-					case null:
-					case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
-						hasBufferAutoType = true;
-						break;
-					default:
-				}
-			}
-			switch (doc.returnType) {
-				case null:
-				case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
-					hasBufferAutoType = true;
-					bufferAutoTypeRet = true;
-				default:
-			}
-		}
-		//
-		var itemType:GmlType = null;
-		while (q.loop) {
-			switch (peek()) {
-				case KParClose: {
-					if (sqb) { readError("Unexpected `)`"); return -1; }
-					skip(); closed = true; break;
-				};
-				case KSqbClose: {
-					if (!sqb) { readError("Unexpected `]`"); return -1; }
-					skip(); closed = true; break;
-				};
-				case KComma: {
-					if (seenComma) {
-						readError("Unexpected `,`");
-						return -1;
-					} else {
-						seenComma = true;
-						skip();
-					}
-				};
-				default: {
-					if (!seenComma) {
-						readExpect("a comma in values list");
-						return -1;
-					}
-					seenComma = false;
-					
-					if (sqb) { // array literal logic
-						if (readExpr(newDepth)) return -1;
-						if (argc == 0) {
-							itemType = expr.currType;
-						} else if (itemType != null) {
-							// turn mixed-type array literals into array<any>
-							if (!valueCanCastTo(expr.currValue, expr.currType, itemType, null)) {
-								itemType = null;
-							}
-							// tuples require passing the supposed destination type to readExpr.
-						}
-						argc++;
-						continue;
-					}
-					
-					var argType:GmlType;
-					var argTypeInd = argc;
-					if (argTypes != null) {
-						if (argTypeInd > argTypeClamp) argTypeInd = argTypeClamp;
-						argType = argTypeInd >= argTypesLen ? null : argTypes[argTypeInd];
-					} else argType = null;
-					
-					// read the next argument:
-					if (isMethod && argc == 1) {
-						// rewrite `self` for `method()`'s `fn` argument
-						var lso = funcLiteral.selfOverride;
-						funcLiteral.selfOverride = methodSelf;
-						var foundError = readExpr(newDepth);
-						funcLiteral.selfOverride = lso;
-						if (foundError) return -1;
-					} else {
-						if (readExpr(newDepth, None, null, argType)) return -1;
-					}
-					
-					if (argTypes != null && expr.currType != null) {
-						if (argType != null) {
-							if (isFuncValue && argTypeInd == argTypeClamp) argType = argType.unwrapParam();
-							if (hasBufferAutoType) {
-								switch (argType) {
-									case null:
-									case TInst(typeName, [], KCustom):
-										if (typeName == "buffer_auto_type") {
-											argType = bufferAutoType;
-										} else if (typeName == "buffer_type") {
-											var btmap = parsers.linter.misc.GmlLinterBufferAutoType.map;
-											bufferAutoType = btmap[expr.currName];
-										}
-									default:
-								}
-							}
-							if (!valueCanCastTo(
-								expr.currValue, expr.currType,
-								argType, templateTypes
-							)) {
-								var argName:String;
-								if (doc != null) {
-									argName = JsTools.or(doc.args[argTypeInd], "?");
-								} else argName = null;
-								addWarning("Can't cast " + expr.currType.toString(templateTypes)
-									+ " to " + argType.toString(templateTypes)
-									+ ' for ' + argName + "#" + argc
-								);
-							}
-						}
-					}
-					
-					// store `self` type for `method()`:
-					if (isMethod && argc == 0) methodSelf = expr.currType;
-					
-					argc++;
-				};
-			}
-		} // while (q.loop), can continue
-		
-		if (sqb) {
-			readArgs_outType = itemType;
-		} else {
-			if (doc != null) {
-				var retType = doc.returnType;
-				if (bufferAutoTypeRet) retType = bufferAutoType;
-				readArgs_outType = retType.mapTemplateTypes(templateTypes);
-			} else if (isFuncValue) {
-				readArgs_outType = argTypes[argTypesLen];
-			} else readArgs_outType = null;
-		}
-		if (!closed) {
-			readSeqStartError("Unclosed " + (sqb ? "[]" : "()"));
-			return -1;
-		} else return argc;
-	}
-	static var readArgs_outType:GmlType;
 	
 	function checkCallArgs(doc:GmlFuncDoc, currName:String, argc:Int, isExpr:Bool, isNew:Bool) {
 		var isUserFunc:Bool;
