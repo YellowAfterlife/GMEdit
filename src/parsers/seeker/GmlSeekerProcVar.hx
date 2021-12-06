@@ -6,6 +6,7 @@ import js.lib.RegExp;
 import parsers.seeker.GmlSeekerParser;
 import synext.GmlExtLambda;
 import tools.Aliases;
+import tools.CharCode;
 using tools.NativeString;
 
 /**
@@ -43,14 +44,27 @@ class GmlSeekerProcVar {
 	}
 	
 	public static function proc(seeker:GmlSeekerImpl) {
-		var q = seeker.reader;
+		var q:GmlReaderExt = seeker.reader;
 		var locals = seeker.locals;
 		var localKind = seeker.localKind;
 		var hasFunctionLiterals = seeker.hasFunctionLiterals;
 		var funcsAreGlobal = seeker.funcsAreGlobal;
 		var canLam = seeker.canLam;
 		while (q.loop) {
-			var name = seeker.find(Ident);
+			q.skipSpaces1();
+			var c:CharCode = q.peek();
+			var name:String;
+			switch (c) {
+				case "/".code: switch (q.peek(1)) {
+					case "/".code: q.skip(2); q.skipLine(); continue;
+					case "*".code: q.skip(2); q.skipComment(); continue;
+					default: break;
+				}
+				case _ if (c.isIdent0()):
+					name = q.readIdent();
+				default: break;
+			};
+			
 			if (name == null) break;
 			if (name == "var") { // `var var`
 				name = seeker.find(Ident);
@@ -89,6 +103,7 @@ class GmlSeekerProcVar {
 						case ")", "]", "}": {
 							depth -= 1;
 							if (depth < 0) {
+								if (s == "}") seeker.curlyDepth++;
 								q.pos--;
 								break;
 							}

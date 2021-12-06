@@ -65,6 +65,7 @@
     {"id":{"name":"v_linter_flags","path":"scripts/v_linter_flags/v_linter_flags.yy",},"order":11,},
     {"id":{"name":"v_enum_tuples","path":"scripts/v_enum_tuples/v_enum_tuples.yy",},"order":1,},
     {"id":{"name":"v_null_safety","path":"scripts/v_null_safety/v_null_safety.yy",},"order":6,},
+    {"id":{"name":"v_semicolonless_oddities","path":"scripts/v_semicolonless_oddities/v_semicolonless_oddities.yy",},"order":3,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
@@ -80,6 +81,7 @@
     {"name":"Switch","path":"options/switch/options_switch.yy",},
     {"name":"Windows UWP","path":"options/windowsuap/options_windowsuap.yy",},
     {"name":"Xbox One","path":"options/xboxone/options_xboxone.yy",},
+    {"name":"operagx","path":"options/operagx/options_operagx.yy",},
   ],
   "isDnDProject": false,
   "isEcma": false,
@@ -126,7 +128,7 @@
   ],
   "IncludedFiles": [],
   "MetaData": {
-    "IDEVersion": "2.3.3.574",
+    "IDEVersion": "2.3.7.603",
   },
   "resourceVersion": "1.4",
   "name": "TestGMEditGMS23",
