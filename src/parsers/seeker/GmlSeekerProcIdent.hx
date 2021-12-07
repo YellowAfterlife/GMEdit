@@ -153,8 +153,12 @@ class GmlSeekerProcIdent {
 			var templateSelf:GmlType = null;
 			var templateItems:Array<GmlTypeTemplateItem> = null;
 			var fieldType:GmlType = null;
-			do {
+			do { // once
 				var c = q.peek();
+				if (c == "/".code) switch (q.peek(1)) {
+					case "/".code: q.skipLine(); q.skipSpaces1(); c = q.peek();
+					case "*".code: q.skip(2); q.skipComment(); q.skipSpaces1(); c = q.peek();
+				}
 				var specTypeInst = seeker.specTypeInst;
 				function procAs() {
 					q.skipSpaces1_local();
