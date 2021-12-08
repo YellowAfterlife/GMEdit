@@ -144,5 +144,6 @@ class Main {
 		#end
 		plugins.PluginManager.init();
 		console.log("hello!");
+		StartupTests.main();
 	}
 }

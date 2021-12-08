@@ -23,6 +23,14 @@ class NativeObject {
 		js.Syntax.code("}");
 		return false;
 	}
+	public static function countFields(q:Dynamic):Int {
+		// a forField(q, () => n += 1) optimizes out `+=`! Can't believe you've done this to me
+		var fd:String = null;
+		var has:js.lib.Function = untyped js.lib.Object.prototype.hasOwnProperty;
+		var found = 0;
+		js.Syntax.code("for ({0} in {1}) if ({2}) {3} += 1", fd, q, has.call(q, fd), found);
+		return found;
+	}
 	public static inline function fillDefaults<T:{}>(obj:T, defaults:T):Void {
 		forField(defaults, function(fd:String) {
 			var v = Reflect.field(defaults, fd);
