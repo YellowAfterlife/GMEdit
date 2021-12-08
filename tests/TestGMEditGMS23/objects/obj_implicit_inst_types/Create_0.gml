@@ -59,7 +59,7 @@ i = int2d_comma[0]; ///want_warn
 i = int2d_comma[0][0];
 
 a_cast_int = /*#cast*/ 1 /*#as int*/;
-a_cast_int = ""; ///want_warn
+s = a_cast_int; ///want_warn
 
 int1dx = [];
 int1dx[0] = 0;

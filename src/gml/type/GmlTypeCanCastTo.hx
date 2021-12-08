@@ -1,8 +1,10 @@
 package gml.type;
 import ace.AceGmlTools;
+import gml.type.GmlType.GmlTypeAnonField;
 import gml.type.GmlType.GmlTypeKind;
 import haxe.ds.ReadOnlyArray;
 import tools.JsTools;
+import tools.NativeObject;
 using tools.NativeString;
 
 /**
@@ -192,6 +194,15 @@ class GmlTypeCanCastTo {
 					if (ok) return true;
 				}
 			}
+			case [TAnon(a1), TAnon(a2)]: {
+				var ok = true;
+				NativeObject.forField(a2.fields, function(fd:String) {
+					var afd2 = a2.fields[fd];
+					var afd1 = a1.fields[fd];
+					if (afd1 == null || !afd1.type.canCastTo(afd2.type)) ok = false;
+				});
+				return ok;
+			};
 			default:
 		}
 		return false;

@@ -113,6 +113,27 @@ class GmlTypeParser {
 					}
 				}
 				result = TInst("tuple",  params, KTuple);
+			case "{".code:
+				var ani = new GmlTypeAnon();
+				while (q.loop) {
+					parseRec_skip(q);
+					var field = q.readIdent();
+					if (field == null) return parseError("Expected field name in {}");
+					
+					parseRec_skip(q);
+					if (q.read() != ":".code) return parseError("Expected a `:` after field in {}");
+					
+					var t = parseRec(q, ctx, FCanAlias);
+					if (t == null) return null;
+					ani.fields[field] = new GmlTypeAnonField(t, null);
+					
+					switch (q.read()) {
+						case "}".code: break;
+						case ",".code, ";".code: // OK!
+						default: return parseError("Expected a `,`/`;` or a `}` in `{}`");
+					}
+				}
+				result = TAnon(ani);
 			case "(".code:
 				result = parseRec(q, ctx, FCanAlias);
 				if (result == null) return null;
@@ -260,7 +281,7 @@ class GmlTypeParser {
 					return null;
 				}
 				typeStr = '($t)';
-			case KSqbOpen:
+			case KSqbOpen: {
 				typeStr = "[";
 				var depth = 1;
 				seqStart.setTo(reader);
@@ -281,6 +302,29 @@ class GmlTypeParser {
 					self.readSeqStartError("Unclosed tuple parameters");
 					return null;
 				}
+			};
+			case KCubOpen: {
+				typeStr = "{";
+				var depth = 1;
+				seqStart.setTo(reader);
+				while (reader.loop) {
+					switch (self.next()) {
+						case KCubOpen:
+							typeStr += "{";
+							depth += 1;
+						case KCubClose:
+							typeStr += "}";
+							depth -= 1;
+							if (depth <= 0) break;
+						default:
+							typeStr += self.nextVal;
+					}
+				}
+				if (depth > 0) {
+					self.readSeqStartError("Unclosed tuple parameters");
+					return null;
+				}
+			};
 			case KIdent, KUndefined, KFunction:
 				typeStr = self.nextVal;
 				if (self.skipIf(self.peek() == KLT)) {
@@ -359,6 +403,9 @@ class GmlTypeParser {
 			case "[".code: // [...tuple params]
 				q.skip();
 				if (!q.skipTypeParams(till, "[".code, "]".code)) return rewind();
+			case "{".code: // {...fields}
+				q.skip();
+				if (!q.skipTypeParams(till, "{".code, "}".code)) return rewind();
 			case _ if (c.isIdent0()): // name<...params>
 				q.skipIdent1();
 				start = q.pos;
