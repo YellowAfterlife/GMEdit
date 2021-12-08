@@ -623,10 +623,11 @@ class GmlExtImport {
 						var mcr = GmlAPI.gmlMacros[ident];
 						if (mcr != null && mcr.expr == "var") ident = "var";
 						//
-						if (ident == "var"
+						if (ident == "var" || ident == "globalvar"
 							|| ident == "args" && q.get(p - 1) == "#".code
 						) {
-							var isVar = ident == "var";
+							var isVar = ident != "args";
+							var isGlobalVar = ident == "globalvar";
 							next = isVar ? imp.shorten[ident] : null;
 							if (next != null) {
 								flush(p);
@@ -641,12 +642,14 @@ class GmlExtImport {
 								if (d.typeStr != null) {
 									out += ":";
 									procSegment(d.typeStart, d.typeEnd, true);
-									var varType = GmlTypeDef.parse(d.typeStr, q.getPos(q.pos).toString());
-									imp.localTypes.set(d.name, varType);
-									var tn = varType.getNamespace();
-									if (imp.kind[tn] == "enum") {
-										// convert enum to namespace if used as one
-										imp.ensureNamespace(tn);
+									if (!isGlobalVar) {
+										var varType = GmlTypeDef.parse(d.typeStr, q.getPos(q.pos).toString());
+										imp.localTypes.set(d.name, varType);
+										var tn = varType.getNamespace();
+										if (imp.kind[tn] == "enum") {
+											// convert enum to namespace if used as one
+											imp.ensureNamespace(tn);
+										}
 									}
 								}
 								out += q.substring(d.rawTypeEnd, d.exprStart);
@@ -996,8 +999,11 @@ class GmlExtImport {
 					var mcr = GmlAPI.gmlMacros[dotFull];
 					if (mcr != null && mcr.expr == "var") dotFull = "var";
 					//
-					if (dotFull == "var" || dotFull == "args" && q.get(p - 1) == "#".code) {
-						var isVar = dotFull == "var";
+					if (dotFull == "var" || dotFull == "globalvar"
+						|| dotFull == "args" && q.get(p - 1) == "#".code
+					) {
+						var isVar = dotFull != "args";
+						var isGlobalVar = dotFull == "globalvar";
 						if (svd == null) svd = new SkipVarsData();
 						q.skipVars(function(d:SkipVarsData) {
 							var skipVarOldPos = q.pos;
@@ -1007,7 +1013,7 @@ class GmlExtImport {
 								procSegment(d.typeStart, d.typeEnd, true);
 								flush(d.typeEnd);
 								if (isVar) out += "*/";
-								impc += 1;
+								if (!isGlobalVar) impc += 1;
 							}
 							out += q.substring(d.rawTypeEnd, d.exprStart);
 							procSegment(d.exprStart, d.exprEnd, false);

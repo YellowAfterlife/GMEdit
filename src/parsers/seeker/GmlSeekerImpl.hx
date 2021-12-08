@@ -13,6 +13,7 @@ import gml.GmlLocals;
 import gml.GmlVersion;
 import gml.Project;
 import gml.file.GmlFileKindTools;
+import gml.type.GmlTypeDef;
 import haxe.io.Path;
 import js.lib.RegExp;
 import parsers.GmlReaderExt;
@@ -238,6 +239,20 @@ class GmlSeekerImpl {
 						
 						saveReader();
 						q.skipSpaces1();
+						if (q.peek() == "/".code
+							&& q.peek(1) == "*".code
+							&& q.peek(2) == ":".code
+						) {
+							q.skip(3);
+							var typeStart = q.pos;
+							q.skipComment();
+							var typeStr = q.substring(typeStart, q.pos - 2);
+							var type = GmlTypeDef.parse(typeStr, "globalvar");
+							out.globalVarTypes[name] = type;
+							saveReader();
+							q.skipSpaces1();
+						}
+
 						if (q.peek() != ",".code) {
 							restoreReader();
 							break;
