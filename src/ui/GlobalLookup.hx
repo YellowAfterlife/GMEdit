@@ -52,7 +52,7 @@ class GlobalLookup {
 		if (!isCmd) {
 			var pos = filter.indexOf(":");
 			if (pos >= 0) {
-				kindFilters = [filter.substring(pos + 1)];
+				kindFilters = filter.substring(pos + 1).split("|");
 				filter = filter.substring(0, pos);
 			} else {
 				kindFilters = kindFiltersArr;
