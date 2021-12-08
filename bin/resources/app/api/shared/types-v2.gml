@@ -1,14 +1,14 @@
 // Visual
-typedef camera
+typedef camera : simplename
 typedef display_timing_method
 typedef gpu_cmpfunc
 typedef gpu_cullmode
 typedef draw_lighttype
 typedef tilemap_data : int
-typedef tileset : asset;
+typedef tileset : asset, simplename;
 
 // Layers!
-typedef layer
+typedef layer : simplename
 typedef layer_element
 typedef layer_background : layer_element
 typedef layer_sprite : layer_element
@@ -24,4 +24,4 @@ typedef virtual_keyboard_autocapitalization
 
 // misc.
 typedef android_permission_state
-typedef gif
+typedef gif : simplename

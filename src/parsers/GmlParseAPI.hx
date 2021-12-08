@@ -64,7 +64,7 @@ class GmlParseAPI {
 			var name = mt[1];
 			var parent = mt[2];
 			var def = mt[3];
-			stdKind[name] = "namespace";
+			var wantKind = true;
 			stdComp.push(new AceAutoCompleteItem(name, "namespace", "type\nbuilt-in"));
 			if (def != null) {
 				if (typedefs != null) typedefs[name] = GmlTypeDef.parse(def, mt[0]);
@@ -73,9 +73,11 @@ class GmlParseAPI {
 					var def = new GmlNamespaceDef();
 					def.name = name;
 					def.parents = parent != null ? parent.splitRx(tools.JsTools.rx(~/\s*,\s*/)) : [];
+					if (def.parents.indexOf("simplename") >= 0) wantKind = false;
 					namespaceDefs.push(def);
 				}
 			}
+			if (wantKind) stdKind[name] = "namespace";
 		});
 		
 		// struct types

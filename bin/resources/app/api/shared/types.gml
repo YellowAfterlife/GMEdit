@@ -101,25 +101,25 @@ typedef async_load_save_load = specified_map<
 // todo: more async events
 
 // Asset types
-typedef asset : minus1able;
-typedef sprite : asset;
-typedef sound : asset;
-typedef path : asset;
-typedef script : asset;
-typedef shader : asset;
-typedef font : asset;
-typedef timeline : asset;
-typedef object : asset;
-typedef room : asset;
-typedef audio_group : asset;
+typedef asset : minus1able, simplename;
+typedef sprite : asset, simplename;
+typedef sound : asset, simplename;
+typedef path : asset, simplename;
+typedef script : asset, simplename;
+typedef shader : asset, simplename;
+typedef font : asset, simplename;
+typedef timeline : asset, simplename;
+typedef object : asset, simplename;
+typedef room : asset, simplename;
+typedef audio_group : asset, simplename;
 
 // Types that generally have some data attached to them
-typedef datetime
-typedef pointer
+typedef datetime : simplename
+typedef pointer : simplename
 typedef mp_grid : minus1able
-typedef buffer : minus1able
-typedef surface : minus1able
-typedef texture : minus1able
+typedef buffer : minus1able, simplename
+typedef surface : minus1able, simplename
+typedef texture : minus1able, simplename
 typedef audio_emitter : minus1able
 typedef sound_instance : minus1able
 typedef sound_sync_group : minus1able
@@ -129,7 +129,7 @@ typedef html_clickable_tpe
 typedef texture_group
 typedef file_handle : minus1able
 typedef binary_file_handle : minus1able
-typedef particle : minus1able
+typedef particle : minus1able, simplename
 typedef particle_system : minus1able
 typedef particle_emitter : minus1able
 typedef virtual_key

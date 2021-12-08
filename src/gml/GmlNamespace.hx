@@ -40,6 +40,8 @@ class GmlNamespace {
 	 */
 	public var noTypeRef:Bool = false;
 	
+	public var avoidHighlight:Bool = false;
+	
 	/**
 	 * Parent namespace, if any
 	 */
@@ -285,6 +287,7 @@ class GmlNamespace {
 			case "struct": canCastToStruct = value;
 			case "minus1able": minus1able = value;
 			case "nullable": isNullable = value;
+			case "simplename": avoidHighlight = value;
 			// todo: bitflags
 			default: return false;
 		}

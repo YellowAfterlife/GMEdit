@@ -1,1 +1,1 @@
-typedef background : asset;
+typedef background : asset, simplename;

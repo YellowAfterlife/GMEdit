@@ -310,7 +310,13 @@ class GmlAPI {
 			ns.addFieldHint(hint.field, hint.isInst, hint.comp, hint.doc, hint.type);
 		}
 		for (pair in stdNamespaceDefs) {
-			var ns = ensureNamespace(pair.name);
+			var name = pair.name;
+			var ns = gmlNamespaces[name];
+			if (ns == null) {
+				ns = new GmlNamespace(name);
+				gmlNamespaces[name] = ns;
+				gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
+			}
 			ns.canCastToStruct = false;
 			ns.noTypeRef = true;
 			for (parent in pair.parents) {
@@ -321,6 +327,7 @@ class GmlAPI {
 					ns.canCastToStruct = ns.parent.canCastToStruct;
 				} else Console.warn('Parent ${parent} is missing for ${pair.name}');
 			}
+			if (!ns.avoidHighlight) stdKind[name] = "namespace";
 		}
 		gml.type.GmlTypeParser.clear();
 	}
