@@ -96,7 +96,7 @@ class Theme {
 					fullConf = dir + "/config.json";
 					if (FileSystem.existsSync(fullConf)) {
 						proc(FileSystem.readJsonFileSync(fullConf));
-					}
+					} else then();
 				}
 			} catch (x:Dynamic) {
 				Console.log(x);
