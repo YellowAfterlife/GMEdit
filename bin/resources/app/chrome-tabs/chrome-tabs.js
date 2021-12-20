@@ -472,6 +472,7 @@
             source.parentElement.insertBefore(source, target)
             this.simpleDragTab = null
             this.layoutTabs()
+            GMEdit._emit("tabsReorder", {target:this})
           },
         }
         for (let prop in events) events[prop] = events[prop].bind(this)
