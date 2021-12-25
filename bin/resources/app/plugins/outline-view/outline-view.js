@@ -543,14 +543,14 @@
 		changeTo(e.file);
 	}
 	function onFileClose(e) {
-		syncAll();
+		if (!currOnly) syncAll();
 	}
 	function onFileSave(e) {
 		reindex(e.file);
 		update(e.file);
 	}
 	function onTabsReorder(e) {
-		syncAll(e.target.tabEls);
+		if (!currOnly) syncAll(e.target.tabEls);
 	}
 	// update current subitem on editor navigation
 	var onUpdate_scheduled = false;
