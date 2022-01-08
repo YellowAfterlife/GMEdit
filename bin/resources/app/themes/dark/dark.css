@@ -215,8 +215,8 @@ button[type=button].highlighted-button {
 .popout-window legend {
 	color: inherit;
 }
-.popout-window fieldset {
-	border: 1px solid #495057;
+.popout-window fieldset, .popout-window hr {
+	border-color: #495057;
 }
 .popout-window a {
 	color: #40C3F4;

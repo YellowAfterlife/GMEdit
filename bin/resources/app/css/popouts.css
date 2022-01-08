@@ -127,6 +127,10 @@
 	padding: 4px;
 	-webkit-padding-before: 0;
 }
+.popout-window hr {
+	border: 0;
+	border-top: 1px solid #999;
+}
 .popout-window fieldset.collapsed,
 #preferences-editor fieldset.collapsed,
 .project-properties > fieldset.collapsed {
