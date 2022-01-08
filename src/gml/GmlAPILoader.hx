@@ -174,6 +174,7 @@ using tools.ERegTools;
 			doc: GmlAPI.stdDoc,
 			comp: GmlAPI.stdComp,
 			types: GmlAPI.stdTypes,
+			typeExists: GmlAPI.stdTypeExists,
 			namespaceDefs: GmlAPI.stdNamespaceDefs,
 			typedefs: GmlAPI.stdTypedefs,
 			fieldHints: GmlAPI.stdFieldHints,

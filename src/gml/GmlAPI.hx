@@ -94,6 +94,7 @@ class GmlAPI {
 	public static var stdDoc:Dictionary<GmlFuncDoc> = new Dictionary();
 	public static var stdComp:AceAutoCompleteItems = [];
 	public static var stdKind:Dictionary<String> = new Dictionary();
+	public static var stdTypeExists:Dictionary<Bool> = new Dictionary();
 	
 	/** Types per built-in variable */
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
@@ -112,6 +113,7 @@ class GmlAPI {
 	public static function stdClear() {
 		stdDoc = new Dictionary();
 		stdTypes = new Dictionary();
+		stdTypeExists = new Dictionary();
 		stdComp.clear();
 		
 		stdInstComp.clear();
@@ -316,6 +318,7 @@ class GmlAPI {
 				ns = new GmlNamespace(name);
 				gmlNamespaces[name] = ns;
 				gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
+				if (name == "instance" || name == "object") ns.isObject = true;
 			}
 			ns.canCastToStruct = false;
 			ns.noTypeRef = true;

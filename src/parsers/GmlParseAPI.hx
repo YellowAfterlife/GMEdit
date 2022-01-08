@@ -31,6 +31,7 @@ class GmlParseAPI {
 		var stdComp = data.comp;
 		var stdDoc = data.doc;
 		var stdTypes = data.types;
+		var stdTypeExists = data.typeExists;
 		var ukSpelling = data.ukSpelling;
 		var kindPrefix = data.kindPrefix != null ? data.kindPrefix + "." : "";
 		var version = data.version != null ? data.version : GmlVersion.none;
@@ -77,6 +78,7 @@ class GmlParseAPI {
 					namespaceDefs.push(def);
 				}
 			}
+			if (stdTypeExists != null) stdTypeExists[name] = true;
 			if (wantKind) stdKind[name] = "namespace";
 		});
 		
@@ -316,6 +318,7 @@ typedef GmlParseAPIArgs = {
 	kind:Dictionary<String>,
 	doc:Dictionary<GmlFuncDoc>,
 	comp:AceAutoCompleteItems,
+	?typeExists:Dictionary<Bool>,
 	?types:Dictionary<GmlType>,
 	?namespaceDefs:Array<GmlNamespaceDef>,
 	?typedefs:Dictionary<GmlType>,

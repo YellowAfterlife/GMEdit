@@ -222,6 +222,7 @@ class GmlTypeParser {
 				else {
 					if (typeWarn != null
 						&& !GmlAPI.stdKind.exists(name)
+						&& !GmlAPI.stdTypeExists.exists(name)
 						&& !GmlTypeTools.kindMap.exists(name)
 						&& name != "undefined"
 					) typeWarn.push(name);
