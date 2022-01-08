@@ -19,4 +19,6 @@ typedef ProjectTabState = {
 	?relPath:RelPath,
 	?fullPath:FullPath,
 	?pinned:Bool,
+	?kind:String,
+	?data:Dynamic,
 }

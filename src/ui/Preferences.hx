@@ -337,10 +337,10 @@ class Preferences {
 		for (tab in ChromeTabs.getTabs()) {
 			if (tab.gmlFile.kind == kind) {
 				tab.click();
-				return;
+				return tab.gmlFile;
 			}
 		}
-		kind.create("Preferences", null, null, null);
+		return kind.create("Preferences", null, null, null);
 	}
 	public static function save() {
 		FileWrap.writeConfigSync("config", path, current);

@@ -197,8 +197,8 @@ class ProjectProperties {
 			if (tab.gmlFile.kind != kind) continue;
 			if ((cast tab.gmlFile.editor:KProjectPropertiesEditor).project != pj) continue;
 			tab.click();
-			return;
+			return tab.gmlFile;
 		}
-		kind.create("Project properties", null, pj, null);
+		return kind.create("Project properties", null, pj, null);
 	}
 }

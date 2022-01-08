@@ -1,8 +1,10 @@
 package file.kind.misc;
+import ui.ChromeTabs.ChromeTab;
 import gml.file.GmlFile.GmlFileNav;
 import gml.file.GmlFile;
 import gml.Project;
 import editors.Editor;
+import gml.project.ProjectState.ProjectTabState;
 import ui.project.ProjectProperties;
 
 /**
@@ -13,6 +15,17 @@ class KProjectProperties extends KPreferencesBase {
 	public static var inst = new KProjectProperties();
 	override public function init(file:GmlFile, data:Dynamic):Void {
 		file.editor = new KProjectPropertiesEditor(file, data);
+	}
+	
+	public static inline var tabStateKind = "project-properties";
+	override public function saveTabState(tab:ChromeTab):ProjectTabState {
+		return { kind: tabStateKind, data: { top: tab.gmlFile.editor.element.scrollTop } };
+	}
+	public static function loadTabState(tabState:ProjectTabState):GmlFile {
+		if (tabState.kind != tabStateKind) return null;
+		var file = ProjectProperties.open();
+		file.editor.element.scrollTop = tabState.data.top;
+		return file;
 	}
 }
 class KProjectPropertiesEditor extends Editor {

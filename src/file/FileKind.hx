@@ -8,7 +8,9 @@ import file.kind.gmx.*;
 import file.kind.yy.*;
 import file.kind.misc.*;
 import gml.file.GmlFile;
+import gml.project.ProjectState.ProjectTabState;
 import tools.Dictionary;
+import ui.ChromeTabs.ChromeTab;
 
 /**
  * ...
@@ -16,6 +18,7 @@ import tools.Dictionary;
  */
 @:keep class FileKind {
 	public static var inst:FileKind = new FileKind();
+	/** file extension -> handlers */
 	public static var map:Dictionary<Array<FileKind>> = new Dictionary();
 	public static function register(fileExt:String, file:FileKind):Void {
 		var arr = map[fileExt];
@@ -40,6 +43,27 @@ import tools.Dictionary;
 	public function getTabContext(file:GmlFile, data:Dynamic):String {
 		if (file.path != null) return file.path;
 		return file.name;
+	}
+	
+	public function saveTabState(tab:ChromeTab):ProjectTabState {
+		var path = tab.gmlFile.path;
+		if (path == null) return null;
+		var rel = gml.Project.current.relPath(path);
+		var ts:ProjectTabState = {};
+		if (rel != path) {
+			ts.relPath = rel;
+		} else ts.fullPath = path;
+		return ts;
+	}
+	
+	public static var tabStateLoaders:Dictionary<Array<ProjectTabState->GmlFile>> = new Dictionary();
+	public static function registerTabStateLoader(tabStateKind:String, fn:ProjectTabState-> GmlFile) {
+		var arr = tabStateLoaders[tabStateKind];
+		if (arr == null) {
+			arr = [];
+			tabStateLoaders[tabStateKind] = arr;
+		}
+		arr.unshift(fn);
 	}
 	
 	/**
@@ -156,5 +180,8 @@ import tools.Dictionary;
 		register("dmd", new KMarkdown(true));
 		register("js", KJavaScript.inst);
 		register("json", KJavaScript.inst);
+		//
+		registerTabStateLoader(KPreferences.tabStateKind, KPreferences.loadTabState);
+		registerTabStateLoader(KProjectProperties.tabStateKind, KProjectProperties.loadTabState);
 	}
 }
