@@ -122,7 +122,7 @@ class PluginManager {
 	
 	// Set to true whenever manager is initalised
 	public static var ready:Bool = false;
-	public static function init() {
+	public static function init(cb:Void->Void) {
 		try {
 			Type.resolveClass("Main");
 			js.Syntax.code("window.$hxClasses = $hxClasses");
@@ -180,7 +180,23 @@ class PluginManager {
 			}
 		}
 		//
-		for (name in list) load(name);
+		var pluginsLeft = 1;
+		function next(_) {
+			if (--pluginsLeft <= 0) cb();
+		}
+		for (name in list) {
+			pluginsLeft += 1;
+			load(name, next);
+		}
+		next(null);
 		ready = true;
+	}
+	public static function dispatchInitCallbacks() {
+		for (pluginName in PluginManager.pluginList) {
+			var pluginState = PluginManager.pluginMap[pluginName];
+			if (pluginState.error == null && pluginState.data.init != null) {
+				pluginState.data.init(pluginState);
+			}
+		}
 	}
 }

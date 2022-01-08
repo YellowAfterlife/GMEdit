@@ -18,6 +18,7 @@ import js.html.HTMLDocument;
 import js.html.KeyboardEvent;
 import js.html.Window;
 import parsers.GmlEvent;
+import plugins.PluginManager;
 import tools.HtmlTools;
 import ui.ChromeTabs;
 import ui.*;
@@ -142,7 +143,12 @@ class Main {
 		aceEditor.session = WelcomePage.init(aceEditor);
 		LiveWeb.init();
 		#end
-		plugins.PluginManager.init();
+		Project.nameNode.innerText = "Loading plugins...";
+		plugins.PluginManager.init(function() {
+			Project.nameNode.innerText = "Loading project...";
+			Project.openInitialProject();
+			PluginManager.dispatchInitCallbacks();
+		});
 		console.log("hello!");
 		StartupTests.main();
 	}

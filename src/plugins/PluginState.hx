@@ -56,13 +56,13 @@ class PluginState {
 		this.error = error;
 		for (fn in listeners) fn(error);
 		listeners.resize(0);
-		//
-		if (error == null && data.init != null) {
+		// moved to PluginManager.dispatchInitCallbacks
+		/*if (error == null && data.init != null) {
 			var t = Date.now().getTime();
 			data.init(this);
 			var dt = Date.now().getTime() - t;
 			if (dt > 500) Main.console.warn('init() for $name took ${dt}ms.');
-		}
+		}*/
 	}
 }
 typedef PluginCallback = (error:Null<Error>)->Void;
