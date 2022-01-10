@@ -44,6 +44,7 @@ class PluginManager {
 		//
 		var state = new PluginState(name, dir + "/" + name);
 		if (cb != null) state.listeners.push(cb);
+		pluginMap.set(name, state);
 		FileSystem.readJsonFile('$dir/$name/config.json', function(err, conf:PluginConfig) {
 			if (err != null) {
 				state.finish(err);
@@ -55,7 +56,6 @@ class PluginManager {
 			} else {
 				state.config = conf;
 				registerMap.set(conf.name, state);
-				pluginMap.set(name, state);
 			}
 			//
 			function loadResources():Void {
