@@ -65,6 +65,13 @@ using tools.NativeString;
 			return true;
 		} else return false;
 	}
+	public function skipIfIdentEquals(s:String, offset:Int = 0):Bool {
+		if (peekstr(s.length, offset) != s) return false;
+		var c = peek(s.length + offset);
+		if (c.isIdent1()) return false;
+		skip(s.length);
+		return true;
+	}
 	
 	public inline function get(p:Int):CharCode {
 		return source.fastCodeAt(p);

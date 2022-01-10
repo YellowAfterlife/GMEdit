@@ -63,8 +63,12 @@ class GmlExtCast extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
-				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-					q.readContextName(null);
+				case "#".code: {
+					if (q.skipIfIdentEquals("import")) {
+						q.skipLine();
+					} else if (p == 0 || q.get(p - 1) == "\n".code) {
+						q.readContextName(null);
+					}
 				};
 				default:
 			}
@@ -90,8 +94,12 @@ class GmlExtCast extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
-				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
-					q.readContextName(null);
+				case "#".code: {
+					if (q.skipIfIdentEquals("import")) {
+						q.skipLine();
+					} else if (p == 0 || q.get(p - 1) == "\n".code) {
+						q.readContextName(null);
+					}
 				};
 				case _ if (c.isIdent0()): {
 					var p = q.pos - 1;
