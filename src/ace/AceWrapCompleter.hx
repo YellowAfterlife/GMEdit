@@ -128,7 +128,7 @@ using tools.NativeString;
 						if (dotKindMeta) {
 							callback(null, GmlAPI.gmlNamespaceComp.array);
 						} else {
-							var imp = GmlFile.current.codeEditor.imports[scope];
+							var imp = session.gmlEditor.imports[scope];
 							if (imp == null) break;
 							callback(null, imp.namespaceComp);
 						}
@@ -200,7 +200,7 @@ using tools.NativeString;
 					if (tk.type != "namespace") continue;
 					var scope = session.gmlScopes.get(pos.row);
 					if (scope == null) continue;
-					var imp = GmlFile.current.codeEditor.imports[scope];
+					var imp = session.gmlEditor.imports[scope];
 					var ns:GmlNamespace;
 					if (dotKindMeta) {
 						ns = GmlAPI.gmlNamespaces[tk.value];
@@ -254,7 +254,7 @@ using tools.NativeString;
 					
 					var imp:GmlImports;
 					if (!isGlobal) {
-						imp = GmlFile.current.codeEditor.imports[scope];
+						imp = session.gmlEditor.imports[scope];
 						if (imp == null) continue;
 					} else imp = null;
 					
@@ -279,7 +279,7 @@ using tools.NativeString;
 					// expand imports:
 					var scope = session.gmlScopes.get(pos.row);
 					if (scope != null) {
-						var imp = GmlFile.current.codeEditor.imports[scope];
+						var imp = session.gmlEditor.imports[scope];
 						if (imp != null) {
 							var s = imp.longenEnum[name];
 							if (s != null) name = s;

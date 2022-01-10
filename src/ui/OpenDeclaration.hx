@@ -155,7 +155,7 @@ class OpenDeclaration {
 		if (term == "event_inherited" || term == "action_inherited") {
 			var def = session.gmlScopes.get(pos.row);
 			if (def == "") return false;
-			var file = GmlFile.current;
+			var file = session.gmlFile;
 			var path = file.path;
 			if (Std.is(file.kind, KGmxEvents)) {
 				return gmx.GmxObject.openEventInherited(path, def) != null;
@@ -168,7 +168,7 @@ class OpenDeclaration {
 		do {
 			var scope = session.gmlScopes.get(pos.row);
 			if (scope == null) break;
-			var imp = GmlFile.current.codeEditor.imports[scope];
+			var imp = session.gmlFile.codeEditor.imports[scope];
 			if (imp == null) break;
 			//
 			var iter = new AceTokenIterator(session, pos.row, pos.column);

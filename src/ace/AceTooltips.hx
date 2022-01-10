@@ -53,7 +53,7 @@ class AceTooltips {
 		//
 		if (AceStatusBar.canDocData.exists(t) || Std.is(session.gmlFile.kind, file.kind.KGml)) {
 			var scope = session.gmlScopes.get(pos.row);
-			var codeEditor = gml.file.GmlFile.current.codeEditor;
+			var codeEditor = session.gmlEditor;
 			var iter = new AceTokenIterator(session, pos.row, pos.column);
 			//
 			var feit = new AceTokenIterator(session, pos.row, pos.column);
