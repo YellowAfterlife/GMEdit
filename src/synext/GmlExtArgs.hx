@@ -68,6 +68,7 @@ class GmlExtArgs {
 		var version = GmlAPI.version;
 		if (!Preferences.current.argsMagic) return code;
 		if (strict == null) strict = Preferences.current.argsStrict;
+		var hasFunctionLiterals = gml.Project.current.version.hasFunctionLiterals();
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
@@ -222,7 +223,7 @@ class GmlExtArgs {
 			}
 			if (req == found && argv) args += ",";
 			//
-			{
+			if (!hasFunctionLiterals) {
 				var trailEnd = code.indexOf("\n#define", q.pos);
 				var trailCode:String;
 				if (trailEnd >= 0) {
@@ -239,6 +240,7 @@ class GmlExtArgs {
 			return args;
 		}
 		//
+		var curlyDepth = 0;
 		var checkArgs = true;
 		while (q.loop) {
 			var p = q.pos;
@@ -255,6 +257,8 @@ class GmlExtArgs {
 						checkArgs = true; 
 					}
 				};
+				case "{".code: curlyDepth++;
+				case "}".code: curlyDepth--;
 				default: {
 					if (checkArgs && c.isIdent0()) {
 						q.skipIdent1();
@@ -272,9 +276,18 @@ class GmlExtArgs {
 								// if we don't find #args, revert reading position to var|
 								q.pos = p1;
 							}
-						} else if (argKeywords[id]) {
+						}
+						else if (hasFunctionLiterals && id == "function") {
+							checkArgs = true;
+						}
+						else if (argKeywords[id]) {
 							// if we find a argument#/argument[#] before #args line, it's not that.
 							checkArgs = false;
+						}
+					} else if (hasFunctionLiterals && c == "f".code) {
+						q.skipIdent1();
+						if (q.substring(p, q.pos) == "function") {
+							checkArgs = true;
 						}
 					}
 				};

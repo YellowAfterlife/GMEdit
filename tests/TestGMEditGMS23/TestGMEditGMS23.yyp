@@ -69,6 +69,7 @@
     {"id":{"name":"v_func_blank_args","path":"scripts/v_func_blank_args/v_func_blank_args.yy",},"order":2,},
     {"id":{"name":"v_anon_structs","path":"scripts/v_anon_structs/v_anon_structs.yy",},"order":2,},
     {"id":{"name":"v_common_namespace_names","path":"scripts/v_common_namespace_names/v_common_namespace_names.yy",},"order":4,},
+    {"id":{"name":"v_args23","path":"scripts/v_args23/v_args23.yy",},"order":2,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
