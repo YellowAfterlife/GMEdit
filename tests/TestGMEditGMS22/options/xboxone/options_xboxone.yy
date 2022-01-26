@@ -18,7 +18,7 @@
     "option_xbone_logo_wide": "${base_options_dir}\\xboxone\\logos\\WideLogo.png",
     "option_xbone_network_config_manifest": "",
     "option_xbone_product_id": "",
-    "option_xbone_program_id": null,
+    "option_xbone_program_id": "A149997C-9864-464E-9E03-8E06832F4CFF",
     "option_xbone_publisher": "Company Name",
     "option_xbone_publisher_display_name": "Company Display Name",
     "option_xbone_ratings": "<mx:Ratings Category=\"game\">\\u000a <!-- Insert your title ratings here -->\\u000a <!-- See \"Title Ratings for Xbox One\" white paper -->\\u000a <!-- from developer.xboxlive.com for details -->\\u000a <\/mx:Ratings>",

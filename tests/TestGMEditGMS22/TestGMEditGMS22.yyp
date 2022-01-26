@@ -71,6 +71,14 @@
             }
         },
         {
+            "Key": "230295d8-28a5-4a5f-b4dc-ba61d568067f",
+            "Value": {
+                "id": "262199bb-b69d-417c-adea-40274640ca7b",
+                "resourcePath": "datafiles_yy\\test.txt.yy",
+                "resourceType": "GMIncludedFile"
+            }
+        },
+        {
             "Key": "23a9b91c-9668-4256-ab81-85a20be4bd1e",
             "Value": {
                 "id": "f081ffec-b9ed-4fa8-ac81-37c12925b441",
@@ -124,6 +132,14 @@
                 "id": "e54ecc76-9e57-6d80-4155-be94e96bdce7",
                 "resourcePath": "scripts\\v_doc_template\\v_doc_template.yy",
                 "resourceType": "GMScript"
+            }
+        },
+        {
+            "Key": "48cad366-5b04-46d0-b99b-352b5a73a7df",
+            "Value": {
+                "id": "13c4a860-c78d-41b1-8ede-261d4d5c2d50",
+                "resourcePath": "notes\\i'm a note.yy",
+                "resourceType": "GMNotes"
             }
         },
         {
@@ -400,8 +416,12 @@
         }
     ],
     "script_order": [
+        "102410dc-6440-4df0-89e3-20cb61fa015b",
         "c0c9e6a7-900a-ee7a-5232-4560d4e153ec",
         "e210f950-63a5-4693-c3e0-7ed9b32d0415",
+        "e0f72199-af01-4d6f-afa9-9f3478044fd1",
+        "bf2c3b0b-40dc-482d-838d-e977af03b665",
+        "714ab57e-90ad-4f1a-a42e-3856d068d35a",
         "127abba8-0a51-4228-9a84-ef12cc986125",
         "23a9b91c-9668-4256-ab81-85a20be4bd1e",
         "de40ff17-a87f-8354-a230-f2480e9bb0e0",
