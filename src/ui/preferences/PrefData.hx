@@ -61,6 +61,9 @@ import haxe.DynamicAccess;
 		globalLookup: {
 			matchMode: AceSmart,
 			maxCount: 100,
+			initialWidth: 480,
+			initialHeight: 384,
+			initialFilters: {},
 		},
 		chromeTabs: {
 			minWidth: 50,
@@ -139,6 +142,9 @@ typedef PrefDataImpl = {
 	globalLookup: {
 		matchMode:PrefMatchMode,
 		maxCount:Int,
+		initialWidth:Int,
+		initialHeight:Int,
+		initialFilters:DynamicAccess<Bool>,
 	},
 	chromeTabs: {
 		minWidth:Int,

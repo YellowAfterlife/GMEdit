@@ -16,24 +16,43 @@
 	right: 0;
 	bottom: 0;
 	margin: auto;
-	width: 300px;
-	height: 200px;
+	width: 480px;
+	height: 272px;
 	resize: both;
 	display: flex;
-	flex-direction: column;
 }
-#global-lookup > div {
+#global-lookup .lookup-main {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+#global-lookup .lookup-query {
 	margin-bottom: 4px;
 	display: flex;
 }
-#global-lookup > div > label {
+#global-lookup .lookup-query > label[for="filter"] {
 	margin-left: 6px;
 	display: flex;
 	align-items: center;
 }
-#global-lookup > select {
+#global-lookup .lookup-main > select {
 	flex-grow: 1;
 	overflow-y: auto;
+}
+#global-lookup .lookup-options {
+	margin-left: 4px;
+	min-width: 100px;
+}
+#global-lookup .lookup-options > fieldset {
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	height: 100%;
+	box-sizing: border-box;
+}
+#global-lookup .lookup-options hr {
+	width: 100%;
+	margin: 0.3em 0;
 }
 /* */
 #global-search {
@@ -128,6 +147,7 @@
 	-webkit-padding-before: 0;
 }
 .popout-window hr {
+	width: 100%;
 	border: 0;
 	border-top: 1px solid #999;
 }

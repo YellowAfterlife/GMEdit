@@ -2,11 +2,13 @@ package ui.preferences;
 import electron.Electron;
 import electron.FileWrap;
 import js.html.Element;
+import js.html.InputElement;
 import ui.Preferences.*;
 import gml.GmlAPI;
 import gml.Project;
 import ui.RecentProjects;
 import ui.preferences.PrefData;
+using tools.HtmlTools;
 
 /**
  * ...
@@ -144,6 +146,36 @@ class PrefNav {
 			current.globalLookup.maxCount = i;
 			save();
 		});
+		
+		el = addIntInput(out, "Initial width", current.globalLookup.initialWidth, function(i) {
+			if (i < 160) i = 1;
+			current.globalLookup.initialWidth = i;
+			save();
+		});
+		
+		el = addIntInput(out, "Initial height", current.globalLookup.initialHeight, function(i) {
+			if (i < 160) i = 1;
+			current.globalLookup.initialHeight = i;
+			save();
+		});
+		
+		el = addGroup(out, "Default filters"); {
+			el.classList.add("collapsed");
+			el.style.display = "flex";
+			el.style.flexDirection = "column";
+			var tmp = Main.document.createDivElement();
+			el.appendChild(tmp);
+			tmp.outerHTML = GlobalLookup.checkboxHTML;
+			var opts = current.globalLookup.initialFilters;
+			for (cb in el.querySelectorAllAuto("input", InputElement)) {
+				var opt = opts[cb.name];
+				if (opt != null) cb.checked = opt;
+				cb.addEventListener("change", function(_) {
+					current.globalLookup.initialFilters[cb.name] = cb.checked;
+					save();
+				});
+			}
+		}
 	}
 	public static function build(out:Element) {
 		out = addGroup(out, "Navigation");

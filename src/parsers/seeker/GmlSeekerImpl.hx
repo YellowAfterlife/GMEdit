@@ -160,7 +160,7 @@ class GmlSeekerImpl {
 		var col = eol ? null : 0;
 		var row = reader.row;
 		if (!GmlAPI.gmlLookup.exists(s)) {
-			if (s != mainTop) GmlAPI.gmlLookupList.push(s);
+			if (s != mainTop) GmlAPI.gmlLookupItems.push({value:s});
 		}
 		var lookup:GmlLookup = { path: orig, sub: sub, row: row, col: col };
 		if (project.isGMS23 && s == mainTop) {

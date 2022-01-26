@@ -6,6 +6,7 @@ import file.kind.gmx.*;
 import file.kind.misc.*;
 import gml.file.*;
 import ui.*;
+import haxe.macro.Expr.Var;
 import js.html.Element;
 import haxe.io.Path;
 import ace.AceWrap;
@@ -59,7 +60,7 @@ class GmxLoader {
 					};
 				}
 				project.setResourceTypeFromPath(path);
-				GmlAPI.gmlLookupList.push(name);
+				GmlAPI.gmlLookupItems.push({value:name, meta:"asset." + one});
 				if (index) seekSoon.push({ full: full, main: _main, kind: kind});
 				var item = TreeView.makeAssetItem(name, path, full, one);
 				if (one == "sprite") ths.push({path:full, item:item, name:name});
@@ -115,6 +116,8 @@ class GmxLoader {
 				var full = project.fullPath(Path.join([path, name]));
 				var item = TreeView.makeAssetItem(name, rel, full, "datafile") ;
 				out.appendChild(item);
+				GmlAPI.gmlLookup.set(rel, { path: full, row: 0 });
+				GmlAPI.gmlLookupItems.push({value:rel, meta:"includedFile"});
 			} else {
 				var name = gmx.get("name");
 				var next = path + name + "/";
@@ -186,7 +189,7 @@ class GmxLoader {
 						if (help != null && help != "") {
 							GmlAPI.extCompAdd(new AceAutoCompleteItem(name, "function", help));
 							GmlAPI.extDoc.set(name, GmlFuncDoc.parse(help));
-							if (isGmlFile) GmlAPI.gmlLookupList.push(name);
+							if (isGmlFile) GmlAPI.gmlLookupItems.push({value:name, meta:"extfunction"});
 						}
 						if (isGmlFile) {
 							GmlAPI.gmlLookup.set(name, {

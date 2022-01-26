@@ -113,7 +113,7 @@ class GmlLinterParser {
 				};
 				case "#".code: {
 					c = q.peek();
-					if (c.isHex()) {
+					if (c.isHex()) { // color literal?
 						var i = 0, ci;
 						while (++i < 6) {
 							ci = q.peek(i);

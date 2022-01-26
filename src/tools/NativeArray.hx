@@ -89,4 +89,13 @@ import js.Syntax;
 		for (v in arr) if (fn(v)) { result = v; break; }
 		return result;
 	}
+	public static function removeFirst<T>(arr:Array<T>, fn:T->Bool):Null<T> {
+		var result:Null<T> = null;
+		for (i => v in arr) if (fn(v)) {
+			arr.splice(i, 1);
+			result = v;
+			break;
+		}
+		return result;
+	}
 }

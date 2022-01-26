@@ -23,6 +23,9 @@ class HtmlTools {
 	public static inline function querySelectorEls(el:EitherType<Document, Element>, selectors:String):ElementList {
 		return cast asElement(el).querySelectorAll(selectors);
 	}
+	public static inline function querySelectorAllAuto<T:Element>(el:EitherType<Document, Element>, selectors:String, ?c:Class<T>):ElementListOf<T> {
+		return cast asElement(el).querySelectorAll(selectors);
+	}
 	public static inline function querySelectorAuto<T:Element>(
 		el:EitherType<Document, Element>, selectors:String, ?c:Class<T>
 	):T {

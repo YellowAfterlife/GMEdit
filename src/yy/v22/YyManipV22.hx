@@ -241,10 +241,11 @@ class YyManipV22 {
 			//
 		} else switch (kind) {
 			case "script", "object", "shader": {
+				var aceKind = "asset." + kind;
 				GmlAPI.gmlComp.push(new AceAutoCompleteItem(args.name, kind));
-				GmlAPI.gmlKind.set(args.name, "asset." + kind);
+				GmlAPI.gmlKind.set(args.name, aceKind);
 				GmlAPI.gmlLookup.set(args.name, { path: args.npath, row: 0 });
-				GmlAPI.gmlLookupList.push(args.name);
+				GmlAPI.gmlLookupItems.push({value:args.name, meta:aceKind});
 				var fk:FileKind = switch (kind) {
 					case "object": file.kind.yy.KYyEvents.inst;
 					case "shader": null;

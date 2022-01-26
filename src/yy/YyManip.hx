@@ -285,10 +285,11 @@ class YyManip {
 			// OK! It's a folder
 		} else switch (kind) {
 			case "script", "object", "shader": {
+				var aceKind = "asset." + kind;
 				GmlAPI.gmlComp.push(new AceAutoCompleteItem(name, kind));
-				GmlAPI.gmlKind.set(name, "asset." + kind);
+				GmlAPI.gmlKind.set(name, aceKind);
 				GmlAPI.gmlLookup.set(name, { path: yyPath, row: 0 });
-				GmlAPI.gmlLookupList.push(name);
+				GmlAPI.gmlLookupItems.push({value:name, meta:aceKind});
 				var fk:FileKind = switch (kind) {
 					case "object": KYyEvents.inst;
 					case "shader": null;
@@ -495,10 +496,13 @@ class YyManip {
 				lookup.path = newPath;
 				GmlAPI.gmlLookup.move(curName, newName);
 				var rxLookup = new RegExp('^$curName$', 'm');
-				var i = GmlAPI.gmlLookupList.indexOf(curName);
-				if (i >= 0) {
-					GmlAPI.gmlLookupList[i] = newName;
-				} else GmlAPI.gmlLookupList.push(newName);
+				var item = GmlAPI.gmlLookupItems.findFirst(q->q.value == curName);
+				if (item != null) {
+					item.value = newName;
+				} else {
+					// todo: meta
+					GmlAPI.gmlLookupItems.push({value: newName});
+				}
 			}
 			if (args.kind == "sprite") pj.spriteURLs.move(curName, newName);
 			//

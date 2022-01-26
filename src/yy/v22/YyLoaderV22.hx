@@ -18,6 +18,7 @@ import file.kind.yy.*;
 import file.kind.misc.*;
 import yy.YyProjectResource;
 import yy.v22.YyGUIDCollisionChecker;
+using tools.NativeString;
 
 /**
  * Loads project files for GMS <= 2.2
@@ -183,14 +184,20 @@ class YyLoaderV22 {
 						case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 						"GMScript", "GMShader", "GMFont", "GMTimeline",
 						"GMObject", "GMRoom": {
-							var atype = type.substring(2).toLowerCase();
-							GmlAPI.gmlKind.set(name, "asset." + atype);
+							var atype = type.fastSubStart(2).decapitalize();
+							var aceType = "asset." + atype;
+							GmlAPI.gmlKind.set(name, aceType);
 							if (type != "GMScript") { // scripts have custom logic below
-								GmlAPI.gmlLookupList.push(name);
+								GmlAPI.gmlLookupItems.push({value:name, meta:aceType});
 							}
 							var next = new AceAutoCompleteItem(name, atype);
 							comp.push(next);
 							GmlAPI.gmlAssetComp.set(name, next);
+						};
+						case "GMNotes": {
+							var atype = type.fastSubStart(2).decapitalize();
+							var aceType = "asset." + atype;
+							GmlAPI.gmlLookupItems.push({value:name, meta:aceType});
 						};
 					}
 					if (out == null) continue;
@@ -199,7 +206,7 @@ class YyLoaderV22 {
 							full = Path.withoutExtension(full) + ".gml";
 							// we'll index lambda scripts on demand
 							if (!scriptLambdas || !NativeString.startsWith(name, GmlExtLambda.lfPrefix)) {
-								GmlAPI.gmlLookupList.push(name);
+								GmlAPI.gmlLookupItems.push({value:name, meta:"asset.script"});
 								GmlSeeker.run(full, name, KGmlScript.inst);
 							}
 						};
@@ -219,6 +226,8 @@ class YyLoaderV22 {
 							full = NativeString.replaceExt(full, rxDatafiles, "datafiles$1");
 							full = Path.withoutExtension(full);
 							name = Path.withoutDirectory(full);
+							GmlAPI.gmlLookup.set(rel, { path: full, row: 0 });
+							GmlAPI.gmlLookupItems.push({value:name, meta:"includedFile"});
 						};
 						case "GMExtension": {
 							var ext:YyExtension = FileWrap.readYyFileSync(full);
@@ -268,7 +277,7 @@ class YyLoaderV22 {
 											name, "function", help
 										));
 										GmlAPI.extDoc.set(name, gml.GmlFuncDoc.parse(help));
-										if (isGmlFile) GmlAPI.gmlLookupList.push(name);
+										if (isGmlFile) GmlAPI.gmlLookupItems.push({value:name, meta:"extfunction"});
 									}
 									if (isGmlFile) {
 										GmlAPI.gmlLookup.set(name, {

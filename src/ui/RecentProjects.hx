@@ -1,4 +1,5 @@
 package ui;
+import ace.extern.AceAutoCompleteItem;
 import electron.AppTools;
 import electron.Electron;
 import electron.FileSystem;
@@ -46,11 +47,11 @@ class RecentProjects {
 	public static function show() {
 		TreeView.clear();
 		var el = TreeView.element;
-		var lookup = [];
+		var lookup:Array<AceAutoCompleteItem> = [];
 		if (electron.Electron != null) for (path in get()) {
 			var pair = tools.PathTools.ptDetectProject(path);
 			var name = pair.name;
-			lookup.push(name);
+			lookup.push({value:name, meta:pair.version.label});
 			var pj = TreeView.makeProject(name, path);
 			FileSystem.exists(path, function(e) {
 				if (e != null) {
@@ -72,6 +73,6 @@ class RecentProjects {
 			});
 			el.appendChild(pj);
 		}
-		gml.GmlAPI.gmlLookupList = lookup;
+		gml.GmlAPI.gmlLookupItems = lookup;
 	}
 }

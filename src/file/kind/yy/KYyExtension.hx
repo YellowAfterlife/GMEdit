@@ -65,7 +65,7 @@ class KYyExtension extends FileKind {
 						name, "function", help
 					));
 					GmlAPI.extDoc.set(name, gml.GmlFuncDoc.parse(help));
-					if (isGmlFile) GmlAPI.gmlLookupList.push(name);
+					if (isGmlFile) GmlAPI.gmlLookupItems.push({value:name, meta:"extfunction"});
 				}
 				if (isGmlFile) {
 					GmlAPI.gmlLookup.set(name, {

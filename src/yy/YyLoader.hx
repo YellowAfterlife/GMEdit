@@ -154,6 +154,12 @@ class YyLoader {
 		if (project.existsSync("datafiles")) {
 			var idir = TreeView.makeAssetDir("Included Files", "datafiles/", "file");
 			raw.RawLoader.loadDirRec(project, idir.treeItems, "datafiles");
+			var items = tools.HtmlTools.querySelectorAllAuto(idir, "div." + TreeView.clItem, TreeViewItem);
+			for (item in items) {
+				var rel = item.treeRelPath;
+				GmlAPI.gmlLookup.set(rel, { path: item.treeFullPath, row: 0 });
+				GmlAPI.gmlLookupItems.push({ value: rel, meta:"includedFile" });
+			}
 			topLevel.treeItems.appendChild(idir);
 		}
 		// restoreOpen runs in Project:reload

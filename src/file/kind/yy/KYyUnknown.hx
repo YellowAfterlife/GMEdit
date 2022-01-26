@@ -73,9 +73,10 @@ class KYyUnknown extends FileKind {
 				case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 					"GMScript", "GMShader", "GMFont", "GMTimeline",
 					"GMObject", "GMRoom"
-				: {
-					GmlAPI.gmlKind.set(name, "asset." + kind);
-					GmlAPI.gmlLookupList.push(name);
+				: { // assets
+					var aceKind = "asset." + kind;
+					GmlAPI.gmlKind.set(name, aceKind);
+					GmlAPI.gmlLookupItems.push({ value:name, meta:aceKind });
 					if (resType != "GMScript") {
 						// since 2.3 scripts contain function definitions,
 						// why would we care about the script resource itself?
@@ -83,6 +84,10 @@ class KYyUnknown extends FileKind {
 						GmlAPI.gmlComp.push(next);
 						GmlAPI.gmlAssetComp.set(name, next);
 					}
+				};
+				case "GMNotes": { // not assets, but lookup is allowed
+					var aceKind = "asset." + kind;
+					GmlAPI.gmlLookupItems.push({ value:name, meta:aceKind });
 				};
 			}
 			// don't touch the relative YY path, rename operations rely on it

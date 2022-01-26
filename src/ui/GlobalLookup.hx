@@ -11,6 +11,7 @@ import js.html.OptionElement;
 import js.html.SelectElement;
 import Main.*;
 import tools.Dictionary;
+import tools.JsTools;
 import tools.NativeString;
 import ace.AceMacro;
 import gml.GmlAPI;
@@ -18,6 +19,7 @@ import tools.macros.SynSugar;
 import ui.CommandPalette;
 import ui.Preferences;
 using tools.HtmlTools;
+using tools.NativeString;
 
 /**
  * The thing you see when you press Ctrl+T
@@ -39,6 +41,22 @@ class GlobalLookup {
 	private static var kindFiltersArr:Array<String> = null;
 	private static var kindFiltersStr:String = "";
 	
+	// this is for checkboxes on the right (as opposed to text-based filters)
+	public static var kindFilterCheckboxes:ElementListOf<InputElement>;
+	public static var kindFilterCheckboxState:Dictionary<Bool> = new Dictionary();
+	static function syncKindFilterCheckboxes() {
+		var tf = kindFilterCheckboxState;
+		for (cb in kindFilterCheckboxes) {
+			var on = cb.checked;
+			var kind = cb.dataset.kind;
+			tf[kind] = on;
+			var kind2 = cb.dataset.kind2;
+			if (kind2 != null) tf[kind2] = on;
+		}
+	}
+	
+	static var assetHintMapper:Dictionary<String> = new Dictionary();
+	
 	private static function updateImpl(?force:Bool) {
 		updateTimer = null;
 		var filter = field.value;
@@ -58,6 +76,7 @@ class GlobalLookup {
 				kindFilters = kindFiltersArr;
 			}
 		}
+		syncKindFilterCheckboxes();
 		//
 		if (filter.length >= 2 || isCmd) {
 			var selection = list.selectedOptions.length > 0
@@ -65,12 +84,18 @@ class GlobalLookup {
 			var found = 0;
 			var foundMap = new Dictionary<Bool>();
 			list.selectedIndex = -1;
-			var arr = isCmd ? CommandPalette.lookupList : GmlAPI.gmlLookupList;
+			var arr = isCmd ? CommandPalette.lookupItems : GmlAPI.gmlLookupItems;
 			var matchMode = Preferences.current.globalLookup.matchMode;
+			function getHint(name:String) {
+				var ac = GmlAPI.gmlAssetComp[name];
+				if (ac != null) {
+					return ac.meta;
+				} else {
+					return tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
+				}
+			}
 			if (filteredList == null || filteredListCmd != isCmd) {
-				filteredList = new AceFilteredList(arr.map(function(name):AceAutoCompleteItem {
-					return cast {value:name};
-				}), filter);
+				filteredList = new AceFilteredList(arr, filter);
 				filteredList.gmlMatchMode = matchMode;
 				filteredListCmd = isCmd;
 			}
@@ -94,17 +119,9 @@ class GlobalLookup {
 				option.textContent = name;
 				return option;
 			}
-			inline function getHint(name:String) {
-				var ac = GmlAPI.gmlAssetComp[name];
-				if (ac != null) {
-					return ac.meta;
-				} else {
-					return tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
-				}
-			}
-			function addOption(name:String):Void {
+			function addOption(name:String, hint:String):Void {
 				//
-				var hint:String, title:String;
+				var title:String;
 				if (isCmd) {
 					var cmd = CommandPalette.lookupMap[name];
 					if (cmd != null) {
@@ -115,7 +132,18 @@ class GlobalLookup {
 						title = null;
 					}
 				} else {
-					hint = getHint(name);
+					if (hint == null) hint = getHint(name);
+					if (hint.charCodeAt(0) == "a".code 
+						&& hint.charCodeAt(5) == ".".code
+						&& hint.startsWith("asset.")
+					) {
+						var h1 = assetHintMapper[hint];
+						if (h1 == null) {
+							h1 = hint.fastSubStart(6);
+							assetHintMapper[hint] = h1;
+						}
+						hint = h1;
+					}
 					title = null;
 				}
 				//
@@ -127,9 +155,11 @@ class GlobalLookup {
 			filteredList.shouldSort = true;
 			filteredList.setFilter(filter);
 			var filteredItems = filteredList.filtered;
-			if (kindFilters != null) filteredItems = filteredItems.filter(function(item) {
-				var hint = getHint(item.value);
+			if (!isCmd) filteredItems = filteredItems.filter(function(item) {
+				var hint = item.meta;
 				if (hint == null) return false;
+				if (kindFilterCheckboxState[hint] == false) return false;
+				if (kindFilters == null) return true;
 				for (kindFilter in kindFilters) {
 					if (NativeString.contains(hint, kindFilter)) return true;
 				}
@@ -140,17 +170,17 @@ class GlobalLookup {
 			if (filteredItems.length > maxCount + 1) {
 				var show = filteredItems.slice(0, maxCount);
 				var hide = filteredItems.slice(maxCount);
-				for (item in show) addOption(item.value);
+				for (item in show) addOption(item.value, item.meta);
 				//
 				var more_txt = hide.length + ' more items...';
 				var more = addOption_1(found++, more_txt, "", null);
 				(cast more).noCache = true;
 				more.onclick = function(_) {
 					found = maxCount; // causes "more" to be replaced
-					for (item in hide) addOption(item.value);
+					for (item in hide) addOption(item.value, item.meta);
 				}
 			} else {
-				for (item in filteredItems) addOption(item.value);
+				for (item in filteredItems) addOption(item.value, item.meta);
 			}
 			// remove extra items:
 			i = list.children.length;
@@ -183,9 +213,10 @@ class GlobalLookup {
 			field.value = initialText;
 			field.focus();
 			updateImpl();
-		} else {
-			element.style.display = "none";
-		}
+		} else hide();
+	}
+	public static function hide() {
+		element.style.display = "none";
 	}
 	static function openTerm(term:String):Bool {
 		if (NativeString.startsWith(field.value, ">")) {
@@ -201,9 +232,6 @@ class GlobalLookup {
 		update();
 		var kc = e.keyCode, i:Int;
 		switch (kc) {
-			case KeyboardEvent.DOM_VK_TAB: {
-				e.preventDefault();
-			};
 			case KeyboardEvent.DOM_VK_UP: {
 				e.preventDefault();
 				i = (list.selectedIndex - 1) % list.children.length;
@@ -222,30 +250,99 @@ class GlobalLookup {
 				} else {
 					var term = list.value;
 					if (term == "") term = field.value;
-					if (openTerm(term)) toggle();
+					if (openTerm(term)) hide();
 				}
 			};
 			case KeyboardEvent.DOM_VK_ESCAPE: {
-				toggle();
+				hide();
 			};
 		}
 	}
+	public static var checkboxHTML:String;
+
 	public static function init() {
 		filteredList = new AceFilteredList([]);
 		element = document.createFormElement();
 		element.id = "global-lookup";
 		element.classList.add("popout-window");
 		element.style.display = "none";
-		element.innerHTML = SynSugar.xmls(<html>
-			<div>
-				<input name="name" type="text" />
-				<label for="filter">
-					<input name="filter" type="checkbox" title="Click to set default filters"/>
-				</label>
+		
+		checkboxHTML = {
+			var cbHTML = SynSugar.xmls(<html>
+				<lbcb checked asset name="sprite">Sprites</lbcb>
+				<lbcb checked asset name="tileset">Tilesets</lbcb>
+				<lbcb checked asset name="background">Backgrounds</lbcb>
+				<lbcb checked asset name="sound">Sounds</lbcb>
+				<lbcb checked asset name="path">Paths</lbcb>
+				<lbcb checked asset name="script">Scripts</lbcb>
+				<lbcb checked asset name="shader">Shaders</lbcb>
+				<lbcb checked asset name="font">Fonts</lbcb>
+				<lbcb checked asset name="timeline">Timelines</lbcb>
+				<lbcb checked asset name="object">Objects</lbcb>
+				<lbcb checked asset name="room">Rooms</lbcb>
+				<lbcb checked asset name="sequence">Sequences</lbcb>
+				<lbcb checked asset name="animcurve">Animation curves</lbcb>
+				<lbcb checked asset name="notes">Notes</lbcb>
+				<lbcb checked asset name="extension" data-kind2="extfunction">Extensions</lbcb>
+				<lbcb name="includedFile">Included files</lbcb>
+				<hr/>
+				<lbcb name="globalvar">Global variables</lbcb>
+				<lbcb name="macro">Macros</lbcb>
+				<lbcb name="enums">Enums</lbcb>
+				<lbcb name="namespace">Namespaces</lbcb>
+			</html>);
+			cbHTML = ~/<lbcb(.*?)>(.+?)<\/lbcb>/g.map(cbHTML, function(rx:EReg) {
+				var attrs = rx.matched(1);
+				var text = rx.matched(2);
+				return '<label><input type="checkbox"$attrs/>$text</label>';
+			});
+			var tmp = document.createDivElement();
+			tmp.innerHTML = cbHTML;
+			var cbs:ElementListOf<InputElement> = tmp.querySelectorAllAuto('input[type="checkbox"]');
+			for (cb in cbs) {
+				var isAsset = cb.hasAttribute("asset");
+				if (isAsset) cb.removeAttribute("asset");
+				if (cb.dataset.kind == null) {
+					var name = cb.name;
+					var kind = name;
+					if (isAsset) kind = "asset." + kind;
+					cb.name = "lookup-" + name;
+					cb.dataset.kind = kind;
+				}
+			}
+			tmp.innerHTML;
+		};
+		
+		var initHTML = SynSugar.xmls(<html>
+			<div class="lookup-main">
+				<div class="lookup-query">
+					<input name="name" type="text"/>
+					<label for="filter">
+						<input name="filter" type="checkbox" title="Click to set default filters"/>
+					</label>
+				</div>
+				<select name="comp" size="5"></select>
 			</div>
-			<select name="comp" size="5"></select>
+			<div class="lookup-options">
+				<fieldset>
+					<legend>Look for</legend>
+					<checkboxHTML/>
+				</fieldset>
+			</div>
 		</html>);
+		initHTML = StringTools.replace(initHTML, "<checkboxHTML/>", checkboxHTML);
+		element.innerHTML = initHTML;
+		element.onkeydown = onkeydown;
+		element.style.width  = Preferences.current.globalLookup.initialWidth + "px";
+		element.style.height = Preferences.current.globalLookup.initialHeight + "px";
+		
 		document.querySelectorAuto("#main", Element).insertAfterSelf(element);
+		kindFilterCheckboxes = element.querySelectorAllAuto('.lookup-options input[type="checkbox"]');
+		for (cb in kindFilterCheckboxes) {
+			var opt = Preferences.current.globalLookup.initialFilters[cb.name];
+			if (opt != null) cb.checked = opt;
+			cb.addEventListener("change", () -> updateImpl(true));
+		}
 		//
 		field = element.querySelectorAuto('input[name="name"]');
 		field.placeholder = "Resource `name[:type]` or `>command`";
@@ -271,11 +368,10 @@ class GlobalLookup {
 				var term = list.value;
 				if (term != "") {
 					openTerm(term);
-					toggle();
+					hide();
 				}
 			});
 		};
-		field.onkeydown = onkeydown;
 		field.onkeyup = function(_) update();
 	}
 }

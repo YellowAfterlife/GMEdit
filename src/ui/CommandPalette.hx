@@ -1,4 +1,5 @@
 package ui;
+import ace.extern.AceAutoCompleteItem;
 import gml.file.GmlFile;
 import js.html.OptionElement;
 import js.lib.RegExp;
@@ -12,18 +13,18 @@ import ui.project.ProjectProperties;
 @:expose("CommandPalette")
 class CommandPalette {
 	public static var lookupMap:Map<String, CommandDef> = new Map();
-	public static var lookupList:Array<String> = [];
+	public static var lookupItems:Array<AceAutoCompleteItem> = [];
 	public static function add(cmd:CommandDef) {
 		var name = cmd.name;
 		if (lookupMap[name] == null) {
-			lookupList.push(name);
+			lookupItems.push({value:name});
 		}
 		lookupMap[name] = cmd;
 	}
 	public static function remove(cmd:CommandDef) {
 		var name = cmd.name;
 		if (lookupMap[name] != null) {
-			lookupList.remove(name);
+			tools.NativeArray.removeFirst(lookupItems, (c)->c.name == name);
 			lookupMap.remove(name);
 		}
 	}

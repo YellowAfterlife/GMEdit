@@ -239,7 +239,7 @@ class GmlAPI {
 	 * NB! If an asset is hidden (e.g. an unlisted extension function), it can be in gmlLookup
 	 * but not in here.
 	 */
-	public static var gmlLookupList:Array<String> = [];
+	public static var gmlLookupItems:Array<AceAutoCompleteItem> = [];
 	
 	/** @hint and other namespaces collected across the code */
 	public static var gmlNamespaces:Dictionary<GmlNamespace> = new Dictionary();
@@ -295,7 +295,7 @@ class GmlAPI {
 		gmlInstFieldMap = new Dictionary();
 		gmlInstFieldComp.clear();
 		gmlLookup = new Dictionary();
-		gmlLookupList.resize(0);
+		gmlLookupItems.resize(0);
 		gmlNamespaces = new Dictionary();
 		gmlNamespaceComp.clear();
 		for (type in gmx.GmxLoader.assetTypes) {

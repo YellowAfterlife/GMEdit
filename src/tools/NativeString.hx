@@ -45,11 +45,17 @@ import tools.CharCode;
 	}
 	
 	public static function capitalize(s:String):String {
-		return s.charAt(0).toUpperCase() + s.substring(1);
+		return s.charAt(0).toUpperCase() + fastSubStart(s, 1);
+	}
+	public static function decapitalize(s:String):String {
+		return s.charAt(0).toLowerCase() + fastSubStart(s, 1);
 	}
 	
 	public static inline function fastSub(s:String, start:Int, len:Int):String {
 		return Syntax.code("{0}.substr({1},{2})", s, start, len);
+	}
+	public static inline function fastSubStart(s:String, start:Int):String {
+		return Syntax.code("{0}.substr({1})", s, start);
 	}
 	
 	public static inline function repeat(s:String, count:Int):String {

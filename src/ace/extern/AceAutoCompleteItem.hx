@@ -76,7 +76,7 @@ from AceAutoCompleteItemImpl to AceAutoCompleteItemImpl {
 }
 typedef AceAutoCompleteItemImpl = {
 	/** Name shown in auto-completion menu */
-	var name:String;
+	var ?name:String;
 	
 	/** Value to be inserted when the item is chosen */
 	var value:String;
@@ -85,7 +85,7 @@ typedef AceAutoCompleteItemImpl = {
 	var ?score:Int;
 	
 	/** Item "kind" that makes for a separate column in auto-completion menu. */
-	var meta:String;
+	var ?meta:String;
 	
 	/**
 	 * Documentation line, shown on the right of auto-complete menu.
