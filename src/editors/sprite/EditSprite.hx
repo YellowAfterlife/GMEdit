@@ -185,7 +185,7 @@ class EditSprite extends Editor {
 		Dialog.showOpenDialog({
 			title: "Open",
 			buttonLabel: "Import",
-			properties: [ DialogOpenFeature.multiSelections ],
+			properties: [ DialogOpenFeature.openFile, DialogOpenFeature.multiSelections ],
 			filters: [
 				new DialogFilter( "Image files", ["png"])
 			]
