@@ -23,6 +23,7 @@ import editors.EditCode;
 import parsers.linter.GmlLinterKind;
 import gml.GmlVersion;
 import ace.extern.*;
+import tools.IntDictionary;
 import tools.JsTools;
 import tools.NativeObject;
 import tools.macros.GmlLinterMacros.*;
@@ -921,12 +922,22 @@ class GmlLinter {
 		//
 		if (session.gmlErrorMarkers == null) session.gmlErrorMarkers = [];
 		var annotations:Array<AceAnnotation> = [];
+		var markerMap:IntDictionary<{level:Int, id:AceMarker}> = new IntDictionary();
 		function addMarker(text:String, pos:AcePos, isError:Bool) {
-			var line = session.getLine(pos.row);
-			var range = new AceRange(0, pos.row, line.length, pos.row);
-			var clazz = isError ? "ace_error-line" : "ace_warning-line";
-			var marker = new ace.gml.AceGmlWarningMarker(session, pos.row, clazz);
-			session.gmlErrorMarkers.push(marker.addTo(session));
+			do {
+				var newLevel = isError ? 2 : 1;
+				var old = markerMap[pos.row];
+				if (old != null) {
+					if (old.level >= newLevel) break;
+					session.gmlErrorMarkers.remove(old.id);
+					session.removeMarker(old.id);
+				}
+				var clazz = isError ? "ace_error-line" : "ace_warning-line";
+				var marker = new ace.gml.AceGmlWarningMarker(session, pos.row, clazz);
+				var markerID = marker.addTo(session);
+				session.gmlErrorMarkers.push(markerID);
+				markerMap[pos.row] = { level: newLevel, id: markerID };
+			} while (false);
 			annotations.push({
 				row: pos.row, column: pos.column, type: isError ? "error" : "warning", text: text
 			});
