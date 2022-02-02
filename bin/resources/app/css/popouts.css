@@ -207,6 +207,16 @@ html #ace_settingsmenu {
 #ace_settingsmenu div[contains="setTheme"] {
 	display: none;
 }
+.ace_goto {
+	display: flex;
+	flex-direction: column;
+	resize: vertical;
+}
+.ace_goto_comp {
+	width: 100%;
+	flex-grow: 1;
+	margin-bottom: 4px;
+}
 
 .popout-menu {
 	z-index: 1000;

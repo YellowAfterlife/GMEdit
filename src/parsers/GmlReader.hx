@@ -69,7 +69,10 @@ using tools.NativeString;
 		return false;
 	}
 	
-	/** Skips past the end of a comment-block */
+	/**
+	 * Skips past the end of a comment-block
+	 * @return Number of lines skipped
+	 */
 	public function skipComment() {
 		var n = 0;
 		while (loopLocal) {
@@ -85,6 +88,10 @@ using tools.NativeString;
 		return n;
 	}
 	
+	/**
+	 * Skips a GMS1-style string
+	 * @return Number of lines skipped
+	 */
 	public function skipString1(qc:Int):Int {
 		var c = peek(), n = 0;
 		while (c != qc && loopLocal) {
@@ -95,6 +102,10 @@ using tools.NativeString;
 		return n;
 	}
 	
+	/**
+	 * Skips a GMS2-style string
+	 * @return Number of lines skipped
+	 */
 	public function skipString2():Int {
 		var n = 0;
 		var c = peek();
@@ -256,23 +267,33 @@ using tools.NativeString;
 	
 	/** Skips spaces, tabs, `\r`, `\n` */
 	public function skipSpaces1() {
+		var lines = 0;
 		while (loop) {
 			switch (peek()) {
-				case " ".code, "\t".code, "\r".code, "\n".code: {
+				case "\n".code: {
+					lines += 1; skip(); continue;
+				}
+				case " ".code, "\t".code, "\r".code: {
 					skip(); continue;
 				};
 			}; break;
 		}
+		return lines;
 	}
 	
 	public function skipSpaces1_local() {
+		var lines = 0;
 		while (loopLocal) {
 			switch (peek()) {
-				case " ".code, "\t".code, "\r".code, "\n".code: {
+				case "\n".code: {
+					lines += 1; skip(); continue;
+				}
+				case " ".code, "\t".code, "\r".code: {
 					skip(); continue;
 				};
 			}; break;
 		}
+		return lines;
 	}
 	
 	public function skipSpaces1x(till:Int) {

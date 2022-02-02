@@ -1,5 +1,6 @@
 package file.kind;
 
+import ace.extern.AceAutoCompleteItems;
 import editors.EditCode;
 import electron.Dialog;
 import electron.FileWrap;
@@ -57,5 +58,9 @@ class KCode extends FileKind {
 	 */
 	public function postproc(editor:EditCode, code:String):String {
 		return code;
+	}
+	
+	public function gatherGotoTargets(editor:EditCode):AceAutoCompleteItems {
+		return null;
 	}
 }

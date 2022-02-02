@@ -1,6 +1,7 @@
 package ace;
 import ace.AceWrap;
 import ace.extern.*;
+import ace.extern.AceSelection;
 import editors.EditCode;
 import electron.ConfigFile;
 import electron.FileSystem;
@@ -132,7 +133,7 @@ class AceSessionData {
 	}
 }
 typedef AceSessionDataImpl = {
-	selection:Dynamic,
+	selection:AceSelectionData,
 	scrollLeft:Float,
 	scrollTop:Float,
 	foldLines:Array<Int>,

@@ -1,4 +1,5 @@
 package file.kind;
+import ace.extern.AceAutoCompleteItems;
 import gml.file.GmlFile.GmlFileNav;
 import editors.EditCode;
 import editors.Editor;
@@ -6,7 +7,9 @@ import electron.Dialog;
 import js.lib.RegExp;
 import parsers.*;
 import synext.*;
-import tools.NativeString;
+import tools.CharCode;
+import tools.JsTools;
+using tools.NativeString;
 
 /**
  * A parent for any kinds containing GML code.
@@ -92,7 +95,7 @@ class KGml extends KCode {
 		var row = 0, col = 0;
 		var i:Int, s:String;
 		if (nav.def != null) {
-			var rxDef = new RegExp("^(#define|#event|#moment|#target|function)[ \t]" + NativeString.escapeRx(nav.def) + "\\b");
+			var rxDef = new RegExp("^(#define|#event|#moment|#target|function)[ \t]+" + NativeString.escapeRx(nav.def) + "\\b");
 			i = 0;
 			while (i < len) {
 				s = session.getLine(i);
@@ -167,5 +170,83 @@ class KGml extends KCode {
 		GmlSeeker.runSyncImpl(path, content, main, out, locals, this);
 		GmlSeeker.finish(path, out);
 		return true;
+	}
+	
+	override public function gatherGotoTargets(editor:EditCode):AceAutoCompleteItems {
+		var items:AceAutoCompleteItems = [];
+		var code = editor.session.getValue();
+		var q = new GmlReader(code);
+		var curlyDepth = 0;
+		var lineNumber = 0;
+		var version = gml.Project.current.version;
+		var hasRegions = true;
+		function add(name:String, meta:String) {
+			items.push({ value: "" + lineNumber, caption: name, meta: meta });
+		}
+		while (q.loop) {
+			var at = q.pos;
+			var c:CharCode = q.read();
+			switch (c) {
+				case "\n".code: lineNumber++;
+				case "{".code: curlyDepth++;
+				case "}".code: curlyDepth--;
+				case "/".code: switch (q.peek()) {
+					case "/".code:
+						q.skip();
+						if (q.skipIfEquals("#".code)) {
+							var kind:String = if (q.skipIfIdentEquals("region")) {
+								"region";
+							} else if (q.skipIfIdentEquals("mark")) {
+								"mark";
+							} else null;
+							if (kind != null) {
+								at = q.pos;
+								q.skipLine();
+								var txt = q.substring(at, q.pos).trimBoth();
+								if (txt != "") add(txt, kind);
+							}
+						}
+						q.skipLine();
+					case "*".code: q.skip(); lineNumber += q.skipComment();
+				};
+				case '"'.code, "'".code, "@".code, "`".code: {
+					lineNumber += q.skipStringAuto(c, version);
+				};
+				case "#".code: {
+					if (q.skipIfIdentEquals("region")) {
+						at = q.pos;
+						q.skipLine();
+						var txt = q.substring(at, q.pos).trimBoth();
+						if (txt != "") add(txt, "region");
+					} else if (q.skipIfIdentEquals("endregion")) {
+						q.skipLine();
+					} else if (at == 0 || q.get(at - 1) == "\n".code) {
+						var newCtx = q.readContextName(null);
+						if (newCtx != null) {
+							var meta = switch (q.get(at + 1)) {
+								case "d".code: "function";
+								case "e".code: "event";
+								case "m".code: "moment";
+								default: null;
+							}
+							add(newCtx, meta);
+						}
+					}
+				};
+				case _ if (c.isIdent0()): {
+					q.skipIdent1();
+					if (c == "f".code && curlyDepth == 0
+						&& q.pos - at == JsTools.clen("function")
+						&& q.get(q.pos - 1) == "n".code
+						&& q.substring(at, q.pos) == "function"
+					) {
+						lineNumber += q.skipSpaces1();
+						var fname = q.readIdent();
+						if (fname != null) add(fname, "function");
+					}
+				};
+			}
+		}
+		return items;
 	}
 }

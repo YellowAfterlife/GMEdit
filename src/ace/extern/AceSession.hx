@@ -1,4 +1,5 @@
 package ace.extern;
+import ace.AceSessionData;
 import ace.extern.AceAnchor;
 import ace.extern.AceAnnotation;
 import ace.extern.AceDocument;
@@ -6,6 +7,7 @@ import ace.extern.AceLangRule.AceLangRuleState;
 import ace.extern.AceMarker;
 import ace.extern.AcePos;
 import ace.extern.AceRange;
+import ace.extern.AceSelection;
 import haxe.extern.EitherType;
 import tools.IntDictionary;
 
@@ -83,6 +85,7 @@ import tools.IntDictionary;
 	public var gmlErrorMarkers:Array<AceMarker>;
 	public var gmlLinterDirty:Bool;
 	public var gmlLinterRevision:Int;
+	public var gmlGotoOrigState:AceSessionDataImpl;
 }
 class AceSessionTools {
 	public static function getEOF(s:AceSession):AcePos {

@@ -1,5 +1,6 @@
 package ace.extern;
 import ace.extern.AceRange;
+import haxe.extern.EitherType;
 
 /**
  * ...
@@ -15,6 +16,7 @@ extern class AceSelection {
 	public var lead:AcePos;
 	public var rangeCount:Int;
 	public function getAllRanges():Array<AceRange>;
-	public function toJSON():Dynamic;
-	public function fromJSON(q:Dynamic):Void;
+	public function toJSON():AceSelectionData;
+	public function fromJSON(q:AceSelectionData):Void;
 }
+typedef AceSelectionData = EitherType<AceRange, Array<AceRange>>;
