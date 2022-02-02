@@ -440,7 +440,7 @@ class Preferences {
 		obj.setOption = function(key:String, val:Dynamic) {
 			obj.setOption_raw(key, val);
 			if (key == "tabSize" && val != current.tabSize) {
-				current.tabSize = Std.parseInt(val);
+				current.tabSize = val is String ? Std.parseInt(val) : val;
 				save();
 			}
 			if (key == "useSoftTabs" && val != current.tabSpaces) {
