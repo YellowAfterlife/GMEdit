@@ -207,10 +207,14 @@ class GlobalLookup {
 	public static function toggle(?initialText:String) {
 		if (element.style.display == "none") {
 			element.style.display = "";
-			if (initialText == null) initialText = aceEditor.getSelectedText();
+			if (initialText == null) {
+				initialText = aceEditor.getSelectedText();
+				if (initialText.indexOf("\n") >= 0) initialText = null;
+			}
 			filteredList = null;
 			filteredListCmd = null;
 			field.value = initialText;
+			field.select();
 			field.focus();
 			updateImpl();
 		} else hide();
