@@ -116,14 +116,14 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 					var et = [];
 					if (v23) {
 						var filters = prop.filters.map((s) -> NativeString.trimBoth(s));
-						if (YyObjectProperties.isAllAssetTypes23(filters)) return GmlTypeDef.asset;
+						if (YyObjectProperties.isAllAssetTypes23(filters) || filters.length == 0) return GmlTypeDef.asset;
 						for (ft in prop.filters) {
 							ft = NativeString.trimBoth(ft);
 							et.push(GmlTypeDef.simple(ft.substring(2).toLowerCase()));
 						}
 					} else {
 						var flags = prop.resourceFilter;
-						if (flags == 1023) return GmlTypeDef.asset;
+						if (flags == 1023 || flags == 0) return GmlTypeDef.asset;
 						for (tp in YyObjectProperties.assetTypes) {
 							if ((flags & tp.flag) == 0) continue;
 							et.push(GmlTypeDef.simple(tp.name));

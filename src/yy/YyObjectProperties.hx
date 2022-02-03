@@ -202,10 +202,12 @@ class YyObjectProperties {
 						var atm = assetTypeMap23;
 						if (!isAll) {
 							out += "<";
-							for (i => t in filters) {
-								if (i > 0) out += ", ";
+							var found = 0;
+							for (t in filters) {
+								if (found++ > 0) out += ", ";
 								out += atm.defget(t, t);
 							}
+							if (found == 0) out += "0";
 							out += ">";
 						}
 					}
@@ -438,6 +440,7 @@ class YyObjectProperties {
 								filters = [];
 								for (param in params) switch (param) {
 									case Ident(s): filters.push(assetTypeMap23.defget(s, s));
+									case Number(0): {};
 									default: throw 'Expected an asset type, got $param';
 								}
 							} else filters = allAssetTypes23.copy();
