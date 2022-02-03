@@ -22,7 +22,7 @@ class GmlTypeDef {
 	public static var anyArray:GmlType = TInst("array", [], KArray);
 	public static var anyCustomKeyArray:GmlType = TInst("ckarray", [], KCustomKeyArray);
 	public static var forbidden:GmlType = TInst("forbidden", [], KVoid);
-	public static var asset:GmlType = TInst("asset", [], KCustom);
+	public static var asset:GmlType = TInst("asset", [], KAsset);
 	public static var global:GmlType = TInst("global", [], KGlobal);
 	public static var anyFunction:GmlType = TInst("function", [], KFunction);
 	public static var methodSelf:GmlType = TInst("methodSelf", [], KMethodSelf);
