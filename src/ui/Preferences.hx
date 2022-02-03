@@ -420,7 +420,7 @@ class Preferences {
 				if (!FileSystem.existsSync(umPath)) continue;
 				var um:Dynamic = FileSystem.readYyFileSync(umPath);
 				
-				var username:String = um.username;
+				var username:String = JsTools.or(um.login, um.username);
 				var sep = username.indexOf("@");
 				if (sep >= 0) username = username.substring(0, sep);
 				
