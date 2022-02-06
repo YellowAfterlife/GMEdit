@@ -199,14 +199,15 @@
       const tabWidth = this.tabWidth
       let tabHeight, tabLeft = 0, tabRight = 0
       const first = tabEls[0]
+      const autoHideCloseButtons = this.el.classList.contains("chrome-tabs-auto-hide-close-buttons")
+      const lockPinned = this.el.classList.contains("chrome-tabs-lock-pinned")
+      let closeButtonWidth = 0
       if (first) {
         tabHeight = first.offsetHeight
         tabLeft = parseInt(getComputedStyle(first.querySelector(".chrome-tab-favicon")).marginLeft)
         let closeBt = first.querySelector(".chrome-tab-close")
         tabRight = parseInt(getComputedStyle(closeBt).right)
-        if (!this.el.classList.contains("chrome-tabs-auto-hide-close-buttons")) {
-          tabRight += closeBt.offsetWidth
-        }
+        closeButtonWidth = closeBt.offsetWidth
       } else {
         tabHeight = this.el.querySelector(".chrome-tabs-content").offsetHeight
       }
@@ -231,6 +232,11 @@
           let titleText = tabEl.querySelector('.chrome-tab-title-text')
           if (!titleText) titleText = tabEl.querySelector('.chrome-tab-title')
           width = titleText.offsetWidth + tabLeft + tabRight + tabOverlapDistance
+          if (autoHideCloseButtons) {
+            // all close buttons are hidden
+          } else if (tabEl.classList.contains("chrome-tab-pinned") && lockPinned) {
+            // pinned tabs' close buttons are hidden
+          } else width += closeButtonWidth
           width = Math.min(width, tabsContentWidth)
         } else width = tabWidth
         

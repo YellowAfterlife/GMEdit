@@ -74,6 +74,7 @@ import haxe.DynamicAccess;
 			flowAroundSystemButtons: false,
 			autoHideCloseButtons: false,
 			rowBreakAfterPinnedTabs: false,
+			lockPinnedTabs: false,
 			multilineStretchStyle: 1,
 			idleTime: 0,
 		},
@@ -155,6 +156,11 @@ typedef PrefDataImpl = {
 		flowAroundSystemButtons:Bool,
 		autoHideCloseButtons:Bool,
 		rowBreakAfterPinnedTabs:Bool,
+		
+		/** if locked, pinned tabs cannot be closed except through context menu */
+		lockPinnedTabs:Bool,
+		
+		/** time until the tab gets grayed out, in seconds */
 		idleTime:Int,
 		/** 0: don't, 1: stretch all, 2: stretch last */
 		multilineStretchStyle:Int,

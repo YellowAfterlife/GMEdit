@@ -112,10 +112,13 @@ class KeyboardShortcuts {
 		#end
 		//
 		addCommand("closeTab", "modw-w", function() {
-			var q = document.querySelector(".chrome-tab-current .chrome-tab-close");
-			if (q != null) {
-				q.click();
+			var tab:ChromeTab = document.querySelectorAuto(".chrome-tab-current");
+			if (tab != null) {
+				if (Preferences.current.chromeTabs.lockPinnedTabs && tab.isPinned) return;
+				var closeButton = tab.querySelector(".chrome-tab-close");
+				if (closeButton != null) closeButton.click();
 			} else if (document.querySelectorAll(".chrome-tab").length == 0) {
+				// close with no tabs open to close the project
 				Project.open("");
 			}
 		});
@@ -123,7 +126,7 @@ class KeyboardShortcuts {
 			for (tab in document.querySelectorEls(
 				".chrome-tab:not(.chrome-tab-current)"
 			)) {
-				if (tab.classList.contains("chrome-tab-pinned")) continue;
+				if (tab.classList.contains(ChromeTabs.clPinned)) continue;
 				tab.querySelector(".chrome-tab-close").click();
 			}
 		});

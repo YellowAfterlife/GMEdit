@@ -47,8 +47,10 @@ html[data-multiline-tabs] .chrome-tabs {
 }
 
 
-.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover):not(.chrome-tab-changed) .chrome-tab-close {
-	display: none;
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover):not(.chrome-tab-changed) .chrome-tab-close,
+.chrome-tabs.chrome-tabs-lock-pinned .chrome-tab.chrome-tab-pinned:not(.chrome-tab-changed) .chrome-tab-close {
+	visibility: hidden;
+	pointer-events: none;
 }
 .chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover).chrome-tab-changed .chrome-tab-close {
 	right: 1em;
@@ -69,7 +71,8 @@ html[data-multiline-tabs] .chrome-tabs {
 	max-width: calc(100% - 4em);
 }
 /* tab titles can be wider when the close buttons are hidden*/
-.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover) .chrome-tab-title {
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover) .chrome-tab-title ,
+.chrome-tabs.chrome-tabs-lock-pinned .chrome-tab.chrome-tab-pinned .chrome-tab-title {
 	max-width: calc(100% - 2.6em);
 }
 

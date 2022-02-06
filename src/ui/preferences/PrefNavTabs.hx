@@ -44,10 +44,17 @@ class PrefNavTabs {
 		
 		el = addCheckbox(out, "Auto-hide 'close' buttons", cur.autoHideCloseButtons, function(v) {
 			current.chromeTabs.autoHideCloseButtons = v;
-			ChromeTabs.element.classList.setTokenFlag("chrome-tabs-auto-hide-close-buttons", v);
+			ChromeTabs.element.classList.setTokenFlag(ChromeTabs.clAutoHideCloseButtons, v);
 			ChromeTabs.impl.layoutTabs();
 			save();
 		});
+		el = addCheckbox(out, "Lock pinned tabs", cur.lockPinnedTabs, function(v) {
+			current.chromeTabs.lockPinnedTabs = v;
+			ChromeTabs.element.classList.setTokenFlag(ChromeTabs.clLockPinnedTabs, v);
+			ChromeTabs.impl.layoutTabs();
+			save();
+		});
+		el.title = "Hides 'close' buttons on pinned tabs and prevents them from being closed via keyboard shortcuts";
 		el = addIntInput(out, "Mark tabs as 'idle' after (in seconds; 0 to disable)", cur.idleTime, function(t) {
 			current.chromeTabs.idleTime = t;
 			for (tab in ChromeTabs.element.querySelectorEls(".chrome-tab." + ChromeTabs.clIdle)) {

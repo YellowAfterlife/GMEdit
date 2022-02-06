@@ -1,4 +1,5 @@
 package tools;
+import haxe.DynamicAccess;
 import js.html.*;
 import haxe.extern.EitherType;
 
@@ -52,6 +53,26 @@ class HtmlTools {
 	}
 	public static function setDisplayFlag(el:Element, visible:Bool):Void {
 		el.style.display = visible ? "" : "none";
+	}
+	public static function setDatasetValue(el:Element, key:String, value:String) {
+		var dataset:DynamicAccess<String> = cast el.dataset;
+		if (value == null) {
+			if (dataset[key] == null) return false;
+			js.Syntax.delete(dataset, key);
+			return true;
+		} else {
+			if (dataset[key] == value) return false;
+			dataset[key] = value;
+			return true;
+		}
+	}
+	public static function setDatasetFlag(el:Element, key:String, value:Bool) {
+		var dataset:DynamicAccess<String> = cast el.dataset;
+		if (value) {
+			dataset[key] = "";
+		} else {
+			js.Syntax.delete(dataset, key);
+		}
 	}
 	
 	public static inline function insertBeforeEl(ctr:Element, insertWhat:Element, beforeWhat:Element) {

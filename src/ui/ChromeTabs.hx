@@ -34,6 +34,9 @@ class ChromeTabs {
 	public static inline var clCurrent:String = "chrome-tab-current";
 	public static inline var clPinned:String = "chrome-tab-pinned";
 	
+	public static inline var clAutoHideCloseButtons:String = "chrome-tabs-auto-hide-close-buttons";
+	public static inline var clLockPinnedTabs:String = "chrome-tabs-lock-pinned";
+	
 	public static inline var pathHistorySize:Int = 32;
 	public static inline function addTab(title:String) {
 		impl.addTab({ title: title });
@@ -112,7 +115,8 @@ class ChromeTabs {
 		var opt:Dynamic = { tabOverlapDistance: 14 };
 		js.lib.Object.assign(opt, srcOpt);
 		impl.init(element, opt);
-		element.classList.setTokenFlag("chrome-tabs-auto-hide-close-buttons", srcOpt.autoHideCloseButtons);
+		element.classList.setTokenFlag(clAutoHideCloseButtons, srcOpt.autoHideCloseButtons);
+		element.classList.setTokenFlag(clLockPinnedTabs, srcOpt.lockPinnedTabs);
 		element.classList.setTokenFlag("chrome-tabs-fit-text", srcOpt.fitText);
 		element.classList.setTokenFlag("chrome-tabs-boxy", srcOpt.boxyTabs);
 		//
@@ -350,10 +354,10 @@ extern class ChromeTab extends Element {
 	
 	public var isPinned(get, set):Bool;
 	private inline function get_isPinned():Bool {
-		return classList.contains("chrome-tab-pinned");
+		return classList.contains(ChromeTabs.clPinned);
 	}
 	private inline function set_isPinned(z:Bool):Bool {
-		HtmlTools.setTokenFlag(classList, "chrome-tab-pinned", z);
+		HtmlTools.setTokenFlag(classList, ChromeTabs.clPinned, z);
 		return z;
 	}
 	
