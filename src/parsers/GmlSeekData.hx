@@ -357,21 +357,47 @@ class GmlSeekDataHint {
 			if (!preferExisting || type == null) {
 				type = hint.type;
 			} else {
+				// clarify types:
 				var t1 = type;
 				var t2 = hint.type;
 				for (i in 0 ... 16) {
 					switch (t1) {
 						case null:
+							if (t2 == null) break;
 							type = hint.type;
 							comp.setDocTag("type", type.toString());
-						case TInst(_, p, KArray): t1 = p[0];
+							break;
+						case TInst(_, p, KArray):
+							t1 = p[0];
+							switch (t2) {
+								case null: break;
+								case TInst(_, p, KArray): t2 = p[0];
+								default: break;
+							}
+						case TInst(_, p, KList):
+							t1 = p[0];
+							switch (t2) {
+								case null: break;
+								case TInst(_, p, KList): t2 = p[0];
+								default: break;
+							}
+						case TInst(_, p, KGrid):
+							t1 = p[0];
+							switch (t2) {
+								case null: break;
+								case TInst(_, p, KGrid): t2 = p[0];
+								default: break;
+							}
+						case TInst(_, p, KMap):
+							t1 = p[1];
+							switch (t2) {
+								case null: break;
+								case TInst(_, p, KMap): t2 = p[1];
+								default: break;
+							}
 						default: break;
 					}
-					switch (t2) {
-						case null: break;
-						case TInst(_, p, KArray): t2 = p[0]; if (t2 == null) break;
-						default: break;
-					}
+					if (t2 == null) break;
 				}
 			}
 		}

@@ -7,7 +7,7 @@ import tools.JsTools;
  * Helpers for grabbing specific type definitions
  * @author YellowAfterlife
  */
-class GmlTypeDef {
+@:keep class GmlTypeDef {
 	//
 	public static var any:GmlType = TInst("any", [], KAny);
 	public static var void:GmlType = TInst("void", [], KVoid);
@@ -27,8 +27,17 @@ class GmlTypeDef {
 	public static var anyFunction:GmlType = TInst("function", [], KFunction);
 	public static var methodSelf:GmlType = TInst("methodSelf", [], KMethodSelf);
 	
-	public static inline function array(itemType:GmlType):GmlType {
+	public static inline function arrayOf(itemType:GmlType):GmlType {
 		return TInst("array", [itemType], KArray);
+	}
+	public static inline function listOf(itemType:GmlType):GmlType {
+		return TInst("ds_list", [itemType], KList);
+	}
+	public static inline function gridOf(itemType:GmlType):GmlType {
+		return TInst("ds_grid", [itemType], KGrid);
+	}
+	public static inline function mapOf(keyType:GmlType, valType:GmlType):GmlType {
+		return TInst("ds_map", [keyType, valType], KMap);
 	}
 	
 	public static function type(name:String):GmlType {

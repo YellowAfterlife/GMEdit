@@ -92,12 +92,29 @@ class GmlSeekerProcIdent {
 		
 		// skip unless it's `some =` (and no `some ==`)
 		var skip = false;
-		var arrayDepth = 0;
+		var arrayAccessors:Array<GmlSeekerProcIdent_ArrayAccessKind> = [];
 		seeker.saveReader();
 		while (q.loop) switch (q.read()) {
 			case " ".code, "\t".code, "\r".code, "\n".code: { };
 			case "=".code: skip = q.peek() == "=".code; break;
 			case "[".code: // go over array indices
+				var arrayAccessor:GmlSeekerProcIdent_ArrayAccessKind = AKArray;
+				switch (q.peek()) {
+					case "#".code: arrayAccessor = AKGrid;
+					case "|".code: arrayAccessor = AKList;
+					case "?".code:
+						arrayAccessor = AKMapAny;
+						q.skip();
+						q.skipSpaces1();
+						var c = q.peek();
+						if (c.isDigit() || c == ".".code) {
+							arrayAccessor = AKMapNumber;
+						} else if (c == "@".code) switch (q.peek(1)) {
+							case '"'.code, "'".code: arrayAccessor = AKMapString;
+						}
+				}
+				arrayAccessors.push(arrayAccessor);
+				
 				var sqbDepth = 1;
 				while (q.loop) {
 					while (q.loop) {
@@ -106,10 +123,14 @@ class GmlSeekerProcIdent {
 						} else switch (q.read()) {
 							case "[".code: sqbDepth++;
 							case "]".code: if (--sqbDepth <= 0) break;
-							case ",".code: arrayDepth += 1;
+							case ",".code: {
+								if (arrayAccessor == AKArray) {
+									arrayAccessor = AKArray2d;
+									arrayAccessors.push(AKArray);
+								}
+							}
 						}
 					}
-					arrayDepth += 1;
 					q.skipSpaces1();
 					if (!q.skipIfEquals("[".code)) break;
 				} 
@@ -319,7 +340,19 @@ class GmlSeekerProcIdent {
 					isConstructor = q.substring(ctStart, q.pos) == "constructor";
 				}
 			} while (false);
-			for (_ in 0 ... arrayDepth) fieldType = GmlTypeDef.array(fieldType);
+			
+			var arrayAccInd = arrayAccessors.length;
+			while (--arrayAccInd >= 0) {
+				switch (arrayAccessors[arrayAccInd]) {
+					case AKArray: fieldType = GmlTypeDef.arrayOf(fieldType);
+					case AKList: fieldType = GmlTypeDef.listOf(fieldType);
+					case AKGrid: fieldType = GmlTypeDef.gridOf(fieldType);
+					case AKMapAny: fieldType = GmlTypeDef.mapOf(null, fieldType);
+					case AKMapNumber: fieldType = GmlTypeDef.mapOf(GmlTypeDef.number, fieldType);
+					case AKMapString: fieldType = GmlTypeDef.mapOf(GmlTypeDef.string, fieldType);
+					default:
+				}
+			}
 			GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, s, args, null, fieldType, argTypes, true);
 			var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
 			if (templateSelf != null && addFieldHint_doc != null) {
@@ -329,4 +362,13 @@ class GmlSeekerProcIdent {
 		}
 		seeker.restoreReader();
 	}
+}
+enum abstract GmlSeekerProcIdent_ArrayAccessKind(Int) {
+	var AKArray;
+	var AKArray2d; // marks that we already handled a `,`
+	var AKList;
+	var AKGrid;
+	var AKMapAny;
+	var AKMapNumber;
+	var AKMapString;
 }

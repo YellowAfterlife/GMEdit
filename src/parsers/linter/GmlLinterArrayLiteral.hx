@@ -105,7 +105,7 @@ class GmlLinterArrayLiteral {
 		} else if (itemType != null) {
 			outType = targetType;
 		} else {
-			outType = index > 0 ? GmlTypeDef.array(autoType) : GmlTypeDef.anyArray;
+			outType = index > 0 ? GmlTypeDef.arrayOf(autoType) : GmlTypeDef.anyArray;
 		}
 		return false;
 	}
