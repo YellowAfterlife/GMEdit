@@ -98,42 +98,51 @@ class GmlSeekerProcIdent {
 			case " ".code, "\t".code, "\r".code, "\n".code: { };
 			case "=".code: skip = q.peek() == "=".code; break;
 			case "[".code: // go over array indices
-				var arrayAccessor:GmlSeekerProcIdent_ArrayAccessKind = AKArray;
-				switch (q.peek()) {
-					case "#".code: arrayAccessor = AKGrid;
-					case "|".code: arrayAccessor = AKList;
-					case "?".code:
-						arrayAccessor = AKMapAny;
-						q.skip();
-						q.skipSpaces1();
-						var c = q.peek();
-						if (c.isDigit() || c == ".".code) {
-							arrayAccessor = AKMapNumber;
-						} else if (c == "@".code) switch (q.peek(1)) {
-							case '"'.code, "'".code: arrayAccessor = AKMapString;
-						}
-				}
-				arrayAccessors.push(arrayAccessor);
-				
-				var sqbDepth = 1;
-				while (q.loop) {
-					while (q.loop) {
-						if (q.skipCommon_inline() >= 0) {
-							
-						} else switch (q.read()) {
-							case "[".code: sqbDepth++;
-							case "]".code: if (--sqbDepth <= 0) break;
-							case ",".code: {
-								if (arrayAccessor == AKArray) {
-									arrayAccessor = AKArray2d;
-									arrayAccessors.push(AKArray);
+				var arrayLoop = true;
+				do {
+					var arrayAccessor:GmlSeekerProcIdent_ArrayAccessKind = AKArray;
+					switch (q.peek()) {
+						case "#".code: arrayAccessor = AKGrid;
+						case "|".code: arrayAccessor = AKList;
+						case "?".code:
+							arrayAccessor = AKMapAny;
+							q.skip();
+							q.skipSpaces1();
+							var c = q.peek();
+							if (c.isDigit() || c == ".".code) {
+								arrayAccessor = AKMapNumber;
+							} else if (c == "@".code) switch (q.peek(1)) {
+								case '"'.code, "'".code: arrayAccessor = AKMapString;
+							}
+					}
+					arrayAccessors.push(arrayAccessor);
+					
+					var sqbDepth = 1;
+					while (q.loop) { // read until and past closing bracket
+						while (q.loop) {
+							if (q.skipCommon_inline() >= 0) {
+								
+							} else switch (q.read()) {
+								case "[".code: sqbDepth++;
+								case "]".code:
+									if (--sqbDepth <= 0) {
+										q.skipSpaces1();
+										arrayLoop = q.skipIfEquals("[".code);
+										break;
+									}
+								case ",".code: {
+									if (arrayAccessor == AKArray) {
+										arrayAccessor = AKArray2d;
+										arrayAccessors.push(AKArray);
+									}
 								}
 							}
 						}
+						q.skipSpaces1();
+						if (!q.skipIfEquals("[".code)) break;
 					}
-					q.skipSpaces1();
-					if (!q.skipIfEquals("[".code)) break;
-				} 
+				} while (arrayLoop);
+				
 				if (q.skipIfEquals("=".code)) {
 					skip = q.peek() == "=".code;
 				} else skip = true;
