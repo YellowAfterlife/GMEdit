@@ -54,7 +54,7 @@ class KGmlMultifile extends KGml {
 			file.extraFiles.push(new GmlFileExtra(item.path));
 		}
 		if (errors == "") {
-			GmlSeeker.runSync(file.path, out, "", file.kind);
+			//GmlSeeker.runSync(file.path, out, "", file.kind);
 			return out;
 		} else return editor.setLoadError(errors);
 	}
