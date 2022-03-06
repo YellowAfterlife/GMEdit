@@ -47,6 +47,13 @@ class CommandPalette {
 				editors.EditKeybindings.open();
 			}
 		});
+		add({
+			name: "Fullscreen mode",
+			exec: function() {
+				var wnd = electron.Electron.remote.getCurrentWindow();
+				wnd.setFullScreen(!wnd.fullScreen);
+			}
+		});
 	}
 }
 typedef CommandDef = {

@@ -101,6 +101,11 @@ class KeyboardShortcuts {
 				Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
 			});
 			lcmd.description = "Only works in standalone version.";
+			
+			addCommand("toggleFullscreen", "f11", function() {
+				var wnd = electron.Electron.remote.getCurrentWindow();
+				wnd.setFullScreen(!wnd.fullScreen);
+			});
 		}
 		//
 		#if !lwedit
@@ -292,7 +297,9 @@ class KeyboardShortcuts {
 		document.querySelector(".system-button.maximize").addEventListener("click", function(_) {
 			var wnd = getCurrentWindow();
 			if (wnd != null) {
-				if (wnd.isMaximized()) {
+				if (wnd.fullScreen) {
+					wnd.setFullScreen(false);
+				} else if (wnd.isMaximized()) {
 					wnd.unmaximize();
 				} else wnd.maximize();
 			}
