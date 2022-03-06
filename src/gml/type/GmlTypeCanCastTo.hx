@@ -76,6 +76,8 @@ class GmlTypeCanCastTo {
 					var ns = GmlAPI.gmlNamespaces[name];
 					if (JsTools.nca(ns, ns.canCastToStruct)) return true;
 				}
+				var doc = GmlAPI.gmlDoc[name];
+				if (doc != null && doc.isConstructor) return true;
 			case TAnon(_): return true;
 			default:
 		}
