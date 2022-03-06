@@ -213,8 +213,11 @@ class GlobalLookup {
 			}
 			filteredList = null;
 			filteredListCmd = null;
+			if (initialText == null) initialText = "";
 			field.value = initialText;
-			field.select();
+			if (initialText.startsWith(">")) {
+				field.setSelectionRange(1, initialText.length);
+			} else field.select();
 			field.focus();
 			updateImpl();
 		} else hide();
