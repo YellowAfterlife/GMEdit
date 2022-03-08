@@ -378,7 +378,7 @@ layer_background_get_speed(background_element_id:layer_background)->number
 layer_sprite_get_id(layer_id:layer|string,sprite_element_name:string)->layer_sprite
 layer_sprite_exists(layer_id:layer|string,sprite_element_id:layer_sprite)->bool
 
-layer_sprite_create(layer_id:layer|string,x:number,y,sprite:number)->layer_sprite
+layer_sprite_create(layer_id:layer|string,x:number,y,sprite:sprite)->layer_sprite
 layer_sprite_destroy(sprite_element_id:layer_sprite)->void
 
 layer_sprite_change(sprite_element_id:layer_sprite,sprite:sprite)->void
