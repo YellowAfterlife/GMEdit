@@ -139,14 +139,14 @@ class Main {
 		ChromeTabs.init();
 		Project.init();
 		aceEditor.statusBar.update();
-		#if lwedit
-		aceEditor.session = WelcomePage.init(aceEditor);
-		LiveWeb.init();
-		#end
 		Project.nameNode.innerText = "Loading plugins...";
 		plugins.PluginManager.init(function() {
 			Project.nameNode.innerText = "Loading project...";
 			Project.openInitialProject();
+			#if lwedit
+			aceEditor.session = WelcomePage.init(aceEditor);
+			LiveWeb.init();
+			#end
 			PluginManager.dispatchInitCallbacks();
 		});
 		console.log("hello!");
