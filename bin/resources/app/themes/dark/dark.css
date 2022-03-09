@@ -6,6 +6,10 @@
 	--color-hightlight-background: #333333;
 }
 
+body {
+	background: var(--color-background);
+}
+
 input {
 	background-color: var(--color-hightlight-background);
 	border: none;

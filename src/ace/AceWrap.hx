@@ -1,4 +1,5 @@
 package ace;
+#if !starter
 import ace.AceMacro;
 import ace.extern.*;
 import gml.file.GmlFile;
@@ -200,3 +201,4 @@ extern typedef AceExports = Dynamic;
 extern typedef AceModule = Dynamic;
 extern typedef AceImpl = AceRequire->AceExports->AceModule->Void;
 //
+#end

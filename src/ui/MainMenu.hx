@@ -213,7 +213,7 @@ class MainMenu {
 			label: "Dev tools",
 			accelerator: "CommandOrControl+Shift+I",
 			click: function() {
-				Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+				electron.extern.BrowserWindow.getFocusedWindow().toggleDevTools();
 			}
 		}));
 		//

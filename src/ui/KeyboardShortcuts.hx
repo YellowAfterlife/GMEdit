@@ -98,7 +98,7 @@ class KeyboardShortcuts {
 		});
 		if (!isWeb) {
 			addCommand("toggleDevTools", "mod-shift-i", function() {
-				Electron.remote.BrowserWindow.getFocusedWindow().toggleDevTools();
+				electron.extern.BrowserWindow.getFocusedWindow().toggleDevTools();
 			});
 			lcmd.description = "Only works in standalone version.";
 			

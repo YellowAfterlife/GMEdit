@@ -2,6 +2,7 @@ package ui;
 #if starter
 import ui.Starter.FileSystemMin in FileSystem;
 #else
+import electron.Electron;
 import electron.FileSystem;
 import electron.FileWrap;
 #end
@@ -28,12 +29,28 @@ class Theme {
 		for (e in qry) arr.push(cast e);
 		return arr;
 	})();
+	static function setBackgroundColor(hexColor:String) {
+		#if starter
+		var require = (untyped window).require;
+		if (require != null) try {
+			var electron = require("electron");
+			electron.remote.getCurrentWindow().setBackgroundColor(hexColor);
+		} catch (x:Dynamic) {
+			Console.error(x);
+		}
+		#else
+		if (Electron.isAvailable()) {
+			Electron.remote.getCurrentWindow().setBackgroundColor(hexColor);
+		}
+		#end
+	}
 	private static function reset() {
 		for (el in elements) {
 			var par = el.parentElement;
 			if (par != null) par.removeChild(el);
 		}
 		setDarkTabs(false);
+		setBackgroundColor("#ffffff");
 		document.documentElement.removeAttribute("data-theme-uses-bracket-depth");
 	}
 	private static function setDarkTabs(z:Bool) {
@@ -59,6 +76,7 @@ class Theme {
 		function procSelf(theme:ThemeImpl) {
 			if (theme.darkChromeTabs != null) setDarkTabs(theme.darkChromeTabs);
 			if (theme.windowsAccentColors) electron.WindowsAccentColors.update(true);
+			if (theme.backgroundColor != null) setBackgroundColor(theme.backgroundColor);
 			if (theme.useBracketDepth != null) {
 				if (theme.useBracketDepth) {
 					document.documentElement.setAttribute("data-theme-uses-bracket-depth", "");
@@ -131,6 +149,7 @@ class Theme {
 	}
 }
 typedef ThemeImpl = {
+	?backgroundColor:String,
 	?parentTheme:String,
 	?stylesheets:Array<String>,
 	?darkChromeTabs:Bool,

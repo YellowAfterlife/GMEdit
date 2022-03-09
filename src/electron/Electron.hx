@@ -1,9 +1,7 @@
 package electron;
-
+#if !starter
 import electron.FontScanner.FontScannerFallback;
-import gmx.SfGmx;
-import js.lib.Error;
-import haxe.extern.EitherType;
+import electron.extern.ElectronRemote;
 
 /*
  * ...
@@ -14,7 +12,7 @@ import haxe.extern.EitherType;
 		return Electron != null;
 	}
 	public static var shell:Dynamic;
-	public static var remote:Dynamic;
+	public static var remote:ElectronRemote;
 	public static var clipboard:Clipboard;
 	public static var ipcRenderer:Dynamic;
 	public static inline function init():Void {
@@ -38,6 +36,7 @@ import haxe.extern.EitherType;
 			set("Electron_Menu", remote.Menu);
 			set("Electron_MenuItem", remote.MenuItem);
 			set("Electron_App", remote.app);
+			set("Electron_BrowserWindow", remote.BrowserWindow);
 			
 			try {
 				load("libFontScanner", "./native/font-scanner/index.js");
@@ -73,3 +72,4 @@ import haxe.extern.EitherType;
 		}
 	}
 }
+#end

@@ -1,4 +1,5 @@
 {
 	"stylesheets": ["dark.css"],
-	"darkChromeTabs": true
+	"darkChromeTabs": true,
+	"backgroundColor": "#222222"
 }
