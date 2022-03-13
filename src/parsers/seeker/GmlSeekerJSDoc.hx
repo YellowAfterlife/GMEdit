@@ -328,7 +328,7 @@ class GmlSeekerJSDoc {
 					out.kindMap[fn] = "asset.script";
 					out.kindList.push(fn);
 				}
-				seeker.setLookup(fn);
+				seeker.setLookup(fn, false, "asset.script");
 				return;
 			}
 		}

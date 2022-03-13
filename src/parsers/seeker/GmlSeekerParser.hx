@@ -59,7 +59,7 @@ class GmlSeekerParser {
 									haxe.Json.parse(line.substring(sp + 1));
 								} catch (_:Dynamic) break;
 								var mf = new GmlExtMFunc(name, json);
-								seeker.setLookup(name);
+								seeker.setLookup(name, false, "macro");
 								out.mfuncs[name] = mf;
 								out.comps[name] = mf.comp;
 								out.kindList.push(name);

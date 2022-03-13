@@ -156,11 +156,11 @@ class GmlSeekerImpl {
 		return GmlSeekerParser.find(this, flags);
 	}
 	
-	public function setLookup(s:String, eol:Bool = false):Void {
+	public function setLookup(s:String, eol:Bool, meta:String):Void {
 		var col = eol ? null : 0;
 		var row = reader.row;
 		if (!GmlAPI.gmlLookup.exists(s)) {
-			if (s != mainTop) GmlAPI.gmlLookupItems.push({value:s});
+			if (s != mainTop) GmlAPI.gmlLookupItems.push({ value:s, meta:meta });
 		}
 		var lookup:GmlLookup = { path: orig, sub: sub, row: row, col: col };
 		if (project.isGMS23 && s == mainTop) {
@@ -235,7 +235,7 @@ class GmlSeekerImpl {
 						}
 						out.kindList.push(name);
 						out.kindMap.set(name, "globalvar");
-						setLookup(name);
+						setLookup(name, false, "globalvar");
 						
 						saveReader();
 						q.skipSpaces1();
@@ -295,7 +295,7 @@ class GmlSeekerImpl {
 	
 	public function run() {
 		var q = reader;
-		if (main != null) setLookup(main);
+		if (main != null) setLookup(main, false, null);
 		mainComp = main != null ? GmlAPI.gmlAssetComp[main] : null;
 		var s:String, name:String;
 		//

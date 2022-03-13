@@ -61,7 +61,7 @@ class GmlSeekerProcMacro {
 			var i = name.indexOf("_mf");
 			if (i < 0 || !out.mfuncs.exists(name.substring(0, i))) {
 				out.comps[name] = m.comp;
-				seeker.setLookup(name, true);
+				seeker.setLookup(name, true, "macro");
 			} else {
 				// adjust for mfunc rows being hidden
 				q.row -= 1;

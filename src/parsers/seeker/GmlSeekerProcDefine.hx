@@ -113,7 +113,7 @@ class GmlSeekerProcDefine {
 		seeker.start = q.pos;
 		seeker.sub = main;
 		seeker.reader.row = isFunc ? -1 : 0;
-		seeker.setLookup(main, true);
+		seeker.setLookup(main, true, "asset.script");
 		var locals = new GmlLocals(main);
 		seeker.locals = locals;
 		out.locals.set(main, locals);

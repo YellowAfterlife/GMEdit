@@ -45,7 +45,7 @@ class GmlSeekerProcEnum {
 		var en = new GmlEnum(name, orig);
 		out.enums[name] = en;
 		out.comps[name] = new AceAutoCompleteItem(name, "enum");
-		seeker.setLookup(name);
+		seeker.setLookup(name, false, "enum");
 		
 		function checkDoc(s:String):Bool {
 			if (s == null || !s.startsWith("///")) return false;

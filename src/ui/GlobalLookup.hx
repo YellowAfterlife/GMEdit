@@ -88,11 +88,8 @@ class GlobalLookup {
 			var matchMode = Preferences.current.globalLookup.matchMode;
 			function getHint(name:String) {
 				var ac = GmlAPI.gmlAssetComp[name];
-				if (ac != null) {
-					return ac.meta;
-				} else {
-					return tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
-				}
+				if (ac != null && ac.meta != null) return ac.meta;
+				return tools.JsTools.or(GmlAPI.gmlKind[name], GmlAPI.extKind[name]);
 			}
 			if (filteredList == null || filteredListCmd != isCmd) {
 				filteredList = new AceFilteredList(arr, filter);
