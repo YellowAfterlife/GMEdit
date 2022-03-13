@@ -4,7 +4,7 @@ package electron.extern;
  * ...
  * @author YellowAfterlife
  */
-@:extern("Electron_BrowserWindow")
+@:native("Electron_BrowserWindow")
 extern class BrowserWindow {
 	/**
 		Try to close the window. This has the same effect as a user manually clicking

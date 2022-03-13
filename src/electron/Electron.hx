@@ -1,7 +1,11 @@
 package electron;
+import electron.Menu;
 #if !starter
+import js.Syntax;
 import electron.FontScanner.FontScannerFallback;
 import electron.extern.ElectronRemote;
+import electron.extern.*;
+import electron.ElectronMacros.*;
 
 /*
  * ...
@@ -15,6 +19,7 @@ import electron.extern.ElectronRemote;
 	public static var remote:ElectronRemote;
 	public static var clipboard:Clipboard;
 	public static var ipcRenderer:Dynamic;
+	
 	public static inline function init():Void {
 		inline function load(hxname:String, ename:String):Void {
 			untyped window[hxname] = require(ename);
@@ -26,23 +31,26 @@ import electron.extern.ElectronRemote;
 		inline function blank(hxname:String) {
 			untyped window[hxname] = null;
 		}
+		inline function req(name:String):Dynamic {
+			return (untyped require)(name);
+		}
 		if (untyped window.require != null) {
-			load("Electron_API", "electron");
-			load("Electron_FS", "fs");
-			set("Electron_Dialog", remote.dialog);
+			setExternTypeSafe(Electron, req("electron"));
+			setExternTypeSafe(FileSystem, req("fs"));
+			setExternTypeSafe(Dialog, remote.dialog);
 			Dialog.initWorkarounds();
-			set("Electron_IPC", ipcRenderer);
-			set("Electron_Shell", shell);
-			set("Electron_Menu", remote.Menu);
-			set("Electron_MenuItem", remote.MenuItem);
-			set("Electron_App", remote.app);
-			set("Electron_BrowserWindow", remote.BrowserWindow);
+			setExternTypeSafe(IPC, ipcRenderer);
+			setExternTypeSafe(Shell, shell);
+			setExternTypeSafe(Menu, remote.Menu);
+			setExternTypeSafe(MenuItem, remote.MenuItem);
+			setExternTypeSafe(AppTools, remote.app);
+			setExternTypeSafe(BrowserWindow, remote.BrowserWindow);
 			
 			try {
-				load("libFontScanner", "./native/font-scanner/index.js");
+				setExternType(FontScanner, req("./native/font-scanner/index.js"));
 			} catch (x:Dynamic) {
 				Main.console.warn("font-scanner failed to load: ", x);
-				set("libFontScanner", FontScannerFallback);
+				setExternType(FontScanner, cast FontScannerFallback);
 			}
 			
 			function ensure(dir:String) {
@@ -61,14 +69,14 @@ import electron.extern.ElectronRemote;
 			ensure(path + "/api/v2");
 			ensure(path + "/api/live");
 		} else {
-			blank("Electron_API");
-			set("Electron_FS", FileSystem.FileSystemBrowser);
-			blank("Electron_IPC");
-			blank("Electron_Shell");
-			set("Electron_Menu", MenuFallback);
-			set("Electron_MenuItem", MenuFallback.MenuItemFallback);
-			blank("Electron_App");
-			set("libFontScanner", FontScannerFallback);
+			setExternType(Electron, null);
+			setExternType(FileSystem, cast FileSystem.FileSystemBrowser);
+			setExternType(IPC, null);
+			setExternType(Shell, null);
+			setExternType(Menu, cast MenuFallback);
+			setExternType(MenuItem, cast MenuFallback.MenuItemFallback);
+			setExternType(AppTools, null);
+			setExternType(FontScanner, cast FontScannerFallback);
 		}
 	}
 }
