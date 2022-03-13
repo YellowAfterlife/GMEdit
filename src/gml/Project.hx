@@ -122,8 +122,11 @@ import ui.treeview.TreeViewElement;
 	/** Texture groups */
 	public var yyTextureGroups:Array<String>;
 
-	/** Whether this is a new-format GMS2.3 project */
+	/** Whether this is a new-format GMS2.3+ project */
 	public var isGMS23:Bool = false;
+	
+	public var isGM2022:Bool = false;
+	
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
 	public var yyExtJson:Bool = false;
 	/** This will be false for 2.3 */

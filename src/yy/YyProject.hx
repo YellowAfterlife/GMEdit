@@ -13,6 +13,8 @@ typedef YyProject = {
 	?Folders:Array<YyProjectFolder>,
 	/** Exists 2.3 and forward */
 	?TextureGroups:Array<YyTextureGroup>,
+	//
+	?MetaData: { IDEVersion: String },
 };
 typedef YyProjectFolder = {
 	>YyBase,

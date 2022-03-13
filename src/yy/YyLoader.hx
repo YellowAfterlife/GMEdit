@@ -70,6 +70,12 @@ class YyLoader {
 		}
 		project.hasGMLive = yyProjectTxt.contains('"path":"scripts/GMLive/GMLive.yy"');
 		var yyProject:YyProject = YyJsonParser.parse(yyProjectTxt);
+		if (project.isGMS23) {
+			var metaData = yyProject.MetaData;
+			if (metaData != null && metaData.IDEVersion != null) {
+				project.isGM2022 = new RegExp("^20\\d{2}\\.").test(metaData.IDEVersion);
+			}
+		}
 		//
 		assetColours = new Dictionary();
 		var pjName = Path.withoutExtension(project.name);

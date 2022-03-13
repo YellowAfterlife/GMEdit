@@ -53,6 +53,7 @@ class GmlExtHashColorLiterals extends SyntaxExtension {
 		return out;
 	}
 	override public function postproc(editor:EditCode, code:String):String {
+		if (gml.Project.current.version.hasColorLiterals()) return code;
 		var q = new GmlReader(code);
 		var v = q.version;
 		var v2 = v.hasLiteralStrings();

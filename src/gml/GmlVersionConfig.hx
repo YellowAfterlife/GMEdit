@@ -34,6 +34,9 @@ typedef GmlVersionConfig = {
 	/** Whether `a ? b : c` is supported */
 	var hasTernaryOperator:Bool;
 	
+	/** Whether `#RrGgBbb` is allowed */
+	var hasColorLiterals:Bool;
+	
 	/** Whether GMS2 style `/// @meta` docs are used */
 	var hasJSDoc:Bool;
 	
@@ -141,6 +144,7 @@ class GmlVersionConfigDefaults {
 			hasRegions: v2,
 			hasEventSections: v1,
 			hasEventActions: v1,
+			hasColorLiterals: false,
 			//
 			resetLineCounterOnDefine: true,
 			hasJSDoc: v2,

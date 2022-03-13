@@ -1,5 +1,6 @@
 package gml;
 import electron.Dialog;
+import gml.GmlVersionV23;
 import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
@@ -128,6 +129,10 @@ import electron.FileWrap;
 	public function resetOnDefine() return config.resetLineCounterOnDefine;
 	public function getName() return name;
 	//
+	public function hasColorLiterals():Bool {
+		return config.hasColorLiterals;
+	}
+	//
 	static function init_1() {
 		// load versions and their dependencies:
 		for (v in list) map[v.name] = v;
@@ -211,7 +216,10 @@ import electron.FileWrap;
 					var full = dir + "/" + id;
 					if (!FileSystem.existsSync(full + "/config.json")) continue;
 					found[id] = true;
-					var v = new GmlVersion(id, full, isCustom);
+					var v:GmlVersion;
+					if (id == "v23") {
+						v = new GmlVersionV23(id, full, isCustom);
+					} else v = new GmlVersion(id, full, isCustom);
 					v.load();
 					list.push(v);
 				}
@@ -229,7 +237,11 @@ import electron.FileWrap;
 			var ids = ["v1", "v2", "v23"];
 			var left = ids.length;
 			for (id in ids) {
-				var v = new GmlVersion(id, Main.relPath("api/" + id), false);
+				var path = Main.relPath("api/" + id);
+				var v:GmlVersion;
+				if (id == "v23") {
+					v = new GmlVersionV23(id, path, false);
+				} else v = new GmlVersion(id, path, false);
 				v.load(function(e, v) {
 					if (--left == 0) init_1();
 				});
