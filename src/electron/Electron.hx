@@ -1,4 +1,5 @@
 package electron;
+import electron.Dialog.Electron_Dialog;
 import electron.Menu;
 #if !starter
 import js.Syntax;
@@ -37,7 +38,7 @@ import electron.ElectronMacros.*;
 		if (untyped window.require != null) {
 			setExternTypeSafe(Electron, req("electron"));
 			setExternTypeSafe(FileSystem, req("fs"));
-			setExternTypeSafe(Dialog, remote.dialog);
+			setExternTypeSafe(Electron_Dialog, remote.dialog);
 			Dialog.initWorkarounds();
 			setExternTypeSafe(IPC, ipcRenderer);
 			setExternTypeSafe(Shell, shell);
