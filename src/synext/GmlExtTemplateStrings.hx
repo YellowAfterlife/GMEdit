@@ -114,7 +114,9 @@ class GmlExtTemplateStrings extends SyntaxExtension {
 							var fmtStart = q.pos;
 							q.skipStringAuto('"'.code, version);
 							fmt = q.substring(fmtStart, q.pos - 1);
-							if (!esc) { // collapse GMS1 "1"+'"'+"2" into `1"2`
+							if (esc) {
+								fmt = fmt.replace('\\"', '"');
+							} else { // collapse GMS1 "1"+'"'+"2" into `1"2`
 								var sep = "+'\"'+\"";
 								while (q.loopLocal) {
 									if (q.peek(0) != "+".code) break;
@@ -221,8 +223,12 @@ class GmlExtTemplateStrings extends SyntaxExtension {
 							}
 							continue;
 						}
-						if (!esc && c == '"'.code) { // expand GMS1 " into "+'"'+"
-							curFmt += q.substring(curStart, q.pos - 1) + "\"+'\"'+\"";
+						if (c == '"'.code) {
+							if (esc) { // GMS2: " -> \"
+								curFmt += q.substring(curStart, q.pos - 1) + '\\"';
+							} else { // GMS1: " -> "+'"'+"
+								curFmt += q.substring(curStart, q.pos - 1) + "\"+'\"'+\"";
+							}
 							curStart = q.pos;
 						}
 						if (c == "`".code) {
