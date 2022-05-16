@@ -333,6 +333,10 @@ class TreeViewItemMenus {
 		}
 	}
 	//
+	public static function editTagsImpl() {
+		var d = getItemData(target);
+		TagEditor.show();
+	}
 	public static function renameImpl_1(q:TreeViewItemRename) {
 		
 	}
@@ -518,6 +522,12 @@ class TreeViewItemMenus {
 			icon: Menu.silkIcon("stop_close"),
 			click: removeImpl
 		});
+		var editTagsItem = new MenuItem({
+			id: "edit-tags",
+			label: "Edit tags",
+			icon: Menu.silkIcon("tag_blue"),
+			click: editTagsImpl
+		});
 		var renameItem = new MenuItem({
 			id: "rename",
 			label: "Rename",
@@ -525,7 +535,7 @@ class TreeViewItemMenus {
 			click: renameImpl
 		});
 		items.manipCreate = createItem;
-		items.manipOuter = [createItem, renameItem, removeItem];
+		items.manipOuter = [createItem, editTagsItem, renameItem, removeItem];
 		items.manipNonRoot.push(removeItem);
 	}
 	public static function update(dir:Bool) {

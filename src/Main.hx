@@ -123,6 +123,7 @@ class Main {
 		ColorPicker.init();
 		GlobalSearch.init();
 		GlobalLookup.init();
+		TagEditor.init();
 		Sidebar.init();
 		MainMenu.init();
 		//

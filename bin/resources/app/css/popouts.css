@@ -55,6 +55,13 @@
 	margin: 0.3em 0;
 }
 /* */
+.popout-center {
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+}
 #global-search {
 	left: 0;
 	top: 0;
@@ -89,7 +96,30 @@
 	margin: auto;
 	top: 40px;
 	width: 8em;
+	height: 1.25em;
 	text-align: center;
+	display: flex;
+	box-sizing: content-box;
+	line-height: 1.25;
+}
+#tag-editor {
+	display: flex;
+	flex-direction: column;
+	resize: both;
+	width: 360px;
+	height: 360px;
+}
+#tag-editor label {
+	padding-bottom: 2px;
+}
+#tag-editor textarea[name="tags"] {
+	flex-grow: 1;
+}
+#tag-editor .tag-editor-controls {
+	display: flex;
+}
+#tag-editor .tag-editor-controls span {
+	flex-grow: 1;
 }
 /* */
 #preferences-window {
