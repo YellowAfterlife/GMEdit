@@ -5,6 +5,7 @@ package electron;
  * @author YellowAfterlife
  */
 @:native("Electron_App") extern class AppTools {
+	static function getAppPath():String;
 	static function getPath(kind:String):String;
 	
 	/** Windows-only! */

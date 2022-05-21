@@ -5,7 +5,9 @@ var electron, fs, configPath;
 if (window.require) {
 	electron = require("electron");
 	fs = require("fs");
-	configPath = electron.remote.app.getPath("userData") + "/GMEdit/session/splitter.json";
+	var remote = electron.remote;
+	if (remote == null) remote = require("@electron/remote");
+	configPath = remote.app.getPath("userData") + "/GMEdit/session/splitter.json";
 }
 var conf = null;
 function initConf() {

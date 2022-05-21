@@ -1,14 +1,23 @@
 const electron = require('electron')
 
-{ // validate Electron version
-	const wantVersion = 11
+const electronVersion = (() => {
 	let version = process.versions.electron
 	let pos = version.indexOf(".")
 	if (pos >= 0) version = version.substr(0, pos)
-	version = parseInt(version)
-	if (version && version < wantVersion) throw new Error([
+	return parseInt(version)
+})()
+
+const remoteAsModule = (electronVersion >= 14)
+if (remoteAsModule) {
+	require('@electron/remote/main').initialize()
+}
+
+const minVersion = 11
+const maxVersion = 18
+if (electronVersion < minVersion) {
+	throw new Error([
 		"Hey, this Electron version is too old!",
-		`GMEdit needs at least Electron ${wantVersion}.x, but you have ${process.versions.electron}.`,
+		`GMEdit needs at least Electron ${minVersion}.x, but you have ${process.versions.electron}.`,
 		"If you are downloading GMEdit-App-Only.zip, please download a full release to update Electron.",
 		"If you are building GMEdit from source code, grab a newer Electron binary as per README instructions."
 	].join("\n"))
@@ -53,7 +62,8 @@ function createWindow(first) {
 		title: "GMEdit",
 		webPreferences: {
 			enableRemoteModule: true,
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		},
 		show: !showOnceReady,
 		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
@@ -81,11 +91,7 @@ function createWindow(first) {
 	})
 
 	// and load the index.html of the app.
-	let index_url = url.format({
-		pathname: path.join(__dirname, "index.html"),
-		protocol: 'file:',
-		slashes: true
-	})
+	let index_url = `file:///${__dirname}/index.html`
 	
 	let params = []
 	if (windowFrame) params.push("electron-window-frame")
@@ -94,11 +100,7 @@ function createWindow(first) {
 		
 		//
 		if (args.includes("--liveweb")) {
-			index_url = url.format({
-				pathname: path.join(__dirname, "index-live.html"),
-				protocol: 'file:',
-				slashes: true
-			})
+			index_url = `file:///${__dirname}/index-live.html`
 		}
 		
 		let openArgs = args.slice(1).filter(function(arg) {
@@ -115,9 +117,16 @@ function createWindow(first) {
 	if (params.length > 0) index_url += "?" + params.join("&")
 	
 	wnd.loadURL(index_url)
+	if (remoteAsModule) {
+		require("@electron/remote/main").enable(wnd.webContents)
+	}
 
 	// Open the DevTools.
-	//wnd.webContents.openDevTools()
+	try {
+		//wnd.webContents.openDevTools()
+	} catch (e) {
+		console.error("Failed to open devtools: ", e)
+	}
 
 	// Emitted when the window is closed.
 	wnd.on('closed', function () {
@@ -134,6 +143,19 @@ app.on('ready', function () {
 	// This method will be called when Electron has finished
 	// initialization and is ready to create browser windows.
 	// Some APIs can only be used after this event occurs.
+	if (electronVersion > maxVersion) {
+		electron.dialog.showMessageBoxSync({
+			message: [
+				"Hey, this Electron version is too new!",
+				`GMEdit has only been verified to work with Electron versions up to ${maxVersion}.x, but you have ${process.versions.electron}.`,
+				"If you are downloading GMEdit-App-Only.zip, please download a full release.",
+				"If you are building GMEdit from source code, grab an appropriate Electron binary as per README instructions."
+			].join("\n"),
+			type: "warning",
+			buttons: ["OK"],
+		})
+	}
+	
 	createWindow(true)
 })
 

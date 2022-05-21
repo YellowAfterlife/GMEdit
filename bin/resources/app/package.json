@@ -1,11 +1,22 @@
 {
   "name": "AceGM",
   "version": "1.0.0",
-  "description": "",
+  "description": "A high-end code editor for all things GameMaker",
+  "homepage": "https://yellowafterlife.itch.io/gmedit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YellowAfterlife/GMEdit"
+  },
+  "license": "MIT",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
   "author": "YellowAfterlife",
-  "devDependencies": {}
+  "dependencies": {
+    "@electron/remote": "^2.0.8"
+  },
+  "devDependencies": {
+    "electron-builder": "^23.0.3"
+  }
 }

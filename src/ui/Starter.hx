@@ -37,7 +37,13 @@ class Starter {
 		//
 		var electron = softReq("electron");
 		if (electron != null) {
-			userPath = electron.remote.app.getPath("userData") + "/GMEdit";
+			var remote = electron.remote;
+			var ver = (cast window).parseInt((cast window).process.versions.electron);
+			if (ver >= 14) {
+				remote = req("@electron/remote");
+				electron.remote = remote;
+			}
+			userPath = remote.app.getPath("userData") + "/GMEdit";
 		}
 		dynWindow.Electron = electron;
 	}

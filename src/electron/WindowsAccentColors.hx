@@ -17,14 +17,20 @@ class WindowsAccentColors {
 		try {
 			if (Electron == null) return;
 			if (untyped (window.process.platform) != "win32") return;
-			untyped {
-				// https://discuss.atom.io/t/require-javascript-file-in-renderer-process/37343/8
-				var remote = Electron.remote;
-				var path = require("path");
-				var appPath = remote.app.getAppPath();
-				var jsPath = path.resolve(appPath, "./misc/WindowsAccentColors.js");
-				impl = require(jsPath);
-			};
+			inline function req(path:String):Dynamic {
+				return (cast js.Browser.window).require(path);
+			}
+			// https://discuss.atom.io/t/require-javascript-file-in-renderer-process/37343/8
+			var remote = Electron.remote;
+			if (remote == null) remote = req("@electron/remote");
+			var path = req("path");
+			#if starter
+			var appPath = remote.app.getAppPath();
+			#else
+			var appPath = electron.AppTools.getAppPath();
+			#end
+			var jsPath = path.resolve(appPath, "./misc/WindowsAccentColors.js");
+			impl = req(jsPath);
 		} catch (x:Dynamic) {
 			Console.error("Error initializing accent colors: ", x);
 		}
