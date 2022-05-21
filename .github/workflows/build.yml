@@ -15,5 +15,21 @@ jobs:
           npx electron-builder
       - uses: actions/upload-artifact@v2
         with:
+          name: GMEdit-Win
           path:
-            bin/resources/app/dist/GMEdit-1.0.0-win.zip
+            bin/resources/app/dist/*.zip
+  build-mac:
+    name: Build for Mac
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: |
+          cd bin/resources/app
+          npm install
+          npx electron-builder
+      - uses: actions/upload-artifact@v2
+        with:
+          name: GMEdit-Mac
+          path:
+            bin/resources/app/dist/*.zip
