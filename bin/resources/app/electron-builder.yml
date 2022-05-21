@@ -1,0 +1,14 @@
+appId: cc.yal.gmedit
+productName: GMEdit
+win:
+  target: zip
+  asar: false
+  icon: icons/icon.ico
+linux:
+  target: zip
+  asar: false
+  icon: icons/linux
+mac:
+  target: zip
+  asar: false
+  icon: icons/icon.icns

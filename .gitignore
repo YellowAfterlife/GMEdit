@@ -4,6 +4,7 @@
 /bin/resources/app/app.js.map
 /bin/resources/default_app.asar
 /bin/resources/electron.asar
+/bin/resources/app/dist/*
 /bin/resources/app/node_modules/*
 /art/*.png
 /*.lnk
