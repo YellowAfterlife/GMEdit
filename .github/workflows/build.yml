@@ -12,7 +12,7 @@ jobs:
       - run: |
           cd bin/resources/app
           npm install
-          npx electron-builder  -p never
+          npx electron-builder -p never -x64 -ia32
       - uses: actions/upload-artifact@v2
         with:
           name: GMEdit-Win
@@ -27,9 +27,24 @@ jobs:
       - run: |
           cd bin/resources/app
           npm install
-          npx electron-builder -p never
+          npx electron-builder -p never -x64 -arm64
       - uses: actions/upload-artifact@v2
         with:
           name: GMEdit-Mac
+          path:
+            bin/resources/app/dist/*.zip
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: |
+          cd bin/resources/app
+          npm install
+          npx electron-builder -p never -x64
+      - uses: actions/upload-artifact@v2
+        with:
+          name: GMEdit-Linux
           path:
             bin/resources/app/dist/*.zip
