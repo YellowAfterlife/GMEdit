@@ -43,8 +43,8 @@ jobs:
           cd bin/resources/app
           npm install
           npx electron-builder -p never --x64
-          cd dist/linux-unpacked
-          zip -r ../../AppOnly.zip *
+          cd dist/linux-unpacked/resources/app
+          zip -r ../../../../AppOnly.zip *
       - uses: actions/upload-artifact@v2
         with:
           name: GMEdit-Linux
