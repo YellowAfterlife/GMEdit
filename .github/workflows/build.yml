@@ -12,7 +12,7 @@ jobs:
       - run: |
           cd bin/resources/app
           npm install
-          npx electron-builder
+          npx electron-builder  -p never
       - uses: actions/upload-artifact@v2
         with:
           name: GMEdit-Win
@@ -27,7 +27,7 @@ jobs:
       - run: |
           cd bin/resources/app
           npm install
-          npx electron-builder
+          npx electron-builder -p never
       - uses: actions/upload-artifact@v2
         with:
           name: GMEdit-Mac
