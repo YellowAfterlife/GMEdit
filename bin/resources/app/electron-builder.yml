@@ -1,11 +1,11 @@
 appId: cc.yal.gmedit
 productName: GMEdit
-artifactName: GMEdit
 win:
   target: zip
   asar: false
   icon: icons/icon.ico
 linux:
+  artifactName: GMEdit.${ext}
   target: zip
   asar: false
   icon: icons/linux
