@@ -6,6 +6,9 @@
 /bin/resources/electron.asar
 /bin/resources/app/dist/*
 /bin/resources/app/node_modules/*
+
+/export/bin
+/export/base
 /art/*.png
 /*.lnk
 .DS_Store

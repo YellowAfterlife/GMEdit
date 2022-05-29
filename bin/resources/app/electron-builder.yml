@@ -5,7 +5,7 @@ win:
   asar: false
   icon: icons/icon.ico
 linux:
-  artifactName: GMEdit.${ext}
+  artifactName: GMEdit-${version}-${os}.${ext}
   target: zip
   asar: false
   icon: icons/linux
