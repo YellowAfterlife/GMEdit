@@ -26,7 +26,7 @@
     {"id":{"name":"v_func_literal_types","path":"scripts/v_func_literal_types/v_func_literal_types.yy",},"order":0,},
     {"id":{"name":"v_method","path":"scripts/v_method/v_method.yy",},"order":1,},
     {"id":{"name":"v_std_structs","path":"scripts/v_std_structs/v_std_structs.yy",},"order":2,},
-    {"id":{"name":"v_color_literal","path":"scripts/v_color_literal/v_color_literal.yy",},"order":1,},
+    {"id":{"name":"v_color_literal","path":"scripts/v_color_literal/v_color_literal.yy",},"order":0,},
     {"id":{"name":"v_imp_namespace_class","path":"scripts/v_imp_namespace_class/v_imp_namespace_class.yy",},"order":4,},
     {"id":{"name":"v_imp_static","path":"scripts/v_imp_static/v_imp_static.yy",},"order":5,},
     {"id":{"name":"v_is_highlight","path":"scripts/v_is_highlight/v_is_highlight.yy",},"order":0,},
@@ -69,9 +69,10 @@
     {"id":{"name":"v_func_blank_args","path":"scripts/v_func_blank_args/v_func_blank_args.yy",},"order":2,},
     {"id":{"name":"v_anon_structs","path":"scripts/v_anon_structs/v_anon_structs.yy",},"order":2,},
     {"id":{"name":"v_common_namespace_names","path":"scripts/v_common_namespace_names/v_common_namespace_names.yy",},"order":4,},
-    {"id":{"name":"v_args23","path":"scripts/v_args23/v_args23.yy",},"order":2,},
+    {"id":{"name":"v_args23","path":"scripts/v_args23/v_args23.yy",},"order":1,},
     {"id":{"name":"v_constructor_implicit_types","path":"scripts/v_constructor_implicit_types/v_constructor_implicit_types.yy",},"order":4,},
     {"id":{"name":"v_struct_constraint","path":"scripts/v_struct_constraint/v_struct_constraint.yy",},"order":6,},
+    {"id":{"name":"v_arrow_funcs","path":"scripts/v_arrow_funcs/v_arrow_funcs.yy",},"order":2,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
@@ -126,6 +127,7 @@
     {"folderPath":"folders/Scripts/Linter/Casts.yy","order":3,"resourceVersion":"1.0","name":"Casts","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Scripts/Linter/Syntax.yy","order":5,"resourceVersion":"1.0","name":"Syntax","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Scripts/Linter/Types.yy","order":4,"resourceVersion":"1.0","name":"Types","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/Scripts/Syntax extensions.yy","order":6,"resourceVersion":"1.0","name":"Syntax extensions","tags":[],"resourceType":"GMFolder",},
   ],
   "AudioGroups": [
     {"targets":-1,"resourceVersion":"1.3","name":"audiogroup_default","resourceType":"GMAudioGroup",},

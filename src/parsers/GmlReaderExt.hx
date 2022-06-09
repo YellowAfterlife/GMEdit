@@ -212,6 +212,12 @@ using StringTools;
 		return r;
 	}
 	
+	public function getBottomOffset():Int {
+		if (oldPos.length > 0) {
+			return oldPos[oldPos.length - 1];
+		} else return pos;
+	}
+	
 	public function getWatchForDepth(depth:Int, n:Int) {
 		var p = oldPos[depth];
 		var bn = p < n ? p : n;

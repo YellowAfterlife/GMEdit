@@ -56,6 +56,7 @@ class KGml extends KCode {
 	public static function initSyntaxExtensions() {
 		syntaxExtensions = [
 			// GmlExtCoroutines.inst, // done in KGmlScript
+			GmlExtArrowFunctions.inst,
 			GmlExtLambda.inst,
 			GmlExtMFunc.inst,
 			GmlExtImport.inst,

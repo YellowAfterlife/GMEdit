@@ -205,10 +205,11 @@ class GmlLinterParser {
 				case "}".code: return retv(KCubClose, "}");
 				//
 				case "=".code: {
-					if (q.peek() == "=".code) {
-						q.skip();
-						return retv(KEQ, "==");
-					} else return retv(KSet, "=");
+					switch (q.peek()) {
+						case "=".code: q.skip(); return retv(KEQ, "==");
+						case ">".code: q.skip(); return retv(KArrowFunc, "=>");
+						default: return retv(KSet, "=");
+					}
 				};
 				case "!".code: {
 					if (q.peek() == "=".code) {

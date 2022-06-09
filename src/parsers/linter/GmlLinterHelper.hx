@@ -18,6 +18,7 @@ class GmlLinterHelper {
 	
 	inline function setError(text:String):Void linter.setError(text);
 	inline function addWarning(text:String):Void linter.addWarning(text);
+	inline function readError(text:String):FoundError return linter.readError(text);
 	inline function readExpect(what:String):FoundError return linter.readExpect(what);
 	
 	var reader(get, never):GmlReaderExt;
@@ -30,10 +31,11 @@ class GmlLinterHelper {
 	inline function get_context() return linter.context;
 	inline function set_context(c) return linter.context = c;
 	
-	inline function peek() return linter.peek();
-	inline function skip() return linter.skip();
-	inline function next() return linter.next();
+	inline function peek():GmlLinterKind return linter.peek();
+	inline function skip():GmlLinterKind return linter.skip();
+	inline function next():GmlLinterKind return linter.next();
 	inline function skipIf(cond:Bool):Bool return linter.skipIf(cond);
+	inline function skipIfPeek(kind:GmlLinterKind):Bool return linter.skipIfPeek(kind);
 	
 	var nextVal(get, never):String;
 	inline function get_nextVal() return linter.nextVal;

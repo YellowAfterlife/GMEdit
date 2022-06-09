@@ -8,6 +8,7 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterArrayAccess;
 import parsers.linter.GmlLinterArrayLiteral;
+import parsers.linter.GmlLinterFuncLiteral;
 import tools.Aliases;
 import parsers.linter.GmlLinter;
 import tools.JsTools;
@@ -147,12 +148,52 @@ class GmlLinterExpr extends GmlLinterHelper {
 				isLocalIdent = GmlLinterIdent.isLocal;
 			};
 			case KParOpen: {
-				rc(self.readExpr(newDepth));
-				if (next() != KParClose) return readExpect("a `)`");
-				currType = this.currType;
-				currFunc = this.currFunc;
-				currValue = this.currValue;
-				nullSafety = this.nullSafety;
+				var arrowState:GmlLinterFuncLiteralArgsArrowState = null;
+				var arrowArgName:String = null;
+				if (skipIfPeek(KParClose)) {
+					arrowState = AfterEmptyPar;
+				} else if (peek() == KIdent) {
+					arrowArgName = nextVal;
+					var peeker = linter.__peekReader;
+					peeker.skipSpaces1();
+					switch (peeker.read()) {
+						case ")".code:
+							peeker.skipSpaces1();
+							if (peeker.skipIfStrEquals("=>")) {
+								arrowState = AfterArrow;
+								skip();
+							}
+						case ":".code:
+							arrowState = AfterColon;
+							skip();
+						case ",".code:
+							arrowState = AfterComma;
+							skip();
+					}
+				}
+				if (arrowState == null) { // normal expr
+					rc(self.readExpr(newDepth));
+					readCheckSkip(KParClose, "a `)`");
+					currType = this.currType;
+					currFunc = this.currFunc;
+					currValue = this.currValue;
+					nullSafety = this.nullSafety;
+				}
+				else {
+					if (isStat()) {
+						if (arrowState == AfterArrow) {
+							return readError("Arrow functions cannot be statements");
+						} else return readExpect("a `)`");
+					}
+					rc(self.funcLiteral.read(newDepth, false, true, {
+						arrowFunc: {
+							state: arrowState,
+							firstArgName: arrowArgName,
+						}
+					}));
+					currFunc = self.funcLiteral.doc;
+					currType = currFunc.getFunctionType();
+				}
 			};
 			case KNew: {
 				rc(self.readExpr(newDepth, IsNew));

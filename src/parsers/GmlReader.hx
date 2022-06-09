@@ -1,9 +1,11 @@
 package parsers;
 
 import ace.extern.*;
+import editors.EditCode;
 import file.FileKind;
 import file.kind.gml.KGmlScript;
 import gml.GmlVersion;
+import parsers.linter.GmlLinter;
 import tools.Aliases;
 import tools.CharCode;
 import tools.StringReader;
@@ -512,6 +514,19 @@ using tools.NativeString;
 			}
 		}
 		return n;
+	}
+	
+	public function skipComplexExpr(editor:EditCode):Void {
+		// bit of a hack isn't it
+		@:privateAccess {
+			var l = new GmlLinter();
+			l.runPre(source, editor, version);
+			l.setLocalTypes = false;
+			l.reader.pos = pos;
+			l.readExpr(0, None);
+			var i = l.reader.oldPos.length - 1;
+			pos = l.reader.getBottomOffset();
+		}
 	}
 	
 	/**

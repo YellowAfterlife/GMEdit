@@ -256,7 +256,7 @@ class GmlLinter {
 	}
 	//
 	private var __peekReader:GmlReaderExt = new GmlReaderExt("", GmlVersion.none);
-	function peek() {
+	function peek():GmlLinterKind {
 		var q = __peekReader;
 		q.setTo(reader);
 		var wasPeek = __next_isPeek;
@@ -280,6 +280,9 @@ class GmlLinter {
 		}
 		__skipAvail = false;
 		return cond;
+	}
+	function skipIfPeek(kind:GmlLinterKind):Bool {
+		return inline skipIf(peek() == kind);
 	}
 	//
 	inline function nextOr(nk:GmlLinterKind):GmlLinterKind {
