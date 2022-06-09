@@ -521,7 +521,7 @@ using tools.NativeString;
 		@:privateAccess {
 			var l = new GmlLinter();
 			l.runPre(source, editor, version);
-			l.setLocalTypes = false;
+			l.initSkipper();
 			l.reader.pos = pos;
 			l.readExpr(0, None);
 			var i = l.reader.oldPos.length - 1;

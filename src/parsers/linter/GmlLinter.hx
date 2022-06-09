@@ -141,6 +141,13 @@ class GmlLinter {
 	var setLocalVars:Bool = false;
 	var setLocalTypes:Bool = true;
 	
+	/** Initializes this linter for being used by GmlReader - no state changes */
+	public function initSkipper():Void {
+		setLocalTypes = false;
+		setLocalVars = false;
+		currFuncDoc = null;
+	}
+	
 	/** Used for storing stacktrace when reading {...}/[...]/etc. */
 	var seqStart:GmlReaderExt = new GmlReaderExt("", GmlVersion.none);
 	function readSeqStartError(text:String):FoundError {

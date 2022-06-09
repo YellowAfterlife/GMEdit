@@ -155,20 +155,29 @@ class GmlLinterExpr extends GmlLinterHelper {
 				} else if (peek() == KIdent) {
 					arrowArgName = nextVal;
 					var peeker = linter.__peekReader;
-					peeker.skipSpaces1();
-					switch (peeker.read()) {
-						case ")".code:
-							peeker.skipSpaces1();
-							if (peeker.skipIfStrEquals("=>")) {
-								arrowState = AfterArrow;
+					for (iter in 0 ... 2) {
+						peeker.skipSpaces1();
+						switch (peeker.read()) {
+							case ")".code:
+								peeker.skipSpaces1();
+								if (peeker.skipIfStrEquals("=>")) {
+									arrowState = AfterArrow;
+									skip();
+								}
+							case "=".code:
+								// running a linter in another linter! Can you believe that?
+								// Fortunately it's not like you usually have thousands of arrow funcs
+								// all with first argument being optional.
+								peeker.skipComplexExpr(editor);
+								continue;
+							case ":".code if (iter == 0):
+								arrowState = AfterColon;
 								skip();
-							}
-						case ":".code:
-							arrowState = AfterColon;
-							skip();
-						case ",".code:
-							arrowState = AfterComma;
-							skip();
+							case ",".code:
+								arrowState = AfterComma;
+								skip();
+						}
+						break;
 					}
 				}
 				if (arrowState == null) { // normal expr

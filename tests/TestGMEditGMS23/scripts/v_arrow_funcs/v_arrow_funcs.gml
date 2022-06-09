@@ -4,6 +4,7 @@ function v_arrow_funcs() {
 	var blankExpr = function() /*=>*/ {return 0};
 	var oneBlock = function(a) /*=>*/ { show_debug_message(a) };
 	var oneExpr = function(a) /*=>*/ {return -a};
+	var optArgs = function(a=1,b=2) /*=>*/ {return a-b};
 	//*
 	var arr = [2, 1, 3];
 	array_sort(arr, function(a, b) /*=>*/ {return a - b});
