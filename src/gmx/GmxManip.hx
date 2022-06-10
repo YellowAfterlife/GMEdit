@@ -240,7 +240,7 @@ void main()
 		} else {
 			var p0 = gmx.text;
 			switch (single) {
-				case "script": {};
+				case "script", "object": {};
 				default: p0 += '.$single.gmx';
 			}
 			var mt = new RegExp("^(\\w+[/\\\\])(\\w+)(.*)$").exec(p0);
