@@ -58,6 +58,7 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 				var exprEnd = q.pos;
 				if (!q.skipIfEquals("}".code)) continue;
 				var expr = q.substring(exprStart, exprEnd);
+				expr = preproc(editor, expr);
 				flush(p);
 				out += q.substring(parStart, parEnd)
 					+ q.substring(beforeSpStart, beforeSpEnd)

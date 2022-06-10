@@ -9,10 +9,9 @@ function v_arrow_funcs() {
 	var arr = [2, 1, 3];
 	array_sort(arr, function(a, b) /*=>*/ {return a - b});
 	//*
-	var hell = function() /*=>*/ {return [
+	var nested = function() /*=>*/ {return [
 		function() /*=>*/ {return 1},
 		function() /*=>*/ {return 2},
 		function() /*=>*/ {return 3}
 	]};
-	//var a1 = (a,b) => a + b;*/
 }
