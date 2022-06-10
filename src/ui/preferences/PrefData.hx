@@ -25,6 +25,7 @@ import haxe.DynamicAccess;
 		nullCoalescingAssignment: true,
 		castOperators: true,
 		hashColorLiterals: true,
+		arrowFunctions: true,
 		showGMLive: Everywhere,
 		
 		fileSessionTime: 7,
@@ -97,6 +98,7 @@ typedef PrefDataImpl = {
 	nullCoalescingAssignment:Bool,
 	castOperators:Bool,
 	hashColorLiterals:Bool,
+	arrowFunctions:Bool,
 	
 	assetThumbs:Bool,
 	clearAssetThumbsOnRefresh:Bool,

@@ -2,7 +2,7 @@
 function v_arrow_funcs() { 
 	var blankBlock = function() /*=>*/ {};
 	var blankExpr = function() /*=>*/ {return 0};
-	var oneBlock = function(a) /*=>*/ { show_debug_message(a) };
+	var oneBlock = function(a) /*=>*/{;show_debug_message(a);}
 	var oneExpr = function(a) /*=>*/ {return -a};
 	var optArgs = function(a=1,b=2) /*=>*/ {return a-b};
 	//*

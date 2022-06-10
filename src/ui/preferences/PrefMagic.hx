@@ -111,6 +111,13 @@ class PrefMagic {
 		});
 		el.title = "(as an alternative to usual 0xBbGgRr)";
 		
+		el = addCheckbox(out, "Use arrow function shorthands", current.arrowFunctions, function(z) {
+			current.arrowFunctions = z;
+			save();
+		});
+		el.title = "Lets you write (a, b) => c instead of function(a, b) { return c } and alike";
+		addWiki(el, "https://github.com/YellowAfterlife/GMEdit/wiki/Using-arrow-functions");
+		
 		//
 		#if !lwedit
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];

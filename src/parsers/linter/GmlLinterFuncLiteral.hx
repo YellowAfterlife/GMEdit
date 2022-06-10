@@ -151,7 +151,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 		linter.localVarTokenType = nextLocalType;
 		
 		inline function readFuncBody():FoundError {
-			if (arrowOpts == null || peek() == KCubOpen) {
+			if (arrowOpts == null || skipIfPeek(KSemico) || peek() == KCubOpen) {
 				return readStat(0);
 			} else {
 				var trouble = readExpr(0);

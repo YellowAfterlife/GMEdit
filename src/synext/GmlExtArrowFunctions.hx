@@ -5,6 +5,7 @@ import parsers.GmlReader;
 import synext.SyntaxExtension;
 import tools.Aliases.GmlCode;
 import tools.CharCode;
+import ui.Preferences;
 
 /**
  * `(a, b) => c` <-> `function(a, b) /*=>*\/ { return c }`
@@ -15,6 +16,9 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 	public static var inst:GmlExtArrowFunctions = new GmlExtArrowFunctions();
 	public function new() {
 		super("()=>", "arrow functions");
+	}
+	override public function check(editor:EditCode, code:String):Bool {
+		return Preferences.current.arrowFunctions;
 	}
 	override public function preproc(editor:EditCode, code:String):String {
 		var q = new GmlReader(code);
@@ -51,10 +55,22 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 			q.skipSpaces1_local();
 			var afterSpEnd = q.pos;
 			if (!q.skipIfEquals("{".code)) continue;
-			if (q.skipIfIdentEquals("return")) {
+			if (q.skipIfEquals(";".code)) { // ()=>;stat
+				var statStart = q.pos;
+				q.skipComplexStatement(editor);
+				var stat = q.substring(statStart, q.pos);
+				if (!q.skipIfEquals("}".code)) continue;
+				stat = preproc(editor, stat);
+				flush(p);
+				out += q.substring(parStart, parEnd)
+					+ q.substring(beforeSpStart, beforeSpEnd)
+					+ "=>"
+					+ q.substring(afterSpStart, afterSpEnd)
+					+ ";" + stat;
+			} else if (q.skipIfIdentEquals("return")) { // ()=>expr
 				q.skipIfEquals(" ".code);
 				var exprStart = q.pos;
-				skipExpr(q, editor);
+				q.skipComplexExpr(editor);
 				var exprEnd = q.pos;
 				if (!q.skipIfEquals("}".code)) continue;
 				var expr = q.substring(exprStart, exprEnd);
@@ -65,23 +81,19 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 					+ "=>"
 					+ q.substring(afterSpStart, afterSpEnd)
 					+ expr;
-				start = q.pos;
-			} else {
+			} else { // ()=>{block}
 				flush(p);
 				out += q.substring(parStart, parEnd)
 					+ q.substring(beforeSpStart, beforeSpEnd)
 					+ "=>"
 					+ q.substring(afterSpStart, afterSpEnd)
 					+ q.substring(afterSpEnd, q.pos);
-				start = q.pos;
 			}
+			start = q.pos;
 		}
 		if (start == 0) return code;
 		flush(q.pos);
 		return out;
-	}
-	static inline function skipExpr(q:GmlReader, editor:EditCode) {
-		q.skipComplexExpr(editor);
 	}
 	function postproc_sub(q:GmlReader, editor:EditCode):String {
 		var start = q.pos - 1;
@@ -131,13 +143,19 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 			+ "/*=>*/"
 			+ q.substring(afterSpStart, afterSpEnd);
 		
-		if (!q.skipIfEquals("{".code)) { // expr
+		if (q.skipIfEquals(";".code)) { // =>;stat
+			var statStart = q.pos;
+			q.skipComplexStatement(editor);
+			var stat = q.substring(statStart, q.pos);
+			stat = postproc(editor, stat);
+			return out + "{;" + stat + "}";
+		} else if (!q.skipIfEquals("{".code)) { // =>expr
 			var exprStart = q.pos;
-			skipExpr(q, editor);
+			q.skipComplexExpr(editor);
 			var expr = q.substring(exprStart, q.pos);
 			expr = postproc(editor, expr);
 			return out + "{return " + expr + "}";
-		} else { // block
+		} else { // =>{block}
 			return out + "{";
 		}
 	}

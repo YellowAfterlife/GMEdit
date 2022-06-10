@@ -524,7 +524,17 @@ using tools.NativeString;
 			l.initSkipper();
 			l.reader.pos = pos;
 			l.readExpr(0, None);
-			var i = l.reader.oldPos.length - 1;
+			pos = l.reader.getBottomOffset();
+		}
+	}
+	public function skipComplexStatement(editor:EditCode):Void {
+		// same as above
+		@:privateAccess {
+			var l = new GmlLinter();
+			l.runPre(source, editor, version);
+			l.initSkipper();
+			l.reader.pos = pos;
+			l.readStat(0, None);
 			pos = l.reader.getBottomOffset();
 		}
 	}
