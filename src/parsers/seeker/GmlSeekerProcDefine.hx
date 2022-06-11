@@ -34,10 +34,21 @@ class GmlSeekerProcDefine {
 	public static function procFuncLiteralArgs(seeker:GmlSeekerImpl) {
 		if (seeker.find(Par0) == "(") {
 			var q = seeker.reader;
+			var wantArgName = true;
+			var depth = 1;
 			while (q.loop) {
-				var s = seeker.find(Ident | Par1);
-				if (s == ")" || s == null) break;
-				seeker.locals.add(s, seeker.localKind);
+				var s = seeker.find(Ident | Par0 | Par1 | Comma);
+				switch (s) {
+					case null: break;
+					case "(": depth++;
+					case ")": if (--depth <= 0) break;
+					case ",": if (depth == 1) wantArgName = true;
+					default:
+						if (wantArgName) {
+							wantArgName = false;
+							seeker.locals.add(s, seeker.localKind);
+						}
+				}
 			}
 			procFuncLiteralRetArrow(seeker);
 		}

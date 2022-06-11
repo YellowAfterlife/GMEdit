@@ -87,7 +87,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 							var argName = nextVal;
 							var argIndex = doc.args.length;
 							awaitArgName = false;
-							doc.args.push(nextVal);
+							doc.args.push(argName);
 							var argTypeStr = null;
 							var t:GmlType;
 							if (skipIf(peek() == KColon)) {
