@@ -51,17 +51,21 @@ class KGml extends KCode {
 	 */
 	public var saveSessionChanged:Bool;
 	
+	/**
+	 * NB! Syntax extensions are applied in "forward" order on open/preproc
+	 * and in backwards order on save/postproc.
+	 */
 	public static var syntaxExtensions:Array<SyntaxExtension> = null;
 	
 	public static function initSyntaxExtensions() {
 		syntaxExtensions = [
 			// GmlExtCoroutines.inst, // done in KGmlScript
-			GmlExtArrowFunctions.inst,
 			GmlExtLambda.inst,
 			GmlExtMFunc.inst,
 			GmlExtImport.inst,
 			GmlNullCoalescingOperator.inst,
 			GmlNullCoalescingAssignment.inst,
+			GmlExtArrowFunctions.inst,
 			GmlExtTemplateStrings.inst,
 			GmlExtCast.inst,
 			GmlExtHashColorLiterals.inst,
