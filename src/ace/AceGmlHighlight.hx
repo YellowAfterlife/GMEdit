@@ -129,6 +129,7 @@ using tools.NativeArray;
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
+		var rPragma = rxRule(["preproc.pragma", "keyword", "string"], ~/^(#pragma\b[ \t]*)(\w*[ \t]*)(.*)/);
 		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
 		var rKeyEvent = rulePairs([
 			"^#event", "preproc.event",
@@ -180,8 +181,8 @@ using tools.NativeArray;
 			fakeMultiline
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
-			//
 			rDefine, rAction, rKeyEvent, rEvent, rEventBlank, rMoment, rTarget,
+		].concat(version.config.hasPragma ? [rPragma] : []).concat([
 			rxRule(["keyword", "text", "field"], ~/(static)(\s+)([_a-zA-Z]\w*)/),
 			//{ macros
 			rpushPairs([
@@ -219,7 +220,7 @@ using tools.NativeArray;
 			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
 			rxRule("preproc.gmcr", ~/#gmcr\b/),
-		]; //}
+		]); //}
 		if (version.config.hasRegions) { // regions
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));

@@ -169,6 +169,7 @@ class GmlLinterParser {
 									q.pos = p; return retv(KHash, "#");
 								}
 							};
+							case "pragma" if (l.version.config.hasPragma): q.skipLine();
 							case "gmcr": {
 								if (l.keywords["yield"] == null) {
 									l.keywords["yield"] = KYield;

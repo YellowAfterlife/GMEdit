@@ -61,6 +61,9 @@ typedef GmlVersionConfig = {
 	/** Whether events can have #action magic */
 	var hasEventActions:Bool;
 	
+	/** Whether #pragma is a thing */
+	var hasPragma:Bool;
+	
 	/** If set to "gms1", auto-maps colour<->color */
 	var docMode:String;
 	
@@ -145,6 +148,7 @@ class GmlVersionConfigDefaults {
 			hasEventSections: v1,
 			hasEventActions: v1,
 			hasColorLiterals: false,
+			hasPragma: false,
 			//
 			resetLineCounterOnDefine: true,
 			hasJSDoc: v2,
