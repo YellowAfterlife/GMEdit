@@ -49,6 +49,7 @@ class GmlParseAPI {
 		var lwConst = data.lwConst;
 		var lwFlags = data.lwFlags;
 		#end
+		var featureFlags = ui.Preferences.current.apiFeatureFlags;
 		//
 		
 		// typedefs!
@@ -123,6 +124,7 @@ class GmlParseAPI {
 				+ "(?:->" + "(\\S+)" + ")?" // $4 -> retType
 			+ ")"
 			+ "([ ~\\$#*@&£!:]*)" // $5 -> flags
+			+ "(?:\\^(\\w*))?" // $6 -> feature flag
 		+ "", "gm");
 		rxFunc.each(src, function(mt:RegExpMatch) {
 			var comp = mt[1];
@@ -131,6 +133,7 @@ class GmlParseAPI {
 			var ret = mt[4];
 			var flags:String = mt[5];
 			if (NativeString.contains(flags, "&")) return;
+			var featureFlag = mt[6];
 			//
 			var orig = name;
 			var show = true;
@@ -153,6 +156,7 @@ class GmlParseAPI {
 					stdDoc.set(orig, doc);
 				}
 			}
+			if (featureFlag != null && featureFlags.indexOf(featureFlag) < 0) show = false;
 			//
 			#if lwedit
 			if (lwInst != null && (
@@ -199,16 +203,17 @@ class GmlParseAPI {
 			stdDoc.set(name, doc);
 		});
 		
-		// variables!
+		// constants and variables!
 		var rxVar = new RegExp("^"
 			+ "(" // 1 -> comp
 				+ "(\\w+)" // 2 -> name
 				+ "(" + "\\[.*?\\]" + ")?" // 3 -> array data
 				+ "([~\\*\\$£#@&]*)" // 4 -> flags
 			+ ")"
-			+ "(?::(\\S+))?" // 5 -> type annotation
+			+ "(?:\\^(\\w*))?" // 5 -> feature flag
+			+ "(?::(\\S+))?" // 6 -> type annotation
 			+ "[ \t]*"
-			+ "(?://.*)?"
+			+ "(?://.*)?" // a comment, perhaps?
 			+ "$" // this is here because otherwise the regex greedily triggers on functions
 		+ "", "gm");
 		rxVar.each(src, function(mt:RegExpMatch) {
@@ -216,7 +221,8 @@ class GmlParseAPI {
 			var name =  mt[2];
 			var range = mt[3];
 			var flags = mt[4];
-			var typeStr = mt[5];
+			var featureFlag = mt[5];
+			var typeStr = mt[6];
 			var type:GmlType = null;
 			if (NativeString.contains(flags, "&")) return;
 			if (typeStr != null && stdTypes != null) {
@@ -228,6 +234,8 @@ class GmlParseAPI {
 			//
 			var isConst:Bool = flags.indexOf("#") >= 0;
 			var kind:String = isConst ? "constant" : "variable";
+			var show = true;
+			if (featureFlag != null && featureFlags.indexOf(featureFlag) < 0) show = false;
 			//
 			var isInst = NativeString.contains(flags, "@");
 			if (isInst) {
@@ -269,7 +277,7 @@ class GmlParseAPI {
 			stdKind.set(name, kindPrefix + kind);
 			var doc = comp;
 			if (typeStr != null) doc += "\ntype " + typeStr;
-			stdComp.push({
+			if (show) stdComp.push({
 				name: name,
 				value: name,
 				score: 0,

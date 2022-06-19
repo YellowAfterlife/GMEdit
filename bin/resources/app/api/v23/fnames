@@ -11,6 +11,8 @@
 // ! = disallowed in free
 // % = property
 // ? = struct variable
+// ^ = do not add to autocomplete
+// ^feature_flag = do not add to autocomplete if the feature flag is disabled
 
 argument_relative&
 argument
@@ -164,7 +166,7 @@ dot_product_normalized(x1,y1,x2,y2)$
 dot_product_3d_normalized(x1,y1,z1,x2,y2,z2)$
 math_set_epsilon(new_epsilon)
 math_get_epsilon()
-angle_difference(src,dest)
+angle_difference(dest,src)
 point_distance_3d(x1,y1,z1,x2,y2,z2)
 point_distance(x1,y1,x2,y2)
 point_direction(x1,y1,x2,y2)
@@ -373,6 +375,7 @@ object_index*@
 id*@
 solid@
 persistent@
+managed*@^rollback
 mask_index@
 instance_count*@
 instance_id*@
@@ -383,8 +386,8 @@ instance_position(x,y,obj)
 instance_nearest(x,y,obj)
 instance_furthest(x,y,obj)
 instance_place(x,y,obj)
-instance_create_depth(x,y,depth,obj)
-instance_create_layer(x,y,layer_id_or_name,obj)
+instance_create_depth(x,y,depth,obj,var_struct*,...)
+instance_create_layer(x,y,layer_id_or_name,obj,var_struct*,...)
 instance_copy(performevent)
 instance_change(obj,performevents)
 instance_destroy(id*,execute_event_flag*,...)
@@ -470,6 +473,7 @@ event_number*
 event_object*
 event_action*
 ev_create#
+ev_pre_create#
 ev_destroy#
 ev_step#
 ev_alarm#
@@ -644,7 +648,7 @@ ev_async_save_load#
 ev_async_audio_recording#
 ev_async_audio_playback#
 ev_async_system_event#
-//ev_async_message_event#//event not exists
+
 
 // section 3.11
 
@@ -757,6 +761,10 @@ mb_right#
 mb_middle#
 mb_side1#
 mb_side2#
+m_axisx#
+m_axisy#
+m_axisx_gui#
+m_axisy_gui#
 mouse_check_button(button)
 mouse_check_button_pressed(button)
 mouse_check_button_released(button)
@@ -1016,10 +1024,12 @@ mip_markedonly#
 audio_falloff_none#
 audio_falloff_inverse_distance#
 audio_falloff_inverse_distance_clamped#
+audio_falloff_inverse_distance_scaled#
 audio_falloff_linear_distance#
 audio_falloff_linear_distance_clamped#
 audio_falloff_exponent_distance#
 audio_falloff_exponent_distance_clamped#
+audio_falloff_exponent_distance_scaled#
 
 audio_old_system#&
 audio_new_system#&
@@ -1066,6 +1076,27 @@ application_get_position()
 application_surface_enable(enable)
 application_surface_is_enabled()
 
+
+video_open(path)
+video_close()
+video_set_volume(vol)
+video_draw()
+video_pause()
+video_resume()
+video_enable_loop(enable)
+video_seek_to(milliseconds)
+video_get_duration()
+video_get_position()
+video_get_status()
+video_get_format()
+video_is_looping()
+video_get_volume()
+video_format_rgba#
+video_format_yuv#
+video_status_closed#
+video_status_preparing#
+video_status_playing#
+video_status_paused#
 
 // section 5.8
 
@@ -1988,6 +2019,7 @@ os_get_region()
 os_check_permission(permission)
 os_request_permission(permission)
 os_lock_orientation(flag)
+os_set_orientation_lock(landscape_enable,portrait_enable)
 display_get_dpi_x()
 display_get_dpi_y()
 display_set_gui_size(width,height)
@@ -2148,27 +2180,27 @@ url_open_ext(url,target)
 url_open_full(url,target,options)
 get_timer()
 
-achievement_login()
-achievement_logout()
-achievement_post(achievement_name,value)
-achievement_increment(achievement_name,value)
-achievement_post_score(score_name,value)
-achievement_available()
-achievement_show_achievements()
-achievement_show_leaderboards()
-achievement_load_friends()
-achievement_load_leaderboard(ident,minindex,maxindex,filter)
-achievement_send_challenge(to,challengeid,score,type,msg)
-achievement_load_progress()
-achievement_reset()
-achievement_login_status()
-achievement_get_pic(char)
+achievement_login()&
+achievement_logout()&
+achievement_post(achievement_name,value)&
+achievement_increment(achievement_name,value)&
+achievement_post_score(score_name,value)&
+achievement_available()&
+achievement_show_achievements()&
+achievement_show_leaderboards()&
+achievement_load_friends()&
+achievement_load_leaderboard(ident,minindex,maxindex,filter)&
+achievement_send_challenge(to,challengeid,score,type,msg)&
+achievement_load_progress()&
+achievement_reset()&
+achievement_login_status()&
+achievement_get_pic(char)&
 
-achievement_show_challenge_notifications(receive_challenge,local_complete,remote_complete)
-achievement_get_challenges()
-achievement_event(stringid)
-achievement_show(type,val)
-achievement_get_info(userid)
+achievement_show_challenge_notifications(receive_challenge,local_complete,remote_complete)&
+achievement_get_challenges()&
+achievement_event(stringid)&
+achievement_show(type,val)&
+achievement_get_info(userid)&
 
 
 cloud_file_save(filename, description)
@@ -2366,35 +2398,35 @@ uwp_livetile_notification_end()
 uwp_livetile_notification_template_add(template)
 
 //uwp appbar commands
-uwp_appbar_enable(flag)
-uwp_appbar_add_element(id, type, icon, label, section, toolTip, callback)
-uwp_appbar_remove_element(id)
+uwp_appbar_enable(flag)&
+uwp_appbar_add_element(id, type, icon, label, section, toolTip, callback)&
+uwp_appbar_remove_element(id)&
 
 uwp_device_touchscreen_available()
 //-------------------
 
 // windows phone
-winphone_license_trial_version()
-winphone_tile_title(title)
-winphone_tile_count(count)
+winphone_license_trial_version()&
+winphone_tile_title(title)&
+winphone_tile_count(count)&
 
-winphone_tile_back_title(title)
-winphone_tile_back_content(content)
-winphone_tile_back_content_wide(content)
-winphone_tile_front_image(included_filename)
-winphone_tile_front_image_small(included_filename)
-winphone_tile_front_image_wide(included_filename)
-winphone_tile_back_image(included_filename)
-winphone_tile_back_image_wide(included_filename)
+winphone_tile_back_title(title)&
+winphone_tile_back_content(content)&
+winphone_tile_back_content_wide(content)&
+winphone_tile_front_image(included_filename)&
+winphone_tile_front_image_small(included_filename)&
+winphone_tile_front_image_wide(included_filename)&
+winphone_tile_back_image(included_filename)&
+winphone_tile_back_image_wide(included_filename)&
 
 winphone_tile_background_colour(colour)£
 winphone_tile_background_color(color)$
-winphone_tile_icon_image(included_filename)
-winphone_tile_small_icon_image(included_filename)
-winphone_tile_wide_content(content, index)
+winphone_tile_icon_image(included_filename)&
+winphone_tile_small_icon_image(included_filename)&
+winphone_tile_wide_content(content, index)&
 
-winphone_tile_cycle_images(included_filename_1, included_filename_2, ...)
-winphone_tile_small_background_image(included_filename)
+winphone_tile_cycle_images(included_filename_1, included_filename_2, ...)&
+winphone_tile_small_background_image(included_filename)&
 
 // Physics functions
 // World level functions
@@ -2597,25 +2629,25 @@ phy_particle_data_flag_color#$
 phy_particle_data_flag_category#
 
 
-achievement_our_info#
-achievement_friends_info#
-achievement_leaderboard_info#
-achievement_achievement_info#
-achievement_filter_all_players#
-achievement_filter_friends_only#
-achievement_filter_favorites_only#
-achievement_type_achievement_challenge#
-achievement_type_score_challenge#
-achievement_pic_loaded#
+achievement_our_info&
+achievement_friends_info&
+achievement_leaderboard_info&
+achievement_achievement_info&
+achievement_filter_all_players&
+achievement_filter_friends_only&
+achievement_filter_favorites_only&
+achievement_type_achievement_challenge&
+achievement_type_score_challenge&
+achievement_pic_loaded&
 
 
-achievement_show_ui#
-achievement_show_profile#
-achievement_show_leaderboard#
-achievement_show_achievement#
-achievement_show_bank#
-achievement_show_friend_picker#
-achievement_show_purchase_prompt#
+achievement_show_ui&
+achievement_show_profile&
+achievement_show_leaderboard&
+achievement_show_achievement&
+achievement_show_bank&
+achievement_show_friend_picker&
+achievement_show_purchase_prompt&
 
 network_create_socket(type)
 network_create_socket_ext(type, port)
@@ -2626,7 +2658,7 @@ network_connect_raw(socket, url, port)
 network_connect_async(socket, url, port)
 network_connect_raw_async(socket, url, port)
 network_send_packet(socket, bufferid, size)
-network_send_raw(socket, bufferid, size)
+network_send_raw(socket, bufferid, size, options)
 network_send_broadcast(socket, port, bufferid, size)
 network_send_udp(socket, URL, port, bufferid, size)
 network_send_udp_raw(socket, URL, port, bufferid, size)
@@ -2637,11 +2669,14 @@ network_destroy(socket)
 network_socket_tcp#
 network_socket_udp#
 network_socket_ws#
+network_socket_wss#
 network_socket_bluetooth#
 network_type_connect#
 network_type_disconnect#
 network_type_data#
 network_type_non_blocking_connect#
+network_send_binary#
+network_send_text#
 
 network_config_connect_timeout#
 network_config_use_non_blocking_socket#
@@ -2780,171 +2815,6 @@ gp_axis_orientation_w#
 gml_release_mode(enable)
 gml_pragma(setting,....)
 
-//steam functions
-steam_activate_overlay(overlayIndex)
-steam_is_overlay_enabled()
-steam_is_overlay_activated()
-steam_get_persona_name()
-steam_initialised()
-steam_is_cloud_enabled_for_app()
-steam_is_cloud_enabled_for_account()
-steam_file_persisted(filename)
-steam_get_quota_total()
-steam_get_quota_free()
-steam_file_write(steam_filename,data,size)
-steam_file_write_file(steam_filename,local_filename)
-steam_file_read(filename)
-steam_file_delete(filename)
-steam_file_exists(filename)
-steam_file_size(filename)
-steam_file_share(filename)
-steam_is_screenshot_requested()
-steam_send_screenshot(filename,width,height)
-steam_is_user_logged_on()
-steam_get_user_steam_id()
-steam_user_owns_dlc(dlc_id)
-steam_user_installed_dlc(dlc_id)
-steam_set_achievement(ach_name)
-steam_get_achievement(ach_name)
-steam_clear_achievement(ach_name)
-steam_set_stat_int(stat_name,value)
-steam_set_stat_float(stat_name,value)
-steam_set_stat_avg_rate(stat_name,session_count,session_length)
-steam_get_stat_int(stat_name)
-steam_get_stat_float(stat_name)
-steam_get_stat_avg_rate(stat_name)
-steam_reset_all_stats()
-steam_reset_all_stats_achievements()
-steam_stats_ready()
-steam_create_leaderboard(lb_name,sort_method,display_type)
-steam_upload_score(lb_name,score)
-steam_upload_score_ext(lb_name,score,forceupdate)
-steam_download_scores_around_user(lb_name,range_start,range_end)
-steam_download_scores(lb_name,start_idx,end_idx)
-steam_download_friends_scores(lb_name)
-steam_upload_score_buffer(lb_name, score, buffer_id )
-steam_upload_score_buffer_ext(lb_name, score, buffer_id, forceupdate )
-steam_current_game_language()
-steam_available_languages()
-steam_activate_overlay_browser( url )
-steam_activate_overlay_user( dialog_name, steamid )
-steam_activate_overlay_store( app_id )
-steam_get_user_persona_name( steam_id )
-
-//steam ugc functions
-//helpers
-steam_get_app_id()
-steam_get_user_account_id()
-steam_ugc_download( ugc_handle, dest_filename )
-
-//create, edit content
-steam_ugc_create_item( consumer_app_id, file_type )
-steam_ugc_start_item_update( consumer_app_id, published_file_id )
-steam_ugc_set_item_title( ugc_update_handle, title)
-steam_ugc_set_item_description( ugc_update_handle, description )
-steam_ugc_set_item_visibility(ugc_update_handle, visibility )
-steam_ugc_set_item_tags( ugc_update_handle, tag_array )
-steam_ugc_set_item_content( ugc_update_handle, directory )
-steam_ugc_set_item_preview( ugc_update_handle, image_path )
-steam_ugc_submit_item_update( ugc_update_handle, change_note )
-steam_ugc_get_item_update_progress( ugc_update_handle, info_map )
-
-//consuming content
-steam_ugc_subscribe_item( published_file_id )
-steam_ugc_unsubscribe_item( published_file_id )
-steam_ugc_num_subscribed_items()
-steam_ugc_get_subscribed_items( item_list )
-steam_ugc_get_item_install_info( published_file_id, info_map )
-steam_ugc_get_item_update_info( published_file_id, info_map )
-steam_ugc_request_item_details( published_file_id, max_age_seconds )
-
-//querying content
-steam_ugc_create_query_user( list_type, match_type, sort_order, page )
-steam_ugc_create_query_user_ex( list_type, match_type, sort_order, page, account_id, creator_app_id, consumer_app_id )
-steam_ugc_create_query_all( query_type, match_type, page )
-steam_ugc_create_query_all_ex( query_type, match_type, page, creator_app_id, consumer_app_id )
-
-steam_ugc_query_set_cloud_filename_filter( ugc_query_handle , match_cloud_filename )
-steam_ugc_query_set_match_any_tag( ugc_query_handle, match_any_tag )
-steam_ugc_query_set_search_text( ugc_query_handle, search_text )
-steam_ugc_query_set_ranked_by_trend_days( ugc_query_handle , days)
-steam_ugc_query_add_required_tag( ugc_query_handle, tag_name )
-steam_ugc_query_add_excluded_tag( ugc_query_handle, tag_name )
-steam_ugc_query_set_return_long_description( ugc_query_handle, return_long_desc )
-steam_ugc_query_set_return_total_only( ugc_query_handle, return_total_only )
-steam_ugc_query_set_allow_cached_response( ugc_query_handle, max_age_seconds )
-steam_ugc_send_query( ugc_query_handle )
-
-//steam constants
-ov_friends#
-ov_community#
-ov_players#
-ov_settings#
-ov_gamegroup#
-ov_achievements#
-lb_sort_none#
-lb_sort_ascending#
-lb_sort_descending#
-lb_disp_none#
-lb_disp_numeric#
-lb_disp_time_sec#
-lb_disp_time_ms#
-
-//steam ugc constants
-ugc_result_success#
-ugc_filetype_community#
-ugc_filetype_microtrans#
-ugc_visibility_public#
-ugc_visibility_friends_only#
-ugc_visibility_private#
-
-//ugc query_type constants
-ugc_query_RankedByVote#
-ugc_query_RankedByPublicationDate#
-ugc_query_AcceptedForGameRankedByAcceptanceDate#
-ugc_query_RankedByTrend#
-ugc_query_FavoritedByFriendsRankedByPublicationDate#
-ugc_query_CreatedByFriendsRankedByPublicationDate#
-ugc_query_RankedByNumTimesReported#
-ugc_query_CreatedByFollowedUsersRankedByPublicationDate#
-ugc_query_NotYetRated#
-ugc_query_RankedByTotalVotesAsc#
-ugc_query_RankedByVotesUp#
-ugc_query_RankedByTextSearch#
-
-//ugc query sort_type constants
-ugc_sortorder_CreationOrderDesc#
-ugc_sortorder_CreationOrderAsc#
-ugc_sortorder_TitleAsc#
-ugc_sortorder_LastUpdatedDesc#
-ugc_sortorder_SubscriptionDateDesc#
-ugc_sortorder_VoteScoreDesc#
-ugc_sortorder_ForModeration#
-
-//ugc query list type constants
-ugc_list_Published#
-ugc_list_VotedOn#
-ugc_list_VotedUp#
-ugc_list_VotedDown#
-ugc_list_WillVoteLater#
-ugc_list_Favorited#
-ugc_list_Subscribed#
-ugc_list_UsedOrPlayed#
-ugc_list_Followed#
-
-//ugc query match_type constants
-ugc_match_Items#
-ugc_match_Items_Mtx#
-ugc_match_Items_ReadyToUse#
-ugc_match_Collections#
-ugc_match_Artwork#
-ugc_match_Videos#
-ugc_match_Screenshots#
-ugc_match_AllGuides#
-ugc_match_WebGuides#
-ugc_match_IntegratedGuides#
-ugc_match_UsableInGame#
-ugc_match_ControllerBindings#
 
 shader_set(shader)
 shader_get_name(shader)
@@ -3025,12 +2895,12 @@ vertex_get_buffer_size(vbuff)
 vertex_create_buffer_from_buffer(src_buffer,format)
 vertex_create_buffer_from_buffer_ext(src_buffer,format,src_offset,num_vertices)
 
-push_local_notification(fire_time, title, message, data)
-push_get_first_local_notification( ds_map )
-push_get_next_local_notification( ds_map )
-push_cancel_local_notification( id )
-push_get_application_badge_number()
-push_set_application_badge_number( num )
+push_local_notification(fire_time, title, message, data)&
+push_get_first_local_notification( ds_map )&
+push_get_next_local_notification( ds_map )&
+push_cancel_local_notification( id )&
+push_get_application_badge_number()&
+push_set_application_badge_number( num )&
 
 
 // Instance specific
@@ -3270,30 +3140,30 @@ tile_mirror#
 tile_index_mask#
 
 // Tile element functions
-layer_tile_exists(layer_id,tile_element_id,...)
+layer_tile_exists(layer_id,tile_element_id,...)^
 
-layer_tile_create(layer_id,x,y,tileset,left,top,width,height)
-layer_tile_destroy(tile_element_id)
+layer_tile_create(layer_id,x,y,tileset,left,top,width,height)^
+layer_tile_destroy(tile_element_id)^
 
-layer_tile_change(tile_element_id,sprite)
-layer_tile_xscale(tile_element_id,scale)
-layer_tile_yscale(tile_element_id,scale)
-layer_tile_blend(tile_element_id,col)
-layer_tile_alpha(tile_element_id,alpha)
-layer_tile_x(tile_element_id,x)
-layer_tile_y(tile_element_id,y)
-layer_tile_region(tile_element_id,left,top,width,height)
-layer_tile_visible(tile_element_id,visible)
+layer_tile_change(tile_element_id,sprite)^
+layer_tile_xscale(tile_element_id,scale)^
+layer_tile_yscale(tile_element_id,scale)^
+layer_tile_blend(tile_element_id,col)^
+layer_tile_alpha(tile_element_id,alpha)^
+layer_tile_x(tile_element_id,x)^
+layer_tile_y(tile_element_id,y)^
+layer_tile_region(tile_element_id,left,top,width,height)^
+layer_tile_visible(tile_element_id,visible)^
 
-layer_tile_get_sprite(tile_element_id)
-layer_tile_get_xscale(tile_element_id)
-layer_tile_get_yscale(tile_element_id)
-layer_tile_get_blend(tile_element_id)
-layer_tile_get_alpha(tile_element_id)
-layer_tile_get_x(tile_element_id)
-layer_tile_get_y(tile_element_id)
-layer_tile_get_region(tile_element_id)
-layer_tile_get_visible(tile_element_id)
+layer_tile_get_sprite(tile_element_id)^
+layer_tile_get_xscale(tile_element_id)^
+layer_tile_get_yscale(tile_element_id)^
+layer_tile_get_blend(tile_element_id)^
+layer_tile_get_alpha(tile_element_id)^
+layer_tile_get_x(tile_element_id)^
+layer_tile_get_y(tile_element_id)^
+layer_tile_get_region(tile_element_id)^
+layer_tile_get_visible(tile_element_id)^
 
 // Instance element functions
 layer_instance_get_instance(instance_element_id)
@@ -3516,12 +3386,16 @@ fx_get_name(filter_or_effect)
 fx_get_parameter_names(filter_or_effect)
 fx_get_parameter(filter_or_effect,parameter_name)
 fx_get_parameters(filter_or_effect)
+fx_get_single_layer(filter_or_effect)
 fx_set_parameter(filter_or_effect,parameter_name,val,...)
 fx_set_parameters(filter_or_effect,parameter_struct)
+fx_set_single_layer(filter_or_effect,enable)
 
 layer_set_fx(layer_name_or_id,filter_or_effect)
 layer_get_fx(layer_name_or_id)
 layer_clear_fx(layer_name_or_id)
+layer_enable_fx(layer_name_or_id,enable)
+layer_fx_is_enabled(layer_name_or_id)
 
 
 // SequenceInstance properties
@@ -3626,6 +3500,10 @@ curve?
 ??InstanceTrack
 objectIndex?
 
+// Text track
+??TextTrack
+text?
+
 // Message event
 ??MessageEvent
 events?
@@ -3700,6 +3578,7 @@ seqtracktype_spriteframes#
 seqtracktype_instance#
 seqtracktype_message#
 seqtracktype_moment#
+seqtracktype_text#
 
 // Sequence playback mode constants
 seqplay_oneshot#
@@ -3718,9 +3597,19 @@ seqinterpolation_lerp#
 seqaudiokey_loop#
 seqaudiokey_oneshot#
 
+// Text track alignment
+seqtextkey_left#
+seqtextkey_center#
+seqtextkey_right#
+seqtextkey_justify#
+seqtextkey_top#
+seqtextkey_middle#
+seqtextkey_bottom#
+
 // Anim curve channel type
 animcurvetype_linear#
 animcurvetype_catmullrom#
+animcurvetype_bezier#
 
 // Garbage collection functions
 gc_collect()
@@ -3749,3 +3638,61 @@ weak_ref_any_alive(array,[index],[length])
 // weak reference structure
 ??WeakRef
 ref?
+
+// Time Sources
+time_source_global#
+time_source_game#
+time_source_units_seconds#
+time_source_units_frames#
+time_source_expire_nearest#
+time_source_expire_after#
+time_source_state_initial#
+time_source_state_active#
+time_source_state_paused#
+time_source_state_stopped#
+
+time_source_create(parent,period,units,callback,[args],[reps],[expiryType])
+time_source_destroy(id)
+time_source_start(id)
+time_source_stop(id)
+time_source_pause(id)
+time_source_reset(id)
+time_source_reconfigure(id,period,units,callback,[args],[reps],[expiryType])
+time_source_get_period(id)
+time_source_get_reps_completed(id)
+time_source_get_reps_remaining(id)
+time_source_get_units(id)
+time_source_get_time_remaining(id)
+time_source_get_state(id)
+time_source_get_parent(id)
+time_source_get_children(id)
+time_source_exists(id)
+
+time_seconds_to_bpm(seconds)
+time_bpm_to_seconds(bpm)
+
+// rollback multiplayer
+rollback_define_player(player_obj)^rollback
+rollback_define_input(input)^rollback
+rollback_define_mock_input(player_id,input)^rollback
+rollback_define_input_frame_delay(frames)^rollback
+rollback_start_game(num_players,...)^rollback
+rollback_join_game()^rollback
+rollback_leave_game()^rollback
+rollback_get_input(...)^rollback
+rollback_use_random_input(enabled)^rollback
+rollback_display_events(enabled)^rollback
+rollback_current_frame^rollback
+rollback_event_id^rollback
+rollback_event_param^rollback
+rollback_game_running^rollback
+
+rollback_connected_to_peer#^rollback
+rollback_synchronizing_with_peer#^rollback
+rollback_synchronized_with_peer#^rollback
+rollback_disconnected_from_peer#^rollback
+rollback_game_interrupted#^rollback
+rollback_game_resumed#^rollback
+rollback_game_full#^rollback
+rollback_game_info#^rollback
+rollback_connect_info#^rollback

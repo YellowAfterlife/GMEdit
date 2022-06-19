@@ -54,7 +54,7 @@ import haxe.DynamicAccess;
 		};
 		//
 		q["GMObject"] = {
-			order: ["spriteId", "solid", "visible", "spriteMaskId", "persistent", "parentObjectId", "physicsObject", "physicsSensor", "physicsShape", "physicsGroup", "physicsDensity", "physicsRestitution", "physicsLinearDamping", "physicsAngularDamping", "physicsFriction", "physicsStartAwake", "physicsKinematic", "physicsShapePoints", "eventList", "properties", "overriddenProperties"].concat(base),
+			order: ["spriteId", "solid", "visible", "managed", "spriteMaskId", "persistent", "parentObjectId", "physicsObject", "physicsSensor", "physicsShape", "physicsGroup", "physicsDensity", "physicsRestitution", "physicsLinearDamping", "physicsAngularDamping", "physicsFriction", "physicsStartAwake", "physicsKinematic", "physicsShapePoints", "eventList", "properties", "overriddenProperties"].concat(base),
 			digits: td1(["physicsDensity", "physicsRestitution", "physicsLinearDamping", "physicsAngularDamping", "physicsFriction"]),
 		};
 		q["GMEvent"] = {

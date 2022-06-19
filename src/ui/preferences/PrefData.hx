@@ -9,6 +9,7 @@ import haxe.DynamicAccess;
 	public static function defValue():PrefData return {
 		theme: "dark",
 		ukSpelling: false,
+		apiFeatureFlags: [],
 		compMatchMode: PrefMatchMode.AceSmart,
 		compKeywords: true,
 		compFilterSnippets: true,
@@ -114,6 +115,7 @@ typedef PrefDataImpl = {
 	compMatchMode:PrefMatchMode,
 	compKeywords:Bool,
 	compFilterSnippets:Bool,
+	apiFeatureFlags:Array<String>,
 	
 	detectTab:Bool,
 	tabSize:Int,

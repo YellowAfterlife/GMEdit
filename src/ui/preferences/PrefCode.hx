@@ -14,6 +14,8 @@ import file.kind.misc.KSnippets;
  */
 class PrefCode {
 	static function buildComp(out:Element) {
+		var el:Element;
+		
 		addCheckbox(out, "UK spelling", current.ukSpelling, function(z) {
 			current.ukSpelling = z;
 			GmlAPI.ukSpelling = z;
@@ -26,9 +28,25 @@ class PrefCode {
 			save();
 		});
 		
+		el = addInput(out,
+			"API feature flags (comma-separated; spaces are trimmed; reload required)",
+			current.apiFeatureFlags.join(", "),
+		function(text) {
+			text = tools.NativeString.trimBoth(text);
+			var flags = text == "" ? [] : text.split(",").map(s -> tools.NativeString.trimBoth(s));
+			current.apiFeatureFlags = flags;
+			save();
+		});
+		el.title = "Seen as ^flag suffix in GM2022+ `fnames`."
+				+"\nAdd flags if participating in feature betas.";
+		
 		//
 		var compMatchModes = PrefMatchMode.names;
-		var el = addDropdown(out, "Auto-completion mode", compMatchModes[current.compMatchMode], compMatchModes, function(s) {
+		el = addDropdown(out,
+			"Auto-completion mode",
+			compMatchModes[current.compMatchMode],
+			compMatchModes,
+		function(s) {
 			current.compMatchMode = compMatchModes.indexOf(s);
 			save();
 		});
