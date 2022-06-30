@@ -141,7 +141,7 @@ class GmlSeekerProcIdent {
 						q.skipSpaces1();
 						if (!q.skipIfEquals("[".code)) break;
 					}
-				} while (arrayLoop);
+				} while (arrayLoop && q.loop);
 				
 				if (q.skipIfEquals("=".code)) {
 					skip = q.peek() == "=".code;
