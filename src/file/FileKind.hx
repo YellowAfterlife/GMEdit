@@ -142,8 +142,9 @@ import ui.ChromeTabs.ChromeTab;
 	 * or will call GmlSeeker.runNext later itself (false).
 	 * @param	path	Full (normal) or relative (ZIP) path to file
 	 * @param	content	Raw file content (text/JSON)
+	 * @param	sync	Whether operation should be performed synchronously/on-spot
 	 */
-	public function index(path:String, content:String, main:String):Bool {
+	public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		return true;
 	}
 	

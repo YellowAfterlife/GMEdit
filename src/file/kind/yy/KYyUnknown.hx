@@ -24,7 +24,7 @@ class KYyUnknown extends FileKind {
 	);
 	static var rxName = new RegExp('\n  "name": "([^"]+)');
 	static var rxResourceType = new RegExp('\n  "resourceType": "([^"]+)');
-	override public function index(path:String, content:String, main:String):Bool {
+	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		var project = Project.current;
 		var full = project.fullPath(path);
 		//
@@ -119,6 +119,6 @@ class KYyUnknown extends FileKind {
 				}
 			}
 		} else Main.console.error('`$path` has missing parent `$parentPath`');
-		return detect.kind.index(full, content, main);
+		return detect.kind.index(full, content, main, sync);
 	}
 }

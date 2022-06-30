@@ -217,11 +217,7 @@ class GmlFile {
 		if (path != null && out != null && codeEditor != null && codeEditor.kind.indexOnSave) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
-				if (Std.is(kind, KYyEvents)) {
-					KYyEvents.runSync(path, out, true);
-				} else {
-					GmlSeeker.runSync(path, out, data.main, kind);
-				}
+				kind.index(path, out, data.main, true);
 				if (GmlAPI.version.config.indexingMode == Local) liveApply();
 				codeEditor.session.gmlScopes.updateOnSave();
 				var next = GmlSeekData.map[path];

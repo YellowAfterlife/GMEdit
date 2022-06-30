@@ -44,7 +44,7 @@ class KGmkEvents extends file.kind.gml.KGmlEvents {
 		return root.toGmxString();
 	}
 	
-	override public function index(path:String, content:String, main:String):Bool {
+	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		var obj = SfGmx.parse(content);
 		var out = new GmlSeekData(this);
 		//

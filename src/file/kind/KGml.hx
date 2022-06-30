@@ -163,7 +163,7 @@ class KGml extends KCode {
 		return found;
 	}
 	
-	override public function index(path:String, content:String, main:String):Bool {
+	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		var content_noCoroutines = content;
 		content = GmlExtCoroutines.pre(content);
 		//

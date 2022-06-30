@@ -43,8 +43,8 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 		//
 		return YyJson.stringify(obj, Project.current.yyExtJson);
 	}
-	override public function index(path:String, content:String, main:String):Bool {
-		return runSync(path, content, false);
+	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
+		return runSync(path, content, sync);
 	}
 	public static function runSync(orig:String, src:String, allSync:Bool) {
 		var obj:YyObject = YyJson.parse(src);

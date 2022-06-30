@@ -98,7 +98,7 @@ class GmlSeeker {
 		parChildren.push(childName);
 	}
 	public static function runSync(path:String, content:String, main:String, kind:FileKind) {
-		return kind.index(path, content, main);
+		return kind.index(path, content, main, false);
 	} // runSync
 }
 

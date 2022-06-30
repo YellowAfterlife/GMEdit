@@ -19,7 +19,7 @@ using tools.NativeString;
 class KYyExtension extends FileKind {
 	public static var inst:KYyExtension = new KYyExtension();
 	static var rxValidName:RegExp = new RegExp("^\\w+$");
-	override public function index(full:String, content:String, main:String):Bool {
+	override public function index(full:String, content:String, main:String, sync:Bool):Bool {
 		var ext:YyExtension = YyJson.parse(content);
 		var pj = gml.Project.current;
 		var extDirRel = pj.relPath(full);
