@@ -222,9 +222,23 @@ class EditCode extends Editor {
 			var check_1 = NativeString.trimRight(file.code);
 			check_1 = NativeString.replaceExt(check_1, rxr, "");
 			//
-			inline function finishChange():Void {
+			function finishChange():Void {
 				session.setValue(file.code);
 				plugins.PluginEvents.fileReload({file:file});
+				var path = file.path;
+				if (path != null) {
+					var data = GmlSeekData.map[path];
+					if (data != null) {
+						kind.index(path, file.code, data.main, true);
+						if (GmlAPI.version.config.indexingMode == Local) file.liveApply();
+						session.gmlScopes.updateOnSave();
+						var next = GmlSeekData.map[path];
+						if (locals != locals) {
+							locals = locals;
+							if (GmlFile.current == file) session.bgTokenizer.start(0);
+						}
+					}
+				}
 				if (Std.is(kind, KGml) && (cast kind:KGml).canSyntaxCheck) {
 					var check = inline parsers.linter.GmlLinter.getOption((q)->q.onLoad);
 					if (check) parsers.linter.GmlLinter.runFor(this);
