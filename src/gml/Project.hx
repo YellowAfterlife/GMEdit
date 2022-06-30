@@ -333,6 +333,8 @@ import ui.treeview.TreeViewElement;
 		ProjectStateManager.set(path, data);
 	}
 	public var firstLoadState:ProjectState = null;
+	
+	public var isIndexing = false;
 	public function finishedIndexing() {
 		nameNode.innerText = displayName;
 		if (current.hasGMLive) GMLive.updateAll();
@@ -432,6 +434,7 @@ import ui.treeview.TreeViewElement;
 	}
 	//
 	public function reload(?first:Bool) {
+		isIndexing = true;
 		nameNode.innerText = "Loading...";
 		window.setTimeout(function() {
 			objectChildren = new Dictionary();

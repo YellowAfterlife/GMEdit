@@ -53,8 +53,12 @@ class GmlSeeker {
 	}
 	public static function runFinish():Void {
 		GmlAPI.gmlComp.autoSort();
-		if (Project.current != null) Project.current.finishedIndexing();
-		Main.aceEditor.session.bgTokenizer.start(0);
+		var pj = Project.current;
+		if (pj != null && pj.isIndexing) {
+			pj.isIndexing = false;
+			pj.finishedIndexing();
+			Main.aceEditor.session.bgTokenizer.start(0);
+		}
 	}
 	public static function runNext():Void {
 		var left = --itemsLeft;
