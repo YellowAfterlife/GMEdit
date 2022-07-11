@@ -484,6 +484,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					self.skip();
 					rc(self.readExpr(newDepth));
 					currKind = KLiveIn;
+					currType = GmlTypeDef.bool;
 				};
 				case KNot: { // field not in object
 					if (hasFlag(NoOps) || self.keywords["in"] == null) break;
@@ -495,6 +496,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					}
 					rc(self.readExpr(newDepth));
 					currKind = KLiveIn;
+					currType = GmlTypeDef.bool;
 				};
 				case KAs: { // <expr> as <type>
 					if (hasFlag(NoOps)) break;
