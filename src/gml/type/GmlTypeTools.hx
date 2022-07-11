@@ -129,14 +129,19 @@ import ace.extern.AceTokenType;
 	 */
 	public static function mapTemplateTypes(t:GmlType, templateTypes:ReadOnlyArray<GmlType>):GmlType {
 		if (templateTypes == null) return t;
+		var depth = 0;
 		function f(t:GmlType):GmlType {
 			return switch (t) {
 				case null: null;
 				case TTemplate(_, ind, c): {
-					var t = templateTypes[ind];
-					return t != null ? t : c;
+					var r = templateTypes[ind];
+					return r != null ? r : c;
 				};
-				default: t.map(f);
+				default:
+					if (++depth >= 200) throw "map stack overflow";	
+					var r = t.map(f);
+					depth--;
+					return r;
 			}
 		}
 		return f(t);
@@ -194,23 +199,28 @@ import ace.extern.AceTokenType;
 		}
 	}
 	
-	public static function equals(a:GmlType, b:GmlType, ?tpl:Array<GmlType>):Bool {
+	public static function equals(a:GmlType, b:GmlType, ?tpl:Array<GmlType>, depth:Int = 0):Bool {
+		if (++depth > 128) {
+			Console.warn("equals stack overflow");
+			return false;
+		}
+		if (a == b) return true;
 		a = resolve(a); b = resolve(b);
 		switch (b) {
 			case null:
-			case THint(_, type): return equals(a, type, tpl);
+			case THint(_, type): return equals(a, type, tpl, depth);
 			case TInst(_, bp, KTemplateSelf):
 				switch (a) {
 					case null: return true;
 					case TInst(_, ap, _):
-						for (i in 0 ... bp.length) equals(ap[i], bp[i], tpl);
+						for (i in 0 ... bp.length) equals(ap[i], bp[i], tpl, depth);
 						return true;
 					default: return false;
 				}
 			case TTemplate(_, i, c):
 				if (tpl == null) return true;
 				if (tpl[i] != null) {
-					return equals(a, tpl[i]);
+					return equals(a, tpl[i], depth);
 				} else {
 					// this is clearly not a very good idea
 					if (a != null) {
@@ -224,7 +234,7 @@ import ace.extern.AceTokenType;
 		}
 		switch (a) {
 			case null, TInst(_, _, KAny): return inline isAny(b);
-			case THint(_, type): return equals(type, b, tpl);
+			case THint(_, type): return equals(type, b, tpl, depth);
 			case TInst(n1, tp1, k1):
 				switch (b) {
 					case null: return false;
@@ -232,7 +242,7 @@ import ace.extern.AceTokenType;
 						if (k1 != k2) return false;
 						if (k1 == KCustom && n1 != n2) return false;
 						for (i => p1 in tp1) {
-							if (!p1.equals(tp2[i], tpl)) return false;
+							if (!p1.equals(tp2[i], tpl, depth)) return false;
 						}
 						return true;
 					default: return false;
@@ -250,7 +260,7 @@ import ace.extern.AceTokenType;
 					var et = et1[ei1];
 					var ei2 = -1;
 					while (++ei2 < en) {
-						if (et.equals(et2[ei2], tpl)) break;
+						if (et.equals(et2[ei2], tpl, depth)) break;
 					}
 					if (ei2 >= en) return false;
 				}
@@ -266,7 +276,7 @@ import ace.extern.AceTokenType;
 					n1 += 1;
 					var fd2 = fm2.fields[name];
 					if (fd2 == null) return false;
-					if (!fd1.type.equals(fd2.type, tpl)) return false;
+					if (!fd1.type.equals(fd2.type, tpl, depth)) return false;
 				}
 				return n1 == fm2.fields.size();
 			case TTemplate(i1, _): return false;
@@ -286,9 +296,9 @@ import ace.extern.AceTokenType;
 				for (f1 in m1.fieldList) {
 					var f2 = m2.fieldMap[f1.name];
 					if (f2 == null) return false;
-					if (!equals(f1.type, f2.type, tpl)) return false;
+					if (!equals(f1.type, f2.type, tpl, depth)) return false;
 				}
-				return equals(m1.defaultType, m2.defaultType, tpl);
+				return equals(m1.defaultType, m2.defaultType, tpl, depth);
 		}
 	}
 	
