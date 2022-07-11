@@ -15,7 +15,9 @@ using tools.PathTools;
  */
 class RawLoader {
 	public static function loadDirRec(project:Project, out:Element, dirPath:String):Void {
+		var gmlExtensions = project.version.config.gmlExtensions;
 		var dirPairs = project.readdirSync(dirPath);
+		var assetThumbs = ui.Preferences.current.assetThumbs;
 		// directories first, files after
 		for (dirPass in 0 ... 2) for (pair in dirPairs) {
 			if (pair.isDirectory != (dirPass == 0)) continue;
@@ -30,11 +32,15 @@ class RawLoader {
 				var item = TreeView.makeAssetItem(item, rel, full, "file");
 				out.appendChild(item);
 				//
-				if (ui.Preferences.current.assetThumbs)
-				switch (Path.extension(full).toLowerCase()) {
-					case "png", "jpg", "jpeg", "gif", "bmp": {
-						TreeView.setThumb(full, full, item);
-					};
+				if (assetThumbs || gmlExtensions != null) {
+					var ext = Path.extension(full).toLowerCase();
+					if (gmlExtensions != null && gmlExtensions.indexOf(ext) >= 0) {
+						item.yyOpenAs = file.kind.KGml.inst;
+					} else if (assetThumbs) switch (ext) {
+						case "png", "jpg", "jpeg", "gif", "bmp": {
+							TreeView.setThumb(full, full, item);
+						};
+					}
 				}
 			}
 		}

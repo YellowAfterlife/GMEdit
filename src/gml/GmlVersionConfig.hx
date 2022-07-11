@@ -81,6 +81,9 @@ typedef GmlVersionConfig = {
 	
 	var ?projectRegexCached:RegExp;
 	
+	/** If specified, overrides what counts as a code file for RawLoader (e.g. ["gml", "ntgml"]) */
+	var ?gmlExtensions:Array<String>;
+	
 	/**
 	 * 
 	 * "local": Per-file (e.g. NTT mods)
