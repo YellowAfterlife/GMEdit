@@ -229,7 +229,7 @@ class EditCode extends Editor {
 				if (path != null) {
 					var data = GmlSeekData.map[path];
 					if (data != null) {
-						kind.index(path, file.code, data.main, true);
+						kind.index(path, file.readContent(), data.main, true);
 						if (GmlAPI.version.config.indexingMode == Local) file.liveApply();
 						session.gmlScopes.updateOnSave();
 						var next = GmlSeekData.map[path];

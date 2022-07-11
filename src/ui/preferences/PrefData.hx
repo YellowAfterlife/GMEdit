@@ -34,6 +34,7 @@ import haxe.DynamicAccess;
 		singleClickOpen: false,
 		taskbarOverlays: false,
 		assetThumbs: true,
+		assetCache: false,
 		clearAssetThumbsOnRefresh: true,
 		codeLiterals: false,
 		ctrlWheelFontSize: true,
@@ -102,6 +103,7 @@ typedef PrefDataImpl = {
 	arrowFunctions:Bool,
 	
 	assetThumbs:Bool,
+	assetCache:Bool,
 	clearAssetThumbsOnRefresh:Bool,
 	singleClickOpen:Bool,
 	taskbarOverlays:Bool,

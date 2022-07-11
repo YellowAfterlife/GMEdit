@@ -84,6 +84,7 @@ import haxe.extern.EitherType;
 		} else copyFileSyncImpl(path, dest);
 	}
 	//
+	public static function stat(path:String, cb:Error->FileSystemStat->Void):Void;
 	public static function statSync(path:String):FileSystemStat;
 	
 	/** Returns last-change time for a file, or null if operation fails */

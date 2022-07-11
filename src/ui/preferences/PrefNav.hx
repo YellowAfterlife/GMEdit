@@ -92,6 +92,9 @@ class PrefNav {
 		addCheckbox(out, "Close associated tab(s) when deleting a resource in GMEdit", current.closeTabsOnFileDeletion, function(v) {
 			current.closeTabsOnFileDeletion = v; save();
 		});
+		addCheckbox(out, "Cache assets in memory", current.assetCache, function(v) {
+			current.assetCache = v; save();
+		}).title = "Disabling this improves memory use at cost of longer project reloads";
 		return out;
 	}
 	static function buildRecent(out:Element) {

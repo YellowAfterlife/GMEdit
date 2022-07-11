@@ -541,11 +541,46 @@ import ui.treeview.TreeViewElement;
 		if (existsSync(path)) unlinkSync(path);
 	}
 	//
+	private var fileCache:Dictionary<{data:String, mtime:Float}> = new Dictionary();
 	public function readTextFile(path:String, fn:Error->String->Void):Void {
-		FileSystem.readTextFile(fullPath(path), fn);
+		if (Preferences.current.assetCache) {
+			var full = fullPath(path);
+			var pair = fileCache[path];
+			if (pair != null) {
+				FileSystem.stat(full, function(e, stat) {
+					if (e == null && stat.mtimeMs == pair.mtime) {
+						fn(null, pair.data);
+					} else FileSystem.readTextFile(full, function(e2, text) {
+						fn(e2, text);
+						if (e2 == null) {
+							if (e == null) {
+								fileCache[path] = { data: text, mtime: stat.mtimeMs };
+							} else FileSystem.stat(full, function(e3, stat2) {
+								if (e3 == null) fileCache[path] = { data: text, mtime: stat2.mtimeMs };
+							});
+						}
+					});
+				});
+			} else {
+				FileSystem.readTextFile(full, function(e, text) {
+					fn(e, text);
+					if (e == null) FileSystem.stat(full, function(e, stat) {
+						if (e == null) fileCache[path] = { data: text, mtime: stat.mtimeMs };
+					});
+				});
+			}
+		} else FileSystem.readTextFile(fullPath(path), fn);
 	}
 	public function readTextFileSync(path:String):String {
-		return FileSystem.readTextFileSync(fullPath(path));
+		if (Preferences.current.assetCache) {
+			var full = fullPath(path);
+			var mtime = FileSystem.mtimeSync(full);
+			var pair = fileCache[path];
+			if (pair != null && pair.mtime == mtime) return pair.data;
+			var result = FileSystem.readTextFileSync(full);
+			fileCache[path] = { data: result, mtime: mtime };
+			return result;
+		} else return FileSystem.readTextFileSync(fullPath(path));
 	}
 	public function writeTextFileSync(path:String, text:String) {
 		FileSystem.writeFileSync(fullPath(path), text);
