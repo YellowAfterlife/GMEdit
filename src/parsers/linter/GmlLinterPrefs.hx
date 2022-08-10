@@ -18,6 +18,7 @@ package parsers.linter;
 		checkScriptArgumentCounts: true,
 		
 		specTypeVar: false,
+		specTypeStatic: false,
 		specTypeLet: false,
 		specTypeConst: false,
 		specTypeMisc: false,
@@ -54,6 +55,9 @@ typedef GmlLinterPrefsImpl = {
 	
 	/** auto-infer for `var` */
 	?specTypeVar:Bool,
+	
+	/** auto-infer for `static` */
+	?specTypeStatic:Bool,
 	
 	/** auto-infer for `let` (var macro) */
 	?specTypeLet:Bool,

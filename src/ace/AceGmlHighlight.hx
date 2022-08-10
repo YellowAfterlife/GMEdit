@@ -183,7 +183,7 @@ using tools.NativeArray;
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
 			rDefine, rAction, rKeyEvent, rEvent, rEventBlank, rMoment, rTarget,
 		].concat(version.config.hasPragma ? [rPragma] : []).concat([
-			rxRule(["keyword", "text", "field"], ~/(static)(\s+)([_a-zA-Z]\w*)/),
+			//rxRule(["keyword", "text", "local"], ~/(static)(\s+)([_a-zA-Z]\w*)/),
 			//{ macros
 			rpushPairs([
 				"#macro", "preproc.macro",

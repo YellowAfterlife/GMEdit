@@ -145,6 +145,7 @@ class PrefLinter {
 		
 		out = addGroup(orig, "Implicit types");
 		addf(aBool, "For `var`", opt.specTypeVar);
+		addf(aBool, "For `static`", opt.specTypeStatic);
 		addf(aBool, "For `let`", opt.specTypeLet);
 		addf(aBool, "For `const`", opt.specTypeConst);
 		addf(aBool, "For other `var` macros", opt.specTypeMisc);

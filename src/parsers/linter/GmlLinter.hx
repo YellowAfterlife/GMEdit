@@ -580,7 +580,8 @@ class GmlLinter {
 		switch (nk) {
 			case KMFuncDecl, KMacro: {};
 			case KEnum: rc(readEnum(newDepth));
-			case KVar, KConst, KLet, KGlobalVar, KArgs: {
+			case KVar, KConst, KLet, KGlobalVar, KArgs, KStatic: {
+				var varKeyword = nextVal;
 				var isArgs = nk == KArgs;
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
@@ -594,7 +595,7 @@ class GmlLinter {
 					//
 					if (!skipIf(nk == KIdent)) break;
 					var varName = nextVal;
-					if (mainKind != KGlobalVar) {
+					if (mainKind != KGlobalVar && mainKind != KStatic) {
 						if (mainKind != KVar || prefs.blockScopedVar) {
 							var lk = localKinds[varName];
 							if (lk != null && lk != KGhostVar) {
@@ -650,7 +651,9 @@ class GmlLinter {
 							|| switch (mainKind) {
 								case KLet: prefs.specTypeLet;
 								case KConst: prefs.specTypeConst;
-								default: keywordStr == "var" ? prefs.specTypeVar : prefs.specTypeMisc;
+								case KStatic: prefs.specTypeStatic;
+								default: keywordStr == "var" || keywordStr == "static"
+									? prefs.specTypeVar : prefs.specTypeMisc;
 							});
 							if (apply) {
 								var imp = getImports(true);
@@ -680,7 +683,7 @@ class GmlLinter {
 					//
 					if (!skipIf(peek() == KComma)) break;
 				}
-				if (found == 0) readSeqStartWarn("This `var` has no declarations.");
+				if (found == 0) readSeqStartWarn("This `"+varKeyword+"` has no declarations.");
 			};
 			case KCubOpen: {
 				z = false;
@@ -820,11 +823,6 @@ class GmlLinter {
 					default: return readExpect("a label name");
 				}
 				skipIf(peek() == KColon);
-			};
-			case KStatic: {
-				rc(readCheckSkip(KIdent, "a variable name"));
-				rc(readCheckSkip(KSet, "a `=` after static variable name"));
-				rc(readExpr(newDepth, flags));
 			};
 			case KTry: {
 				rc(readStat(newDepth));

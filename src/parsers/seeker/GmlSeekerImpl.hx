@@ -279,7 +279,7 @@ class GmlSeekerImpl {
 					var name = find(Ident);
 					locals.add(name, localKind, "try-catch");
 				};
-				case "var": {
+				case "var"|"static": {
 					GmlSeekerProcVar.proc(this);
 				};
 				case "enum": {
