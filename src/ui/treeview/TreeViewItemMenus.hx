@@ -201,12 +201,13 @@ class TreeViewItemMenus {
 		//
 		if (d.filter == "file") {
 			try {
-				var full = Path.join([tvDir.getAttribute(TreeView.attrRel), s]);
+				var newRel = Path.join([tvDir.getAttribute(TreeView.attrRel), s]);
 				if (mkdir) {
-					Project.current.mkdirSync(full);
+					Project.current.mkdirSync(newRel);
 				} else {
-					Project.current.writeTextFileSync(full, "");
+					Project.current.writeTextFileSync(newRel, "");
 				}
+				args.npath = newRel;
 				createImplTV(args);
 				return args;
 			} catch (x:Dynamic) {
