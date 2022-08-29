@@ -1,4 +1,5 @@
 package yy;
+import haxe.extern.EitherType;
 import yy.YyResourceRef;
 
 /**
@@ -37,7 +38,7 @@ typedef YyAssetBrowserData = {
 	Palette:Array<YyAssetBrowserColour>,
 }
 typedef YyAssetBrowserAssetColour = {
-	Key: YyResourceRef,
+	Key: EitherType<String, YyResourceRef>,
 	Value: YyAssetBrowserColour,
 }
 /** #AABBGGRR */

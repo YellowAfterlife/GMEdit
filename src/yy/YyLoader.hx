@@ -87,7 +87,11 @@ class YyLoader {
 			if (abc != null) for (pair in abc) {
 				var c = pair.Value;
 				var colors = [c.toCSS(), c.toAlphaCSS(0.5)];
-				assetColours[pair.Key.path.replace("\\", "/")] = colors;
+				var path:String;
+				if (pair.Key is String) {
+					path = pair.Key;
+				} else path = (pair.Key:YyResourceRef).path;
+				assetColours[path.replace("\\", "/")] = colors;
 			}
 		} catch (x:Dynamic) Console.error(x);
 		//
