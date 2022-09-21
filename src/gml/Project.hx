@@ -615,11 +615,16 @@ import ui.treeview.TreeViewElement;
 	public function readYyFileSync(path:String):Dynamic {
 		return YyJson.parse(readTextFileSync(path));
 	}
-	public inline function writeJsonFileSync(path:String, value:Dynamic) {
+	public function writeJsonFileSync(path:String, value:Dynamic) {
 		writeTextFileSync(path, NativeString.yyJson(value));
 	}
-	public inline function writeYyFileSync(path:String, value:Dynamic) {
-		writeTextFileSync(path, YyJsonPrinter.stringify(value, yyExtJson));
+	public function writeYyFileSync(path:String, value:Dynamic) {
+		var text = YyJsonPrinter.stringify(value, yyExtJson);
+		if (Preferences.current.avoidYyChanges && existsSync(path)) try {
+			var curr = readYyFileSync(path);
+			if (YyJsonPrinter.stringify(curr, yyExtJson) == text) return;
+		} catch (x:Dynamic) { }
+		writeTextFileSync(path, text);
 	}
 	//
 	public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {

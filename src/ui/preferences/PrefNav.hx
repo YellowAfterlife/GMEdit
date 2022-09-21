@@ -81,6 +81,11 @@ class PrefNav {
 			save();
 		});
 		//
+		addCheckbox(out, "Avoid changing YY files where possible", current.avoidYyChanges, function(z) {
+			current.avoidYyChanges = z;
+			save();
+		}).title = "Does not overwrite files if changes only affect whitespace/field order.";
+		//
 		var fileChangeActions = [
 			"Do nothing",
 			"Ask what to do",

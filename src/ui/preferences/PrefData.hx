@@ -41,6 +41,7 @@ import haxe.DynamicAccess;
 		showArgTypesInStatusBar: false,
 		
 		fileChangeAction: Ask,
+		avoidYyChanges: false,
 		closeTabsOnFileDeletion: true,
 		backupCount: { v1: 2, v2: 0, live: 0 },
 		recentProjectCount: 16,
@@ -108,6 +109,8 @@ typedef PrefDataImpl = {
 	singleClickOpen:Bool,
 	taskbarOverlays:Bool,
 	showGMLive:PrefGMLive,
+	
+	avoidYyChanges:Bool,
 	fileChangeAction:PrefFileChangeAction,
 	closeTabsOnFileDeletion:Bool,
 	recentProjectCount:Int,
