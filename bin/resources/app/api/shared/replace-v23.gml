@@ -165,8 +165,8 @@ json_parse(json:string)->any
 network_socket_ws#:network_type
 network_config_avoid_time_wait#:network_config
 buffer_surface_copy&:any
-buffer_get_surface(buffer:buffer, surface:surface,offset:int)->void
-buffer_set_surface(buffer:buffer, surface:surface,offset:int)->void
+buffer_get_surface(buffer:buffer, source_surface:surface,offset:int)->void
+buffer_set_surface(buffer:buffer, dest_surface:surface,offset:int)->void
 
 
 //tags

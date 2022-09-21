@@ -2431,8 +2431,8 @@ buffer_create(size:int, buffer_kind:buffer_kind, alignment:int)->buffer
 buffer_write(buffer:buffer, type:buffer_type, value:buffer_auto_type)->int
 buffer_read(buffer:buffer, type:buffer_type)->buffer_auto_type
 buffer_seek(buffer:buffer, base:buffer_seek_base, offset:int)->void
-buffer_get_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
-buffer_set_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
+buffer_get_surface(buffer:buffer, source_surface:surface, mode, offset:int, modulo:int)->void
+buffer_set_surface(buffer:buffer, dest_surface:surface, mode, offset:int, modulo:int)->void
 buffer_delete(buffer:buffer)->void
 buffer_exists(buffer:buffer)->bool
 buffer_get_type(buffer:buffer)->buffer_kind
