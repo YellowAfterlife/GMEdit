@@ -74,6 +74,7 @@
     {"id":{"name":"v_struct_constraint","path":"scripts/v_struct_constraint/v_struct_constraint.yy",},"order":6,},
     {"id":{"name":"v_arrow_funcs","path":"scripts/v_arrow_funcs/v_arrow_funcs.yy",},"order":2,},
     {"id":{"name":"v_mfunc_crash","path":"scripts/v_mfunc_crash/v_mfunc_crash.yy",},"order":3,},
+    {"id":{"name":"v_paren_call","path":"scripts/v_paren_call/v_paren_call.yy",},"order":3,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

@@ -152,7 +152,8 @@ class GmlLinterExpr extends GmlLinterHelper {
 				var arrowArgName:String = null;
 				if (skipIfPeek(KParClose)) {
 					arrowState = AfterEmptyPar;
-				} else if (peek() == KIdent) {
+				}
+				else if (peek() == KIdent) {
 					arrowArgName = nextVal;
 					var peeker = linter.__peekReader;
 					for (iter in 0 ... 2) {
@@ -183,6 +184,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 				if (arrowState == null) { // normal expr
 					rc(self.readExpr(newDepth));
 					readCheckSkip(KParClose, "a `)`");
+					if (this.currKind == KCall) {
+						currKind = statKind = KCall;
+					}
 					currType = this.currType;
 					currFunc = this.currFunc;
 					currValue = this.currValue;
