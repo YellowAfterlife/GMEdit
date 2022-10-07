@@ -510,11 +510,14 @@ class GmlLinter {
 		//
 		seqStart.setTo(reader);
 		var hasDefault = false;
+		var caseCount = 0;
 		var q = reader;
 		while (q.loop) {
 			switch (peek()) {
 				case KCubClose: {
 					skip();
+					if (caseCount == 0 && !hasDefault) return readSeqStartError(
+						"Empty switch-blocks are forbidden in GML");
 					return false;
 				};
 				case KDefault: {
@@ -525,6 +528,7 @@ class GmlLinter {
 					resetCase();
 				};
 				case KCase: {
+					caseCount += 1;
 					skip();
 					rc(readExpr(newDepth));
 					rc(readCheckSkip(KColon, "a colon after a case"));
@@ -533,6 +537,8 @@ class GmlLinter {
 				default: {
 					isInCase = true;
 					rc(readStat(newDepth));
+					if (caseCount == 0 && !hasDefault) return readError(
+						"Statements inside a switch-block must appear inside case/default");
 				};
 			}
 		}
