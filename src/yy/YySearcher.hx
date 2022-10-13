@@ -8,6 +8,7 @@ import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.NativeString;
 import ui.GlobalSearch;
+import yy.YyTimeline;
 
 /**
  * ...
@@ -70,14 +71,13 @@ class YySearcher {
 				case "GMObject": if (opt.checkObjects) {
 					ensureName();
 					filesLeft += 1;
-					pj.readTextFile(resPath, function(error, data) {
+					pj.readYyFile(resPath, function(error, obj:YyObject) {
 						if (error == null) try {
-							var obj:YyObject = YyJson.parse(data, !v22);
 							var code = obj.getCode(resPath);
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
 								if (obj.setCode(resPath, gml1)) {
-									pj.writeJsonFileSync(resPath, obj);
+									pj.writeYyFileSync(resPath, obj);
 								} else addError("Failed to modify " + resName
 									+ ":\n" + YyObject.errorText);
 							}
@@ -90,18 +90,20 @@ class YySearcher {
 				case "GMTimeline": if (opt.checkObjects) {
 					ensureName();
 					filesLeft += 1;
-					pj.readTextFile(resPath, function(error, data) {
+					pj.readYyFile(resPath, function(error, _tl:YyTimelineImpl) {
+						var tl:YyTimeline = _tl;
 						if (error == null) try {
-							var tl:YyTimeline = YyJson.parse(data, !v22);
 							var code = tl.getCode(resFull);
 							var gml1 = fn(resName, resFull, code);
 							if (gml1 != null && gml1 != code) {
 								if (tl.setCode(resPath, gml1)) {
-									pj.writeJsonFileSync(resPath, tl);
+									pj.writeYyFileSync(resPath, tl);
 								} else addError("Failed to modify " + resName
 									+ ":\n" + YyObject.errorText);
 							}
-						} catch (_:Dynamic) { };
+						} catch (x:Dynamic) {
+							addError("Failed to modify " + resName + ":\n" + x);
+						} else Main.console.warn(error);
 						next();
 					});
 				};
