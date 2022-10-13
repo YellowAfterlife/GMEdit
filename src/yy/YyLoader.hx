@@ -74,6 +74,9 @@ class YyLoader {
 			var metaData = yyProject.MetaData;
 			if (metaData != null && metaData.IDEVersion != null) {
 				project.isGM2022 = new RegExp("^20\\d{2}\\.").test(metaData.IDEVersion);
+				project.yyResourceVersion = try {
+					Std.parseFloat(yyProject.resourceVersion);
+				} catch (x:Dynamic) 1.0;
 			}
 		}
 		//

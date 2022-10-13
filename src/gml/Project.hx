@@ -121,6 +121,8 @@ import ui.treeview.TreeViewElement;
 	public var yyOrder:Dictionary<Int>;
 	/** Texture groups */
 	public var yyTextureGroups:Array<String>;
+	/** resourceVersion for project YY itself */
+	public var yyResourceVersion:Float = 1.0;
 
 	/** Whether this is a new-format GMS2.3+ project */
 	public var isGMS23:Bool = false;

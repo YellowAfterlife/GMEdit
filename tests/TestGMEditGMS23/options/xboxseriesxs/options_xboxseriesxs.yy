@@ -1,4 +1,7 @@
 {
+  "resourceType": "GMXboxSeriesXSOptions",
+  "resourceVersion": "1.1",
+  "name": "Xbox Series XS",
   "option_xboxseriesxs_display_name": "Created with GameMaker Studio 2",
   "option_xboxseriesxs_description": "Your Description",
   "option_xboxseriesxs_publisher": "Company Name",
@@ -13,6 +16,7 @@
   "option_xboxseriesxs_content_id": "",
   "option_xboxseriesxs_ekbid": "",
   "option_xboxseriesxs_playfab_party_id": "00000",
+  "option_xboxseriesxs_simplified_user_model": false,
   "option_xboxseriesxs_require_xbox_live": false,
   "option_xboxseriesxs_require_game_chat": false,
   "option_xboxseriesxs_game_chat_slots": 4,
@@ -34,8 +38,4 @@
   "option_xboxseriesxs_support_4k_one_x": false,
   "option_xboxseriesxs_support_4k_one_s": false,
   "option_xboxseriesxs_languages": "<!-- Add languages you support here -->\n <!-- os_get_language will only return languages listed -->\n <!-- \"en-us\" is supported by default, do not add it here-->\n <!-- See \"NLS APIs and Localization\" white paper -->\n <!-- from developer.xboxlive.com for info -->",
-  "resourceVersion": "1.0",
-  "name": "Xbox Series XS",
-  "tags": [],
-  "resourceType": "GMXboxSeriesXSOptions",
 }

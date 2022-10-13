@@ -1,7 +1,11 @@
 {
+  "resourceType": "GMObject",
+  "resourceVersion": "1.0",
+  "name": "obj_variable_definitions",
   "spriteId": null,
   "solid": false,
   "visible": true,
+  "managed": true,
   "spriteMaskId": null,
   "persistent": false,
   "parentObjectId": null,
@@ -18,27 +22,27 @@
   "physicsKinematic": false,
   "physicsShapePoints": [],
   "eventList": [
-    {"isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMEvent",},
+    {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,},
   ],
   "properties": [
-    {"varType":0,"value":"0","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"a_real","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":1,"value":"0","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"an_integer","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":2,"value":"hello!","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"a_string","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":3,"value":"True","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"a_bool","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":4,"value":"1+5","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"an_expr","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":6,"value":"1, \"two\"","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"a_real","varType":0,"value":"0","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"an_integer","varType":1,"value":"0","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"a_string","varType":2,"value":"hello!","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"a_bool","varType":3,"value":"True","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"an_expr","varType":4,"value":"1+5","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"multi_select","varType":6,"value":"1, \"two\"","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[
         "1",
         "\"two\"",
         "2+1",
-      ],"multiselect":true,"filters":[],"resourceVersion":"1.0","name":"multi_select","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":6,"value":"\"two\"","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[
+      ],"multiselect":true,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"single_select","varType":6,"value":"\"two\"","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[
         "1",
         "\"two\"",
-      ],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"single_select","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":5,"value":"spr_blank","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[
+      ],"multiselect":false,"filters":[],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"a_sprite","varType":5,"value":"spr_blank","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[
         "GMSprite",
-      ],"resourceVersion":"1.0","name":"a_sprite","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":5,"value":"obj_variable_definitions","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[
+      ],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"an_asset","varType":5,"value":"obj_variable_definitions","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[
         "GMAnimCurve",
         " GMFont",
         " GMObject",
@@ -51,16 +55,12 @@
         " GMSprite",
         " GMTileSet",
         " GMTimeline",
-      ],"resourceVersion":"1.0","name":"an_asset","tags":[],"resourceType":"GMObjectProperty",},
-    {"varType":5,"value":"spr_blank","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],"resourceVersion":"1.0","name":"an_empty_asset","tags":[],"resourceType":"GMObjectProperty",},
+      ],},
+    {"resourceType":"GMObjectProperty","resourceVersion":"1.0","name":"an_empty_asset","varType":5,"value":"spr_blank","rangeEnabled":false,"rangeMin":0.0,"rangeMax":10.0,"listItems":[],"multiselect":false,"filters":[],},
   ],
   "overriddenProperties": [],
   "parent": {
     "name": "Objects",
     "path": "folders/Objects.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "obj_variable_definitions",
-  "tags": [],
-  "resourceType": "GMObject",
 }

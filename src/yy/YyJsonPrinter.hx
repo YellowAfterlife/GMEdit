@@ -12,9 +12,12 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class YyJsonPrinter {
+	// the following are set in stringify() call and reused:
 	static var isExt:Bool = false;
 	static var wantCompact:Bool = false;
 	static var trailingCommas:Bool = false;
+	static var wantPrefixFields:Bool = false;
+	
 	static function stringify_string(s:String):String {
 		var r = '"';
 		var start = 0;
@@ -46,6 +49,11 @@ class YyJsonPrinter {
 	
 	public static var mvcOrder22 = ["configDeltas", "id", "modelName", "mvc", "name"];
 	public static var mvcOrder23 = ["parent", "resourceVersion", "name", "path", "tags", "resourceType"];
+	
+	/** in projects with resourceVersion >= 1.6, these appear before everything else */
+	public static var rv1_6_prefixFieldList = ["resourceType", "resourceVersion", "name"];
+	public static var rv1_6_prefixFieldMap:Dictionary<Bool> = Dictionary.fromKeys(rv1_6_prefixFieldList, true);
+	
 	public static var orderByModelName:Dictionary<Array<String>> = (function() {
 		var q = new Dictionary();
 		var plain = ["id", "modelName", "mvc"];
@@ -146,7 +154,7 @@ class YyJsonPrinter {
 					if (sep) r += "\r\n" + indentString.repeat(indent); else sep = true;
 				}
 			}
-			inline function addField(field:String):Void {
+			function addField(field:String):Void {
 				addSep();
 				found++;
 				r += stringify_string(field) + (compact ? ":" : ": ");
@@ -156,18 +164,32 @@ class YyJsonPrinter {
 				);
 				if (tcs) r += ",";
 			}
-			//
-			var r0:String, r1:String;
-			if (orderedFieldsAfter) {
-				r0 = r; r = "";
-			} else r0 = null;
-			//
-			for (field in orderedFields) {
+			
+			// with 2022.8/YYP resourceVersion>=1.6, key fields (type, name, version)
+			// appear before everything else.
+			if (wantPrefixFields) for (field in rv1_6_prefixFieldList) {
 				if (!Reflect.hasField(obj, field)) continue;
 				addField(field);
 			}
+			
+			// if ordered fields should go after the regular ones,
+			// we'll swap result-string 
+			var rOrig:String, rAfter:String;
+			if (orderedFieldsAfter) {
+				rOrig = r; r = "";
+			} else rOrig = null;
+			
 			//
-			if (orderedFieldsAfter) { r1 = r; r = r0; } else r1 = null;
+			for (field in orderedFields) {
+				if (!Reflect.hasField(obj, field)) continue;
+				if (wantPrefixFields && rv1_6_prefixFieldMap.exists(field)) continue;
+				addField(field);
+			}
+			//
+			if (orderedFieldsAfter) {
+				rAfter = r;
+				r = rOrig;
+			} else rAfter = null;
 			//
 			var allFields = Reflect.fields(obj);
 			if (allFields.length > found) {
@@ -177,12 +199,12 @@ class YyJsonPrinter {
 					if (isOrdered.exists(field)) continue;
 					addField(field);
 				}
-				if (orderedFieldsAfter && r1 != "") {
+				if (orderedFieldsAfter && rAfter != "") {
 					addSep();
-					r += r1;
+					r += rAfter;
 				}
 			} else {
-				if (orderedFieldsAfter) r += r1;
+				if (orderedFieldsAfter) r += rAfter;
 			}
 			//
 			indent -= 1;
@@ -199,6 +221,7 @@ class YyJsonPrinter {
 		wantCompact = extJson;
 		trailingCommas = extJson;
 		isExt = extJson;
+		wantPrefixFields = extJson && gml.Project.current.yyResourceVersion >= 1.6;
 		indentString = extJson ? "  " : "    ";
 		return stringify_rec(obj, 0, false);
 	}
