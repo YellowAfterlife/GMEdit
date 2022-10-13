@@ -36,7 +36,7 @@ import yy.YyResourceRef;
 		}
 		//
 		for (event in this.eventList) {
-			var ed = event.unpack();
+			var ed = event.unpack(this);
 			var rel = ed.getPath();
 			var name = ed.getName();
 			var full = Path.join([dir, rel]);
@@ -99,8 +99,8 @@ import yy.YyResourceRef;
 		var oldMap = new Dictionary<YyObjectEvent>();
 		var oldNames:Array<String> = [];
 		for (ev in oldList) {
-			var ed = ev.unpack();
-			var oldName = ev.unpack().getName();
+			var ed = ev.unpack(this);
+			var oldName = ed.getName();
 			oldNames.push(oldName);
 			oldMap.set(oldName, ev);
 		}
@@ -124,13 +124,14 @@ import yy.YyResourceRef;
 				if (sorted) newList.push({ event: oldList[i], code: newMap[oldNames[i]].join("\r\n") });
 			} else {
 				// remove event files that are no longer used
-				var rel = oldList[i].unpack().getPath();
+				var rel = oldList[i].unpack(this).getPath();
 				var full = Path.join([dir, rel]);
 				if (FileWrap.existsSync(full)) FileWrap.unlinkSync(full);
 			}
 		}
 		
 		// form newly introduced events:
+		var v2022_8 = Project.current.yyResourceVersion >= 1.6;
 		for (i in 0 ... eventData.length) {
 			var ename = newNames[i];
 			if (sorted && oldMap.exists(ename)) continue; // see above
@@ -153,18 +154,27 @@ import yy.YyResourceRef;
 				};
 			} else {
 				var obj = idat.obj;
+				var col:YyResourceRef;
+				if (v2022_8 && idat.type == GmlEvent.typeCollision && obj == this.name) {
+					col = null;
+				} else if (obj == null || obj == "") {
+					col = null;
+				} else {
+					col = { name:obj, path:'objects/$obj/$obj.yy' };
+				};
 				ev = {
 					resourceType: "GMEvent",
 					resourceVersion: "1.0",
 					isDnD: false,
-					collisionObjectId: obj != null && obj != ""
-						? { name:obj, path:'objects/$obj/$obj.yy' } : null,
-					parent: { name: this.name, path: 'objects/${this.name}/${this.name}.yy' },
 					eventType: idat.type,
 					eventNum: idat.numb != null ? idat.numb : 0,
 					name: "",
-					tags: [],
 				};
+				if (!v2022_8 || col != null) ev.collisionObjectId = col;
+				if (!v2022_8) {
+					ev.parent = { name: this.name, path: 'objects/${this.name}/${this.name}.yy' };
+					ev.tags = [];
+				}
 			}
 			newList.push({ event: ev, code: item.code.join("\r\n") });
 		}
@@ -173,7 +183,7 @@ import yy.YyResourceRef;
 		this.eventList = [];
 		for (item in newList) {
 			var ev = item.event;
-			var full = Path.join([dir, ev.unpack().getPath()]);
+			var full = Path.join([dir, ev.unpack(this).getPath()]);
 			FileWrap.writeTextFileSync(full, item.code);
 			this.eventList.push(ev);
 		}

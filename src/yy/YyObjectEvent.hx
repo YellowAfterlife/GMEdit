@@ -1,5 +1,7 @@
 package yy;
 import haxe.extern.EitherType;
+import parsers.GmlEvent;
+import yy.YyObject;
 /**
  * ...
  * @author YellowAfterlife
@@ -24,19 +26,22 @@ import haxe.extern.EitherType;
 			} else return a.eventNum - b.eventNum;
 		}
 	}
-	public inline function unpack():YyObjectEventData {
+	public function unpack(yyObj:YyObject):YyObjectEventData {
 		var id:String, obj:String, num:Int, type:Int;
 		if (YyTools.isV22(this)) {
-			id = this.id;
-			obj = this.collisionObjectId;
 			num = this.enumb;
 			type = this.eventtype;
+			
+			obj = this.collisionObjectId;
+			id = this.id;
 		} else {
-			var col:YyResourceRef = this.collisionObjectId;
-			id = (col != null ? col.name : null);
-			obj = id;
 			num = this.eventNum;
 			type = this.eventType;
+			
+			var col:YyResourceRef = this.collisionObjectId;
+			obj = (col != null ? col.name : null);
+			if (obj == null && type == GmlEvent.typeCollision) obj = yyObj.name;
+			id = obj;
 		}
 		return { id: id, obj: obj, num: num, type: type };
 	}
@@ -58,7 +63,8 @@ typedef YyObjectEventDataImpl = {
 };
 typedef YyObjectEventImpl = {
 	>YyBase,
-	collisionObjectId:EitherType<YyGUID, YyResourceRef>,
+	// optional in resourceVersion >= 1.6
+	?collisionObjectId:EitherType<YyGUID, YyResourceRef>,
 	
 	// 2.2:
 	?IsDnD:Bool,

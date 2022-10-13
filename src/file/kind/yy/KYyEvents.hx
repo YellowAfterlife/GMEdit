@@ -79,7 +79,7 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 		var eventsLeft = 0;
 		var eventFiles = [];
 		for (event in obj.eventList) {
-			var ed = event.unpack();
+			var ed = event.unpack(obj);
 			var rel = YyEvent.toPath(ed.type, ed.num, ed.id);
 			var full = Path.join([dir, rel]);
 			var name = YyEvent.toString(ed.type, ed.num, ed.obj);
