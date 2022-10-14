@@ -80,6 +80,7 @@
     {"id":{"name":"v_paren_call","path":"scripts/v_paren_call/v_paren_call.yy",},"order":3,},
     {"id":{"name":"v_empty_switch","path":"scripts/v_empty_switch/v_empty_switch.yy",},"order":4,},
     {"id":{"name":"v_broken_switch","path":"scripts/v_broken_switch/v_broken_switch.yy",},"order":5,},
+    {"id":{"name":"v_constructor_function_redefinitions","path":"scripts/v_constructor_function_redefinitions/v_constructor_function_redefinitions.yy",},"order":6,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

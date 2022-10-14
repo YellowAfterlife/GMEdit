@@ -601,12 +601,14 @@ class GmlLinter {
 					//
 					if (!skipIf(nk == KIdent)) break;
 					var varName = nextVal;
+					var allowTypeRedefinition = false;
 					if (mainKind != KGlobalVar && mainKind != KStatic) {
+						var lk = localKinds[varName];
 						if (mainKind != KVar || prefs.blockScopedVar) {
-							var lk = localKinds[varName];
 							if (lk != null && lk != KGhostVar) {
 								addWarning('Redefinition of a variable `$varName`');
 							} else {
+								allowTypeRedefinition = true;
 								var arr = localNamesPerDepth[oldDepth];
 								if (arr == null) {
 									arr = [];
@@ -614,6 +616,8 @@ class GmlLinter {
 								}
 								arr.push(varName);
 							}
+						} else if (lk == null || lk == KGhostVar) {
+							allowTypeRedefinition = true;
 						}
 						localKinds[varName] = mainKind;
 					}
@@ -667,7 +671,11 @@ class GmlLinter {
 								if (lastVarType == null) {
 									if (setLocalVars) typeInfo = "type " + varExprType.toString() + " (auto)";
 									imp.localTypes[varName] = varExprType;
-								} else if (!varExprType.equals(lastVarType)) {
+								}
+								else if (allowTypeRedefinition) {
+									imp.localTypes[varName] = varExprType;
+								}
+								else if (!varExprType.equals(lastVarType)) {
 									addWarning('Implicit redefinition of type for local variable $varName from '
 										+ lastVarType.toString() + " to " + varExprType.toString());
 								}
