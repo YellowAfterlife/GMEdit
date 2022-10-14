@@ -280,7 +280,7 @@ class GmlSeekerImpl {
 					locals.add(name, localKind, "try-catch");
 				};
 				case "var"|"static": {
-					GmlSeekerProcVar.proc(this);
+					GmlSeekerProcVar.proc(this, s);
 				};
 				case "enum": {
 					GmlSeekerProcEnum.proc(this);

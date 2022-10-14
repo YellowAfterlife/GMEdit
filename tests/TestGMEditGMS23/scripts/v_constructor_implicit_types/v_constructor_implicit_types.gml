@@ -1,6 +1,12 @@
 function v_constructor_implicit_types_1() constructor {
 	int_map = ds_map_create();
 	str_map = ds_map_create();
+	
+	static kind = "test";
+	static magic = undefined; /// @is {string?}
+	static int_map_size = function() /*=>*/ {return ds_map_size(int_map)};
+	static merge = function(thing) {}
+	///note: `self.`/`.` should bring up the above
 }
 function v_constructor_implicit_types_2() : v_constructor_implicit_types_1() constructor {
 	int_map[?1] = 2;

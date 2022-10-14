@@ -2,6 +2,8 @@ package parsers.seeker;
 import file.kind.gml.KGmlLambdas;
 import gml.GmlAPI;
 import gml.GmlLocals;
+import gml.type.GmlType;
+import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
 import parsers.seeker.GmlSeekerParser;
 import synext.GmlExtLambda;
@@ -43,13 +45,15 @@ class GmlSeekerProcVar {
 		if (lfLocals != null) locals.addLocals(lfLocals);
 	}
 	
-	public static function proc(seeker:GmlSeekerImpl) {
+	public static function proc(seeker:GmlSeekerImpl, kind:String) {
 		var q:GmlReaderExt = seeker.reader;
 		var locals = seeker.locals;
 		var localKind = seeker.localKind;
 		var hasFunctionLiterals = seeker.hasFunctionLiterals;
 		var funcsAreGlobal = seeker.funcsAreGlobal;
 		var canLam = seeker.canLam;
+		var isStatic = kind == "static";
+		var isConstructor = seeker.doc.isConstructor;
 		while (q.loop) {
 			q.skipSpaces1();
 			var c:CharCode = q.peek();
@@ -85,7 +89,25 @@ class GmlSeekerProcVar {
 			}
 			if (s == ",") {
 				// OK, next
-			} else if (s == "=") {
+			}
+			else if (s == "=" && isStatic && isConstructor) {
+				GmlSeekerProcExpr.proc(seeker, name);
+				var args:String = GmlSeekerProcExpr.args;
+				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
+				var isConstructor = GmlSeekerProcExpr.isConstructor;
+				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
+				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
+				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
+				
+				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, name, args, null, fieldType, argTypes, true);
+				var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
+				if (templateSelf != null && addFieldHint_doc != null) {
+					addFieldHint_doc.templateSelf = templateSelf;
+					addFieldHint_doc.templateItems = templateItems;
+				}
+				break;
+			}
+			else if (s == "=") {
 				// name = (balanced expression)[,;]
 				var depth = 0;
 				var exit = false;
