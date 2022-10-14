@@ -59,6 +59,7 @@ typedef MenuPopupOptions = {
 };
 @:native("Electron_MenuItem") extern class MenuItem {
 	function new(opt:MenuItemOptions);
+	var id:String;
 	var enabled:Bool;
 	var visible:Bool;
 	var checked:Bool;

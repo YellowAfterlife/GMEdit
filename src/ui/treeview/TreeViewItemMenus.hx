@@ -54,6 +54,7 @@ class TreeViewItemMenus {
 			single: prefix.substring(0, prefix.length - 2),
 		};
 	}
+	/** Note: doesn't do  */
 	public static function updatePrefix(par:Element) {
 		var root = TreeView.element;
 		prefix = "unknown/";
@@ -79,7 +80,12 @@ class TreeViewItemMenus {
 				};
 			}
 			for (q in items.manipOuter) {
-				q.visible = true;
+				if (q.id == "edit-tags") {
+					if (Project.current.isGMS23) {
+						var rel = target.getAttribute(TreeView.attrRel);
+						q.visible = dir || rel != null && rel.endsWith(".yy");
+					} else q.visible = false;
+				} else  q.visible = true;
 				q.enabled = supported;
 			}
 			//
@@ -335,8 +341,11 @@ class TreeViewItemMenus {
 	}
 	//
 	public static function editTagsImpl() {
-		var d = getItemData(target);
-		TagEditor.show();
+		var e = TreeViewMenus.targetAsTVE;
+		var rel = e.treeRelPath;
+		var dir = e.treeIsDir;
+		if (dir && rel.endsWith("/")) rel = rel.substring(0, rel.length - 1) + ".yy";
+		TagEditor.show(rel, dir);
 	}
 	public static function renameImpl_1(q:TreeViewItemRename) {
 		

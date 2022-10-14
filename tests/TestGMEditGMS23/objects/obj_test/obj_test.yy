@@ -28,4 +28,8 @@
     "name": "Objects",
     "path": "folders/Objects.yy",
   },
+  "tags": [
+    "test",
+    "obj_test",
+  ],
 }

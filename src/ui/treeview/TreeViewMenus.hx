@@ -27,6 +27,10 @@ import Main.*;
 class TreeViewMenus {
 	/** treeview element that a menu was invoked at */
 	public static var target:Element;
+	public static var targetAsTVE(get, never):TreeViewElement;
+	static inline function get_targetAsTVE():TreeViewElement {
+		return cast target;
+	}
 	public static var itemMenu:Menu;
 	public static var dirMenu:Menu;
 	public static var items:TreeViewMenuData;

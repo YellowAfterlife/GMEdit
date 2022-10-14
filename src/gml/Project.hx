@@ -62,13 +62,13 @@ import ui.treeview.TreeViewElement;
 	//
 	public var version:GmlVersion = GmlVersion.v1;
 	
-	/** full path */
+	/** full path ("D:/myProject/myProject.yyp") */
 	public var path:String;
-	/** no directory */
+	/** no directory ("myProject.yyp") */
 	public var name:String;
-	/** no directory, no extension */
+	/** no directory, no extension ("myProject") */
 	public var displayName:String;
-	/** project directory */
+	/** project directory ("D:/myProject") */
 	public var dir:String;
 	/** whether this project is stored in memory rather than on disk */
 	public var isVirtual:Bool;

@@ -108,12 +108,16 @@
 	resize: both;
 	width: 360px;
 	height: 360px;
+	left: 0; top: 0; right: 0; bottom: 0;
+	margin: auto;
 }
 #tag-editor label {
 	padding-bottom: 2px;
 }
 #tag-editor textarea[name="tags"] {
 	flex-grow: 1;
+	resize: none;
+	font-family: Consolas, monospace;
 }
 #tag-editor .tag-editor-controls {
 	display: flex;
