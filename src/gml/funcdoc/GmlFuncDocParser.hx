@@ -47,39 +47,44 @@ class GmlFuncDocParser {
 			}
 			//
 			var depth = 1;
-			var pos = parOpenAt + 1;
-			var len = str.length;
-			var argStart = pos;
+			var q = new GmlReader(str);
+			var version = Project.current.version;
+			q.pos = parOpenAt + 1;
+			var argStart = q.pos;
 			var argSpace = true;
 			inline function flushArg() {
-				args.push(str.substring(argStart, pos - 1));
+				args.push(q.substring(argStart, q.pos - 1));
 			}
-			while (pos < len) {
-				var c = str.fastCodeAt(pos++);
-				if (pos == argStart) {
+			while (q.loop) {
+				var c = q.read();
+				if (q.pos == argStart) {
 					if (c.isSpace0()) argStart++;
 				}
 				switch (c) {
 					case "[".code, "(".code, "{".code: depth++;
 					case "]".code, ")".code, "}".code:
 						if (--depth <= 0) {
-							if (args.length > 0 || pos - 1 > argStart) flushArg();
-							if (str.charAt(pos) == GmlFuncDoc.retArrow) {
-								hasReturn = str.substr(pos + 1, 4) != "void"
-									|| str.fastCodeAt(pos + 5).isIdent1_ni();
+							if (args.length > 0 || q.pos - 1 > argStart) flushArg();
+							if (q.peekstr(1) == GmlFuncDoc.retArrow) {
+								hasReturn = q.peekstr(4, 1) != "void"
+									|| q.peek(5).isIdent1_ni();
 							}
-							post = str.substring(pos - 1);
+							post = str.substring(q.pos - 1);
 							break;
 						}
+					case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, version);
 					case ",".code if (depth == 1):
 						flushArg();
-						argStart = pos;
+						argStart = q.pos;
 						argSpace = true;
 					case ".".code:
 						if (!rest
-							&& str.fastCodeAt(pos) == ".".code
-							&& str.fastCodeAt(pos + 1) == ".".code
-						) rest = true;
+							&& q.peek(0) == ".".code
+							&& q.peek(1) == ".".code
+						) {
+							rest = true;
+							q.skip(2);
+						}
 				}
 			}
 			//

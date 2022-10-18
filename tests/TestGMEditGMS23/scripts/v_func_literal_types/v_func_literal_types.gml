@@ -21,4 +21,7 @@ function v_func_literal_types() {
 	firs(1, "a", "b");
 	firs(1, 2); ///want_warn
 	firs(1, "2", 3); ///want_warn
+	
+	v_string_split("");
 }
+function v_string_split(str/*:string*/, sep = ",") {}
