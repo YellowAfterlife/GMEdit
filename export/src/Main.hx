@@ -117,7 +117,7 @@ class Main {
 			if (isMac && !hasMac) {
 				hasMac = true;
 				Sys.println("Copying base files for Mac...");
-				CopySync.copyDir(tempDefault, tempMacApp);
+				CopySync.copyDir(tempDefaultApp, tempMacApp);
 			}
 			
 			var platformCap = platform.charAt(0).toUpperCase() + platform.substr(1);
