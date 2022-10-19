@@ -53,7 +53,7 @@ class GmlSeekerProcVar {
 		var funcsAreGlobal = seeker.funcsAreGlobal;
 		var canLam = seeker.canLam;
 		var isStatic = kind == "static";
-		var isConstructor = seeker.doc.isConstructor;
+		var isConstructor = seeker.doc != null && seeker.doc.isConstructor;
 		while (q.loop) {
 			q.skipSpaces1();
 			var c:CharCode = q.peek();
