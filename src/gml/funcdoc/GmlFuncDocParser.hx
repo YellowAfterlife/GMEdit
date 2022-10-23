@@ -47,13 +47,14 @@ class GmlFuncDocParser {
 			}
 			//
 			var depth = 1;
-			var q = new GmlReader(str);
-			var version = Project.current.version;
+			var project = Project.current;
+			var version = project != null ? project.version : GmlVersion.v2;
+			var q = new GmlReader(str, version);
 			q.pos = parOpenAt + 1;
 			var argStart = q.pos;
 			var argSpace = true;
 			inline function flushArg() {
-				args.push(q.substring(argStart, q.pos - 1));
+				args.push(q.substring(argStart, q.pos - 1).trimBoth());
 			}
 			while (q.loop) {
 				var c = q.read();
