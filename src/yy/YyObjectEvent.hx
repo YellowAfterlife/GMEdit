@@ -21,8 +21,10 @@ import yy.YyObject;
 			//
 			if (at == 4) {
 				var aq:YyResourceRef = a.collisionObjectId;
-				var bq:YyResourceRef = a.collisionObjectId;
-				return aq.name < bq.name ? -1 : 1;
+				var bq:YyResourceRef = b.collisionObjectId;
+				var an = aq != null ? aq.name : "";
+				var bn = bq != null ? bq.name : "";
+				return an < bn ? -1 : 1;
 			} else return a.eventNum - b.eventNum;
 		}
 	}
