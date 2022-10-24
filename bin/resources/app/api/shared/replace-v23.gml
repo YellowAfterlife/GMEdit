@@ -144,6 +144,10 @@ ds_map_is_list<K;V>(map:ds_map<K;V>,key:K)->bool
 
 #endregion
 
+os_gdk#:os_type
+os_operagx#:os_type
+os_gxgames#:os_type
+
 //////////////
 // Chapter 412
 //////////////
@@ -242,3 +246,38 @@ generation_collected?:int
 num_generations?:int
 num_objects_in_generation?:int
 
+
+time_source_create(parent:time_source, period:number, units:time_source_units, callback:function, ?args:array, ?reps:number, ?expiryType:time_source_expiry)->time_source
+time_source_destroy(id:time_source, [destroyTree:bool])
+time_source_start(id:time_source)
+time_source_stop(id:time_source)
+time_source_pause(id:time_source)
+time_source_resume(id:time_source)
+time_source_reset(id:time_source)
+time_source_reconfigure(id:time_source, period:number, units:time_source_units, callback:function, ?args:array, ?reps:number, ?expiryType:time_source_expiry)
+time_source_get_period(id:time_source)->number
+time_source_get_reps_completed(id:time_source)->number
+time_source_get_reps_remaining(id:time_source)->number
+time_source_get_units(id:time_source)->time_source_units
+time_source_get_time_remaining(id:time_source)->number
+time_source_get_state(id:time_source)->time_source_state
+time_source_get_parent(id:time_source)->time_source
+time_source_get_children(id:time_source)->time_source[]
+time_source_exists(id:time_source)->bool
+
+time_seconds_to_bpm(seconds:number)->number
+time_bpm_to_seconds(bpm:number)->number
+
+time_source_units_seconds#: time_source_units
+time_source_units_frames#: time_source_units
+
+time_source_expire_nearest#: time_source_expiry
+time_source_expire_after#: time_source_expiry
+
+time_source_state_initial#: time_source_state
+time_source_state_active#: time_source_state
+time_source_state_paused#: time_source_state
+time_source_state_stopped#: time_source_state
+
+call_later(period:number, units:time_source_units, callback:function<void>, [repeat:bool])->time_source
+call_cancel(handle:time_source)
