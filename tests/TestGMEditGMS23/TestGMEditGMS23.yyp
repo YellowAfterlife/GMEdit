@@ -81,6 +81,7 @@
     {"id":{"name":"v_empty_switch","path":"scripts/v_empty_switch/v_empty_switch.yy",},"order":4,},
     {"id":{"name":"v_broken_switch","path":"scripts/v_broken_switch/v_broken_switch.yy",},"order":5,},
     {"id":{"name":"v_constructor_function_redefinitions","path":"scripts/v_constructor_function_redefinitions/v_constructor_function_redefinitions.yy",},"order":6,},
+    {"id":{"name":"v_instance_create","path":"scripts/v_instance_create/v_instance_create.yy",},"order":4,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

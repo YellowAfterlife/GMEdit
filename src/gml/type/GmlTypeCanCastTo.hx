@@ -1,5 +1,6 @@
 package gml.type;
 import ace.AceGmlTools;
+import gml.type.GmlType;
 import gml.type.GmlType.GmlTypeAnonField;
 import gml.type.GmlType.GmlTypeKind;
 import haxe.ds.ReadOnlyArray;
@@ -196,6 +197,9 @@ class GmlTypeCanCastTo {
 					if (ok) return true;
 				}
 			}
+			case [TAnon(a1), TInst(_, [TInst(n2, _, KCustom)], KAnyFieldsOf)]: {
+				return canCastAnonToAnyFieldsOf(a1, n2);
+			};
 			case [TAnon(a1), TAnon(a2)]: {
 				var ok = true;
 				NativeObject.forField(a2.fields, function(fd:String) {
@@ -208,5 +212,26 @@ class GmlTypeCanCastTo {
 			default:
 		}
 		return false;
+	}
+	static function canCastAnonToAnyFieldsOf(a1:GmlTypeAnon, n2:String) {
+		var ns = GmlAPI.gmlNamespaces[n2];
+		if (ns == null) return true;
+		var ok = true;
+		var fields = ns.getInstComp(0, true);
+		for (fdc in fields) {
+			var fd = fdc.name;
+			var af = a1.fields[fd];
+			if (af != null && !af.type.canCastTo(ns.getInstType(fd))) {
+				return false;
+			}
+		}
+		for (name => afd in a1.fields) {
+			var found = false;
+			for (fdc in fields) {
+				if (fdc.name == name) { found = true; break; }
+			}
+			if (!found) return false;
+		}
+		return true;
 	}
 }

@@ -54,6 +54,8 @@ class GmlTypeParser {
 		r["struct"] = KStruct;
 		r["asset"] = KAsset;
 		//
+		r["any_fields_of"] = KAnyFieldsOf;
+		//
 		return r;
 	})();
 	public static var warnAboutMissing:Array<String> = null;

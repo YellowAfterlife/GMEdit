@@ -2,8 +2,8 @@
 // Chapter 402
 //////////////
 
-instance_create_depth<T:object>(x:number,y:number,depth:number,obj:T,?vars)->T
-instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,obj:T,?vars)->T
+instance_create_depth<T:object>(x:number,y:number,depth:number,obj:T,?vars:any_fields_of<T>)->T
+instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,obj:T,?vars:any_fields_of<T>)->T
 
 #region 2.2
 
