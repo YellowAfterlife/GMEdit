@@ -13,6 +13,7 @@
 // ? = struct variable
 // ^ = do not add to autocomplete
 // ^feature_flag = do not add to autocomplete if the feature flag is disabled
+// [name] = optional argument
 
 argument_relative&
 argument
@@ -62,6 +63,8 @@ infinity#
 GM_build_date#
 GM_version#
 GM_runtime_version#
+GM_project_filename#
+GM_build_type#
 
 // section 2.2
 
@@ -661,7 +664,7 @@ error_last&
 show_debug_message(str)
 show_debug_overlay(enable)
 debug_mode*
-debug_event(str)
+debug_event(str,...)
 debug_get_callstack([maxdepth],...)
 alarm_get(index)
 alarm_set(index,count)
@@ -765,6 +768,8 @@ m_axisx#
 m_axisy#
 m_axisx_gui#
 m_axisy_gui#
+m_scroll_up#
+m_scroll_down#
 mouse_check_button(button)
 mouse_check_button_pressed(button)
 mouse_check_button_released(button)
@@ -821,6 +826,7 @@ layer@
 // Sequence-related built-ins
 in_sequence@
 sequence_instance@
+drawn_by_sequence@
 
 // section 5.2
 
@@ -1202,9 +1208,9 @@ audio_emitter_pitch(emitterid,pitch)
 audio_emitter_velocity(emitterid,vx,vy,vz)
 audio_emitter_falloff(emitterid, falloff_ref_dist,falloff_max_dist,falloff_factor)
 audio_emitter_gain(emitterid,gain)
-audio_play_sound(soundid,priority,loops)
-audio_play_sound_on(emitterid,soundid,loops,priority)
-audio_play_sound_at(soundid,x,y,z, falloff_ref_dist,falloff_max_dist,falloff_factor,loops, priority)
+audio_play_sound(soundid,priority,loops,[gain],[offset],[pitch],[listener_mask])
+audio_play_sound_on(emitterid,soundid,loops,priority,[gain],[offset],[pitch],[listener_mask])
+audio_play_sound_at(soundid,x,y,z,falloff_ref_dist,falloff_max_dist,falloff_factor,loops,priority,[gain],[offset],[pitch],[listener_mask])
 audio_stop_sound(soundid)
 audio_resume_music()&
 audio_music_is_playing()&
@@ -1386,6 +1392,11 @@ texturegroup_get_textures(groupname)
 texturegroup_get_sprites(groupname)
 texturegroup_get_fonts(groupname)
 texturegroup_get_tilesets(groupname)
+
+texturegroup_load(groupname,[prefetch])
+texturegroup_unload(groupname)
+texturegroup_get_status(groupname)
+texturegroup_set_mode(explicit,debug,default_sprite)
 
 texture_debug_messages(debug_level)
 
@@ -1973,7 +1984,9 @@ os_tvos#
 os_switch#
 os_ps5#
 os_xboxseriesxs#
+os_gdk#
 os_operagx#
+os_gxgames#
 
 browser_not_a_browser#
 browser_unknown#
@@ -2017,7 +2030,7 @@ os_get_info()
 os_get_language()
 os_get_region()
 os_check_permission(permission)
-os_request_permission(permission)
+os_request_permission(permission,..)
 os_lock_orientation(flag)
 os_set_orientation_lock(landscape_enable,portrait_enable)
 display_get_dpi_x()
@@ -2658,7 +2671,7 @@ network_connect_raw(socket, url, port)
 network_connect_async(socket, url, port)
 network_connect_raw_async(socket, url, port)
 network_send_packet(socket, bufferid, size)
-network_send_raw(socket, bufferid, size, options)
+network_send_raw(socket, bufferid, size, options*)
 network_send_broadcast(socket, port, bufferid, size)
 network_send_udp(socket, URL, port, bufferid, size)
 network_send_udp_raw(socket, URL, port, bufferid, size)
@@ -2675,6 +2688,9 @@ network_type_connect#
 network_type_disconnect#
 network_type_data#
 network_type_non_blocking_connect#
+network_type_up#
+network_type_up_failed#
+network_type_down#
 network_send_binary#
 network_send_text#
 
@@ -2683,6 +2699,11 @@ network_config_use_non_blocking_socket#
 network_config_enable_reliable_udp#
 network_config_disable_reliable_udp#
 network_config_avoid_time_wait#
+network_config_websocket_protocol#
+
+network_connect_none#
+network_connect_blocking#
+network_connect_nonblocking#
 
 buffer_create(size, buffer_type, alignment)
 buffer_write(buffer, type, value)
@@ -2904,16 +2925,17 @@ push_set_application_badge_number( num )&
 
 
 // Instance specific
-skeleton_animation_set(anim_name)!
+skeleton_animation_set(anim_name, [loop])!
 skeleton_animation_get()!
 skeleton_animation_mix(anim_from,anim_to,duration)!
-skeleton_animation_set_ext(anim_name, track)!
+skeleton_animation_set_ext(anim_name, track, [loop])!
 skeleton_animation_get_ext(track)!
 skeleton_animation_get_duration(anim_name)!
 skeleton_animation_get_frames(anim_name)!
 skeleton_animation_clear(track)!
 skeleton_skin_set(skin_name)!
 skeleton_skin_get()!
+skeleton_skin_create(skin_name, base_skins)!
 skeleton_attachment_set(slot, attachment)!
 skeleton_attachment_get(slot)!
 skeleton_attachment_create(name,sprite,ind,xo,yo,xs,ys,rot)!
@@ -2936,7 +2958,11 @@ skeleton_get_num_bounds()!
 skeleton_get_bounds(index)!
 skeleton_animation_get_frame(track)!
 skeleton_animation_set_frame(track,index)!
+skeleton_animation_get_position(track)!
+skeleton_animation_set_position(track,position)!
 skeleton_animation_get_event_frames(anim_name,event_name)!
+skeleton_animation_is_looping(track)!
+skeleton_animation_is_finished(track)!
 
 // Instance independent!
 draw_skeleton(sprite,animname,skinname,frame,x,y,xscale,yscale,rot,col,alpha)!
@@ -3309,6 +3335,11 @@ nineslice_mirror#
 nineslice_blank#
 nineslice_hide#
 
+texturegroup_status_unloaded#
+texturegroup_status_loading#
+texturegroup_status_loaded#
+texturegroup_status_fetched#
+
 //tags
 tag_get_asset_ids(tags,asset_type)
 tag_get_assets(tags)
@@ -3319,11 +3350,12 @@ asset_has_tags(asset_name_or_id,tags,[asset_type])
 asset_has_any_tag(asset_name_or_id,tags,[asset_type])
 asset_clear_tags(asset_name_or_id,[asset_type])
 
-
-extension_get_string(ext_name, option_name)
-
-
-
+//extension options
+extension_exists(ext_name)
+extension_get_option_count(ext_name)
+extension_get_option_names(ext_name)
+extension_get_option_value(ext_name, option_name)
+extension_get_options(ext_name)
 
 //sequences
 layer_sequence_get_instance(sequence_element_id)
@@ -3652,10 +3684,11 @@ time_source_state_paused#
 time_source_state_stopped#
 
 time_source_create(parent,period,units,callback,[args],[reps],[expiryType])
-time_source_destroy(id)
+time_source_destroy(id, [destroyTree])
 time_source_start(id)
 time_source_stop(id)
 time_source_pause(id)
+time_source_resume(id)
 time_source_reset(id)
 time_source_reconfigure(id,period,units,callback,[args],[reps],[expiryType])
 time_source_get_period(id)
@@ -3671,21 +3704,35 @@ time_source_exists(id)
 time_seconds_to_bpm(seconds)
 time_bpm_to_seconds(bpm)
 
+call_later(period, units, callback, [repeat])
+call_cancel(handle)
+
 // rollback multiplayer
-rollback_define_player(player_obj)^rollback
+rollback_use_manual_start()^rollback
+rollback_define_player(player_obj,...)^rollback
 rollback_define_input(input)^rollback
 rollback_define_mock_input(player_id,input)^rollback
 rollback_define_input_frame_delay(frames)^rollback
-rollback_start_game(num_players,...)^rollback
-rollback_join_game()^rollback
+rollback_define_extra_network_latency(latency)^rollback
+rollback_create_game(num_players,...)^rollback
+rollback_join_game(...)^rollback
+rollback_start_game()^rollback
 rollback_leave_game()^rollback
 rollback_get_input(...)^rollback
+rollback_chat(message,...)^rollback
+rollback_use_player_prefs(...)^rollback
+rollback_set_player_prefs(preferences)^rollback
+rollback_get_player_prefs(...)^rollback
+rollback_get_info(...)^rollback
 rollback_use_random_input(enabled)^rollback
 rollback_display_events(enabled)^rollback
+rollback_sync_on_frame()^rollback
 rollback_current_frame^rollback
+rollback_confirmed_frame^rollback
 rollback_event_id^rollback
 rollback_event_param^rollback
 rollback_game_running^rollback
+rollback_api_server^rollback
 
 rollback_connected_to_peer#^rollback
 rollback_synchronizing_with_peer#^rollback
@@ -3695,4 +3742,14 @@ rollback_game_interrupted#^rollback
 rollback_game_resumed#^rollback
 rollback_game_full#^rollback
 rollback_game_info#^rollback
+rollback_chat_message#^rollback
+rollback_player_prefs#^rollback
 rollback_connect_info#^rollback
+rollback_connect_error#^rollback
+
+player_id*@^rollback
+player_local*@^rollback
+player_avatar_url*@^rollback
+player_avatar_sprite*@^rollback
+player_type*@^rollback
+player_user_id*@^rollback
