@@ -104,6 +104,7 @@ class GmlSeekerProcIdent {
 					switch (q.peek()) {
 						case "#".code: arrayAccessor = AKGrid;
 						case "|".code: arrayAccessor = AKList;
+						case "$".code: arrayAccessor = AKStruct;
 						case "?".code:
 							arrayAccessor = AKMapAny;
 							q.skip();
@@ -189,6 +190,7 @@ class GmlSeekerProcIdent {
 			while (--arrayAccInd >= 0) {
 				switch (arrayAccessors[arrayAccInd]) {
 					case AKArray: fieldType = GmlTypeDef.arrayOf(fieldType);
+					case AKStruct: fieldType = GmlTypeDef.parse("struct");
 					case AKList: fieldType = GmlTypeDef.listOf(fieldType);
 					case AKGrid: fieldType = GmlTypeDef.gridOf(fieldType);
 					case AKMapAny: fieldType = GmlTypeDef.mapOf(null, fieldType);
@@ -210,6 +212,7 @@ class GmlSeekerProcIdent {
 enum abstract GmlSeekerProcIdent_ArrayAccessKind(Int) {
 	var AKArray;
 	var AKArray2d; // marks that we already handled a `,`
+	var AKStruct;
 	var AKList;
 	var AKGrid;
 	var AKMapAny;

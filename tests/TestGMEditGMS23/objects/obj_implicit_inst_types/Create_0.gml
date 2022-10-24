@@ -64,3 +64,7 @@ s = a_cast_int; ///want_warn
 int1dx = [];
 int1dx[0] = 0;
 s = int1dx[0]; ///want_warn
+
+structy = {};
+structy[$"a"] = 1;
+structy[$"b"] = 2;
