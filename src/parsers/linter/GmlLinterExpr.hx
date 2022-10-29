@@ -48,6 +48,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 	
 	public var isLocalIdent:Bool;
 	
+	/** Whether the expression is wrapped in () */
+	public var hasParens:Bool;
+	
 	public var nullSafety:GmlLinterLocalNullSafetyItems;
 	
 	function invalid(flags:GmlLinterReadFlags):FoundError {
@@ -98,6 +101,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 		var currFunc:GmlFuncDoc = null;
 		var currValue:GmlLinterValue = null;
 		var nullSafety:GmlLinterLocalNullSafetyItems = [];
+		var hasParens:Bool = false;
 		//
 		inline function checkConst():Void {
 			this.checkConst(currName, currKind);
@@ -181,7 +185,8 @@ class GmlLinterExpr extends GmlLinterHelper {
 						break;
 					}
 				}
-				if (arrowState == null) { // normal expr
+				if (arrowState == null) { // normal (expr)
+					hasParens = true;
 					rc(self.readExpr(newDepth));
 					readCheckSkip(KParClose, "a `)`");
 					if (this.currKind == KCall) {
@@ -604,6 +609,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 		this.selfType = selfType;
 		this.currFunc = currFunc;
 		this.currValue = currValue;
+		this.hasParens = hasParens;
 		this.nullSafety = nullSafety;
 		return false;
 	}

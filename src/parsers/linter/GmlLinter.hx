@@ -579,7 +579,7 @@ class GmlLinter {
 		var mainKind = nk;
 		var z:Bool, z2:Bool, i:Int;
 		inline function checkParens():Void {
-			if (prefs.requireParentheses && expr.currKind != KParOpen) {
+			if (prefs.requireParentheses && !expr.hasParens) {
 				addWarning("Expression is missing parentheses");
 			}
 		}
