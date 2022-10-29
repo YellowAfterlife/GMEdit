@@ -11,7 +11,7 @@ function v_constructor_implicit_types_1() constructor {
 function v_constructor_implicit_types_2() : v_constructor_implicit_types_1() constructor {
 	int_map[?1] = 2;
 	int_map[?""] = ""; ///want_warn
-	str_map[?""] = ""; ///want_warn
+	str_map[?""] = "";
 	str_map[?0] = 0; ///want_warn
 	
 	int_map2 = ds_map_create();

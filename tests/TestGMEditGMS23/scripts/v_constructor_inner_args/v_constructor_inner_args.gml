@@ -12,5 +12,5 @@ function c_constructor_inner_args2() constructor {
 }
 function v_constructor_inner_args() {
 	var c = new c_constructor_inner_args(); ///want_warn
-	var c = new c_constructor_inner_args2(); ///note: actually uses argument[]
+	var c2 = new c_constructor_inner_args2(); ///note: actually uses argument[]
 }

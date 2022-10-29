@@ -25,15 +25,15 @@ function in_self_struct_context() {
 }
 
 function v_self_struct() {
-	var self_struct = new SelfStruct();
+	let self_struct = new SelfStruct();
 	with (self_struct) {
 		in_self_struct_context();
 	}
-	var other_struct = new NotSelfStruct();
+	let other_struct = new NotSelfStruct();
 	with (other_struct) {
 		in_self_struct_context(); ///want_warn not the right context
 	}
-	var inherit_struct = new InheritsSelfStruct();
+	let inherit_struct = new InheritsSelfStruct();
 	with (inherit_struct) {
 		in_self_struct_context();
 	}
