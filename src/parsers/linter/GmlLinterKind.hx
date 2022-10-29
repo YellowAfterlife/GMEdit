@@ -6,6 +6,7 @@ import haxe.ds.Vector;
  * @author ...
  */
 @:build(tools.AutoEnum.build())
+@:build(tools.macros.EnumAbstractBuilder.build())
 enum abstract GmlLinterKind(Int) {
 	var KEOF;
 	

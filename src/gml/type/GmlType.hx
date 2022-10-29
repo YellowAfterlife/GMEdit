@@ -69,7 +69,7 @@ class GmlTypeMapField {
 	}
 }
 
-@:build(gml.type.GmlTypeMacro.build())
+@:build(tools.macros.EnumAbstractBuilder.build())
 enum abstract GmlTypeKind(Int) {
 	// Core types:
 	var KAny = 0x01;
@@ -106,7 +106,4 @@ enum abstract GmlTypeKind(Int) {
 	// Special:
 	var KMethodSelf = 0x40; // used exclusively by linter to redirect `self` in second arg
 	var KAnyFieldsOf = 0x41; // 
-	
-	private static function init() { } // autogen via @:build
-	@:keep private static var __init = init();
 }
