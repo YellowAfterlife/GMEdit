@@ -6,6 +6,7 @@ import gml.type.GmlType;
 import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
 import parsers.seeker.GmlSeekerParser;
+import parsers.seeker.GmlSeekerProcExpr;
 import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.CharCode;
@@ -91,7 +92,12 @@ class GmlSeekerProcVar {
 				// OK, next
 			}
 			else if (s == "=" && isStatic && isConstructor) {
-				GmlSeekerProcExpr.proc(seeker, name);
+				var oldLocalKind = seeker.localKind;
+				seeker.localKind = "sublocal";
+				GmlSeekerProcExpr.proc(seeker, name, true);
+				if (GmlSeekerProcExpr.isFunction) {
+					seeker.doLoop(seeker.curlyDepth);
+				}
 				var args:String = GmlSeekerProcExpr.args;
 				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
 				var isConstructor = GmlSeekerProcExpr.isConstructor;
@@ -105,6 +111,7 @@ class GmlSeekerProcVar {
 					addFieldHint_doc.templateSelf = templateSelf;
 					addFieldHint_doc.templateItems = templateItems;
 				}
+				seeker.localKind = oldLocalKind;
 				break;
 			}
 			else if (s == "=") {
@@ -134,13 +141,13 @@ class GmlSeekerProcVar {
 						case ";": exit = true; break;
 						default: { // ident
 							if (hasFunctionLiterals && s == "function") {
-								var oldLocalKind = localKind;
+								var oldLocalKind = seeker.localKind;
 								if (seeker.curlyDepth > 0 || !funcsAreGlobal) {
-									localKind = "sublocal";
+									seeker.localKind = "sublocal";
 								}
 								GmlSeekerProcDefine.procFuncLiteralArgs(seeker);
 								seeker.doLoop(seeker.curlyDepth);
-								localKind = oldLocalKind;
+								seeker.localKind = oldLocalKind;
 							} else if (GmlAPI.kwFlow[s]) {
 								seeker.restoreReader();
 								exit = true;

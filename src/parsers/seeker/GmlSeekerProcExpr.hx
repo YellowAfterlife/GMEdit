@@ -6,6 +6,7 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTemplateItem;
 import parsers.GmlSeeker;
 import parsers.seeker.GmlSeekerImpl;
+import parsers.seeker.GmlSeekerProcDefine;
 import tools.JsTools;
 
 /**
@@ -20,6 +21,7 @@ class GmlSeekerProcExpr {
 	public static var templateSelf:GmlType = null;
 	public static var templateItems:Array<GmlTypeTemplateItem> = null;
 	public static var fieldType:GmlType = null;
+	public static var isFunction:Bool = false;
 	public static function reset() {
 		args = null;
 		argTypes = null;
@@ -27,8 +29,9 @@ class GmlSeekerProcExpr {
 		templateSelf = null;
 		templateItems = null;
 		fieldType = null;
+		isFunction = false;
 	}
-	public static function proc(seeker:GmlSeekerImpl, s:String) {
+	public static function proc(seeker:GmlSeekerImpl, s:String, ?asStatic:Bool) {
 		reset();
 		//
 		var q = seeker.reader;
@@ -98,6 +101,7 @@ class GmlSeekerProcExpr {
 		switch (ident) {
 			case "function":
 				// OK!
+				isFunction = true;
 			case "undefined", "noone":
 				if (specTypeInst) procAs();
 				return;
@@ -146,7 +150,12 @@ class GmlSeekerProcExpr {
 		
 		start = q.pos;
 		if (q.read() != "(".code) return;
-		while (q.loop) {
+		if (asStatic) {
+			// ... since we won't be going over the whole thing like with `var`
+			q.pos--;
+			GmlSeekerProcDefine.procFuncLiteralArgs(seeker);
+		}
+		else while (q.loop) {
 			var c = q.peek();
 			if (c == ")".code) {
 				q.skip();
