@@ -55,6 +55,7 @@ class GmlSeekerProcVar {
 		var canLam = seeker.canLam;
 		var isStatic = kind == "static";
 		var isConstructor = seeker.doc != null && seeker.doc.isConstructor;
+		var isStaticCtr = isStatic && isConstructor;
 		while (q.loop) {
 			q.skipSpaces1();
 			var c:CharCode = q.peek();
@@ -77,7 +78,7 @@ class GmlSeekerProcVar {
 				// might eat a structure but that code's broken anyway
 				break;
 			}
-			locals.add(name, localKind);
+			if (!isStaticCtr) locals.add(name, localKind);
 			seeker.saveReader();
 			var flags = SetOp | Comma | Semico | Ident | ComBlock;
 			var s = seeker.find(flags);
@@ -91,7 +92,7 @@ class GmlSeekerProcVar {
 			if (s == ",") {
 				// OK, next
 			}
-			else if (s == "=" && isStatic && isConstructor) {
+			else if (s == "=" && isStaticCtr) {
 				var oldLocalKind = seeker.localKind;
 				seeker.localKind = "sublocal";
 				GmlSeekerProcExpr.proc(seeker, name, true);
