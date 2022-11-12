@@ -98,6 +98,7 @@ class GmlSeekerProcExpr {
 		var start = q.pos;
 		q.skipIdent1();
 		var ident = q.substring(start, q.pos);
+		var normalIdent = false;
 		switch (ident) {
 			case "function":
 				// OK!
@@ -116,29 +117,76 @@ class GmlSeekerProcExpr {
 				if (specTypeInst) fieldType = GmlTypeDef.bool;
 				return;
 			default:
-				if (specTypeInst) {
-					var doc = GmlAPI.stdDoc[ident];
-					q.skipSpaces1_local();
-					if (doc != null) {
-						if (q.skipIfEquals("(".code)) {
-							fieldType = doc.returnType.mapTemplateTypes([]);
-							q.skipBalancedParenExpr();
-						} else fieldType = doc.getFunctionType();
-					} else switch (q.peek()) {
-						case "\r".code, "\n".code, ";".code:
-							fieldType = GmlAPI.stdTypes[ident];
-							if (fieldType == null) {
-								var resType = gml.Project.current.resourceTypes[ident];
-								if (resType != null) fieldType = GmlTypeDef.parse(resType);
+				normalIdent = true;
+		}
+		if (normalIdent) {
+			if (!specTypeInst) return;
+			var doc = GmlAPI.stdDoc[ident];
+			q.skipSpaces1_local();
+			if (doc != null) {
+				if (q.skipIfEquals("(".code)) {
+					fieldType = doc.returnType.mapTemplateTypes([]);
+					q.skipBalancedParenExpr();
+				} else fieldType = doc.getFunctionType();
+			} else switch (q.peek()) {
+				case "\r".code, "\n".code, ";".code:
+					for (_ in 0 ... 1) {
+						var loopDoc = seeker.doc;
+						var found = false;
+						for (_ in 0 ... 128) {
+							if (loopDoc == null) break;
+							
+							inline function copyDoc(hdoc:GmlFuncDoc):Void {
+								if (hdoc == null) return;
+								args = hdoc.getNamelessAcText();
+								argTypes = hdoc.argTypes;
+								isConstructor = hdoc.isConstructor;
+								templateSelf = hdoc.templateSelf;
+								templateItems = hdoc.templateItems;
 							}
-						case "(".code:
-							q.skip();
-							q.skipBalancedParenExpr();
-						default:
-					}
-					procAs();
-				}
-				return;
+							
+							// check for (pending) field definition inside this file
+							var hint = seeker.out.fieldHints[loopDoc.name + ":" + ident];
+							if (hint != null) {
+								found = true;
+								copyDoc(hint.doc);
+								fieldType = hint.type;
+								break;
+							}
+							
+							// check for field definition in API
+							var ns = GmlAPI.gmlNamespaces[loopDoc.name];
+							if (ns != null && ns.instKind.exists(ident)) {
+								found = true;
+								copyDoc(ns.docInstMap[ident]);
+								fieldType = ns.instTypes[ident];
+								break;
+							}
+							
+							var parentName = loopDoc.parentName;
+							loopDoc = seeker.out.docs[parentName];
+							if (loopDoc == null) loopDoc = GmlAPI.gmlDoc[parentName];
+						}
+						if (found) break;
+						
+						// standard variable
+						fieldType = GmlAPI.stdTypes[ident];
+						if (fieldType != null) break;
+						
+						// project resource
+						var resType = gml.Project.current.resourceTypes[ident];
+						if (resType != null) {
+							fieldType = GmlTypeDef.parse(resType);
+							break;
+						}
+					} // once
+				case "(".code:
+					q.skip();
+					q.skipBalancedParenExpr();
+				default:
+			}
+			procAs();
+			return;
 		}
 		q.skipSpaces1();
 		if (q.peek().isIdent0_ni()) {

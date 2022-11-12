@@ -154,8 +154,14 @@ class GmlFuncDoc {
 		minArgsCache = null;
 	}
 	
+	/** -> "func(a, b, c)->ret" */
 	public function getAcText() {
 		return pre + args.join(", ") + post;
+	}
+	
+	/** -> "(a, b, c)->ret" */
+	public function getNamelessAcText() {
+		return "(" + args.join(", ") + post;
 	}
 	
 	public static function create(name:String, ?args:Array<String>, ?rest:Bool):GmlFuncDoc {

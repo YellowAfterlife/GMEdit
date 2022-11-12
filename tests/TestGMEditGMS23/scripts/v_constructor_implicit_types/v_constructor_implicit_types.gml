@@ -9,6 +9,9 @@ function v_constructor_implicit_types_1() constructor {
 	///note: `self.`/`.` should bring up the above
 }
 function v_constructor_implicit_types_2() : v_constructor_implicit_types_1() constructor {
+	static merge_base = merge;
+	merge_base(); ///want_warn
+	
 	int_map[?1] = 2;
 	int_map[?""] = ""; ///want_warn
 	str_map[?""] = "";
