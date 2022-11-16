@@ -198,10 +198,11 @@ class GmlSeekerProcExpr {
 		
 		start = q.pos;
 		if (q.read() != "(".code) return;
+		
 		if (asStatic) {
 			// ... since we won't be going over the whole thing like with `var`
 			q.pos--;
-			GmlSeekerProcDefine.procFuncLiteralArgs(seeker);
+			args = GmlSeekerProcDefine.procFuncLiteralArgs(seeker, true);
 		}
 		else while (q.loop) {
 			var c = q.peek();
@@ -220,14 +221,19 @@ class GmlSeekerProcExpr {
 			argTypes = jsDoc.typesFlush(JsTools.nca(doc, doc.templateItems), s);
 			jsDoc.args = null;
 			jsDoc.types = null;
-		} else args = q.substring(start, q.pos);
+		} else if (!asStatic) {
+			args = q.substring(start, q.pos);
+		}
 		
-		if (q.peekstr(4) == "/*->") {
-			var p = q.pos + 2;
+		var returnType:String = null;
+		if (asStatic) {
+			// OK!
+		} else if (q.peekstr(4) == "/*->") {
+			var p = q.pos + 4;
 			q.skip(4);
 			q.skipComment();
 			if (q.peekstr(2, -2) == "*/") {
-				args += q.substring(p, q.pos - 2);
+				returnType = q.substring(p, q.pos - 2);
 			}
 		}
 		//
@@ -243,6 +249,8 @@ class GmlSeekerProcExpr {
 		if (jsDoc.returns != null) {
 			args += GmlFuncDoc.retArrow + jsDoc.returns;
 			jsDoc.returns = null;
+		} else if (returnType != null) {
+			args += GmlFuncDoc.retArrow + returnType;
 		}
 		
 		// constructor?:

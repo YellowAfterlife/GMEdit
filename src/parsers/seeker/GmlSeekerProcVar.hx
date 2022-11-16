@@ -146,7 +146,7 @@ class GmlSeekerProcVar {
 								if (seeker.curlyDepth > 0 || !funcsAreGlobal) {
 									seeker.localKind = "sublocal";
 								}
-								GmlSeekerProcDefine.procFuncLiteralArgs(seeker);
+								GmlSeekerProcDefine.procFuncLiteralArgs(seeker, false);
 								seeker.doLoop(seeker.curlyDepth);
 								seeker.localKind = oldLocalKind;
 							} else if (GmlAPI.kwFlow[s]) {

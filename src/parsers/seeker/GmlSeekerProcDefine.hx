@@ -26,32 +26,46 @@ class GmlSeekerProcDefine {
 				var typeEnd = q.pos - 2;
 				q.pos = typeStart;
 				if (q.skipType(typeEnd)) {
-					seeker.jsDoc.returns = q.substring(typeStart, q.pos);
+					var result = q.substring(typeStart, q.pos);
+					seeker.jsDoc.returns = result;
+					q.pos = typeEnd + 2;
+					return result;
 				} else q.pos = orig;
 			} else q.pos = orig;
 		}
+		return null;
 	}
-	public static function procFuncLiteralArgs(seeker:GmlSeekerImpl) {
-		if (seeker.find(Par0) == "(") {
-			var q = seeker.reader;
-			var wantArgName = true;
-			var depth = 1;
-			while (q.loop) {
-				var s = seeker.find(Ident | Par0 | Par1 | Comma);
-				switch (s) {
-					case null: break;
-					case "(": depth++;
-					case ")": if (--depth <= 0) break;
-					case ",": if (depth == 1) wantArgName = true;
-					default:
-						if (wantArgName) {
-							wantArgName = false;
-							seeker.locals.add(s, seeker.localKind);
-						}
-				}
-			}
-			procFuncLiteralRetArrow(seeker);
+	
+	/** "int" for "(a, b)->int" */
+	public static var procFuncLiteralArgs_returnType:String = null;
+	/** "(a, b)" for "(a, b)->int" */
+	public static function procFuncLiteralArgs(seeker:GmlSeekerImpl, out:Bool):String {
+		if (seeker.find(Par0) != "(") {
+			if (out) procFuncLiteralArgs_returnType = null;
+			return null;
 		}
+		var q = seeker.reader;
+		var start = q.pos - 1;
+		var wantArgName = true;
+		var depth = 1;
+		while (q.loop) {
+			var s = seeker.find(Ident | Par0 | Par1 | Comma);
+			switch (s) {
+				case null: break;
+				case "(": depth++;
+				case ")": if (--depth <= 0) break;
+				case ",": if (depth == 1) wantArgName = true;
+				default:
+					if (wantArgName) {
+						wantArgName = false;
+						seeker.locals.add(s, seeker.localKind);
+					}
+			}
+		}
+		var result = out ? q.substring(start, q.pos) : null;
+		var returnType = procFuncLiteralRetArrow(seeker);
+		if (out) procFuncLiteralArgs_returnType = returnType;
+		return result;
 	}
 	public static function proc(seeker:GmlSeekerImpl, s:String) {
 		var q = seeker.reader;
@@ -87,8 +101,8 @@ class GmlSeekerProcDefine {
 			}
 			if (seeker.isCreateEvent && curlyDepth == 0 && fname != null) {
 				var argsStart = q.pos;
-				procFuncLiteralArgs(seeker);
-				var args:String = q.substring(argsStart, q.pos).trimBoth();
+				var args = procFuncLiteralArgs(seeker, true);
+				if (args == null) args = "()";
 				var argTypes = null;
 				if (jsDoc.args != null) {
 					args = "(" + jsDoc.args.join(", ") + ")";
@@ -105,7 +119,7 @@ class GmlSeekerProcDefine {
 				var isConstructor = (s == ":" || s == "constructor");
 				//
 				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.getObjectName(), true, fname, args, null, null, argTypes, true);
-			} else procFuncLiteralArgs(seeker);
+			} else procFuncLiteralArgs(seeker, false);
 			jsDoc.reset(false); // discard any collected JSDoc
 			return;
 		}
