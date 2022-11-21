@@ -26,7 +26,7 @@ class GmlFileBackup {
 		return path + ".backup" + i;
 	}
 	public static function save(file:GmlFile, code:String) {
-		#if lwedit
+		#if gmedit.live
 		return;
 		#end
 		if (!FileSystem.canSync) return;

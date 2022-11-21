@@ -158,7 +158,7 @@ using StringTools;
 				});
 			}
 		}, "Show keyboard mappings");
-		#if lwedit
+		#if gmedit.live
 		add({
 			name: "lw_execute",
 			bindKey: {win: "Ctrl-Enter", mac: "Command-Enter|Ctrl-Enter"},

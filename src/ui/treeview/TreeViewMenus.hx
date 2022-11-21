@@ -180,7 +180,9 @@ class TreeViewMenus {
 			if (pj.isGMS23 || pj.version.config.projectModeId == 2) {
 				yy.shared.YyManipExtension.addFiles(cast target, path, paths);
 			} else {
+				#if !gmedit.no_gmx
 				gmx.GmxManip.addExtensionFile(path, paths);
+				#end
 			}
 		});
 	}

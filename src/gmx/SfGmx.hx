@@ -1,4 +1,5 @@
 package gmx;
+#if !gmedit.no_gmx
 using StringTools;
 import tools.Dictionary;
 import tools.StringBuilder;
@@ -188,3 +189,4 @@ class SfGmx {
 	}
 	//
 }
+#end

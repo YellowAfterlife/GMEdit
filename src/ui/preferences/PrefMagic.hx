@@ -119,7 +119,7 @@ class PrefMagic {
 		addWiki(el, "https://github.com/YellowAfterlife/GMEdit/wiki/Using-arrow-functions");
 		
 		//
-		#if !lwedit
+		#if !gmedit.live
 		var optGMLive = ["Hide", "Show on items", "Show everywhere"];
 		el = addDropdown(out, "Show GMLive badges", optGMLive[current.showGMLive], optGMLive, function(v) {
 			var v0:PrefGMLive = current.showGMLive;

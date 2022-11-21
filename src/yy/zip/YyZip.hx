@@ -193,6 +193,7 @@ class YyZip extends Project {
 	}
 	// no need to override writeJson/Yy - base version already uses writeTextFileSync
 	
+	#if !gmedit.no_gmx
 	override public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];
 		JsTools.setImmediate(function() {
@@ -207,6 +208,8 @@ class YyZip extends Project {
 			return SfGmx.parse(file.getText());
 		} else throw new Error("File not found: " + path);
 	}
+	#end
+	
 	override public function getImageURL(path:String):String {
 		var file = yyzFileMap[fixSlashes(path)];
 		if (file != null) {

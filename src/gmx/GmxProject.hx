@@ -1,4 +1,5 @@
 package gmx;
+#if !gmedit.no_gmx
 import parsers.GmlReader;
 import tools.StringBuilder;
 
@@ -149,3 +150,4 @@ class GmxProject {
 		return true;
 	}
 }
+#end

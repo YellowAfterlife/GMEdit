@@ -67,8 +67,9 @@ class GmlExtensionAPI {
 	}
 	//
 	public static function get1(src:String):String {
-		var ext = SfGmx.parse(src);
 		var out = "";
+		#if !gmedit.no_gmx
+		var ext = SfGmx.parse(src);
 		for (file in ext.find("files").findAll("file")) {
 			var linesShow = [], linesHide = [];
 			for (fn in file.find("functions").findAll("function")) {
@@ -111,6 +112,7 @@ class GmlExtensionAPI {
 				for (line in linesHide) out += "\n" + line;
 			}
 		}
+		#end
 		return out;
 	}
 	public static function get2(ext:YyExtension):String {

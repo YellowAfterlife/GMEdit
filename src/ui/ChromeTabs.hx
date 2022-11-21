@@ -160,7 +160,7 @@ class ChromeTabs {
 				});
 				tabEl.addEventListener("mouseleave", hideHint);
 				tabEl.addEventListener("mousedown", hideHint);
-				#if lwedit
+				#if gmedit.live
 				GmlSeekData.add(gmlFile.path, KGmlScript.inst);
 				#end
 			}
@@ -176,7 +176,7 @@ class ChromeTabs {
 			if (tabEl.classList.contains("chrome-tab-force-close")) return;
 			var gmlFile = tabEl.gmlFile;
 			if (gmlFile == null) return;
-			#if (lwedit)
+			#if (gmedit.live)
 			if (Std.is(gmlFile.kind, file.kind.gml.KGmlScript)) {
 				if (gmlFile.getAceSession().getValue().length > 0) {
 					if (!Dialog.showConfirmWarn(
@@ -245,7 +245,7 @@ class ChromeTabs {
 				} else impl.setCurrentTab(tab);
 			}
 		});
-		#if lwedit // double-click on empty spots to add tabs
+		#if gmedit.live // double-click on empty spots to add tabs
 		element.addEventListener("dblclick", function(e:MouseEvent) {
 			if (e.target != element.querySelector(".chrome-tabs-content")) return;
 			LiveWeb.newTabDialog();
@@ -276,7 +276,7 @@ class ChromeTabs {
 			});
 		});
 		else window.addEventListener("beforeunload", function(e:BeforeUnloadEvent) {
-			#if lwedit
+			#if gmedit.live
 			LiveWebState.save();
 			#else
 			if (Project.current.path != "") { // not just sitting on "recent projects"

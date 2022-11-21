@@ -461,6 +461,7 @@ class GmlExtLambda {
 		"gms2": postGMS2,
 	};
 	public static function postGMS1(d:GmlExtLambdaPost) {
+		#if !gmedit.no_gmx
 		var pj = d.project;
 		var ext = FileWrap.readGmxFileSync(pj.lambdaExt);
 		var file:SfGmx = null;
@@ -524,6 +525,7 @@ class GmlExtLambda {
 			d.checkInit = true;
 		}
 		if (extz) FileWrap.writeTextFileSync(pj.lambdaExt, ext.toGmxString());
+		#end
 	}
 	public static function postGMS2(d:GmlExtLambdaPost) {
 		var pj = d.project;

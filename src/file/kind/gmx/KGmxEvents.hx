@@ -1,4 +1,5 @@
 package file.kind.gmx;
+#if !gmedit.no_gmx
 import editors.EditCode;
 import electron.FileWrap;
 import gmx.GmxObject;
@@ -81,3 +82,4 @@ class KGmxEvents extends file.kind.gml.KGmlEvents {
 		return true;
 	}
 }
+#end

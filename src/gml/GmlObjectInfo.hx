@@ -75,13 +75,17 @@ class GmlObjectInfo {
 	}
 	public static function showFor(path:String, ident:String) {
 		var info:GmlObjectInfo;
+		#if !gmedit.no_gmx
 		if (Path.extension(path) == "gmx") {
 			var obj = FileWrap.readGmxFileSync(path);
 			info = gmx.GmxObject.getInfo(obj, path);
-		} else if (Path.extension(path) == "yy") {
+		} else // ->
+		#end
+		if (Path.extension(path) == "yy") {
 			var yy:yy.YyObject = FileWrap.readYyFileSync(path);
 			info = yy.getInfo();
-		} else return;
+		}
+		else return;
 		GmlFile.openTab(new GmlFile(
 			"info: " + ident,
 			null, KGmlScript.inst, info.print()

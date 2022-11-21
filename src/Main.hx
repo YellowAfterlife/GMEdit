@@ -127,7 +127,7 @@ class Main {
 		Sidebar.init();
 		MainMenu.init();
 		//
-		#if !lwedit
+		#if !gmedit.live
 		aceEditor.session = WelcomePage.init(aceEditor);
 		#end
 		untyped window.ace_mode_gml_2();
@@ -144,7 +144,7 @@ class Main {
 		plugins.PluginManager.init(function() {
 			Project.nameNode.innerText = "Loading project...";
 			Project.openInitialProject();
-			#if lwedit
+			#if gmedit.live
 			aceEditor.session = WelcomePage.init(aceEditor);
 			LiveWeb.init();
 			#end

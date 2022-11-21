@@ -88,7 +88,7 @@ class FileDrag {
 		document.body.addEventListener("drop", function(e:DragEvent) {
 			e.preventDefault();
 			//Main.console.log(e.dataTransfer.files);
-			#if lwedit
+			#if gmedit.live
 			for (file in e.dataTransfer.files) {
 				ui.liveweb.LiveWebIO.acceptFile(file);
 			}

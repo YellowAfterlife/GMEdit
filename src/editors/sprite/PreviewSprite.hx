@@ -75,6 +75,7 @@ class PreviewSprite extends Editor {
 	//
 	function getData1(data:String):PreviewSpriteData {
 		var d = new PreviewSpriteData();
+		#if !gmedit.no_gmx
 		var pj = Project.current;
 		var q:SfGmx = FileWrap.readGmxFileSync(file.path);
 		d.xorig = q.findFloat("xorig");
@@ -88,6 +89,7 @@ class PreviewSprite extends Editor {
 			d.framePaths.push(frel);
 		}
 		d.frameCount = d.frameURLs.length;
+		#end
 		return d;
 	}
 	function getData2(q:YySprite):PreviewSpriteData {

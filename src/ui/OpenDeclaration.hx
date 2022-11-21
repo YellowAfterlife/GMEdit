@@ -157,9 +157,12 @@ class OpenDeclaration {
 			if (def == "") return false;
 			var file = session.gmlFile;
 			var path = file.path;
+			#if !gmedit.no_gmx
 			if (Std.is(file.kind, KGmxEvents)) {
 				return gmx.GmxObject.openEventInherited(path, def) != null;
-			} else if (Std.is(file.kind, KYyEvents)) {
+			} else // ->
+			#end
+			if (Std.is(file.kind, KYyEvents)) {
 				return yy.YyObject.openEventInherited(path, def) != null;
 			} else return false;
 			return true;

@@ -47,7 +47,7 @@ class GmlAPI {
 		"switch", "case", "default", "break", "continue", "with", "exit", "return",
 		"self", "other", "noone", "all", "global", "local",
 		"mod", "div", "not", "and", "or", "xor", "enum",
-		#if lwedit
+		#if gmedit.live
 		"in", "debugger",
 		#end
 	];
@@ -258,7 +258,7 @@ class GmlAPI {
 		return ns;
 	}
 	
-	#if lwedit
+	#if gmedit.live
 	/** Function name -> min. argument count */
 	public static var lwArg0:Dictionary<Int> = new Dictionary();
 	
@@ -274,6 +274,13 @@ class GmlAPI {
 	/** Whether the "function" is instance-specific */
 	public static var lwInst:Dictionary<Bool> = new Dictionary();
 	#end
+	
+	static var assetTypes:Array<String> = [
+		"sprite", "sound", "path", "font",
+		"shader", "timeline", "script", "object", "room",
+		"background", // GMS1
+		"tileset", // GMS2
+	];
 	
 	public static function gmlClear() {
 		gmlDoc = new Dictionary();
@@ -298,7 +305,7 @@ class GmlAPI {
 		gmlLookupItems.resize(0);
 		gmlNamespaces = new Dictionary();
 		gmlNamespaceComp.clear();
-		for (type in gmx.GmxLoader.assetTypes) {
+		for (type in assetTypes) {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
 		for (k in GmlTypeTools.builtinTypes) {

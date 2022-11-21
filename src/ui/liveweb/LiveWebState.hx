@@ -11,7 +11,7 @@ import tools.Base64;
 import tools.Dictionary;
 import ui.WelcomePage;
 using tools.HtmlTools;
-#if lwedit
+#if gmedit.live
 /**
  * ...
  * @author YellowAfterlife

@@ -1,4 +1,5 @@
 package file.kind.gmx;
+#if !gmedit.no_gmx
 import editors.EditCode;
 import electron.FileWrap;
 import gmx.GmxProject;
@@ -7,7 +8,7 @@ import parsers.GmlReader;
 import tools.StringBuilder;
 
 /**
- * ...
+ * Assembles GMS1 macros and an annotation file into a single-tab editor.
  * @author YellowAfterlife
  */
 class KGmxMacros extends KGml {
@@ -40,3 +41,4 @@ class KGmxMacros extends KGml {
 		return root.toGmxString();
 	}
 }
+#end

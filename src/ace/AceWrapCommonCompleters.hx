@@ -222,8 +222,11 @@ class AceWrapCommonCompleters {
 		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
 			if (!hashLineStartsWith(ssn, pos, prefix, "#m")) return false;
 			var file:GmlFile = ssn.gmlFile;
-			return Project.current.version.config.indexingMode != GMS1
-				|| file != null && Std.is(file.kind, KGmxMacros);
+			return (Project.current.version.config.indexingMode != GMS1
+				#if !gmedit.no_gmx
+				|| file != null && Std.is(file.kind, KGmxMacros)
+				#end
+			);
 		});
 		hashtagCompleters.push(htMacro);
 		
@@ -262,7 +265,11 @@ class AceWrapCommonCompleters {
 		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
 			if (!hashLineStartsWith(ssn, pos, prefix, "#e")) return false;
 			var file:GmlFile = ssn.gmlFile;
-			return Std.is(file.kind, KYyEvents) || Std.is(file.kind, KGmxEvents);
+			return (Std.is(file.kind, KYyEvents)
+				#if !gmedit.no_gmx
+				|| Std.is(file.kind, KGmxEvents)
+				#end
+			);
 		});
 		hashtagCompleters.push(htEvent);
 		

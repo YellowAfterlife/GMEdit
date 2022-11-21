@@ -1,4 +1,5 @@
 package gmx;
+#if !gmedit.no_gmx
 import gml.*;
 import electron.FileWrap;
 import gml.file.GmlFile;
@@ -207,3 +208,4 @@ class GmxObject {
 		return info;
 	}
 }
+#end

@@ -140,7 +140,9 @@ class TreeViewDnD {
 							yy.v22.YyManipV22.move(args);
 						} else yy.YyManip.move(args);
 					};
+					#if !gmedit.no_gmx
 					case 1: gmx.GmxManip.move(args);
+					#end
 					default:
 				}
 			}

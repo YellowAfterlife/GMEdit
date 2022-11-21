@@ -61,7 +61,7 @@ class GmlFile {
 	/** Source file change time */
 	public var time:Float = 0;
 	public function syncTime() {
-		#if !lwedit
+		#if !gmedit.live
 		if (path != null && FileSystem.canSync) {
 			if (kind.checkSelfForChanges) try {
 				time = FileSystem.statSync(path).mtimeMs;
@@ -79,7 +79,11 @@ class GmlFile {
 	/** Path to .gmlnotes (used for GMS1 macros) */
 	public var notePath(get, never):String;
 	private inline function get_notePath():String {
+		#if !gmedit.no_gmx
 		return GmxProject.getNotePath(path);
+		#else
+		return null;
+		#end
 	}
 	
 	/** Last loaded/saved code */
@@ -133,7 +137,7 @@ class GmlFile {
 		editor.ready();
 	}
 	public function close():Void {
-		#if !lwedit
+		#if !gmedit.live
 		editor.stateSave();
 		editor.destroy();
 		#else

@@ -108,7 +108,7 @@ class PrefNav {
 		addFloatInput(out, "Keep file sessions for (days):", current.fileSessionTime, function(v) {
 			current.fileSessionTime = v; save();
 		});
-		#if !lwedit
+		#if !gmedit.live
 		addFloatInput(out, "Keep project sessions for (days):", current.projectSessionTime, function(v) {
 			current.projectSessionTime = v; save();
 		});
@@ -190,11 +190,11 @@ class PrefNav {
 		out.id = "pref-navigation";
 		var el:Element;
 		//
-		#if !lwedit
+		#if !gmedit.live
 		buildTreeview(out);
 		#end
 		buildLookup(out);
-		#if !lwedit
+		#if !gmedit.live
 		buildFiles(out);
 		#end
 		buildRecent(out);

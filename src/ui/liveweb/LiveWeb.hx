@@ -25,7 +25,7 @@ import Main.window;
  * Helpers for GMLive-web
  * @author YellowAfterlife
  */
-#if lwedit
+#if gmedit.live
 class LiveWeb {
 	//
 	public static var modeEl:SelectElement = document.querySelectorAuto("#mode");
@@ -62,7 +62,7 @@ class LiveWeb {
 	
 	//
 	public static function init() {
-		#if lwedit
+		#if gmedit.live
 		var init:LiveWebInit = {};
 		init.aceEditor = Main.aceEditor;
 		init.isElectron = electron.Electron.isAvailable();
@@ -168,6 +168,7 @@ class LiveWeb {
 				e.stopPropagation();
 			}
 		});
+		#if !gmedit.mini
 		document.getElementById("share").onclick = function() {
 			var params = ["mode=" + modeEl.value, "ver=" + verEl.value];
 			//
@@ -190,6 +191,7 @@ class LiveWeb {
 			textarea.select();
 		}
 		LiveWebState.init();
+		#end
 		#end
 	}
 }

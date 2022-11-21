@@ -16,7 +16,7 @@ class WelcomePage {
 	public static var file:GmlFile;
 	public static function init(e:AceEditor) {
 		var session:AceSession;
-		#if lwedit
+		#if gmedit.live
 			file = new GmlFile("WelcomePage", null, ui.liveweb.KLiveWeb.inst, "");
 			GmlFile.current = file;
 			session = file.codeEditor.session;
@@ -33,7 +33,7 @@ class WelcomePage {
 		#end
 		return session;
 	}
-	#if lwedit
+	#if gmedit.live
 	public static var lwText:String = StringTools.replace(SynSugar.xmls(<gml>
 		/*
 		Hello!

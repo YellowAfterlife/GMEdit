@@ -67,6 +67,7 @@ import tools.PathTools;
 		writeTextFileSync(path, yy.YyJson.stringify(value, extJson));
 	}
 	//
+	#if !gmedit.no_gmx
 	public static function readGmxFileSync(path:String):SfGmx {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.readGmxFileSync(path);
@@ -77,6 +78,8 @@ import tools.PathTools;
 			FileSystem.writeFileSync(path, gmx.toGmxString());
 		} else Project.current.writeGmxFileSync(path, gmx);
 	}
+	#end
+	
 	public static function mkdirSync(path:String):Void {
 		if (Path.isAbsolute(path)) {
 			FileSystem.mkdirSync(path);

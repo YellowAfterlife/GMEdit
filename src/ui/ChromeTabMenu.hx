@@ -16,7 +16,7 @@ using tools.HtmlTools;
 class ChromeTabMenu {
 	public static var target:ChromeTab;
 	public static var menu:Menu;
-	#if !lwedit
+	#if !gmedit.live
 	static var showInDirectoryItem:MenuItem;
 	static var showInTreeItem:MenuItem;
 	static var backupsItem:MenuItem;
@@ -37,7 +37,7 @@ class ChromeTabMenu {
 		unpinItem.visible = pinned;
 		closeIdleItem.visible = Preferences.current.chromeTabs.idleTime > 0;
 		
-		#if !lwedit
+		#if !gmedit.live
 		showInDirectoryItem.enabled = hasFile;
 		openExternally.enabled = hasFile;
 		showInTreeItem.enabled = ~/^\w+$/g.match(file.name) && gml.GmlAPI.gmlKind.exists(file.name);
@@ -86,7 +86,7 @@ class ChromeTabMenu {
 			type: MenuItemType.Sep
 		}));
 		
-		#if lwedit
+		#if gmedit.live
 		menu.append(new MenuItem({
 			id: "rename",
 			label: "Rename",

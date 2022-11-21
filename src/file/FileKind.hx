@@ -160,12 +160,14 @@ import ui.ChromeTabs.ChromeTab;
 		register("vsh", KGLSL.inst);
 		register("fsh", KGLSL.inst);
 		//
+		#if !gmedit.no_gmx
 		register("gmx", KGmx.inst);
 		KGmx.register("object", KGmxEvents.inst);
 		KGmx.register("timeline", KGmxMoments.inst);
 		KGmx.register("project", new KGmxMacros(false));
 		KGmx.register("config", new KGmxMacros(true));
 		KGmx.register("sprite", KGmxSprite.inst);
+		#end
 		//
 		register("yy", KYy.inst);
 		KYy.register("GMObject", KYyEvents.inst);

@@ -10,7 +10,7 @@ import tools.ChainCall;
 import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;
-#if lwedit
+#if gmedit.live
 import ui.liveweb.LiveWeb;
 #end
 using tools.NativeString;
@@ -119,7 +119,7 @@ using tools.ERegTools;
 		if (useDefault) cx.call(getContent, dir + "/extra.gml", function(s:String) {
 			// whatever missing in fnames
 			if (s != null && s != "") ctx.raw += "\n" + s;
-			#if lwedit
+			#if gmedit.live
 			ctx.raw += "\ntrace(...)";
 			#end
 		});
@@ -184,7 +184,7 @@ using tools.ERegTools;
 			instType: GmlAPI.stdInstType,
 			ukSpelling: GmlAPI.ukSpelling,
 			version: GmlAPI.version,
-			#if lwedit
+			#if gmedit.live
 			lwArg0: GmlAPI.lwArg0,
 			lwArg1: GmlAPI.lwArg1,
 			lwInst: GmlAPI.lwInst,
@@ -214,7 +214,7 @@ using tools.ERegTools;
 		var cx = loadPre(ctx);
 		
 		// concat customizations:
-		#if !lwedit
+		#if !gmedit.live
 		if (FileSystem.canSync) {
 			var xdir = FileWrap.userPath + "/api/" + version.getName();
 			if (FileSystem.existsSync(xdir))
@@ -246,7 +246,7 @@ using tools.ERegTools;
 		// if we are running on Node, all of the preceding operations complete immediately,
 		// but we didn't initialize the API (in LiveWeb) yet, so might as well just
 		// delay by 1 frame instead of restructuring everything.
-		#if lwedit
+		#if gmedit.live
 		if (FileSystem.canSync) cx.call(function(_, fn) {
 			Main.window.setTimeout(function(_) fn(null));
 		}, null, function(_) {});
@@ -259,7 +259,7 @@ using tools.ERegTools;
 			GmlParseAPI.loadStd(ctx.raw, data);
 			
 			// give GMLive a copy of data
-			#if lwedit
+			#if gmedit.live
 			if (data.lwArg0 != null) {
 				if (LiveWeb.api != null) {
 					#if 0

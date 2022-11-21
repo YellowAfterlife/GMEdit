@@ -20,7 +20,7 @@ class MainMenu {
 	static var menu:Menu;
 	static var exportItem:MenuItem;
 	static function addProjectItems(menu:Menu) {
-		#if !lwedit
+		#if !gmedit.live
 		if (Electron == null) {
 			var form = Main.document.createFormElement();
 			HtmlTools.moveOffScreen(form);
@@ -131,7 +131,7 @@ class MainMenu {
 		#end
 	}
 	static function addGMLiveWebItems(menu:Menu) {
-		#if lwedit
+		#if gmedit.live
 		menu.append(new MenuItem({ label: "New tab",
 			click: function() LiveWeb.newTabDialog()
 		}));
@@ -162,7 +162,7 @@ class MainMenu {
 	}
 	public static function init() {
 		menu = new Menu();
-		#if (!lwedit)
+		#if (!gmedit.live)
 		addProjectItems(menu);
 		#else
 		addGMLiveWebItems(menu);
@@ -175,7 +175,7 @@ class MainMenu {
 			icon: Menu.silkIcon("help"),
 			click: function() {
 				var url:String = "https://github.com/GameMakerDiscord/GMEdit/wiki";
-				#if lwedit
+				#if gmedit.live
 				url += '/GMLive.js';
 				#end
 				if (Electron != null) {
@@ -196,7 +196,7 @@ class MainMenu {
 			click: function() Preferences.open()
 		}));
 		if (Electron != null && window.location.host == "") menu.append(new MenuItem({
-			#if lwedit
+			#if gmedit.live
 			id: "switch-gmedit",
 			label: "Switch to GMEdit",
 			click: function() window.location.href = StringTools.replace(window.location.href, 
@@ -220,7 +220,7 @@ class MainMenu {
 		var btn = Main.document.querySelector(".system-button.preferences");
 		btn.addEventListener("click", function(e) {
 			var pj = Project.current;
-			#if !lwedit
+			#if !gmedit.live
 			exportItem.enabled = pj.version != gml.GmlVersion.none && Std.is(pj, YyZip);
 			#end
 			menu.popupAsync(e);

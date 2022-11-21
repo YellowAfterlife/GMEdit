@@ -192,7 +192,7 @@ import ui.treeview.TreeViewElement;
 		return r;
 	}
 	//
-	#if !lwedit
+	#if !gmedit.live
 	private function new_procSingle() {
 		var _path = path;
 		inline function findV1(dir:String):Void {
@@ -266,7 +266,7 @@ import ui.treeview.TreeViewElement;
 	#end
 	public function new(_path:String, _load:Bool = true) {
 		path = _path;
-		#if !lwedit
+		#if !gmedit.live
 		new_procSingle();
 		#end
 		if (path != null) {
@@ -277,7 +277,7 @@ import ui.treeview.TreeViewElement;
 			name = _path.ptNoDir();
 			displayName = name;
 		}
-		#if (!lwedit && !test)
+		#if (!gmedit.live && !test)
 		if (path != null) detectVersion();
 		if (_load) {
 			document.title = path != "" ? (displayName + " - GMEdit") : "GMEdit";
@@ -400,15 +400,19 @@ import ui.treeview.TreeViewElement;
 	//
 	public static function init() {
 		loaderMap = {
+			#if !gmedit.no_gmx
 			"gms1": GmxLoader.run,
-			"gms2": YyLoader.run,
 			"gmk-splitter": GmkLoader.run,
+			#end
+			"gms2": YyLoader.run,
 			"directory": RawLoader.run,
 		};
 		searchMap = {
+			#if !gmedit.no_gmx
 			"gms1": GmxSearcher.run,
-			"gms2": YySearcher.run,
 			"gmk-splitter": GmkSearcher.run,
+			#end
+			"gms2": YySearcher.run,
 			"directory": RawSearcher.run,
 		};
 		//
@@ -416,7 +420,7 @@ import ui.treeview.TreeViewElement;
 		//
 	}
 	public static function openInitialProject() {
-		#if !lwedit
+		#if !gmedit.live
 		var path = moduleArgs["open"];
 		if (path != null) {
 			var tmp = new Project("", false);
@@ -629,6 +633,7 @@ import ui.treeview.TreeViewElement;
 		writeTextFileSync(path, text);
 	}
 	//
+	#if !gmedit.no_gmx
 	public function readGmxFile(path:String, fn:Error->SfGmx->Void):Void {
 		return FileSystem.readGmxFile(fullPath(path), fn);
 	}
@@ -641,6 +646,7 @@ import ui.treeview.TreeViewElement;
 	public function writeGmkSplitFileSync(path:String, xml:SfGmx) {
 		writeTextFileSync(path, xml.toGmkSplitString());
 	}
+	#end
 	//
 	/**
 	 * Reads a JSON file relative to #config directory.

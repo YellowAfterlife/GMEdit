@@ -112,7 +112,7 @@ class AceStatusBar {
 					case "punctuation.operator" if (ctk.value == ";"): ctk = iter.stepBackward();
 					case "keyword" if (fkw[ctk.value]): ctk = iter.stepBackward();
 					case "preproc.macro": ctk = iter.stepBackward();
-					#if !lwedit
+					#if !gmedit.live
 					case "curly.paren.lparen", "curly.paren.rparen": {
 						ctk = iter.stepBackward();
 					};
@@ -131,7 +131,7 @@ class AceStatusBar {
 				case "preproc.macro": break;
 				case "macroname": break;
 				case "set.operator": break;
-				#if !lwedit
+				#if !gmedit.live
 				case "curly.paren.lparen": break;
 				case "curly.paren.rparen": break;
 				#end

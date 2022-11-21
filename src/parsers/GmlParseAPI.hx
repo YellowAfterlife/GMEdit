@@ -42,7 +42,7 @@ class GmlParseAPI {
 		var namespaceDefs = data.namespaceDefs;
 		var typedefs = data.typedefs;
 		var fieldHints = data.fieldHints;
-		#if lwedit
+		#if gmedit.live
 		var lwArg0 = data.lwArg0;
 		var lwArg1 = data.lwArg1;
 		var lwInst = data.lwInst;
@@ -158,7 +158,7 @@ class GmlParseAPI {
 			}
 			if (featureFlag != null && featureFlags.indexOf(featureFlag) < 0) show = false;
 			//
-			#if lwedit
+			#if gmedit.live
 			if (lwInst != null && (
 				comp.charCodeAt(0) == ":".code || NativeString.contains(flags, "@")
 			)) {
@@ -260,7 +260,7 @@ class GmlParseAPI {
 				if (orig != name) stdKind.set(orig, kindPrefix + kind);
 			}
 			//
-			#if lwedit
+			#if gmedit.live
 			if (isConst && lwConst != null) {
 				lwConst.set(name, true);
 				if (orig != name) lwConst.set(orig, true);
@@ -338,7 +338,7 @@ typedef GmlParseAPIArgs = {
 	?instKind:Dictionary<AceTokenType>,
 	?instType:Dictionary<GmlType>,
 	?fieldHints:Array<GmlSeekDataHint>,
-	#if lwedit
+	#if gmedit.live
 	?lwArg0:Dictionary<Int>,
 	?lwArg1:Dictionary<Int>,
 	?lwConst:Dictionary<Bool>,

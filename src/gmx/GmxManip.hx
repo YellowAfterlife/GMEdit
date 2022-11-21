@@ -1,4 +1,5 @@
 package gmx;
+#if !gmedit.no_gmx
 import electron.Dialog;
 import electron.FileSystem;
 import electron.FileWrap;
@@ -342,3 +343,4 @@ void main()
 		}
 	}
 }
+#end

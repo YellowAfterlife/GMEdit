@@ -223,7 +223,9 @@ class TreeViewItemMenus {
 		}
 		var pj = Project.current;
 		switch (pj.version.config.projectModeId) {
+			#if !gmedit.no_gmx
 			case 1: gmx.GmxManip.add(args);
+			#end
 			case 2: {
 				if (pj.yyUsesGUID) {
 					YyManipV22.add(args);
@@ -330,7 +332,9 @@ class TreeViewItemMenus {
 		var project = Project.current;
 		var vi = project.version.config.projectModeId;
 		switch (vi) {
+			#if !gmedit.no_gmx
 			case 1: gmx.GmxManip.remove(args);
+			#end
 			case 2: {
 				if (project.yyUsesGUID) {
 					YyManipV22.remove(args);
@@ -416,7 +420,9 @@ class TreeViewItemMenus {
 			var oldPath = el.treeFullPath;
 			var vi = project.version.config.projectModeId;
 			switch (vi) {
+				#if !gmedit.no_gmx
 				case 1: gmx.GmxManip.rename(args);
+				#end
 				case 2: {
 					if (project.yyUsesGUID) {
 						YyManipV22.rename(args);

@@ -108,7 +108,7 @@ class KeyboardShortcuts {
 			});
 		}
 		//
-		#if !lwedit
+		#if !gmedit.live
 		addCommand("reloadProject", "modw-r", function() {
 			if (Project.current != null) {
 				Project.current.reload();
@@ -152,7 +152,7 @@ class KeyboardShortcuts {
 				var file = tabEl.gmlFile;
 				if (file != null) file.save();
 			}
-			#if lwedit
+			#if gmedit.live
 			ui.liveweb.LiveWebState.save();
 			#end
 		});
@@ -171,7 +171,7 @@ class KeyboardShortcuts {
 			if (file == null) return;
 			GlobalSearch.findReferences(file.name);
 		});
-		#if !lwedit
+		#if !gmedit.live
 		addCommand("showInResourceTree", "alt-g", function() {
 			var file = GmlFile.current;
 			if (file == null) return;

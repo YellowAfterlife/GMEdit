@@ -56,7 +56,7 @@ import electron.FileWrap;
 			config = GmlVersionConfigDefaults.get(true);
 			if (callback != null) JsTools.setImmediate(callback, null, this);
 		} else {
-			#if lwedit
+			#if gmedit.live
 			var vc = name.charAt(name.length - 1);
 			config = GmlVersionConfigDefaults.get(vc == "2");
 			config.resetLineCounterOnDefine = false;
@@ -192,7 +192,7 @@ import electron.FileWrap;
 			if (v.label == null) v.label = v.name;
 		}
 		for (v in list) loadVer(v);
-		#if lwedit
+		#if gmedit.live
 		v1 = map["gmlivejs-v1"];
 		v2 = map["gmlivejs-v2"];
 		#else
@@ -201,7 +201,7 @@ import electron.FileWrap;
 		#end
 	}
 	public static function init() {
-		#if lwedit
+		#if gmedit.live
 		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
 		list.push(new GmlVersion("gmlivejs-v2", Main.relPath("api/gmlivejs-v2"), false));
 		for (v in list) v.load();

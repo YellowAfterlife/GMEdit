@@ -30,6 +30,7 @@ import haxe.extern.EitherType;
 			callback(e, d);
 		});
 	}
+	#if !gmedit.no_gmx
 	public static inline function readGmxFile(path:String, callback:Error->SfGmx->Void):Void {
 		readFile(path, "utf8", function(e:Error, d:Dynamic) {
 			if (d != null) try {
@@ -40,14 +41,19 @@ import haxe.extern.EitherType;
 			callback(e, d);
 		});
 	}
+	#end
 	//
 	public static function readFileSync(path:String, ?enc:String):Dynamic;
 	public static inline function readTextFileSync(path:String):String {
 		return readFileSync(path, "utf8");
 	}
+	
+	#if !gmedit.no_gmx
 	public static inline function readGmxFileSync(path:String):SfGmx {
 		return SfGmx.parse(readTextFileSync(path));
 	}
+	#end
+	
 	public static inline function readJsonFileSync(path:String):Dynamic {
 		return Json.parse(readTextFileSync(path));
 	}

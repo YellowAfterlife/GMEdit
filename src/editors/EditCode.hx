@@ -186,7 +186,7 @@ class EditCode extends Editor {
 		return true;
 	}
 	override public function checkChanges():Void {
-		#if lwedit
+		#if gmedit.live
 		return;
 		#end
 		var act = Preferences.current.fileChangeAction;

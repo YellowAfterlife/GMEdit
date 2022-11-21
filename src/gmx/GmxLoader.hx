@@ -1,4 +1,6 @@
 package gmx;
+
+#if !gmedit.no_gmx
 import gml.*;
 import file.FileKind;
 import file.kind.gml.*;
@@ -279,3 +281,4 @@ class GmxLoader {
 		//}
 	}
 }
+#end

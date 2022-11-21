@@ -168,7 +168,7 @@ class PluginManager {
 		} else { // base package for web version
 			list = [
 				"outline-view",
-				#if !lwedit
+				#if !gmedit.live
 				"image-viewer",
 				"ini-editor",
 				#end
