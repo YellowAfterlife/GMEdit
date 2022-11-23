@@ -2,6 +2,7 @@ package gml;
 import electron.FileWrap;
 import gmx.SfGmx;
 import haxe.DynamicAccess;
+import js.lib.RegExp;
 import ui.Preferences;
 import yy.YyExtension;
 import gml.file.GmlFile;
@@ -26,6 +27,7 @@ class GmlExtensionAPI {
 		GmlFile.openTab(new GmlFile("api: " + ident, path, kind));
 	}
 	//
+	static var rxIdent = new RegExp("^\\w+$", "g");
 	static function procFn(name:String, exname:String, help:String, args:Array<String>, hidden:Bool):String {
 		var r:String = help;
 		function getBaseHelp() {
@@ -43,7 +45,13 @@ class GmlExtensionAPI {
 			if (!r.startsWith(name + "(")) r = getBaseHelp() + " " + r;
 		}
 		//if (hidden) r += " // hidden";
-		if (exname != name) r += "\n// ^ external: " + exname;
+		if (name != exname) {
+			if (rxIdent.test(exname)) {
+				r = exname + " as " + r;
+			} else {
+				r = haxe.Json.stringify(exname) + " as " + r;
+			}
+		}
 		return r;
 	}
 	static function procMc(name:String, val:String, hidden:Bool):String {
@@ -61,8 +69,8 @@ class GmlExtensionAPI {
 	}
 	static function procInitFinal(sInit:String, sFinal:String) {
 		var r = "";
-		if (sInit != null && sInit != "") r += "\n// init: " + sInit;
-		if (sFinal != null && sFinal != "") r += "\n// final: " + sFinal;
+		if (sInit != null && sInit != "") r += "\n/// @init " + sInit;
+		if (sFinal != null && sFinal != "") r += "\n/// @final " + sFinal;
 		return r;
 	}
 	//
@@ -123,8 +131,8 @@ class GmlExtensionAPI {
 				var args = [];
 				if (fn.argCount < 0) {
 					args.push("...");
-				} else for (arg in fn.args) {
-					args.push((arg == 1 ? "s" : "v") + args.length);
+				} else for (argType in fn.args) {
+					args.push((argType == 1 ? "p" : "f") + args.length);
 				}
 				(fn.hidden ? linesHide : linesShow).push(procFn(
 					fn.name, fn.externalName, fn.help, args, fn.hidden));
