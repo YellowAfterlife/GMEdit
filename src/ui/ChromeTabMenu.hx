@@ -32,10 +32,14 @@ class ChromeTabMenu {
 		var file = el.gmlFile;
 		var hasFile = file.path != null;
 		
-		var pinned = el.classList.contains(ChromeTabs.clPinned);
-		pinItem.visible = !pinned;
-		unpinItem.visible = pinned;
-		closeIdleItem.visible = Preferences.current.chromeTabs.idleTime > 0;
+		if (pinItem != null) {
+			var pinned = el.classList.contains(ChromeTabs.clPinned);
+			pinItem.visible = !pinned;
+			unpinItem.visible = pinned;
+		}
+		if (closeIdleItem != null) {
+			closeIdleItem.visible = Preferences.current.chromeTabs.idleTime > 0;
+		}
 		
 		#if !gmedit.live
 		showInDirectoryItem.enabled = hasFile;

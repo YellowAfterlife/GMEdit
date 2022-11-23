@@ -57,13 +57,18 @@ import electron.FileWrap;
 			if (callback != null) JsTools.setImmediate(callback, null, this);
 		} else {
 			#if gmedit.live
-			var vc = name.charAt(name.length - 1);
-			config = GmlVersionConfigDefaults.get(vc == "2");
+			var v2 = name.indexOf("-v1") < 0;
+			config = GmlVersionConfigDefaults.get(v2);
 			config.resetLineCounterOnDefine = false;
 			config.hasTernaryOperator = true;
 			config.hasDefineArgs = true;
 			config.additionalKeywords = ["in"];
-			config.docMode = "gms" + vc;
+			config.docMode = v2 ? "gms2" : "gms1";
+			#if gmedit.mini
+			config.additionalKeywords = ["function", "try", "catch", "finally", "throw", "static", "new", "delete"];
+			config.hasColorLiterals = true;
+			config.indexingMode = GmlVersionConfigIndexingMode.Local;
+			#end
 			if (callback != null) JsTools.setImmediate(callback, null, this);
 			#else
 			var path = dir + "/config.json";
@@ -192,7 +197,9 @@ import electron.FileWrap;
 			if (v.label == null) v.label = v.name;
 		}
 		for (v in list) loadVer(v);
-		#if gmedit.live
+		#if gmedit.mini
+		v2 = map["gmlivejs-v23"];
+		#elseif gmedit.live
 		v1 = map["gmlivejs-v1"];
 		v2 = map["gmlivejs-v2"];
 		#else
@@ -201,7 +208,11 @@ import electron.FileWrap;
 		#end
 	}
 	public static function init() {
-		#if gmedit.live
+		#if gmedit.mini
+		list.push(new GmlVersion("gmlivejs-v23", Main.relPath("api/gmlivejs-v23"), false));
+		list[0].load();
+		init_1();
+		#elseif gmedit.live
 		list.push(new GmlVersion("gmlivejs-v1", Main.relPath("api/gmlivejs-v1"), false));
 		list.push(new GmlVersion("gmlivejs-v2", Main.relPath("api/gmlivejs-v2"), false));
 		for (v in list) v.load();

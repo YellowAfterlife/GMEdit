@@ -1,0 +1,27 @@
+{
+	"parent": "gml2",
+	"name": "GameMaker Studio 2.3+",
+	
+	"docMode": "gms2",
+	"projectMode": "gms2",
+	"indexingMode": "gms2",
+	"loadingMode": "gms2",
+	"searchMode": "gms2",
+	
+	"apiFiles": [
+		"default",
+		"../shared/types.gml",
+		"../shared/types-v2.gml",
+		"../shared/types-v23.gml"
+	],
+	"patchFiles": [
+		"../shared/replace.gml",
+		"../shared/replace-v2.gml",
+		"../shared/replace-v23.gml"
+	],
+	
+	"additionalKeywords": ["function", "try", "catch", "finally", "throw", "static", "new", "delete"],
+	
+	"//projectRegex": "This version is assigned as an override in gml.Project.reload if the YYP has a 2.3 tag",
+	"helpURL": "https://manual.yoyogames.com/#ux=search&rhsearch=$1"
+}

@@ -25,7 +25,7 @@ import Main.window;
  * Helpers for GMLive-web
  * @author YellowAfterlife
  */
-#if gmedit.live
+#if (gmedit.live && !gmedit.mini)
 class LiveWeb {
 	//
 	public static var modeEl:SelectElement = document.querySelectorAuto("#mode");
@@ -39,25 +39,6 @@ class LiveWeb {
 		if (isReady) return;
 		isReady = true;
 		api.run({}, function(_, _){});
-	}
-	
-	public static function addTab(name:String, code:String) {
-		for (tab in ChromeTabs.impl.tabEls) {
-			if (tab.gmlFile.name == name) {
-				window.alert("A tab with this name already exists.");
-				return;
-			}
-		}
-		var file = new GmlFile(name, name, KLiveWeb.inst, code);
-		GmlFile.openTab(file);
-		GmlSeeker.runSync(name, name, code, KLiveWeb.inst);
-	}
-	
-	public static function newTabDialog() {
-		electron.Dialog.showPrompt("New tab name?", "", function(name) {
-			if (name == null || name == "") return;
-			addTab(name, "");
-		});
 	}
 	
 	//
@@ -120,40 +101,7 @@ class LiveWeb {
 						es.clearAnnotations();
 					}
 				} else {
-					var path = e.file;
-					var col = e.column;
-					var row = e.row;
-					var msg = e.text;
-					//
-					var hint = Main.aceEditor.statusBar.statusHint;
-					hint.setInnerText(msg);
-					hint.classList.add("active");
-					hint.onclick = function(_) {
-						if (GmlFile.current.path != path) {
-							for (tab in ChromeTabs.impl.tabEls) {
-								if (tab.gmlFile.path != path) continue;
-								tab.click();
-								break;
-							}
-							window.setTimeout(function() {
-								Main.aceEditor.gotoLine0(row, col);
-							});
-						} else Main.aceEditor.gotoLine0(row, col);
-					};
-					var statusBar = Main.aceEditor.statusBar;
-					statusBar.ignoreUntil = window.performance.now() + statusBar.delayTime + 50;
-					//
-					for (tab in ChromeTabs.impl.tabEls) {
-						if (tab.gmlFile.path != path) continue;
-						var session = tab.gmlFile.getAceSession();
-						if (session == null) continue;
-						var range = new AceRange(0, row, session.getLine(row).length, row);
-						session.gmlErrorMarker = session.addMarker(range, "ace_error-line", "fullLine");
-						session.setAnnotations([{
-							row: row, column: col, type: "error", text: msg
-						}]);
-						break;
-					}
+					LiveWebTools.showError(e);
 				}
 			});
 		}
@@ -168,7 +116,6 @@ class LiveWeb {
 				e.stopPropagation();
 			}
 		});
-		#if !gmedit.mini
 		document.getElementById("share").onclick = function() {
 			var params = ["mode=" + modeEl.value, "ver=" + verEl.value];
 			//
@@ -191,7 +138,6 @@ class LiveWeb {
 			textarea.select();
 		}
 		LiveWebState.init();
-		#end
 		#end
 	}
 }

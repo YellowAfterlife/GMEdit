@@ -55,7 +55,7 @@ class LiveWebIO {
 			case "gml": {
 				var reader = new js.html.FileReader();
 				reader.onloadend = function(_) {
-					LiveWeb.addTab(Path.withoutExtension(file.name), reader.result);
+					LiveWebTools.addTab(Path.withoutExtension(file.name), reader.result);
 				};
 				reader.readAsText(file);
 			};
@@ -73,7 +73,7 @@ class LiveWebIO {
 							var data = entry.data;
 							if (data == null) continue;
 							if (entry.compressed) data = BufferTools.inflate(data);
-							LiveWeb.addTab(Path.withoutExtension(path), data.toString());
+							LiveWebTools.addTab(Path.withoutExtension(path), data.toString());
 						}
 					} catch (_:Dynamic) {
 						

@@ -11,11 +11,11 @@ import tools.Base64;
 import tools.Dictionary;
 import ui.WelcomePage;
 using tools.HtmlTools;
-#if gmedit.live
 /**
  * ...
  * @author YellowAfterlife
  */
+#if gmedit.live
 class LiveWebState {
 	static inline var lsPairs = "liveweb-state";
 	static inline var lsMode = "liveweb-mode";
@@ -87,14 +87,18 @@ class LiveWebState {
 		if (FileSystem.canSync) {
 			var json:LiveWebStateImpl = {
 				pairs: getPairs(),
+				#if !gmedit.mini
 				mode: LiveWeb.modeEl.value,
 				version: LiveWeb.verEl.value
+				#end
 			};
 			FileWrap.writeConfigSync("session", "liveweb", json);
 		} else {
 			Main.window.localStorage.setItem(lsPairs, Json.stringify(getPairs()));
+			#if !gmedit.mini
 			Main.window.localStorage.setItem(lsMode, LiveWeb.modeEl.value);
 			Main.window.localStorage.setItem(lsVersion, LiveWeb.verEl.value);
+			#end
 		}
 	}
 	
@@ -112,13 +116,14 @@ class LiveWebState {
 		tabPairs = null;
 	}
 	public static function init() {
+		var isDefault = false;
+		#if !gmedit.mini
 		var sp = getParams();
 		var s:String;
 		//
 		var modeEl = LiveWeb.modeEl;
 		var verEl = LiveWeb.verEl;
 		//
-		var isDefault = false;
 		if ((s = sp["tabs_lz"]) != null) {
 			tabPairs = Json.parse(LZString.decompressFromEncodedURIComponent(s));
 		} else if ((s = sp["tabs_64"]) != null) {
@@ -129,30 +134,39 @@ class LiveWebState {
 		} else if ((s = sp["gml"]) != null) {
 			s = Base64.decode(s);
 			tabPairs = [{ name: "main", code: postfixColors(s) }];
-		} else {
+		} else // ->
+		#end
+		{
 			isDefault = true;
+			#if !gmedit.mini
 			if (FileSystem.canSync) {
 				try {
 					var json:LiveWebStateImpl = FileWrap.readConfigSync("session", "liveweb");
 				} catch (x:Dynamic) {
 					tabPairs = null;
 				}
-			} else {
+			} else // ->
+			#end
+			{
 				var ls = Main.window.localStorage;
 				var pairsText = ls.getItem(lsPairs);
 				if (pairsText == null || pairsText == "") {
 					tabPairs = null;
 				} else try {
 					tabPairs = Json.parse(pairsText);
+					#if !gmedit.mini
 					modeEl.setSelectValueWithoutOnChange(ls.getItem(lsMode), "2d");
 					verEl.setSelectValueWithoutOnChange(ls.getItem(lsVersion), "GMS1");
+					#end
 				} catch (x:Dynamic) {
 					tabPairs = null;
 				}
 			}
 			if (tabPairs == null) {
+				#if !gmedit.mini
 				modeEl.setSelectValueWithoutOnChange(null, "2d");
 				verEl.setSelectValueWithoutOnChange(null, "GMS2");
+				#end
 				tabPairs = [{
 					name: "Hello!",
 					code: WelcomePage.lwText
@@ -160,6 +174,9 @@ class LiveWebState {
 			}
 		}
 		//
+		#if gmedit.mini
+		GmlAPI.version = GmlVersion.v2;
+		#else
 		if (!isDefault) {
 			if ((s = sp["mode"]) != null) modeEl.setSelectValueWithoutOnChange(s, "2d");
 			if ((s = sp["ver"]) != null) verEl.setSelectValueWithoutOnChange(s, "GMS1");
@@ -168,6 +185,7 @@ class LiveWebState {
 		var v2 = verEl.value == "GMS2";
 		LiveWeb.api.setVersion(v2 ? 20 : 14, LiveWeb.modeEl.value);
 		GmlAPI.version = v2 ? GmlVersion.v2 : GmlVersion.v1;
+		#end
 	}
 }
 @:native("LZString") extern class LZString {
@@ -177,7 +195,9 @@ class LiveWebState {
 typedef LiveWebTab = { name:String, code:String };
 typedef LiveWebStateImpl = {
 	pairs:Array<LiveWebTab>,
+	#if !gmedit.mini
 	mode:String,
 	version:String
+	#end
 }
 #end

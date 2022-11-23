@@ -23,6 +23,13 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class ProjectProperties {
+	public static inline var name:String = (
+		#if gmedit.live
+		"Workspace properties"
+		#else
+		"Project properties"
+		#end
+	);
 	public static function load(project:Project):ProjectData {
 		//
 		var def:ProjectData = {
@@ -199,6 +206,6 @@ class ProjectProperties {
 			tab.click();
 			return tab.gmlFile;
 		}
-		return kind.create("Project properties", null, pj, null);
+		return kind.create(name, null, pj, null);
 	}
 }

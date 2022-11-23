@@ -32,6 +32,7 @@
 	<div id="editor-td" style="width: 520px">
 		<div class="chrome-tabs" id="tabs" style="padding-right: 32px">
 			<div class="chrome-tabs-content"></div>
+			<div id="project-name" style="display:none"></div>
 			<div class="system-buttons">
 				<span class="system-button preferences">
 					<svg width="12" height="12" viewBox="0 0 12 12">
@@ -71,46 +72,7 @@
 		splitter-update-tabs="yeah"
 	></div>
 	<div id="game-td" style="flex-grow: 1">
-		<div class="chrome-tabs has-lw-buttons">
-			<input type="button" id="refresh" value="Run" title="Runs the game. You can also press F5 or Ctrl+Enter for ease." />
-			<input type="button" id="reload" value="Reload" title="Reloads the game' frame. Use this if it breaks permanently." />
-			<input type="button" id="stop" value="Stop" title="Stops the game' code (without reloading)." />
-			<input type="button" id="share" value="Share" title="Gives an unique URL for sharing your code." />
-			<select id="mode" selected="2d">
-				<option title="For smaller 2d experiments. Has leaner external loading restrctions.">2d</option>
-				<option title="For 3d and hardware-intensive experiments. Uses WebGL.">GL</option>
-			</select>
-			<select id="runtime-ver" selected="GMS1">
-				<option title="Has d3d functions. And some old bugs.">GMS1</option>
-				<option title="Has layers.">GMS2</option>
-			</select>
-			<div id="project-name" style="display:none"></div>
-			<div class="app-region-drag"></div>
-			<div class="system-buttons">
-				<!-- (these are close enough replicas of Win10 icons)-->
-				<div class="system-button minimize">
-					<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
-				</div>
-				<div class="system-button maximize">
-					<svg width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
-				</div>
-				<div class="system-button close">
-					<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
-				</div>
-			</div>
-			<script>
-			try {
-				var _ = require("electron").remote;
-			} catch (_) {
-				var bts = document.querySelectorAll(".system-button:not(.preferences)");
-				for (var i = 0; i < bts.length; i++) bts[i].parentElement.removeChild(bts[i]);
-			}
-			</script>
-			<div class="chrome-tabs-bottom-bar"></div>
-		</div>
-		<div class="bottom">
-			<iframe id="game" frameborder="0"></iframe>
-		</div>
+		<iframe id="game" frameborder="0"></iframe>
 	</div>
 </div>
 <div id="popout-container">

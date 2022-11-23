@@ -163,7 +163,11 @@ using StringTools;
 			name: "lw_execute",
 			bindKey: {win: "Ctrl-Enter", mac: "Command-Enter|Ctrl-Enter"},
 			exec: function(editor) {
+				#if gmedit.mini
+				ui.liveweb.MiniWeb.run();
+				#else
 				Main.document.getElementById("refresh").click();
+				#end
 			}
 		}, "Run game");
 		#else

@@ -34,7 +34,7 @@ class CommandPalette {
 			exec: function() Preferences.open()
 		});
 		add({
-			name: "Project properties",
+			name: ProjectProperties.name,
 			exec: function() ProjectProperties.open()
 		});
 		add({

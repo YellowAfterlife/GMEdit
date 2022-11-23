@@ -22,7 +22,9 @@ import plugins.PluginManager;
 import tools.HtmlTools;
 import ui.ChromeTabs;
 import ui.*;
-import ui.liveweb.LiveWeb;
+#if gmedit.live
+import ui.liveweb.*;
+#end
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewMenus;
 
@@ -145,8 +147,12 @@ class Main {
 			Project.nameNode.innerText = "Loading project...";
 			Project.openInitialProject();
 			#if gmedit.live
-			aceEditor.session = WelcomePage.init(aceEditor);
-			LiveWeb.init();
+				aceEditor.session = WelcomePage.init(aceEditor);
+				#if gmedit.mini
+					MiniWeb.init();
+				#else
+					LiveWeb.init();
+				#end
 			#end
 			PluginManager.dispatchInitCallbacks();
 		});

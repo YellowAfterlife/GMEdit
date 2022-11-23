@@ -11,7 +11,7 @@ import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;
 #if gmedit.live
-import ui.liveweb.LiveWeb;
+import ui.liveweb.*;
 #end
 using tools.NativeString;
 using tools.RegExpTools;
@@ -119,7 +119,7 @@ using tools.ERegTools;
 		if (useDefault) cx.call(getContent, dir + "/extra.gml", function(s:String) {
 			// whatever missing in fnames
 			if (s != null && s != "") ctx.raw += "\n" + s;
-			#if gmedit.live
+			#if (gmedit.live && !gmedit.mini)
 			ctx.raw += "\ntrace(...)";
 			#end
 		});
@@ -260,6 +260,11 @@ using tools.ERegTools;
 			
 			// give GMLive a copy of data
 			#if gmedit.live
+			#if gmedit.mini
+			Main.window.setTimeout(function() {
+				MiniWeb.readyUp();
+			});
+			#else
 			if (data.lwArg0 != null) {
 				if (LiveWeb.api != null) {
 					#if 0
@@ -290,6 +295,7 @@ using tools.ERegTools;
 					LiveWeb.readyUp();
 				});
 			}
+			#end
 			
 			// force [re-]tokenization so that the welcome page highlights correctly:
 			Main.aceEditor.session.bgTokenizer.start(0);

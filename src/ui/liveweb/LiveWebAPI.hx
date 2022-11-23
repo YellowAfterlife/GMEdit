@@ -1,4 +1,5 @@
 package ui.liveweb;
+#if (gmedit.live && !gmedit.mini)
 import ace.AceWrap;
 import js.html.FrameElement;
 
@@ -25,6 +26,7 @@ typedef LiveWebOptions = {
 	?reload:Bool,
 	?dryRun:Bool,
 }
+#end
 typedef LiveWebCallback = (error:LiveWebError, js:String)->Void;
 typedef LiveWebError = {
 	file:String,

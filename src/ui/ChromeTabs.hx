@@ -245,10 +245,10 @@ class ChromeTabs {
 				} else impl.setCurrentTab(tab);
 			}
 		});
-		#if gmedit.live // double-click on empty spots to add tabs
+		#if (gmedit.live) // double-click on empty spots to add tabs
 		element.addEventListener("dblclick", function(e:MouseEvent) {
 			if (e.target != element.querySelector(".chrome-tabs-content")) return;
-			LiveWeb.newTabDialog();
+			ui.liveweb.LiveWebTools.newTabDialog();
 		});
 		#end
 		//

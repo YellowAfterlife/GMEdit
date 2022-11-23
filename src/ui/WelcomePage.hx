@@ -16,7 +16,12 @@ class WelcomePage {
 	public static var file:GmlFile;
 	public static function init(e:AceEditor) {
 		var session:AceSession;
-		#if gmedit.live
+		#if gmedit.mini
+			file = new GmlFile("WelcomePage", null, KPlain.inst, "");
+			GmlFile.current = file;
+			session = file.codeEditor.session;
+			session.setValue(lwText);
+		#elseif gmedit.live
 			file = new GmlFile("WelcomePage", null, ui.liveweb.KLiveWeb.inst, "");
 			GmlFile.current = file;
 			session = file.codeEditor.session;
@@ -33,7 +38,15 @@ class WelcomePage {
 		#end
 		return session;
 	}
-	#if gmedit.live
+	#if gmedit.mini
+	public static var lwText:String = SynSugar.xmls(<txt>
+		// Double-click the tab bar or use the menu to add a tab.
+	</txt>);
+	public static var lwCode:String = SynSugar.xmls(<gml>
+		show_debug_message("hi!");
+		return "OK";
+	</gml>);
+	#elseif gmedit.live
 	public static var lwText:String = StringTools.replace(SynSugar.xmls(<gml>
 		/*
 		Hello!
@@ -49,17 +62,17 @@ class WelcomePage {
 		trace("hi!");
 		frame = 0;
 
-		@define step
+		$define step
 		// step event code
 		frame += delta_time/1000000;
 
-		@define draw
+		$define draw
 		// draw event code
 		scr_show("hi!");
 
-		@define scr_show
+		$define scr_show
 		// define scripts like this
 		draw_text(10, 10 + sin(frame / 0.7) * 3, argument0);
-	</gml>), "@define", "#define");
+	</gml>), "$define", "#define");
 	#end
 }

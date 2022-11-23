@@ -123,6 +123,7 @@ class PrefNav {
 		return out;
 	}
 	static function buildMisc(out:Element) {
+		if (Electron == null) return;
 		out = addGroup(out, "Misc.");
 		out.dataset.outlineViewLabel = "Misc.";
 		addCheckbox(out, "Show taskbar overlays", current.taskbarOverlays, function(z) {
@@ -134,7 +135,7 @@ class PrefNav {
 			+ " over the GMEdit icon (Windows-only?)"
 		);
 		//
-		if (Electron != null) addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
+		addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
 			current.gmkSplitPath = v; save();
 		});
 	}

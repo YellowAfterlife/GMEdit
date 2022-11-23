@@ -131,16 +131,16 @@ class MainMenu {
 		#end
 	}
 	static function addGMLiveWebItems(menu:Menu) {
-		#if gmedit.live
+		#if (gmedit.live)
 		menu.append(new MenuItem({ label: "New tab",
-			click: function() LiveWeb.newTabDialog()
+			click: function() LiveWebTools.newTabDialog()
 		}));
-		menu.append(new MenuItem({ label: "New project",
+		menu.append(new MenuItem({ label: "New workspace",
 			click: function() {
 				var tabEls = ChromeTabs.impl.tabEls;
 				if (tabEls.length > 0) {
 					if (!window.confirm(
-						"Are you sure you want to start a new project?" +
+						"Are you sure you want to start a new workspace?" +
 						"\nAll tabs will be closed."
 					)) return;
 					var i = tabEls.length;
@@ -169,6 +169,7 @@ class MainMenu {
 		#end
 		//
 		menu.appendSep("sep-help");
+		#if !gmedit.mini
 		menu.append(new MenuItem({
 			id: "help",
 			label: "Help",
@@ -183,9 +184,10 @@ class MainMenu {
 				} else window.open(url, "_blank");
 			}
 		}));
+		#end
 		menu.append(new MenuItem({
 			id: "project-properties",
-			label: "Project properties",
+			label: ProjectProperties.name,
 			icon: Menu.silkIcon("project_properties"),
 			click: function() ProjectProperties.open()
 		}));
