@@ -7,7 +7,10 @@ import gml.Project;
 import haxe.io.Path;
 import tools.HtmlTools;
 import tools.NativeString;
+#if gmedit.live
 import ui.liveweb.*;
+import ui.miniweb.*;
+#end
 import ui.project.ProjectProperties;
 import yy.zip.YyZip;
 import Main.window;
@@ -130,8 +133,8 @@ class MainMenu {
 		}
 		#end
 	}
+	#if (gmedit.live)
 	static function addGMLiveWebItems(menu:Menu) {
-		#if (gmedit.live)
 		menu.append(new MenuItem({ label: "New tab",
 			click: function() LiveWebTools.newTabDialog()
 		}));
@@ -158,8 +161,17 @@ class MainMenu {
 		menu.append(new MenuItem({ label: "Export...",
 			click: function() LiveWebIO.exportDialog()
 		}));
+		#if gmedit.mini
+		menu.appendSep("sep-run");
+		menu.append(new MenuItem({ label: "Run",
+			click: function() MiniWeb.run(),
+		}));
+		menu.append(new MenuItem({ label: "Stop",
+			click: function() MiniWeb.stop(),
+		}));
 		#end
 	}
+	#end
 	public static function init() {
 		menu = new Menu();
 		#if (!gmedit.live)

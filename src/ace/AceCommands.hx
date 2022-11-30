@@ -9,6 +9,7 @@ import tools.NativeString;
 import ui.CommandPalette;
 import ace.extern.AceCommand;
 import ui.ext.Bookmarks;
+import ui.miniweb.MiniWeb;
 using StringTools;
 
 /**
@@ -164,7 +165,7 @@ using StringTools;
 			bindKey: {win: "Ctrl-Enter", mac: "Command-Enter|Ctrl-Enter"},
 			exec: function(editor) {
 				#if gmedit.mini
-				ui.liveweb.MiniWeb.run();
+				ui.miniweb.MiniWeb.run();
 				#else
 				Main.document.getElementById("refresh").click();
 				#end

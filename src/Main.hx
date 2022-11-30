@@ -25,6 +25,7 @@ import ui.*;
 #if gmedit.live
 import ui.liveweb.*;
 #end
+import ui.miniweb.MiniWeb;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewMenus;
 

@@ -13,6 +13,7 @@ import ui.Preferences;
 #if gmedit.live
 import ui.liveweb.*;
 #end
+import ui.miniweb.MiniWeb;
 using tools.NativeString;
 using tools.RegExpTools;
 using tools.ERegTools;
