@@ -28,6 +28,29 @@ array_pop<T>(array:T[])->T
 array_insert<T>(array:T[],index:int,...values:T)->void
 array_delete<T>(array:T[],index:int,number:int)->void
 array_sort<T>(array:T[],sortType_or_function:bool|function<T;T;int>)->void
+//
+array_first<T>(array:T[])->T
+array_last<T>(array:T[])->T
+array_create_ext<T>(size:int,generator:function<index:int, T>)->T[]
+array_find_index<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->int
+array_any<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->bool
+array_all<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->bool
+array_foreach<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->void
+array_reduce<T;R>(array:T[], predicate:function<previous:R, current:T, index:int, R>, ?init_value:R, ?offset:int, ?length:int)->R
+array_filter<T>(array:T[], filter:function<value:T; index:int; bool>, ?offset:int, ?length:int)->T[]
+array_filter_ext<T>(array:T[], filter:function<value:T; index:int; bool>, ?offset:int, ?length:int)->int
+array_map<T;R>(array:T[], predicate:function<value:T; index:int; R>, ?offset:int, ?length:int)->R[]
+array_map_ext<T>(array:T[], predicate:function<value:T; index:int; T>, ?offset:int, ?length:int)->int
+array_copy_while<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->T[]
+
+array_unique<T>(array:T[], ?offset:int, ?length:int)->T[]
+array_unique_ext<T>(array:T[], ?offset:int, ?length:int)->int
+array_reverse<T>(array:T[], ?offset:int, ?length:int)->T[]
+array_reverse_ext<T>(array:T[], ?offset:int, ?length:int)->int
+
+array_concat<T>(...arrays:T[])->T[]
+array_union<T>(...arrays:T[])->T[]
+array_intersection<T>(...arrays:T[])->T[]
 
 weak_ref_create<T:struct>(thing_to_track:T)->weak_reference
 weak_ref_alive(weak_ref:weak_reference)->bool
@@ -44,6 +67,21 @@ method_get_self(method)
 string_pos_ext(substr:string,str:string,startpos:int)->int
 string_last_pos(substr:string,str:string)->int
 string_last_pos_ext(substr:string,str:string,startpos:int)->int
+
+string(val_or_template, ...values)->string
+string_ext(format:string, arg_array:array)->string
+string_trim_start(str:string)->string
+string_trim_end(str:string)->string
+string_trim(str:string)->string
+string_starts_with(str:string,substr:string)->string
+string_ends_with(str:string,substr:string)->string
+string_split(str:string, delim:string, ?remove_empty:bool, ?max_splits:int)->string[]
+string_split_ext(str:string, delim_array:string[], ?remove_empty:bool, ?max_splits:int)->string[]
+string_join(delim:string, ...values)->string
+string_join_ext(delim:string, val_array:array)->string
+string_concat(...values)->string
+string_concat_ext(val_array:array)->string
+string_foreach(str:string,func:function<char:string; pos:int; void>, ?pos:int, ?length:int)->void
 
 #endregion
 
@@ -65,6 +103,8 @@ caption_health&
 
 #region 3.11
 
+show_debug_message(val_or_format, ...values)->void
+show_debug_message_ext(format:string, values_arr:array)->void
 debug_get_callstack(?maxDepth:int)->string[]
 font_texture_page_size:int
 

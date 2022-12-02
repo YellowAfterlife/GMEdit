@@ -116,6 +116,26 @@ array_pop(array)
 array_insert(array,index,val,...)
 array_delete(array,index,number)
 array_sort(array,sortType_or_function)
+array_first(array)
+array_last(array)
+array_create_ext(size,function)
+array_find_index(array,function,[offset],[length])
+array_any(array,function,[offset],[length])
+array_all(array,function,[offset],[length])
+array_foreach(array,function,[offset],[length])
+array_reduce(array,function,[init_value],[offset],[length])
+array_filter(array,function,[offset],[length])
+array_filter_ext(array,function,[offset],[length])
+array_map(array,function,[offset],[length])
+array_map_ext(array,function,[offset],[length])
+array_copy_while(array,function,[offset],[length])
+array_unique(array,[offset],[length])
+array_unique_ext(array,[offset],[length])
+array_reverse(array,[offset],[length])
+array_reverse_ext(array,[offset],[length])
+array_concat(array0,array1,...)
+array_union(array0,array1,...)
+array_intersection(array0,array1,...)
 random(x)
 random_range(x1,x2)
 irandom(x)
@@ -180,7 +200,7 @@ lengthdir_y(len,dir)
 
 real(val)
 bool(val)
-string(val)
+string(val_or_template,val0,val1,...)
 int64(val)
 ptr(val)
 string_format(val,total,dec)
@@ -213,6 +233,21 @@ string_replace(str,substr,newstr)
 string_replace_all(str,substr,newstr)
 string_count(substr,str)
 string_hash_to_newline(str)
+
+string_ext(format,arg_array)
+string_trim_start(str)
+string_trim_end(str)
+string_trim(str)
+string_starts_with(str,substr)
+string_ends_with(str,substr)
+string_split(str,delim,remove_empty,max_splits)
+string_split_ext(str,delim_array,remove_empty,max_splits)
+string_join(delim,arg0,arg1,...)
+string_join_ext(delim,val_array)
+string_concat(arg0,arg1,arg2,...)
+string_concat_ext(val_array)
+string_foreach(str,func,pos,length)
+
 clipboard_has_text()
 clipboard_set_text(str)
 clipboard_get_text()
@@ -489,6 +524,7 @@ ev_draw_begin#
 ev_draw_end#
 ev_draw_pre#
 ev_draw_post#
+ev_draw_normal#
 ev_keypress#
 ev_keyrelease#
 ev_trigger#
@@ -661,7 +697,8 @@ gamemaker_registered&
 gamemaker_version&
 error_occurred&
 error_last&
-show_debug_message(str)
+show_debug_message(val_or_format,val0,val1,...)
+show_debug_message_ext(format,array_value)
 show_debug_overlay(enable)
 debug_mode*
 debug_event(str,...)
@@ -1270,6 +1307,7 @@ audio_resume_sync_group(sync_group_id)
 audio_sync_group_get_track_pos(sync_group_id)
 audio_sync_group_debug(sync_group_id)
 audio_sync_group_is_playing(sync_group_id)
+audio_sync_group_is_paused(sync_group_id)
 audio_debug(enable)
 
 audio_group_load( groupId )
@@ -1279,6 +1317,7 @@ audio_group_load_progress( groupId )
 audio_group_name( groupId )
 audio_group_stop_all( groupId )
 audio_group_set_gain( groupId, volume, time )
+audio_group_get_gain(groupId)
 audio_create_buffer_sound( bufferId, format, rate, offset, length, channels )!
 audio_free_buffer_sound( soundId )!
 audio_create_play_queue(bufferFormat, sampleRate, channels)!
@@ -1948,7 +1987,7 @@ matrix_build_projection_ortho(width,height,znear,zfar)
 matrix_build_projection_perspective(width,height,znear,zfar)
 matrix_build_projection_perspective_fov(fov_y,aspect,znear,zfar)
 matrix_multiply(matrix,matrix)
-matrix_transform_vertex(matrix, x, y, z)
+matrix_transform_vertex(matrix, x, y, z, [w])
 
 matrix_stack_push(...)
 matrix_stack_pop()
@@ -2704,6 +2743,8 @@ network_config_websocket_protocol#
 network_connect_none#
 network_connect_blocking#
 network_connect_nonblocking#
+network_connect_active#
+network_connect_passive#
 
 buffer_create(size, buffer_type, alignment)
 buffer_write(buffer, type, value)
@@ -2848,6 +2889,7 @@ shader_set_uniform_i(uniform_id,val,....)
 shader_set_uniform_i_array(uniform_id,array)
 shader_set_uniform_f(uniform_id,val,....)
 shader_set_uniform_f_array(uniform_id,array)
+shader_set_uniform_f_buffer(uniform_id,buffer,offset,count)
 shader_set_uniform_matrix(uniform_id)
 shader_set_uniform_matrix_array(uniform_id,array)
 shader_enable_corner_id(enable)
@@ -2941,6 +2983,11 @@ skeleton_attachment_get(slot)!
 skeleton_attachment_create(name,sprite,ind,xo,yo,xs,ys,rot)!
 skeleton_attachment_create_colour(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!£
 skeleton_attachment_create_color(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!$
+skeleton_attachment_exists(name)!
+skeleton_attachment_replace(name,sprite,ind,xo,yo,xs,ys,rot)!
+skeleton_attachment_replace_colour(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!£
+skeleton_attachment_replace_color(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!$
+skeleton_attachment_destroy(name)!
 skeleton_collision_draw_set(val)!
 skeleton_bone_data_get(bone, map)!
 skeleton_bone_data_set(bone, map)!
@@ -3742,8 +3789,12 @@ rollback_game_interrupted#^rollback
 rollback_game_resumed#^rollback
 rollback_game_full#^rollback
 rollback_game_info#^rollback
+rollback_connection_rejected#^rollback
+rollback_protocol_rejected#^rollback
+rollback_end_game#^rollback
 rollback_chat_message#^rollback
 rollback_player_prefs#^rollback
+rollback_high_latency#^rollback
 rollback_connect_info#^rollback
 rollback_connect_error#^rollback
 
@@ -3753,3 +3804,15 @@ player_avatar_url*@^rollback
 player_avatar_sprite*@^rollback
 player_type*@^rollback
 player_user_id*@^rollback
+
+audio_bus_main#^audio-fx
+
+??AudioBus^audio-fx
+bypass?
+gain?
+effects?
+
+audio_bus_create()^audio-fx
+audio_effect_create(type)^audio-fx
+audio_emitter_bus(emitter_idx, bus)^audio-fx
+audio_emitter_get_bus(emitter_idx)^audio-fx
