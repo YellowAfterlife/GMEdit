@@ -31,7 +31,7 @@ array_sort<T>(array:T[],sortType_or_function:bool|function<T;T;int>)->void
 //
 array_first<T>(array:T[])->T
 array_last<T>(array:T[])->T
-array_create_ext<T>(size:int,generator:function<index:int, T>)->T[]
+array_create_ext<T>(size:int,generator:function<index:int; T>)->T[]
 array_find_index<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->int
 array_any<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->bool
 array_all<T>(array:T[], predicate:function<value:T; index:int; bool>, ?offset:int, ?length:int)->bool
