@@ -177,7 +177,7 @@ using tools.NativeString;
 					canDot = false;
 					skip();
 				} else break;
-			} else if (c.isDigit()) {
+			} else if (c.isDigit() || c == "_".code) {
 				skip();
 			} else break;
 			c = peek();
