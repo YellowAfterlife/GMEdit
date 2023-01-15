@@ -281,8 +281,9 @@ using tools.NativeArray;
 			]);
 		}
 		rBase = rBase.concat([ //{
-			rxRule("numeric", ~/\$[0-9a-fA-F]+/), // $c0ffee
-			rxRule("numeric", ~/0x[0-9a-fA-F]*/), // 0xc0ffee
+			rxRule("numeric", ~/\$[_0-9a-fA-F]+/), // $c0ffee
+			rxRule("numeric", ~/0x[_0-9a-fA-F]*/), // 0xc0ffee
+			rxRule("numeric", ~/0b[_01]*/), // 0b101
 			rxRule("numeric", ~/\d[\d_]*(?:\.[\d_]*)?/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxPush(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "gml.enum"),

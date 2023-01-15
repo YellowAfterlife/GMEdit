@@ -196,7 +196,17 @@ using tools.NativeString;
 	public function skipHex():Void {
 		var c = peek();
 		while (loopLocal) {
-			if (c.isHex()) {
+			if (c == "_".code || c.isHex()) {
+				skip();
+				c = peek();
+			} else break;
+		}
+	}
+	
+	public function skipBinary():Void {
+		var c = peek();
+		while (loopLocal) {
+			if (c == "_".code || c == "0".code || c == "1".code) {
 				skip();
 				c = peek();
 			} else break;

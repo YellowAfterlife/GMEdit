@@ -351,10 +351,15 @@ class GmlLinterParser {
 					}
 					else if (c.isDigit()) {
 						start();
-						if (q.peek() == "x".code) {
+						if (c == "0".code && q.peek() == "x".code) {
 							q.skip();
 							q.skipHex();
-						} else {
+						}
+						else if (c == "0".code && q.peek() == "b".code) {
+							q.skip();
+							q.skipBinary();
+						}
+						else {
 							q.skipNumber();
 						}
 						return ret(KNumber);
