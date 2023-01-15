@@ -368,7 +368,7 @@ class GmlSeekerJSDoc {
 					seeker.doc.pre = seeker.main + "(";
 				} else seeker.doc.post += " " + s;
 			}
-			seeker.mainComp.doc = seeker.doc.getAcText();
+			if (seeker.mainComp != null) seeker.mainComp.doc = seeker.doc.getAcText();
 			return; // found!
 		}
 		
