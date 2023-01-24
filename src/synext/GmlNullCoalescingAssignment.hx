@@ -1,6 +1,7 @@
 package synext;
 import editors.EditCode;
 import file.kind.KGml;
+import gml.Project;
 import js.lib.RegExp;
 import js.lib.RegExp.RegExpMatch;
 import parsers.GmlReader;
@@ -60,7 +61,7 @@ class GmlNullCoalescingAssignment extends SyntaxExtension {
 		+ "="
 	, "g");
 	public static function pre(code:GmlCode):GmlCode {
-		if (!Preferences.current.nullCoalescingAssignment) return code;
+		if (!Preferences.current.nullCoalescingAssignment || Project.current.isGM2022) return code;
 		var q = new GmlReader(code);
 		var version = gml.GmlAPI.version;
 		var out = "";
@@ -133,7 +134,7 @@ class GmlNullCoalescingAssignment extends SyntaxExtension {
 		return out;
 	}
 	public static function post(code:GmlCode):GmlCode {
-		if (!Preferences.current.nullCoalescingAssignment) return code;
+		if (!Preferences.current.nullCoalescingAssignment || Project.current.isGM2022) return code;
 		var q = new GmlReader(code);
 		var version = gml.GmlAPI.version;
 		var out = "";
