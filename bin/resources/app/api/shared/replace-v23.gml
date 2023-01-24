@@ -308,16 +308,16 @@ time_source_exists(id:time_source)->bool
 time_seconds_to_bpm(seconds:number)->number
 time_bpm_to_seconds(bpm:number)->number
 
-time_source_units_seconds#: time_source_units
-time_source_units_frames#: time_source_units
+time_source_units_seconds#:time_source_units
+time_source_units_frames#:time_source_units
 
-time_source_expire_nearest#: time_source_expiry
-time_source_expire_after#: time_source_expiry
+time_source_expire_nearest#:time_source_expiry
+time_source_expire_after#:time_source_expiry
 
-time_source_state_initial#: time_source_state
-time_source_state_active#: time_source_state
-time_source_state_paused#: time_source_state
-time_source_state_stopped#: time_source_state
+time_source_state_initial#:time_source_state
+time_source_state_active#:time_source_state
+time_source_state_paused#:time_source_state
+time_source_state_stopped#:time_source_state
 
 call_later(period:number, units:time_source_units, callback:function<void>, [repeat:bool])->time_source
 call_cancel(handle:time_source)
