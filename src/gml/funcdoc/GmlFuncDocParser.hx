@@ -53,6 +53,8 @@ class GmlFuncDocParser {
 			q.pos = parOpenAt + 1;
 			var argStart = q.pos;
 			var argSpace = true;
+			var isType = false; // 
+			var isValue = false;
 			inline function flushArg() {
 				args.push(q.substring(argStart, q.pos - 1).trimBoth());
 			}
@@ -73,11 +75,23 @@ class GmlFuncDocParser {
 							post = str.substring(q.pos - 1);
 							break;
 						}
-					case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, version);
+					case "<".code if (isType): depth++;
+					case ">".code if (isType): if (depth > 1) depth--;
+					case "=".code: isValue = true; isType = false;
+					case ":".code if (!isValue && depth == 1): isType = true;
+					case '"'.code, "'".code, "@".code, "`".code:
+						q.skipStringAuto(c, version);
+					case "/".code:
+						switch (q.peek()) {
+							case "/".code: q.skipLine();
+							case "*".code: q.skip(); q.skipComment();
+						}
 					case ",".code if (depth == 1):
 						flushArg();
 						argStart = q.pos;
 						argSpace = true;
+						isType = false;
+						isValue = false;
 					case ".".code:
 						if (!rest
 							&& q.peek(0) == ".".code
