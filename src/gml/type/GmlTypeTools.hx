@@ -118,7 +118,7 @@ import ace.extern.AceTokenType;
 				return et2 != et1 ? TEither(et2) : t;
 			};
 			case THint(hint, t1):
-				var t2 = map(t1, f);
+				var t2 = f(t1);
 				return t2 != t1 ? THint(hint, t2) : t;
 			default: return t;
 		}
