@@ -149,28 +149,37 @@ class AceTooltips {
 				if (comp != null) r = comp.doc;
 			};
 			case "numeric": {
-				var bgr:String;
-				if (v.length == 8 && v.startsWith("0x")) {
-					bgr = v.substring(2);
-				} else if (v.length == 7 && v.charCodeAt(0) == "$".code) {
-					bgr = v.substring(1);
-				} else bgr = null;
-				if (bgr != null) {
-					r = "color:0x" + bgr;
+				var isRGB = false;
+				var hex = switch (v.length) {
+					case 8 if (v.startsWith("0x")): v.substring(2);
+					case 7 if (v.charCodeAt(0) == "$".code): v.substring(1);
+					case 7 if (v.charCodeAt(0) == "#".code): isRGB = true; v.substring(1);
+					default: null;
+				}
+				if (hex != null) {
+					r = isRGB ? "color:#" +hex : "color:0x" + hex;
 					if (text != r) {
 						text = r;
-						var bit = Std.parseInt("0x" + bgr);
-						var rgb = bgr.substr(4, 2) + bgr.substr(2, 2) + bgr.substr(0, 2);
+						var int = Std.parseInt("0x" + hex);
+						var rgb = isRGB ? hex
+							: hex.substr(4, 2) + hex.substr(2, 2) + hex.substr(0, 2);
+						var rgbStr:String;
+						if (isRGB) {
+							rgbStr = ((int >> 16) & 0xff)
+								+ ', ' + ((int >> 8) & 0xff)
+								+ ', ' + (int & 0xff);
+						} else {
+							rgbStr = (int & 0xff)
+								+ ', ' + ((int >> 8) & 0xff)
+								+ ', ' + ((int >> 16) & 0xff);
+						}
 						ttip.setHtml('<span style="'
 							+ 'display: inline-block;'
 							+ 'background-color: #$rgb;'
 							+ 'vertical-align: middle;'
 							+ 'width: 0.8em;'
 							+ 'height: 0.8em;'
-						+ '"></span> RGB(' + (bit & 0xff)
-							+ ', ' + ((bit >> 8) & 0xff)
-							+ ', ' + ((bit >> 16) & 0xff)
-						+ ')');
+						+ '"></span> RGB($rgbStr)');
 					}
 				}
 			};
