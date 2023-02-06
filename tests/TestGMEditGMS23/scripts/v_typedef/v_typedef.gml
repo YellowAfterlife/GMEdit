@@ -17,7 +17,9 @@ function v_typedef() {
 	var tv2/*:tvec2*/ = [1, 2];
 	tv2 = ["1", "2"]; ///want_warn
 	
-	/// @typedef {function<left:T, right:T, int>} fcomparator
+	/// @typedef {function<left:T, right:T, int>} fcomparator<T>
 	var f/*:fcomparator<int>*/ = function(a, b) { return a - b }
 	// typing f() should show argument "names" inside.
+	f(1, 2);
+	f(1, "a"); ///want_warn
 }

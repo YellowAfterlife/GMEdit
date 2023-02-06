@@ -82,6 +82,8 @@
     {"id":{"name":"v_broken_switch","path":"scripts/v_broken_switch/v_broken_switch.yy",},"order":5,},
     {"id":{"name":"v_constructor_function_redefinitions","path":"scripts/v_constructor_function_redefinitions/v_constructor_function_redefinitions.yy",},"order":6,},
     {"id":{"name":"v_instance_create","path":"scripts/v_instance_create/v_instance_create.yy",},"order":4,},
+    {"id":{"name":"v_nullish","path":"scripts/v_nullish/v_nullish.yy",},"order":4,},
+    {"id":{"name":"scrTemp","path":"scripts/scrTemp/scrTemp.yy",},"order":7,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},

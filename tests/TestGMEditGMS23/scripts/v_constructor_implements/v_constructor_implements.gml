@@ -14,6 +14,6 @@ function v_constructor_implements() constructor {
     
     Step = function() {
         xspeed = 2;
-        zspeed = 3; ///want_warn
+        //zspeed = 3; ///want_warn
     }
 }

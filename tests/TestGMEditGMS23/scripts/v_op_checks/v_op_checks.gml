@@ -7,13 +7,13 @@ function v_op_checks() {
 	s += "";
 	s += 1; ///want_warn - rhs
 	s -= ""; ///want_warn
-	z = i && 0;
-	z = i && s; ///want_warn
-	z = i && (s == "");
+	z = i != 0 && false;
+	z = i != 0 && s; ///want_warn
+	z = i != 0 && (s == "");
 	
 	i = -i;
 	i = ~i;
-	i = !i;
+	i = !i; ///want_warn in strict mode
 	s = -s; ///want_warn
 	s = ~s; ///want_warn
 	s = !s; ///want_warn

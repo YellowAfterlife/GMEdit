@@ -4,6 +4,6 @@ function v_is_highlight() constructor {
 	value2 = new Class1();	  /// @is {Class1<Class1<Class1>>}
 	value3 = new Class1();	  /// @is {Class1<Class1<Class1>>}
 	{
-		hey = 1; ///want_warn
+		hey = 1; ///note: would be a warning if non-top-level assignments were disabled
 	}
 }
