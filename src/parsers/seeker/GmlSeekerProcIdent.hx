@@ -148,7 +148,7 @@ class GmlSeekerProcIdent {
 					skip = q.peek() == "=".code;
 				} else skip = true;
 				break;
-			case ":".code: {
+			/*case ":".code: {
 				// todo: I don't remember what this is supposed to be
 				var swapReader = seeker.swapReader;
 				var k = swapReader.pos;
@@ -167,7 +167,7 @@ class GmlSeekerProcIdent {
 					}
 				}
 				break;
-			};
+			};*/
 			default: skip = true; break;
 		}
 		if (skip) { seeker.restoreReader(); return; }
