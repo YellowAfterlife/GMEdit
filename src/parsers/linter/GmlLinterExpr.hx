@@ -72,7 +72,8 @@ class GmlLinterExpr extends GmlLinterHelper {
 	}
 	
 	public function read(
-		oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind, ?targetType:GmlType
+		oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind,
+		?targetType:GmlType, ?templateTypes:Array<GmlType>
 	):FoundError {
 		var self = linter;
 		var newDepth = oldDepth + 1;
@@ -207,7 +208,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 						arrowFunc: {
 							state: arrowState,
 							firstArgName: arrowArgName,
-						}
+						},
+						targetType: targetType,
+						templateTypes: templateTypes,
 					}));
 					currFunc = self.funcLiteral.doc;
 					currType = currFunc.getFunctionType();
@@ -263,7 +266,10 @@ class GmlLinterExpr extends GmlLinterHelper {
 				currType = GmlLinterArrayLiteral.outType;
 			};
 			case KLambda, KFunction:
-				rc(self.funcLiteral.read(newDepth, nk == KFunction, isStat()));
+				rc(self.funcLiteral.read(newDepth, nk == KFunction, isStat(), {
+					targetType: targetType,
+					templateTypes: templateTypes,
+				}));
 				currFunc = self.funcLiteral.doc;
 				currType = currFunc.getFunctionType();
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
@@ -508,7 +514,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					currType = GmlTypeDef.bool;
 				};
 				case KAs: { // <expr> as <type>
-					if (hasFlag(NoOps)) break;
+					if (hasFlag(NoOps) && !hasFlag(IsCast)) break;
 					self.skip();
 					var tnp = q.pos;
 					rc(self.readTypeName());

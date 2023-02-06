@@ -9,6 +9,7 @@ import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
+using gml.type.GmlTypeTools;
 
 /**
  * ...
@@ -19,10 +20,26 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 	public var doc:GmlFuncDoc;
 	public var selfOverride:GmlType;
 	
+	static var defaultOptions:GmlLinterFuncLiteralOptions = {};
 	public function read(oldDepth:Int, isFunc:Bool, isStat:Bool, ?options:GmlLinterFuncLiteralOptions):FoundError {
 		var name = "function";
 		var isTopLevel = isFunc && isStat && oldDepth == 2 && linter.functionsAreGlobal;
-		var arrowOpts = options != null ? options.arrowFunc : null;
+		if (options == null) options = defaultOptions;
+		var arrowOpts = options.arrowFunc;
+		var targetType = options.targetType;
+		var templateTypes = options.templateTypes;
+		var targetArgTypes:Array<GmlType> = null;
+		if (targetType != null) {
+			var mappedType = targetType;
+			if (templateTypes != null) {
+				mappedType = mappedType.mapTemplateTypes(templateTypes);
+			}
+			switch (mappedType) {
+				case TInst(_, tp, KFunction) if (tp.length > 0):
+					targetArgTypes = tp.slice(0, tp.length - 1);
+				default:
+			}
+		}
 		//
 		var hasName = arrowOpts == null && peek() == KIdent;
 		if (hasName) {
@@ -64,7 +81,12 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 					var t = GmlTypeDef.parse(argTypeStr);
 					procArgTypePost(arrowOpts.firstArgName, t, argTypeStr);
 				} else {
-					procArgTypePost(arrowOpts.firstArgName, null, null);
+					var firstTargetArgType = targetArgTypes != null ? targetArgTypes[0] : null;
+					if (firstTargetArgType != null) {
+						procArgTypePost(arrowOpts.firstArgName, firstTargetArgType, null);
+					} else {
+						procArgTypePost(arrowOpts.firstArgName, null, null);
+					}
 				}
 			}
 		}
@@ -91,12 +113,16 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 							var argTypeStr = null;
 							var t:GmlType;
 							if (skipIf(peek() == KColon)) {
+								// arg:type
 								rc(linter.readTypeName());
 								argTypeStr = GmlLinter.readTypeName_typeStr;
 								t = GmlTypeDef.parse(argTypeStr);
 							} else {
 								if (globalDoc != null && globalDoc.argTypes != null) {
+									// no :type, but we have this hinted already
 									t = globalDoc.argTypes[argIndex];
+								} else if (targetArgTypes != null) {
+									t = targetArgTypes[argIndex];
 								} else t = null;
 							}
 							procArgTypePost(argName, t, argTypeStr);
@@ -197,7 +223,9 @@ typedef GmlLinterFuncLiteralOptions = {
 		state:GmlLinterFuncLiteralArgsArrowState,
 		firstArgName:String,
 		?retType:GmlType,
-	}
+	},
+	?targetType:GmlType,
+	?templateTypes:Array<GmlType>,
 };
 enum abstract GmlLinterFuncLiteralArgsArrowState(Int) {
 	var AfterColon;

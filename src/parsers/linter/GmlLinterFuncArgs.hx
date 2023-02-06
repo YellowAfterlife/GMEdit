@@ -107,7 +107,7 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 				funcLiteral.selfOverride = lso;
 				rc(foundError);
 			} else {
-				rc(readExpr(newDepth, None, null, argType));
+				rc(readExpr(newDepth, None, null, argType, templateTypes));
 			}
 			
 			if (argTypes != null && (isUndefined || expr.currType != null)) {
