@@ -73,11 +73,24 @@ class YyLoader {
 		if (project.isGMS23) {
 			var metaData = yyProject.MetaData;
 			if (metaData != null && metaData.IDEVersion != null) {
-				project.isGM2022 = new RegExp("^20\\d{2}\\.").test(metaData.IDEVersion);
+				var mt = new RegExp("^(20\\d{2})\\.").exec(metaData.IDEVersion);
+				var year = mt != null ? Std.parseInt(mt[1]) : null;
+				if (year == null) year = 0;
+				project.isGM2022 = year >= 2022;
+				project.isGM2023 = year >= 2023;
+				project.usesResourceOrderFile = project.isGM2023 && project.existsSync(project.getResourceOrderFilePath());
 				project.yyResourceVersion = try {
 					Std.parseFloat(yyProject.resourceVersion);
 				} catch (x:Dynamic) 1.0;
 			}
+		}
+		//
+		var resourceOrder:YyResourceOrderSettings = null;
+		if (project.usesResourceOrderFile) try {
+			resourceOrder = project.readYyFileSync(project.getResourceOrderFilePath());
+		} catch (x:Dynamic) {
+			Console.error("Failed to read resource order file:", x);
+			project.usesResourceOrderFile = false;
 		}
 		//
 		assetColours = new Dictionary();
@@ -111,7 +124,12 @@ class YyLoader {
 			}
 			//
 			var folderDir = TreeView.makeAssetDir(folder.name, folderPath + "/", "mixed");
-			folderDir.yyOrder = folder.order;
+			var folderOrder = folder.order;
+			if (resourceOrder != null) {
+				var folder2 = resourceOrder.FolderOrderSettings.findFirst((f)->f.path == folderPathYY);
+				if (folder2 != null) folderOrder = folder2.order;
+			}
+			folderDir.yyOrder = folderOrder;
 			folderMap[folderPath] = folderDir;
 			folderPairs.push({
 				dir: folderDir,
@@ -197,6 +215,9 @@ class YyLoader {
 				project.yyObjectNames[resName] = resName;
 				project.yyObjectGUIDs[resName] = cast resName;
 			}
+		}
+		if (resourceOrder != null) for (ordItem in resourceOrder.ResourceOrderSettings) {
+			project.yyOrder[ordItem.name] = ordItem.order;
 		}
 		//
 		for (resource in yyProject.resources) {

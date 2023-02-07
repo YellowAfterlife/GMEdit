@@ -36,6 +36,7 @@ import ui.ChromeTabs;
 import ui.Preferences;
 import ui.ext.Bookmarks;
 import ui.ext.GMLive;
+import yy.YyProject.YyResourceOrderSettings;
 import yy.zip.YyZip;
 using tools.PathTools;
 import gml.file.GmlFile;
@@ -126,13 +127,30 @@ import ui.treeview.TreeViewElement;
 
 	/** Whether this is a new-format GMS2.3+ project */
 	public var isGMS23:Bool = false;
-	
+	/** GM2022 or newer */
 	public var isGM2022:Bool = false;
+	/** GM2023 or newer */
+	public var isGM2023:Bool = false;
 	
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
 	public var yyExtJson:Bool = false;
 	/** This will be false for 2.3 */
 	public var yyUsesGUID:Bool = true;
+	
+	public var usesResourceOrderFile:Bool = false;
+	public function getResourceOrderFilePath():String {
+		return Path.withExtension(name, "resource_order");
+	}
+	public function readResourceOrderFileSync():YyResourceOrderSettings {
+		if (!usesResourceOrderFile) return null;
+		var path = getResourceOrderFilePath();
+		if (existsSync(path)) {
+			return readYyFileSync(getResourceOrderFilePath());
+		} else return null;
+	}
+	public function writeResourceOrderFileSync(yy:YyResourceOrderSettings) {
+		if (yy != null) writeYyFileSync(getResourceOrderFilePath(), yy);
+	}
 	
 	/** name -> URL */
 	public var spriteURLs:Dictionary<String> = new Dictionary();

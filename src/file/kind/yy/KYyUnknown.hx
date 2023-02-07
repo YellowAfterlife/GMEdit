@@ -98,7 +98,9 @@ class KYyUnknown extends FileKind {
 				};
 				case "GMNotes": {
 					full = Path.withExtension(full, "txt");
-					content = electron.FileWrap.readTextFileSync(full);
+					if (electron.FileWrap.existsSync(full)) {
+						content = electron.FileWrap.readTextFileSync(full);
+					} else content = "";
 					detect.kind = file.kind.misc.KPlain.inst;
 				};
 				case "GMExtension": makeEl = false;

@@ -1,4 +1,5 @@
 package ui.treeview;
+import haxe.io.Path;
 import js.html.InputElement;
 import js.html.KeyboardEvent;
 import js.html.DivElement;
@@ -92,6 +93,12 @@ extern class TreeViewElement extends DivElement {
 	private inline function set_treeText(s:String):String {
 		return TreeViewElementTools.setTreeText(this, s);
 	}
+	
+	/** Gets you the path used in .yyp/.resource_order */
+	public var treeYyPath23(get, never):String;
+	private inline function get_treeYyPath23():String {
+		return TreeViewElementTools.getTreeYyPathV23(this);
+	}
 
 	/**
 	 * Opens and selects an inline textbox for the element. When the textbox is unfocused
@@ -120,7 +127,7 @@ extern class TreeViewDir extends TreeViewElement {
 		return HtmlTools.getChildrenAs(treeItems);
 	}
 	
-	/** Shorthand for getting the path for `parent` nodes in resources */
+	/** like "folders/Scripts/Tools.yy" for "Scripts/Tools" - used in .yyp/.resource_order */
 	public var treeFolderPath23(get, never):String;
 	private inline function get_treeFolderPath23():String {
 		return TreeViewElementTools.getTreeFolderPathV23(this);
@@ -129,13 +136,30 @@ extern class TreeViewDir extends TreeViewElement {
 extern class TreeViewItem extends TreeViewElement {
 	/** If not null, overrides the FileKind that will be used for this element. */
 	public var yyOpenAs:FileKind;
+	
+	/** like "Scripts/Tools/trace.yy" for "Scripts/Tools/trace" - used in .yyp/.resource_order */
+	public var treeResourcePath23(get, never):String;
+	private inline function get_treeResourcePath23():String {
+		return TreeViewElementTools.getTreeResourcePathV23(this);
+	}
 }
 private class TreeViewElementTools {
-	public static function getTreeFolderPathV23(el:TreeViewDir) {
+	public static function getTreeYyPathV23(el:TreeViewElement):String {
+		if (el.treeIsDir) {
+			return getTreeFolderPathV23(el.asTreeDir());
+		} else return getTreeResourcePathV23(el.asTreeItem());
+	}
+	public static function getTreeFolderPathV23(el:TreeViewDir):String {
 		var rel = el.treeRelPath;
 		if (rel.endsWith("/")) {
 			return rel.substring(0, rel.length - 1) + ".yy";
 		} else return rel;
+	}
+	public static function getTreeResourcePathV23(el:TreeViewItem):String {
+		var path = el.treeRelPath;
+		var pt = new Path(path);
+		if (pt.ext == "gml") { pt.ext = "yy"; path = pt.toString(); }
+		return path;
 	}
 	public static function getTreeParentDir(el:TreeViewElement):TreeViewDir {
 		var par = el.parentElement;

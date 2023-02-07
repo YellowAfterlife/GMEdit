@@ -29,11 +29,11 @@ using tools.NativeArray;
 using tools.NativeString;
 
 /**
- * ...
+ * "Add a resource to the project? How hard can it be?"
  * @author YellowAfterlife
  */
 class YyManip {
-	static function prepare(q:TreeViewItemBase) {
+	static function prepare(q:TreeViewItemBase):{pj:Project, py:YyProject} {
 		var pj = Project.current;
 		var py = q.py;
 		if (py == null) py = pj.readYyFileSync(pj.name);
@@ -73,14 +73,11 @@ class YyManip {
 	);
 	
 	static function getProjectFolderForTreeDir(py:YyProject, el:TreeViewDir):YyProjectFolder {
-		var path = el.treeRelPath;
-		path = path.trimIfEndsWith("/") + ".yy";
+		var path = el.treeFolderPath23;
 		return py.Folders.findFirst((f) -> f.folderPath == path);
 	}
 	static function getProjectResourceForTreeItem(py:YyProject, el:TreeViewItem):YyProjectResource {
-		var path = el.treeRelPath;
-		var pt = new Path(path);
-		if (pt.ext == "gml") { pt.ext = "yy"; path = pt.toString(); }
+		var path = el.treeResourcePath23;
 		return py.resources.findFirst((r) -> r.id.path == path);
 	}
 	static function getProjectItemForTreeEl(py:YyProject, el:TreeViewElement):YyProjectFolderOrResource {
@@ -91,15 +88,60 @@ class YyManip {
 		}
 	}
 	
-	static function offsetTreeItems(py:YyProject, items:ElementListOf<TreeViewElement>, start:Int, offset:Int):Bool {
+	/**
+	 * For GM2023+, this pulls up an element from .resoure_order
+	 * For older versions, this pulls up an element from .yyp
+	 */
+	static function getProjectOrderItemForTreeEl(
+		el:TreeViewElement,
+		yyProject:YyProject,
+		orderConf:YyResourceOrderSettings,
+		createIfNeeded:Bool
+	):YyProjectFolderOrResource {
+		var isDir = el.treeIsDir;
+		if (orderConf == null) {
+			if (yyProject == null) return null;
+			if (isDir) {
+				return getProjectFolderForTreeDir(yyProject, el.asTreeDir());
+			} else return getProjectResourceForTreeItem(yyProject, el.asTreeItem());
+		}
+		var path = el.treeYyPath23;
+		var arr = isDir ? orderConf.FolderOrderSettings : orderConf.ResourceOrderSettings;
+		var item = arr.findFirst(q -> q.path == path);
+		if (item == null && createIfNeeded) {
+			// OK, here comes the fun part: items with order==0 are removed from the file.
+			item = { name: el.treeIdent, order: 0, path: path };
+			arr.insertAtRandom(item);
+		}
+		return item;
+	}
+	
+	/**
+	 * Used when inserting and removing elements - we gotta change the offsets
+	 * of subsequent elements, both in resource tree and in YYP.
+	 */
+	static function offsetTreeItems(
+		yyProject:YyProject,
+		items:ElementListOf<TreeViewElement>,
+		start:Int, offset:Int,
+		orderConf:YyResourceOrderSettings
+	):Bool {
 		var changed = false;
 		for (i in start ... items.length) {
 			var el = items[i];
 			el.yyOrder += offset;
-			var item = getProjectItemForTreeEl(py, el);
+			var item = getProjectOrderItemForTreeEl(el, yyProject, orderConf, true);
 			if (item != null) {
 				changed = true;
 				item.order += offset;
+				if (item.order <= 0 && orderConf != null) {
+					// per above, the first item must be omitted:
+					if (el.treeIsDir) {
+						orderConf.FolderOrderSettings.remove(item);
+					} else {
+						orderConf.ResourceOrderSettings.remove(item);
+					}
+				}
 			}
 		}
 		return changed;
@@ -107,19 +149,24 @@ class YyManip {
 	
 	public static function add(args:TreeViewItemCreate) {
 		var pdat = prepare(args);
-		var pj = pdat.pj, py = pdat.py;
+		var pj:Project = pdat.pj;
+		var py:YyProject = pdat.py;
 		var name = args.name;
 		var parDir = args.tvDir;
 		
 		// create the resource itself:
 		var kind = args.kind;
 		var yypItem:YyProjectFolderOrResource;
+		var yyOrderItem:YyResourceOrderItem;
 		var ntv:TreeViewElement;
 		var yyResource:YyResource = null;
 		var yyResourceText:String = null;
 		var yyPath:String = null;
 		var yyFullPath:String = null;
 		var indexText:String = null;
+		
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
+		
 		if (args.mkdir) {
 			var pre = (parDir.treeIsRoot ? "folders/" : parDir.treeRelPath) + name;
 			var folder:YyProjectFolder = {
@@ -131,10 +178,14 @@ class YyManip {
 				resourceType: "GMFolder",
 			};
 			py.Folders.push(folder);
+			if (resourceOrder != null) {
+				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
+				resourceOrder.FolderOrderSettings.push(yyOrderItem);
+			} else yyOrderItem = null;
 			yypItem = folder;
 			ntv = TreeView.makeAssetDir(name, pre + "/", "mixed");
 		}
-		else {
+		else { // not a folder
 			var kindRoot = kind + "s";
 			if (!pj.existsSync(kindRoot)) pj.mkdirSync(kindRoot);
 			var dir = '$kindRoot/$name';
@@ -214,6 +265,7 @@ class YyManip {
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
 				};
 				case "note": {
+					itemFullPath = Path.withExtension(itemFullPath, "txt");
 					var note:YyResource = {
 						parent: yyParent,
 						resourceVersion: "1.1",
@@ -257,7 +309,11 @@ class YyManip {
 				id: { name: name, path: pre + ".yy" },
 				order: -1,
 			};
-			py.resources.push(res);
+			py.resources.insertAtRandom(res);
+			if (resourceOrder != null) {
+				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
+				resourceOrder.ResourceOrderSettings.insertAtRandom(yyOrderItem);
+			} else yyOrderItem = null;
 			yypItem = res;
 			// same trouble as in YyLoader
 			pj.yyResources[name] = res;
@@ -268,17 +324,21 @@ class YyManip {
 			}
 			//
 			ntv = TreeView.makeAssetItem(name, itemRelPath, itemFullPath, kind);
-		}
+		} // end of folder/not folder
 		
 		// add the treeview and realign YYP items:
-		TreeViewItemMenus.insertImplTV(parDir, args.tvRef, ntv, args.order);
+		TreeViewItemMenus.insertImplTV(parDir, args.tvRef, ntv, args .order);
 		var parItemEls = parDir.treeItemEls;
 		var itemOrder = parItemEls.indexOf(ntv);
-		yypItem.order = itemOrder;
-		offsetTreeItems(py, parItemEls, itemOrder + 1, 1);
+		if (yyOrderItem != null) {
+			yyOrderItem.order = itemOrder;
+			yypItem.order = 0;
+		} else yypItem.order = itemOrder;
+		offsetTreeItems(py, parItemEls, itemOrder + 1, 1, resourceOrder);
 		
 		// Update the YYP:
 		if (args.py == null) pj.writeYyFileSync(pj.name, py);
+		if (resourceOrder != null) pj.writeResourceOrderFileSync(resourceOrder);
 		
 		// index the new item:
 		if (args.mkdir) {
@@ -307,10 +367,11 @@ class YyManip {
 	public static function remove(args:TreeViewItemRemove) {
 		var pdat = prepare(args);
 		var pj = pdat.pj, py = pdat.py;
-		Main.console.log(args);
 		var cleanRefs:Bool = args.cleanRefs;
 		var checkRefs:Array<YyResourceRef> = [];
-		var removeRec:TreeViewItem->Void = null;
+		var removeRec:TreeViewElement->Void = null;
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
+		
 		function removeItem(el:TreeViewItem):Void {
 			var pyRes = getProjectResourceForTreeItem(py, el);
 			if (pyRes != null) {
@@ -321,12 +382,16 @@ class YyManip {
 				pj.rmdirRecSync(dir);
 			}
 		}
-		function removeRec(el:TreeViewElement):Void {
+		removeRec = function(el:TreeViewElement):Void {
 			if (el.treeIsDir) {
 				var dir = el.asTreeDir();
 				var pyFolder = getProjectFolderForTreeDir(py, dir);
 				if (pyFolder != null) {
 					py.Folders.remove(pyFolder);
+				}
+				if (resourceOrder != null) {
+					var ordFolder = getProjectOrderItemForTreeEl(dir, null, resourceOrder, false);
+					if (ordFolder != null) resourceOrder.FolderOrderSettings.remove(ordFolder);
 				}
 				for (ch in dir.treeItemEls) {
 					removeRec(ch);
@@ -337,7 +402,7 @@ class YyManip {
 		var el:TreeViewElement = cast args.tvRef;
 		removeRec(el);
 		var order = args.tvDir.treeItemEls.indexOf(el);
-		offsetTreeItems(py, args.tvDir.treeItemEls, order + 1, -1);
+		offsetTreeItems(py, args.tvDir.treeItemEls, order + 1, -1, resourceOrder);
 		el.parentElement.removeChild(el);
 		//
 		if (checkRefs.length > 0) {
@@ -383,11 +448,13 @@ class YyManip {
 		}
 		//
 		pj.writeYyFileSync(pj.name, py);
+		if (resourceOrder != null) pj.writeResourceOrderFileSync(resourceOrder);
 		return true;
 	}
 	public static function rename(args:TreeViewItemRename) {
 		var pdat = prepare(args);
 		var pj = pdat.pj, py = pdat.py;
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
 		/** path is "folders/A/B" */
 		function renameDirRec(dir:TreeViewDir, path:String, ?folder:YyProjectFolder) {
 			var dirName = Path.withoutDirectory(path);
@@ -395,6 +462,10 @@ class YyManip {
 			//
 			if (folder == null) folder = getProjectFolderForTreeDir(py, dir);
 			if (folder != null) folder.folderPath = dirPath;
+			if (resourceOrder != null) {
+				var ordItem = getProjectOrderItemForTreeEl(dir, null, resourceOrder, false);
+				if (ordItem != null) ordItem.asOrderItem().path = dirPath;
+			}
 			//
 			var dirPrefix = path + "/";
 			dir.treeRelPath = dirPrefix;
@@ -429,6 +500,14 @@ class YyManip {
 			var newName = args.name;
 			var newDir = Path.directory(curDir) + "/" + newName;
 			var newPath = newDir + "/" + newName + ".yy";
+			//
+			if (resourceOrder != null) {
+				var ordItem:YyResourceOrderItem = getProjectOrderItemForTreeEl(el, null, resourceOrder, false);
+				if (ordItem != null) {
+					ordItem.name = newName;
+					ordItem.path = newPath;
+				}
+			}
 			//
 			item.treeIdent = newName;
 			item.treeText = newName;
@@ -520,12 +599,15 @@ class YyManip {
 			}
 		}
 		pj.writeYyFileSync(pj.name, py);
+		pj.writeResourceOrderFileSync(resourceOrder);
 		return false;
 	}
 	
 	public static function move(q:TreeViewItemMove) {
 		var pdat = prepare(q);
-		var pj = pdat.pj, py = pdat.py;
+		var pj:Project = pdat.pj;
+		var py:YyProject = pdat.py;
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
 		//
 		function moveDirRec(dirEl:TreeViewDir, path:String) {
 			var dirName = Path.withoutDirectory(path);
@@ -552,6 +634,7 @@ class YyManip {
 		var isDir = dragEl.treeIsDir;
 		var dragElPath = dragEl.treeRelPath; // current path
 		var dragItem = getProjectItemForTreeEl(py, dragEl);
+		var orderItem = getProjectOrderItemForTreeEl(dragEl, null, resourceOrder, true);
 		var oldDir = q.srcDir;
 		//
 		var newDir = q.tvDir;
@@ -583,7 +666,7 @@ class YyManip {
 		// shift subsequent items in current container back:
 		var oldParItems = q.srcDir.treeItemEls;
 		var oldParIndex = oldParItems.indexOf(dragEl);
-		offsetTreeItems(py, oldParItems, oldParIndex + 1, -1);
+		offsetTreeItems(py, oldParItems, oldParIndex + 1, -1, resourceOrder);
 		/*for (i in oldParIndex + 1 ... oldParItems.length) {
 			var el = oldParItems[i];
 			el.yyOrder -= 1;
@@ -595,29 +678,30 @@ class YyManip {
 		// shift subsequent items in new container forward:
 		var newDirItems = newDir.treeItemEls;
 		var newDirIndex:Int;
-		if (q.order == 0) {
+		if (q .order == 0) {
 			newDirIndex = newDirItems.length;
 		} else {
 			newDirIndex = newDirItems.indexOf(cast q.tvRef);
-			if (q.order > 0 && newDirIndex >= 0) newDirIndex++;
+			if (q .order > 0 && newDirIndex >= 0) newDirIndex++;
 		}
-		dragItem.order = newDirIndex;
-		offsetTreeItems(py, newDirItems, newDirIndex, 1);
-		/*for (i in newDirIndex ... newDirItems.length) {
-			var el = newDirItems[i];
-			el.yyOrder += 1;
-			var item = getPyItemForTreeEl(el);
-			if (item != null) item.order += 1;
-		}*/
+		if (orderItem != null) {
+			if (newDirIndex == 0) {
+				if (isDir) {
+					resourceOrder.FolderOrderSettings.remove(orderItem);
+				} else resourceOrder.ResourceOrderSettings.remove(orderItem);
+			} else orderItem.order = newDirIndex;
+		} else dragItem.order = newDirIndex;
+		offsetTreeItems(py, newDirItems, newDirIndex, 1, resourceOrder);
 		newDir.treeItems.insertBefore(dragEl, newDirItems[newDirIndex]);
 		
 		//
 		pj.writeYyFileSync(pj.name, py);
+		pj.writeResourceOrderFileSync(resourceOrder);
 		return true;
 	}
 	public static function moveTV(q:TreeViewItemMove) {
 		q.srcRef.parentElement.removeChild(q.srcRef);
-		switch (q.order) {
+		switch (q .order) {
 			case 1: q.tvRef.insertAfterSelf(q.srcRef);
 			case -1: q.tvRef.insertBeforeSelf(q.srcRef);
 			default: q.tvDir.treeItems.appendChild(q.srcRef);
@@ -625,12 +709,21 @@ class YyManip {
 	}
 }
 abstract YyProjectFolderOrResource(Dynamic)
-from YyProjectFolder from YyProjectResource to YyProjectFolder to YyProjectResource {
+	from YyProjectFolder
+	from YyProjectResource
+	from YyResourceOrderItem
+	to YyProjectFolder
+	to YyProjectResource
+	to YyResourceOrderItem
+{
 	public var order(get, set):Int;
 	private inline function get_order():Int {
 		return (this:YyProjectFolder).order;
 	}
 	private inline function set_order(ord:Int):Int {
 		return (this:YyProjectFolder).order = ord;
+	}
+	public inline function asOrderItem():YyResourceOrderItem {
+		return this;
 	}
 }

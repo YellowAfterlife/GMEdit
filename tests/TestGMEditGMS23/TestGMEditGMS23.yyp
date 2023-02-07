@@ -6,7 +6,12 @@
     {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},
   ],
   "configs": {
-    "children": [],
+    "children": [
+      {"children":[
+          {"children":[],"name":"SubSub",},
+        ],"name":"Sub",},
+      {"children":[],"name":"Sub2",},
+    ],
     "name": "Default",
   },
   "defaultScriptType": 1,
@@ -56,6 +61,7 @@
     {"id":{"name":"v_doc_implements","path":"scripts/v_doc_implements/v_doc_implements.yy",},"order":1,},
     {"id":{"name":"tl_test","path":"timelines/tl_test/tl_test.yy",},"order":0,},
     {"id":{"name":"v_imp_func_arg_types","path":"scripts/v_imp_func_arg_types/v_imp_func_arg_types.yy",},"order":1,},
+    {"id":{"name":"me too","path":"notes/me too/me too.yy",},"order":0,},
     {"id":{"name":"v_imp_typed_let","path":"scripts/v_imp_typed_let/v_imp_typed_let.yy",},"order":2,},
     {"id":{"name":"v_imp_return_type","path":"scripts/v_imp_return_type/v_imp_return_type.yy",},"order":3,},
     {"id":{"name":"v_hint_template","path":"scripts/v_hint_template/v_hint_template.yy",},"order":2,},

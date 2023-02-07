@@ -12,7 +12,7 @@ import js.Syntax;
 	}
 
 	/**Create a new array from a given content*/
-	public static inline function from<T>(content: Dynamic):Array<T> {
+	@:noUsing public static inline function from<T>(content: Dynamic):Array<T> {
 		return Syntax.code("Array.from")(content);
 	}
 	
@@ -52,8 +52,12 @@ import js.Syntax;
 	}
 	
 	public static inline function forEach<T>(arr:Array<T>, fn:T->Void):Void {
-		untyped arr.forEach(fn);
+		(cast arr).forEach(fn);
 	}
+	public static inline function defaultSort<T>(arr:Array<T>) {
+		(cast arr).sort();
+	}
+	
 	public static function insertAfter<T>(arr:Array<T>, insertWhat:T, afterWhat:T):Void {
 		var i = arr.indexOf(afterWhat);
 		if (i >= 0) {
@@ -65,6 +69,11 @@ import js.Syntax;
 		if (i >= 0) {
 			arr.insert(i, insertWhat);
 		} else arr.unshift(insertWhat);
+	}
+	public static function insertAtRandom<T>(arr:Array<T>, item:T):Int {
+		var at = Std.random(arr.length + 1);
+		arr.insert(at, item);
+		return at;
 	}
 	public static function replaceOne<T>(arr:Array<T>, replaceWhat:T, withWhat:T):Bool {
 		var i = arr.indexOf(replaceWhat);

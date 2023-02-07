@@ -33,6 +33,7 @@ typedef YyTextureGroup = {
 	groupParent:String,
 	targets:Int,
 }
+
 typedef YyAssetBrowserData = {
 	AssetColours:Array<YyAssetBrowserAssetColour>,
 	Palette:Array<YyAssetBrowserColour>,
@@ -62,4 +63,14 @@ abstract YyAssetBrowserColour(String) {
 				+ StringTools.hex(ah, 2);
 		} else return this;
 	}
+}
+
+typedef YyResourceOrderItem = {
+	name:String,
+	path:String,
+	order:Int,
+}
+typedef YyResourceOrderSettings = {
+	FolderOrderSettings: Array<YyResourceOrderItem>,
+	ResourceOrderSettings: Array<YyResourceOrderItem>,
 }

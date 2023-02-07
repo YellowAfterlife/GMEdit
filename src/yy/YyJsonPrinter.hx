@@ -12,11 +12,13 @@ using tools.NativeString;
  * @author YellowAfterlife
  */
 class YyJsonPrinter {
-	// the following are set in stringify() call and reused:
+	//{ the following are set in stringify() call and reused
 	static var isExt:Bool = false;
 	static var wantCompact:Bool = false;
 	static var trailingCommas:Bool = false;
 	static var wantPrefixFields:Bool = false;
+	static var isGM2023:Bool = false;
+	//}
 	
 	static function stringify_string(s:String):String {
 		var r = '"';
@@ -61,14 +63,28 @@ class YyJsonPrinter {
 		q["GMEvent"] = plain.concat(["IsDnD"]);
 		return q;
 	})();
+	/** <=2.2 */
 	public static var metaByModelName:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByModelName();
+	/** 2.3 .. 2022 */
 	public static var metaByResourceType:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByResourceType();
+	/** >=2023 */
+	public static var metaByResourceType2023:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByResourceType2023();
+	static inline function isV2023() {
+		return gml.Project.current != null && gml.Project.current.isGM2023;
+	}
 	
 	static var isOrderedCache:Map<Array<String>, Dictionary<Bool>> = new Map();
 	
-	static function fieldComparator(a:String, b:String):Int {
-		return a > b ? 1 : -1;
-	}
+	static var fieldComparator:(a:String, b:String)->Int = (function() {
+		try {
+			var cl = new js.lib.intl.Collator();
+			return cl.compare;
+		} catch (_) {
+			return function(a:String, b:String) {
+				return a.toLowerCase() > b.toLowerCase() ? 1 : -1;
+			}
+		}
+	})();
 	
 	static var indentString:String = "    ";
 	static var nextType:String = null;
@@ -113,12 +129,13 @@ class YyJsonPrinter {
 			var found = 0, sep = false;
 			// where available, use 
 			var meta:YyJsonMeta;
+			var _2023 = isExt && isV2023();
 			if (nt != null) {
-				meta = isExt ? metaByResourceType[nt] : metaByModelName[nt];
+				meta = isExt ? (_2023 ? metaByResourceType2023[nt] : metaByResourceType[nt]) : metaByModelName[nt];
 				if (meta == null) Main.console.warn('Unknown type $nt');
 			} else if (isExt) {
 				nt = obj.resourceType;
-				meta = JsTools.nca(nt, metaByResourceType[nt]);
+				meta = JsTools.nca(nt, (_2023 ? metaByResourceType2023[nt] : metaByResourceType[nt]));
 			} else {
 				nt = obj.modelName;
 				meta = JsTools.nca(nt, metaByModelName[nt]);
@@ -146,7 +163,7 @@ class YyJsonPrinter {
 			}
 			//
 			var tcs = trailingCommas;
-			var orderedFieldsAfter = isExt;
+			var orderedFieldsAfter = isExt && !_2023;
 			inline function addSep():Void {
 				if (!tcs) {
 					if (sep) r += ",\r\n" + indentString.repeat(indent); else sep = true;
@@ -221,7 +238,14 @@ class YyJsonPrinter {
 		wantCompact = extJson;
 		trailingCommas = extJson;
 		isExt = extJson;
-		wantPrefixFields = extJson && gml.Project.current.yyResourceVersion >= 1.6;
+		var project = gml.Project.current;
+		if (project != null) {
+			isGM2023 = project.isGM2023;
+			wantPrefixFields = !isGM2023 && project.yyResourceVersion >= 1.6;
+		} else {
+			wantPrefixFields = false;
+			isGM2023 = false;
+		}
 		indentString = extJson ? "  " : "    ";
 		return stringify_rec(obj, 0, false);
 	}
