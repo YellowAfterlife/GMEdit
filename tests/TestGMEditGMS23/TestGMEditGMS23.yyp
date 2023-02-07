@@ -131,6 +131,8 @@
     {"id":{"name":"v_nullish","path":"scripts/v_nullish/v_nullish.yy",},"order":4,},
     {"id":{"name":"scrTemp","path":"scripts/scrTemp/scrTemp.yy",},"order":7,},
     {"id":{"name":"v_func_arg_template_types","path":"scripts/v_func_arg_template_types/v_func_arg_template_types.yy",},"order":2,},
+    {"id":{"name":"seek_index_redirect","path":"scripts/seek_index_redirect/seek_index_redirect.yy",},"order":6,},
+    {"id":{"name":"seek_index_redirect_note","path":"notes/seek_index_redirect_note/seek_index_redirect_note.yy",},"order":7,},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},

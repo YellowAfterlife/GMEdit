@@ -333,6 +333,38 @@ class GmlSeekerJSDoc {
 			}
 		}
 		
+		mt = jsDoc_index_redirect.exec(s);
+		if (mt != null) {
+			var code:String;
+			var rel = mt[1];
+			if (rel != null) {
+				var dir = tools.PathTools.ptDir(seeker.orig);
+				var full = tools.PathTools.ptJoin(dir, rel);
+				if (electron.FileWrap.existsSync(full)) {
+					try {
+						code = electron.FileWrap.readTextFileSync(full);
+					} catch (x:Dynamic) {
+						Console.error('Error loading @index_redirect file "$rel" requested from "${seeker.orig}', x);
+						code = null;
+					}
+				} else {
+					Console.error('Specified @index_redirect file "$rel" requested from "${seeker.orig} doesn\'t exist');
+					code = null;
+				}
+			} else code = null;
+			//
+			var reader = seeker.reader;
+			var oldName = reader.name;
+			if (code != null) {
+				var tmp = new GmlReaderExt(code, reader.version);
+				reader.setTo(tmp);
+			} else {
+				reader.clear();
+			}
+			reader.name = oldName;
+			return;
+		}
+		
 		// tags from hereafter have no meaning outside of a script/function
 		if (seeker.main == null) return;
 		

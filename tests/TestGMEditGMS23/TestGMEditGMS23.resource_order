@@ -72,6 +72,7 @@
     {"name":"v_buffer_auto_type","order":4,"path":"scripts/v_buffer_auto_type/v_buffer_auto_type.yy",},
     {"name":"v_array_access","order":5,"path":"scripts/v_array_access/v_array_access.yy",},
     {"name":"v_minus1able","order":5,"path":"scripts/v_minus1able/v_minus1able.yy",},
+    {"name":"i'm a note","order":1,"path":"notes/i'm a note/i'm a note.yy",},
     {"name":"v_strict_self","order":7,"path":"scripts/v_strict_self/v_strict_self.yy",},
     {"name":"v_linter_flags","order":12,"path":"scripts/v_linter_flags/v_linter_flags.yy",},
     {"name":"v_enum_tuples","order":1,"path":"scripts/v_enum_tuples/v_enum_tuples.yy",},
@@ -92,5 +93,7 @@
     {"name":"v_nullish","order":4,"path":"scripts/v_nullish/v_nullish.yy",},
     {"name":"scrTemp","order":7,"path":"scripts/scrTemp/scrTemp.yy",},
     {"name":"v_func_arg_template_types","order":2,"path":"scripts/v_func_arg_template_types/v_func_arg_template_types.yy",},
+    {"name":"seek_index_redirect","order":6,"path":"scripts/seek_index_redirect/seek_index_redirect.yy",},
+    {"name":"seek_index_redirect_note","order":7,"path":"notes/seek_index_redirect_note/seek_index_redirect_note.yy",},
   ],
 }
