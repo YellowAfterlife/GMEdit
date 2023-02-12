@@ -157,7 +157,7 @@ class TreeViewItemMenus {
 				}
 			}
 		} else {
-			if (kind != "note" && !(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
+			if (kind != "notes" && !(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
 				Dialog.showError("Name contains illegal characters!");
 				return false;
 			}
@@ -446,7 +446,7 @@ class TreeViewItemMenus {
 			
 			// NB! You'll need to add a "resource_<name>_add.png" to /icons/silk
 			// when you add new resource types here.
-			var resourceTypes = ["sprite", "sound", "script", "note", "shader", "font", "object"];
+			var resourceTypes = ["sprite", "sound", "script", "notes", "shader", "font", "object"];
 
 			if (Preferences.current.assetOrder23 == PrefAssetOrder23.Ascending) {
 				resourceTypes.sort((a,b) -> a < b ? -1 : 1);

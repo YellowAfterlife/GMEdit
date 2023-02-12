@@ -264,7 +264,7 @@ class YyManip {
 					pj.writeTextFileSync(pre + ".fsh", YyShaderDefaults.baseFragGLSL);
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
 				};
-				case "note": {
+				case "notes": {
 					itemFullPath = Path.withExtension(itemFullPath, "txt");
 					var note:YyResource = {
 						parent: yyParent,
