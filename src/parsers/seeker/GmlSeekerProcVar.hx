@@ -106,7 +106,19 @@ class GmlSeekerProcVar {
 				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
 				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
 				
-				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, name, args, null, fieldType, argTypes, true);
+				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName,
+					true, name, args, null, fieldType, argTypes, true);
+				if (gml.Project.current.isGM2023) {
+					var add = true;
+					if (seeker.strictStaticJSDoc) {
+						if (seeker.jsDoc.isStatic) {
+							seeker.jsDoc.isStatic = false;
+						} else add = false;
+					}
+					if (add) GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName,
+						false, name, args, null, fieldType, argTypes, true);
+				}
+				
 				var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
 				if (templateSelf != null && addFieldHint_doc != null) {
 					addFieldHint_doc.templateSelf = templateSelf;

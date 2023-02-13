@@ -27,6 +27,7 @@ class GmlSeekerJSDoc {
 	public var interfaceName:String = null;
 	public var implementsNames:Array<String> = null;
 	public var templateItems:Array<GmlTypeTemplateItem> = null;
+	public var isStatic:Bool = false;
 	
 	public function reset(resetInterf = true):Void {
 		args = null;
@@ -331,6 +332,12 @@ class GmlSeekerJSDoc {
 				seeker.setLookup(fn, false, "asset.script");
 				return;
 			}
+		}
+		
+		mt = jsDoc_static.exec(s);
+		if (mt != null) {
+			isStatic = true;
+			return;
 		}
 		
 		mt = jsDoc_index_redirect.exec(s);

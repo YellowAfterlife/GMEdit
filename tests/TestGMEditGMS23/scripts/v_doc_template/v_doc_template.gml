@@ -13,6 +13,16 @@ function TMap() constructor {
 	static ret = function(val) {
 		return val;
 	}
+	
+	/// @static
+	static create = function()/*->TMap*/ {
+		return new TMap();
+	}
+	///note: TMap.| should only show create()
+	
+	var _create/*:function<TMap>*/ = TMap.create; ///note: OK!
+	var _create_v/*:function<void>*/ = TMap.create; ///want_warn
+	var _amiss = TMap.amiss; ///want_warn
 }
 
 /// @template T

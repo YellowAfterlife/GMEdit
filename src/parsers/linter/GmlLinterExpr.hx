@@ -1,6 +1,7 @@
 package parsers.linter;
 import ace.AceGmlTools;
 import gml.GmlAPI;
+import gml.GmlEnum;
 import gml.GmlFuncDoc;
 import gml.type.GmlType;
 import gml.type.GmlTypeCanCastTo;
@@ -396,11 +397,19 @@ class GmlLinterExpr extends GmlLinterHelper {
 					// extract `Type` from `Type?` when doing `v?.field`
 					if (nk == KNullDot && currType.isNullable()) currType = currType.unwrapParam();
 					
-					var enumType = currKind == KIdent ? GmlAPI.gmlEnums[currName] : null;
+					var enumType:GmlEnum, scriptName:String;
+					if (currKind == KIdent) {
+						enumType = GmlAPI.gmlEnums[currName];
+						scriptName = enumType == null && GmlAPI.gmlKind[currName] == "asset.script" ? currName : null;
+					} else {
+						enumType = null;
+						scriptName = null;
+					}
 					
 					currKind = nk == KDot ? KField : KNullField;
-					var isStatic:Bool = false, nsType:GmlType = null;
+					var isStatic:Bool, nsType:GmlType = null;
 					if (enumType != null) {
+						isStatic = true;
 						currType = GmlTypeDef.int;
 						currFunc = null;
 						var ef = enumType.compMap[field];
@@ -412,12 +421,25 @@ class GmlLinterExpr extends GmlLinterHelper {
 								// todo: try to parse?
 							}
 						}
-					} else {
+					}
+					else if (scriptName != null) {
+						selfType = currType;
+						isStatic = true;
+						nsType = GmlTypeDef.simple(scriptName);
+					}
+					else {
 						selfType = currType;
 						isStatic = currType.isType();
 						nsType = isStatic ? currType.unwrapParam() : currType;
 					}
-					if (enumType == null) switch (nsType) {
+					var ctn:String = null;
+					if (enumType != null) {
+						// OK!
+					}
+					else if (scriptName != null) {
+						ctn = scriptName;
+					}
+					else switch (nsType) {
 						case null: {
 							currType = null;
 							currFunc = null;
@@ -426,49 +448,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 							currType = GmlAPI.gmlGlobalTypes[field];
 							currFunc = null;
 						};
-						case TInst(ctn, _, KCustom): {
-							var wantWarn = false;
-							var found = AceGmlTools.findNamespace(ctn, self.getImports(), function(ns) {
-								wantWarn = true;
-								if (isStatic) {
-									currType = ns.staticTypes[field];
-									currFunc = ns.docStaticMap[field];
-									return ns.staticKind.exists(field);
-								} else {
-									currType = ns.getInstType(field);
-									currFunc = ns.getInstDoc(field);
-									return ns.getInstKind(field) != null;
-								}
-							});
-							
-							if (found) {
-								if (currType != null) switch (selfType) {
-									case TInst(_, sp, _) if (sp.length > 0): {
-										currType = currType.mapTemplateTypes(sp);
-									};
-									default:
-								}
-							} else {
-								var en = GmlAPI.gmlEnums[ctn];
-								if (en != null) {
-									wantWarn = true;
-									if (en.items.exists(field)) {
-										// TODO: come up with some method of indicating that enum
-										// is typed as itself and may not cast to integers
-										currType = GmlTypeDef.int;
-										found = true;
-									} else currType = GmlTypeDef.forbidden;
-								} else currType = null;
-								currFunc = null;
-							}
-							if (!found) {
-								currType = null;
-								currFunc = null;
-								if (wantWarn && self.prefs.requireFields) {
-									self.addWarning('Variable $field is not part of $ctn');
-								}
-							}
-						};
+						case TInst(_ctn, _, KCustom): ctn = _ctn;
 						case TAnon(inf): {
 							var fd = inf.fields[field];
 							if (fd != null) {
@@ -487,7 +467,50 @@ class GmlLinterExpr extends GmlLinterHelper {
 							currFunc = null;
 						};
 					}
-				};
+					if (ctn != null) {
+						var wantWarn = false;
+						var found = AceGmlTools.findNamespace(ctn, self.getImports(), function(ns) {
+							wantWarn = true;
+							if (isStatic) {
+								currType = ns.staticTypes[field];
+								currFunc = ns.docStaticMap[field];
+								return ns.staticKind.exists(field);
+							} else {
+								currType = ns.getInstType(field);
+								currFunc = ns.getInstDoc(field);
+								return ns.getInstKind(field) != null;
+							}
+						});
+						
+						if (found) {
+							if (currType != null) switch (selfType) {
+								case TInst(_, sp, _) if (sp.length > 0): {
+									currType = currType.mapTemplateTypes(sp);
+								};
+								default:
+							}
+						} else {
+							var en = GmlAPI.gmlEnums[ctn];
+							if (en != null) {
+								wantWarn = true;
+								if (en.items.exists(field)) {
+									// TODO: come up with some method of indicating that enum
+									// is typed as itself and may not cast to integers
+									currType = GmlTypeDef.int;
+									found = true;
+								} else currType = GmlTypeDef.forbidden;
+							} else currType = null;
+							currFunc = null;
+						}
+						if (!found) {
+							currType = null;
+							currFunc = null;
+							if (wantWarn && self.prefs.requireFields) {
+								self.addWarning('Variable $field is not part of $ctn');
+							}
+						}
+					}
+				}; // x.y
 				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
 					self.skip();
 					rc(GmlLinterArrayAccess.read(self, nk, newDepth, currType, currKind, currValue));

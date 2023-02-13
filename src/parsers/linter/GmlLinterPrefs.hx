@@ -92,6 +92,9 @@ typedef GmlLinterPrefsImpl = {
 	/** Whether to assume scripts without a @self to have {void} @self */
 	?strictScriptSelf:Bool,
 	
+	/** Whether to only show fields in Script.| if they have a @static JSDoc */
+	?strictStaticJSDoc:Bool,
+	
 	?liveCheckOnEnter:Bool,
 	?liveCheckOnSemico:Bool,
 	?liveMaxLines:Int,

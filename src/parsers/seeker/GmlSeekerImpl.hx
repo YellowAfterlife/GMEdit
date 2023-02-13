@@ -78,6 +78,7 @@ class GmlSeekerImpl {
 	public var isCreateEvent:Bool;
 	public var specTypeInst:Bool;
 	public var specTypeInstSubTopLevel:Bool;
+	public var strictStaticJSDoc:Bool;
 	
 	public var funcsAreGlobal:Bool;
 	public var hasFunctionLiterals:Bool;
@@ -136,8 +137,9 @@ class GmlSeekerImpl {
 		hasFunctionLiterals = additionalKeywordsMap.exists("function");
 		hasTryCatch = additionalKeywordsMap.exists("catch");
 		
-		specTypeInst = GmlLinter.getOption((p) -> p.specTypeInst);
-		specTypeInstSubTopLevel = GmlLinter.getOption((p) -> p.specTypeInstSubTopLevel);
+		specTypeInst = GmlLinter.getOption(p -> p.specTypeInst);
+		specTypeInstSubTopLevel = GmlLinter.getOption(p -> p.specTypeInstSubTopLevel);
+		strictStaticJSDoc = GmlLinter.getOption(p -> p.strictStaticJSDoc);
 		localKind = notLam ? "local" : "sublocal";
 		if (project.properties.lambdaMode == Scripts) {
 			if (orig.contains("/" + GmlExtLambda.lfPrefix)) {

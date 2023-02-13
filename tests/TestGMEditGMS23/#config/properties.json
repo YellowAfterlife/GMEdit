@@ -10,6 +10,7 @@
         "specTypeLet": true,
         "specTypeVar": false,
         "strictScriptSelf": true,
+        "strictStaticJSDoc": true,
         "warnAboutRedundantCasts": true
     },
     "nullConditionalSet": "nc_set",

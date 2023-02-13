@@ -177,6 +177,7 @@ class AceWrapCommonCompleters {
 			new AceAutoCompleteItem("template", jsk, "@template [{Constraint}] Type\nDeclare type parameters"),
 			new AceAutoCompleteItem("typedef", jsk, "@typedef {FullType} Alias\nDeclare a shorthand for a type"),
 			new AceAutoCompleteItem("init", jsk, "@init\nMarks a non-Create event as a variable/function source"),
+			new AceAutoCompleteItem("static", jsk, "@static\nMarks a static variable as intended for access via Constructor.varname"),
 		];
 		jsDocCompleter = new AceWrapCompleter([], ["comment.meta"], false, gmlOnly);
 		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case
