@@ -155,19 +155,19 @@ class GmlSeekerProcVar {
 				var oldLocalKind = seeker.localKind;
 				seeker.localKind = "sublocal";
 				GmlSeekerProcExpr.proc(seeker, name, true);
-				var isFunction = GmlSeekerProcExpr.isFunction;
-				if (isFunction) {
+				var exprIsFunction = GmlSeekerProcExpr.isFunction;
+				if (exprIsFunction) {
 					seeker.doLoop(seeker.curlyDepth);
 				}
 				var args:String = GmlSeekerProcExpr.args;
 				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
-				var isConstructor = GmlSeekerProcExpr.isConstructor;
+				var exprIsConstructor = GmlSeekerProcExpr.isConstructor;
 				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
 				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
 				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
 				
 				inline function addFieldHint(asInst:Bool) {
-					GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName,
+					GmlSeekerProcField.addFieldHint(seeker, exprIsConstructor, seeker.jsDoc.interfaceName,
 					asInst, name, args, null, fieldType, argTypes, true);
 					
 					var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
@@ -180,7 +180,7 @@ class GmlSeekerProcVar {
 				if (addStaticHint) addFieldHint(false);
 				
 				seeker.localKind = oldLocalKind;
-				if (isFunction) {
+				if (exprIsFunction) {
 					q.skipSpaces1_local();
 					var c = q.peek();
 					if (c == ",".code) continue;
