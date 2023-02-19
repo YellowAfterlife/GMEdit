@@ -94,5 +94,6 @@
     {"name":"v_func_arg_template_types","order":2,"path":"scripts/v_func_arg_template_types/v_func_arg_template_types.yy",},
     {"name":"seek_index_redirect","order":6,"path":"scripts/seek_index_redirect/seek_index_redirect.yy",},
     {"name":"seek_index_redirect_note","order":7,"path":"notes/seek_index_redirect_note/seek_index_redirect_note.yy",},
+    {"name":"v_func_doc_static","path":"scripts/v_func_doc_static/v_func_doc_static.yy","order":3,},
   ],
 }

@@ -74,6 +74,7 @@
     {"id":{"name":"nc_scripts","path":"scripts/nc_scripts/nc_scripts.yy",},"order":0,},
     {"id":{"name":"v_speculative_types","path":"scripts/v_speculative_types/v_speculative_types.yy",},"order":8,},
     {"id":{"name":"v_doc_is_global","path":"scripts/v_doc_is_global/v_doc_is_global.yy",},"order":9,},
+    {"id":{"name":"v_func_doc_static","path":"scripts/v_func_doc_static/v_func_doc_static.yy",},"order":0,},
     {"id":{"name":"v_missing_fields","path":"scripts/v_missing_fields/v_missing_fields.yy",},"order":10,},
     {"id":{"name":"v_statusbar_arg_types","path":"scripts/v_statusbar_arg_types/v_statusbar_arg_types.yy",},"order":0,},
     {"id":{"name":"v_tooltip_color","path":"scripts/v_tooltip_color/v_tooltip_color.yy",},"order":0,},

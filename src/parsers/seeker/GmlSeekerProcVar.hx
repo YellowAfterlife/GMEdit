@@ -56,6 +56,17 @@ class GmlSeekerProcVar {
 		var isStatic = kind == "static";
 		var isConstructor = seeker.doc != null && seeker.doc.isConstructor;
 		var isStaticCtr = isStatic && isConstructor;
+		var addStaticHint = {
+			var add = q.version.hasScriptDotStatic();
+			if (add) {
+				if (isStaticCtr && seeker.strictStaticJSDoc) {
+					if (seeker.jsDoc.isStatic) {
+						seeker.jsDoc.isStatic = false;
+					} else add = false;
+				}
+			}
+			add;
+		};
 		while (q.loop) {
 			q.skipSpaces1();
 			var c:CharCode = q.peek();
@@ -72,7 +83,7 @@ class GmlSeekerProcVar {
 			};
 			
 			if (name == null) break;
-			if (name == "var") { // `var var`
+			if (name == (isStatic ? "static" : "var")) { // `var var`
 				name = seeker.find(Ident);
 			} else if (GmlAPI.kwFlow[name]) {
 				// might eat a structure but that code's broken anyway
@@ -89,46 +100,7 @@ class GmlSeekerProcVar {
 				}
 				s = seeker.find(flags);
 			}
-			if (s == ",") {
-				// OK, next
-			}
-			else if (s == "=" && isStaticCtr) {
-				var oldLocalKind = seeker.localKind;
-				seeker.localKind = "sublocal";
-				GmlSeekerProcExpr.proc(seeker, name, true);
-				if (GmlSeekerProcExpr.isFunction) {
-					seeker.doLoop(seeker.curlyDepth);
-				}
-				var args:String = GmlSeekerProcExpr.args;
-				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
-				var isConstructor = GmlSeekerProcExpr.isConstructor;
-				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
-				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
-				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
-				
-				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName,
-					true, name, args, null, fieldType, argTypes, true);
-				if (gml.Project.current.isGM2023) {
-					var add = true;
-					if (seeker.strictStaticJSDoc) {
-						if (seeker.jsDoc.isStatic) {
-							seeker.jsDoc.isStatic = false;
-						} else add = false;
-					}
-					if (add) GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName,
-						false, name, args, null, fieldType, argTypes, true);
-				}
-				
-				var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
-				if (templateSelf != null && addFieldHint_doc != null) {
-					addFieldHint_doc.templateSelf = templateSelf;
-					addFieldHint_doc.templateItems = templateItems;
-				}
-				seeker.localKind = oldLocalKind;
-				break;
-			}
-			else if (s == "=") {
-				// name = (balanced expression)[,;]
+			function skipBalancedExpr() {
 				var depth = 0;
 				var exit = false;
 				while (q.loop) {
@@ -144,7 +116,9 @@ class GmlSeekerProcVar {
 						case "(", "[", "{": depth += 1;
 						case ")", "]", "}": {
 							depth -= 1;
-							if (depth < 0) {
+							if (depth < 0) { // `if (...) { var v = ... }¦`
+								// find() would decrement curlyDepth so if we're backing off
+								// we need to increment it back
 								if (s == "}") seeker.curlyDepth++;
 								q.pos--;
 								break;
@@ -172,7 +146,52 @@ class GmlSeekerProcVar {
 						};
 					}
 				}
-				if (exit) break;
+				return exit;
+			}
+			if (s == ",") {
+				// OK, next
+			}
+			else if (s == "=" && isStatic) {
+				var oldLocalKind = seeker.localKind;
+				seeker.localKind = "sublocal";
+				GmlSeekerProcExpr.proc(seeker, name, true);
+				var isFunction = GmlSeekerProcExpr.isFunction;
+				if (isFunction) {
+					seeker.doLoop(seeker.curlyDepth);
+				}
+				var args:String = GmlSeekerProcExpr.args;
+				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
+				var isConstructor = GmlSeekerProcExpr.isConstructor;
+				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
+				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
+				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
+				
+				inline function addFieldHint(asInst:Bool) {
+					GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName,
+					asInst, name, args, null, fieldType, argTypes, true);
+					
+					var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
+					if (templateSelf != null && addFieldHint_doc != null) {
+						addFieldHint_doc.templateSelf = templateSelf;
+						addFieldHint_doc.templateItems = templateItems;
+					}
+				}
+				if (isConstructor) addFieldHint(true);
+				if (addStaticHint) addFieldHint(false);
+				
+				seeker.localKind = oldLocalKind;
+				if (isFunction) {
+					q.skipSpaces1_local();
+					var c = q.peek();
+					if (c == ",".code) continue;
+					if (c == ";".code) break;
+					if (c.isIdent0()) break; // static f = function() etc = 1
+				}
+				if (skipBalancedExpr()) break;
+			}
+			else if (s == "=") {
+				// name = (balanced expression)[,;]
+				if (skipBalancedExpr()) break;
 			} else {
 				// EOF or `var name something_else`
 				seeker.restoreReader();

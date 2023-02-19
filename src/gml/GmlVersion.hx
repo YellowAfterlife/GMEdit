@@ -126,6 +126,7 @@ import electron.FileWrap;
 	}
 	public function hasJSDoc() return config.hasJSDoc;
 	public function hasScriptArgs() return config.hasDefineArgs;
+	public function hasScriptDotStatic() return config.hasScriptDotStatic;
 	public function resetOnDefine() return config.resetLineCounterOnDefine;
 	public function getName() return name;
 	//

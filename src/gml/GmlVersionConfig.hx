@@ -37,6 +37,9 @@ typedef GmlVersionConfig = {
 	/** Whether `#RrGgBbb` is allowed */
 	var hasColorLiterals:Bool;
 	
+	/** Whether scr_some.stativar is allowed */
+	var hasScriptDotStatic:Bool;
+	
 	/** Whether GMS2 style `/// @meta` docs are used */
 	var hasJSDoc:Bool;
 	
@@ -150,7 +153,8 @@ class GmlVersionConfigDefaults {
 			hasRegions: v2,
 			hasEventSections: v1,
 			hasEventActions: v1,
-			hasColorLiterals: false,
+			hasColorLiterals: v2,
+			hasScriptDotStatic: v2,
 			hasPragma: false,
 			//
 			resetLineCounterOnDefine: true,

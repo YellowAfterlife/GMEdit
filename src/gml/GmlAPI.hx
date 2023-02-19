@@ -56,8 +56,9 @@ class GmlAPI {
 		("if|then|else|begin|end"
 		+ "|for|while|do|until|repeat|with|break|continue"
 		+ "|switch|case|default"
+		+ "|try|throw|catch|finally"
 		+ "|exit|return|wait"
-		+ "|enum|var|globalvar"
+		+ "|enum|var|globalvar|static"
 		).split("|"), true
 	);
 	
