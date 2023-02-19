@@ -28,6 +28,7 @@ class GmlSeekerJSDoc {
 	public var implementsNames:Array<String> = null;
 	public var templateItems:Array<GmlTypeTemplateItem> = null;
 	public var isStatic:Bool = false;
+	public var redirectCount = 0;
 	
 	public function reset(resetInterf = true):Void {
 		args = null;
@@ -344,9 +345,18 @@ class GmlSeekerJSDoc {
 		if (mt != null) {
 			var code:String;
 			var rel = mt[1];
+			if (rel != null && ++redirectCount > 32) {
+				Console.error('More than 32 layers of @index_redirect in file "${seeker.orig}');
+				rel = null;
+			}
 			if (rel != null) {
-				var dir = tools.PathTools.ptDir(seeker.orig);
-				var full = tools.PathTools.ptJoin(dir, rel);
+				var full:String;
+				if (rel.startsWith("/")) {
+					full = gml.Project.current.fullPath(rel.substring(1));
+				} else {
+					var dir = tools.PathTools.ptDir(seeker.orig);
+					full = tools.PathTools.ptJoin(dir, rel);
+				}
 				if (electron.FileWrap.existsSync(full)) {
 					try {
 						code = electron.FileWrap.readTextFileSync(full);
