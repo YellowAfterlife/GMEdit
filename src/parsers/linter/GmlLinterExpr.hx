@@ -218,7 +218,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 				}
 			};
 			case KNew: {
-				rc(self.readExpr(newDepth, IsNew));
+				rc(self.readExpr(newDepth, IsNew.with(NoSfx)));
 				currType = JsTools.or(this.currType, GmlTypeDef.simple(this.currName));
 				currFunc = currType.getSelfCallDoc(self.getImports());
 			};
@@ -359,7 +359,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					if (self.prefs.forbidNonIdentCalls && !currKind.canCall()) {
 						return self.readError('Expression ${currKind.getName()} is not callable');
 					}
-					if (hasFlag(NoSfx)) return self.readError("Can't call this");
+					if (hasFlag(NoSfx) && !hasFlag(IsNew)) return self.readError("Can't call this");
 					self.skip();
 					var argsSelf = currKind == KIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
 					var argc = self.funcArgs.read(newDepth, currFunc, argsSelf, currType);
@@ -390,6 +390,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					currType = GmlTypeDef.number;
 				};
 				case KDot, KNullDot: { // x.y
+					if (hasFlag(IsNew)) break;
 					self.skip();
 					rc(self.readCheckSkip(KIdent, "field name after `.`"));
 					var field = self.nextVal;
