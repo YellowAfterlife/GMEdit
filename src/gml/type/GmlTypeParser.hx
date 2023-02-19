@@ -226,7 +226,7 @@ class GmlTypeParser {
 						&& !GmlAPI.stdKind.exists(name)
 						&& !GmlAPI.stdTypeExists.exists(name)
 						&& !GmlTypeTools.kindMap.exists(name)
-						&& name != "undefined"
+						&& !kindMeta.exists(name)
 					) typeWarn.push(name);
 					result = TInst(name, params, kind);
 				}
