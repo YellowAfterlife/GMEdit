@@ -116,89 +116,76 @@ class GmlParseAPI {
 		
 		// functions!
 		var rxFunc:RegExp = new RegExp("^"
-			+ "(" // $1 -> general signature
-				+ ":*" // instance variable marker
-				+ "(\\w+)" // $2 -> name
-				+ "(?:<.*?>)?" // type params
-				+ "\\(" + "(.*?)" + "\\)" // $3 -> args
-				+ "(?:->" + "(\\S+)" + ")?" // $4 -> retType
-			+ ")"
-			+ "([ ~\\$#*@&£!:]*)" // $5 -> flags
-			+ "(?:\\^(\\w*))?" // $6 -> feature flag
-		+ "", "gm");
+			+ "(:*)" // $1 -> instance-specific marker (non-standard) - e.g. ":instance_copy(performevent)"
+			+ "(\\w+" // function name
+			+ "(?:<.*?>)?" // type params
+			+ '\\(' // arguments start
+			+ ".+" // rest of line
+		+ ")", "gm");
+		var rxFuncTail:RegExp = new RegExp("^"
+			+ "(.*?)" // $1 -> normal stuff
+			+ "([ ~\\$#*@&£!:]*)" // $2 -> flags (e.g. "£" for "draw_set_colour(col)£")
+			+ "\\s*(?:\\^(\\w*))?" // $3 -> feature flag
+			+ "\\s*"
+			+ "(?://.*)?" // -> comment
+		+ "$");
+		var isGMS1 = version.config.docMode == "gms1";
 		rxFunc.each(src, function(mt:RegExpMatch) {
-			var comp = mt[1];
-			var name = mt[2];
-			var args = mt[3];
-			var ret = mt[4];
-			var flags:String = mt[5];
-			if (NativeString.contains(flags, "&")) return;
-			var featureFlag = mt[6];
-			//
-			var orig = name;
-			var show = true;
-			var doc = GmlFuncDoc.parse(comp);
+			var doc = GmlFuncDoc.parse(mt[2]);
 			for (name in typeWarn) Console.warn('[API] Unknown type $name referenced in ${mt[0]}');
 			typeWarn.clear();
-			//
-			if (version.config.docMode != "gms1") {
-				if (ukSpelling) {
-					if (flags.indexOf("$") >= 0) show = false;
-				} else {
-					if (flags.indexOf("£") >= 0) show = false;
-				}
-			} else if (version != GmlVersion.none) {
-				// (todo: were there other things?)
+			var name = doc.name;
+			var orig = name;
+			
+			var show = true;
+			var mtt = rxFuncTail.exec(doc.post);
+			var flags:String;
+			if (mtt != null) {
+				doc.post = mtt[1];
+				flags = mtt[2];
+				var featureFlag = mtt[3];
+				if (featureFlag != null && !featureFlags.contains(featureFlag)) show = false;
+			} else flags = "";
+			
+			if (flags.contains("&")) return; // deprecated!
+			
+			// UK/US spelling:
+			if (isGMS1) {
+				// were there other things..? Not like anyone cares
 				var usn = NativeString.replaceExt(name, "colour", "color");
 				if (ukSpelling) orig = usn; else name = usn;
 				if (orig != name) {
 					stdKind.set(orig, "function");
 					stdDoc.set(orig, doc);
 				}
+			} else {
+				if (flags.contains(ukSpelling ? "$" : "£")) show = false;
 			}
-			if (featureFlag != null && featureFlags.indexOf(featureFlag) < 0) show = false;
-			//
+			
 			#if lwedit
-			if (lwInst != null && (
-				comp.charCodeAt(0) == ":".code || NativeString.contains(flags, "@")
-			)) {
+			if (mt[1].length > 0 || flags.contains("@")) {
 				lwInst.set(name, true);
 				if (orig != name) lwInst.set(orig, true);
 			}
 			if (lwArg0 != null) {
-				var argc:Int;
-				if (NativeString.contains(args, "...") || NativeString.contains(args, "?")) {
-					argc = -1;
-				} else if (NativeString.contains(args, ",")) {
-					argc = args.split(",").length;
-				} else {
-					argc = NativeString.trimBoth(args).length > 0 ? 1 : 0;
-				}
-				var arg0:Int, arg1:Int;
-				if (argc == -1) {
-					arg0 = 0;
-					arg1 = 0x7fffffff;
-				} else {
-					arg0 = argc;
-					arg1 = argc;
-				}
-				lwArg0.set(name, arg0);
-				lwArg1.set(name, arg1);
+				lwArg0[name] = doc.minArgs;
+				lwArg1[name] = doc.maxArgs;
 				if (orig != name) {
-					lwArg0.set(orig, arg0);
-					lwArg1.set(orig, arg1);
+					lwArg0[orig] = doc.minArgs;
+					lwArg1[orig] = doc.maxArgs;
 				}
 			}
 			#end
-			//
+			
 			if (stdKind.exists(name)) return;
-			stdKind.set(name, kindPrefix + "function");
+			
+			stdKind[name] = kindPrefix + "function";
 			if (show) stdComp.push({
 				name: name,
 				value: name,
 				score: 0,
 				meta: "function",
-				doc: comp
+				doc: doc.getAcText()
 			});
 			stdDoc.set(name, doc);
 		});
