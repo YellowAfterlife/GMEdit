@@ -106,7 +106,6 @@ caption_health&
 show_debug_message(val_or_format, ...values)->void
 show_debug_message_ext(format:string, values_arr:array)->void
 debug_get_callstack(?maxDepth:int)->string[]
-font_texture_page_size:int
 
 #endregion
 
@@ -133,7 +132,10 @@ sequence_instance@ //TODO
 // Chapter 406
 //////////////
 
+#region 6.3
 audio_system()&->void
+audio_play_sound_ext(params:any_fields_of<audio_play_sound_ext_t>)->sound_instance
+#endregion
 
 //////////////
 // Chapter 407
@@ -146,6 +148,12 @@ audio_system()&->void
 //////////////
 // Chapter 409
 //////////////
+
+#region 9.4
+font_enable_sdf(ind:font,enable:bool)
+font_get_sdf_enabled(ind:font)->bool
+font_texture_page_size:int
+#endregion
 
 #region 9.6
 

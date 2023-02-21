@@ -1487,6 +1487,7 @@ file_find_next()->string
 file_find_close()->void
 
 file_attributes(fname:string,attr:int|file_attribute)->bool
+fa_none#:file_attribute
 fa_readonly#:file_attribute
 fa_hidden#:file_attribute
 fa_sysfile#:file_attribute

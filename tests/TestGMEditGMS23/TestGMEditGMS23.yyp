@@ -119,6 +119,7 @@
     {"id":{"name":"spr_blank","path":"sprites/spr_blank/spr_blank.yy",},"order":0,},
     {"id":{"name":"i'm a note","path":"notes/i'm a note/i'm a note.yy",},"order":0,},
     {"id":{"name":"v_strict_self","path":"scripts/v_strict_self/v_strict_self.yy",},"order":7,},
+    {"id":{"name":"lint_audio_play_sound_ext","path":"scripts/lint_audio_play_sound_ext/lint_audio_play_sound_ext.yy",},"order":0,},
     {"id":{"name":"v_linter_flags","path":"scripts/v_linter_flags/v_linter_flags.yy",},"order":12,},
     {"id":{"name":"v_enum_tuples","path":"scripts/v_enum_tuples/v_enum_tuples.yy",},"order":1,},
     {"id":{"name":"v_null_safety","path":"scripts/v_null_safety/v_null_safety.yy",},"order":8,},
