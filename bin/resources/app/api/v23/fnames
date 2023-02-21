@@ -84,6 +84,9 @@ is_nan(val)
 is_infinity(val)
 is_struct(val)
 is_method(val)
+is_instanceof(struct, constructor_name)
+static_get(struct_or_func_name)
+static_set(struct, struct)
 typeof(val)
 instanceof(struct)
 exception_unhandled_handler(user_handler)
@@ -116,6 +119,11 @@ array_pop(array)
 array_insert(array,index,val,...)
 array_delete(array,index,number)
 array_sort(array,sortType_or_function)
+array_shuffle(array,[offset],[length])
+array_shuffle_ext(array,[offset],[length])
+array_get_index(array,value,[offset],[length])
+array_contains(array,value,[offset],[length])
+array_contains_ext(array,values,matchAll,[offset],[length])
 array_first(array)
 array_last(array)
 array_create_ext(size,function)
@@ -342,6 +350,7 @@ move_outside_all(dir,maxdist)
 move_bounce_solid(advanced)
 move_bounce_all(advanced)
 move_wrap(hor,vert,margin)
+move_and_collide(dx,dy,obj,[num_iterations], [xoff],[yoff],[max_x_move],[max_y_move])
 distance_to_point(x,y)
 distance_to_object(obj)
 position_empty(x,y)
@@ -477,7 +486,7 @@ room_goto_next()
 room_previous(numb)
 room_next(numb)
 room_restart()
-game_end(...)
+game_end([return_code])
 game_restart()
 game_load(filename)
 game_save(filename)
@@ -1248,6 +1257,7 @@ audio_emitter_gain(emitterid,gain)
 audio_play_sound(soundid,priority,loops,[gain],[offset],[pitch],[listener_mask])
 audio_play_sound_on(emitterid,soundid,loops,priority,[gain],[offset],[pitch],[listener_mask])
 audio_play_sound_at(soundid,x,y,z,falloff_ref_dist,falloff_max_dist,falloff_factor,loops,priority,[gain],[offset],[pitch],[listener_mask])
+audio_play_sound_ext(params)
 audio_stop_sound(soundid)
 audio_resume_music()&
 audio_music_is_playing()&
@@ -1534,6 +1544,9 @@ font_replace_sprite(ind,spr,first,prop,sep)!
 font_replace_sprite_ext(font,spr,string_map,prop,sep)!
 font_delete(ind)!
 
+font_enable_sdf(ind,enable)!
+font_get_sdf_enabled(ind)!
+
 // section 9.5
 
 path_set_kind(ind,kind)
@@ -1560,6 +1573,7 @@ path_shift(ind,xshift,yshift)
 
 script_execute(ind,arg0,arg1,...)
 script_execute_ext(ind,array,[offset=0],[num_args=array_length(array)-offset],...)
+method_call(method,array,[offset=0],[num_args=array_length(array)-offset],...)
 
 // section 9.8
 
@@ -1653,6 +1667,7 @@ file_bin_read_byte(file)
 parameter_count()
 parameter_string(n)
 environment_get_variable(name)
+fa_none#
 fa_readonly#
 fa_hidden#
 fa_sysfile#
@@ -3160,9 +3175,10 @@ tilemap_y(tilemap_element_id,y)
 tilemap_set(tilemap_element_id,tiledata,cell_x,cell_y)
 tilemap_set_at_pixel(tilemap_element_id,tiledata,x,y)
 
-tileset_get_texture(tilemap_element_id)
-tileset_get_uvs(tilemap_element_id)
-tileset_get_name(tilemap_element_id)
+tileset_get_texture(tileset_id)
+tileset_get_uvs(tileset_id)
+tileset_get_name(tileset_id)
+tileset_get_info(tileset_id)
 
 tilemap_get_tileset(tilemap_element_id)
 tilemap_get_tile_width(tilemap_element_id)
@@ -3756,6 +3772,7 @@ call_cancel(handle)
 
 // rollback multiplayer
 rollback_use_manual_start()^rollback
+rollback_use_late_join()^rollback
 rollback_define_player(player_obj,...)^rollback
 rollback_define_input(input)^rollback
 rollback_define_mock_input(player_id,input)^rollback
@@ -3805,14 +3822,15 @@ player_avatar_sprite*@^rollback
 player_type*@^rollback
 player_user_id*@^rollback
 
-audio_bus_main#^audio-fx
+audio_bus_main#
 
-??AudioBus^audio-fx
+??AudioBus
 bypass?
 gain?
 effects?
 
-audio_bus_create()^audio-fx
-audio_effect_create(type)^audio-fx
-audio_emitter_bus(emitter_idx, bus)^audio-fx
-audio_emitter_get_bus(emitter_idx)^audio-fx
+audio_bus_create()
+audio_effect_create(type, [params])
+audio_emitter_bus(emitter_idx, bus)
+audio_emitter_get_bus(emitter_idx)
+audio_bus_get_emitters(bus)
