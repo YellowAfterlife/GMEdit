@@ -63,12 +63,12 @@ class GmlLinter {
 	//
 	public var warnings:Array<GmlLinterProblem> = [];
 	function addWarning(text:String):Void {
-		if (prefs.suppressAll) return;
+		if (prefs.suppressAll || isProperties) return;
 		warnings.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	public var errors:Array<GmlLinterProblem> = [];
 	function addError(text:String):Void {
-		if (prefs.suppressAll) return;
+		if (prefs.suppressAll || isProperties) return;
 		errors.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	//
