@@ -654,7 +654,7 @@ var Mode = function() {
 	this.HighlightRules = MarkdownHighlightRules;
 	
 	this.$outdent = new MatchingBraceOutdent();
-	this.$behaviour = new CstyleBehaviour();
+	this.$behaviour = new CstyleBehaviour({ braces: true });
 	this.foldingRules = new FoldMode();
 };
 oop.inherits(Mode, TextMode);
@@ -690,7 +690,8 @@ oop.inherits(Mode, TextMode);
 	this.autoOutdent = function(state, doc, row) {
 		this.$outdent.autoOutdent(doc, row);
 	};
-
+	
+	this.$quotes = {'"': '"', "'": "'", "`": "`"};
 	this.$id = "ace/mode/markdown";
 }).call(Mode.prototype);
 
