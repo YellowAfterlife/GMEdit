@@ -186,7 +186,8 @@ class YyManip {
 			ntv = TreeView.makeAssetDir(name, pre + "/", "mixed");
 		}
 		else { // not a folder
-			var kindRoot = kind + "s";
+			var kindRoot = kind;
+			if (!kindRoot.endsWith("s")) kindRoot += "s";
 			if (!pj.existsSync(kindRoot)) pj.mkdirSync(kindRoot);
 			var dir = '$kindRoot/$name';
 			var pre = '$dir/$name';
