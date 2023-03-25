@@ -1,3 +1,4 @@
-function seek_index_redirect_magic(one = 1, two = 2, three = 3) {
-
-}
+/// @template A
+function setTimeout_1(fn:function<A,void>, delay:number, arg1:A) {}
+/// @template A,B
+function setTimeout_2(fn:function<A,B,void>, delay:number, arg1:A, arg2:B) {}
