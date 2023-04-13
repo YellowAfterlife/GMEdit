@@ -26,8 +26,8 @@ class AceCtxMenu {
 	public function bind(editor:AceWrap) {
 		this.editor = editor;
 		editor.contextMenu = this;
-		var pos:AcePos;
-		var tk:AceToken;
+		var pos:AcePos = null;
+		var tk:AceToken = null;
 		inline function cb():Clipboard {
 			return Electron.clipboard;
 		}

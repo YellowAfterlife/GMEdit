@@ -31,7 +31,7 @@ class GmlObjectProperties {
 			if (object != null) {
 				if (ovfn != null) {
 					err = ovfn(object, key, v);
-				}
+				} else err = null;
 			} else if (type != null) {
 				var guid = null;
 				while (q.loop) {
