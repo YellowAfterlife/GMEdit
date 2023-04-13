@@ -230,10 +230,13 @@ import yy.YyResourceRef;
 	}
 	public function getInfo(?info:GmlObjectInfo):GmlObjectInfo {
 		var objName = this.name;
+		var v23 = Project.current.isGMS23;
 		if (info == null) {
 			info = new GmlObjectInfo();
 			info.objectName = objName;
-			if (this.spriteId.isValid()) {
+			if (Reflect.isObject(this.spriteId)) {
+				info.spriteName = (cast this.spriteId:YyResourceRef).name;
+			} else if (this.spriteId.isValid()) {
 				var res = Project.current.yyResources[this.spriteId];
 				if (res != null) {
 					info.spriteName = res.Value.resourceName;
@@ -245,7 +248,14 @@ import yy.YyResourceRef;
 		}
 		//
 		for (event in this.eventList) {
-			var eid = YyEvent.toString(event.eventtype, event.enumb, event.collisionObjectId);
+			var eid:String;
+			if (v23) {
+				var cor:YyResourceRef = event.collisionObjectId;
+				var co = cor != null ? cor.name : null;
+				eid = GmlEvent.toString(event.eventType, event.eventNum, co);
+			} else {
+				eid = YyEvent.toString(event.eventtype, event.enumb, event.collisionObjectId);
+			}
 			var elist = info.eventMap[eid];
 			if (elist == null) {
 				elist = [];
