@@ -17,8 +17,9 @@ class GmlSeekerJSDocRegex {
 	);
 	public static var jsDoc_param = new RegExp("^///\\s*"
 		+ "@(?:arg|param|argument)\\s+"
-		+ "(?:\\{(.*?)\\}\\s*)?" // {type}?
-		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value` -> $1
+		+ "(?:\\{" + "(.*?)" + "\\}\\s*)?" // {type}? -> $1
+		+ "(" + "(\\S+)" + "(\\s+=" + "(.+)" + ")?)" // `arg` or `arg=value` -> $2
+		// arg name -> $3, arg value wrap -> $4, arg value -> $5
 	);
 	public static var jsDoc_hint = new RegExp("^///\\s*"
 		+ "@hint\\b\\s*"

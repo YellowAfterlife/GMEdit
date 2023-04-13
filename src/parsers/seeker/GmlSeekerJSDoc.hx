@@ -6,6 +6,7 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTemplateItem;
 import gml.type.GmlTypeTools;
 import js.lib.RegExp;
+import parsers.GmlReader;
 import parsers.GmlSeekData;
 import parsers.seeker.GmlSeekerImpl;
 import parsers.seeker.GmlSeekerJSDocRegex.*;
@@ -305,12 +306,29 @@ class GmlSeekerJSDoc {
 				args = [];
 				types = [];
 			}
-			var argText = mt[2];
 			var argType = mt[1];
-			for (arg in argText.split(",")) {
+			var argNames = mt[3];
+			var argValueWrap = mt[4];
+			var showArgTypes = ui.Preferences.current.showArgTypesInStatusBar;
+			var argNameArr = argNames.split(",");
+			for (i => arg in argNameArr) {
+				if (arg.contains("...")) rest = true;
+				if (argValueWrap != null && i == argNameArr.length - 1) {
+					if (arg.endsWith("]")) {
+						arg = arg.substring(0, arg.length - 1);
+						if (showArgTypes) arg += ":" + argType;
+						arg += argValueWrap + "]";
+					} else {
+						if (showArgTypes) arg += ":" + argType;
+						arg += argValueWrap;
+					}
+				} else if (showArgTypes) {
+					if (arg.endsWith("]")) {
+						arg = arg.substring(0, arg.length - 1) + ":" + argType + "]";
+					} else arg += ":" + argType;
+				}
 				args.push(arg);
 				types.push(argType);
-				if (arg.contains("...")) rest = true;
 			}
 			return; // found!
 		}

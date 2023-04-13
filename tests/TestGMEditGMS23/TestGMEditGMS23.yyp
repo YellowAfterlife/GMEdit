@@ -56,6 +56,7 @@
   "resources": [
     {"id":{"name":"lint_new","path":"scripts/lint_new/lint_new.yy",},"order":0,},
     {"id":{"name":"obj_test","path":"objects/obj_test/obj_test.yy",},"order":0,},
+    {"id":{"name":"v_doc_param","path":"scripts/v_doc_param/v_doc_param.yy",},"order":0,},
     {"id":{"name":"obj_variable_definitions","path":"objects/obj_variable_definitions/obj_variable_definitions.yy",},"order":8,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":0,},
     {"id":{"name":"v_doc_template","path":"scripts/v_doc_template/v_doc_template.yy",},"order":0,},
