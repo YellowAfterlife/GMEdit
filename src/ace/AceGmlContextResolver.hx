@@ -63,6 +63,7 @@ class AceGmlContextResolver {
 					}
 					
 					// position ltReader after the `with` keyword:
+					lt.context = scope;
 					ltReader.source = session.getLine(iter_row);
 					ltReader.length = ltReader.source.length;
 					ltReader.pos = iter_col + iter_tk.length;
