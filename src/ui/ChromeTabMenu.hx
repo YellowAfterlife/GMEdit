@@ -25,6 +25,9 @@ class ChromeTabMenu {
 	static var findReferences:MenuItem;
 	#end
 	static var pinItem:MenuItem;
+	static var pinAsItem:MenuItem;
+	static var pinAsMenu:Menu;
+	static var pinAsMenuItems:Array<MenuItem>;
 	static var unpinItem:MenuItem;
 	static var closeIdleItem:MenuItem;
 	public static function show(el:ChromeTab, ev:MouseEvent) {
@@ -32,10 +35,20 @@ class ChromeTabMenu {
 		var file = el.gmlFile;
 		var hasFile = file.path != null;
 		
+		var tabPrefs = Preferences.current.chromeTabs;
 		var pinned = el.classList.contains(ChromeTabs.clPinned);
-		pinItem.visible = !pinned;
+		var pinLayers = tabPrefs.pinLayers;
+		pinItem.visible = !pinned && !pinLayers;
+		pinAsItem.visible = pinLayers;
+		if (pinLayers) {
+			var pinLayer = el.pinLayer;
+			for (i => item in pinAsMenuItems) {
+				if (item == null) continue;
+				item.checked = pinLayer == i;
+			}
+		}
 		unpinItem.visible = pinned;
-		closeIdleItem.visible = Preferences.current.chromeTabs.idleTime > 0;
+		closeIdleItem.visible = tabPrefs.idleTime > 0;
 		
 		#if !lwedit
 		showInDirectoryItem.enabled = hasFile;
@@ -155,12 +168,33 @@ class ChromeTabMenu {
 		}));
 		
 		menu.appendSep("pin-sep");
+		pinAsMenu = new Menu();
+		pinAsMenuItems = [for (_ in 0 ... 10) null];
+		for (_i in -9 ... 1) {
+			var i = -_i;
+			pinAsMenuItems[i] = pinAsMenu.appendOpt({
+				id: "pinAs" + i,
+				label: i == 0 ? "Unpinned" : "Layer " + i,
+				type: MenuItemType.Check,
+				click: function() {
+					ChromeTabs.impl.setTabPinLayer(target, i);
+					ChromeTabs.impl.layoutTabs();
+				},
+			});
+		}
+		pinAsItem = menu.appendOpt({
+			id: "pinAs",
+			label: "Pin...",
+			icon: Menu.silkIcon("pin"),
+			submenu: pinAsMenu,
+		});
 		pinItem = menu.appendOpt({
 			id: "pin",
 			label: "Pin",
 			icon: Menu.silkIcon("pin"),
 			click: function() {
-				target.classList.add(ChromeTabs.clPinned);
+				ChromeTabs.impl.setTabPinLayer(target, 1);
+				ChromeTabs.impl.layoutTabs();
 			}
 		});
 		unpinItem = menu.appendOpt({
@@ -168,9 +202,11 @@ class ChromeTabMenu {
 			label: "Unpin",
 			icon: Menu.silkIcon("pin"),
 			click: function() {
-				target.classList.remove(ChromeTabs.clPinned);
+				ChromeTabs.impl.setTabPinLayer(target, 0);
+				ChromeTabs.impl.layoutTabs();
 			}
 		});
+		
 		closeIdleItem = menu.appendOpt({
 			id: "close-idle",
 			label: "Close idle tabs",

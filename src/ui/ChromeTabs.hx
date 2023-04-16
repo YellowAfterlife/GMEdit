@@ -312,6 +312,7 @@ class ChromeTabs {
 	public function setCurrentTab(tab:Element):Void;
 	public function removeTab(tabEl:ChromeTab):Void;
 	public function layoutTabs():Void;
+	public function setTabPinLayer(tab:ChromeTab, pinLayer:Int):Void;
 	public var tabEls(default, never):Array<ChromeTab>;
 	public var tabPositions(default, never):Array<{left:Int, top:Int}>;
 	public var options:Dynamic;
@@ -361,6 +362,14 @@ extern class ChromeTab extends Element {
 		return z;
 	}
 	
+	public var pinLayer(get, set):Int;
+	private inline function get_pinLayer() {
+		return ChromeTabTools.getPinLayer(this);
+	}
+	private inline function set_pinLayer(val:Int) {
+		return ChromeTabTools.setPinLayer(this, val);
+	}
+	
 	/** Last access time, as JS Date.now() */
 	public var gmlATime:Null<Float>;
 	public inline function syncATime():Void {
@@ -375,4 +384,16 @@ extern class ChromeTab extends Element {
 extern class ChromeTabList implements ArrayAccess<ChromeTab> {
 	public var length(default, never):Int;
 	public function item(index:Int):ChromeTab;
+}
+class ChromeTabTools {
+	public static function getPinLayer(tab:ChromeTab) {
+		var val = tab.dataset.pinLayer;
+		return val != null ? Std.parseInt(val) : 0;
+	}
+	public static function setPinLayer(tab:ChromeTab, val:Null<Int>) {
+		if (val > 0) {
+			tab.dataset.pinLayer = Std.string(val);
+		} else js.Syntax.delete(tab.dataset, "pinLayer");
+		return val;
+	}
 }

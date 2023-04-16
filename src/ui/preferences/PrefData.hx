@@ -81,6 +81,7 @@ import haxe.DynamicAccess;
 			lockPinnedTabs: false,
 			multilineStretchStyle: 1,
 			idleTime: 0,
+			pinLayers: false,
 		},
 	};
 }
@@ -173,6 +174,7 @@ typedef PrefDataImpl = {
 		idleTime:Int,
 		/** 0: don't, 1: stretch all, 2: stretch last */
 		multilineStretchStyle:Int,
+		pinLayers:Bool,
 	},
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {

@@ -109,6 +109,30 @@
       this.animationStyleEl = document.createElement('style')
       this.el.appendChild(this.animationStyleEl)
     }
+    
+    setTabPinLayer(target, pinLayer) {
+      if (pinLayer > 0) {
+        if (target.classList.contains("chrome-tab-pinned") && (0|target.dataset.pinLayer) == pinLayer) return;
+        target.classList.add("chrome-tab-pinned");
+        target.dataset.pinLayer = pinLayer;
+      } else {
+        if (!target.classList.contains("chrome-tab-pinned")) return;
+        target.classList.remove("chrome-tab-pinned");
+        delete target.dataset.pinLayer;
+      }
+      let insertAfter = null;
+      let tabEls = this.tabEls;
+      for (let tabEl of tabEls) {
+        if (tabEl == target) continue;
+        let tabPinLayer = tabEl.classList.contains("chrome-tab-pinned") ? (0|tabEl.dataset.pinLayer) : 0;
+        if (tabPinLayer >= pinLayer) insertAfter = tabEl;
+      }
+      if (insertAfter) {
+        insertAfter.after(target);
+      } else {
+        if (target != tabEls[0]) tabEls[0].before(target);
+      }
+    }
 
     setupEvents() {
       window.addEventListener('resize', event => {
@@ -116,8 +140,11 @@
       })
 
       //this.el.addEventListener('dblclick', event => this.addTab())
-      this.el.addEventListener('mouseup', ({which, target}) => {
+      this.el.addEventListener('mouseup', (e) => {
+        let target = e.target;
+        let which = e.which;
         if (which != 2) return;
+        e.preventDefault();
         let tcl = target.classList;
         if (tcl.contains('chrome-tab') || tcl.contains('chrome-tab-close') || tcl.contains('chrome-tab-title') || tcl.contains('chrome-tab-title-text') || tcl.contains('chrome-tab-favicon')) {
           let tab = tcl.contains('chrome-tab') ? target : target.parentElement;
@@ -129,22 +156,11 @@
       this.el.addEventListener('click', (e) => {
         let target = e.target
         if (target.classList.contains('chrome-tab')) {
-          if (e.ctrlKey) {
-            if (target.classList.toggle("chrome-tab-pinned")) {
-              for (let tabEl of this.tabEls) {
-                if (!tabEl.classList.contains("chrome-tab-pinned")) {
-                  tabEl.before(target)
-                  break
-                }
-              }
+          if (e.ctrlKey) { // pin/unpin
+            if (target.classList.contains("chrome-tab-pinned")) {
+              this.setTabPinLayer(target, 0);
             } else {
-              let lastPinned = null
-              for (let tabEl of this.tabEls) {
-                if (tabEl.classList.contains("chrome-tab-pinned")) {
-                  lastPinned = tabEl
-                }
-              }
-              if (lastPinned) lastPinned.after(target)
+              this.setTabPinLayer(target, 1);
             }
             this.layoutTabs()
           } else this.setCurrentTab(target)
@@ -224,7 +240,7 @@
       let overflow = false
       //console.log(tabEffectiveWidth, tabsContentWidth)
       
-      let wasPinned = false
+      let lastPinLayer = 0
       for (let tabEl of tabEls) {
         //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
         let width
@@ -247,9 +263,9 @@
             lineBreak = true
             fitToWidth = true
           } else if (rowBreakAfterPinnedTabs) {
-            let isPinned = tabEl.classList.contains("chrome-tab-pinned")
-            if (!isPinned && wasPinned) lineBreak = true
-            wasPinned = isPinned
+            let pinLayer = tabEl.classList.contains("chrome-tab-pinned") ? (0|tabEl.dataset.pinLayer) : 0;
+            if (pinLayer < lastPinLayer) lineBreak = true
+            lastPinLayer = pinLayer
           }
         }
         if (lineBreak) {
@@ -295,7 +311,7 @@
             overflow = true
             tabsContentWidth += systemButtons.offsetWidth;
           }
-        } else {
+        } else { // not linebreak
           tabsPerRow += 1
         }
         positions.push({ tabEl, left, top, row, column, width })

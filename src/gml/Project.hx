@@ -337,7 +337,9 @@ import ui.treeview.TreeViewElement;
 			var tab:ChromeTab = cast _tab;
 			var ts = tab.gmlFile.kind.saveTabState(tab);
 			if (ts != null) {
-				if (tab.isPinned) ts.pinned = true;
+				if (tab.isPinned) {
+					ts.pinned = tab.pinLayer;
+				}
 				if (tab.isOpen) activeTab = tabs.length;
 				tabs.push(ts);
 			}
@@ -404,7 +406,18 @@ import ui.treeview.TreeViewElement;
 				}
 				
 				if (file != null) {
-					if (tabState.pinned) file.tabEl.classList.add("chrome-tab-pinned");
+					var pinLayerVal = tabState.pinned;
+					var pinLayer:Int;
+					if (pinLayerVal == null) {
+						pinLayer = 0;
+					} else if (pinLayerVal is Bool) {
+						pinLayer = (pinLayerVal:Bool) ? 1 : 0;
+					} else {
+						pinLayer = (pinLayerVal:Int);
+					}
+					if (pinLayer > 0) {
+						ChromeTabs.impl.setTabPinLayer(file.tabEl, pinLayer);
+					}
 					if (i == state.activeTab) activeFile = file;
 				}
 			} catch (x:Dynamic) {
