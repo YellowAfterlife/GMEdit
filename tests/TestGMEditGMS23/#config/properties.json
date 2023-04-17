@@ -1,6 +1,7 @@
 {
     "indentWithTabs": true,
     "linterPrefs": {
+        "addMissingArgsToJSDoc": true,
         "implicitBoolIntCasts": false,
         "requireFields": true,
         "specTypeColon": true,

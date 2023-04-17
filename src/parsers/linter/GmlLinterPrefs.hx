@@ -16,6 +16,7 @@ package parsers.linter;
 		requireFunctions: true,
 		checkHasReturn: true,
 		checkScriptArgumentCounts: true,
+		addMissingArgsToJSDoc: true,
 		
 		specTypeVar: false,
 		specTypeStatic: false,
@@ -52,6 +53,8 @@ typedef GmlLinterPrefsImpl = {
 	?requireFunctions:Bool,
 	?checkHasReturn:Bool,
 	?checkScriptArgumentCounts:Bool,
+	
+	?addMissingArgsToJSDoc:Bool,
 	
 	/** auto-infer for `var` */
 	?specTypeVar:Bool,

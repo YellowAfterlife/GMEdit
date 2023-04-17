@@ -4,6 +4,7 @@ import gml.GmlFuncDoc;
 import gml.GmlLocals;
 import gml.type.GmlTypeTemplateItem;
 import parsers.GmlSeekData.GmlSeekDataNamespaceHint;
+import parsers.linter.GmlLinter;
 import parsers.seeker.GmlSeekerImpl;
 import parsers.seeker.GmlSeekerParser;
 import tools.CharCode;
@@ -39,13 +40,14 @@ class GmlSeekerProcDefine {
 	/** "int" for "(a, b)->int" */
 	public static var procFuncLiteralArgs_returnType:String = null;
 	/** "(a, b)" for "(a, b)->int" */
-	public static function procFuncLiteralArgs(seeker:GmlSeekerImpl, out:Bool):String {
+	public static function procFuncLiteralArgs(seeker:GmlSeekerImpl, out:Bool, ?argNames:Array<String>):String {
 		if (seeker.find(Par0) != "(") {
 			if (out) procFuncLiteralArgs_returnType = null;
 			return null;
 		}
 		var q = seeker.reader;
 		var start = q.pos - 1;
+		var argStart = q.pos;
 		var wantArgName = true;
 		var depth = 1;
 		while (q.loop) {
@@ -53,8 +55,20 @@ class GmlSeekerProcDefine {
 			switch (s) {
 				case null: break;
 				case "(": depth++;
-				case ")": if (--depth <= 0) break;
-				case ",": if (depth == 1) wantArgName = true;
+				case ")": if (--depth <= 0) {
+					if (argNames != null) {
+						argNames.push(q.substring(argStart, q.pos - 1).trimBoth());
+					}
+					break;
+				}
+				case ",":
+					if (depth == 1 && !wantArgName) {
+						wantArgName = true;
+						if (argNames != null) {
+							argNames.push(q.substring(argStart, q.pos - 1).trimBoth());
+							argStart = q.pos;
+						}
+					}
 				default:
 					if (wantArgName) {
 						wantArgName = false;
@@ -101,10 +115,16 @@ class GmlSeekerProcDefine {
 			}
 			if (seeker.isCreateEvent && curlyDepth == 0 && fname != null) {
 				var argsStart = q.pos;
-				var args = procFuncLiteralArgs(seeker, true);
+				var litArgs = GmlLinter.getOption(p->p.addMissingArgsToJSDoc) ? [] : null;
+				var args = procFuncLiteralArgs(seeker, true, litArgs);
 				if (args == null) args = "()";
 				var argTypes = null;
 				if (jsDoc.args != null) {
+					// does the function itself have more named arguments than JSDoc?
+					if (litArgs != null) for (i in jsDoc.args.length ... litArgs.length) {
+						jsDoc.args.push(litArgs[i]);
+					}
+					
 					args = "(" + jsDoc.args.join(", ") + ")";
 					argTypes = jsDoc.typesFlush(null, fname);
 					jsDoc.args = null;
@@ -149,12 +169,26 @@ class GmlSeekerProcDefine {
 				var openPos = q.pos;
 				var depth = 1;
 				var awaitArgName = true;
+				var checkJsDocArgs = isDefine && jsDoc.args != null;
+				var litArgs = checkJsDocArgs && GmlLinter.getOption(p->p.addMissingArgsToJSDoc) ? [] : null;
+				var argStart = q.pos;
 				while (q.loop) {
 					var c = q.read();
 					switch (c) {
 						case "(".code, "{".code, "[".code: depth++;
-						case ")".code, "}".code, "]".code: if (--depth <= 0) break;
-						case ",".code: if (depth == 1) awaitArgName = true;
+						case ")".code, "}".code, "]".code: if (--depth <= 0) {
+							if (litArgs != null) {
+								litArgs.push(q.substring(argStart, q.pos - 1).trimBoth());
+							}
+							break;
+						}
+						case ",".code: if (depth == 1 && !awaitArgName) {
+							if (litArgs != null) {
+								litArgs.push(q.substring(argStart, q.pos - 1).trimBoth());
+								argStart = q.pos;
+							}
+							awaitArgName = true;
+						}
 						case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, q.version);
 						case "/".code: switch (q.peek()) {
 							case "/".code: q.skipLine();
@@ -171,7 +205,11 @@ class GmlSeekerProcDefine {
 						};
 					}
 				}
-				if (isDefine && jsDoc.args != null) {
+				if (checkJsDocArgs) {
+					if (litArgs != null) for (i in jsDoc.args.length ... litArgs.length) {
+						jsDoc.args.push(litArgs[i]);
+					}
+					
 					// `@param` override the parsed arguments
 					var doc = GmlFuncDoc.create(main, jsDoc.args, jsDoc.rest);
 					doc.argTypes = jsDoc.typesFlush(null, main);
@@ -198,7 +236,7 @@ class GmlSeekerProcDefine {
 				seeker.docIsAutoFunc = isFunc;
 				seeker.linkDoc();
 			}
-		}
+		} // end of possible arguments
 		//
 		if (isDefine && seeker.canDefineComp) {
 			seeker.mainComp = new AceAutoCompleteItem(main, "script", seeker.doc != null 
