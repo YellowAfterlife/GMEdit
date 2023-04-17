@@ -110,9 +110,12 @@
       this.el.appendChild(this.animationStyleEl)
     }
     
-    setTabPinLayer(target, pinLayer) {
+    getTabPinLayer(tabEl) {
+      return tabEl.classList.contains("chrome-tab-pinned") ? (0|tabEl.dataset.pinLayer) : 0;
+    }
+    setTabPinLayer(target, pinLayer, move) {
       if (pinLayer > 0) {
-        if (target.classList.contains("chrome-tab-pinned") && (0|target.dataset.pinLayer) == pinLayer) return;
+        if (this.getTabPinLayer(target) == pinLayer) return;
         target.classList.add("chrome-tab-pinned");
         target.dataset.pinLayer = pinLayer;
       } else {
@@ -120,11 +123,13 @@
         target.classList.remove("chrome-tab-pinned");
         delete target.dataset.pinLayer;
       }
+      
+      if (!move) return;
       let insertAfter = null;
       let tabEls = this.tabEls;
       for (let tabEl of tabEls) {
         if (tabEl == target) continue;
-        let tabPinLayer = tabEl.classList.contains("chrome-tab-pinned") ? (0|tabEl.dataset.pinLayer) : 0;
+        let tabPinLayer = this.getTabPinLayer(tabEl);
         if (tabPinLayer >= pinLayer) insertAfter = tabEl;
       }
       if (insertAfter) {
@@ -139,29 +144,31 @@
         if (!this.ignoreResize) this.layoutTabs()
       })
 
-      //this.el.addEventListener('dblclick', event => this.addTab())
+      this.el.addEventListener('mousedown', (e) => {
+        if (e.button == 1) {
+          // have to preventDefault() on middle click or the browser might start scrolling the container when closing a tab
+          e.preventDefault()
+          return false
+        }
+      })
+      
       this.el.addEventListener('mouseup', (e) => {
+        if (e.button != 1) return;
         let target = e.target;
-        let which = e.which;
-        if (which != 2) return;
-        e.preventDefault();
         let tcl = target.classList;
         if (tcl.contains('chrome-tab') || tcl.contains('chrome-tab-close') || tcl.contains('chrome-tab-title') || tcl.contains('chrome-tab-title-text') || tcl.contains('chrome-tab-favicon')) {
           let tab = tcl.contains('chrome-tab') ? target : target.parentElement;
           if (tcl.contains('chrome-tab-title-text')) tab = tab.parentElement;
           if (tab) tab.querySelector('.chrome-tab-close').click();
         }
+        return false;
       })
 
       this.el.addEventListener('click', (e) => {
         let target = e.target
         if (target.classList.contains('chrome-tab')) {
           if (e.ctrlKey) { // pin/unpin
-            if (target.classList.contains("chrome-tab-pinned")) {
-              this.setTabPinLayer(target, 0);
-            } else {
-              this.setTabPinLayer(target, 1);
-            }
+            this.setTabPinLayer(target, target.classList.contains("chrome-tab-pinned") ? 0 : 1, true)
             this.layoutTabs()
           } else this.setCurrentTab(target)
         } else if (target.classList.contains('chrome-tab-close')) {
@@ -263,7 +270,7 @@
             lineBreak = true
             fitToWidth = true
           } else if (rowBreakAfterPinnedTabs) {
-            let pinLayer = tabEl.classList.contains("chrome-tab-pinned") ? (0|tabEl.dataset.pinLayer) : 0;
+            let pinLayer = this.getTabPinLayer(tabEl)
             if (pinLayer < lastPinLayer) lineBreak = true
             lastPinLayer = pinLayer
           }
@@ -482,14 +489,8 @@
               source = t
             }
             
-            if (source.classList.contains('chrome-tab-pinned') != target.classList.contains('chrome-tab-pinned')) {
-              for (let tabEl of this.tabEls) {
-                if (!tabEl.classList.contains('chrome-tab-pinned')) {
-                  target = tabEl
-                  break
-                }
-              }
-            }
+            // when dropping the tab to another row, update its pinned status accordingly
+            this.setTabPinLayer(source, this.getTabPinLayer(target))
             
             source.parentElement.insertBefore(source, target)
             this.simpleDragTab = null

@@ -312,7 +312,7 @@ class ChromeTabs {
 	public function setCurrentTab(tab:Element):Void;
 	public function removeTab(tabEl:ChromeTab):Void;
 	public function layoutTabs():Void;
-	public function setTabPinLayer(tab:ChromeTab, pinLayer:Int):Void;
+	public function setTabPinLayer(tab:ChromeTab, pinLayer:Int, ?move:Bool):Void;
 	public var tabEls(default, never):Array<ChromeTab>;
 	public var tabPositions(default, never):Array<{left:Int, top:Int}>;
 	public var options:Dynamic;

@@ -177,7 +177,7 @@ class ChromeTabMenu {
 				label: i == 0 ? "Unpinned" : "Layer " + i,
 				type: MenuItemType.Check,
 				click: function() {
-					ChromeTabs.impl.setTabPinLayer(target, i);
+					ChromeTabs.impl.setTabPinLayer(target, i, true);
 					ChromeTabs.impl.layoutTabs();
 				},
 			});
