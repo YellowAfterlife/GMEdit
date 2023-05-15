@@ -241,6 +241,9 @@ using tools.NativeArray;
 		if (version.hasTemplateStrings()) {
 			rBase.push(rxPush("string", ~/`/, "gml.string.tpl"));
 		}
+		if (version.hasQuoteTemplateStrings()) {
+			rBase.push(rxPush("string", ~/\$"/, "gml.string.tpl.dq"));
+		}
 		//{ braces
 		var rCurlyOpen:AceLangRule = {
 			regex: "\\{",
@@ -406,6 +409,17 @@ using tools.NativeArray;
 			rxRule("string", ~/.*?["]/, "pop"),
 			rxRule("string", ~/.+/),
 		];
+		var rString_esc = [ //{ GMS2 strings with escape characters
+			rule("string.escape", "\\\\(?:"
+				+ "x[0-9a-fA-F]{2}|" // \x41
+				+ "u[0-9a-fA-F]{4}|" // \u1234
+				// there's also octal which doesn't work (?)
+			+ ".)"),
+			// (this is to allow escaping linebreaks, which is honestly a strange thing)
+			({ token : "string", regex : "\\\\$", consumeLineEnd : true }:AceLangRule),
+			rule("string", '"|$', "pop"),
+			rdef("string"),
+		]; //}
 		var rString_tpl_id:AceLangRule = {
 			regex: "(\\$)([a-zA-Z_]\\w*)",
 			onMatch: function(
@@ -423,6 +437,9 @@ using tools.NativeArray;
 			rxRule("string", ~/[`]/, "pop"),
 			rdef("string"),
 		];
+		var rString_tpl_dq = [
+			rxPush(["curly.paren.lparen"], ~/(\{)/, "gml.tpl"),
+		].concat(rString_esc);
 		if (fakeMultiline) {
 			var eol = rule("string", ".*?$", "pop");
 			rPragma_sq.unshift(eol);
@@ -430,6 +447,7 @@ using tools.NativeArray;
 			rString_sq.insert(1, eol);
 			rString_dq.insert(1, eol);
 			rString_tpl.insert(1, eol);
+			rString_tpl_dq.insert(1, eol);
 		}
 		//}
 		//{ #mfunc
@@ -511,20 +529,11 @@ using tools.NativeArray;
 				rule("impfield", "@\\w+"),
 				rule("text", "[ \t]*$", "pop"),
 			].concat(rBase), //}
-			"gml.string.esc": [ //{ GMS2 strings with escape characters
-				rule("string.escape", "\\\\(?:"
-					+ "x[0-9a-fA-F]{2}|" // \x41
-					+ "u[0-9a-fA-F]{4}|" // \u1234
-					// there's also octal which doesn't work (?)
-				+ ".)"),
-				// (this is to allow escaping linebreaks, which is honestly a strange thing)
-				({ token : "string", regex : "\\\\$", consumeLineEnd : true }:AceLangRule),
-				rule("string", '"|$', "pop"),
-				rdef("string"),
-			], //}
+			"gml.string.esc": rString_esc,
 			"gml.string.sq": rString_sq,
 			"gml.string.dq": rString_dq,
 			"gml.string.tpl": rString_tpl,
+			"gml.string.tpl.dq": rString_tpl_dq,
 			"gml.tpl": [ // values inside template strings
 				rxPush("curly.paren.lparen", ~/\{/, "gml.tpl"),
 				rxRule("curly.paren.rparen", ~/\}/, "pop")

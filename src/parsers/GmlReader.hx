@@ -127,23 +127,41 @@ using tools.NativeString;
 		return n;
 	}
 	
-	public function skipStringTemplate(version:GmlVersion):Int {
+	/**
+	 * 
+	 * @param	version
+	 * @param	isDqTpl Whether this is a $"string"
+	 * @return	number of lines skipped
+	 */
+	public function skipStringTemplate(version:GmlVersion, ?isDqTpl:Bool):Int {
 		var n = 0;
 		var esc = version.hasStringEscapeCharacters();
+		var stop = isDqTpl ? '"'.code : '`'.code;
 		while (loop) {
 			var c = read();
 			if (c == "\\".code) {
 				if (esc) {
-					switch (read()) {
-						case "x".code: pos += 2;
-						case "u".code: pos += 4;
+					var c = read();
+					var max = -1;
+					switch (c) {
+						// todo: was it "\u22" that you could do
+						case "x".code: max = 2;
+						case "u".code: max = 6;
+						// no need to check for stop-char, we've just read it
+					}
+					if (max > 0) for (_ in 0 ... max) {
+						c = peek();
+						if (inline c.isHex()) skip(); else break;
 					}
 				} else {
-					if (peek() == "`".code) skip();
+					if (peek() == stop) skip();
 				}
-			} else if (c == "`".code) {
+			} else if (c == stop) {
 				break;
-			} else if (c == "$".code && peek() == "{".code) {
+			} else if (isDqTpl
+				? (c == "{".code)
+				: (c == "$".code && peek() == "{".code)
+			) {
 				skip();
 				var depth = 0;
 				while (loop) {
@@ -162,6 +180,7 @@ using tools.NativeString;
 						case '"'.code, "'".code, "@".code, "`".code: {
 							skipStringAuto(c, version);
 						};
+						case "$".code if (isDqTplStart(version)): skipDqTplString(version);
 					}
 				}
 			} else if (c == "\n".code) n++;
@@ -248,6 +267,15 @@ using tools.NativeString;
 			};
 			default: return 0;
 		}
+	}
+	
+	/** Is this a `$¦"health: {hp}"`? */
+	public inline function isDqTplStart(version:GmlVersion):Bool {
+		return peek() == '"'.code && version.hasQuoteTemplateStrings();
+	}
+	public inline function skipDqTplString(version:GmlVersion):Int {
+		skip(1);
+		return skipStringTemplate(version, true);
 	}
 
 	public function readStringAuto(startquote:CharCode):String {

@@ -63,6 +63,7 @@ class GmlExtHyper extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 					var ctx = q.readContextName(null);
 				};
@@ -91,6 +92,7 @@ class GmlExtHyper extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code: {
 					if (q.substr(p + 1, 5) == "hyper") {
 						q.skipLine();

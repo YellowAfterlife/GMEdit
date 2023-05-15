@@ -127,6 +127,7 @@ class GmlExtMFunc {
 						case "*".code: q.skip(); q.skipComment();
 					}
 					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
+					case "$".code if (q.isDqTplStart(v)): q.skipDqTplString(v);
 					case "#".code: {
 						if (p == 0 || q.get(p - 1) == "\n".code) {
 							var ctx = q.readContextName(null);
@@ -311,6 +312,7 @@ class GmlExtMFunc {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
+				case "$".code if (q.isDqTplStart(v)): q.skipDqTplString(v);
 				case "#".code: {
 					if (q.peek() == "m".code &&
 						q.peek(1) == "a".code &&
@@ -443,6 +445,7 @@ class GmlExtMFunc {
 						default:
 					};
 					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+					case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 					case ",".code: if (depth == 1) {
 						flushArg(p);
 						start = q.pos;
@@ -483,6 +486,7 @@ class GmlExtMFunc {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code if (q.substr(p + 1, 5) == "mfunc" && !q.get(p + 6).isIdent1()): {
 					flush(p);
 					q.skip(6);
@@ -615,6 +619,7 @@ class GmlExtMFunc {
 								argStart = q.pos;
 							};
 							case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+							case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 							case "\r".code, "\n".code: {
 								switch (q.get(p - 1)) {
 									case "\r".code: {}; // it's \r\n

@@ -95,6 +95,7 @@
     {"id":{"name":"v_literal_fields","path":"scripts/v_literal_fields/v_literal_fields.yy",},"order":1,},
     {"id":{"name":"v_constructor_inner_args","path":"scripts/v_constructor_inner_args/v_constructor_inner_args.yy",},"order":2,},
     {"id":{"name":"v_private_fields","path":"scripts/v_private_fields/v_private_fields.yy",},"order":5,},
+    {"id":{"name":"v_dq_template_strings","path":"scripts/v_dq_template_strings/v_dq_template_strings.yy",},"order":0,},
     {"id":{"name":"v_truthy_instance","path":"scripts/v_truthy_instance/v_truthy_instance.yy",},"order":2,},
     {"id":{"name":"v_self","path":"scripts/v_self/v_self.yy",},"order":4,},
     {"id":{"name":"obj_self_object","path":"objects/obj_self_object/obj_self_object.yy",},"order":4,},

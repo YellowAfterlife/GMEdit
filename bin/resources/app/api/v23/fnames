@@ -65,7 +65,9 @@ GM_version#
 GM_runtime_version#
 GM_project_filename#
 GM_build_type#
-
+_GM_LINE_#
+_GM_FILE_#
+_GM_FUNCTION_#
 // section 2.2
 
 is_real(val)
@@ -76,15 +78,13 @@ is_undefined(val)
 is_int32(val)
 is_int64(val)
 is_ptr(val)
-is_vec3(val)
-is_vec4(val)
-is_matrix(val)&
 is_bool(val)
 is_nan(val)
 is_infinity(val)
 is_struct(val)
 is_method(val)
 is_instanceof(struct, constructor_name)
+is_callable(val)
 static_get(struct_or_func_name)
 static_set(struct, struct)
 typeof(val)
@@ -103,7 +103,18 @@ variable_struct_get(struct,name)
 variable_struct_set(struct,name,val)
 variable_struct_get_names(struct)
 variable_struct_names_count(struct)
-variable_struct_remove(struct,name) 
+variable_struct_remove(struct,name)
+variable_get_hash(name)
+variable_clone(var,[depth])
+struct_exists(struct,name)
+struct_get(struct,name)
+struct_set(struct,name,val)
+struct_get_names(struct)
+struct_names_count(struct)
+struct_remove(struct,name) 
+struct_foreach(struct,func)
+struct_get_from_hash(struct,hash)
+struct_set_from_hash(struct,hash,val)
 array_length(variable)
 array_length_1d(variable)&
 array_length_2d(variable, index)&
@@ -116,6 +127,7 @@ array_get(variable,index)
 array_set(variable,index,val)
 array_push(array,val,...)
 array_pop(array)
+array_shift(array)
 array_insert(array,index,val,...)
 array_delete(array,index,number)
 array_sort(array,sortType_or_function)
@@ -208,7 +220,7 @@ lengthdir_y(len,dir)
 
 real(val)
 bool(val)
-string(val_or_template,val0,val1,...)
+string(val_or_template,val0,...)
 int64(val)
 ptr(val)
 string_format(val,total,dec)
@@ -243,18 +255,18 @@ string_count(substr,str)
 string_hash_to_newline(str)
 
 string_ext(format,arg_array)
-string_trim_start(str)
-string_trim_end(str)
-string_trim(str)
+string_trim_start(str, [substrs])
+string_trim_end(str, [substrs])
+string_trim(str, [substrs])
 string_starts_with(str,substr)
 string_ends_with(str,substr)
-string_split(str,delim,remove_empty,max_splits)
-string_split_ext(str,delim_array,remove_empty,max_splits)
+string_split(str,delim,[remove_empty],[max_splits])
+string_split_ext(str,delim_array,[remove_empty],[max_splits])
 string_join(delim,arg0,arg1,...)
 string_join_ext(delim,val_array)
 string_concat(arg0,arg1,arg2,...)
 string_concat_ext(val_array)
-string_foreach(str,func,pos,length)
+string_foreach(str,func,[pos],[length])
 
 clipboard_has_text()
 clipboard_set_text(str)
@@ -642,6 +654,7 @@ ev_push_notification#
 ev_async_save_load#
 ev_audio_recording#
 ev_audio_playback#
+ev_audio_playback_ended#
 ev_system_event#
 ev_broadcast_message#
 ev_step_normal#
@@ -695,6 +708,7 @@ ev_async_push_notification#
 ev_async_save_load#
 ev_async_audio_recording#
 ev_async_audio_playback#
+ev_async_audio_playback_ended#
 ev_async_system_event#
 
 
@@ -1088,11 +1102,11 @@ audio_new_system#&
 
 audio_mono#
 audio_stereo#
-audio_3d#
+audio_3D#
 
 // section 5.7_1
 
-surface_create(w,h)
+surface_create(w,h,[format])
 surface_create_ext(name,w,h)
 surface_resize(id,width,height)
 surface_free(id)
@@ -1100,6 +1114,7 @@ surface_exists(id)
 surface_get_width(id)
 surface_get_height(id)
 surface_get_texture(id)
+surface_get_format(id)
 surface_set_target(id)
 surface_set_target_ext(index,id)
 surface_get_target()
@@ -1107,6 +1122,7 @@ surface_get_target_ext(index)
 surface_reset_target()
 surface_depth_disable(disable)
 surface_get_depth_disable()
+surface_format_is_supported(format)
 draw_surface(id,x,y)
 draw_surface_stretched(id,x,y,w,h)
 draw_surface_tiled(id,x,y)
@@ -1122,6 +1138,15 @@ surface_save(id,fname)
 surface_save_part(id,fname,x,y,w,h)
 surface_copy(destination,x,y,source)
 surface_copy_part(destination,x,y,source,xs,ys,ws,hs)
+
+surface_rgba8unorm#
+surface_r16float#
+surface_r32float#
+surface_rgba4unorm#
+surface_r8unorm#
+surface_rg8unorm#
+surface_rgba16float#
+surface_rgba32float#
 
 application_surface_draw_enable(on_off)
 application_get_position()
@@ -1168,6 +1193,8 @@ display_set_ui_visibility(flags)
 
 // section 5.9
 
+window_set_showborder(show)
+window_get_showborder()
 window_set_fullscreen(full)
 window_get_fullscreen()
 window_set_caption(caption)
@@ -1281,6 +1308,7 @@ audio_is_playing(soundid)
 audio_is_paused(soundid)
 audio_exists(soundid)
 audio_system_is_available()
+audio_system_is_initialised()
 audio_sound_is_playable(soundid)
 
 //audio revision-getters
@@ -1305,6 +1333,12 @@ audio_sound_get_pitch(index)
 audio_get_name(index)
 audio_sound_set_track_position(index, time)
 audio_sound_get_track_position(index)
+audio_sound_loop(voiceIndex, loopState)
+audio_sound_get_loop(voiceIndex)
+audio_sound_loop_start(index, time)
+audio_sound_get_loop_start(index)
+audio_sound_loop_end(index, time)
+audio_sound_get_loop_end(index)
 audio_create_stream(filename)!
 audio_destroy_stream(stream_sound_id)!
 audio_create_sync_group(looping)
@@ -1328,6 +1362,9 @@ audio_group_name( groupId )
 audio_group_stop_all( groupId )
 audio_group_set_gain( groupId, volume, time )
 audio_group_get_gain(groupId)
+audio_group_get_assets(groupId)
+audio_sound_get_audio_group(index)
+
 audio_create_buffer_sound( bufferId, format, rate, offset, length, channels )!
 audio_free_buffer_sound( soundId )!
 audio_create_play_queue(bufferFormat, sampleRate, channels)!
@@ -1369,8 +1406,8 @@ clickable_set_style(buttonid,map)
 
 show_question(str)
 show_question_async(str)
-get_integer(str,def)
-get_string(str,def)
+get_integer(str,def)&
+get_string(str,def)&
 get_integer_async(str,def)
 get_string_async(str,def)
 get_login_async(username,password)
@@ -1525,12 +1562,20 @@ sprite_duplicate(ind)!
 sprite_assign(ind,source)
 sprite_merge(ind1,ind2)
 sprite_add(fname,imgnumb,removeback,smooth,xorig,yorig)!
+sprite_add_ext(fname,imgnumb,xorig,yorig,prefetch)!
 sprite_replace(ind,fname,imgnumb,removeback,smooth,xorig,yorig)!
 sprite_create_from_surface(id,x,y,w,h,removeback,smooth,xorig,yorig)!
 sprite_add_from_surface(ind,id,x,y,w,h,removeback,smooth)!
 sprite_delete(ind)!
 sprite_set_alpha_from_sprite(ind,spr)
 sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbtop,bbright,bbbottom,kind,tolerance)
+
+sprite_add_ext_error_unknown#
+sprite_add_ext_error_cancelled#
+sprite_add_ext_error_spritenotfound#
+sprite_add_ext_error_loadfailed#
+sprite_add_ext_error_decompressfailed#
+sprite_add_ext_error_setupfailed#
 
 // section 9.4
 
@@ -1546,6 +1591,8 @@ font_delete(ind)!
 
 font_enable_sdf(ind,enable)!
 font_get_sdf_enabled(ind)!
+font_sdf_spread(ind,spread)!
+font_get_sdf_spread(ind)!
 
 // section 9.5
 
@@ -1932,9 +1979,10 @@ pt_shape_smoke#
 pt_shape_snow#
 
 // section 12.2
+particle_get_info(ind)
 
-part_system_create()
-part_system_create_layer(layer,persistent)
+part_system_create([partsys])
+part_system_create_layer(layer,persistent,[partsys])
 part_system_destroy(ind)
 part_system_exists(ind)
 part_system_clear(ind)
@@ -1971,7 +2019,8 @@ ps_shape_rectangle#
 ps_shape_ellipse#
 ps_shape_diamond#
 ps_shape_line#
-
+ps_mode_stream#
+ps_mode_burst#
 
 //////////////
 // Chapter 414
@@ -2367,9 +2416,9 @@ http_post_string(url, string)
 http_request(url, method, header_map, body)
 http_get_request_crossorigin()
 http_set_request_crossorigin(crossorigin_type)
-json_encode(ds_map)
+json_encode(ds_map, [prettify])
 json_decode(string)
-json_stringify(val)
+json_stringify(val, [prettify])
 json_parse(json)
 zip_unzip(file, destPath)
 
@@ -3265,6 +3314,7 @@ camera_create()
 camera_create_view(room_x,room_y,width,height,[angle,object,x_speed,y_speed,x_border,y_border])
 camera_destroy(camera)
 camera_apply(camera)
+camera_copy_transforms(dest_camera,src_camera)
 
 camera_get_active()
 camera_get_default()
@@ -3415,6 +3465,7 @@ asset_clear_tags(asset_name_or_id,[asset_type])
 
 //extension options
 extension_exists(ext_name)
+extension_get_version(ext_name)
 extension_get_option_count(ext_name)
 extension_get_option_names(ext_name)
 extension_get_option_value(ext_name, option_name)
@@ -3674,6 +3725,7 @@ seqtracktype_instance#
 seqtracktype_message#
 seqtracktype_moment#
 seqtracktype_text#
+seqtracktype_particlesystem#
 
 // Sequence playback mode constants
 seqplay_oneshot#
@@ -3822,6 +3874,9 @@ player_avatar_sprite*@^rollback
 player_type*@^rollback
 player_user_id*@^rollback
 
+wallpaper_set_config(config)^rollback
+wallpaper_config^rollback
+
 audio_bus_main#
 
 ??AudioBus
@@ -3829,8 +3884,50 @@ bypass?
 gain?
 effects?
 
+??AudioEffect
+bypass?
+cutoff?
+damp?
+factor?
+feedback?
+gain?
+intensity?
+mix?
+offset?
+q?
+rate?
+resolution?
+shape?
+size?
+time?
+type?#*
+
+AudioEffectType#*
+
+??AudioEffectType
+Bitcrusher?#*
+Delay?#*
+Gain?#*
+HPF2?#*
+LPF2?#*
+Reverb1?#*
+Tremolo?#*
+
+AudioLFOType#*
+
+??AudioLFOType
+InvSawtooth?#*
+Sawtooth?#*
+Sine?#*
+Square?#*
+Triangle?#*
+
 audio_bus_create()
 audio_effect_create(type, [params])
 audio_emitter_bus(emitter_idx, bus)
 audio_emitter_get_bus(emitter_idx)
 audio_bus_get_emitters(bus)
+audio_bus_clear_emitters(bus)
+
+lin_to_db(x)
+db_to_lin(x)

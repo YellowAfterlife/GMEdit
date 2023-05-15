@@ -205,6 +205,13 @@ class GlobalSearchImpl {
 							}
 						}
 					};
+					case "$".code if (!opt.checkStrings && q.isDqTplStart(version)): {
+						q.skipDqTplString(version);
+						if (q.pos > p + 1) {
+							flush(p);
+							start = q.pos;
+						}
+					}
 					case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 						if (q.substr(p, 6) == "#macro") {
 							if (!opt.checkMacros) {

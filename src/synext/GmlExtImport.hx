@@ -244,9 +244,8 @@ class GmlExtImport {
 					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code, "'".code, "`".code, "@".code: {
-					q.skipStringAuto(c, version);
-				};
+				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				default: { };
 			}
 		}
@@ -447,9 +446,8 @@ class GmlExtImport {
 					};
 					case "{".code: cubDepth++;
 					case "}".code: cubDepth--;
-					case '"'.code, "'".code, "`".code, "@".code: {
-						q.skipStringAuto(c, version);
-					};
+					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+					case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 					default: if (c.isIdent0()) {
 						q.skipIdent1();
 						var id = q.substring(p0, q.pos);
@@ -530,9 +528,8 @@ class GmlExtImport {
 							}
 							default:
 						};
-						case '"'.code, "'".code, "`".code, "@".code: {
-							q.skipStringAuto(c, version);
-						};
+						case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+						case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 						case ",".code: argName = null;
 						case _ if (c.isIdent0()): {
 							p = q.pos - 1;
@@ -595,9 +592,8 @@ class GmlExtImport {
 					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code, "'".code, "`".code, "@".code: {
-					q.skipStringAuto(c, version);
-				};
+				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 					var ctx = q.readContextName(null);
 					if (ctx != null) {
@@ -844,9 +840,8 @@ class GmlExtImport {
 						case "*".code: q.skip(); q.skipComment();
 						default:
 					};
-					case '"'.code, "'".code, "`".code, "@".code: {
-						q.skipStringAuto(c, version);
-					};
+					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+					case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 					case "{".code: cubDepth++;
 					case "}".code: cubDepth--;
 					default: if (c.isIdent0()) {
@@ -901,8 +896,8 @@ class GmlExtImport {
 						case "*".code: q.skip(); q.skipComment();
 						default:
 					};
-					case '"'.code, "'".code, "`".code, "@".code:
-						q.skipStringAuto(c, version);
+					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+					case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 					case ":".code:
 						var typeStart = q.pos - 1;
 						if (!q.skipType()) continue;
@@ -964,9 +959,8 @@ class GmlExtImport {
 					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code, "'".code, "`".code, "@".code: {
-					q.skipStringAuto(c, version);
-				};
+				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "{".code: cubDepth++;
 				case "}".code: cubDepth--;
 				case "#".code: {

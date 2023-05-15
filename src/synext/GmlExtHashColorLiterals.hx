@@ -43,6 +43,7 @@ class GmlExtHashColorLiterals extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, q.version);
+				case "$".code if (q.isDqTplStart(q.version)): q.skipDqTplString(q.version);
 				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 					q.readContextName(null);
 				};
@@ -73,6 +74,7 @@ class GmlExtHashColorLiterals extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
+				case "$".code if (q.isDqTplStart(v)): q.skipDqTplString(v);
 				case "#".code: {
 					if ((p == 0 || q.get(p - 1) != "[".code) && rx.test(q.peekstr(7))) {
 						flush(p);

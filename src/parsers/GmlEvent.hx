@@ -149,6 +149,7 @@ class GmlEvent {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code: {
 					if (q.pos > 1) switch (q.get(q.pos - 2)) {
 						case "\r".code, "\n".code: { };

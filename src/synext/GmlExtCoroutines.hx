@@ -81,6 +81,7 @@ class GmlExtCoroutines {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				default: { };
 			}
 		}
@@ -122,6 +123,7 @@ class GmlExtCoroutines {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code if ((p == 0 || q.get(p - 1) == "\n".code) && q.substr(p, 5) == "#gmcr"): {
 					found = true;
 				};

@@ -252,6 +252,7 @@ class GmlExtArgs {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 					if (q.substring(p, p + 7) == "#define") {
 						checkArgs = true; 
@@ -379,9 +380,8 @@ class GmlExtArgs {
 								case "*".code: q.skip(); row += q.skipComment();
 								default:
 							};
-							case '"'.code, "'".code, "`".code, "@".code: {
-								row += q.skipStringAuto(c, version);
-							}
+							case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+							case "$".code if (q.isDqTplStart(version)): row += q.skipDqTplString(version);
 							case "(".code, "[".code, "{".code: depth += 1;
 							case ")".code, "]".code, "}".code: depth -= 1;
 							case ",".code: if (depth <= 0) { q.pos -= 1; break; }
@@ -449,6 +449,7 @@ class GmlExtArgs {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): row += q.skipDqTplString(version);
 				case "#".code: {
 					if (q.substring(p, p + 5) == "#args") {
 						flush(p);

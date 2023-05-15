@@ -186,6 +186,15 @@ class GmlLinterParser {
 					else return retv(KHash, "#");
 				};
 				case "$".code: {
+					if (q.isDqTplStart(l.version)) {
+						start();
+						var rows = q.skipDqTplString(l.version);
+						if (rows > 0) {
+							q.row += rows;
+							q.rowStart = q.source.lastIndexOf("\n", q.pos) + 1;
+						}
+						return ret(KString);
+					}
 					if (q.peek(-2) == '['.code) { // Special case, $ after a [ is always treated as an accessor
 						return retv(KDollar, "$");
 					}

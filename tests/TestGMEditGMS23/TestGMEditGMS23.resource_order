@@ -55,6 +55,7 @@
     {"name":"v_self","order":5,"path":"scripts/v_self/v_self.yy",},
     {"name":"obj_self_object","order":4,"path":"objects/obj_self_object/obj_self_object.yy",},
     {"name":"obj_not_self_object","order":5,"path":"objects/obj_not_self_object/obj_not_self_object.yy",},
+    {"name":"v_dq_template_strings","path":"scripts/v_dq_template_strings/v_dq_template_strings.yy","order":5,},
     {"name":"v_comparisons","order":3,"path":"scripts/v_comparisons/v_comparisons.yy",},
     {"name":"v_ternary_ident","order":2,"path":"scripts/v_ternary_ident/v_ternary_ident.yy",},
     {"name":"obj_user_event_init","order":6,"path":"objects/obj_user_event_init/obj_user_event_init.yy",},

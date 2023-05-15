@@ -190,6 +190,7 @@ class GmlSeekerProcDefine {
 							awaitArgName = true;
 						}
 						case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, q.version);
+						case "$".code if (q.isDqTplStart(q.version)): q.skipDqTplString(q.version);
 						case "/".code: switch (q.peek()) {
 							case "/".code: q.skipLine();
 							case "*".code: q.skip(); q.skipComment();

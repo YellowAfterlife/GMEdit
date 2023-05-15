@@ -79,8 +79,8 @@ class GmlFuncDocParser {
 					case ">".code if (isType): if (depth > 1) depth--;
 					case "=".code: isValue = true; isType = false;
 					case ":".code if (!isValue && depth == 1): isType = true;
-					case '"'.code, "'".code, "@".code, "`".code:
-						q.skipStringAuto(c, version);
+					case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, version);
+					case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 					case "/".code:
 						switch (q.peek()) {
 							case "/".code: q.skipLine();

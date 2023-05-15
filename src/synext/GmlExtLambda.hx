@@ -153,6 +153,7 @@ class GmlExtLambda {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 				case "#".code: {
 					var ctx = q.readContextName(null);
 					if (ctx != null) {
@@ -281,6 +282,7 @@ class GmlExtLambda {
 						};
 						case "\r".code, "\n".code: return error("Expected a closing `)`");
 						case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+						case "$".code if (q.isDqTplStart(version)): row += q.skipDqTplString(version);
 						default:
 					}
 				}
@@ -316,6 +318,7 @@ class GmlExtLambda {
 							default:
 						};
 						case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+						case "$".code if (q.isDqTplStart(version)): row += q.skipDqTplString(version);
 						default:
 					}
 				}
@@ -385,6 +388,7 @@ class GmlExtLambda {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): row += q.skipDqTplString(version);
 				case "#".code: {
 					q.skipIdent1();
 					var hash = q.substring(p, q.pos);

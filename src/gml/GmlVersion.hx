@@ -121,6 +121,9 @@ import electron.FileWrap;
 	public function hasTemplateStrings():Bool {
 		return config.hasTemplateStrings || GmlAPI.forceTemplateStrings;
 	}
+	public function hasQuoteTemplateStrings():Bool {
+		return config.hasQuoteTemplateStrings;
+	}
 	public function hasFunctionLiterals():Bool {
 		return config.additionalKeywords != null && config.additionalKeywords.contains("function");
 	}

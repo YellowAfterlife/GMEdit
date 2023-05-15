@@ -28,6 +28,9 @@ typedef GmlVersionConfig = {
 	/** Whether `health: ${hp}/${maxhp}` is allowed */
 	var hasTemplateStrings:Bool;
 	
+	/** Whether $"health: {hp}/{maxhp}" is allowed (GM2023) */
+	var hasQuoteTemplateStrings:Bool;
+	
 	/** Whether 'text' is allowed */
 	var hasSingleQuotedStrings:Bool;
 	
@@ -155,6 +158,7 @@ class GmlVersionConfigDefaults {
 			hasEventActions: v1,
 			hasColorLiterals: v2,
 			hasScriptDotStatic: v2,
+			hasQuoteTemplateStrings: v2,
 			hasPragma: false,
 			//
 			resetLineCounterOnDefine: true,

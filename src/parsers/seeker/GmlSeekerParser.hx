@@ -82,9 +82,8 @@ class GmlSeekerParser {
 					};
 					default:
 				};
-				case '"'.code, "'".code, "`".code, "@".code: {
-					q.skipStringAuto(c, seeker.version);
-				};
+				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, seeker.version);
+				case "$".code if (q.isDqTplStart(seeker.version)): q.skipDqTplString(seeker.version);
 				case "#".code: {
 					q.skipIdent1();
 					if (q.pos > start + 1) {

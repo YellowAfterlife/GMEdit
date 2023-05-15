@@ -214,9 +214,8 @@ class KGml extends KCode {
 						q.skipLine();
 					case "*".code: q.skip(); lineNumber += q.skipComment();
 				};
-				case '"'.code, "'".code, "@".code, "`".code: {
-					lineNumber += q.skipStringAuto(c, version);
-				};
+				case '"'.code, "'".code, "@".code, "`".code: lineNumber += q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): lineNumber += q.skipDqTplString(version);
 				case "#".code: {
 					if (q.skipIfIdentEquals("region")) {
 						at = q.pos;
