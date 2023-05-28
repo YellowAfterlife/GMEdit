@@ -50,10 +50,11 @@ class GmlParseAPI {
 		var lwFlags = data.lwFlags;
 		#end
 		var featureFlags = ui.Preferences.current.apiFeatureFlags;
+		var rsStart = "^[ \t]*";
 		//
 		
 		// typedefs!
-		var rxTypedef = new RegExp("^"
+		var rxTypedef = new RegExp(rsStart
 			+ "typedef\\s+"
 			+ "(\\w+)"
 			+ "(?:\\s*:\\s*(" + "\\w+(?:\\s*,\\s*\\w+)*" + "))?" // : parent(s)
@@ -83,8 +84,35 @@ class GmlParseAPI {
 			if (wantKind) stdKind[name] = "namespace";
 		});
 		
+		// type name aliases for Feather:
+		var rxFeatherAlias = new RegExp(rsStart
+			+ "(?:feathername|fe_name)\\b\\s*"
+			+ "(?:(\\w+)\\s*)?"
+			+ "[=:]\\s*"
+			+ "([\\w\\.\\*]+)"
+			+ ".*"
+			+ "(?:\n\\s*typedef\\s*(\\w+))?"
+		+ "", "gm");
+		var featherAliases = data.featherAliases;
+		if (featherAliases != null) rxFeatherAlias.each(src, function(mt:RegExpMatch) {
+			var gmeName = mt[1];
+			if (gmeName == null) {
+				gmeName = mt[3];
+				if (gmeName == null) {
+					Console.warn("Can't parse \"" + mt[0] + "\" - no GMEdit type name");
+					return;
+				}
+			}
+			var feName = mt[2];
+			if (feName.contains("*")) { // `fe_name ds_map = id.ds*` -> (`ds_map` <-> `id.dsmap`)
+				var flatname = StringTools.replace(gmeName, "_", "");
+				feName = feName.replaceExt("*", flatname);
+			}
+			featherAliases[feName.toLowerCase()] = gmeName;
+		});
+		
 		// struct types
-		var rxStruct = new RegExp("^(?:" + [
+		var rxStruct = new RegExp(rsStart + "(?:" + [
 				"(\\w+)" + "\\?" // 1 -> name
 				+ "(?::(\\S+))?" // 2 -> type annotation
 			, // alt:
@@ -115,14 +143,14 @@ class GmlParseAPI {
 		GmlTypeParser.warnAboutMissing = typeWarn;
 		
 		// functions!
-		var rxFunc:RegExp = new RegExp("^"
+		var rxFunc:RegExp = new RegExp(rsStart
 			+ "(:*)" // $1 -> instance-specific marker (non-standard) - e.g. ":instance_copy(performevent)"
 			+ "(\\w+" // function name
 			+ "(?:<.*?>)?" // type params
 			+ '\\(' // arguments start
 			+ ".+" // rest of line
 		+ ")", "gm");
-		var rxFuncTail:RegExp = new RegExp("^"
+		var rxFuncTail:RegExp = new RegExp(rsStart
 			+ "(.*?)" // $1 -> normal stuff
 			+ "([ ~\\$#*@&£!:]*)" // $2 -> flags (e.g. "£" for "draw_set_colour(col)£")
 			+ "\\s*(?:\\^(\\w*))?" // $3 -> feature flag
@@ -191,7 +219,7 @@ class GmlParseAPI {
 		});
 		
 		// constants and variables!
-		var rxVar = new RegExp("^"
+		var rxVar = new RegExp(rsStart
 			+ "(" // 1 -> comp
 				+ "(\\w+)" // 2 -> name
 				+ "(" + "\\[.*?\\]" + ")?" // 3 -> array data
@@ -325,6 +353,7 @@ typedef GmlParseAPIArgs = {
 	?instKind:Dictionary<AceTokenType>,
 	?instType:Dictionary<GmlType>,
 	?fieldHints:Array<GmlSeekDataHint>,
+	?featherAliases:Dictionary<String>
 	#if lwedit
 	?lwArg0:Dictionary<Int>,
 	?lwArg1:Dictionary<Int>,

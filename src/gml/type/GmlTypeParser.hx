@@ -5,6 +5,7 @@ import parsers.linter.GmlLinter;
 import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
+import ace.AceMacro.jsRx;
 using tools.NativeString;
 
 /**
@@ -13,7 +14,7 @@ using tools.NativeString;
  */
 class GmlTypeParser {
 	static var kindMeta:Dictionary<GmlTypeKind> = (function() {
-		var r = new Dictionary();
+		var r:Dictionary<GmlTypeKind> = new Dictionary();
 		r["any"] = KAny;
 		r["Any"] = KAny;
 		r["Null"] = KNullable;
@@ -33,6 +34,7 @@ class GmlTypeParser {
 		r["number"] = KNumber;
 		r["Number"] = KNumber;
 		r["real"] = KNumber;
+		r["Real"] = KNumber;
 		r["string"] = KString;
 		r["String"] = KString;
 		r["bool"] = KBool;
@@ -41,9 +43,11 @@ class GmlTypeParser {
 		//
 		r["array"] = KArray;
 		r["Array"] = KArray;
+		//
 		r["ds_list"] = KList;
 		r["ds_grid"] = KGrid;
 		r["ds_map"] = KMap;
+		
 		//
 		r["ckarray"] = KCustomKeyArray;
 		r["CustomKeyArray"] = KCustomKeyArray;
@@ -100,7 +104,7 @@ class GmlTypeParser {
 		var c = q.read();
 		var result:GmlType;
 		switch (c) {
-			case "[".code:
+			case "[".code: { // `[int, string]` (tuples)
 				var params = [];
 				while (q.loop) {
 					var t = parseRec(q, ctx, FCanAlias);
@@ -114,8 +118,9 @@ class GmlTypeParser {
 						default: return parseError("Expected a `,`/`;` or a `]` in `[]`");
 					}
 				}
-				result = TInst("tuple",  params, KTuple);
-			case "{".code:
+				result = TInst("tuple", params, KTuple);
+			};
+			case "{".code: { // `{ a:int, b:string }` (anon structs)
 				var ani = new GmlTypeAnon();
 				while (q.loop) {
 					parseRec_skip(q);
@@ -136,19 +141,27 @@ class GmlTypeParser {
 					}
 				}
 				result = TAnon(ani);
-			case "(".code:
+			};
+			case "(".code: { // `(type)` for clarity
 				result = parseRec(q, ctx, FCanAlias);
 				if (result == null) return null;
 				parseRec_skip(q);
 				if (q.read() != ")".code) return parseError("Unclosed ()", start);
-			case _ if (c.isIdent0()):
-				q.skipIdent1();
+			};
+			case _ if (c.isIdent0()): {
+				q.skipDotIdent1();
 				var name = q.substring(start, q.pos);
 				parseRec_skip(q);
 				
 				if ((flags & FCanAlias) != 0 && q.peek() == ":".code) {
 					q.skip();
 					return THint(name, parseRec(q, ctx, flags));
+				}
+				
+				if (name.contains(".")) {
+					var nameLq = name.toLowerCase();
+					var alt = GmlAPI.featherAliases[nameLq];
+					if (alt != null) name = alt;
 				}
 				
 				var kind = JsTools.or(kindMeta[name], KCustom);
@@ -230,6 +243,7 @@ class GmlTypeParser {
 					) typeWarn.push(name);
 					result = TInst(name, params, kind);
 				}
+			};
 			default:
 				return parseError("Expected a type name");
 		}
@@ -330,7 +344,13 @@ class GmlTypeParser {
 			};
 			case KIdent, KUndefined, KFunction:
 				typeStr = self.nextVal;
-				if (self.skipIf(self.peek() == KLT)) {
+				while (self.skipIfPeek(KDot)) {
+					typeStr += ".";
+					if (self.skipIfPeek(KIdent)) {
+						typeStr += self.nextVal;
+					} else break;
+				}
+				if (self.skipIfPeek(KLT)) {
 					var depth = 1;
 					typeStr += "<";
 					seqStart.setTo(reader);
@@ -410,7 +430,7 @@ class GmlTypeParser {
 				q.skip();
 				if (!q.skipTypeParams(till, "{".code, "}".code)) return rewind();
 			case _ if (c.isIdent0()): // name<...params>
-				q.skipIdent1();
+				q.skipDotIdent1();
 				start = q.pos;
 				q.skipSpaces1x(till);
 				if (q.peek() == "<".code) {

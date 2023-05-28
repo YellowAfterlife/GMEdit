@@ -88,6 +88,7 @@
     {"name":"v_struct_constraint","order":6,"path":"scripts/v_struct_constraint/v_struct_constraint.yy",},
     {"name":"v_arrow_funcs","order":2,"path":"scripts/v_arrow_funcs/v_arrow_funcs.yy",},
     {"name":"v_mfunc_crash","order":3,"path":"scripts/v_mfunc_crash/v_mfunc_crash.yy",},
+    {"name":"v_feather_types","path":"scripts/v_feather_types/v_feather_types.yy","order":9,},
     {"name":"v_paren_call","order":1,"path":"scripts/v_paren_call/v_paren_call.yy",},
     {"name":"v_empty_switch","order":2,"path":"scripts/v_empty_switch/v_empty_switch.yy",},
     {"name":"v_broken_switch","order":3,"path":"scripts/v_broken_switch/v_broken_switch.yy",},

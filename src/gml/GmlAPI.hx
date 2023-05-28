@@ -97,6 +97,9 @@ class GmlAPI {
 	public static var stdKind:Dictionary<String> = new Dictionary();
 	public static var stdTypeExists:Dictionary<Bool> = new Dictionary();
 	
+	/** "id.dsmap" -> "ds_map" */
+	public static var featherAliases:Dictionary<String> = new Dictionary();
+	
 	/** Types per built-in variable */
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
 	
@@ -115,6 +118,7 @@ class GmlAPI {
 		stdDoc = new Dictionary();
 		stdTypes = new Dictionary();
 		stdTypeExists = new Dictionary();
+		featherAliases = new Dictionary();
 		stdComp.clear();
 		
 		stdInstComp.clear();

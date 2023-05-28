@@ -362,6 +362,16 @@ using tools.NativeString;
 			} else break;
 		}
 	}
+	public function skipDotIdent1() {
+		while (loopLocal) {
+			var c = peek();
+			if (c.isIdent1()) {
+				skip();
+			} else if (c == ".".code) {
+				skip();
+			} else break;
+		}
+	}
 	
 	/**
 	 * Reads a word and returns it.
