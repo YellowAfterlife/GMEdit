@@ -49,6 +49,7 @@
     {"name":"obj_implicit_inst_types","order":3,"path":"objects/obj_implicit_inst_types/obj_implicit_inst_types.yy",},
     {"name":"v_hint_override","order":4,"path":"scripts/v_hint_override/v_hint_override.yy",},
     {"name":"v_literal_fields","order":1,"path":"scripts/v_literal_fields/v_literal_fields.yy",},
+    {"name":"v_struct_pair_shorthand","path":"scripts/v_struct_pair_shorthand/v_struct_pair_shorthand.yy","order":5,},
     {"name":"v_constructor_inner_args","order":2,"path":"scripts/v_constructor_inner_args/v_constructor_inner_args.yy",},
     {"name":"v_private_fields","order":5,"path":"scripts/v_private_fields/v_private_fields.yy",},
     {"name":"v_truthy_instance","order":2,"path":"scripts/v_truthy_instance/v_truthy_instance.yy",},

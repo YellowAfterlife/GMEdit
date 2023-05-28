@@ -292,8 +292,16 @@ class GmlLinterExpr extends GmlLinterHelper {
 						case KCubClose: break;
 						default: return self.readExpect("a field name");
 					}
-					rc(self.readCheckSkip(KColon, "a `:` between key-value pair in {}"));
-					rc(self.readExpr(newDepth));
+					switch (self.peek()) {
+						case KColon:
+							self.skip();
+							rc(self.readExpr(newDepth));
+						case KComma, KCubClose:
+							GmlLinterIdent.read(self, key);
+							this.currType = GmlLinterIdent.type;
+							this.currFunc = GmlLinterIdent.func;
+						default: return readExpect("a `:` between key-value pair in {}");
+					}
 					if (key != null) {
 						anonFields[key] = new GmlTypeAnonField(this.currType, this.currFunc);
 					}
