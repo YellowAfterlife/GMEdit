@@ -81,6 +81,27 @@ class GmlSeekerProcDefine {
 		if (out) procFuncLiteralArgs_returnType = returnType;
 		return result;
 	}
+	static var patchMissingArgs_rx = new js.lib.RegExp("^\\s*(\\w+)(\\s*=.*)$");
+	static function patchMissingArgs(args:Array<String>, litArgs:Array<String>) {
+		var rx = patchMissingArgs_rx;
+		for (i in 0 ... litArgs.length) {
+			var litArg = litArgs[i];
+			var arg = args[i];
+			if (arg == null) {
+				args[i] = litArg;
+				continue;
+			}
+			var mt = rx.exec(litArg);
+			if (mt == null) continue;
+			if (arg.contains("?") || arg.contains("=")) continue;
+			var argName = arg.trimBoth();
+			if (mt[1] == argName) {
+				args[i] = litArg;
+				continue;
+			}
+			args[i] += mt[2];
+		}
+	}
 	public static function proc(seeker:GmlSeekerImpl, s:String) {
 		var q = seeker.reader;
 		var isDefine = (s == "#define");
@@ -121,9 +142,7 @@ class GmlSeekerProcDefine {
 				var argTypes = null;
 				if (jsDoc.args != null) {
 					// does the function itself have more named arguments than JSDoc?
-					if (litArgs != null) for (i in jsDoc.args.length ... litArgs.length) {
-						jsDoc.args.push(litArgs[i]);
-					}
+					if (litArgs != null) patchMissingArgs(jsDoc.args, litArgs);
 					
 					args = "(" + jsDoc.args.join(", ") + ")";
 					argTypes = jsDoc.typesFlush(null, fname);
@@ -207,9 +226,7 @@ class GmlSeekerProcDefine {
 					}
 				}
 				if (checkJsDocArgs) {
-					if (litArgs != null) for (i in jsDoc.args.length ... litArgs.length) {
-						jsDoc.args.push(litArgs[i]);
-					}
+					if (litArgs != null) patchMissingArgs(jsDoc.args, litArgs);
 					
 					// `@param` override the parsed arguments
 					var doc = GmlFuncDoc.create(main, jsDoc.args, jsDoc.rest);
