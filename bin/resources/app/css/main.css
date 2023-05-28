@@ -124,6 +124,7 @@ https://stackoverflow.com/a/36247448/5578773
 #game-td .chrome-tabs select {
 	box-sizing: border-box;
 	height: 100%;
+	max-height: 2em;
 	margin: 0;
 	border: 1px solid #aaa;
 	padding: 1px 5px;
