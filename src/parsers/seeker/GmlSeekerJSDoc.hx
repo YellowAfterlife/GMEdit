@@ -325,7 +325,7 @@ class GmlSeekerJSDoc {
 				} else if (showArgTypes) {
 					if (arg.endsWith("]")) {
 						arg = arg.substring(0, arg.length - 1) + ":" + argType + "]";
-					} else arg += ":" + argType;
+					} else if (argType != null) arg += ":" + argType;
 				}
 				args.push(arg);
 				types.push(argType);
