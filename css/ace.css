@@ -10,6 +10,7 @@ textarea#source {
 	flex-grow: 1;
 	display: flex;
 	flex-direction: column;
+	min-width: 12em;
 }
 .ace_container > .ace_editor {
 	flex-grow: 1;
@@ -212,6 +213,10 @@ textarea#source {
 }
 
 /** underline the define-line */
+#main .ace_gutter-bookmark {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACTSURBVDhPYxhcIDExcefs2bM/APF/LPgDSB6qFDvIy8v7jw+A5KFKsYNRAwabAe/fv/+/f/9+MA0DxBjw+82bN//Xr1//39jY+AM3N/dVEA3ig8RB8lCl2EF0dPTClJSU/7KysheZmZmTgEI6IBrEB4mD5CEqcQABAQETTk7OHiYmJn2oEBiA+CBxkDxUaNAABgYA91I9pkLO//0AAAAASUVORK5CYIIAAA==);
+	background-position: 2px center;
+}
 #main .ace_gutter-define:not(:first-child) {
 	box-shadow: 0 1px 0px #d0d0d0 inset;
 }

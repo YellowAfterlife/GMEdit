@@ -1,0 +1,3105 @@
+//////////////
+// Chapter 401
+//////////////
+
+// # = constant
+// * = readonly
+// & = obsolete
+
+argument_relative*
+argument
+argument0
+argument1
+argument2
+argument3
+argument4
+argument5
+argument6
+argument7
+argument8
+argument9
+argument10
+argument11
+argument12
+argument13
+argument14
+argument15
+argument_count
+globalvar
+self#
+other#
+all#
+noone#
+global#
+local#
+
+
+//////////////
+// Chapter 402
+//////////////
+
+// section 2.1
+
+true#
+false#
+pi#
+GM_build_date#
+GM_version#
+
+// section 2.2
+
+is_bool(val)
+is_real(val)
+is_string(val)
+is_array(val)
+is_undefined(val)
+is_int32(val)
+is_int64(val)
+is_ptr(val)
+is_vec3(val)
+is_vec4(val)
+is_matrix(val)
+array_length_1d(variable)
+array_length_2d(variable, index)
+array_height_2d(variable)
+random(x)
+random_old(x)
+random_range(x1,x2)
+random_range_old(x1,x2)
+irandom(x)
+irandom_old(x)
+irandom_range(x1,x2)
+irandom_range_old(x1,x2)
+random_set_seed(seed)
+random_get_seed()
+random_use_old_version(trueFalse)
+randomize()
+choose(x1,x2,x3,...)
+abs(x)
+round(x)
+floor(x)
+ceil(x)
+sign(x)
+frac(x)
+sqrt(x)
+sqr(x)
+exp(x)
+ln(x)
+log2(x)
+log10(x)
+sin(radian_angle)
+cos(radian_angle)
+tan(radian_angle)
+arcsin(x)
+arccos(x)
+arctan(x)
+arctan2(y,x)
+dsin(degree_angle)
+dcos(degree_angle)
+dtan(degree_angle)
+darcsin(x)
+darccos(x)
+darctan(x)
+darctan2(y,x)
+degtorad(x)
+radtodeg(x)
+power(x,n)
+logn(n,x)
+min(x1,x2,x3,...)
+max(x1,x2,x3,...)
+mean(x1,x2,x3,...)
+median(x1,x2,x3,...)
+clamp(val,min,max)
+lerp(val1,val2,amount)
+dot_product(x1,y1,x2,y2)
+dot_product_3d(x1,y1,z1,x2,y2,z2)
+dot_product_normalised(x1,y1,x2,y2)
+dot_product_3d_normalised(x1,y1,z1,x2,y2,z2)
+math_set_epsilon(new_epsilon)
+math_get_epsilon()
+angle_difference(src,dest)
+point_distance_3d(x1,y1,z1,x2,y2,z2)
+point_distance(x1,y1,x2,y2)
+point_direction(x1,y1,x2,y2)
+lengthdir_x(len,dir)
+lengthdir_y(len,dir)
+
+// section 2.3
+
+real(val)
+string(val)
+int64(val)
+ptr(val)
+string_format(val,total,dec)
+chr(val)
+ansi_char(val)
+ord(char)
+string_length(str)
+string_byte_length(str)
+string_pos(substr,str)
+string_copy(str,index,count)
+string_char_at(str,index)
+string_ord_at(str,index)
+string_byte_at(str,index)
+string_set_byte_at(str,index,val)
+string_delete(str,index,count)
+string_insert(substr,str,index)
+string_lower(str)
+string_upper(str)
+string_repeat(str,count)
+string_letters(str)
+string_digits(str)
+string_lettersdigits(str)
+string_replace(str,substr,newstr)
+string_replace_all(str,substr,newstr)
+string_count(substr,str)
+clipboard_has_text()
+clipboard_set_text(str)
+clipboard_get_text()
+
+// section 2.4
+
+date_current_datetime()
+date_current_date()&
+date_current_time()&
+date_create_datetime(year,month,day,hour,minute,second)
+date_create_date(year,month,day)&
+date_create_time(hour,minute,second)&
+date_valid_datetime(year,month,day,hour,minute,second)
+date_valid_date(year,month,day)&
+date_valid_time(hour,minute,second)&
+date_inc_year(date,amount)
+date_inc_month(date,amount)
+date_inc_week(date,amount)
+date_inc_day(date,amount)
+date_inc_hour(date,amount)
+date_inc_minute(date,amount)
+date_inc_second(date,amount)
+date_get_year(date)
+date_get_month(date)
+date_get_week(date)
+date_get_day(date)
+date_get_hour(date)
+date_get_minute(date)
+date_get_second(date)
+date_get_weekday(date)
+date_get_day_of_year(date)
+date_get_hour_of_year(date)
+date_get_minute_of_year(date)
+date_get_second_of_year(date)
+date_year_span(date1,date2)
+date_month_span(date1,date2)
+date_week_span(date1,date2)
+date_day_span(date1,date2)
+date_hour_span(date1,date2)
+date_minute_span(date1,date2)
+date_second_span(date1,date2)
+date_compare_datetime(date1,date2)
+date_compare_date(date1,date2)
+date_compare_time(date1,date2)
+date_date_of(date)
+date_time_of(date)
+date_datetime_string(date)
+date_date_string(date)
+date_time_string(date)
+date_days_in_month(date)
+date_days_in_year(date)
+date_leap_year(date)
+date_is_today(date)
+
+date_set_timezone(timezone)
+date_get_timezone()
+timezone_local#
+timezone_utc#
+
+//////////////
+// Chapter 403
+//////////////
+
+// section 3.1
+
+x
+y
+xprevious
+yprevious
+xstart
+ystart
+hspeed
+vspeed
+direction
+speed
+friction
+gravity
+gravity_direction
+motion_set(dir,speed)
+motion_add(dir,speed)
+place_free(x,y)
+place_empty(x,y)
+place_meeting(x,y,obj)
+place_snapped(hsnap,vsnap)
+move_random(hsnap,vsnap)
+move_snap(hsnap,vsnap)
+move_towards_point(x,y,sp)
+move_contact_solid(dir,maxdist)
+move_contact_all(dir,maxdist)
+move_outside_solid(dir,maxdist)
+move_outside_all(dir,maxdist)
+move_bounce_solid(advanced)
+move_bounce_all(advanced)
+move_wrap(hor,vert,margin)
+distance_to_point(x,y)
+distance_to_object(obj)
+position_empty(x,y)
+position_meeting(x,y,obj)
+
+// section 3.2
+
+path_start(path,speed,endaction,absolute)
+path_end()
+path_index*
+path_position
+path_positionprevious
+path_speed
+path_scale
+path_orientation
+path_endaction
+path_action_stop#
+path_action_restart#
+path_action_continue#
+path_action_reverse#
+
+// section 3.3
+
+mp_linear_step(x,y,speed,checkall)
+mp_potential_step(x,y,speed,checkall)
+mp_linear_step_object(x,y,speed,obj)
+mp_potential_step_object(x,y,speed,obj)
+mp_potential_settings(maxrot,rotstep,ahead,onspot)
+mp_linear_path(path,xg,yg,stepsize,checkall)
+mp_potential_path(path,xg,yg,stepsize,factor,checkall)
+mp_linear_path_object(path,xg,yg,stepsize,obj)
+mp_potential_path_object(path,xg,yg,stepsize,factor,obj)
+mp_grid_create(left,top,hcells,vcells,cellwidth,cellheight)
+mp_grid_destroy(id)
+mp_grid_clear_all(id)
+mp_grid_clear_cell(id,h,v)
+mp_grid_clear_rectangle(id,left,top,right,bottom)
+mp_grid_add_cell(id,h,v)
+mp_grid_get_cell(id,h,v)
+mp_grid_add_rectangle(id,left,top,right,bottom)
+mp_grid_add_instances(id,obj,prec)
+mp_grid_path(id,path,xstart,ystart,xgoal,ygoal,allowdiag)
+mp_grid_draw(id)
+mp_grid_to_ds_grid(src,dest)
+
+// section 3.4
+
+collision_point(x,y,obj,prec,notme)
+collision_rectangle(x1,y1,x2,y2,obj,prec,notme)
+collision_circle(x1,y1,radius,obj,prec,notme)
+collision_ellipse(x1,y1,x2,y2,obj,prec,notme)
+collision_line(x1,y1,x2,y2,obj,prec,notme)
+
+
+point_in_rectangle(px,py,x1,y1,x2,y2)
+point_in_triangle(px,py,x1,y1,x2,y2,x3,y3)
+point_in_circle(px,py,cx,cy,rad)
+rectangle_in_rectangle(sx1,sy1,sx2,sy2,dx1,dy1,dx2,dy2)
+rectangle_in_triangle(sx1,sy1,sx2,sy2,x1,y1,x2,y2,x3,y3)
+rectangle_in_circle(sx1,sy1,sx2,sy2,cx,cy,rad)
+
+
+// section 3.5
+
+object_index*
+id*
+solid
+persistent
+mask_index
+instance_count*
+instance_id*
+instance_find(obj,n)
+instance_exists(obj)
+instance_number(obj)
+instance_position(x,y,obj)
+instance_nearest(x,y,obj)
+instance_furthest(x,y,obj)
+instance_place(x,y,obj)
+instance_create(x,y,obj)
+instance_copy(performevent)
+instance_change(obj,performevents)
+instance_destroy()
+position_destroy(x,y)
+position_change(x,y,obj,performevents)
+
+// section 3.6
+
+instance_deactivate_all(notme)
+instance_deactivate_object(obj)
+instance_deactivate_region(left,top,width,height,inside,notme)
+instance_activate_all()
+instance_activate_object(obj)
+instance_activate_region(left,top,width,height,inside)
+
+// section 3.7
+
+room_speed
+fps*
+fps_real*
+current_time*
+current_year*
+current_month*
+current_day*
+current_weekday*
+current_hour*
+current_minute*
+current_second*
+sleep(millisec)&
+alarm[0..11]
+timeline_index
+timeline_position
+timeline_speed
+timeline_running
+timeline_loop
+
+// section 3.8
+
+room
+room_first*
+room_last*
+room_width
+room_height
+room_caption
+room_persistent
+room_goto(numb)
+room_goto_previous()
+room_goto_next()
+room_previous(numb)
+room_next(numb)
+room_restart()
+game_end()
+game_restart()
+game_load(filename)
+game_save(filename)
+game_save_buffer(buffer)
+game_load_buffer(buffer)
+
+transition_kind&
+transition_steps&
+transition_colour&
+transition_define(kind,name)&
+transition_exists(kind)&
+
+// section 3.9
+
+score
+lives
+health
+show_score&
+show_lives&
+show_health&
+caption_score&
+caption_lives&
+caption_health&
+
+// section 3.10
+
+event_perform(type,numb)
+event_user(numb)
+event_perform_object(obj,type,numb)
+event_inherited()
+event_type*
+event_number*
+event_object*
+event_action*
+ev_create#
+ev_destroy#
+ev_step#
+ev_alarm#
+ev_keyboard#
+ev_mouse#
+ev_collision#
+ev_other#
+ev_draw#
+ev_draw_begin#
+ev_draw_end#
+ev_draw_pre#
+ev_draw_post#
+ev_keypress#
+ev_keyrelease#
+ev_trigger#
+ev_left_button#
+ev_right_button#
+ev_middle_button#
+ev_no_button#
+ev_left_press#
+ev_right_press#
+ev_middle_press#
+ev_left_release#
+ev_right_release#
+ev_middle_release#
+ev_mouse_enter#
+ev_mouse_leave#
+ev_mouse_wheel_up#
+ev_mouse_wheel_down#
+ev_global_left_button#
+ev_global_right_button#
+ev_global_middle_button#
+ev_global_left_press#
+ev_global_right_press#
+ev_global_middle_press#
+ev_global_left_release#
+ev_global_right_release#
+ev_global_middle_release#
+ev_joystick1_left&
+ev_joystick1_right&
+ev_joystick1_up&
+ev_joystick1_down&
+ev_joystick1_button1&
+ev_joystick1_button2&
+ev_joystick1_button3&
+ev_joystick1_button4&
+ev_joystick1_button5&
+ev_joystick1_button6&
+ev_joystick1_button7&
+ev_joystick1_button8&
+ev_joystick2_left&
+ev_joystick2_right&
+ev_joystick2_up&
+ev_joystick2_down&
+ev_joystick2_button1&
+ev_joystick2_button2&
+ev_joystick2_button3&
+ev_joystick2_button4&
+ev_joystick2_button5&
+ev_joystick2_button6&
+ev_joystick2_button7&
+ev_joystick2_button8&
+ev_outside#
+ev_boundary#
+ev_game_start#
+ev_game_end#
+ev_room_start#
+ev_room_end#
+ev_no_more_lives#
+ev_animation_end#
+ev_end_of_path#
+ev_no_more_health#
+ev_close_button&
+ev_user0#
+ev_user1#
+ev_user2#
+ev_user3#
+ev_user4#
+ev_user5#
+ev_user6#
+ev_user7#
+ev_user8#
+ev_user9#
+ev_user10#
+ev_user11#
+ev_user12#
+ev_user13#
+ev_user14#
+ev_user15#
+ev_step_normal#
+ev_step_begin#
+ev_step_end#
+ev_gui#
+ev_gui_begin#
+ev_gui_end#
+
+// section 3.11
+
+application_surface*
+gamemaker_pro&
+gamemaker_registered&
+gamemaker_version&
+error_occurred&
+error_last&
+show_debug_message(str)
+show_debug_overlay(bool)
+debug_mode*
+alarm_get(index)
+alarm_set(index,count)
+variable_global_exists(name)&
+variable_global_get(name)&
+variable_global_array_get(name,ind)&
+variable_global_array2_get(name,ind1,ind2)&
+variable_global_set(name,value)&
+variable_global_array_set(name,ind,value)&
+variable_global_array2_set(name,ind1,ind2,value)&
+variable_local_exists(name)&
+variable_local_get(name)&
+variable_local_array_get(name,ind) &
+variable_local_array2_get(name,ind1,ind2)&
+variable_local_set(name,value)&
+variable_local_array_set(name,ind,value)&
+variable_local_array2_set(name,ind1,ind2,value)&
+set_program_priority(priority)&
+set_application_title(title)&
+
+
+//////////////
+// Chapter 404
+//////////////
+
+// section 4.1
+
+keyboard_key
+keyboard_lastkey
+keyboard_lastchar
+keyboard_string
+keyboard_set_map(key1,key2)
+keyboard_get_map(key)
+keyboard_unset_map()
+keyboard_check(key)
+keyboard_check_pressed(key)
+keyboard_check_released(key)
+keyboard_check_direct(key)
+keyboard_get_numlock()
+keyboard_set_numlock(bool)
+keyboard_key_press(key)
+keyboard_key_release(key)
+vk_nokey#
+vk_anykey#
+vk_enter#
+vk_return#
+vk_shift#
+vk_control#
+vk_alt#
+vk_escape#
+vk_space#
+vk_backspace#
+vk_tab#
+vk_pause#
+vk_printscreen#
+vk_left#
+vk_right#
+vk_up#
+vk_down#
+vk_home#
+vk_end#
+vk_delete#
+vk_insert#
+vk_pageup#
+vk_pagedown#
+vk_f1#
+vk_f2#
+vk_f3#
+vk_f4#
+vk_f5#
+vk_f6#
+vk_f7#
+vk_f8#
+vk_f9#
+vk_f10#
+vk_f11#
+vk_f12#
+vk_numpad0#
+vk_numpad1#
+vk_numpad2#
+vk_numpad3#
+vk_numpad4#
+vk_numpad5#
+vk_numpad6#
+vk_numpad7#
+vk_numpad8#
+vk_numpad9#
+vk_divide#
+vk_multiply#
+vk_subtract#
+vk_add#
+vk_decimal#
+vk_lshift#
+vk_lcontrol#
+vk_lalt#
+vk_rshift#
+vk_rcontrol#
+vk_ralt#
+keyboard_clear(key)
+io_clear()
+io_handle()&
+keyboard_wait()&
+browser_input_capture(enable)
+
+// section 4.2
+
+mouse_x*
+mouse_y*
+mouse_button
+mouse_lastbutton
+mb_any#
+mb_none#
+mb_left#
+mb_right#
+mb_middle#
+mouse_check_button(button)
+mouse_check_button_pressed(button)
+mouse_check_button_released(button)
+mouse_wheel_up()
+mouse_wheel_down()
+mouse_clear(button)
+mouse_wait()&
+cursor_sprite
+
+// section 4.3
+
+joystick_exists(id)
+joystick_direction(id)
+joystick_name(id)
+joystick_axes(id)
+joystick_buttons(id)
+joystick_has_pov(id)
+joystick_check_button(id,button)
+joystick_xpos(id)
+joystick_ypos(id)
+joystick_zpos(id)
+joystick_rpos(id)
+joystick_upos(id)
+joystick_vpos(id)
+joystick_pov(id)
+
+
+//////////////
+// Chapter 405
+//////////////
+
+// section 5.1
+
+visible
+sprite_index
+sprite_width*
+sprite_height*
+sprite_xoffset*
+sprite_yoffset*
+image_number*
+image_index
+image_speed
+depth
+image_xscale
+image_yscale
+image_angle
+image_alpha
+image_blend
+bbox_left*
+bbox_right*
+bbox_top*
+bbox_bottom*
+
+// section 5.2
+
+background_colour
+background_showcolour
+background_visible[0..7]
+background_foreground[0..7]
+background_index[0..7]
+background_x[0..7]
+background_y[0...7]
+background_width[0...7]*
+background_height[0...7]*
+background_htiled[0..7]
+background_vtiled[0..7]
+background_xscale[0..7]
+background_yscale[0..7]
+background_hspeed[0..7]
+background_vspeed[0..7]
+background_blend[0..7]
+background_alpha[0..7]
+
+// section 5.3
+
+draw_self()
+draw_sprite(sprite,subimg,x,y)
+draw_sprite_pos(sprite,subimg,x1,y1,x2,y2,x3,y3,x4,y4,alpha)
+draw_sprite_ext(sprite,subimg,x,y,xscale,yscale,rot,colour,alpha)
+draw_sprite_stretched(sprite,subimg,x,y,w,h)
+draw_sprite_stretched_ext(sprite,subimg,x,y,w,h,colour,alpha)
+draw_sprite_tiled(sprite,subimg,x,y)
+draw_sprite_tiled_ext(sprite,subimg,x,y,xscale,yscale,colour,alpha)
+draw_sprite_part(sprite,subimg,left,top,width,height,x,y)
+draw_sprite_part_ext(sprite,subimg,left,top,width,height,x,y,xscale,yscale,colour,alpha)
+draw_sprite_general(sprite,subimg,left,top,width,height,x,y,xscale,yscale,rot,c1,c2,c3,c4,alpha)
+draw_background(back,x,y)
+draw_background_ext(back,x,y,xscale,yscale,rot,colour,alpha)
+draw_background_stretched(back,x,y,w,h)
+draw_background_stretched_ext(back,x,y,w,h,colour,alpha)
+draw_background_tiled(back,x,y)
+draw_background_tiled_ext(back,x,y,xscale,yscale,colour,alpha)
+draw_background_part(back,left,top,width,height,x,y)
+draw_background_part_ext(back,left,top,width,height,x,y,xscale,yscale,colour,alpha)
+draw_background_general(back,left,top,width,height,x,y,xscale,yscale,rot,c1,c2,c3,c4,alpha)
+
+// section 5.4
+
+draw_clear(col)
+draw_clear_alpha(col,alpha)
+draw_point(x,y)
+draw_line(x1,y1,x2,y2)
+draw_line_width(x1,y1,x2,y2,w)
+draw_rectangle(x1,y1,x2,y2,outline)
+draw_roundrect(x1,y1,x2,y2,outline)
+draw_roundrect_ext(x1,y1,x2,y2,radiusx,radiusy,outline)
+draw_triangle(x1,y1,x2,y2,x3,y3,outline)
+draw_circle(x,y,r,outline)
+draw_ellipse(x1,y1,x2,y2,outline)
+draw_set_circle_precision(precision)
+draw_arrow(x1,y1,x2,y2,size)
+draw_button(x1,y1,x2,y2,up)
+draw_path(path,x,y,absolute)
+draw_healthbar(x1,y1,x2,y2,amount,backcol,mincol,maxcol,direction,showback,showborder)
+draw_getpixel(x,y)
+draw_getpixel_ext(x,y)
+draw_set_colour(col)
+draw_set_alpha(alpha)
+draw_get_colour()
+draw_get_alpha()
+c_aqua#
+c_black#
+c_blue#
+c_dkgray#
+c_fuchsia#
+c_gray#
+c_green#
+c_lime#
+c_ltgray#
+c_maroon#
+c_navy#
+c_olive#
+c_purple#
+c_red#
+c_silver#
+c_teal#
+c_white#
+c_yellow#
+c_orange#
+make_colour_rgb(red,green,blue)
+make_colour_hsv(hue,saturation,value)
+colour_get_red(col)
+colour_get_green(col)
+colour_get_blue(col)
+colour_get_hue(col)
+colour_get_saturation(col)
+colour_get_value(col)
+merge_colour(col1,col2,amount)
+screen_save(fname)
+screen_save_part(fname,x,y,w,h)
+
+// section 5.5
+
+draw_set_font(font)
+draw_set_halign(halign)
+fa_left#
+fa_center#
+fa_right#
+draw_set_valign(valign)
+fa_top#
+fa_middle#
+fa_bottom#
+draw_text(x,y,string)
+draw_text_ext(x,y,string,sep,w)
+string_width(string)
+string_height(string)
+string_width_ext(string,sep,w)
+string_height_ext(string,sep,w)
+draw_text_transformed(x,y,string,xscale,yscale,angle)
+draw_text_ext_transformed(x,y,string,sep,w,xscale,yscale,angle)
+draw_text_colour(x,y,string,c1,c2,c3,c4,alpha)
+draw_text_ext_colour(x,y,string,sep,w,c1,c2,c3,c4,alpha)
+draw_text_transformed_colour(x,y,string,xscale,yscale,angle,c1,c2,c3,c4,alpha)
+draw_text_ext_transformed_colour(x,y,string,sep,w,xscale,yscale,angle,c1,c2,c3,c4,alpha)
+
+// section 5.6
+
+draw_point_colour(x,y,col1)
+draw_line_colour(x1,y1,x2,y2,col1,col2)
+draw_line_width_colour(x1,y1,x2,y2,w,col1,col2)
+draw_rectangle_colour(x1,y1,x2,y2,col1,col2,col3,col4,outline)
+draw_roundrect_colour(x1,y1,x2,y2,col1,col2,outline)
+draw_roundrect_colour_ext(x1,y1,x2,y2,radiusx,radiusy,col1,col2,outline)
+draw_triangle_colour(x1,y1,x2,y2,x3,y3,col1,col2,col3,outline)
+draw_circle_colour(x,y,r,col1,col2,outline)
+draw_ellipse_colour(x1,y1,x2,y2,col1,col2,outline)
+pr_pointlist#
+pr_linelist#
+pr_linestrip#
+pr_trianglelist#
+pr_trianglestrip#
+pr_trianglefan#
+draw_primitive_begin(kind)
+draw_vertex(x,y)
+draw_vertex_colour(x,y,col,alpha)
+draw_primitive_end()
+sprite_get_uvs(spr,subimg)
+background_get_uvs(back)
+font_get_uvs(font)
+sprite_get_texture(spr,subimg)
+background_get_texture(back)
+font_get_texture(font)
+texture_preload(texid)&
+texture_set_priority(texid,prio)&
+texture_get_width(texid)
+texture_get_height(texid)
+draw_primitive_begin_texture(kind,texid)
+draw_vertex_texture(x,y,xtex,ytex)
+draw_vertex_texture_colour(x,y,xtex,ytex,col,alpha)
+texture_set_interpolation(linear)
+texture_set_interpolation_ext(sampler_id,linear)
+texture_set_blending(blend)
+texture_set_repeat(repeat)
+texture_set_repeat_ext(sampler_id,repeat)
+draw_set_blend_mode(mode)
+draw_set_blend_mode_ext(src,dest)
+draw_set_colour_write_enable(red,green,blue,alpha)
+draw_set_alpha_test(enable)
+draw_set_alpha_test_ref_value(value)
+draw_get_alpha_test()
+draw_get_alpha_test_ref_value()
+bm_normal#
+bm_add#
+bm_max#
+bm_subtract#
+bm_zero#
+bm_one#
+bm_src_colour#
+bm_inv_src_colour#
+bm_src_alpha#
+bm_inv_src_alpha#
+bm_dest_alpha#
+bm_inv_dest_alpha#
+bm_dest_colour#
+bm_inv_dest_colour#
+bm_src_alpha_sat#
+
+audio_falloff_none#
+audio_falloff_inverse_distance#
+audio_falloff_inverse_distance_clamped#
+audio_falloff_linear_distance#
+audio_falloff_linear_distance_clamped#
+audio_falloff_exponent_distance#
+audio_falloff_exponent_distance_clamped#
+
+audio_old_system#
+audio_new_system#
+
+audio_mono#
+audio_stereo#
+audio_3d#
+
+// section 5.7_1
+
+surface_create(w,h)
+surface_create_ext(name,w,h)
+surface_resize(id,width,height)
+surface_free(id)
+surface_exists(id)
+surface_get_width(id)
+surface_get_height(id)
+surface_get_texture(id)
+surface_set_target(id)
+surface_set_target_ext(index,id)
+surface_reset_target()
+draw_surface(id,x,y)
+draw_surface_stretched(id,x,y,w,h)
+draw_surface_tiled(id,x,y)
+draw_surface_part(id,left,top,width,height,x,y)
+draw_surface_ext(id,x,y,xscale,yscale,rot,colour,alpha)
+draw_surface_stretched_ext(id,x,y,w,h,colour,alpha)
+draw_surface_tiled_ext(id,x,y,xscale,yscale,colour,alpha)
+draw_surface_part_ext(id,left,top,width,height,x,y,xscale,yscale,colour,alpha)
+draw_surface_general(id,left,top,width,height,x,y,xscale,yscale,rot,c1,c2,c3,c4,alpha)
+surface_getpixel(id,x,y)
+surface_getpixel_ext(id,x,y)
+surface_save(id,fname)
+surface_save_part(id,fname,x,y,w,h)
+surface_copy(destination,x,y,source)
+surface_copy_part(destination,x,y,source,xs,ys,ws,hs)
+
+application_surface_draw_enable(on_off)
+application_get_position()
+application_surface_enable(enable)
+application_surface_is_enabled()
+
+// section 5.7
+
+tile_add(background,left,top,width,height,x,y,depth)
+tile_get_count()
+tile_get_id(index)
+tile_get_ids()
+tile_get_ids_at_depth(depth)
+tile_delete(id)
+tile_exists(id)
+tile_get_x(id)
+tile_get_y(id)
+tile_get_left(id)
+tile_get_top(id)
+tile_get_width(id)
+tile_get_height(id)
+tile_get_depth(id)
+tile_get_visible(id)
+tile_get_xscale(id)
+tile_get_yscale(id)
+tile_get_background(id)
+tile_get_blend(id)
+tile_get_alpha(id)
+tile_set_position(id,x,y)
+tile_set_region(id,left,top,width,height)
+tile_set_background(id,background)
+tile_set_visible(id,visible)
+tile_set_depth(id,depth)
+tile_set_scale(id,xscale,yscale)
+tile_set_blend(id,colour)
+tile_set_alpha(id,alpha)
+tile_layer_hide(depth)
+tile_layer_show(depth)
+tile_layer_delete(depth)
+tile_layer_shift(depth,x,y)
+tile_layer_find(depth,x,y)
+tile_layer_delete_at(depth,x,y)
+tile_layer_depth(depth,newdepth)
+
+// section 5.8
+
+display_get_width()
+display_get_height()
+display_get_colourdepth()&
+display_get_frequency()&
+display_get_orientation()
+display_get_gui_width()
+display_get_gui_height()
+
+display_set_size(w,h)&
+display_set_colourdepth(coldepth)&
+display_set_frequency(frequency)&
+display_set_all(w,h,frequency,coldepth)&
+display_test_all(w,h,frequency,coldepth)&
+display_reset(aa_level, vsync)
+display_mouse_get_x()
+display_mouse_get_y()
+display_mouse_set(x,y)
+
+display_get_windows_vertex_buffer_method()
+display_get_windows_alternate_sync()
+display_set_windows_vertex_buffer_method(method)
+display_set_windows_alternate_sync(enable)
+
+vbm_fast#
+vbm_compatible#
+vbm_most_compatible#
+
+
+// section 5.9
+
+window_set_visible(visible)&
+window_get_visible()&
+window_set_fullscreen(full)
+window_get_fullscreen()
+window_set_showborder(show)&
+window_get_showborder()&
+window_set_showicons(show)&
+window_get_showicons()&
+window_set_stayontop(stay)&
+window_get_stayontop()&
+window_set_sizeable(sizeable)&
+window_get_sizeable()&
+window_set_caption(caption)
+window_set_min_width(minwidth)
+window_set_max_width(maxwidth)
+window_set_min_height(minheight)
+window_set_max_height(maxheight)
+window_get_visible_rects(startx,starty,eendx,endy)
+window_get_caption()
+window_set_cursor(curs)
+cr_default#
+cr_none#
+cr_arrow#
+cr_cross#
+cr_beam#
+cr_size_nesw#
+cr_size_ns#
+cr_size_nwse#
+cr_size_we#
+cr_uparrow#
+cr_hourglass#
+cr_drag#
+cr_nodrop&
+cr_hsplit&
+cr_vsplit&
+cr_multidrag&
+cr_sqlwait&
+cr_no&
+cr_appstart#
+cr_help&
+cr_handpoint#
+cr_size_all#
+window_get_cursor()
+window_set_colour(colour)
+window_get_colour()
+window_set_region_scale(scale,adaptwindow)&
+window_get_region_scale()&
+window_set_position(x,y)
+window_set_size(w,h)
+window_set_rectangle(x,y,w,h)
+window_center()
+window_default()&
+window_get_x()
+window_get_y()
+window_get_width()
+window_get_height()
+window_mouse_get_x()
+window_mouse_get_y()
+window_mouse_set(x,y)
+
+// section 5.10
+
+view_enabled
+view_current*
+view_visible[0..7]
+view_xview[0..7]
+view_yview[0..7]
+view_wview[0..7]
+view_hview[0..7]
+view_xport[0..7]
+view_yport[0..7]
+view_wport[0..7]
+view_hport[0..7]
+view_angle[0..7]
+view_hborder[0..7]
+view_vborder[0..7]
+view_hspeed[0..7]
+view_vspeed[0..7]
+view_object[0..7]
+view_surface_id[0..7]
+window_set_region_size(w,h,adaptwindow)&
+window_get_region_width()&
+window_get_region_height()&
+window_view_mouse_get_x(id)
+window_view_mouse_get_y(id)
+window_view_mouse_set(id,x,y)&
+window_views_mouse_get_x()
+window_views_mouse_get_y()
+window_views_mouse_set(x,y)&
+
+// section 5.11
+
+screen_redraw()&
+screen_refresh()&
+screen_wait_vsync()&
+set_automatic_draw(value)&
+set_synchronization(value)&
+
+
+//////////////
+// Chapter 406
+//////////////
+
+// section 6.1
+
+sound_play(index)
+sound_loop(index)
+sound_stop(index)
+sound_stop_all()
+sound_isplaying(index)
+sound_volume(index,value)
+sound_global_volume(value)
+sound_fade(index,value,time)
+sound_pan(index,value)&
+sound_background_tempo(factor)&
+sound_set_search_directory(dir)&
+
+// section 6.2
+
+se_none&
+se_chorus&
+se_echo&
+se_flanger&
+se_gargle&
+se_reverb&
+se_compressor&
+se_equalizer&
+sound_effect_set(snd,effect)&
+sound_effect_chorus(snd,wetdry,depth,feedback,frequency,wave,delay,phase)&
+sound_effect_echo(snd,wetdry,feedback,leftdelay,rightdelay,pandelay)&
+sound_effect_flanger(snd,wetdry,depth,feedback,frequency,wave,delay,phase)&
+sound_effect_gargle(snd,rate,wave)&
+sound_effect_reverb(snd,gain,mix,time,ratio)&
+sound_effect_compressor(snd,gain,attack,release,threshold,ratio,delay)&
+sound_effect_equalizer(snd,center,bandwidth,gain)&
+
+// section 6.3
+
+sound_3d_set_sound_position(snd,x,y,z)&
+sound_3d_set_sound_velocity(snd,x,y,z)&
+sound_3d_set_sound_distance(snd,mindist,maxdist)&
+sound_3d_set_sound_cone(snd,x,y,z,anglein,angleout,voloutside)&
+//sound_3d_set_distance_factor(snd,factor)
+//sound_3d_set_rolloff_factor(snd,factor)
+//sound_3d_set_doppler_factor(snd,factor)
+//sound_3d_set_listener_position(snd,x,y,z)
+//sound_3d_set_listener_velocity(snd,x,y,z)
+//sound_3d_set_listener_orientation(snd,xf,yf,zf,xt,yt,zt)
+
+audio_listener_position(x,y,z)
+audio_listener_velocity(vx,vy,vz)
+audio_listener_orientation(lookat_x,lookat_y,lookat_z,up_x,up_y,up_z)
+audio_emitter_position(emitterid,x,y,z)
+audio_emitter_create()
+audio_emitter_free(emitterid)
+audio_emitter_exists(emitterid);
+audio_emitter_pitch(emitterid,pitch)
+audio_emitter_velocity(emitterid,vx,vy,vz)
+audio_emitter_falloff(emitterid, falloff_ref_dist,falloff_max_dist,falloff_factor)
+audio_emitter_gain(emitterid,gain)
+audio_play_sound(soundid,priority,loops)
+audio_play_sound_on(emitterid,soundid,loops,priority)
+audio_play_sound_at(soundid,x,y,z, falloff_ref_dist,falloff_max_dist,falloff_factor,loops, priority)
+audio_stop_sound(soundid)
+audio_resume_music()&
+audio_music_is_playing()&
+audio_resume_sound(soundid)
+audio_pause_sound(soundid)
+audio_pause_music()&
+audio_channel_num(numchannels)
+audio_sound_length(soundid)
+audio_get_type(soundid)
+audio_falloff_set_model(falloffmode)
+audio_play_music(soundid,loops)&
+audio_stop_music()&
+audio_master_gain(gain)
+audio_music_gain(value,time)&
+audio_sound_gain(index,volume,time)
+audio_sound_pitch(index,pitch)
+audio_stop_all()
+audio_resume_all()
+audio_pause_all()
+audio_is_playing(soundid)
+audio_is_paused(soundid)
+audio_exists(soundid)
+
+//audio revision-getters
+//audio_sound_set_track_position(soundid,time)
+//audio_sound_get_track_position(soundid)
+audio_emitter_get_gain(emitterid)
+audio_emitter_get_pitch(emitterid)
+audio_emitter_get_x(emitterid)
+audio_emitter_get_y(emitterid)
+audio_emitter_get_z(emitterid)
+audio_emitter_get_vx(emitterid)
+audio_emitter_get_vy(emitterid)
+audio_emitter_get_vz(emitterid)
+audio_listener_set_position(index, x,y,z)
+audio_listener_set_velocity(index, vx,vy,vz)
+audio_listener_set_orientation(index, lookat_x,lookat_y,lookat_z,up_x,up_y,up_z)
+audio_listener_get_data(index)
+audio_set_master_gain(listenerIndex, gain)
+audio_get_master_gain(listenerIndex)
+audio_sound_get_gain(index)
+audio_sound_get_pitch(index)
+audio_get_name(index)
+audio_sound_set_track_position(index, time)
+audio_sound_get_track_position(index)
+audio_create_stream(filename)
+audio_destroy_stream(stream_sound_id)
+audio_create_sync_group(looping)
+audio_destroy_sync_group(sync_group_id)
+audio_play_in_sync_group(sync_group_id,soundid)
+audio_start_sync_group(sync_group_id)
+audio_stop_sync_group(sync_group_id)
+audio_pause_sync_group(sync_group_id)
+audio_resume_sync_group(sync_group_id)
+audio_sync_group_get_track_pos(sync_group_id)
+audio_sync_group_debug(sync_group_id)
+audio_sync_group_is_playing(sync_group_id)
+audio_debug(enable)
+
+audio_group_load( groupId )
+audio_group_unload( groupId )
+audio_group_is_loaded( groupId )
+audio_group_load_progress( groupId )
+audio_group_name( groupId )
+audio_group_stop_all( groupId )
+audio_group_set_gain( groupId, volume, time )
+audio_create_buffer_sound( bufferId, format, rate, offset, length, channels )
+audio_free_buffer_sound( soundId )
+audio_create_play_queue(bufferFormat, sampleRate, channels)
+audio_free_play_queue(queueId)
+audio_queue_sound(queueId, buffer_id, offset, length)
+
+audio_get_recorder_count()
+audio_get_recorder_info(recorder_num)
+audio_start_recording(recorder_num)
+audio_stop_recording(channel_index)
+
+audio_sound_get_listener_mask(soundid)
+audio_emitter_get_listener_mask(emitterid)
+audio_get_listener_mask()
+audio_sound_set_listener_mask(soundid,mask)
+audio_emitter_set_listener_mask(emitterid,mask)
+audio_set_listener_mask(mask)
+audio_get_listener_count()
+audio_get_listener_info(index)
+
+audio_system()
+
+
+// section 6.4
+
+cd_init()&
+cd_present()&
+cd_number()&
+cd_playing()&
+cd_paused()&
+cd_track()&
+cd_length()&
+cd_track_length(n)&
+cd_position()&
+cd_track_position()&
+cd_play(first,last)&
+cd_stop()&
+cd_pause()&
+cd_resume()&
+cd_set_position(pos)&
+cd_set_track_position(pos)&
+cd_open_door()&
+cd_close_door()&
+MCI_command(str)&
+
+
+//////////////
+// Chapter 407
+//////////////
+
+// section 7.1
+
+splash_show_video(fname,loop)&
+splash_show_text(fname,delay)&
+splash_show_web(url,delay)&
+splash_show_image(fname,delay)&
+splash_set_caption(cap)&
+splash_set_fullscreen(full)&
+splash_set_border(border)&
+splash_set_size(w,h)&
+splash_set_position(x,y)&
+splash_set_adapt(adapt)&
+splash_set_top(top)&
+splash_set_color(col)&
+splash_set_main(main)&
+splash_set_scale(scale)&
+splash_set_cursor(vis)&
+splash_set_interrupt(interrupt)&
+splash_set_stop_key(stop)&
+splash_set_stop_mouse(stop)&
+splash_set_close_button(show)&
+show_info()&
+load_info(fname)&
+
+// section 7.2
+
+show_message(str)
+show_message_async(str)
+show_message_ext(str,but1,but2,but3&
+clickable_add(x,y,spritetpe,URL,target,params)
+clickable_add_ext(x,y,spritetpe,URL,target,params,scale,alpha)
+clickable_change(buttonid,spritetpe,x,y)
+clickable_change_ext(buttonid,spritetpe,x,y,scale,alpha)
+clickable_delete(buttonid)
+clickable_exists(index)
+clickable_set_style(buttonid,map)
+
+show_question(str)
+show_question_async(str)
+get_integer(str,def)
+get_string(str,def)
+get_integer_async(str,def)
+get_string_async(str,def)
+get_login_async(username,password)
+message_background(back)&
+message_button(sprite)&
+message_alpha(alpha)&
+message_text_font(name,size,colour,style)&
+message_button_font(name,size,colour,style)&
+message_input_font(name,size,colour,style)&
+message_text_charset(type, charset_id)&
+message_mouse_colour(col)&
+message_input_colour(col)&
+message_position(x,y)&
+message_size(w,h)&
+message_caption(show,str)&
+show_menu(str,def)&
+show_menu_pos(x,y,str,def)&
+get_colour(defcol)&
+get_open_filename(filter,fname)
+get_save_filename(filter,fname)
+get_open_filename_ext(filter,fname,dir,title)
+get_save_filename_ext(filter,fname,dir,title)
+get_directory(dname)&
+get_directory_alt(capt,root)&
+show_error(str,abort)
+
+// section 7.3
+
+highscore_show_ext(numb,back,border,col1,col2,name,size)&
+highscore_show(numb)&
+highscore_set_background(back);&
+highscore_set_border(show);&
+highscore_set_font(name,size,style);&
+highscore_set_strings(caption,nobody,escape);&
+highscore_set_colours(back,new,other);&
+highscore_clear()
+highscore_add(str,numb)
+highscore_add_current()&
+highscore_value(place)
+highscore_name(place)
+draw_highscore(x1,y1,x2,y2)
+
+
+//////////////
+// Chapter 408
+//////////////
+
+// section 8.1
+
+sprite_exists(ind)
+sprite_get_name(ind)
+sprite_get_number(ind)
+sprite_get_width(ind)
+sprite_get_height(ind)
+sprite_get_xoffset(ind)
+sprite_get_yoffset(ind)
+sprite_get_bbox_left(ind)
+sprite_get_bbox_right(ind)
+sprite_get_bbox_top(ind)
+sprite_get_bbox_bottom(ind)
+
+sprite_save(ind,subimg,fname)
+sprite_save_strip(ind,fname)
+
+sprite_set_cache_size(ind, max)
+sprite_set_cache_size_ext(ind, image, max)
+sprite_get_tpe(index,subindex)
+
+sprite_prefetch(ind)
+sprite_prefetch_multi(indarray)
+
+// section 8.2
+
+sound_exists(ind)
+sound_get_name(ind)
+sound_get_kind(ind)
+sound_get_preload(ind)
+sound_discard(ind)
+sound_restore(ind)
+
+// section 8.3
+
+background_exists(ind)
+background_get_name(ind)
+background_get_width(ind)
+background_get_height(ind)
+
+background_save(ind,fname)
+
+background_prefetch(ind)
+background_prefetch_multi(indarray)
+
+
+// section 8.4
+
+font_exists(ind)
+font_get_name(ind)
+font_get_fontname(ind)
+font_get_bold(ind)
+font_get_italic(ind)
+font_get_first(ind)
+font_get_last(ind)
+font_get_size(ind)
+font_set_cache_size(font,max)
+
+// section 8.5
+
+path_exists(ind)
+path_get_name(ind)
+path_get_length(ind)
+path_get_time(ind,speed)
+path_get_kind(ind)
+path_get_closed(ind)
+path_get_precision(ind)
+path_get_number(ind)
+path_get_point_x(ind,n)
+path_get_point_y(ind,n)
+path_get_point_speed(ind,n)
+path_get_x(ind,pos)
+path_get_y(ind,pos)
+path_get_speed(ind,pos)
+
+// section 8.6
+
+script_exists(ind)
+script_get_name(ind)
+script_get_text(ind)&
+
+// section 8.7
+
+timeline_exists(ind)
+timeline_get_name(ind)
+timeline_moment_clear(ind,step)
+timeline_moment_add(ind,step,codestr)&
+timeline_moment_add_script(ind,step,script)
+timeline_size(ind)
+timeline_max_moment(ind)
+
+// section 8.8
+
+object_exists(ind)
+object_get_name(ind)
+object_get_sprite(ind)
+object_get_solid(ind)
+object_get_visible(ind)
+object_get_depth(ind)
+object_get_persistent(ind)
+object_get_mask(ind)
+object_get_parent(ind)
+object_get_physics(ind)
+object_is_ancestor(ind_child,ind_parent)
+
+// section 8.9
+
+room_exists(ind)
+room_get_name(ind)
+
+//////////////
+// Chapter 409
+//////////////
+
+// section 9.1
+
+sprite_set_offset(ind,xoff,yoff)
+sprite_duplicate(ind)
+sprite_assign(ind,source)
+sprite_merge(ind1,ind2)
+sprite_add(fname,imgnumb,removeback,smooth,xorig,yorig)
+sprite_replace(ind,fname,imgnumb,removeback,smooth,xorig,yorig)
+sprite_add_sprite(fname)&
+sprite_replace_sprite(ind,fname)&
+sprite_create_from_screen(x,y,w,h,removeback,smooth,xorig,yorig)&
+sprite_add_from_screen(ind,x,y,w,h,removeback,smooth)&
+sprite_create_from_surface(id,x,y,w,h,removeback,smooth,xorig,yorig)
+sprite_add_from_surface(ind,id,x,y,w,h,removeback,smooth)
+sprite_delete(ind)
+sprite_set_alpha_from_sprite(ind,spr)
+sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbright,bbtop,bbbottom,kind,tolerance)
+
+// section 9.2
+
+sound_add(fname,kind,preload)&
+sound_replace(ind,fname,kind,preload)&
+sound_delete(ind)
+
+// section 9.3
+
+background_duplicate(ind)
+background_assign(ind,source)
+background_add(fname,removeback,smooth)
+background_replace(ind,fname,removeback,smooth)
+background_add_background(fname)&
+background_replace_background(ind,fname)&
+background_create_colour(w,h,col)
+background_create_gradient(w,h,col1,col2,kind)
+background_create_from_screen(x,y,w,h,removeback,smooth)&
+background_create_from_surface(id,x,y,w,h,removeback,smooth)
+background_delete(ind)
+background_set_alpha_from_background(ind,back)
+
+// section 9.4
+
+font_add(name,size,bold,italic,first,last)
+font_add_sprite(spr,first,prop,sep)
+font_add_sprite_ext(spr,mapstring,prop,sep)
+font_replace_sprite(ind,spr,first,prop,sep)
+font_replace_sprite_ext(font,spr,string_map,prop,sep)
+font_delete(ind)
+
+// section 9.5
+
+path_set_kind(ind,kind)
+path_set_closed(ind,closed)
+path_set_precision(ind,prec)
+path_add()
+path_assign(ind,path)
+path_duplicate(ind)
+path_append(ind,path)
+path_delete(ind)
+path_add_point(ind,x,y,speed)
+path_insert_point(ind,n,x,y,speed)
+path_change_point(ind,n,x,y,speed)
+path_delete_point(ind,n)
+path_clear_points(ind)
+path_reverse(ind)
+path_mirror(ind)
+path_flip(ind)
+path_rotate(ind,angle)
+path_rescale(ind,xscale,yscale)
+path_shift(ind,xshift,yshift)
+
+// section 9.6
+
+execute_string(str,arg0,arg1,...)&
+execute_file(fname,arg0,arg1,...)&
+script_execute(ind,arg0,arg1,...)
+
+// section 9.7
+
+timeline_add()
+timeline_delete(ind)
+timeline_clear(ind)
+timeline_moment_add(ind,step,codestr)&
+timeline_moment_add_script(ind,step,script)&
+
+// section 9.8
+
+object_set_sprite(ind,spr)
+object_set_solid(ind,solid)
+object_set_visible(ind,vis)
+object_set_depth(ind,depth)
+object_set_persistent(ind,pers)
+object_set_mask(ind,spr)
+object_set_parent(ind,obj)&
+object_add()&
+object_delete(ind)&
+object_event_clear(ind,evtype,evnumb)&
+object_event_add(ind,evtype,evnumb,codestr)&
+
+// section 9.9
+
+room_set_width(ind,w)
+room_set_height(ind,h)
+room_set_caption(ind,str)&
+room_set_persistent(ind,pers)
+room_set_code(ind,codestr)&
+room_set_background_colour(ind,col,show)
+room_set_background(ind,bind,vis,fore,back,x,y,htiled,vtiled,hspeed,vspeed,alpha)
+room_set_view(ind,vind,vis,xview,yview,wview,hview,xport,yport,wport,hport,hborder,vborder,hspeed,vspeed,obj)
+room_set_view_enabled(ind,val)
+room_add()
+room_duplicate(ind)
+room_assign(ind,source)
+room_instance_add(ind,x,y,obj)
+room_instance_clear(ind)
+room_tile_add(ind,back,left,top,width,height,x,y,depth)
+room_tile_add_ext(ind,back,left,top,width,height,x,y,depth,xscale,yscale,alpha)
+room_tile_clear(ind)
+
+asset_get_index(name)
+asset_get_type(name)
+
+asset_object#
+asset_unknown#
+asset_sprite#
+asset_sound#
+asset_room#
+asset_background#
+asset_path#
+asset_script#
+asset_font#
+asset_timeline#
+
+
+//////////////
+// Chapter 410
+//////////////
+
+// section 10.1
+
+file_text_open_from_string(content)
+file_text_open_read(fname)
+file_text_open_write(fname)
+file_text_open_append(fname)
+file_text_close(file)
+file_text_write_string(file,str)
+file_text_write_real(file,val)
+file_text_writeln(file)
+file_text_read_string(file)
+file_text_read_real(file)
+file_text_readln(file)
+file_text_eof(file)
+file_text_eoln(file)
+file_exists(fname)
+file_delete(fname)
+file_rename(oldname,newname)
+file_copy(fname,newname)
+directory_exists(dname)
+directory_create(dname)
+directory_destroy(dname)
+file_find_first(mask,attr)
+file_find_next()
+file_find_close()
+file_attributes(fname,attr)
+filename_name(fname)
+filename_path(fname)
+filename_dir(fname)
+filename_drive(fname)
+filename_ext(fname)
+filename_change_ext(fname,newext)
+file_bin_open(fname,mode)
+file_bin_rewrite(binfile)
+file_bin_close(binfile)
+file_bin_position(binfile)
+file_bin_size(binfile)
+file_bin_seek(binfile,pos)
+file_bin_write_byte(binfile,byte)
+file_bin_read_byte(binfile)
+export_include_file(fname)&
+export_include_file_location(fname,location)&
+discard_include_file(fname)&
+parameter_count()
+parameter_string(n)
+environment_get_variable(name)
+fa_readonly#
+fa_hidden#
+fa_sysfile#
+fa_volumeid#
+fa_directory#
+fa_archive#
+game_id*
+game_display_name*
+game_project_name*
+game_save_id*
+working_directory*
+temp_directory*
+program_directory*
+disk_free(drive)&
+disk_size(drive)&
+
+// section 10.2
+
+registry_write_string(name,str)&
+registry_write_real(name,value)&
+registry_read_string(name)&
+registry_read_real(name)&
+registry_exists(name)&
+registry_write_string_ext(key,name,str)&
+registry_write_real_ext(key,name,value)&
+registry_read_string_ext(key,name)&
+registry_read_real_ext(key,name)&
+registry_exists_ext(key,name)&
+registry_set_root(root)&
+
+// section 10.3
+
+ini_open_from_string(content)
+ini_open(fname)
+ini_close()
+ini_read_string(section,key,default)
+ini_read_real(section,key,default)
+ini_write_string(section,key,str)
+ini_write_real(section,key,value)
+ini_key_exists(section,key)
+ini_section_exists(section)
+ini_key_delete(section,key)
+ini_section_delete(section)
+
+// section 10.4
+
+execute_program(prog,arg,wait)&
+execute_shell(prog,arg)&
+secure_mode&
+
+
+
+
+//////////////
+// Chapter 411
+//////////////
+
+// section 11.0
+
+ds_set_precision(prec)
+ds_exists(id, type)
+
+ds_type_map#
+ds_type_list#
+ds_type_stack#
+ds_type_queue#
+ds_type_grid#
+ds_type_priority#
+
+// section 11.1
+
+ds_stack_create()
+ds_stack_destroy(id)
+ds_stack_clear(id)
+ds_stack_copy(id,source)
+ds_stack_size(id)
+ds_stack_empty(id)
+ds_stack_push(id,value,...)
+ds_stack_pop(id)
+ds_stack_top(id)
+ds_stack_write(id)
+ds_stack_read(id,str,...)
+
+// section 11.2
+
+ds_queue_create()
+ds_queue_destroy(id)
+ds_queue_clear(id)
+ds_queue_copy(id,source)
+ds_queue_size(id)
+ds_queue_empty(id)
+ds_queue_enqueue(id,value,...)
+ds_queue_dequeue(id)
+ds_queue_head(id)
+ds_queue_tail(id)
+ds_queue_write(id)
+ds_queue_read(id,str,...)
+
+// section 11.3
+
+ds_list_create()
+ds_list_destroy(id)
+ds_list_clear(id)
+ds_list_copy(id,source)
+ds_list_size(id)
+ds_list_empty(id)
+ds_list_add(id,value,...)
+ds_list_insert(id,pos,value)
+ds_list_replace(id,pos,value)
+ds_list_delete(id,pos)
+ds_list_find_index(id,value)
+ds_list_find_value(id,pos)
+ds_list_mark_as_list(id,pos)
+ds_list_mark_as_map(id,pos)
+ds_list_sort(id,ascending)
+ds_list_shuffle(id)
+ds_list_write(id)
+ds_list_read(id,str,...)
+
+// section 11.4
+
+ds_map_create()
+ds_map_destroy(id)
+ds_map_clear(id)
+ds_map_copy(id,source)
+ds_map_size(id)
+ds_map_empty(id)
+ds_map_add(id,key,value)
+ds_map_add_list(id,key,value)
+ds_map_add_map(id,key,value)
+ds_map_replace(id,key,value)
+ds_map_replace_map(id,key,value)
+ds_map_replace_list(id,key,value)
+ds_map_delete(id,key)
+ds_map_exists(id,key)
+ds_map_find_value(id,key)
+ds_map_find_previous(id,key)
+ds_map_find_next(id,key)
+ds_map_find_first(id)
+ds_map_find_last(id)
+ds_map_write(id)
+ds_map_read(id,str,...)
+ds_map_secure_save(id, filename)
+ds_map_secure_load(filename)
+
+// section 11.5
+
+ds_priority_create()
+ds_priority_destroy(id)
+ds_priority_clear(id)
+ds_priority_copy(id,source)
+ds_priority_size(id)
+ds_priority_empty(id)
+ds_priority_add(id,value,priority)
+ds_priority_change_priority(id,value,priority)
+ds_priority_find_priority(id,value)
+ds_priority_delete_value(id,value)
+ds_priority_delete_min(id)
+ds_priority_find_min(id)
+ds_priority_delete_max(id)
+ds_priority_find_max(id)
+ds_priority_write(id)
+ds_priority_read(id,str,...)
+
+// section 11.6
+
+ds_grid_create(w,h)
+ds_grid_destroy(id)
+ds_grid_copy(id,source)
+ds_grid_resize(id,w,h)
+ds_grid_width(id)
+ds_grid_height(id)
+ds_grid_clear(id,val)
+ds_grid_set(id,x,y,val)
+ds_grid_add(id,x,y,val)
+ds_grid_multiply(id,x,y,val)
+ds_grid_set_region(id,x1,y1,x2,y2,val)
+ds_grid_add_region(id,x1,y1,x2,y2,val)
+ds_grid_multiply_region(id,x1,y1,x2,y2,val)
+ds_grid_set_disk(id,xm,ym,r,val)
+ds_grid_add_disk(id,xm,ym,r,val)
+ds_grid_multiply_disk(id,xm,ym,r,val)
+ds_grid_set_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
+ds_grid_add_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
+ds_grid_multiply_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
+ds_grid_get(id,x,y)
+ds_grid_get_sum(id,x1,y1,x2,y2)
+ds_grid_get_max(id,x1,y1,x2,y2)
+ds_grid_get_min(id,x1,y1,x2,y2)
+ds_grid_get_mean(id,x1,y1,x2,y2)
+ds_grid_get_disk_sum(id,xm,ym,r)
+ds_grid_get_disk_min(id,xm,ym,r)
+ds_grid_get_disk_max(id,xm,ym,r)
+ds_grid_get_disk_mean(id,xm,ym,r)
+ds_grid_value_exists(id,x1,y1,x2,y2,val)
+ds_grid_value_x(id,x1,y1,x2,y2,val)
+ds_grid_value_y(id,x1,y1,x2,y2,val)
+ds_grid_value_disk_exists(id,xm,ym,r,val)
+ds_grid_value_disk_x(id,xm,ym,r,val)
+ds_grid_value_disk_y(id,xm,ym,r,val)
+ds_grid_shuffle(id)
+ds_grid_write(id)
+ds_grid_read(id,str,...)
+ds_grid_sort(id,column,ascending)
+
+//////////////
+// Chapter 412
+//////////////
+
+// section 12.1a
+
+effect_create_below(kind,x,y,size,colour)
+effect_create_above(kind,x,y,size,colour)
+effect_clear()
+ef_explosion#
+ef_ring#
+ef_ellipse#
+ef_firework#
+ef_smoke#
+ef_smokeup#
+ef_star#
+ef_spark#
+ef_flare#
+ef_cloud#
+ef_rain#
+ef_snow#
+
+// section 12.1
+
+part_type_create()
+part_type_destroy(ind)
+part_type_exists(ind)
+part_type_clear(ind)
+part_type_shape(ind,shape)
+part_type_sprite(ind,sprite,animat,stretch,random)
+part_type_size(ind,size_min,size_max,size_incr,size_wiggle)
+part_type_scale(ind,xscale,yscale)
+part_type_orientation(ind,ang_min,ang_max,ang_incr,ang_wiggle,ang_relative)
+part_type_life(ind,life_min,life_max)
+part_type_step(ind,step_number,step_type)
+part_type_death(ind,death_number,death_type)
+part_type_speed(ind,speed_min,speed_max,speed_incr,speed_wiggle)
+part_type_direction(ind,dir_min,dir_max,dir_incr,dir_wiggle)
+part_type_gravity(ind,grav_amount,grav_dir)
+part_type_colour1(ind,colour1)
+part_type_colour2(ind,colour1,colour2)
+part_type_colour3(ind,colour1,colour2,colour3)
+part_type_colour_mix(ind,colour1,colour2)
+part_type_colour_rgb(ind,rmin,rmax,gmin,gmax,bmin,bmax)
+part_type_colour_hsv(ind,hmin,hmax,smin,smax,vmin,vmax)
+part_type_alpha1(ind,alpha1)
+part_type_alpha2(ind,alpha1,alpha2)
+part_type_alpha3(ind,alpha1,alpha2,alpha3)
+part_type_blend(ind,additive)
+pt_shape_pixel#
+pt_shape_disk#
+pt_shape_square#
+pt_shape_line#
+pt_shape_star#
+pt_shape_circle#
+pt_shape_ring#
+pt_shape_sphere#
+pt_shape_flare#
+pt_shape_spark#
+pt_shape_explosion#
+pt_shape_cloud#
+pt_shape_smoke#
+pt_shape_snow#
+
+// section 12.2
+
+part_system_create()
+part_system_destroy(ind)
+part_system_exists(ind)
+part_system_clear(ind)
+part_system_draw_order(ind,oldtonew)
+part_system_depth(ind,depth)
+part_system_position(ind,x,y)
+part_system_automatic_update(ind,automatic)
+part_system_automatic_draw(ind,draw)
+part_system_update(ind)
+part_system_drawit(ind)
+
+part_particles_create(ind,x,y,parttype,number)
+part_particles_create_colour(ind,x,y,parttype,colour,number)
+part_particles_clear(ind)
+part_particles_count(ind)
+
+// section 12.3
+
+part_emitter_create(ps)
+part_emitter_destroy(ps,ind)
+part_emitter_destroy_all(ps)
+part_emitter_exists(ps,ind)
+part_emitter_clear(ps,ind)
+part_emitter_region(ps,ind,xmin,xmax,ymin,ymax,shape,distribution)
+part_emitter_burst(ps,ind,parttype,number)
+part_emitter_stream(ps,ind,parttype,number)
+ps_distr_linear#
+ps_distr_gaussian#
+ps_distr_invgaussian#
+ps_shape_rectangle#
+ps_shape_ellipse#
+ps_shape_diamond#
+ps_shape_line#
+
+// section 12.4
+
+part_attractor_create(ps)&
+part_attractor_destroy(ps,ind)&
+part_attractor_destroy_all(ps)&
+part_attractor_exists(ps,ind)&
+part_attractor_clear(ps,ind)&
+part_attractor_position(ps,ind,x,y)&
+part_attractor_force(ps,ind,force,dist,kind,additive)&
+ps_force_constant&
+ps_force_linear&
+ps_force_quadratic&
+
+// section 12.5
+
+part_destroyer_create(ps)&
+part_destroyer_destroy(ps,ind)&
+part_destroyer_destroy_all(ps)&
+part_destroyer_exists(ps,ind)&
+part_destroyer_clear(ps,ind)&
+part_destroyer_region(ps,ind,xmin,xmax,ymin,ymax,shape)&
+
+// section 12.6
+
+part_deflector_create(ps)&
+part_deflector_destroy(ps,ind)&
+part_deflector_destroy_all(ps)&
+part_deflector_exists(ps,ind)&
+part_deflector_clear(ps,ind)&
+part_deflector_region(ps,ind,xmin,xmax,ymin,ymax)&
+part_deflector_kind(ps,ind,kind)&
+part_deflector_friction(ps,ind,amount)&
+ps_deflect_vertical&
+ps_deflect_horizontal&
+
+// section 12.7
+
+part_changer_create(ps)&
+part_changer_destroy(ps,ind)&
+part_changer_destroy_all(ps)&
+part_changer_exists(ps,ind)&
+part_changer_clear(ps,ind)&
+part_changer_region(ps,ind,xmin,xmax,ymin,ymax,shape)&
+part_changer_kind(ps,ind,kind)&
+part_changer_types(ps,ind,parttype1,parttype2)&
+ps_change_all&
+ps_change_shape&
+ps_change_motion&
+
+//////////////
+// Chapter 414
+//////////////
+
+external_call(id,arg1,arg2,...)
+external_define(dll,name,calltype,restype,argnumb,arg1type,arg2type,...)
+external_free(dllname)
+window_handle()
+window_device()
+ty_real#
+ty_string#
+dll_cdecl#
+dll_stdcall#
+//////////////
+// Chapter 415
+//////////////
+
+d3d_start()
+d3d_end()
+d3d_set_hidden(enable)
+d3d_set_perspective(enable)
+d3d_set_depth(depth)
+d3d_primitive_begin(kind)
+d3d_vertex(x,y,z)
+d3d_vertex_colour(x,y,z,col,alpha)
+d3d_primitive_end()
+d3d_primitive_begin_texture(kind,texid)
+d3d_vertex_texture(x,y,z,xtex,ytex)
+d3d_vertex_texture_colour(x,y,z,xtex,ytex,col,alpha)
+d3d_draw_block(x1,y1,z1,x2,y2,z2,texid,hrepeat,vrepeat)
+d3d_draw_cylinder(x1,y1,z1,x2,y2,z2,texid,hrepeat,vrepeat,closed,steps)
+d3d_draw_cone(x1,y1,z1,x2,y2,z2,texid,hrepeat,vrepeat,closed,steps)
+d3d_draw_ellipsoid(x1,y1,z1,x2,y2,z2,texid,hrepeat,vrepeat,steps)
+d3d_draw_wall(x1,y1,z1,x2,y2,z2,texid,hrepeat,vrepeat)
+d3d_draw_floor(x1,y1,z1,x2,y2,z2,texid,hrepeat,vrepeat)
+d3d_set_projection(xfrom,yfrom,zfrom,xto,yto,zto,xup,yup,zup)
+d3d_set_projection_ext(xfrom,yfrom,zfrom,xto,yto,zto,xup,yup,zup,angle,aspect,znear,zfar)
+d3d_set_projection_ortho(x,y,w,h,angle)
+d3d_set_projection_perspective(x,y,w,h,angle)
+d3d_transform_set_identity()
+d3d_transform_set_translation(xt,yt,zt)
+d3d_transform_set_scaling(xs,ys,zs)
+d3d_transform_set_rotation_x(angle)
+d3d_transform_set_rotation_y(angle)
+d3d_transform_set_rotation_z(angle)
+d3d_transform_set_rotation_axis(xa,ya,za,angle)
+d3d_transform_add_translation(xt,yt,zt)
+d3d_transform_add_scaling(xs,ys,zs)
+d3d_transform_add_rotation_x(angle)
+d3d_transform_add_rotation_y(angle)
+d3d_transform_add_rotation_z(angle)
+d3d_transform_add_rotation_axis(xa,ya,za,angle)
+d3d_transform_stack_clear()
+d3d_transform_stack_empty()
+d3d_transform_stack_push()
+d3d_transform_stack_pop()
+d3d_transform_stack_top()
+d3d_transform_stack_discard()
+d3d_transform_vertex(x,y,z)
+d3d_set_fog(enable,colour,start,end)
+d3d_set_lighting(enable)
+d3d_set_shading(smooth)
+d3d_set_culling(cull)
+d3d_set_zwriteenable(on_off)
+d3d_light_define_ambient(col)
+d3d_light_define_direction(ind,dx,dy,dz,col)
+d3d_light_define_point(ind,x,y,z,range,col)
+d3d_light_enable(ind,enable)
+d3d_vertex_normal(x,y,z,nx,ny,nz)
+d3d_vertex_normal_colour(x,y,z,nx,ny,nz,col,alpha)
+d3d_vertex_normal_texture(x,y,z,nx,ny,nz,xtex,ytex)
+d3d_vertex_normal_texture_colour(x,y,z,nx,ny,nz,xtex,ytex,col,alpha)
+
+d3d_model_create()
+d3d_model_destroy(ind)
+d3d_model_clear(ind)
+d3d_model_save(ind,fname)
+d3d_model_load(ind,fname)
+d3d_model_draw(ind,x,y,z,texid)
+
+d3d_model_primitive_begin(ind,kind)
+d3d_model_vertex(ind,x,y,z)
+d3d_model_vertex_colour(ind,x,y,z,col,alpha)
+d3d_model_vertex_texture(ind,x,y,z,xtex,ytex)
+d3d_model_vertex_texture_colour(ind,x,y,z,xtex,ytex,col,alpha)
+d3d_model_vertex_normal(ind,x,y,z,nx,ny,nz)
+d3d_model_vertex_normal_colour(ind,x,y,z,nx,ny,nz,col,alpha)
+d3d_model_vertex_normal_texture(ind,x,y,z,nx,ny,nz,xtex,ytex)
+d3d_model_vertex_normal_texture_colour(ind,x,y,z,nx,ny,nz,xtex,ytex,col,alpha)
+d3d_model_primitive_end(ind)
+
+d3d_model_block(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat)
+d3d_model_cylinder(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat,closed,steps)
+d3d_model_cone(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat,closed,steps)
+d3d_model_ellipsoid(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat,steps)
+d3d_model_wall(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat)
+d3d_model_floor(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat)
+
+matrix_view#
+matrix_projection#
+matrix_world#
+matrix_get(type)
+matrix_set(type,matrix)
+matrix_build(x,y,z,xrotation,yrotation,zrotation,xscale,yscale,zscale)
+matrix_multiply(matrix,matrix)
+
+
+// YoYo extension stuff
+os_win32#
+os_windows#
+os_macosx#
+os_psp#
+os_ios#
+os_android#
+os_symbian#
+os_linux#
+os_unknown#
+os_winphone#
+os_tizen#
+os_win8native#
+os_wiiu#
+os_3ds#
+os_psvita#
+os_bb10#
+os_ps4#
+os_xboxone#
+os_ps3#
+os_xbox360#
+os_uwp#
+
+
+browser_not_a_browser#
+browser_unknown#
+browser_ie#
+browser_firefox#
+browser_chrome#
+browser_safari#
+browser_safari_mobile#
+browser_opera#
+browser_tizen#
+browser_windows_store#
+browser_ie_mobile#
+browser_width*
+browser_height*
+
+device_ios_unknown#
+device_ios_iphone#
+device_ios_iphone_retina#
+device_ios_ipad#
+device_ios_ipad_retina#
+device_ios_iphone5#
+device_ios_iphone6#
+device_ios_iphone6plus#
+device_ios_iphone6s#
+device_ios_iphone6splus#
+
+device_emulator#
+device_tablet#
+
+display_landscape#
+display_landscape_flipped#
+display_portrait#
+display_portrait_flipped#
+
+os_type*
+os_device*
+os_browser*
+os_version*
+os_get_config()
+os_get_info()
+os_get_language()
+os_get_region()
+os_lock_orientation(flag)
+display_get_dpi_x()
+display_get_dpi_y()
+display_set_gui_size(width,height)
+display_set_gui_maximise(xscale,yscale,xoffset,yoffset)
+device_mouse_dbclick_enable(enable)
+display_aa*
+async_load*
+delta_time*
+webgl_enabled*
+
+
+leaderboard_type_number#
+leaderboard_type_time_mins_secs#
+
+
+virtual_key_add(x,y,w,h,keycode)
+virtual_key_hide(id)
+virtual_key_delete(id)
+virtual_key_show(id)
+draw_enable_alphablend(enable)
+draw_enable_drawevent(enable)
+draw_enable_swf_aa(enable)
+draw_set_swf_aa_level(aa_level)
+draw_get_swf_aa_level()
+draw_texture_flush()
+draw_flush()
+
+
+shop_leave_rating(text_string,yes_string,no_string,url)
+
+
+url_get_domain()
+url_open(url)
+url_open_ext(url,target)
+url_open_full(url,target,options)
+get_timer()
+
+achievement_login()
+achievement_logout()
+achievement_post(achievement_name,value)
+achievement_increment(achievement_name,value)
+achievement_post_score(score_name,value)
+achievement_available()
+achievement_show_achievements()
+achievement_show_leaderboards()
+achievement_load_friends()
+achievement_load_leaderboard(ident,minindex,maxindex,filter)
+achievement_send_challenge(to,challengeid,score,type,msg)
+achievement_load_progress()
+achievement_reset()
+achievement_login_status()
+achievement_get_pic(char)
+achievement_show_challenge_notifications(receive_challenge,local_complete,remote_complete)
+achievement_get_challenges()
+achievement_event(stringid)
+achievement_show(type,val)
+achievement_get_info(userid)
+
+
+cloud_file_save(filename, description)
+cloud_string_save(data, description)
+cloud_synchronise()
+
+ads_enable(x,y,num)
+ads_disable(num)
+ads_setup(user_uuid,ad_app_key)
+ads_engagement_launch()
+ads_engagement_available()
+ads_engagement_active()
+ads_event(stringid)
+ads_event_preload(stringid)
+
+ads_set_reward_callback(callback)&
+playhaven_add_notification_badge(x, y, width, height, ident)&
+playhaven_hide_notification_badge()&
+playhaven_update_notification_badge()&
+playhaven_position_notification_badge(x, y, width, height)&
+
+ads_get_display_height(slotnum)
+ads_get_display_width(slotnum)
+ads_move(x,y,slotnum)
+
+ads_interstitial_available()
+ads_interstitial_display()
+
+
+pocketchange_display_reward()&
+pocketchange_display_shop()&
+
+
+device_get_tilt_x()
+device_get_tilt_y()
+device_get_tilt_z()
+device_is_keypad_open()
+
+device_ios_get_imagename()&
+device_ios_get_image()&
+
+openfeint_start()&
+achievement_map_achievement(gamecenter_string,openfeint_string)&
+achievement_map_leaderboard(gamecenter_string,openfeint_string,leaderboard_type)&
+openfeint_send_challenge(definition_string,text_string,data_string)&
+openfeint_send_invite(definition_string)&
+openfeint_send_social(text_string,suggested_message,image_name)&
+openfeint_set_url(url)&
+openfeint_accept_challenge()&
+achievement_is_online()&
+openfeint_send_result(challenge_result,description_string)&
+
+// Multi-touch functionality
+device_mouse_check_button(device,button)
+device_mouse_check_button_pressed(device,button)
+device_mouse_check_button_released(device,button)
+device_mouse_x(device)
+device_mouse_y(device)
+device_mouse_raw_x(device)
+device_mouse_raw_y(device)
+device_mouse_x_to_gui(device)
+device_mouse_y_to_gui(device)
+
+
+// In-app purchases functionality
+iap_activate(ds_list)
+iap_status()
+iap_enumerate_products(ds_list)
+iap_restore_all()
+iap_acquire(product_id, payload)
+iap_consume(product_id)
+iap_product_details(product_id, ds_map)
+iap_purchase_details(purchase_id, ds_map)
+iap_is_purchased(product_id)
+
+iap_store_status()&
+iap_product_status(product_id)&
+iap_is_downloaded(purchase_id_string)&
+iap_files_purchased()&
+iap_product_files(purchase_id, ds_list)&
+iap_event_queue()&
+
+iap_data*
+iap_ev_storeload#
+iap_ev_product#
+iap_ev_purchase#
+iap_ev_consume#
+iap_ev_restore#
+
+iap_storeload_ok#
+iap_storeload_failed#
+
+iap_status_uninitialised#
+iap_status_unavailable#
+iap_status_loading#
+iap_status_available#
+iap_status_processing#
+iap_status_restoring#
+
+iap_failed#
+iap_unavailable#
+iap_available#
+iap_purchased#
+iap_canceled#
+iap_refunded#
+
+
+// Facebook integration functionality
+facebook_init()
+facebook_login(ds_list_of_permissions, ios_login_type)
+facebook_status()
+facebook_graph_request(graph_path,httpMethod,ds_map_params,ds_map_response)
+facebook_dialog(graph_path,ds_map_params,ds_map_response)
+facebook_logout()
+facebook_launch_offerwall(product_url)
+facebook_post_message(title,caption,message,picture_url,redirect_url,actionname,action_url)
+facebook_send_invite(title,message,picture_url,redirect_url,ds_map_response)
+facebook_user_id()
+facebook_accesstoken()
+facebook_check_permission(permission)
+facebook_request_read_permissions(ds_list_permissions)
+facebook_request_publish_permissions(ds_list_permissions)
+
+//iOS facebook login behaviour constants
+fb_login_default#
+fb_login_fallback_to_webview#
+fb_login_no_fallback_to_webview#
+fb_login_forcing_webview#
+fb_login_use_system_account#
+fb_login_forcing_safari#
+
+// Gamepad API
+gamepad_is_supported()
+gamepad_get_device_count()
+gamepad_is_connected(device)
+gamepad_get_description(device)
+gamepad_get_button_threshold(device)
+gamepad_set_button_threshold(device, threshold)
+gamepad_get_axis_deadzone(device)
+gamepad_set_axis_deadzone(device, deadzone)
+gamepad_button_count(device)
+gamepad_button_check(device, buttonIndex)
+gamepad_button_check_pressed(device, buttonIndex)
+gamepad_button_check_released(device, buttonIndex)
+gamepad_button_value(device, buttonIndex)
+gamepad_axis_count(axis)
+gamepad_axis_value(device, axisIndex)
+gamepad_set_vibration(device, leftMotorSpeed, rightMotorSpeed)
+gamepad_set_color(index,color)
+gamepad_set_colour(index,colour)
+
+// Check to see if a pause event has come from an OS activity this frame
+os_is_paused()
+window_has_focus()
+code_is_compiled()
+
+// general async commands and related functionality
+http_get(url)
+http_get_file(url, dest)
+http_post_string(url, string)
+http_request(url, method, header_map, body)
+json_encode(ds_map)
+json_decode(string)
+zip_unzip(file, destPath)
+
+base64_encode(string)
+base64_decode(string)
+md5_string_unicode(string)
+md5_string_utf8(string)
+md5_file(fname)
+os_is_network_connected()
+sha1_string_unicode(string)
+sha1_string_utf8(string)
+sha1_file(fname)
+os_powersave_enable(enable)
+analytics_event(string)
+analytics_event_ext(string, string_param_name1, number_value1, ...)
+
+// Metro live tile commands
+win8_livetile_tile_notification(template, ds_map, expiry, tag)
+win8_livetile_tile_clear()
+win8_livetile_badge_notification(id)
+win8_livetile_badge_clear()
+win8_livetile_queue_enable(flag)
+
+// Metro secondary tiles
+win8_secondarytile_pin(id, shortName, displayName, cmdLineArgs, dsListOptions, tileImg, wideTileImg, textCol)
+win8_secondarytile_badge_notification(id, tileId)
+win8_secondarytile_delete(id)
+
+// Metro live tile command list
+win8_livetile_notification_begin(template);
+win8_livetile_notification_secondary_begin(template, tileId);
+win8_livetile_notification_expiry(expiryTime);
+win8_livetile_notification_tag(tag);
+win8_livetile_notification_text_add(text);
+win8_livetile_notification_image_add(image);
+win8_livetile_notification_end();
+
+// Metro appbar commands
+win8_appbar_enable(flag)
+win8_appbar_add_element(type, icon, label, section, toolTip, callback)
+win8_appbar_remove_element(id)
+
+// Metro charms
+win8_settingscharm_add_entry(name, callback)
+win8_settingscharm_add_html_entry(id, name, htmlPath)
+win8_settingscharm_add_xaml_entry(name, xamlPath, headerRGB, callback, wideFlyout)
+win8_settingscharm_set_xaml_property(entryName, elementName, propertyName, newValue )
+win8_settingscharm_get_xaml_property(entryName, elementName, propertyName)
+win8_settingscharm_remove_entry(name)
+
+// Metro share
+win8_share_image(image_filename, title, description, immediate)
+win8_share_screenshot(title, description, immediate)
+win8_share_file(filename, title, description, immediate)
+win8_share_url(url, title, description, immediate)
+win8_share_text(text, title, description, immediate)
+
+// Metro search
+win8_search_enable(_selectionCallback)
+win8_search_disable()
+win8_search_add_suggestions(_dslist)
+
+// Metro device presence
+win8_device_touchscreen_available()
+
+// Metro licensing (US English spelling)
+win8_license_initialize_sandbox(_licenseString)
+win8_license_trial_version()
+
+
+// windows phone
+winphone_license_trial_version()
+winphone_tile_title(title)
+winphone_tile_count(count)
+
+winphone_tile_back_title(title)
+winphone_tile_back_content(content)
+winphone_tile_back_content_wide(content)
+winphone_tile_front_image(included_filename)
+winphone_tile_front_image_small(included_filename)
+winphone_tile_front_image_wide(included_filename)
+winphone_tile_back_image(included_filename)
+winphone_tile_back_image_wide(included_filename)
+
+winphone_tile_background_colour(colour)
+winphone_tile_icon_image(included_filename)
+winphone_tile_small_icon_image(included_filename)
+winphone_tile_wide_content(content, index)
+
+winphone_tile_cycle_images(included_filename_1, included_filename_2, ...)
+winphone_tile_small_background_image(included_filename)
+
+// Physics functions
+// World level functions
+physics_world_create(PixelToMetreScale)
+physics_world_gravity(gx, gy)
+physics_world_update_speed(speed)
+physics_world_update_iterations(iterations)
+physics_world_draw_debug(draw_flags)
+
+// Pause
+physics_pause_enable(pause)
+
+// Fixture related functions
+physics_fixture_create()
+physics_fixture_set_kinematic(fixture)
+physics_fixture_set_density(fixture, density)
+physics_fixture_set_awake(fixture, flag)
+physics_fixture_set_restitution(fixture, restitution)
+physics_fixture_set_friction(fixture,friction)
+physics_fixture_set_collision_group(fixture, group)
+physics_fixture_set_sensor(fixture, sensorState)
+physics_fixture_set_linear_damping(fixture, damping)
+physics_fixture_set_angular_damping(fixture, damping)
+physics_fixture_set_circle_shape(fixture, circleRadius)
+physics_fixture_set_box_shape(fixture, halfWidth, halfHeight)
+physics_fixture_set_edge_shape(fixture, local_x1, local_y1, local_x2, local_y2)
+physics_fixture_set_polygon_shape(fixture)
+physics_fixture_set_chain_shape(fixture, loop)
+physics_fixture_add_point(fixture, local_x, local_y)
+physics_fixture_bind(fixture, obj)
+physics_fixture_bind_ext(fixture, obj, xo, yo)
+physics_fixture_delete(fixture)
+
+// Physics instance manipulation functions
+physics_apply_force(xpos, ypos, xforce, yforce)
+physics_apply_impulse(xpos, ypos, ximpulse, yimpulse)
+physics_apply_angular_impulse(impulse)
+physics_apply_local_force(xlocal, ylocal, xforce_local, yforce_local)
+physics_apply_local_impulse(xlocal, ylocal, ximpulse_local, yimpulse_local)
+physics_apply_torque(torque)
+physics_mass_properties(mass, local_centre_of_mass_x, local_centre_of_mass_y, inertia)
+physics_draw_debug()
+physics_test_overlap(x, y, angle, obj)
+physics_remove_fixture(inst, id)
+physics_set_friction(fixture, friction)
+physics_set_density(fixture, density)
+physics_set_restitution(fixture, restitution)
+physics_get_friction(fixture)
+physics_get_density(fixture)
+physics_get_restitution(fixture)
+
+// Joints
+physics_joint_distance_create(inst1, inst2, anchor_1_x, anchor_1_y, anchor_2_x, anchor_2_y, collideInstances)
+physics_joint_rope_create(inst1, inst2, anchor_1_x, anchor_1_y, anchor_2_x, anchor_2_y, maxLength, collideInstances)
+physics_joint_revolute_create(inst1, inst2, anchor_x, anchor_y, lower_angle_limit, upper_angle_limit, enable_limit, max_motor_torque, motor_speed, enable_motor, collideInstances)
+physics_joint_prismatic_create(inst1, inst2, anchor_x, anchor_y, axis_x, axis_y, lower_translation_limit, upper_translation_limit, enable_limit, max_motor_force, motor_speed, enable_motor, collideInstances)
+physics_joint_pulley_create(inst1, inst2, anchor_1_x, anchor_1_y, anchor_2_x, anchor_2_y, local_anchor_1_x, local_anchor_1_y, local_anchor_2_x, local_anchor_2_y, ratio, collideInstances)
+physics_joint_wheel_create(inst1, inst2, anchor_x, anchor_y, axis_x, axis_y, enableMotor, max_motor_torque, motor_speed, freq_hz, damping_ratio, collideInstances)
+physics_joint_weld_create(inst1, inst2, anchor_x, anchor_y, ref_angle, freq_hz, damping_ratio, collideInstances)
+physics_joint_friction_create(inst1, inst2, anchor_x, anchor_y, max_force, max_torque, collideInstances)
+physics_joint_gear_create(inst1, inst2, revoluteJoint, prismaticJoint, ratio)
+physics_joint_enable_motor(joint, motorState)
+physics_joint_get_value(joint, field)
+physics_joint_set_value(joint, field, value)
+physics_joint_delete(joint)
+
+// Physics particles
+physics_particle_create(typeflags, x, y, xv, yv, col, alpha, category)
+physics_particle_delete(ind)
+physics_particle_delete_region_circle(x, y, radius)
+physics_particle_delete_region_box(x, y, halfWidth, halfHeight)
+physics_particle_delete_region_poly(pointList)
+physics_particle_set_flags(ind, typeflags)
+physics_particle_set_category_flags(category, typeflags)
+physics_particle_draw(typemask, category, sprite, subimg)
+physics_particle_draw_ext(typemask, category, sprite, subimg, xscale, yscale, angle, col, alpha)
+physics_particle_count()
+physics_particle_get_data(buffer, dataFlags)
+physics_particle_get_data_particle(ind, buffer, dataFlags)
+
+physics_particle_group_begin(typeflags, groupflags, x, y, ang, xv, yv, angVelocity, col, alpha, strength, category)
+physics_particle_group_circle(radius)
+physics_particle_group_box(halfWidth, halfHeight)
+physics_particle_group_polygon()
+physics_particle_group_add_point(x, y)
+physics_particle_group_end()
+physics_particle_group_join(to, from)
+physics_particle_group_delete(ind)
+physics_particle_group_count(group)
+physics_particle_group_get_data(group, buffer, dataFlags)
+physics_particle_group_get_mass(group)
+physics_particle_group_get_inertia(group)
+physics_particle_group_get_centre_x(group)
+physics_particle_group_get_centre_y(group)
+physics_particle_group_get_vel_x(group)
+physics_particle_group_get_vel_y(group)
+physics_particle_group_get_ang_vel(group)
+physics_particle_group_get_x(group)
+physics_particle_group_get_y(group)
+physics_particle_group_get_angle(group)
+physics_particle_set_group_flags(group, groupflags)
+physics_particle_get_group_flags(group)
+
+physics_particle_get_max_count()
+physics_particle_get_radius()
+physics_particle_get_density()
+physics_particle_get_damping()
+physics_particle_get_gravity_scale()
+physics_particle_set_max_count(count)
+physics_particle_set_radius(radius)
+physics_particle_set_density(density)
+physics_particle_set_damping(damping)
+physics_particle_set_gravity_scale(scale)
+
+
+// Physics related built in variables (not all can be set)
+phy_rotation
+phy_position_x
+phy_position_y
+phy_angular_velocity
+phy_linear_velocity_x
+phy_linear_velocity_y
+phy_speed_x
+phy_speed_y
+phy_speed*
+phy_angular_damping
+phy_linear_damping
+phy_bullet
+phy_fixed_rotation
+phy_active
+phy_mass*
+phy_inertia*
+phy_com_x*
+phy_com_y*
+phy_dynamic*
+phy_kinematic*
+phy_sleeping*
+phy_collision_points*
+phy_collision_x*
+phy_collision_y*
+phy_col_normal_x*
+phy_col_normal_y*
+phy_position_xprevious*
+phy_position_yprevious*
+
+phy_joint_anchor_1_x#
+phy_joint_anchor_1_y#
+phy_joint_anchor_2_x#
+phy_joint_anchor_2_y#
+phy_joint_reaction_force_x#
+phy_joint_reaction_force_y#
+phy_joint_reaction_torque#
+phy_joint_motor_speed#
+phy_joint_angle#
+phy_joint_motor_torque#
+phy_joint_max_motor_torque#
+phy_joint_translation#
+phy_joint_speed#
+phy_joint_motor_force#
+phy_joint_max_motor_force#
+phy_joint_length_1#
+phy_joint_length_2#
+phy_joint_damping_ratio#
+phy_joint_frequency#
+phy_joint_lower_angle_limit#
+phy_joint_upper_angle_limit#
+phy_joint_angle_limits#
+phy_joint_max_length#
+phy_joint_max_torque#
+phy_joint_max_force#
+
+phy_debug_render_aabb#
+phy_debug_render_collision_pairs#
+phy_debug_render_coms#
+phy_debug_render_core_shapes#
+phy_debug_render_joints#
+phy_debug_render_obb#
+phy_debug_render_shapes#
+
+
+phy_particle_flag_water#
+phy_particle_flag_zombie#
+phy_particle_flag_wall#
+phy_particle_flag_spring#
+phy_particle_flag_elastic#
+phy_particle_flag_viscous#
+phy_particle_flag_powder#
+phy_particle_flag_tensile#
+phy_particle_flag_colourmixing#
+
+phy_particle_group_flag_solid#
+phy_particle_group_flag_rigid#
+
+phy_particle_data_flag_typeflags#
+phy_particle_data_flag_position#
+phy_particle_data_flag_velocity#
+phy_particle_data_flag_colour#
+phy_particle_data_flag_category#
+
+
+achievement_our_info#
+achievement_friends_info#
+achievement_leaderboard_info#
+achievement_achievement_info#
+achievement_filter_all_players#
+achievement_filter_friends_only#
+achievement_filter_favorites_only#
+achievement_type_achievement_challenge#
+achievement_type_score_challenge#
+achievement_pic_loaded#
+
+
+achievement_show_ui#
+achievement_show_profile#
+achievement_show_leaderboard#
+achievement_show_achievement#
+achievement_show_bank#
+achievement_show_friend_picker#
+achievement_show_purchase_prompt#
+
+network_create_socket(type)
+network_create_socket_ext(type, port)
+network_create_server(type, port, maxclients)
+network_create_server_raw(type, port, maxclients)
+network_connect(socket, url, port)
+network_connect_raw(socket, url, port)
+network_send_packet(socket, bufferid, size)
+network_send_raw(socket, buffer_id, size)
+network_send_broadcast(socket, port, bufferid, size)
+network_send_udp(socket, URL, port, data, size)
+network_send_udp_raw(socket, URL, port, data, size)
+network_set_timeout(socket, read, write)
+network_set_config(parameter, value)
+network_resolve(url)
+network_destroy(socket)
+network_socket_tcp#
+network_socket_udp#
+network_socket_bluetooth#
+network_type_connect#
+network_type_disconnect#
+network_type_data#
+network_type_non_blocking_connect#
+
+network_config_connect_timeout#
+network_config_use_non_blocking_socket#
+network_config_enable_reliable_udp#
+network_config_disable_reliable_udp#
+
+buffer_create(size, buffer_type, alignment)
+buffer_write(buffer, type, value)
+buffer_read(buffer, type)
+buffer_seek(buffer, base, offset)
+buffer_get_surface(buffer, surface, mode, offset, modulo)
+buffer_set_surface(buffer, surface, mode, offset, modulo)
+buffer_delete(buffer)
+buffer_poke(buffer, offset, type, value)
+buffer_peek(buffer, offset, type)
+buffer_save(buffer, filename)
+buffer_save_ext(buffer, filename, offset, size)
+buffer_load(filename)
+buffer_load_ext(buffer, filename, offset)
+buffer_load_partial(buffer, filename, src_offset, src_len, dest_offset)
+buffer_copy(src_buffer, src_offset, size, dest_buffer, dest_offset)
+buffer_fill(buffer, offset, type, value, size)
+buffer_get_size(buffer)
+buffer_tell(buffer)
+buffer_resize(buffer, newsize)
+buffer_md5(buffer, offset, size)
+buffer_sha1(buffer, offset, size)
+buffer_base64_encode(buffer, offset, size)
+buffer_base64_decode(string)
+buffer_base64_decode_ext(buffer, string, offset)
+buffer_sizeof(type)
+buffer_get_address(buffer)
+buffer_create_from_vertex_buffer(vertex_buffer, type, alignment)
+buffer_create_from_vertex_buffer_ext(vertex_buffer, type, alignment, start_vertex, num_vertices)
+buffer_copy_from_vertex_buffer(vertex_buffer, start_vertex, num_vertices, dest_buffer, dest_offset)
+buffer_async_group_begin(groupname)
+buffer_async_group_option(optionname,optionvalue)
+buffer_async_group_end()
+buffer_load_async(bufferid,filename,offset,size)
+buffer_save_async(bufferid,filename,offset,size)
+buffer_fixed#
+buffer_grow#
+buffer_wrap#
+buffer_fast#
+buffer_vbuffer#
+buffer_network#
+buffer_u8#
+buffer_s8#
+buffer_u16#
+buffer_s16#
+buffer_u32#
+buffer_s32#
+buffer_u64#
+buffer_f16#
+buffer_f32#
+buffer_f64#
+buffer_bool#
+buffer_string#
+buffer_text#
+buffer_seek_start#
+buffer_seek_relative#
+buffer_seek_end#
+buffer_generalerror#
+buffer_outofspace#
+buffer_outofbounds#
+buffer_invalidtype#
+
+
+text_type&
+button_type&
+input_type&
+
+
+gp_face1#
+gp_face2#
+gp_face3#
+gp_face4#
+gp_shoulderl#
+gp_shoulderr#
+gp_shoulderlb#
+gp_shoulderrb#
+gp_select#
+gp_start#
+gp_stickl#
+gp_stickr#
+gp_padu#
+gp_padd#
+gp_padl#
+gp_padr#
+gp_axislh#
+gp_axislv#
+gp_axisrh#
+gp_axisrv#
+
+
+immersion_play_effect(effectIndex)
+immersion_stop()
+
+gml_release_mode(enable)
+gml_pragma(setting,....)
+
+//steam functions
+steam_activate_overlay(overlayIndex)
+steam_is_overlay_enabled()
+steam_is_overlay_activated()
+steam_get_persona_name()
+steam_initialised()
+steam_is_cloud_enabled_for_app()
+steam_is_cloud_enabled_for_account()
+steam_file_persisted(filename)
+steam_get_quota_total()
+steam_get_quota_free()
+steam_file_write(steam_filename,data,size)
+steam_file_write_file(steam_filename,local_filename)
+steam_file_read(filename)
+steam_file_delete(filename)
+steam_file_exists(filename)
+steam_file_size(filename)
+steam_file_share(filename)
+steam_publish_workshop_file(filename, previewImage,title,description)
+steam_is_screenshot_requested()
+steam_send_screenshot(filename,width,height)
+steam_is_user_logged_on()
+steam_get_user_steam_id()
+steam_user_owns_dlc(dlc_id)
+steam_user_installed_dlc(dlc_id)
+steam_set_achievement(ach_name)
+steam_get_achievement(ach_name)
+steam_clear_achievement(ach_name)
+steam_set_stat_int(stat_name,value)
+steam_set_stat_float(stat_name,value)
+steam_set_stat_avg_rate(stat_name,session_count,session_length)
+steam_get_stat_int(stat_name)
+steam_get_stat_float(stat_name)
+steam_get_stat_avg_rate(stat_name)
+steam_reset_all_stats()
+steam_reset_all_stats_achievements()
+steam_stats_ready()
+steam_create_leaderboard(lb_name,sort_method,display_type)
+steam_upload_score(lb_name,score)
+steam_download_scores_around_user(lb_name,range_start,range_end)
+steam_download_scores(lb_name,start_idx,end_idx)
+steam_download_friends_scores(lb_name)
+steam_upload_score_buffer(lb_name, score, buffer_id )
+steam_current_game_language()
+steam_available_languages()
+steam_activate_overlay_browser( url )
+steam_activate_overlay_user( dialog_name, steamid )
+steam_activate_overlay_store( app_id )
+steam_get_user_persona_name( steam_id )
+
+//steam ugc functions
+//helpers
+steam_get_app_id()
+steam_get_user_account_id()
+steam_ugc_download( ugc_handle, dest_filename )
+
+//create, edit content
+steam_ugc_create_item( consumer_app_id, file_type )
+steam_ugc_start_item_update( consumer_app_id, published_file_id )
+steam_ugc_set_item_title( ugc_update_handle, title)
+steam_ugc_set_item_description( ugc_update_handle, description )
+steam_ugc_set_item_visibility(ugc_update_handle, visibility )
+steam_ugc_set_item_tags( ugc_update_handle, tag_array )
+steam_ugc_set_item_content( ugc_update_handle, directory )
+steam_ugc_set_item_preview( ugc_update_handle, image_path )
+steam_ugc_submit_item_update( ugc_update_handle, change_note )
+steam_ugc_get_item_update_progress( ugc_update_handle, info_map )
+
+//consuming content
+steam_ugc_subscribe_item( published_file_id )
+steam_ugc_unsubscribe_item( published_file_id )
+steam_ugc_num_subscribed_items()
+steam_ugc_get_subscribed_items( item_list )
+steam_ugc_get_item_install_info( published_file_id, info_map )
+steam_ugc_get_item_update_info( published_file_id, info_map )
+steam_ugc_request_item_details( published_file_id, max_age_seconds )
+
+//querying content
+steam_ugc_create_query_user( list_type, match_type, sort_order, page )
+steam_ugc_create_query_user_ex( list_type, match_type, sort_order, page, account_id, creator_app_id, consumer_app_id )
+steam_ugc_create_query_all( query_type, match_type, page )
+steam_ugc_create_query_all_ex( query_type, match_type, page, creator_app_id, consumer_app_id )
+
+steam_ugc_query_set_cloud_filename_filter( ugc_query_handle , match_cloud_filename )
+steam_ugc_query_set_match_any_tag( ugc_query_handle, match_any_tag )
+steam_ugc_query_set_search_text( ugc_query_handle, search_text )
+steam_ugc_query_set_ranked_by_trend_days( ugc_query_handle , days)
+steam_ugc_query_add_required_tag( ugc_query_handle, tag_name )
+steam_ugc_query_add_excluded_tag( ugc_query_handle, tag_name )
+steam_ugc_query_set_return_long_description( ugc_query_handle, return_long_desc )
+steam_ugc_query_set_return_total_only( ugc_query_handle, return_total_only )
+steam_ugc_query_set_allow_cached_response( ugc_query_handle, max_age_seconds )
+steam_ugc_send_query( ugc_query_handle )
+
+//steam constants
+ov_friends#
+ov_community#
+ov_players#
+ov_settings#
+ov_gamegroup#
+ov_achievements#
+lb_sort_none#
+lb_sort_ascending#
+lb_sort_descending#
+lb_disp_none#
+lb_disp_numeric#
+lb_disp_time_sec#
+lb_disp_time_ms#
+
+//steam ugc constants
+ugc_result_success#
+ugc_filetype_community#
+ugc_filetype_microtrans#
+ugc_visibility_public#
+ugc_visibility_friends_only#
+ugc_visibility_private#
+
+//ugc query_type constants
+ugc_query_RankedByVote#
+ugc_query_RankedByPublicationDate#
+ugc_query_AcceptedForGameRankedByAcceptanceDate#
+ugc_query_RankedByTrend#
+ugc_query_FavoritedByFriendsRankedByPublicationDate#
+ugc_query_CreatedByFriendsRankedByPublicationDate#
+ugc_query_RankedByNumTimesReported#
+ugc_query_CreatedByFollowedUsersRankedByPublicationDate
+ugc_query_NotYetRated#
+ugc_query_RankedByTotalVotesAsc#
+ugc_query_RankedByVotesUp#
+ugc_query_RankedByTextSearch#
+
+//ugc query sort_type constants
+ugc_sortorder_CreationOrderDesc#
+ugc_sortorder_CreationOrderAsc#
+ugc_sortorder_TitleAsc#
+ugc_sortorder_LastUpdatedDesc#
+ugc_sortorder_SubscriptionDateDesc#
+ugc_sortorder_VoteScoreDesc#
+ugc_sortorder_ForModeration#
+
+//ugc query list type constants
+ugc_list_Published#
+ugc_list_VotedOn#
+ugc_list_VotedUp#
+ugc_list_VotedDown#
+ugc_list_WillVoteLater#
+ugc_list_Favorited#
+ugc_list_Subscribed#
+ugc_list_UsedOrPlayed#
+ugc_list_Followed#
+
+//ugc query match_type constants
+ugc_match_Items#
+ugc_match_Items_Mtx#
+ugc_match_Items_ReadyToUse#
+ugc_match_Collections#
+ugc_match_Artwork#
+ugc_match_Videos#
+ugc_match_Screenshots#
+ugc_match_AllGuides#
+ugc_match_WebGuides#
+ugc_match_IntegratedGuides#
+ugc_match_UsableInGame#
+ugc_match_ControllerBindings#
+
+shader_set(shader)
+shader_reset()
+shader_is_compiled(shader)
+shader_get_sampler_index(shader,uniform_name)
+shader_get_uniform(shader,uniform_name)
+shader_set_uniform_i(uniform_id,val,....)
+shader_set_uniform_i_array(uniform_id,array)
+shader_set_uniform_f(uniform_id,val,....)
+shader_set_uniform_f_array(uniform_id,array)
+shader_set_uniform_matrix(uniform_id)
+shader_set_uniform_matrix_array(uniform_id,array)
+shader_enable_corner_id(enable)
+texture_set_stage(sampled_id, texture_id)
+texture_get_texel_width(texture_id)
+texture_get_texel_height(texture_id)
+shaders_are_supported()
+
+vertex_format_begin()
+vertex_format_end()
+vertex_format_delete(format_id)
+vertex_format_add_position()
+vertex_format_add_position_3d()
+vertex_format_add_colour()
+vertex_format_add_normal()
+vertex_format_add_textcoord()
+vertex_format_add_custom(type,usage)
+
+vertex_usage_position#
+vertex_usage_colour#
+vertex_usage_normal#
+vertex_usage_textcoord#
+vertex_usage_blendweight#
+vertex_usage_blendindices#
+vertex_usage_psize#
+vertex_usage_tangent#
+vertex_usage_binormal#
+vertex_usage_fog#
+vertex_usage_depth#
+vertex_usage_sample#
+
+vertex_type_float1#
+vertex_type_float2#
+vertex_type_float3#
+vertex_type_float4#
+vertex_type_colour#
+vertex_type_ubyte4#
+
+
+vertex_create_buffer()
+vertex_create_buffer_ext(size)
+vertex_delete_buffer(vbuff)
+vertex_begin(vbuff,format)
+vertex_end(vbuff)
+vertex_position(vbuff,x,y)
+vertex_position_3d(vbuff,x,y,z)
+vertex_colour(vbuff,colour,alpha)
+vertex_argb(vbuff,argb)
+vertex_texcoord(vbuff,u,v)
+vertex_normal(vbuff,nx,ny,nz)
+vertex_float1(vbuff,f1)
+vertex_float2(vbuff,f1,f2)
+vertex_float3(vbuff,f1,f2,f3)
+vertex_float4(vbuff,f1,f2,f3,f4)
+vertex_ubyte4(vbuff,b1,b2,b3,b4)
+vertex_submit(vbuff,prim,texture)
+vertex_freeze(vbuff)
+vertex_get_number(vbuff)
+vertex_get_buffer_size(vbuff)
+vertex_create_buffer_from_buffer(src_buffer,format)
+vertex_create_buffer_from_buffer_ext(src_buffer,format,src_offset,num_vertices)
+
+push_local_notification(fire_time, title, message, data)
+push_get_first_local_notification( ds_map )
+push_get_next_local_notification( ds_map )
+push_cancel_local_notification( id )
+
+
+// Instance specific
+skeleton_animation_set(anim_name)
+skeleton_animation_get()
+skeleton_animation_mix(anim_from,anim_to,duration)
+skeleton_animation_set_ext(anim_name, track)
+skeleton_animation_get_ext(track)
+skeleton_animation_get_duration(anim_name)
+skeleton_animation_clear(track)
+skeleton_skin_set(skin_name)
+skeleton_skin_get()
+skeleton_attachment_set(slot, attachment)
+skeleton_attachment_get(slot)
+skeleton_attachment_create(name,sprite,ind,xo,yo,xs,ys,rot)
+skeleton_collision_draw_set(val)
+skeleton_bone_data_get(bone, map)
+skeleton_bone_data_set(bone, map)
+skeleton_bone_state_get(bone, map)
+skeleton_bone_state_set(bone, map)
+
+// Instance independent
+draw_skeleton(sprite,animname,skinname,frame,x,y,xscale,yscale,rot,colour,alpha)
+draw_skeleton_time(sprite, animname,skinname, time, x,y, xscale,yscale, rot, colour,alpha)
+draw_skeleton_collision(sprite,animname,frame,x,y,xscale,yscale,rot,colour)
+skeleton_animation_list(sprite, list)
+skeleton_skin_list(sprite, list)
+skeleton_slot_data(sprite, list)

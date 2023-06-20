@@ -1,0 +1,16 @@
+{
+	"parent": "gml1",
+	"name": "GMLive.js (GMS1 mode)",
+	
+	"docMode": "gms1",
+	"projectMode": "gms1",
+	"indexingMode": "gms1",
+	"loadingMode": "gms1",
+	"searchMode": "gms1",
+	
+	"hasEventSections": true,
+	"hasEventActions": true,
+	
+	"helpURL": "http://docs.yoyogames.com/?tab=i&page=$1",
+	"helpIndex": "helpindexdat.js"
+}

@@ -330,21 +330,24 @@ function ace_mode_gml_1() {
 var rxDefine = /^(?:#define|#event|#action|#section|#moment|#target)\b/;
 var rxLine1 = /^#moment\s+\d+[|\s]\s*.+$|^#event\s+\w+(?:\:\w*)?[|\s]\s*.+$|#section[|\s]\s*.+/;
 var rxSection = /^#section\b/;
-var rxMFunc = /^\s*#mfunc\s+(\w+)/;
 var Gutter = ace.require("ace/layer/gutter").Gutter;
-var GmlSeekData;
+var GmlSeekData = null;
+var GmlExtArgsAce_getHiddenLines = null;
 
 function syncGutterState(gutter) {
 	var session = gutter.session;
 	var isGML = session.$modeId == "ace/mode/gml";
+	gutter.isGML = isGML;
 	gutter.gmlResetOnDefine = isGML && window.gmlResetOnDefine;
 	gutter.gmlHasMFunc = false;
+	gutter.gmlHasArgs = isGML;
 	if (isGML) do {
 		var file = session.gmlFile;
 		if (!file.path) break;
 		if (!GmlSeekData) {
 			if (!$gmedit) break;
 			GmlSeekData = $gmedit["parsers.GmlSeekData"];
+			GmlExtArgsAce_getHiddenLines = $gmedit["synext.GmlExtArgsAce"].getHiddenLines;
 		}
 		var sd = GmlSeekData.map[file.path];
 		if (sd && sd.mfuncs.array.length) {
@@ -354,6 +357,23 @@ function syncGutterState(gutter) {
 	} while (false);
 }
 
+function gutterUpdate_impl(gutter, session, firstRow) {
+	syncGutterState(gutter);
+	if (gutter.isGML) {
+		var checkRow = firstRow;
+		var resetOnDefine = gutter.gmlResetOnDefine;
+		session.$firstLineNumber = 1;
+		while (--checkRow >= 0) {
+			if (resetOnDefine && rxDefine.test(session.getLine(checkRow))) {
+				session.$firstLineNumber -= checkRow + 1;
+				break;
+			}
+			gutter.gmlCellClass(checkRow, null);
+		}
+		this.$gmlCellText = null;
+	}
+}
+
 /**
  * When starting to update gutter, we want to figure out how the starting line number
  * (which will be either 0 or -event number)
@@ -361,18 +381,7 @@ function syncGutterState(gutter) {
 var Gutter_update = Gutter.prototype.update;
 if (!Gutter_update) throw "Gutter:update is amiss";
 Gutter.prototype.update = function(config) {
-	var session = this.session;
-	syncGutterState(this);
-	if (this.gmlResetOnDefine) {
-		var checkRow = config.firstRow;
-		session.$firstLineNumber = 1;
-		while (--checkRow >= 0) {
-			if (rxDefine.test(session.getLine(checkRow))) {
-				session.$firstLineNumber = -checkRow;
-				break;
-			}
-		}
-	}
+	gutterUpdate_impl(this, this.session, config.firstRow);
 	return Gutter_update.call(this, config);
 }
 
@@ -382,45 +391,60 @@ Gutter.prototype.update = function(config) {
 var Gutter_$renderLines = Gutter.prototype.$renderLines;
 if (!Gutter_$renderLines) throw "Gutter:$renderLines is amiss";
 Gutter.prototype.$renderLines = function(config, firstRow, lastRow) {
-	var session = this.session;
-	syncGutterState(this);
-	if (this.gmlResetOnDefine) {
-		var checkRow = firstRow;
-		session.$firstLineNumber = 1;
-		while (--checkRow >= 0) {
-			if (rxDefine.test(session.getLine(checkRow))) {
-				session.$firstLineNumber = -checkRow;
-				break;
-			}
-		}
-	}
+	gutterUpdate_impl(this, this.session, firstRow);
 	return Gutter_$renderLines.call(this, config, firstRow, lastRow);
 }
 
+Gutter.prototype.addBookmarkClass = function(bookmarks, row, className) {
+	for (var i = 0; i < bookmarks.length; i++) {
+		if (bookmarks[i].row == row) {
+			return className + " ace_gutter-bookmark";
+		}
+	}
+	return className;
+}
+var rxArgsLine = /^\s*#args\s+(.+)/;
+var rxMFunc = /^\s*#mfunc\s+(\w+)/;
 /**
- * With few minor changes to ace.js, $renderCell will call $gmlCellClass
- * if gmlResetOnDefine == true, and this is where we reset line number
+ * With few minor changes to ace.js, Gutter:$renderCell will call $gmlCellClass
+ * if Gutter:isGML == true, and this is where we reset line number
  * and set the magic variable to replace 0/etc. for it by a "#"
  */
 Gutter.prototype.gmlCellClass = function(row, className) {
 	var session = this.session;
+	var doc = session.getDocument();
 	var rowText = session.getLine(row);
-	var reset = rxDefine.test(rowText);
-	if (reset) {
-		this.$gmlCellText = "#";
-		session.$firstLineNumber = -row;
+	var mt, mf, hiddenLines;
+	var full = className != null;
+	if (this.gmlResetOnDefine
+		&& rxDefine.test(rowText)
+	) {
+		session.$firstLineNumber = -row; // so that the current row would be 0
 		if (rxLine1.test(rowText)) session.$firstLineNumber += 1;
-		className += "ace_gutter-define ";
-	} else if (rxSection.test(rowText)) {
-		className += "ace_gutter-define ";
-	} else if (this.gmlHasMFunc) do {
-		var mt = rxMFunc.exec(rowText)
-		if (!mt) break;
-		var mf = this.gmlMFuncMap[mt[1]];
-		if (!mf) break;
-		this.$gmlCellText = (row + session.$firstLineNumber).toString();
+		if (full) {
+			this.$gmlCellText = "#";
+			className += " ace_gutter-define"; // ... and override its line number to "#"
+		}
+	}
+	else if (rxSection.test(rowText)) { // show as "#" but don't reset line number
+		if (full) className += " ace_gutter-define";
+	}
+	else if (this.gmlHasArgs
+		&& (mt = rxArgsLine.exec(rowText))
+	) {
+		hiddenLines = GmlExtArgsAce_getHiddenLines(mt[1]);
+		if (hiddenLines > 0) {
+			if (full) this.$gmlCellText = (row + session.$firstLineNumber).toString();
+			session.$firstLineNumber += hiddenLines;
+		}
+	}
+	else if (this.gmlHasMFunc
+		&& (mt = rxMFunc.exec(rowText))
+		&& (mf = this.gmlMFuncMap[mt[1]])
+	) {
+		if (full) this.$gmlCellText = (row + session.$firstLineNumber).toString();
 		session.$firstLineNumber += mf.order.length + 1;
-	} while (false);
+	}
 	return className;
 }
 
@@ -630,7 +654,7 @@ var Mode = function() {
 	this.HighlightRules = MarkdownHighlightRules;
 	
 	this.$outdent = new MatchingBraceOutdent();
-	this.$behaviour = new CstyleBehaviour();
+	this.$behaviour = new CstyleBehaviour({ braces: true });
 	this.foldingRules = new FoldMode();
 };
 oop.inherits(Mode, TextMode);
@@ -666,7 +690,8 @@ oop.inherits(Mode, TextMode);
 	this.autoOutdent = function(state, doc, row) {
 		this.$outdent.autoOutdent(doc, row);
 	};
-
+	
+	this.$quotes = {'"': '"', "'": "'", "`": "`"};
 	this.$id = "ace/mode/markdown";
 }).call(Mode.prototype);
 

@@ -6,6 +6,10 @@
 	--color-hightlight-background: #333333;
 }
 
+body {
+	background: var(--color-background);
+}
+
 input {
 	background-color: var(--color-hightlight-background);
 	border: none;
@@ -215,8 +219,8 @@ button[type=button].highlighted-button {
 .popout-window legend {
 	color: inherit;
 }
-.popout-window fieldset {
-	border: 1px solid #495057;
+.popout-window fieldset, .popout-window hr {
+	border-color: #495057;
 }
 .popout-window a {
 	color: #40C3F4;
@@ -225,6 +229,10 @@ button[type=button].highlighted-button {
 .popout-window input[type="text"],
 .popout-window select {
 	background: #444;
+}
+.popout-window select option[hint]:after {
+	background: #111;
+	color: white;
 }
 
 #preferences-editor, #keybindings-editor {

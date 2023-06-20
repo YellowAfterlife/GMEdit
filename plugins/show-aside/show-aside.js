@@ -22,6 +22,7 @@
 		mainCont.removeChild(container);
 		gmlFile = null;
 		forceUpdate();
+		setTimeout(() => aceEditor.focus());
 	}
 	function show(file) {
 		if (!file.codeEditor) return;
@@ -96,6 +97,21 @@
 				hide();
 			}
 		}));
+		//
+		editor.commands.addCommand({
+			name: "saveFile",
+			bindKey: {win: "Ctrl-S", mac: "Command-S"},
+			exec: function(e) {
+				let file = e.session.gmlFile;
+				if (file && file.save()) {
+					setTimeout(() => {
+						if (file.codeEditor.session.getUndoManager().isClean()) {
+							e.session.getUndoManager().markClean();
+						}
+					});
+				}
+			}
+		});
 	}
 	//
 	function init() {
@@ -105,9 +121,11 @@
 		while (insertAt < mainMenu.items.length) {
 			if (mainMenu.items[insertAt++].aceCommand == "selectall") break;
 		}
-		mainMenu.insert(insertAt, new MenuItem({type:"separator"}));
+		mainMenu.insert(insertAt, new MenuItem({type:"separator", id:"show-aside-sep"}));
 		mainMenu.insert(insertAt + 1, new MenuItem({
 			label: "Show aside",
+			id: "show-aside",
+			icon: __dirname + "/icons/silk/application_split_vertical.png",
 			click: function() {
 				show(aceEditor.session.gmlFile);
 			}

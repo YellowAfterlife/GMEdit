@@ -1,4 +1,4 @@
-.popout-window {
+﻿.popout-window {
 	position: absolute;
 	background: #fdfdfd;
 	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
@@ -10,32 +10,108 @@
 }
 /* */
 
+input[type=checkbox], input[type=radio] {
+	vertical-align: top;
+	width: 13px;
+	height: 13px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	outline: none;
+	position: relative;
+	cursor: pointer;
+	border: rgba(0, 0, 0, 0.3) solid 1px;
+}
+input[type=checkbox]:before, input[type=radio]:before {
+	/* regular sans-serif is mysteriously misaligned in firefox */
+	font-family: Arial, sans-serif;
+}
+input[type=checkbox]:disabled, input[type=radio]:disabled {
+	opacity: 0.5px;
+}
+input[type=checkbox]:checked:before, input[type=radio]:checked:before {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+input[type=checkbox]:checked {
+	background-color: #5584d4;
+	background-color: var(--color-primary);
+}
+input[type=checkbox]:checked:before {
+	content: "✔";
+	color:black;
+	font-size: 12px;
+}
+input[type=radio] {
+	border-radius: 10px;
+}
+input[type=radio]:checked {
+	background-color: #5584d4;
+	background-color: var(--color-primary);
+	text-align: center;
+}
+input[type=radio]:checked:before {
+	content: "•";
+	color:black;
+	font-size: 19px;
+}
+
 #global-lookup {
 	left: 0;
 	top: 0;
 	right: 0;
 	bottom: 0;
 	margin: auto;
-	width: 300px;
-	height: 200px;
+	width: 480px;
+	height: 272px;
 	resize: both;
 	display: flex;
-	flex-direction: column;
 }
-#global-lookup > div {
+#global-lookup .lookup-main {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+#global-lookup .lookup-query {
 	margin-bottom: 4px;
 	display: flex;
 }
-#global-lookup > div > label {
+#global-lookup .lookup-query > label[for="filter"] {
 	margin-left: 6px;
 	display: flex;
 	align-items: center;
 }
-#global-lookup > select {
+#global-lookup .lookup-main > select {
 	flex-grow: 1;
 	overflow-y: auto;
 }
+#global-lookup .lookup-options {
+	margin-left: 4px;
+	min-width: 100px;
+}
+#global-lookup .lookup-options > fieldset {
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	height: 100%;
+	box-sizing: border-box;
+}
+#global-lookup .lookup-options hr {
+	width: 100%;
+	margin: 0.3em 0;
+}
 /* */
+.popout-center {
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+}
 #global-search {
 	left: 0;
 	top: 0;
@@ -62,6 +138,42 @@
 #global-search .search-options fieldset {
 	height: 100%;
 	box-sizing: border-box;
+}
+
+#global-search-info {
+	left: 0;
+	right: 0;
+	margin: auto;
+	top: 40px;
+	width: 8em;
+	height: 1.25em;
+	text-align: center;
+	display: flex;
+	box-sizing: content-box;
+	line-height: 1.25;
+}
+#tag-editor {
+	display: flex;
+	flex-direction: column;
+	resize: both;
+	width: 360px;
+	height: 360px;
+	left: 0; top: 0; right: 0; bottom: 0;
+	margin: auto;
+}
+#tag-editor label {
+	padding-bottom: 2px;
+}
+#tag-editor textarea[name="tags"] {
+	flex-grow: 1;
+	resize: none;
+	font-family: Consolas, monospace;
+}
+#tag-editor .tag-editor-controls {
+	display: flex;
+}
+#tag-editor .tag-editor-controls span {
+	flex-grow: 1;
 }
 /* */
 #preferences-window {
@@ -118,6 +230,11 @@
 	padding: 4px;
 	-webkit-padding-before: 0;
 }
+.popout-window hr {
+	width: 100%;
+	border: 0;
+	border-top: 1px solid #999;
+}
 .popout-window fieldset.collapsed,
 #preferences-editor fieldset.collapsed,
 .project-properties > fieldset.collapsed {
@@ -143,8 +260,10 @@
 	position: absolute;
 	right: 2px;
 	font-size: 85%;
-	bottom: calc(50% - 0.425em);
-	--top: calc(50% - 0.425em);
+	bottom: calc(50% - 0.425em - 2px);
+	background: #eee;
+	color: #000;
+	padding: 1px 3px;
 }
 .popout-window input[type="text"],
 .popout-window select {
@@ -172,6 +291,16 @@ html #ace_settingsmenu {
 #ace_settingsmenu div[contains="setTheme"] {
 	display: none;
 }
+.ace_goto {
+	display: flex;
+	flex-direction: column;
+	resize: vertical;
+}
+.ace_goto_comp {
+	width: 100%;
+	flex-grow: 1;
+	margin-bottom: 4px;
+}
 
 .popout-menu {
 	z-index: 1000;
@@ -188,6 +317,9 @@ html #ace_settingsmenu {
 }
 .popout-menu li {
 	padding: 4px 20px;
+	padding-left: 34px;
+	background-position: 8px center;
+	background-repeat: no-repeat;
 	cursor: default;
 }
 .popout-menu li[disabled] {
@@ -200,7 +332,7 @@ html #ace_settingsmenu {
 	margin: 5px 1px;
 }
 .popout-menu li:not([disabled]):not(.popout-menu-separator):hover {
-	background: #EBEBEB;
+	background-color: #EBEBEB;
 }
 .popout-menu .popout-menu-submenu {
 	position: relative;

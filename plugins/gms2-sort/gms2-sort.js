@@ -42,6 +42,7 @@
 		init: function() {
 			var menuItem = new Electron_MenuItem({
 				label: "Sort",
+				icon: __dirname + "/icons/silk/arrow_switch.png",
 				click: onClick,
 			});
 			$gmedit["ui.treeview.TreeView"].on("dirMenu", function(e) {

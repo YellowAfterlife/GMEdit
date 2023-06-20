@@ -13,7 +13,14 @@
 	var Preferences = $gmedit["ui.Preferences"];
 	var FileWrap = $gmedit["electron.FileWrap"];
 	var popout = false; // show a popout instead of a sidebar
+	var displayMode = 1;
 	var currOnly = false; // original idea (only show the current file)
+	var noIndex = false;
+	function setDisplayMode(m) {
+		displayMode = m;
+		currOnly = (m == 0);
+		noIndex = (m == 3);
+	}
 	var showAtTop = true;
 	var showFuncArgs = false;
 	var tailSep = " ➜ "; // narrow space, arrow, narrow space
@@ -139,6 +146,7 @@
 		})(),
 		"ace/mode/markdown": (function() {
 			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}\s])/;
+			var rxDmd2 = /^\s*(#+)(?:\[(.+)\].*|(.+))/;
 			function update_dmd(file, pos) {
 				var row = pos.row;
 				var doc = file.codeEditor.session.doc;
@@ -157,14 +165,17 @@
 				var stack = [], eos;
 				for (var row = 0; row < n; row++) {
 					var line = doc.getLine(row);
-					var mt = rxDmd.exec(line);
-					if (mt) {
+					var mt;
+					if (mt = rxDmd.exec(line)) {
 						ctx.push(mt[3], mt[2], {ctx:mt[2],ctxAfter:true});
 						if (eos) stack.push(eos);
 						eos = mt[1] + "}";
 					} else if (eos && line.startsWith(eos)) {
 						eos = stack.pop();
 						ctx.pop();
+					} else if (mt = rxDmd2.exec(line)) {
+						var name = mt[2] || mt[3];
+						ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
 					}
 				}
 			}
@@ -192,7 +203,7 @@
 				while (--i >= 0) {
 					var group = groups[i];
 					var legend = group.querySelector("legend");
-					var label = legend.dataset.outlineViewLabel;
+					var label = group.dataset.outlineViewLabel;
 					if (group.parentElement != parent && label == null) continue;
 					if (group.offsetTop <= scrollTop) {
 						if (group.id) {
@@ -210,13 +221,14 @@
 				update(this);
 			}
 			function pref_reindex(file, ctx) {
-				var parent = pref_getRoot(file);
-				var groups = parent.querySelectorAll("fieldset");
+				var prefRoot = pref_getRoot(file);
+				var groups = prefRoot.querySelectorAll("fieldset");
+				var groupChain = [];
 				for (var i = 0; i < groups.length; i++) {
 					var group = groups[i];
 					var legend = group.querySelector("legend");
-					var label = legend.dataset.outlineViewLabel;
-					if (group.parentElement != parent && label == null) continue;
+					var label = group.dataset.outlineViewLabel;
+					if (group.parentElement != prefRoot && label == null) continue;
 					if (!label) label = legend.textContent.replace(/\(.+\)$/, "");
 					var nav = {};
 					if (group.id) {
@@ -224,7 +236,21 @@
 					} else {
 						nav.ctx = legend.textContent;
 					}
-					ctx.mark(label, label, nav);
+					while (groupChain.length > 0) {
+						var curParent = groupChain[groupChain.length - 1];
+						var inCurParent = false;
+						var parent = group.parentElement;
+						while (parent) {
+							if (parent == curParent) inCurParent = true;
+							parent = parent.parentElement;
+						}
+						if (!inCurParent) {
+							ctx.pop();
+							groupChain.pop();
+						} else break;
+					}
+					groupChain.push(group);
+					ctx.push(label, label, nav);
 				}
 				if (!file.outlineViewScroll) {
 					file.outlineViewScroll = true;
@@ -429,7 +455,7 @@
 				return q;
 			},
 		};
-		conf.reindex(file, ctx);
+		if (!noIndex) conf.reindex(file, ctx);
 		flushStack();
 		finishDir(ov);
 		// re-collapse:
@@ -455,6 +481,11 @@
 			var file = tabEl.gmlFile;
 			if (!file) continue;
 			if (!file.outlineView) createFor(file);
+			if (displayMode == 2) {
+				if (tabEl.classList.contains("chrome-tab-current")) {
+					file.outlineView.classList.add("open");
+				} else file.outlineView.classList.remove("open");
+			}
 			treeview.appendChild(file.outlineView);
 		}
 	}
@@ -477,6 +508,15 @@
 			}
 		} else {
 			var ov = file.outlineView;
+			if (displayMode == 2) {
+				for (var i = 0; i < treeview.children.length; i++) {
+					var dir = treeview.children[i];
+					if (!dir.classList || !dir.classList.contains("outline-dir")) continue;
+					if (dir == ov) {
+						dir.classList.add("open");
+					} else dir.classList.remove("open");
+				}
+			}
 			if (ov.scrollIntoViewIfNeeded) {
 				ov.scrollIntoViewIfNeeded();
 			} else ov.scrollIntoView();
@@ -503,14 +543,14 @@
 		changeTo(e.file);
 	}
 	function onFileClose(e) {
-		syncAll();
+		if (!currOnly) syncAll();
 	}
 	function onFileSave(e) {
 		reindex(e.file);
 		update(e.file);
 	}
 	function onTabsReorder(e) {
-		syncAll(e.target.tabEls);
+		if (!currOnly) syncAll(e.target.tabEls);
 	}
 	// update current subitem on editor navigation
 	var onUpdate_scheduled = false;
@@ -590,8 +630,18 @@
 			var val = ov[name];
 			return val !== undefined ? val : def;
 		}
+		function prepareOV() {
+			var currOV = Preferences.current.outlineView;
+			if (!currOV) currOV = Preferences.current.outlineView = {};
+			return currOV;
+		}
 		if (!(currOV && currOV.hide)) toggle();
-		currOnly = opt(currOV, "currOnly", false);
+		function getDisplayMode(currOV) {
+			var dm = opt(currOV, "displayMode", null);
+			if (dm == null) dm = opt(currOV, "currOnly", false) ? 0 : 1;
+			return dm;
+		}
+		setDisplayMode(getDisplayMode(currOV))
 		showAtTop = opt(currOV, "showAtTop", true);
 		showFuncArgs = opt(currOV, "showFuncArgs", true);
 		//
@@ -600,31 +650,35 @@
 			var currOV = Preferences.current.outlineView;
 			var hideCtr = Preferences.addCheckbox(out, "Hide", currOV && currOV.hide, function(val) {
 				toggle();
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
+				var currOV = prepareOV();
 				currOV.hide = !visible;
 				Preferences.save();
 			});
 			toggleCheckbox = hideCtr.querySelector("input");
-			Preferences.addCheckbox(out, "Only show the currently active file", opt(currOV, "currOnly", false), function(val) {
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
-				currOnly = currOV.currOnly = val;
-				currEl = null;
+			var displayModes = [
+				"Only show the currently active document",
+				"Show all documents",
+				"Show all documents, auto-collapse inactive",
+				"Show document titles only",
+			];
+			Preferences.addDropdown(out, "Display mode", displayModes[getDisplayMode(currOV)], displayModes, function(val) {
+				var i = displayModes.indexOf(val);
+				var currOV = prepareOV();
+				currOV.displayMode = i;
+				setDisplayMode(i);
 				Preferences.save();
 				toggle_sync();
-			});
+				forceRefresh();
+			})
 			Preferences.addCheckbox(out, "Show 2.3 function arguments", opt(currOV, "showFuncArgs", true), function(val) {
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
+				var currOV = prepareOV();
 				showFuncArgs = currOV.showFuncArgs = val;
 				currEl = null;
 				Preferences.save();
 				forceRefresh();
 			});
 			Preferences.addCheckbox(out, "Scroll to top upon navigation", opt(currOV, "showAtTop", true), function(val) {
-				var currOV = Preferences.current.outlineView;
-				if (!currOV) currOV = Preferences.current.outlineView = {};
+				var currOV = prepareOV();
 				showAtTop = currOV.showAtTop = val;
 				currEl = null;
 				Preferences.save();

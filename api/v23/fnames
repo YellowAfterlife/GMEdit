@@ -11,6 +11,9 @@
 // ! = disallowed in free
 // % = property
 // ? = struct variable
+// ^ = do not add to autocomplete
+// ^feature_flag = do not add to autocomplete if the feature flag is disabled
+// [name] = optional argument
 
 argument_relative&
 argument
@@ -36,7 +39,6 @@ other#
 all#
 noone#
 global#
-local#
 undefined#
 pointer_invalid#
 pointer_null#
@@ -61,7 +63,11 @@ infinity#
 GM_build_date#
 GM_version#
 GM_runtime_version#
-
+GM_project_filename#
+GM_build_type#
+_GM_LINE_#
+_GM_FILE_#
+_GM_FUNCTION_#
 // section 2.2
 
 is_real(val)
@@ -72,14 +78,15 @@ is_undefined(val)
 is_int32(val)
 is_int64(val)
 is_ptr(val)
-is_vec3(val)
-is_vec4(val)
-is_matrix(val)&
 is_bool(val)
 is_nan(val)
 is_infinity(val)
 is_struct(val)
 is_method(val)
+is_instanceof(struct, constructor_name)
+is_callable(val)
+static_get(struct_or_func_name)
+static_set(struct, struct)
 typeof(val)
 instanceof(struct)
 exception_unhandled_handler(user_handler)
@@ -96,7 +103,18 @@ variable_struct_get(struct,name)
 variable_struct_set(struct,name,val)
 variable_struct_get_names(struct)
 variable_struct_names_count(struct)
-variable_struct_remove(struct,name) 
+variable_struct_remove(struct,name)
+variable_get_hash(name)
+variable_clone(var,[depth])
+struct_exists(struct,name)
+struct_get(struct,name)
+struct_set(struct,name,val)
+struct_get_names(struct)
+struct_names_count(struct)
+struct_remove(struct,name) 
+struct_foreach(struct,func)
+struct_get_from_hash(struct,hash)
+struct_set_from_hash(struct,hash,val)
 array_length(variable)
 array_length_1d(variable)&
 array_length_2d(variable, index)&
@@ -109,9 +127,35 @@ array_get(variable,index)
 array_set(variable,index,val)
 array_push(array,val,...)
 array_pop(array)
+array_shift(array)
 array_insert(array,index,val,...)
 array_delete(array,index,number)
 array_sort(array,sortType_or_function)
+array_shuffle(array,[offset],[length])
+array_shuffle_ext(array,[offset],[length])
+array_get_index(array,value,[offset],[length])
+array_contains(array,value,[offset],[length])
+array_contains_ext(array,values,matchAll,[offset],[length])
+array_first(array)
+array_last(array)
+array_create_ext(size,function)
+array_find_index(array,function,[offset],[length])
+array_any(array,function,[offset],[length])
+array_all(array,function,[offset],[length])
+array_foreach(array,function,[offset],[length])
+array_reduce(array,function,[init_value],[offset],[length])
+array_filter(array,function,[offset],[length])
+array_filter_ext(array,function,[offset],[length])
+array_map(array,function,[offset],[length])
+array_map_ext(array,function,[offset],[length])
+array_copy_while(array,function,[offset],[length])
+array_unique(array,[offset],[length])
+array_unique_ext(array,[offset],[length])
+array_reverse(array,[offset],[length])
+array_reverse_ext(array,[offset],[length])
+array_concat(array0,array1,...)
+array_union(array0,array1,...)
+array_intersection(array0,array1,...)
 random(x)
 random_range(x1,x2)
 irandom(x)
@@ -165,22 +209,18 @@ dot_product_normalized(x1,y1,x2,y2)$
 dot_product_3d_normalized(x1,y1,z1,x2,y2,z2)$
 math_set_epsilon(new_epsilon)
 math_get_epsilon()
-angle_difference(src,dest)
+angle_difference(dest,src)
 point_distance_3d(x1,y1,z1,x2,y2,z2)
 point_distance(x1,y1,x2,y2)
 point_direction(x1,y1,x2,y2)
 lengthdir_x(len,dir)
 lengthdir_y(len,dir)
 
-weak_ref_create(thing_to_track)
-weak_ref_alive(weak_ref)
-weak_ref_any_alive(array,[index],[length])
-
 // section 2.3
 
 real(val)
 bool(val)
-string(val)
+string(val_or_template,val0,...)
 int64(val)
 ptr(val)
 string_format(val,total,dec)
@@ -213,6 +253,21 @@ string_replace(str,substr,newstr)
 string_replace_all(str,substr,newstr)
 string_count(substr,str)
 string_hash_to_newline(str)
+
+string_ext(format,arg_array)
+string_trim_start(str, [substrs])
+string_trim_end(str, [substrs])
+string_trim(str, [substrs])
+string_starts_with(str,substr)
+string_ends_with(str,substr)
+string_split(str,delim,[remove_empty],[max_splits])
+string_split_ext(str,delim_array,[remove_empty],[max_splits])
+string_join(delim,arg0,arg1,...)
+string_join_ext(delim,val_array)
+string_concat(arg0,arg1,arg2,...)
+string_concat_ext(val_array)
+string_foreach(str,func,[pos],[length])
+
 clipboard_has_text()
 clipboard_set_text(str)
 clipboard_get_text()
@@ -307,6 +362,7 @@ move_outside_all(dir,maxdist)
 move_bounce_solid(advanced)
 move_bounce_all(advanced)
 move_wrap(hor,vert,margin)
+move_and_collide(dx,dy,obj,[num_iterations], [xoff],[yoff],[max_x_move],[max_y_move])
 distance_to_point(x,y)
 distance_to_object(obj)
 position_empty(x,y)
@@ -378,6 +434,7 @@ object_index*@
 id*@
 solid@
 persistent@
+managed*@^rollback
 mask_index@
 instance_count*@
 instance_id*@
@@ -388,8 +445,8 @@ instance_position(x,y,obj)
 instance_nearest(x,y,obj)
 instance_furthest(x,y,obj)
 instance_place(x,y,obj)
-instance_create_depth(x,y,depth,obj)
-instance_create_layer(x,y,layer_id_or_name,obj)
+instance_create_depth(x,y,depth,obj,var_struct*,...)
+instance_create_layer(x,y,layer_id_or_name,obj,var_struct*,...)
 instance_copy(performevent)
 instance_change(obj,performevents)
 instance_destroy(id*,execute_event_flag*,...)
@@ -441,13 +498,15 @@ room_goto_next()
 room_previous(numb)
 room_next(numb)
 room_restart()
-game_end(...)
+game_end([return_code])
 game_restart()
 game_load(filename)
 game_save(filename)
 game_save_buffer(buffer)
 game_load_buffer(buffer)
 
+scheduler_resolution_set(milliseconds)
+scheduler_resolution_get()
 
 // section 3.9
 
@@ -464,6 +523,7 @@ caption_health&
 // section 3.10
 
 event_perform(type,numb)
+event_perform_async(type,ds_map)
 event_user(numb)
 event_perform_object(obj,type,numb)
 event_inherited()
@@ -472,6 +532,7 @@ event_number*
 event_object*
 event_action*
 ev_create#
+ev_pre_create#
 ev_destroy#
 ev_step#
 ev_alarm#
@@ -484,6 +545,7 @@ ev_draw_begin#
 ev_draw_end#
 ev_draw_pre#
 ev_draw_post#
+ev_draw_normal#
 ev_keypress#
 ev_keyrelease#
 ev_trigger#
@@ -592,6 +654,7 @@ ev_push_notification#
 ev_async_save_load#
 ev_audio_recording#
 ev_audio_playback#
+ev_audio_playback_ended#
 ev_system_event#
 ev_broadcast_message#
 ev_step_normal#
@@ -632,6 +695,23 @@ ev_global_gesture_rotate_start#
 ev_global_gesture_rotating#
 ev_global_gesture_rotate_end#
 
+ev_async_web_image_load#
+//ev_async_web_sound_load#//event not exists
+ev_async_web#
+ev_async_dialog#
+ev_async_web_iap#
+ev_async_web_cloud#
+ev_async_web_networking#
+ev_async_web_steam#
+ev_async_social#
+ev_async_push_notification#
+ev_async_save_load#
+ev_async_audio_recording#
+ev_async_audio_playback#
+ev_async_audio_playback_ended#
+ev_async_system_event#
+
+
 // section 3.11
 
 application_surface*
@@ -640,11 +720,12 @@ gamemaker_registered&
 gamemaker_version&
 error_occurred&
 error_last&
-show_debug_message(str)
+show_debug_message(val_or_format,val0,val1,...)
+show_debug_message_ext(format,array_value)
 show_debug_overlay(enable)
 debug_mode*
-debug_event(str)
-debug_get_callstack()
+debug_event(str,...)
+debug_get_callstack([maxdepth],...)
 alarm_get(index)
 alarm_set(index,count)
 
@@ -741,6 +822,14 @@ mb_none#
 mb_left#
 mb_right#
 mb_middle#
+mb_side1#
+mb_side2#
+m_axisx#
+m_axisy#
+m_axisx_gui#
+m_axisy_gui#
+m_scroll_up#
+m_scroll_down#
 mouse_check_button(button)
 mouse_check_button_pressed(button)
 mouse_check_button_released(button)
@@ -797,6 +886,7 @@ layer@
 // Sequence-related built-ins
 in_sequence@
 sequence_instance@
+drawn_by_sequence@
 
 // section 5.2
 
@@ -849,11 +939,14 @@ c_aqua#
 c_black#
 c_blue#
 c_dkgray#
+c_dkgrey#
 c_fuchsia#
 c_gray#
+c_grey#
 c_green#
 c_lime#
 c_ltgray#
+c_ltgrey#
 c_maroon#
 c_navy#
 c_olive#
@@ -882,7 +975,6 @@ color_get_blue(col)$
 color_get_hue(col)$
 color_get_saturation(col)$
 color_get_value(col)$
-merge_color(col1,col2,amount)$
 screen_save(fname)
 screen_save_part(fname,x,y,w,h)
 gif_open(width,height,...)
@@ -954,6 +1046,8 @@ draw_vertex_color(x,y,col,alpha)$
 draw_primitive_end()
 sprite_get_uvs(spr,subimg)
 font_get_uvs(font)
+font_get_info(font)
+font_cache_glyph(font,glyphIndex)
 sprite_get_texture(spr,subimg)
 font_get_texture(font)
 texture_get_width(texid)
@@ -996,21 +1090,23 @@ mip_markedonly#
 audio_falloff_none#
 audio_falloff_inverse_distance#
 audio_falloff_inverse_distance_clamped#
+audio_falloff_inverse_distance_scaled#
 audio_falloff_linear_distance#
 audio_falloff_linear_distance_clamped#
 audio_falloff_exponent_distance#
 audio_falloff_exponent_distance_clamped#
+audio_falloff_exponent_distance_scaled#
 
 audio_old_system#&
 audio_new_system#&
 
 audio_mono#
 audio_stereo#
-audio_3d#
+audio_3D#
 
 // section 5.7_1
 
-surface_create(w,h)
+surface_create(w,h,[format])
 surface_create_ext(name,w,h)
 surface_resize(id,width,height)
 surface_free(id)
@@ -1018,6 +1114,7 @@ surface_exists(id)
 surface_get_width(id)
 surface_get_height(id)
 surface_get_texture(id)
+surface_get_format(id)
 surface_set_target(id)
 surface_set_target_ext(index,id)
 surface_get_target()
@@ -1025,6 +1122,7 @@ surface_get_target_ext(index)
 surface_reset_target()
 surface_depth_disable(disable)
 surface_get_depth_disable()
+surface_format_is_supported(format)
 draw_surface(id,x,y)
 draw_surface_stretched(id,x,y,w,h)
 draw_surface_tiled(id,x,y)
@@ -1041,11 +1139,41 @@ surface_save_part(id,fname,x,y,w,h)
 surface_copy(destination,x,y,source)
 surface_copy_part(destination,x,y,source,xs,ys,ws,hs)
 
+surface_rgba8unorm#
+surface_r16float#
+surface_r32float#
+surface_rgba4unorm#
+surface_r8unorm#
+surface_rg8unorm#
+surface_rgba16float#
+surface_rgba32float#
+
 application_surface_draw_enable(on_off)
 application_get_position()
 application_surface_enable(enable)
 application_surface_is_enabled()
 
+
+video_open(path)
+video_close()
+video_set_volume(vol)
+video_draw()
+video_pause()
+video_resume()
+video_enable_loop(enable)
+video_seek_to(milliseconds)
+video_get_duration()
+video_get_position()
+video_get_status()
+video_get_format()
+video_is_looping()
+video_get_volume()
+video_format_rgba#
+video_format_yuv#
+video_status_closed#
+video_status_preparing#
+video_status_playing#
+video_status_paused#
 
 // section 5.8
 
@@ -1054,6 +1182,7 @@ display_get_height()
 display_get_orientation()
 display_get_gui_width()
 display_get_gui_height()
+display_get_frequency()
 
 display_reset(aa_level, vsync)
 display_mouse_get_x()
@@ -1064,6 +1193,8 @@ display_set_ui_visibility(flags)
 
 // section 5.9
 
+window_set_showborder(show)
+window_get_showborder()
 window_set_fullscreen(full)
 window_get_fullscreen()
 window_set_caption(caption)
@@ -1150,9 +1281,10 @@ audio_emitter_pitch(emitterid,pitch)
 audio_emitter_velocity(emitterid,vx,vy,vz)
 audio_emitter_falloff(emitterid, falloff_ref_dist,falloff_max_dist,falloff_factor)
 audio_emitter_gain(emitterid,gain)
-audio_play_sound(soundid,priority,loops)
-audio_play_sound_on(emitterid,soundid,loops,priority)
-audio_play_sound_at(soundid,x,y,z, falloff_ref_dist,falloff_max_dist,falloff_factor,loops, priority)
+audio_play_sound(soundid,priority,loops,[gain],[offset],[pitch],[listener_mask])
+audio_play_sound_on(emitterid,soundid,loops,priority,[gain],[offset],[pitch],[listener_mask])
+audio_play_sound_at(soundid,x,y,z,falloff_ref_dist,falloff_max_dist,falloff_factor,loops,priority,[gain],[offset],[pitch],[listener_mask])
+audio_play_sound_ext(params)
 audio_stop_sound(soundid)
 audio_resume_music()&
 audio_music_is_playing()&
@@ -1176,6 +1308,7 @@ audio_is_playing(soundid)
 audio_is_paused(soundid)
 audio_exists(soundid)
 audio_system_is_available()
+audio_system_is_initialised()
 audio_sound_is_playable(soundid)
 
 //audio revision-getters
@@ -1200,6 +1333,12 @@ audio_sound_get_pitch(index)
 audio_get_name(index)
 audio_sound_set_track_position(index, time)
 audio_sound_get_track_position(index)
+audio_sound_loop(voiceIndex, loopState)
+audio_sound_get_loop(voiceIndex)
+audio_sound_loop_start(index, time)
+audio_sound_get_loop_start(index)
+audio_sound_loop_end(index, time)
+audio_sound_get_loop_end(index)
 audio_create_stream(filename)!
 audio_destroy_stream(stream_sound_id)!
 audio_create_sync_group(looping)
@@ -1212,6 +1351,7 @@ audio_resume_sync_group(sync_group_id)
 audio_sync_group_get_track_pos(sync_group_id)
 audio_sync_group_debug(sync_group_id)
 audio_sync_group_is_playing(sync_group_id)
+audio_sync_group_is_paused(sync_group_id)
 audio_debug(enable)
 
 audio_group_load( groupId )
@@ -1221,6 +1361,10 @@ audio_group_load_progress( groupId )
 audio_group_name( groupId )
 audio_group_stop_all( groupId )
 audio_group_set_gain( groupId, volume, time )
+audio_group_get_gain(groupId)
+audio_group_get_assets(groupId)
+audio_sound_get_audio_group(index)
+
 audio_create_buffer_sound( bufferId, format, rate, offset, length, channels )!
 audio_free_buffer_sound( soundId )!
 audio_create_play_queue(bufferFormat, sampleRate, channels)!
@@ -1262,8 +1406,8 @@ clickable_set_style(buttonid,map)
 
 show_question(str)
 show_question_async(str)
-get_integer(str,def)
-get_string(str,def)
+get_integer(str,def)&
+get_string(str,def)&
 get_integer_async(str,def)
 get_string_async(str,def)
 get_login_async(username,password)
@@ -1321,6 +1465,11 @@ sprite_set_speed(ind,speed,type)
 sprite_get_speed_type(ind)
 sprite_get_speed(ind)
 
+sprite_get_info(ind)
+sprite_get_nineslice(ind)
+sprite_set_nineslice(ind,nineslice)
+sprite_nineslice_create()
+
 texture_is_ready(tex_id)
 texture_prefetch(tex_id_or_groupname)
 texture_flush(tex_id_or_groupname)
@@ -1329,6 +1478,11 @@ texturegroup_get_textures(groupname)
 texturegroup_get_sprites(groupname)
 texturegroup_get_fonts(groupname)
 texturegroup_get_tilesets(groupname)
+
+texturegroup_load(groupname,[prefetch])
+texturegroup_unload(groupname)
+texturegroup_get_status(groupname)
+texturegroup_set_mode(explicit,debug,default_sprite)
 
 texture_debug_messages(debug_level)
 
@@ -1408,12 +1562,20 @@ sprite_duplicate(ind)!
 sprite_assign(ind,source)
 sprite_merge(ind1,ind2)
 sprite_add(fname,imgnumb,removeback,smooth,xorig,yorig)!
+sprite_add_ext(fname,imgnumb,xorig,yorig,prefetch)!
 sprite_replace(ind,fname,imgnumb,removeback,smooth,xorig,yorig)!
 sprite_create_from_surface(id,x,y,w,h,removeback,smooth,xorig,yorig)!
 sprite_add_from_surface(ind,id,x,y,w,h,removeback,smooth)!
 sprite_delete(ind)!
 sprite_set_alpha_from_sprite(ind,spr)
 sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbtop,bbright,bbbottom,kind,tolerance)
+
+sprite_add_ext_error_unknown#
+sprite_add_ext_error_cancelled#
+sprite_add_ext_error_spritenotfound#
+sprite_add_ext_error_loadfailed#
+sprite_add_ext_error_decompressfailed#
+sprite_add_ext_error_setupfailed#
 
 // section 9.4
 
@@ -1422,10 +1584,15 @@ font_add_get_enable_aa()
 font_add(name,size,bold,italic,first,last)!
 font_add_sprite(spr,first,prop,sep)!
 font_add_sprite_ext(spr,mapstring,prop,sep)!
-font_replace(ind,name,size,bold,italic,first,last)!
+
 font_replace_sprite(ind,spr,first,prop,sep)!
 font_replace_sprite_ext(font,spr,string_map,prop,sep)!
 font_delete(ind)!
+
+font_enable_sdf(ind,enable)!
+font_get_sdf_enabled(ind)!
+font_sdf_spread(ind,spread)!
+font_get_sdf_spread(ind)!
 
 // section 9.5
 
@@ -1453,6 +1620,7 @@ path_shift(ind,xshift,yshift)
 
 script_execute(ind,arg0,arg1,...)
 script_execute_ext(ind,array,[offset=0],[num_args=array_length(array)-offset],...)
+method_call(method,array,[offset=0],[num_args=array_length(array)-offset],...)
 
 // section 9.8
 
@@ -1546,6 +1714,7 @@ file_bin_read_byte(file)
 parameter_count()
 parameter_string(n)
 environment_get_variable(name)
+fa_none#
 fa_readonly#
 fa_hidden#
 fa_sysfile#
@@ -1661,8 +1830,8 @@ ds_map_replace_map(id,key,value)
 ds_map_replace_list(id,key,value)
 ds_map_delete(id,key)
 ds_map_exists(id,key)
-ds_map_values_to_array(id,[array])
-ds_map_keys_to_array(id,[array])
+ds_map_values_to_array(id,array*,...)
+ds_map_keys_to_array(id,array*,...)
 ds_map_find_value(id,key)
 ds_map_is_map(id,key)
 ds_map_is_list(id,key)
@@ -1707,7 +1876,6 @@ ds_grid_resize(id,w,h)
 ds_grid_width(id)
 ds_grid_height(id)
 ds_grid_clear(id,val)
-ds_grid_set(id,x,y,val)
 ds_grid_add(id,x,y,val)
 ds_grid_multiply(id,x,y,val)
 ds_grid_set_region(id,x1,y1,x2,y2,val)
@@ -1719,7 +1887,6 @@ ds_grid_multiply_disk(id,xm,ym,r,val)
 ds_grid_set_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
 ds_grid_add_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
 ds_grid_multiply_grid_region(id,source,x1,y1,x2,y2,xpos,ypos)
-ds_grid_get(id,x,y)
 ds_grid_get_sum(id,x1,y1,x2,y2)
 ds_grid_get_max(id,x1,y1,x2,y2)
 ds_grid_get_min(id,x1,y1,x2,y2)
@@ -1812,9 +1979,10 @@ pt_shape_smoke#
 pt_shape_snow#
 
 // section 12.2
+particle_get_info(ind)
 
-part_system_create()
-part_system_create_layer(layer,persistent)
+part_system_create([partsys])
+part_system_create_layer(layer,persistent,[partsys])
 part_system_destroy(ind)
 part_system_exists(ind)
 part_system_clear(ind)
@@ -1851,7 +2019,8 @@ ps_shape_rectangle#
 ps_shape_ellipse#
 ps_shape_diamond#
 ps_shape_line#
-
+ps_mode_stream#
+ps_mode_burst#
 
 //////////////
 // Chapter 414
@@ -1882,7 +2051,7 @@ matrix_build_projection_ortho(width,height,znear,zfar)
 matrix_build_projection_perspective(width,height,znear,zfar)
 matrix_build_projection_perspective_fov(fov_y,aspect,znear,zfar)
 matrix_multiply(matrix,matrix)
-matrix_transform_vertex(matrix, x, y, z)
+matrix_transform_vertex(matrix, x, y, z, [w])
 
 matrix_stack_push(...)
 matrix_stack_pop()
@@ -1916,6 +2085,11 @@ os_ps3#
 os_uwp#
 os_tvos#
 os_switch#
+os_ps5#
+os_xboxseriesxs#
+os_gdk#
+os_operagx#
+os_gxgames#
 
 browser_not_a_browser#
 browser_unknown#
@@ -1959,8 +2133,9 @@ os_get_info()
 os_get_language()
 os_get_region()
 os_check_permission(permission)
-os_request_permission(permission)
+os_request_permission(permission,..)
 os_lock_orientation(flag)
+os_set_orientation_lock(landscape_enable,portrait_enable)
 display_get_dpi_x()
 display_get_dpi_y()
 display_set_gui_size(width,height)
@@ -2121,51 +2296,33 @@ url_open_ext(url,target)
 url_open_full(url,target,options)
 get_timer()
 
-achievement_login()
-achievement_logout()
-achievement_post(achievement_name,value)
-achievement_increment(achievement_name,value)
-achievement_post_score(score_name,value)
-achievement_available()
-achievement_show_achievements()
-achievement_show_leaderboards()
-achievement_load_friends()
-achievement_load_leaderboard(ident,minindex,maxindex,filter)
-achievement_send_challenge(to,challengeid,score,type,msg)
-achievement_load_progress()
-achievement_reset()
-achievement_login_status()
-achievement_get_pic(char)
+achievement_login()&
+achievement_logout()&
+achievement_post(achievement_name,value)&
+achievement_increment(achievement_name,value)&
+achievement_post_score(score_name,value)&
+achievement_available()&
+achievement_show_achievements()&
+achievement_show_leaderboards()&
+achievement_load_friends()&
+achievement_load_leaderboard(ident,minindex,maxindex,filter)&
+achievement_send_challenge(to,challengeid,score,type,msg)&
+achievement_load_progress()&
+achievement_reset()&
+achievement_login_status()&
+achievement_get_pic(char)&
 
-achievement_show_challenge_notifications(receive_challenge,local_complete,remote_complete)
-achievement_get_challenges()
-achievement_event(stringid)
-achievement_show(type,val)
-achievement_get_info(userid)
+achievement_show_challenge_notifications(receive_challenge,local_complete,remote_complete)&
+achievement_get_challenges()&
+achievement_event(stringid)&
+achievement_show(type,val)&
+achievement_get_info(userid)&
 
 
 cloud_file_save(filename, description)
 cloud_string_save(data, description)
 cloud_synchronise()
 
-ads_enable(x,y,num)&
-ads_disable(num)&
-ads_setup(user_uuid,ad_app_key)&
-ads_engagement_launch()&
-ads_engagement_available()&
-ads_engagement_active()&
-ads_event(stringid)&
-ads_event_preload(stringid)&
-
-ads_set_reward_callback(callback)&
-
-
-ads_get_display_height(slotnum)&
-ads_get_display_width(slotnum)&
-ads_move(x,y,slotnum)&
-
-ads_interstitial_available()&
-ads_interstitial_display()&
 
 device_get_tilt_x()
 device_get_tilt_y()
@@ -2259,9 +2416,9 @@ http_post_string(url, string)
 http_request(url, method, header_map, body)
 http_get_request_crossorigin()
 http_set_request_crossorigin(crossorigin_type)
-json_encode(ds_map)
+json_encode(ds_map, [prettify])
 json_decode(string)
-json_stringify(val)
+json_stringify(val, [prettify])
 json_parse(json)
 zip_unzip(file, destPath)
 
@@ -2272,7 +2429,7 @@ base64_decode(string)
 md5_string_unicode(string)
 md5_string_utf8(string)
 md5_file(fname)
-os_is_network_connected(attempt_connection*)
+os_is_network_connected(attempt_connection,...)
 sha1_string_unicode(string)
 sha1_string_utf8(string)
 sha1_file(fname)
@@ -2357,35 +2514,35 @@ uwp_livetile_notification_end()
 uwp_livetile_notification_template_add(template)
 
 //uwp appbar commands
-uwp_appbar_enable(flag)
-uwp_appbar_add_element(id, type, icon, label, section, toolTip, callback)
-uwp_appbar_remove_element(id)
+uwp_appbar_enable(flag)&
+uwp_appbar_add_element(id, type, icon, label, section, toolTip, callback)&
+uwp_appbar_remove_element(id)&
 
 uwp_device_touchscreen_available()
 //-------------------
 
 // windows phone
-winphone_license_trial_version()
-winphone_tile_title(title)
-winphone_tile_count(count)
+winphone_license_trial_version()&
+winphone_tile_title(title)&
+winphone_tile_count(count)&
 
-winphone_tile_back_title(title)
-winphone_tile_back_content(content)
-winphone_tile_back_content_wide(content)
-winphone_tile_front_image(included_filename)
-winphone_tile_front_image_small(included_filename)
-winphone_tile_front_image_wide(included_filename)
-winphone_tile_back_image(included_filename)
-winphone_tile_back_image_wide(included_filename)
+winphone_tile_back_title(title)&
+winphone_tile_back_content(content)&
+winphone_tile_back_content_wide(content)&
+winphone_tile_front_image(included_filename)&
+winphone_tile_front_image_small(included_filename)&
+winphone_tile_front_image_wide(included_filename)&
+winphone_tile_back_image(included_filename)&
+winphone_tile_back_image_wide(included_filename)&
 
 winphone_tile_background_colour(colour)£
 winphone_tile_background_color(color)$
-winphone_tile_icon_image(included_filename)
-winphone_tile_small_icon_image(included_filename)
-winphone_tile_wide_content(content, index)
+winphone_tile_icon_image(included_filename)&
+winphone_tile_small_icon_image(included_filename)&
+winphone_tile_wide_content(content, index)&
 
-winphone_tile_cycle_images(included_filename_1, included_filename_2, ...)
-winphone_tile_small_background_image(included_filename)
+winphone_tile_cycle_images(included_filename_1, included_filename_2, ...)&
+winphone_tile_small_background_image(included_filename)&
 
 // Physics functions
 // World level functions
@@ -2588,25 +2745,25 @@ phy_particle_data_flag_color#$
 phy_particle_data_flag_category#
 
 
-achievement_our_info#
-achievement_friends_info#
-achievement_leaderboard_info#
-achievement_achievement_info#
-achievement_filter_all_players#
-achievement_filter_friends_only#
-achievement_filter_favorites_only#
-achievement_type_achievement_challenge#
-achievement_type_score_challenge#
-achievement_pic_loaded#
+achievement_our_info&
+achievement_friends_info&
+achievement_leaderboard_info&
+achievement_achievement_info&
+achievement_filter_all_players&
+achievement_filter_friends_only&
+achievement_filter_favorites_only&
+achievement_type_achievement_challenge&
+achievement_type_score_challenge&
+achievement_pic_loaded&
 
 
-achievement_show_ui#
-achievement_show_profile#
-achievement_show_leaderboard#
-achievement_show_achievement#
-achievement_show_bank#
-achievement_show_friend_picker#
-achievement_show_purchase_prompt#
+achievement_show_ui&
+achievement_show_profile&
+achievement_show_leaderboard&
+achievement_show_achievement&
+achievement_show_bank&
+achievement_show_friend_picker&
+achievement_show_purchase_prompt&
 
 network_create_socket(type)
 network_create_socket_ext(type, port)
@@ -2617,7 +2774,7 @@ network_connect_raw(socket, url, port)
 network_connect_async(socket, url, port)
 network_connect_raw_async(socket, url, port)
 network_send_packet(socket, bufferid, size)
-network_send_raw(socket, bufferid, size)
+network_send_raw(socket, bufferid, size, options*)
 network_send_broadcast(socket, port, bufferid, size)
 network_send_udp(socket, URL, port, bufferid, size)
 network_send_udp_raw(socket, URL, port, bufferid, size)
@@ -2628,24 +2785,38 @@ network_destroy(socket)
 network_socket_tcp#
 network_socket_udp#
 network_socket_ws#
+network_socket_wss#
 network_socket_bluetooth#
 network_type_connect#
 network_type_disconnect#
 network_type_data#
 network_type_non_blocking_connect#
+network_type_up#
+network_type_up_failed#
+network_type_down#
+network_send_binary#
+network_send_text#
 
 network_config_connect_timeout#
 network_config_use_non_blocking_socket#
 network_config_enable_reliable_udp#
 network_config_disable_reliable_udp#
 network_config_avoid_time_wait#
+network_config_websocket_protocol#
+
+network_connect_none#
+network_connect_blocking#
+network_connect_nonblocking#
+network_connect_active#
+network_connect_passive#
 
 buffer_create(size, buffer_type, alignment)
 buffer_write(buffer, type, value)
 buffer_read(buffer, type)
 buffer_seek(buffer, base, offset)
-buffer_get_surface(buffer, surface, offset)
-buffer_set_surface(buffer, surface, offset)
+buffer_get_surface(buffer, surface,offset)
+buffer_set_surface(buffer, surface,offset)
+buffer_set_used_size(buffer,size)
 buffer_delete(buffer)
 buffer_exists(buffer)
 buffer_get_type(buffer)
@@ -2752,174 +2923,24 @@ gp_axislv#
 gp_axisrh#
 gp_axisrv#
 
+gp_axis_acceleration_x#
+gp_axis_acceleration_y#
+gp_axis_acceleration_z#
+
+gp_axis_angular_velocity_x#
+gp_axis_angular_velocity_y#
+gp_axis_angular_velocity_z#
+
+gp_axis_orientation_x#
+gp_axis_orientation_y#
+gp_axis_orientation_z#
+gp_axis_orientation_w#
+
+
+
 gml_release_mode(enable)
 gml_pragma(setting,....)
 
-//steam functions
-steam_activate_overlay(overlayIndex)
-steam_is_overlay_enabled()
-steam_is_overlay_activated()
-steam_get_persona_name()
-steam_initialised()
-steam_is_cloud_enabled_for_app()
-steam_is_cloud_enabled_for_account()
-steam_file_persisted(filename)
-steam_get_quota_total()
-steam_get_quota_free()
-steam_file_write(steam_filename,data,size)
-steam_file_write_file(steam_filename,local_filename)
-steam_file_read(filename)
-steam_file_delete(filename)
-steam_file_exists(filename)
-steam_file_size(filename)
-steam_file_share(filename)
-steam_is_screenshot_requested()
-steam_send_screenshot(filename,width,height)
-steam_is_user_logged_on()
-steam_get_user_steam_id()
-steam_user_owns_dlc(dlc_id)
-steam_user_installed_dlc(dlc_id)
-steam_set_achievement(ach_name)
-steam_get_achievement(ach_name)
-steam_clear_achievement(ach_name)
-steam_set_stat_int(stat_name,value)
-steam_set_stat_float(stat_name,value)
-steam_set_stat_avg_rate(stat_name,session_count,session_length)
-steam_get_stat_int(stat_name)
-steam_get_stat_float(stat_name)
-steam_get_stat_avg_rate(stat_name)
-steam_reset_all_stats()
-steam_reset_all_stats_achievements()
-steam_stats_ready()
-steam_create_leaderboard(lb_name,sort_method,display_type)
-steam_upload_score(lb_name,score)
-steam_upload_score_ext(lb_name,score,forceupdate)
-steam_download_scores_around_user(lb_name,range_start,range_end)
-steam_download_scores(lb_name,start_idx,end_idx)
-steam_download_friends_scores(lb_name)
-steam_upload_score_buffer(lb_name, score, buffer_id )
-steam_upload_score_buffer_ext(lb_name, score, buffer_id, forceupdate )
-steam_current_game_language()
-steam_available_languages()
-steam_activate_overlay_browser( url )
-steam_activate_overlay_user( dialog_name, steamid )
-steam_activate_overlay_store( app_id )
-steam_get_user_persona_name( steam_id )
-
-//steam ugc functions
-//helpers
-steam_get_app_id()
-steam_get_user_account_id()
-steam_ugc_download( ugc_handle, dest_filename )
-
-//create, edit content
-steam_ugc_create_item( consumer_app_id, file_type )
-steam_ugc_start_item_update( consumer_app_id, published_file_id )
-steam_ugc_set_item_title( ugc_update_handle, title)
-steam_ugc_set_item_description( ugc_update_handle, description )
-steam_ugc_set_item_visibility(ugc_update_handle, visibility )
-steam_ugc_set_item_tags( ugc_update_handle, tag_array )
-steam_ugc_set_item_content( ugc_update_handle, directory )
-steam_ugc_set_item_preview( ugc_update_handle, image_path )
-steam_ugc_submit_item_update( ugc_update_handle, change_note )
-steam_ugc_get_item_update_progress( ugc_update_handle, info_map )
-
-//consuming content
-steam_ugc_subscribe_item( published_file_id )
-steam_ugc_unsubscribe_item( published_file_id )
-steam_ugc_num_subscribed_items()
-steam_ugc_get_subscribed_items( item_list )
-steam_ugc_get_item_install_info( published_file_id, info_map )
-steam_ugc_get_item_update_info( published_file_id, info_map )
-steam_ugc_request_item_details( published_file_id, max_age_seconds )
-
-//querying content
-steam_ugc_create_query_user( list_type, match_type, sort_order, page )
-steam_ugc_create_query_user_ex( list_type, match_type, sort_order, page, account_id, creator_app_id, consumer_app_id )
-steam_ugc_create_query_all( query_type, match_type, page )
-steam_ugc_create_query_all_ex( query_type, match_type, page, creator_app_id, consumer_app_id )
-
-steam_ugc_query_set_cloud_filename_filter( ugc_query_handle , match_cloud_filename )
-steam_ugc_query_set_match_any_tag( ugc_query_handle, match_any_tag )
-steam_ugc_query_set_search_text( ugc_query_handle, search_text )
-steam_ugc_query_set_ranked_by_trend_days( ugc_query_handle , days)
-steam_ugc_query_add_required_tag( ugc_query_handle, tag_name )
-steam_ugc_query_add_excluded_tag( ugc_query_handle, tag_name )
-steam_ugc_query_set_return_long_description( ugc_query_handle, return_long_desc )
-steam_ugc_query_set_return_total_only( ugc_query_handle, return_total_only )
-steam_ugc_query_set_allow_cached_response( ugc_query_handle, max_age_seconds )
-steam_ugc_send_query( ugc_query_handle )
-
-//steam constants
-ov_friends#
-ov_community#
-ov_players#
-ov_settings#
-ov_gamegroup#
-ov_achievements#
-lb_sort_none#
-lb_sort_ascending#
-lb_sort_descending#
-lb_disp_none#
-lb_disp_numeric#
-lb_disp_time_sec#
-lb_disp_time_ms#
-
-//steam ugc constants
-ugc_result_success#
-ugc_filetype_community#
-ugc_filetype_microtrans#
-ugc_visibility_public#
-ugc_visibility_friends_only#
-ugc_visibility_private#
-
-//ugc query_type constants
-ugc_query_RankedByVote#
-ugc_query_RankedByPublicationDate#
-ugc_query_AcceptedForGameRankedByAcceptanceDate#
-ugc_query_RankedByTrend#
-ugc_query_FavoritedByFriendsRankedByPublicationDate#
-ugc_query_CreatedByFriendsRankedByPublicationDate#
-ugc_query_RankedByNumTimesReported#
-ugc_query_CreatedByFollowedUsersRankedByPublicationDate#
-ugc_query_NotYetRated#
-ugc_query_RankedByTotalVotesAsc#
-ugc_query_RankedByVotesUp#
-ugc_query_RankedByTextSearch#
-
-//ugc query sort_type constants
-ugc_sortorder_CreationOrderDesc#
-ugc_sortorder_CreationOrderAsc#
-ugc_sortorder_TitleAsc#
-ugc_sortorder_LastUpdatedDesc#
-ugc_sortorder_SubscriptionDateDesc#
-ugc_sortorder_VoteScoreDesc#
-ugc_sortorder_ForModeration#
-
-//ugc query list type constants
-ugc_list_Published#
-ugc_list_VotedOn#
-ugc_list_VotedUp#
-ugc_list_VotedDown#
-ugc_list_WillVoteLater#
-ugc_list_Favorited#
-ugc_list_Subscribed#
-ugc_list_UsedOrPlayed#
-ugc_list_Followed#
-
-//ugc query match_type constants
-ugc_match_Items#
-ugc_match_Items_Mtx#
-ugc_match_Items_ReadyToUse#
-ugc_match_Collections#
-ugc_match_Artwork#
-ugc_match_Videos#
-ugc_match_Screenshots#
-ugc_match_AllGuides#
-ugc_match_WebGuides#
-ugc_match_IntegratedGuides#
-ugc_match_UsableInGame#
-ugc_match_ControllerBindings#
 
 shader_set(shader)
 shader_get_name(shader)
@@ -2932,6 +2953,7 @@ shader_set_uniform_i(uniform_id,val,....)
 shader_set_uniform_i_array(uniform_id,array)
 shader_set_uniform_f(uniform_id,val,....)
 shader_set_uniform_f_array(uniform_id,array)
+shader_set_uniform_f_buffer(uniform_id,buffer,offset,count)
 shader_set_uniform_matrix(uniform_id)
 shader_set_uniform_matrix_array(uniform_id,array)
 shader_enable_corner_id(enable)
@@ -3000,30 +3022,36 @@ vertex_get_buffer_size(vbuff)
 vertex_create_buffer_from_buffer(src_buffer,format)
 vertex_create_buffer_from_buffer_ext(src_buffer,format,src_offset,num_vertices)
 
-push_local_notification(fire_time, title, message, data)
-push_get_first_local_notification( ds_map )
-push_get_next_local_notification( ds_map )
-push_cancel_local_notification( id )
-push_get_application_badge_number()
-push_set_application_badge_number( num )
+push_local_notification(fire_time, title, message, data)&
+push_get_first_local_notification( ds_map )&
+push_get_next_local_notification( ds_map )&
+push_cancel_local_notification( id )&
+push_get_application_badge_number()&
+push_set_application_badge_number( num )&
 
 
 // Instance specific
-skeleton_animation_set(anim_name)!
+skeleton_animation_set(anim_name, [loop])!
 skeleton_animation_get()!
 skeleton_animation_mix(anim_from,anim_to,duration)!
-skeleton_animation_set_ext(anim_name, track)!
+skeleton_animation_set_ext(anim_name, track, [loop])!
 skeleton_animation_get_ext(track)!
 skeleton_animation_get_duration(anim_name)!
 skeleton_animation_get_frames(anim_name)!
 skeleton_animation_clear(track)!
 skeleton_skin_set(skin_name)!
 skeleton_skin_get()!
+skeleton_skin_create(skin_name, base_skins)!
 skeleton_attachment_set(slot, attachment)!
 skeleton_attachment_get(slot)!
 skeleton_attachment_create(name,sprite,ind,xo,yo,xs,ys,rot)!
 skeleton_attachment_create_colour(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!£
 skeleton_attachment_create_color(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!$
+skeleton_attachment_exists(name)!
+skeleton_attachment_replace(name,sprite,ind,xo,yo,xs,ys,rot)!
+skeleton_attachment_replace_colour(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!£
+skeleton_attachment_replace_color(name,sprite,ind,xo,yo,xs,ys,rot,col,alpha)!$
+skeleton_attachment_destroy(name)!
 skeleton_collision_draw_set(val)!
 skeleton_bone_data_get(bone, map)!
 skeleton_bone_data_set(bone, map)!
@@ -3041,7 +3069,11 @@ skeleton_get_num_bounds()!
 skeleton_get_bounds(index)!
 skeleton_animation_get_frame(track)!
 skeleton_animation_set_frame(track,index)!
+skeleton_animation_get_position(track)!
+skeleton_animation_set_position(track,position)!
 skeleton_animation_get_event_frames(anim_name,event_name)!
+skeleton_animation_is_looping(track)!
+skeleton_animation_is_finished(track)!
 
 // Instance independent!
 draw_skeleton(sprite,animname,skinname,frame,x,y,xscale,yscale,rot,col,alpha)!
@@ -3192,9 +3224,10 @@ tilemap_y(tilemap_element_id,y)
 tilemap_set(tilemap_element_id,tiledata,cell_x,cell_y)
 tilemap_set_at_pixel(tilemap_element_id,tiledata,x,y)
 
-tileset_get_texture(tilemap_element_id)
-tileset_get_uvs(tilemap_element_id)
-tileset_get_name(tilemap_element_id)
+tileset_get_texture(tileset_id)
+tileset_get_uvs(tileset_id)
+tileset_get_name(tileset_id)
+tileset_get_info(tileset_id)
 
 tilemap_get_tileset(tilemap_element_id)
 tilemap_get_tile_width(tilemap_element_id)
@@ -3245,30 +3278,30 @@ tile_mirror#
 tile_index_mask#
 
 // Tile element functions
-layer_tile_exists(layer_id,tile_element_id,...)
+layer_tile_exists(layer_id,tile_element_id,...)^
 
-layer_tile_create(layer_id,x,y,tileset,left,top,width,height)
-layer_tile_destroy(tile_element_id)
+layer_tile_create(layer_id,x,y,tileset,left,top,width,height)^
+layer_tile_destroy(tile_element_id)^
 
-layer_tile_change(tile_element_id,sprite)
-layer_tile_xscale(tile_element_id,scale)
-layer_tile_yscale(tile_element_id,scale)
-layer_tile_blend(tile_element_id,col)
-layer_tile_alpha(tile_element_id,alpha)
-layer_tile_x(tile_element_id,x)
-layer_tile_y(tile_element_id,y)
-layer_tile_region(tile_element_id,left,top,width,height)
-layer_tile_visible(tile_element_id,visible)
+layer_tile_change(tile_element_id,sprite)^
+layer_tile_xscale(tile_element_id,scale)^
+layer_tile_yscale(tile_element_id,scale)^
+layer_tile_blend(tile_element_id,col)^
+layer_tile_alpha(tile_element_id,alpha)^
+layer_tile_x(tile_element_id,x)^
+layer_tile_y(tile_element_id,y)^
+layer_tile_region(tile_element_id,left,top,width,height)^
+layer_tile_visible(tile_element_id,visible)^
 
-layer_tile_get_sprite(tile_element_id)
-layer_tile_get_xscale(tile_element_id)
-layer_tile_get_yscale(tile_element_id)
-layer_tile_get_blend(tile_element_id)
-layer_tile_get_alpha(tile_element_id)
-layer_tile_get_x(tile_element_id)
-layer_tile_get_y(tile_element_id)
-layer_tile_get_region(tile_element_id)
-layer_tile_get_visible(tile_element_id)
+layer_tile_get_sprite(tile_element_id)^
+layer_tile_get_xscale(tile_element_id)^
+layer_tile_get_yscale(tile_element_id)^
+layer_tile_get_blend(tile_element_id)^
+layer_tile_get_alpha(tile_element_id)^
+layer_tile_get_x(tile_element_id)^
+layer_tile_get_y(tile_element_id)^
+layer_tile_get_region(tile_element_id)^
+layer_tile_get_visible(tile_element_id)^
 
 // Instance element functions
 layer_instance_get_instance(instance_element_id)
@@ -3281,6 +3314,7 @@ camera_create()
 camera_create_view(room_x,room_y,width,height,[angle,object,x_speed,y_speed,x_border,y_border])
 camera_destroy(camera)
 camera_apply(camera)
+camera_copy_transforms(dest_camera,src_camera)
 
 camera_get_active()
 camera_get_default()
@@ -3401,6 +3435,24 @@ os_permission_denied_dont_request#
 os_permission_denied#
 os_permission_granted#
 
+nineslice_left#
+nineslice_top#
+nineslice_right#
+nineslice_bottom#
+nineslice_centre#
+nineslice_center#
+
+nineslice_stretch#
+nineslice_repeat#
+nineslice_mirror#
+nineslice_blank#
+nineslice_hide#
+
+texturegroup_status_unloaded#
+texturegroup_status_loading#
+texturegroup_status_loaded#
+texturegroup_status_fetched#
+
 //tags
 tag_get_asset_ids(tags,asset_type)
 tag_get_assets(tags)
@@ -3411,11 +3463,13 @@ asset_has_tags(asset_name_or_id,tags,[asset_type])
 asset_has_any_tag(asset_name_or_id,tags,[asset_type])
 asset_clear_tags(asset_name_or_id,[asset_type])
 
-
-extension_get_string(ext_name, option_name)
-
-
-
+//extension options
+extension_exists(ext_name)
+extension_get_version(ext_name)
+extension_get_option_count(ext_name)
+extension_get_option_names(ext_name)
+extension_get_option_value(ext_name, option_name)
+extension_get_options(ext_name)
 
 //sequences
 layer_sequence_get_instance(sequence_element_id)
@@ -3447,8 +3501,6 @@ layer_sequence_get_speedscale(sequence_element_id)
 
 layer_sequence_get_length(sequence_element_id)
 
-sequence_exists(sequence_struct_id)
-
 // Animation Curves
 animcurve_get(curve_id)
 animcurve_get_channel(curve_struct_or_id,channel_name_or_index)
@@ -3473,6 +3525,23 @@ animcurve_destroy(curve_struct_or_id)
 animcurve_exists(curve_struct_or_id)
 animcurve_channel_new()
 animcurve_point_new()
+
+// Effects functions
+fx_create(filter_or_effect_name)
+fx_get_name(filter_or_effect)
+fx_get_parameter_names(filter_or_effect)
+fx_get_parameter(filter_or_effect,parameter_name)
+fx_get_parameters(filter_or_effect)
+fx_get_single_layer(filter_or_effect)
+fx_set_parameter(filter_or_effect,parameter_name,val,...)
+fx_set_parameters(filter_or_effect,parameter_struct)
+fx_set_single_layer(filter_or_effect,enable)
+
+layer_set_fx(layer_name_or_id,filter_or_effect)
+layer_get_fx(layer_name_or_id)
+layer_clear_fx(layer_name_or_id)
+layer_enable_fx(layer_name_or_id,enable)
+layer_fx_is_enabled(layer_name_or_id)
 
 
 // SequenceInstance properties
@@ -3577,6 +3646,10 @@ curve?
 ??InstanceTrack
 objectIndex?
 
+// Text track
+??TextTrack
+text?
+
 // Message event
 ??MessageEvent
 events?
@@ -3651,6 +3724,8 @@ seqtracktype_spriteframes#
 seqtracktype_instance#
 seqtracktype_message#
 seqtracktype_moment#
+seqtracktype_text#
+seqtracktype_particlesystem#
 
 // Sequence playback mode constants
 seqplay_oneshot#
@@ -3669,9 +3744,19 @@ seqinterpolation_lerp#
 seqaudiokey_loop#
 seqaudiokey_oneshot#
 
+// Text track alignment
+seqtextkey_left#
+seqtextkey_center#
+seqtextkey_right#
+seqtextkey_justify#
+seqtextkey_top#
+seqtextkey_middle#
+seqtextkey_bottom#
+
 // Anim curve channel type
 animcurvetype_linear#
 animcurvetype_catmullrom#
+animcurvetype_bezier#
 
 // Garbage collection functions
 gc_collect()
@@ -3692,3 +3777,157 @@ generation_collected?
 num_generations?
 num_objects_in_generation?
 
+// weak reference functions
+weak_ref_create(thing_to_track)
+weak_ref_alive(weak_ref)
+weak_ref_any_alive(array,[index],[length])
+
+// weak reference structure
+??WeakRef
+ref?
+
+// Time Sources
+time_source_global#
+time_source_game#
+time_source_units_seconds#
+time_source_units_frames#
+time_source_expire_nearest#
+time_source_expire_after#
+time_source_state_initial#
+time_source_state_active#
+time_source_state_paused#
+time_source_state_stopped#
+
+time_source_create(parent,period,units,callback,[args],[reps],[expiryType])
+time_source_destroy(id, [destroyTree])
+time_source_start(id)
+time_source_stop(id)
+time_source_pause(id)
+time_source_resume(id)
+time_source_reset(id)
+time_source_reconfigure(id,period,units,callback,[args],[reps],[expiryType])
+time_source_get_period(id)
+time_source_get_reps_completed(id)
+time_source_get_reps_remaining(id)
+time_source_get_units(id)
+time_source_get_time_remaining(id)
+time_source_get_state(id)
+time_source_get_parent(id)
+time_source_get_children(id)
+time_source_exists(id)
+
+time_seconds_to_bpm(seconds)
+time_bpm_to_seconds(bpm)
+
+call_later(period, units, callback, [repeat])
+call_cancel(handle)
+
+// rollback multiplayer
+rollback_use_manual_start()^rollback
+rollback_use_late_join()^rollback
+rollback_define_player(player_obj,...)^rollback
+rollback_define_input(input)^rollback
+rollback_define_mock_input(player_id,input)^rollback
+rollback_define_input_frame_delay(frames)^rollback
+rollback_define_extra_network_latency(latency)^rollback
+rollback_create_game(num_players,...)^rollback
+rollback_join_game(...)^rollback
+rollback_start_game()^rollback
+rollback_leave_game()^rollback
+rollback_get_input(...)^rollback
+rollback_chat(message,...)^rollback
+rollback_use_player_prefs(...)^rollback
+rollback_set_player_prefs(preferences)^rollback
+rollback_get_player_prefs(...)^rollback
+rollback_get_info(...)^rollback
+rollback_use_random_input(enabled)^rollback
+rollback_display_events(enabled)^rollback
+rollback_sync_on_frame()^rollback
+rollback_current_frame^rollback
+rollback_confirmed_frame^rollback
+rollback_event_id^rollback
+rollback_event_param^rollback
+rollback_game_running^rollback
+rollback_api_server^rollback
+
+rollback_connected_to_peer#^rollback
+rollback_synchronizing_with_peer#^rollback
+rollback_synchronized_with_peer#^rollback
+rollback_disconnected_from_peer#^rollback
+rollback_game_interrupted#^rollback
+rollback_game_resumed#^rollback
+rollback_game_full#^rollback
+rollback_game_info#^rollback
+rollback_connection_rejected#^rollback
+rollback_protocol_rejected#^rollback
+rollback_end_game#^rollback
+rollback_chat_message#^rollback
+rollback_player_prefs#^rollback
+rollback_high_latency#^rollback
+rollback_connect_info#^rollback
+rollback_connect_error#^rollback
+
+player_id*@^rollback
+player_local*@^rollback
+player_avatar_url*@^rollback
+player_avatar_sprite*@^rollback
+player_type*@^rollback
+player_user_id*@^rollback
+
+wallpaper_set_config(config)^rollback
+wallpaper_config^rollback
+
+audio_bus_main#
+
+??AudioBus
+bypass?
+gain?
+effects?
+
+??AudioEffect
+bypass?
+cutoff?
+damp?
+factor?
+feedback?
+gain?
+intensity?
+mix?
+offset?
+q?
+rate?
+resolution?
+shape?
+size?
+time?
+type?#*
+
+AudioEffectType#*
+
+??AudioEffectType
+Bitcrusher?#*
+Delay?#*
+Gain?#*
+HPF2?#*
+LPF2?#*
+Reverb1?#*
+Tremolo?#*
+
+AudioLFOType#*
+
+??AudioLFOType
+InvSawtooth?#*
+Sawtooth?#*
+Sine?#*
+Square?#*
+Triangle?#*
+
+audio_bus_create()
+audio_effect_create(type, [params])
+audio_emitter_bus(emitter_idx, bus)
+audio_emitter_get_bus(emitter_idx)
+audio_bus_get_emitters(bus)
+audio_bus_clear_emitters(bus)
+
+lin_to_db(x)
+db_to_lin(x)

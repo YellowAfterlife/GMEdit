@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="chrome-tabs/chrome-tabs-dark-theme.css" />
 	<script src="chrome-tabs/draggabilly.pkgd.min.js"></script>
 	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/top.css" />
 	<link rel="stylesheet" href="css/popouts.css" />
 	<link rel="stylesheet" href="css/ace.css" />
 	<link rel="stylesheet" href="css/tree.css" />
@@ -38,13 +39,15 @@
 	<div id="tree-td" style="width: 200px">
 		<div class="chrome-tabs project-name">
 			<div id="project-name">Starting up...</div>
-			<span class="system-button preferences">
-				<svg width="12" height="12" viewBox="0 0 12 12">
-					<rect width="10" height="1" x="1" y="3" fill="black"></rect>
-					<rect width="10" height="1" x="1" y="6" fill="black"></rect>
-					<rect width="10" height="1" x="1" y="9" fill="black"></rect>
-				</svg>
-			</span>
+			<div class="system-buttons">
+				<span class="system-button preferences">
+					<svg width="12" height="12" viewBox="0 0 12 12">
+						<rect width="10" height="1" x="1" y="3" fill="black"></rect>
+						<rect width="10" height="1" x="1" y="6" fill="black"></rect>
+						<rect width="10" height="1" x="1" y="9" fill="black"></rect>
+					</svg>
+				</span>
+			</div>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
 		<div class="bottom treeview">
@@ -61,15 +64,17 @@
 	<div id="editor-td">
 		<div class="chrome-tabs has-system-buttons" id="tabs">
 			<div class="chrome-tabs-content"></div>
-			<!-- (these are close enough replicas of Win10 icons)-->
-			<div class="system-button close">
-				<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
-			</div>
-			<div class="system-button maximize">
-				<svg width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
-			</div>
-			<div class="system-button minimize">
-				<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
+			<div class="system-buttons">
+				<!-- (these are close enough replicas of Win10 icons)-->
+				<div class="system-button minimize">
+					<svg width="12" height="12" viewBox="0 0 12 12"><rect width="10" height="1" x="1" y="6" fill="black"></rect></svg>
+				</div>
+				<div class="system-button maximize">
+					<svg width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="black"></rect></svg>
+				</div>
+				<div class="system-button close">
+					<svg width="12" height="12" viewBox="0 0 12 12"><polygon fill="black" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon></svg>
+				</div>
 			</div>
 			<div class="chrome-tabs-bottom-bar"></div>
 		</div>
@@ -94,70 +99,12 @@
 		</div>
 	</div>
 </div>
-<form id="global-search" class="popout-window" style="display:none">
-	<div class="search-main">
-		<div>
-			Find what:
-			<input type="text" name="find-text" />
-		</div>
-		<div>
-			Replace with:
-			<input type="text" name="replace-text" />
-		</div>
-		<div>
-			<input type="button" class="highlighted_button" name="find" value="Find All" />
-			<input type="button" class="highlighted_button" name="replace" value="Replace All" title="Replace items across the project" />
-			<input type="button" class="highlighted_button" name="cancel" value="Cancel" /><br/>
-		</div>
-		<div>
-			<input type="button" class="highlighted_button" name="preview" value="Preview 'Replace All'" title="Preview replace operation without modifications" />
-		</div>
-		<div style="display:none" class="searching-text">
-			Searching...
-		</div>
-	</div>
-	<div class="search-options">
-		<fieldset>
-			<legend>Options</legend>
-			<input    id="global-search-whole-word" type="checkbox"
-			/><label for="global-search-whole-word">Whole word</label><br/>
-			<input    id="global-search-match-case" type="checkbox"
-			/><label for="global-search-match-case">Match case</label><br/>
-			<input    id="global-search-check-comments" type="checkbox" checked
-			/><label for="global-search-check-comments">Look in comments</label><br/>
-			<input    id="global-search-check-strings" type="checkbox" checked
-			/><label for="global-search-check-strings">Look in strings</label><br/>
-			<input    id="global-search-check-headers" type="checkbox"
-			/><label for="global-search-check-headers" title="Will show results inside #event/etc. lines">Look in headers</label><br/>
-			<input    id="global-search-expand-lambdas" type="checkbox" checked
-			/><label for="global-search-expand-lambdas" title="If enabled, will show results inside inline functions at place of declaration rather than inside their extension">Expand #lambdas</label><br/>
-			<input    id="global-search-regexp" type="checkbox"
-			/><label for="global-search-regexp" title="Also lets you use $0,$1,$2,etc. in 'replace by'">RegExp search</label><br/>
-			<input    id="global-search-unique" type="checkbox"
-			/><label for="global-search-unique" title="When using regexp search, only shows unique matches">Unique match</label>
-		</fieldset>
-	</div>
-	<div class="search-options search-options-2">
-		<fieldset>
-			<legend>Look in</legend>
-			<input    id="global-search-check-scripts"    type="checkbox" checked
-			/><label for="global-search-check-scripts">Scripts</label><br/>
-			<input    id="global-search-check-objects"    type="checkbox" checked
-			/><label for="global-search-check-objects">Objects</label><br/>
-			<input    id="global-search-check-timelines"  type="checkbox" checked
-			/><label for="global-search-check-timelines">Timelines</label><br/>
-			<input    id="global-search-check-macros"     type="checkbox" checked
-			/><label for="global-search-check-macros">Macros</label><br/>
-			<input    id="global-search-check-rooms" type="checkbox" checked
-			/><label for="global-search-check-rooms">Rooms</label><br/>
-			<input    id="global-search-check-shaders"    type="checkbox"
-			/><label for="global-search-check-shaders">Shaders</label><br/>
-			<input    id="global-search-check-extensions" type="checkbox"
-			/><label for="global-search-check-extensions">Extensions</label><br/>
-		</fieldset>
-	</div>
-</form>
-<div id="preferences-window" class="popout-window" style="display:none"></div>
+<div id="popout-container">
+	<form id="tag-editor" class="popout-window popout-center" style="display:none"></form>
+	<form id="global-search" class="popout-window popout-center" style="display:none"></form>
+	<form id="global-search-info" class="popout-window popout-center" style="display:none"></form>
+	<div id="preferences-window" class="popout-window" style="display:none"></div>
+</div>
 <input type="color" id="color-picker" style="display:none"/>
 <!-- -->
 <script type="text/javascript" id="gmcr_script" async></script>

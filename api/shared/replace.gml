@@ -129,7 +129,7 @@ lengthdir_y(len:number,dir:number)->number
 real(val:string)->number
 bool(val:number)->bool
 string(val:any)->string
-int64(val:number)->int
+int64(val:number|string|pointer)->int
 ptr(val:number|string)->pointer
 string_format(val:number,total:int,dec:int)->string
 chr(val:int)->string
@@ -1366,7 +1366,7 @@ sprite_create_from_surface(id:surface,x:int,y:int,w:int,h:int,removeback:bool,sm
 sprite_add_from_surface(sprite:sprite,surface:surface,x:int,y:int,w:int,h:int,removeback:bool,smooth:bool)!->sprite
 sprite_delete(ind:sprite)!->void
 sprite_set_alpha_from_sprite(ind:sprite,spr:sprite)->void
-sprite_collision_mask(ind:sprite,sepmasks:bool,bboxmode:int,bbleft:number,bbtop:number,bbright:number,bbbottom:number,kind:bbox_kind,tolerance:int)->void
+sprite_collision_mask(ind:sprite,sepmasks:bool,bboxmode:bbox_mode|int,bbleft:number,bbtop:number,bbright:number,bbbottom:number,kind:bbox_kind,tolerance:int)->void
 
 #endregion
 
@@ -1487,6 +1487,7 @@ file_find_next()->string
 file_find_close()->void
 
 file_attributes(fname:string,attr:int|file_attribute)->bool
+fa_none#:file_attribute
 fa_readonly#:file_attribute
 fa_hidden#:file_attribute
 fa_sysfile#:file_attribute
@@ -1518,7 +1519,7 @@ environment_get_variable(name:string)->string
 game_id*:int
 game_display_name*:string
 game_project_name*:string
-game_save_id*:int
+game_save_id*:string
 working_directory*:string
 temp_directory*:string
 program_directory*:string
@@ -2304,34 +2305,34 @@ physics_particle_set_gravity_scale(scale:number)->void
 
 
 // Physics related built in variables (not all can be set)
-phy_rotation@:number?
-phy_position_x@:number?
-phy_position_y@:number?
-phy_angular_velocity@:number?
-phy_linear_velocity_x@:number?
-phy_linear_velocity_y@:number?
-phy_speed_x@:number?
-phy_speed_y@:number?
-phy_speed*@:number?
-phy_angular_damping@:number?
-phy_linear_damping@:number?
-phy_bullet@:bool?
-phy_fixed_rotation@:bool?
-phy_active@:bool?
-phy_mass*@:number?
-phy_inertia*@:number?
-phy_com_x*@:number?
-phy_com_y*@:number?
-phy_dynamic*@:bool?
-phy_kinematic*@:bool?
-phy_sleeping*@:bool?
-phy_collision_points*@:int?
-phy_collision_x*@:number?
-phy_collision_y*@:number?
-phy_col_normal_x*@:number?
-phy_col_normal_y*@:number?
-phy_position_xprevious*@:number?
-phy_position_yprevious*@:number?
+phy_rotation@:number
+phy_position_x@:number
+phy_position_y@:number
+phy_angular_velocity@:number
+phy_linear_velocity_x@:number
+phy_linear_velocity_y@:number
+phy_speed_x@:number
+phy_speed_y@:number
+phy_speed*@:number
+phy_angular_damping@:number
+phy_linear_damping@:number
+phy_bullet@:bool
+phy_fixed_rotation@:bool
+phy_active@:bool
+phy_mass*@:number
+phy_inertia*@:number
+phy_com_x*@:number
+phy_com_y*@:number
+phy_dynamic*@:bool
+phy_kinematic*@:bool
+phy_sleeping*@:bool
+phy_collision_points*@:int
+phy_collision_x*@:number[]
+phy_collision_y*@:number[]
+phy_col_normal_x*@:number[]
+phy_col_normal_y*@:number[]
+phy_position_xprevious*@:number
+phy_position_yprevious*@:number
 
 phy_joint_anchor_1_x#:physics_joint_value
 phy_joint_anchor_1_y#:physics_joint_value
@@ -2428,24 +2429,24 @@ network_config_disable_reliable_udp#:network_config
 #region Buffers
 
 buffer_create(size:int, buffer_kind:buffer_kind, alignment:int)->buffer
-buffer_write(buffer:buffer, type:buffer_type, value:number|string|bool)->int
-buffer_read(buffer:buffer, type:buffer_type)->number|string|bool
+buffer_write(buffer:buffer, type:buffer_type, value:buffer_auto_type)->int
+buffer_read(buffer:buffer, type:buffer_type)->buffer_auto_type
 buffer_seek(buffer:buffer, base:buffer_seek_base, offset:int)->void
-buffer_get_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
-buffer_set_surface(buffer:buffer, surface:surface, mode, offset:int, modulo:int)->void
+buffer_get_surface(buffer:buffer, source_surface:surface, mode, offset:int, modulo:int)->void
+buffer_set_surface(buffer:buffer, dest_surface:surface, mode, offset:int, modulo:int)->void
 buffer_delete(buffer:buffer)->void
 buffer_exists(buffer:buffer)->bool
 buffer_get_type(buffer:buffer)->buffer_kind
 buffer_get_alignment(buffer:buffer)->int
-buffer_poke(buffer:buffer, offset:int, type:buffer_type, value:number|string|bool)->void
-buffer_peek(buffer:buffer, offset:int, type:buffer_type)->number|string|bool
+buffer_poke(buffer:buffer, offset:int, type:buffer_type, value:buffer_auto_type)->void
+buffer_peek(buffer:buffer, offset:int, type:buffer_type)->buffer_auto_type
 buffer_save(buffer:buffer, filename:string)->void
 buffer_save_ext(buffer:buffer, filename:string, offset:int, size:int)->void
 buffer_load(filename:string)->buffer
 buffer_load_ext(buffer:buffer, filename:string, offset:int)->void
 buffer_load_partial(buffer:buffer, filename:string, src_offset:int, src_len:int, dest_offset:int)->void
 buffer_copy(src_buffer:buffer, src_offset:int, size:int, dest_buffer:buffer, dest_offset:int)->void
-buffer_fill(buffer:buffer, offset:int, type:buffer_type, value:number|string|bool, size:int)->void
+buffer_fill(buffer:buffer, offset:int, type:buffer_type, value:buffer_auto_type, size:int)->void
 buffer_get_size(buffer:buffer)->int
 buffer_tell(buffer:buffer)->int
 buffer_resize(buffer:buffer, newsize:int)->void
@@ -2462,9 +2463,9 @@ buffer_create_from_vertex_buffer_ext(vertex_buffer:vertex_buffer, kind:buffer_ki
 buffer_copy_from_vertex_buffer(vertex_buffer:vertex_buffer, start_vertex:int, num_vertices:int, dest_buffer:buffer, dest_offset:int)->void
 buffer_async_group_begin(groupname:string)->void
 buffer_async_group_option(optionname:string,optionvalue:number|bool|string)->void
-buffer_async_group_end()->int
-buffer_load_async(bufferid:buffer,filename:string,offset:int,size:int)->int
-buffer_save_async(bufferid:buffer,filename:string,offset:int,size:int)->int
+buffer_async_group_end()->async_save_load_id
+buffer_load_async(bufferid:buffer,filename:string,offset:int,size:int)->async_save_load_id
+buffer_save_async(bufferid:buffer,filename:string,offset:int,size:int)->async_save_load_id
 buffer_compress(bufferid:buffer,offset:int,size:int)->buffer
 buffer_decompress(bufferId:buffer)->buffer
 buffer_fixed#:buffer_kind
@@ -2520,7 +2521,7 @@ steam_get_user_steam_id()->int // gimped steam_id, dont really have a good way t
 steam_user_owns_dlc(dlc_id:int)->bool
 steam_user_installed_dlc(dlc_id:int)->bool
 steam_set_achievement(ach_name:string)->void
-steam_get_achievement(ach_name:string)->void
+steam_get_achievement(ach_name:string)->bool
 steam_clear_achievement(ach_name:string)->void
 steam_set_stat_int(stat_name:string,value:int)->void
 steam_set_stat_float(stat_name:string,value:number)->void

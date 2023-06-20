@@ -5,7 +5,9 @@ var electron, fs, configPath;
 if (window.require) {
 	electron = require("electron");
 	fs = require("fs");
-	configPath = electron.remote.app.getPath("userData") + "/GMEdit/session/splitter.json";
+	var remote = electron.remote;
+	if (remote == null) remote = require("@electron/remote");
+	configPath = remote.app.getPath("userData") + "/GMEdit/session/splitter.json";
 }
 var conf = null;
 function initConf() {
@@ -64,6 +66,10 @@ function Splitter(sizer) {
 		if (nw < q.minWidth) nw = q.minWidth;
 		q.setWidth(nw);
 		if (q.updateTabs && window.$gmedit) $gmedit["ui.ChromeTabs"].impl.layoutTabs()
+		
+		var e = new CustomEvent("resize");
+		e.initEvent("resize");
+		window.dispatchEvent(e);
 	};
 	sp_mouseup = function(e) {
 		document.removeEventListener("mousemove", sp_mousemove);

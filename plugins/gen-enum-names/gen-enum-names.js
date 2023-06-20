@@ -22,13 +22,17 @@
 			tk = iter.stepForward();
 			tk = iter.stepForward();
 			var names = [];
+			var depth = 1;
 			while(tk != null) {
 				tk = iter.stepForward();
 				if(tk == null) {
 					break;
 				}
+				if(tk.type == "curly.paren.lparen") {
+					depth += 1; continue;
+				}
 				if(tk.type == "curly.paren.rparen") {
-					break;
+					if (--depth <= 0) break; else continue;
 				}
 				if(tk.type != "enumfield") {
 					continue;

@@ -1,0 +1,195 @@
+/* tabs, system buttons, and alike */
+/* */
+.chrome-tabs {
+	border-radius: 0;
+	height: 36px;
+	padding-top: 4px;
+	--webkit-user-select: none;
+	z-index: 7;
+}
+
+.chrome-tab .chrome-tab-favicon {
+	width: 0;
+}
+
+.chrome-tabs:not(.chrome-tabs-boxy) .chrome-tab-background svg .flat {
+	display: none;
+}
+.chrome-tabs.chrome-tabs-boxy .chrome-tab-background svg .curvy {
+	display: none;
+}
+
+.chrome-tabs .chrome-tab:not(.chrome-tab-pinned) svg .chrome-tab-pinline {
+	fill: transparent;
+}
+
+/* color of accent line on pinned tabs */
+.chrome-tabs .chrome-tab.chrome-tab-pinned svg .chrome-tab-pinline {
+	fill: #FF8129;
+}
+
+.chrome-tabs .chrome-tab.chrome-tab-simple-drop svg .chrome-tab-background {
+	filter: url(#drop-highlight);
+}
+
+/*
+We want treeview/gameview area header to adjust to match taller tabs area when multiline
+You may reasonably remark that maybe this should be using a CSS grid, and yes - maybe.
+*/
+html[data-multiline-tabs] .chrome-tabs {
+	height: calc(var(--chrome-tabs-height) + 8px);
+	max-height: calc(100vh - 100px);
+}
+
+/* idle tabs get darker */
+.chrome-tabs .chrome-tab.chrome-tab-idle {
+	filter: brightness(0.75);
+}
+
+
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover):not(.chrome-tab-changed) .chrome-tab-close,
+.chrome-tabs.chrome-tabs-lock-pinned .chrome-tab.chrome-tab-pinned:not(.chrome-tab-changed) .chrome-tab-close {
+	visibility: hidden;
+	pointer-events: none;
+}
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover).chrome-tab-changed .chrome-tab-close {
+	right: 1em;
+}
+
+.chrome-tabs .chrome-tab.chrome-tab-currently-dragged .chrome-tab-close {
+	pointer-events: none;
+}
+#app:not(.app-browser) .chrome-tabs::before {
+	content: "";
+	display: block;
+	position: absolute;
+	left: 2px; top: 8px; right: 2px; bottom: 2px;
+	-webkit-app-region: drag;
+}
+
+.chrome-tabs .chrome-tab-title {
+	max-width: calc(100% - 4em);
+}
+/* tab titles can be wider when the close buttons are hidden*/
+.chrome-tabs.chrome-tabs-auto-hide-close-buttons .chrome-tab:not(:hover) .chrome-tab-title ,
+.chrome-tabs.chrome-tabs-lock-pinned .chrome-tab.chrome-tab-pinned .chrome-tab-title {
+	max-width: calc(100% - 2.6em);
+}
+
+/* auto-fit tabs very rarely overflow, so "..." is unnecessary */
+.chrome-tabs.chrome-tabs-fit-text .chrome-tab-title {
+	text-overflow: clip;
+}
+/* no need to show tab tooltips now - they are wide enough! */
+.chrome-tabs.chrome-tabs-fit-text ~ .chrome-tabs-hint {
+	visibility: hidden;
+}
+
+/* usually the trailing end of the tab text is significant */
+.chrome-tabs:not(.chrome-tabs-fit-text) .chrome-tab-title-text {
+	float: right;
+}
+
+.chrome-tabs .chrome-tab,
+.system-button,
+.chrome-tabs .lw-controls {
+	-webkit-app-region: no-drag;
+}
+.chrome-tabs.has-lw-buttons {
+	display: flex;
+}
+#app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
+	display: none;
+}
+.chrome-tabs.has-lw-buttons .app-region-drag {
+	-webkit-app-region: drag;
+	flex-grow: 1;
+}
+#game-td .chrome-tabs.has-lw-buttons > input,
+#game-td .chrome-tabs.has-lw-buttons > select {
+	margin-right: 2px;
+}
+#app:not(.app-browser) .chrome-tabs.has-lw-buttons::before {
+	left: 230px;
+}
+#tabs.chrome-tabs.has-system-buttons {
+	padding-right: 108px;
+}
+
+.chrome-tab-changed .chrome-tab-close::before,
+.chrome-tabs.chrome-tabs-dark-theme .chrome-tab.chrome-tab-changed .chrome-tab-close:not(:hover)::before {
+	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3.5" fill="%235198D9"/></svg>');
+}
+.chrome-tabs-hint {
+	position: absolute;
+	top: 36px;
+	display: none;
+	z-index: 1000;
+	color: white;
+	background: rgba(0,0,0,0.7);
+	padding: 1px 4px;
+	border-radius: 2px;
+	pointer-events: none;
+}
+.chrome-tabs-hint:before {
+	position: absolute;
+	left: calc(50% - 4px);
+	top: -8px;
+	content: "";
+	border: 4px solid transparent;
+	border-bottom-color: rgba(0,0,0,0.7);
+}
+
+.project-name {
+	line-height: 36px;
+	padding-top: 0;
+	position: relative;
+}
+#project-name {
+	font-size: 14px;
+	width: calc(100% - 28px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	word-break: break-all;
+	word-wrap: break-word;
+	white-space: nowrap;
+}
+
+
+/* System buttons (and the menu-burger button) */
+.system-buttons {
+	position: absolute;
+	right: 0; top: 0;
+	display: flex;
+}
+.system-button {
+	width: 36px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+html.starter-loading .system-button {
+	display: none;
+}
+.system-button.maximize {
+	right: 36px;
+}
+.system-button.minimize {
+	right: 72px;
+}
+.system-button:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.system-button:active {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+.system-button.close:hover {
+	background-color: rgba(250, 80, 80, 0.9);
+}
+.system-button.close:active {
+	background-color: rgba(250, 80, 80, 1.0);
+}
+.system-button.close:hover svg polygon {
+	fill: white;
+}
