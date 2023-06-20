@@ -50,7 +50,7 @@ class GmlParseAPI {
 		var lwFlags = data.lwFlags;
 		#end
 		var featureFlags = ui.Preferences.current.apiFeatureFlags;
-		var rsStart = "^[ \t]*";
+		var rsStart = "^";
 		//
 		
 		// typedefs!
