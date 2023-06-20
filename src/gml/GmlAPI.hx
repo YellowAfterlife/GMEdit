@@ -147,9 +147,7 @@ class GmlAPI {
 		sk["false"] = "constant.boolean";
 		
 		for (k in GmlTypeTools.builtinTypes) {
-			switch (k) {
-				case "string", "bool": continue;
-			}
+			if (GmlTypeTools.simplenameMap[k]) continue;
 			sk[k] = "namespace";
 		}
 		stdKind = sk;
@@ -251,13 +249,13 @@ class GmlAPI {
 	
 	public static var gmlNamespaceComp:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
 	
-	public static function ensureNamespace(name:String):GmlNamespace {
+	public static function ensureNamespace(name:String, ?opt:GmlEnsureNamespaceOptions):GmlNamespace {
 		var ns = gmlNamespaces[name];
 		if (ns == null) {
 			ns = new GmlNamespace(name);
 			gmlNamespaces[name] = ns;
 			gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
-			if (!gmlKind.exists(name) && !stdKind.exists(name)) gmlKind[name] = "namespace";
+			if (!gmlKind.exists(name) && !stdKind.exists(name) && opt?.setKind != false) gmlKind[name] = "namespace";
 			if (name == "instance" || name == "object") ns.isObject = true;
 		}
 		return ns;
@@ -307,7 +305,9 @@ class GmlAPI {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
 		for (k in GmlTypeTools.builtinTypes) {
-			var ns = ensureNamespace(k);
+			var ns = ensureNamespace(k, {
+				setKind: !GmlTypeTools.simplenameMap[k]
+			});
 			ns.canCastToStruct = ns.name == "struct";
 			ns.noTypeRef = true;
 		}
@@ -377,3 +377,6 @@ class GmlNamespaceDef {
 	public var parents:Array<String>;
 	public function new() {}
 }
+typedef GmlEnsureNamespaceOptions = {
+	?setKind:Bool,
+};

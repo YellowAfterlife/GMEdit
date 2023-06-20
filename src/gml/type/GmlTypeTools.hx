@@ -24,6 +24,10 @@ import ace.extern.AceTokenType;
 		"type", "Type",
 		"struct", "instance",
 	];
+	public static var simplenameMap:Dictionary<Bool> = Dictionary.fromKeys([
+		"string", "bool", "type",
+		"struct", "array"
+	], true);
 	public static var kindMap:Dictionary<AceTokenType> = Dictionary.fromKeys(builtinTypes, "namespace");
 	
 	public static inline var templateItemName:String = "TemplateItem";
