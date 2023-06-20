@@ -251,6 +251,7 @@ import electron.FileWrap;
 				});
 				list.push(v);
 			}
+			init_1();
 		}
 		#end
 	}

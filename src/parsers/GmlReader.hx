@@ -37,7 +37,16 @@ using tools.NativeString;
 	public var version:GmlVersion;
 	public function new(gmlCode:String, ?version:GmlVersion) {
 		super(gmlCode);
-		this.version = version != null ? version : gml.Project.current.version;
+		if (version != null) {
+			this.version = version;
+		} else {
+			var project = gml.Project.current;
+			if (project != null) {
+				this.version = project.version;
+			} else {
+				this.version = GmlVersion.v2;
+			}
+		}
 	}
 	
 	/** Skips to the end of the current line */
