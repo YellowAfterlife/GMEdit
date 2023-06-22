@@ -22,6 +22,9 @@ Overall, it can be viewed as a more pleasant alternative to GameMaker's base  ID
 
 By design it is something that you run alongside the base IDE, but there are [ways](https://github.com/YellowAfterlife/GMEdit/wiki/Running-games-from-GMEdit) you can avoid switching back and forth to run the game.
 
+**NEW!** [Try GMEdit online](https://yellowafterlife.github.io/GMEdit/)!  
+This web-based version has some limitations compared to the downloadable one, but can give you a general idea of what GMEdit can do, and can also be used to open GameMaker projects without installing anything!
+
 Maintained by: [YellowAfterlife](https://yal.cc)
 
 ## Pre-built binaries
@@ -34,7 +37,7 @@ Same page also houses screenshots and development log.
 
 ### First time setup
 * Download/clone the repository
-* Download [a pre-built 11.x Electron binary](https://github.com/electron/electron/releases)
+* Download [a pre-built 18.x Electron binary](https://github.com/electron/electron/releases)
   and extract the files into bin/ directory (so that you have `bin/electron.exe` on Windows or `bin/electron` on Mac/Linux).
 
   You can find which exact version GMEdit is using by evaluating `process.versions.electron` in the JS console (Ctrl+Shift+I).
