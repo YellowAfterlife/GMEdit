@@ -84,6 +84,7 @@ class GmlSeekerImpl {
 	public var hasFunctionLiterals:Bool;
 	public var hasTryCatch:Bool;
 	public var jsDoc:GmlSeekerJSDoc = new GmlSeekerJSDoc();
+	public var isLibraryResource:Bool;
 	
 	public var commentLineJumps = new IntDictionary<Int>();
 	
@@ -127,6 +128,7 @@ class GmlSeekerImpl {
 		canLam = !notLam && project.canLambda();
 		canDefineComp = (kind is KGml) && (cast kind:KGml).canDefineComp;
 		funcsAreGlobal = GmlFileKindTools.functionsAreGlobal(kind);
+		isLibraryResource = project.libraryResourceMap[main];
 		
 		isObject = (kind is KGmlEvents);
 		isCreateEvent = isObject && (locals.name == "create"
@@ -161,8 +163,11 @@ class GmlSeekerImpl {
 	public function setLookup(s:String, eol:Bool, meta:String):Void {
 		var col = eol ? null : 0;
 		var row = reader.row;
-		if (!GmlAPI.gmlLookup.exists(s)) {
-			if (s != mainTop) GmlAPI.gmlLookupItems.push({ value:s, meta:meta });
+		if (!GmlAPI.gmlLookup.exists(s)
+			&& s != mainTop
+			&& !isLibraryResource
+		) {
+			GmlAPI.gmlLookupItems.push({ value:s, meta:meta });
 		}
 		var lookup:GmlLookup = { path: orig, sub: sub, row: row, col: col };
 		if (project.isGMS23 && s == mainTop) {

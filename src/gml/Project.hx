@@ -165,6 +165,20 @@ import ui.treeview.TreeViewElement;
 	public var properties:ProjectData = cast {};
 	public var propertiesElement:DivElement = null;
 	
+	/** name -> exclude? */
+	public var libraryResourceMap:Dictionary<Bool> = new Dictionary();
+	public function updateLibraryResourceMap(?lrList:Array<String>) {
+		if (lrList == null) lrList = properties.libraryResources;
+		var lrMap = new Dictionary();
+		if (lrList != null) for (lrName in lrList) {
+			lrName = NativeString.trimBoth(lrName);
+			if (lrName == "") continue;
+			if (NativeString.startsWith(lrName, "//")) continue;
+			lrMap[lrName] = true;
+		}
+		libraryResourceMap = lrMap;
+	}
+	
 	/** whether X is a lambda script */
 	public var lambdaMap:Dictionary<Bool> = new Dictionary();
 	public var lambdaExt:RelPath = null;
@@ -483,6 +497,8 @@ import ui.treeview.TreeViewElement;
 			var state:ProjectState = null;
 			if (first) {
 				properties = ProjectProperties.load(this);
+				updateLibraryResourceMap(properties.libraryResources);
+				
 				GmlAPI.forceTemplateStrings = properties.templateStringScript != null;
 				GmlSeekData.map = new Dictionary();
 				state = ProjectStateManager.get(path);

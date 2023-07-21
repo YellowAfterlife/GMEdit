@@ -31,6 +31,8 @@ typedef ProjectData = {
 	?nullConditionalVal:GmlName,
 	
 	?linterPrefs:parsers.linter.GmlLinterPrefs,
+	
+	?libraryResources:Array<String>,
 }
 enum abstract LambdaMode(Int) from Int to Int {
 	/// may also be null

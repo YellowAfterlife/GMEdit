@@ -192,6 +192,26 @@ class Preferences {
 		out.appendChild(ctr);
 		return ctr;
 	}
+	public static function addTextArea(out:Element, legend:String, curr:String, fn:String->Void):Element {
+		var ctr = document.createDivElement();
+		ctr.classList.add("input");
+		//
+		var lb = document.createLabelElement();
+		lb.htmlFor = legend;
+		lb.appendChild(document.createTextNode(legend));
+		ctr.appendChild(lb);
+		//
+		var ta = document.createTextAreaElement();
+		ta.value = curr;
+		ta.name = legend;
+		ta.addEventListener("change", function(_) {
+			fn(ta.value);
+		});
+		ctr.appendChild(ta);
+		//
+		out.appendChild(ctr);
+		return ctr;
+	}
 	public static function addRegexPatternInput(out:Element, legend:String, curr:String, fn:String->Void):Element {
 		var ctr = document.createDivElement();
 		ctr.classList.add("input");

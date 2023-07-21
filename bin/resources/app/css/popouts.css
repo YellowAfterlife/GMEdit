@@ -266,9 +266,13 @@ input[type=radio]:checked:before {
 	padding: 1px 3px;
 }
 .popout-window input[type="text"],
-.popout-window select {
+.popout-window select,
+.popout-window textarea {
 	width: 100%;
 	box-sizing: border-box;
+}
+.popout-window textarea {
+	resize: vertical;
 }
 .popout-window input[type="text"].error {
 	border-color: rgb(250, 50, 50);

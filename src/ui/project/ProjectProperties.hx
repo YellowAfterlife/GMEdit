@@ -76,6 +76,29 @@ class ProjectProperties {
 		});
 	}
 	
+	static function buildSearch(project:Project, out:Element) {
+		var fs = Preferences.addGroup(out, "Search and indexing");
+		fs.id = "project-properties-search";
+		
+		var d = project.properties;
+		var el:Element;
+		
+		el = Preferences.addTextArea(fs, "Library resource names",
+			(d.libraryResources ?? []).join("\n"),
+		function(text:String) {
+			text = NativeString.trimBoth(text);
+			var lines = text.split("\n");
+			d.libraryResources = lines;
+			save(project, d);
+			project.updateLibraryResourceMap(lines);
+		});
+		
+		el.querySelectorAuto("label", Element).title = [
+			"Library resources are omitted from search results and Global Lookup.",
+			"Takes effect upon reloading the project."
+		].join("\n");
+	}
+	
 	static function addGmlNameInput(out:Element, legend:String, curr:GmlName, fn:GmlName->Void) {
 		var input:InputElement = null;
 		var rx = new RegExp("^[a-zA-Z_]\\w*$");
@@ -182,6 +205,7 @@ class ProjectProperties {
 	
 	public static function build(project:Project, out:DivElement) {
 		buildCode(project, out);
+		buildSearch(project, out);
 		buildSyntax(project, out);
 		ui.preferences.PrefLinter.build(out, project);
 		//

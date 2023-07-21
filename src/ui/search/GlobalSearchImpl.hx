@@ -84,6 +84,7 @@ class GlobalSearchImpl {
 		var canLambda = pj.canLambda() && opt.expandLambdas;
 		var lambdaGml:String = null;
 		pj.search(function(name:String, path:String, code:String) {
+			if (pj.libraryResourceMap[name]) return isRepl ? code : null;
 			var lambdaPre:GmlExtLambdaPre;
 			if (canLambda) {
 				lambdaPre = GmlExtLambda.preInit(pj);
