@@ -499,16 +499,23 @@
             
             if (source.parentElement != target.parentElement) return
             
+            let insertAfter = false
             if (source.nextElementSibling == target) {
               let t = target
               target = source
               source = t
+            } else if (e.offsetX > target.offsetWidth / 2) {
+              insertAfter = true
             }
             
             // when dropping the tab to another row, update its pinned status accordingly
             this.setTabPinLayer(source, this.getTabPinLayer(target))
             
-            source.parentElement.insertBefore(source, target)
+            if (insertAfter) {
+              target.after(source)
+            } else {
+              source.parentElement.insertBefore(source, target)
+            }
             this.simpleDragTab = null
             this.layoutTabs()
             GMEdit._emit("tabsReorder", {target:this})
