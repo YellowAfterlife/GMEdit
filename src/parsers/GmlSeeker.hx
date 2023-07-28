@@ -17,7 +17,6 @@ using tools.PathTools;
  * @author YellowAfterlife
  */
 class GmlSeeker {
-	public static inline var maxAtOnce = 16;
 	public static var itemsLeft:Int = 0;
 	static var itemQueue:Array<GmlSeekerItem> = [];
 	static var lastLabelUpdateTime:Float = 0;
@@ -47,7 +46,7 @@ class GmlSeeker {
 	}
 	public static function run(path:FullPath, main:GmlName, kind:FileKind) {
 		var item:GmlSeekerItem = {path:path.ptNoBS(), main:main, kind:kind};
-		if (itemsLeft < maxAtOnce) {
+		if (itemsLeft < ui.Preferences.current.assetIndexBatchSize) {
 			runItem(item);
 		} else itemQueue.push(item);
 	}

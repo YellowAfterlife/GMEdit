@@ -42,6 +42,15 @@ class PrefNav {
 			+ " at cost of not reflecting any potential changes to sprites"
 		);
 		//
+		addIntInput(out, "Batch size for indexing/project search", current.assetIndexBatchSize, function(n) {
+			current.assetIndexBatchSize = n;
+			save();
+		}).title = (
+			"Higher values speed up loading/searching times on big projects, but going too high"
+			+ " may cause load/search errors due to running out of file descriptors."
+			+ " Note that this is measured in assets rather than files due to implementation details."
+		);
+		//
 		var assetOrder23 = [
 			"Custom order (as authored)",
 			"Ascending (A-Z)",

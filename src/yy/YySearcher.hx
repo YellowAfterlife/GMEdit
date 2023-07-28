@@ -17,7 +17,6 @@ import yy.YyTimeline;
 class YySearcher {
 	var queue:Array<{ fn:Any->Void, arg:Any }> = [];
 	var count = 0;
-	static inline var maxCount = 16;
 	var done:Void->Void;
 	function new(done:Void->Void = null) {
 		this.done = done;
@@ -34,7 +33,7 @@ class YySearcher {
 		} else if (count <= 0) done();
 	}
 	function proc<T>(arg:T, fn:T->Void):Void {
-		if (count < maxCount) {
+		if (count < ui.Preferences.current.assetIndexBatchSize) {
 			procSync(arg, fn);
 		} else queue.push({ fn: cast fn, arg: arg });
 	}
