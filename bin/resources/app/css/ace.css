@@ -249,6 +249,7 @@ textarea#source {
 .ace_editor.ace_autocomplete {
 	font-family: sans-serif;
 	overflow: visible;
+	width: 25em;
 }
 .ace_editor.ace_autocomplete .ace_text-layer {
 	margin-left: 0!important;
@@ -257,7 +258,7 @@ textarea#source {
 	opacity: 1;
 	margin: 0;
 	display: inline-block;
-	width: 68px;
+	width: 6em;
 	vertical-align: bottom;
 	overflow-x: hidden;
 	text-overflow: ellipsis;
