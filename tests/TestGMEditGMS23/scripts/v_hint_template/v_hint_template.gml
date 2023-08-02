@@ -1,11 +1,12 @@
 // Context: @hint is a complicated construct with many moving parts.
-// In fact, so many, that even just syntax highlighting for it has its own class.
+// In fact, so many that even just syntax highlighting for it has its own class.
 // This verifies that the various @hint patterns are highlighted and handled correctly.
 
 /// @hint new HintArray<T>(size:int, value:T)
 /// @hint HintArray<T>:push(...values:T)
 /// @hint HintArray<T>:pop()->T
 /// @hint HintArray<T>:fwd<X>(a:T, b:X)->X
+/// @hint HintArray<T>:(index:int, ?newValue:T)->T
 /// @hint {T} HintArray<T>:defValue
 /// @hint HintArray.create<T>(size:int, ?value:T)->HintArray<T>
 /// @hint HintArray<T>.create2(size:int, ?value:T)->HintArray<T>
@@ -33,4 +34,9 @@ function v_hint_template() {
 	s = arr.defValue; ///want_warn
 	var iac/*:IArrayAccess*/ = arr;
 	var etc/*:ISomethingElse*/ = arr; ///want_warn
+	
+	i = arr(0);
+	s = arr(0); ///want_warn
+	arr(0, i);
+	arr(0, s); ///want_warn
 }

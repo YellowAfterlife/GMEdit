@@ -41,6 +41,12 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 				templateTypes = NativeArray.create(doc.templateItems.length);
 			}
 			if (doc.templateSelf != null) {
+				if (doc.pre.endsWith(":(")) {
+					// this is a self-call so selfType is funcType
+					// conveniently, the suffix also happens to accurately describe
+					// my feelings about doing this kind of a workaround.
+					selfType = fnType;
+				}
 				if (!GmlTypeTools.canCastTo(selfType, doc.templateSelf, templateTypes, linter.getImports())) {
 					addWarning("Can't cast " + selfType.toString(templateTypes)
 						+ " to " + doc.templateSelf.toString(templateTypes)
