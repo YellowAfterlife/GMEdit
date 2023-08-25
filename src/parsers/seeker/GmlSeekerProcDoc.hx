@@ -2,6 +2,7 @@ package parsers.seeker;
 import gml.GmlFuncDoc;
 import gml.type.GmlTypeDef;
 import parsers.GmlSeekData.GmlSeekDataNamespaceHint;
+import synext.GmlExtCoroutines;
 
 /**
  * ...
@@ -60,6 +61,17 @@ class GmlSeekerProcDoc {
 			if (updateComp) {
 				var mainComp = seeker.mainComp;
 				if (mainComp != null) mainComp.doc = doc.getAcText();
+			}
+			
+			if (seeker.out.hasCoroutines) {
+				var crp = "<" + doc.name + ">";
+				var crt = GmlExtCoroutines.arrayTypeName + crp;
+				doc.post = GmlFuncDoc.parRetArrow + GmlExtCoroutines.arrayTypeResultName + crp;
+				doc.hasReturn = true;
+				if (doc.argTypes == null) doc.argTypes = [];
+				doc.argTypes.unshift(GmlTypeDef.parse(crt + '|number|undefined'));
+				doc.args.unshift("state");
+				@:privateAccess doc.minArgsCache = 1;
 			}
 		}
 		

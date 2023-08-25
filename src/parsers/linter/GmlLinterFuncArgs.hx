@@ -5,6 +5,7 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import haxe.ds.ReadOnlyArray;
 import parsers.linter.GmlLinter.GmlLinterValue;
+import synext.GmlExtCoroutines;
 import tools.Aliases;
 import tools.JsTools;
 import tools.NativeArray;
@@ -74,14 +75,18 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 		var hasBufferAutoType:Bool = false;
 		var bufferAutoType:GmlType = null;
 		var bufferAutoTypeRet = false;
-		if (doc != null && argTypes != null && doc.name.contains("buffer_")) {
-			for (argType in argTypes) {
-				switch (argType) {
-					case null:
-					case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
-						hasBufferAutoType = true;
-						break;
-					default:
+		var coroutineStatus = 0; // [none, init, continue]
+		var coroutineResult:GmlType = null;
+		if (doc != null) {
+			if (doc.name.contains("buffer_")) {
+				if (argTypes != null) for (argType in argTypes) {
+					switch (argType) {
+						case null:
+						case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
+							hasBufferAutoType = true;
+							break;
+						default:
+					}
 				}
 			}
 			switch (doc.returnType) {
@@ -89,6 +94,9 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 				case TInst(name, [], KCustom) if (name == "buffer_auto_type"):
 					hasBufferAutoType = true;
 					bufferAutoTypeRet = true;
+				case TInst(name, [t], KCustom) if (name == GmlExtCoroutines.arrayTypeResultName):
+					coroutineStatus = 2;
+					coroutineResult = t;
 				default:
 			}
 		}
@@ -102,21 +110,41 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 			} else argType = null;
 			
 			// read the next argument:
+			var argExprType:GmlType, argExprValue:GmlLinterValue;
 			if (isUndefined) {
 				// don't read anything
-			} else if (isMethod && argc == 1) {
-				// rewrite `self` for `method()`'s `fn` argument
-				var funcLiteral = linter.funcLiteral;
-				var lso = funcLiteral.selfOverride;
-				funcLiteral.selfOverride = methodSelf;
-				var foundError = readExpr(newDepth);
-				funcLiteral.selfOverride = lso;
-				rc(foundError);
+				argExprType = GmlTypeDef.undefined;
+				argExprValue = GmlLinterValue.VUndefined;
 			} else {
-				rc(readExpr(newDepth, None, null, argType, templateTypes));
+				if (isMethod && argc == 1) {
+					// rewrite `self` for `method()`'s `fn` argument
+					var funcLiteral = linter.funcLiteral;
+					var lso = funcLiteral.selfOverride;
+					funcLiteral.selfOverride = methodSelf;
+					var foundError = readExpr(newDepth);
+					funcLiteral.selfOverride = lso;
+					rc(foundError);
+				} else {
+					rc(readExpr(newDepth, None, null, argType, templateTypes));
+				}
+				argExprType = expr.currType;
+				argExprValue = expr.currValue;
 			}
 			
-			if (argTypes != null && (isUndefined || expr.currType != null)) {
+			if (coroutineResult != null && argc == 0) {
+				if (isUndefined
+				|| argExprValue != null && argExprValue.match(GmlLinterValue.VNumber(_, _) | GmlLinterValue.VUndefined)
+				|| argExprType != null && (
+					linter.valueCanCastTo(argExprValue, argExprType, GmlTypeDef.undefined, templateTypes)
+					|| linter.valueCanCastTo(argExprValue, argExprType, GmlTypeDef.number, templateTypes)
+				)) {
+					coroutineResult = GmlTypeDef.simpleOf(GmlExtCoroutines.arrayTypeName, [coroutineResult]);
+				} else {
+					coroutineResult = GmlTypeDef.bool;
+				}
+			}
+			
+			if (argTypes != null && argExprType != null) {
 				if (argType != null) {
 					if (isFuncValue && argTypeInd == argTypeClamp) argType = argType.unwrapParam();
 					if (hasBufferAutoType) {
@@ -132,12 +160,7 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 							default:
 						}
 					}
-					var argExprType = isUndefined ? GmlTypeDef.undefined : expr.currType;
-					if (!linter.valueCanCastTo(
-						isUndefined ? GmlLinterValue.VUndefined : expr.currValue,
-						argExprType,
-						argType, templateTypes
-					)) {
+					if (!linter.valueCanCastTo(argExprValue, argExprType, argType, templateTypes)) {
 						var argName:String;
 						if (doc != null) {
 							argName = JsTools.or(doc.args[argTypeInd], "?");
@@ -191,6 +214,7 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 		if (doc != null) {
 			var retType = doc.returnType;
 			if (bufferAutoTypeRet) retType = bufferAutoType;
+			else if (coroutineResult != null) retType = argc > 0 ? coroutineResult : null;
 			returnType = retType.mapTemplateTypes(templateTypes);
 		} else if (isFuncValue) {
 			returnType = argTypes[argTypesLen];

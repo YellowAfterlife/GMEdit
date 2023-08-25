@@ -14,6 +14,8 @@ using StringTools;
  * @author YellowAfterlife
  */
 class GmlExtCoroutines {
+	public static inline var arrayTypeName = "coroutine_array";
+	public static inline var arrayTypeResultName = "coroutine_array_result";
 	private static var keywordMap0:Dictionary<AceTokenType> = new Dictionary();
 	private static var keywordMap1:Dictionary<AceTokenType> = Dictionary.fromKeys(
 		["yield", "label", "goto"], "keyword");

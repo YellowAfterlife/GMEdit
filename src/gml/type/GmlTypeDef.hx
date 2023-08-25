@@ -55,6 +55,12 @@ import tools.JsTools;
 		return t;
 	}
 	
+	public static function simpleOf(name:String, par:Array<GmlType>):GmlType {
+		if (name == null) return null;
+		var kind = JsTools.or(@:privateAccess GmlTypeParser.kindMeta[name], KCustom);
+		return TInst(name, par, kind);
+	}
+	
 	public static function object(name:String):GmlType @:privateAccess {
 		if (name == null) return null;
 		var t = GmlTypeParser.cache[name];

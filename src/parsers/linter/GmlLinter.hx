@@ -589,6 +589,7 @@ class GmlLinter {
 			case KVar, KConst, KLet, KGlobalVar, KArgs, KStatic: {
 				var varKeyword = nextVal;
 				var isArgs = nk == KArgs;
+				var isCoroutineArgs = isArgs && currFuncDoc != null	&& currFuncDoc.post.startsWith(GmlFuncDoc.parRetArrow + synext.GmlExtCoroutines.arrayTypeResultName);
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
 				var found = 0;
@@ -637,6 +638,8 @@ class GmlLinter {
 						varType = null;
 						varTypeStr = null;
 						if (isArgs && currFuncDoc != null && currFuncDoc.argTypes != null) {
+							// linear coroutines have a prefix argument
+							if (isCoroutineArgs) argIndex += 1;
 							varType = currFuncDoc.argTypes[argIndex];
 							varTypeStr = varType != null ? varType.toString() : null;
 							if (varType != null && setLocalTypes) {
