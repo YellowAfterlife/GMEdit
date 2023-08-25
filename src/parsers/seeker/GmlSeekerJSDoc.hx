@@ -226,14 +226,14 @@ class GmlSeekerJSDoc {
 				fdName = hr.readIdent();
 				if (fdName != null) {
 					hr.skipSpaces0_local();
-					if (hr.peek() == "<".code) { // namespace<params>
-						hp = hr.pos;
-						if (hr.skipTypeParams()) {
-							var fdp = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
-							templateItems = templateItems.nzcct(fdp);
-							hr.skipSpaces0_local();
-						} else return;
-					}
+				}
+				if (hr.peek() == "<".code) { // namespace<params>
+					hp = hr.pos;
+					if (hr.skipTypeParams()) {
+						var fdp = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
+						templateItems = templateItems.nzcct(fdp);
+						hr.skipSpaces0_local();
+					} else return;
 				}
 			}
 			
