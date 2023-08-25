@@ -116,6 +116,7 @@
 7:73 async_audio_recording
 7:74 async_audio_playback
 7:75 async_system
+7:76 other_broadcast_message
 3:0 step
 3:1 step_begin
 3:2 step_end
