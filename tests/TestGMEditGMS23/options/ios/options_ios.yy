@@ -6,7 +6,7 @@
   "option_ios_cocoapods_checkbox": true,
   "option_ios_defer_home_indicator": false,
   "option_ios_devices": 2,
-  "option_ios_display_name": "Created with GameMaker Studio 2",
+  "option_ios_display_name": "Created with GameMaker",
   "option_ios_half_ipad1_textures": false,
   "option_ios_icon_ipad_app_152": "${base_options_dir}/ios/icons/app/ipad_152.png",
   "option_ios_icon_ipad_app_76": "${base_options_dir}/ios/icons/app/ipad_76.png",
