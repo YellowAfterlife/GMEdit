@@ -124,7 +124,7 @@ class YyLoader {
 			}
 			//
 			var folderDir = TreeView.makeAssetDir(folder.name, folderPath + "/", "mixed");
-			var folderOrder = folder.order;
+			var folderOrder = folder.order ?? 0;
 			if (resourceOrder != null) {
 				var folder2 = resourceOrder.FolderOrderSettings.findFirst((f)->f.path == folderPathYY);
 				if (folder2 != null) folderOrder = folder2.order;
@@ -205,7 +205,7 @@ class YyLoader {
 		for (resource in yyProject.resources) {
 			var resPath = resource.id.path;
 			var resName = resource.id.name;
-			project.yyOrder[resName] = resource.order;
+			project.yyOrder[resName] = resource.order ?? 0;
 			// get rid of this mess later
 			project.yyResources[resName] = resource;
 			project.yyResourceGUIDs[resName] = cast resName;
