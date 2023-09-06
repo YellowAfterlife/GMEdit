@@ -1,11 +1,11 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "v_func_doc_static",
+  "name": "coro_method",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {
-    "name": "Function literals",
-    "path": "folders/Scripts/Linter/Function literals.yy",
+    "name": "Syntax extensions",
+    "path": "folders/Scripts/Syntax extensions.yy",
   },
 }
