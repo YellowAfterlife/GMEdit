@@ -275,6 +275,10 @@ class GmlLinterExpr extends GmlLinterHelper {
 					templateTypes: templateTypes,
 				}));
 				currFunc = self.funcLiteral.doc;
+				if (isStat() && currFunc.name != "function") {
+					// prevent `function f() {}\n(() => {})()` from being recognized as f-call
+					flags.add(NoSfx);
+				}
 				currType = currFunc.getFunctionType();
 			case KCubOpen: { // { fd1: v1, fd2: v2 }
 				var anon = new GmlTypeAnon();
@@ -370,7 +374,10 @@ class GmlLinterExpr extends GmlLinterHelper {
 					if (self.prefs.forbidNonIdentCalls && !currKind.canCall()) {
 						return self.readError('Expression ${currKind.getName()} is not callable');
 					}
-					if (hasFlag(NoSfx) && !hasFlag(IsNew)) return self.readError("Can't call this");
+					if (hasFlag(NoSfx) && !hasFlag(IsNew)) {
+						if (isStat()) break; // things like `function f() {}\n(() => {})()`
+						return self.readError("Can't call this");
+					}
 					self.skip();
 					var argsSelf = currKind == KIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
 					var argc = self.funcArgs.read(newDepth, currFunc, argsSelf, currType);
