@@ -48,6 +48,10 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 			if (isTopLevel) context = name;
 		}
 		var globalDoc = isTopLevel && hasName ? gml.GmlAPI.gmlDoc[name] : null;
+		var globalDocArgTypes = globalDoc != null ? globalDoc.argTypes : null;
+		var globalDocArgOffset = globalDoc != null && tools.NativeString.startsWith(
+			globalDoc.post, GmlFuncDoc.parRetArrow + synext.GmlExtCoroutines.arrayTypeResultName
+		) ? 1 : 0;
 		var doc = new GmlFuncDoc(name, "(", ")", [], false);
 		var nextLocalType = isTopLevel ? "local" : "sublocal";
 		//
@@ -118,9 +122,9 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 								argTypeStr = GmlLinter.readTypeName_typeStr;
 								t = GmlTypeDef.parse(argTypeStr);
 							} else {
-								if (globalDoc != null && globalDoc.argTypes != null) {
+								if (globalDocArgTypes != null) {
 									// no :type, but we have this hinted already
-									t = globalDoc.argTypes[argIndex];
+									t = globalDoc.argTypes[argIndex + globalDocArgOffset];
 								} else if (targetArgTypes != null) {
 									t = targetArgTypes[argIndex];
 								} else t = null;

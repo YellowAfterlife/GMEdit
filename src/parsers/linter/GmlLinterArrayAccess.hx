@@ -7,6 +7,7 @@ import gml.type.GmlTypeCanCastTo;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterArrayAccess;
+import synext.GmlExtCoroutines;
 import tools.Aliases;
 import parsers.linter.GmlLinter;
 import tools.JsTools;
@@ -197,6 +198,23 @@ class GmlLinterArrayAccess {
 									currType = p[Std.int(i)];
 								}
 							default: currType = null;
+						}
+					};
+					case KCustom if (currType.match(TInst(GmlExtCoroutines.arrayTypeName, _, _))): {
+						switch (arrayValue) {
+							case null:
+								self.checkTypeCast(arrayType, GmlTypeDef.number, "array index", arrayValue);
+								currType = null;
+							case VNumber(f, _):
+								var i = Std.int(f);
+								switch (i) {
+									case 0: currType = null; // result
+									case 1: currType = GmlTypeDef.number; // case
+									case 2: currType = GmlTypeDef.anyArray; // args
+									default: currType = null;
+								}
+							default:
+								currType = null;
 						}
 					};
 					default: {

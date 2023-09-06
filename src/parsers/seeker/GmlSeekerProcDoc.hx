@@ -63,15 +63,33 @@ class GmlSeekerProcDoc {
 				if (mainComp != null) mainComp.doc = doc.getAcText();
 			}
 			
-			if (seeker.out.hasCoroutines) {
-				var crp = "<" + doc.name + ">";
-				var crt = GmlExtCoroutines.arrayTypeName + crp;
-				doc.post = GmlFuncDoc.parRetArrow + GmlExtCoroutines.arrayTypeResultName + crp;
-				doc.hasReturn = true;
-				if (doc.argTypes == null) doc.argTypes = [];
-				doc.argTypes.unshift(GmlTypeDef.parse(crt + '|number|undefined'));
-				doc.args.unshift("state");
-				@:privateAccess doc.minArgsCache = 1;
+			if (seeker.out.hasCoroutines && (
+					seeker.out.yieldScripts.contains(doc.name)
+					|| doc.name == main && seeker.out.yieldScripts.contains("")
+				)
+			) {
+				switch (seeker.out.coroutineMode) {
+					case Linear: {
+						// hack the definition to return coroutine_array_result<script>
+						// and to take coroutine_array<script> as prefix argument
+						var crp = "<" + doc.name + ">";
+						var crt = GmlExtCoroutines.arrayTypeName + crp;
+						doc.post = GmlFuncDoc.parRetArrow + GmlExtCoroutines.arrayTypeResultName + crp;
+						doc.hasReturn = true;
+						if (doc.argTypes == null) doc.argTypes = [];
+						doc.argTypes.unshift(GmlTypeDef.parse(crt + '|number|undefined'));
+						doc.args.unshift("state");
+						@:privateAccess doc.minArgsCache = 1;
+					};
+					case Method: {
+						doc.post = GmlFuncDoc.parRetArrow + "function<bool>";
+						doc.hasReturn = true;
+					};
+					case Constructor: {
+						doc.post = GmlFuncDoc.parRetArrow + GmlExtCoroutines.constructorFor(doc.name);
+						doc.hasReturn = true;
+					};
+				}
 			}
 		}
 		

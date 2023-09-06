@@ -219,7 +219,7 @@ using tools.NativeArray;
 			//
 			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
-			rxRule("preproc.gmcr", ~/#gmcr\b/),
+			rxRule(["preproc.gmcr", "regionname"], ~/(#gmcr)\b(.*)/),
 		]); //}
 		if (version.config.hasRegions) { // regions
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));

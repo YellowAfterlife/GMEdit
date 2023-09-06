@@ -222,6 +222,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 				currType = JsTools.or(this.currType, GmlTypeDef.simple(this.currName));
 				currFunc = currType.getSelfCallDoc(self.getImports());
 			};
+			case KYield: {
+				rc(self.readExpr(newDepth));
+			};
 			case KCast: {
 				rc(self.readExpr(newDepth, GmlLinterReadFlags.NoOps.with(IsCast)));
 				if (this.currKind == KAs) {

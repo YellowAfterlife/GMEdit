@@ -829,9 +829,15 @@ class GmlLinter {
 				} else canBreak = z;
 			};
 			//
-			case KLiveWait, KYield, KGoto, KThrow, KDelete: { // keyword <value>
-				rc(readExpr(newDepth));// wait <time>
+			case KLiveWait, KThrow, KDelete: { // keyword <value>
+				rc(readExpr(newDepth)); // wait <time>
 			}
+			case KGoto: { // goto <label name>
+				switch (peek()) {
+					case KIdent, KString: skip();
+					default: return readExpect("a label name");
+				}
+			};
 			case KLabel: { // label <name>[:]
 				switch (peek()) {
 					case KIdent, KString: {

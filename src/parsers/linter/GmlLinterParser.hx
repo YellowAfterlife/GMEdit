@@ -176,6 +176,7 @@ class GmlLinterParser {
 									l.keywords["label"] = KLabel;
 									l.keywords["goto"] = KGoto;
 								}
+								q.skipLine();
 							};
 							case "region", "endregion", "section": {
 								q.skipLine();

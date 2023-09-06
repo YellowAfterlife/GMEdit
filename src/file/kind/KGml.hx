@@ -9,6 +9,7 @@ import parsers.*;
 import synext.*;
 import tools.CharCode;
 import tools.JsTools;
+import synext.GmlExtCoroutines;
 using tools.NativeString;
 
 /**
@@ -166,9 +167,26 @@ class KGml extends KCode {
 	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		var content_noCoroutines = content;
 		content = GmlExtCoroutines.pre(content);
-		//
+		
 		var out = new GmlSeekData(this);
+		//
 		out.hasCoroutines = content != content_noCoroutines;
+		var crResult = GmlExtCoroutines.result;
+		if (crResult != null) {
+			out.yieldScripts = crResult.yieldScripts;
+			out.coroutineMode = crResult.mode;
+			if ((crResult.mode:GmlExtCoroutineMode) == Constructor) {
+				for (scr in out.yieldScripts) {
+					// we are indexing the original code so that the user sees their variables
+					// and such, but we do also need coroutine-constructor information
+					// for type checking and auto-completion
+					var ctr = GmlExtCoroutines.constructorFor(scr);
+					content += "\n/// @hint {any} " + ctr + ":result";
+					content += "\n/// @hint {bool} " + ctr + ":next()";
+				}
+			}
+		}
+		//
 		out.main = main;
 		var locals = new gml.GmlLocals();
 		out.locals.set("", locals);
