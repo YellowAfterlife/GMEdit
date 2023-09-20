@@ -110,6 +110,9 @@ class AceWrapCommonCompleters {
 	/** Suggests the 2.3 `function` keyword quite so specifically */
 	public var keywordCompleterGMS23_function:AceWrapCompleter;
 	
+	/** Suggests the 2.3 `constructor` keyword quite so specifically */
+	public var keywordCompleterGMS23_constructor:AceWrapCompleter;
+	
 	/** A mishmash of completers for various `#keyword`s, each with their own conditions */
 	public var hashtagCompleters:Array<AceWrapCompleter>;
 	
@@ -150,6 +153,27 @@ class AceWrapCommonCompleters {
 			return ctxKind == Expr || ctxKind == Statement || ctxKind == AfterExpr;
 		});
 		completers.push(keywordCompleterGMS23_function);
+		
+		keywordCompleterGMS23_constructor = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("constructor", "keyword")
+		], excludeTokens, true, gmlOnly, function(cc, editor, session, pos:AcePos, prefix:String, callback) {
+			if (!Preferences.current.compKeywords) return false;
+			
+			if (!prefix.startsWith("co")) return false;
+			if (!Project.current.isGMS23) return false;
+			var line = session.getLine(pos.row);
+			var col = pos.column - prefix.length;
+			while (--col >= 0) {
+				var c = line.fastCodeAt(col);
+				if (c == " ".code || c == "\t".code) {
+					// OK!
+				} else if (c == ")".code) {
+					return true;
+				} else return false;
+			}
+			return false;
+		});
+		completers.push(keywordCompleterGMS23_constructor);
 		
 		keywordCompleterExprStat = new AceWrapCompleterCustom(GmlAPI.kwCompExprStat,
 		excludeTokens, true, gmlOnly, function(cc, editor, session, pos, prefix:String, callback) {
