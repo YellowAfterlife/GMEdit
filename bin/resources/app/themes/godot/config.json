@@ -1,0 +1,10 @@
+{
+	"parentTheme": "dark",
+	"stylesheets": [
+		"jet-brains-mono.css",
+		"noto-sans.css",
+		"godot.css"
+	],
+	"darkChromeTabs": true,
+	"backgroundColor": "#FF2222"
+}

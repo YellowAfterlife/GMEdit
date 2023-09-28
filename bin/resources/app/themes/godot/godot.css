@@ -1,0 +1,156 @@
+:root {
+	--color-background: #363D4A;
+	--color-primary: #71BCFC;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+body {
+  font-family: "Noto Sans", sans-serif;
+}
+
+#project-name {
+  font-weight: lighter;
+}
+
+.chrome-tabs {
+  background: #252B34 !important;
+}
+
+.treeview {
+  background: #21262E;
+}
+
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current > div.chrome-tab-background > svg {
+  display: none;
+}
+
+#tabs > div.chrome-tabs-content > div.chrome-tab.chrome-tab-current > div.chrome-tab-background:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  right: 7px;
+  background: #363D4A;
+  border-top: 2px solid #5B94C6;
+}
+
+.chrome-tabs.chrome-tabs-dark-theme .chrome-tabs-bottom-bar {
+	background: #363D4A;
+	box-shadow: none;
+}
+
+#tabs > div.chrome-tabs-content > div > div.chrome-tab-background > svg {
+  display: none;
+}
+
+#tabs > div.chrome-tabs-content > .chrome-tab > div.chrome-tab-background:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  right: 7px;
+  background: #252B34;
+  border-top: 2px solid transparent;
+}
+
+.chrome-tabs.chrome-tabs-dark-theme {
+	box-shadow: none;
+}
+
+.chrome-tabs .chrome-tab-close::before {
+	transform: scale(1.5);
+}
+
+.chrome-tabs .chrome-tab-close:hover, .chrome-tabs .chrome-tab-close:hover:active {
+	background: unset;
+}
+
+.treeview .header:not(:active):hover, .treeview .header:not(:active):hover > span, .treeview .item:not(:active):hover, .treeview .item:not(:active):hover > span {
+	background: #374F66;
+}
+
+.treeview .dir > .header, .treeview .item {
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.treeview .dir > .header:before, .treeview .item:before {
+	background-image: url(tree-godot.png);
+}
+
+input[type="checkbox"], input[type="radio"], input[type="number"], select {
+  background: #252B34;
+}
+
+#sound-editor input, #sound-editor select {
+  background: #363D4A;
+}
+
+#main #editor-td {
+  background: #252B34;
+}
+
+#ace_settingsmenu {
+  background: #21262E;
+}
+
+#splitter-td, .splitter-td, #misc-splitter-td {
+  background: #252B34;
+  border-color: #363D4A;
+  border-left-width: 3px;
+  border-right-width: 3px;
+  width: 10px;
+  flex: 0 0 10px;
+}
+
+#pref-theme:after {
+  content: "This theme comes with the same font used in the Godot script editor. To use it, click on \"Code Editor Settings\" below. Then, add \"JetBrainsMono\" to the front of the \"Font Family\" list.";
+  margin-top: 1em;
+  display: block;
+  color: #FC7F7F;
+}
+
+
+#preferences-editor input[type="text"], #preferences-editor input[type="button"], .ace_optionsMenuEntry button, .ace_optionsMenuEntry button:hover, #preferences-editor select {
+	background: #252B34;
+}
+
+#main .ace-tm {
+	background: #1D2229;
+}
+
+#main .ace_gutter {
+	color: #A1C2A8;
+	background: #1D2229;
+}
+
+/* */
+::-webkit-scrollbar {
+	background: #30343B !important;
+	width: 10px;
+	height: 12px;
+}
+::-webkit-scrollbar-thumb {
+	background-color: #6C6F74;
+	border: 2px solid #30343B;
+  border-radius: 10px;
+	min-height: 40px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background-color: #C2C3C5;
+}
+::-webkit-scrollbar-corner {
+  background: #30343B;
+}
+::-webkit-scrollbar-track {
+	background-color: #30343B;
+}
