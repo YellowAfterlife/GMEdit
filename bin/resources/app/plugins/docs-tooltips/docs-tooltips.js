@@ -3,15 +3,29 @@
   
   const state = {
     enabled: true,
+    strictLatest: false,
     keys: []
   };
   
   GMEdit.register('docs-tooltips', {
     init: () => {
-      if (!Preferences.current.docs_tooltips) Preferences.current.docs_tooltips = { enabled: true };
+      downloadLatestDocs();
+
+      if (!Preferences.current.docs_tooltips) Preferences.current.docs_tooltips = {
+        enabled: true,
+        strictLatest: false
+      };
+
+      state.enabled = Preferences.current.docs_tooltips.enabled;
+      state.strictLatest = Preferences.current.docs_tooltips.strictLatest;
 
       const ogSetText = aceEditor.tooltipManager.ttip.setText;
       aceEditor.tooltipManager.ttip.setText = function() {
+        if (!state.enabled || (state.strictLatest && $gmedit['gml.Project'].current.version.name != 'v23')) {
+          ogSetText.apply(this, arguments);
+          return;
+        }
+
         const text = arguments[0];
         const returnValue = text.split('➜')[1];
 
@@ -25,8 +39,6 @@
           ogSetText.apply(this, arguments);
         }
       }
-  
-      state.enabled = Preferences.current.docs_tooltips.enabled;
     },
     cleanup: () => {}
   });
@@ -39,12 +51,20 @@
       Preferences.current.docs_tooltips.enabled = state.enabled;
       Preferences.save();
     });
+
+    Preferences.addCheckbox(out, 'Disable for non GMS2.3+ projects', state.strictLatest, () => {
+      state.strictLatest = !state.strictLatest;
+      Preferences.current.docs_tooltips.strictLatest = state.strictLatest;
+      Preferences.save();
+    });
   });
-  
-  fetch('https://raw.githubusercontent.com/christopherwk210/gm-bot/master/static/docs-index.json')
-  .then(res => res.json())
-  .then(data => state.keys = data.keys)
-  .catch(() => console.error('docs-tooltips: failed to fetch documentation'));
+
+  function downloadLatestDocs() {
+    fetch('https://raw.githubusercontent.com/christopherwk210/gm-bot/master/static/docs-index.json')
+      .then(res => res.json())
+      .then(data => state.keys = data.keys)
+      .catch(() => console.error('docs-tooltips: failed to fetch documentation'));
+  }
   
   function createTooltipHTML(key, returnValue) {
     const topic = key.topics[0];
