@@ -13,11 +13,13 @@
 
       if (!Preferences.current.docs_tooltips) Preferences.current.docs_tooltips = {
         enabled: true,
-        strictLatest: false
+        strictLatest: false,
+        keys: []
       };
 
       state.enabled = Preferences.current.docs_tooltips.enabled;
       state.strictLatest = Preferences.current.docs_tooltips.strictLatest;
+      state.keys = Preferences.current.docs_tooltips.keys;
 
       const ogSetText = aceEditor.tooltipManager.ttip.setText;
       aceEditor.tooltipManager.ttip.setText = function() {
@@ -62,7 +64,11 @@
   function downloadLatestDocs() {
     fetch('https://raw.githubusercontent.com/christopherwk210/gm-bot/master/static/docs-index.json')
       .then(res => res.json())
-      .then(data => state.keys = data.keys)
+      .then(data => {
+        state.keys = data.keys;
+        Preferences.current.docs_tooltips.keys = data.keys;
+        Preferences.save();
+      })
       .catch(() => console.error('docs-tooltips: failed to fetch documentation'));
   }
   
