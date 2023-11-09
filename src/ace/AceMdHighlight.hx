@@ -51,6 +51,9 @@ using tools.NativeString;
 		//
 		rBase.push(rxPush("md-url-start", ~/\[/, "md.url"));
 		if (dmd) {
+			rBase.push(rxPush([
+				"md-pre-start", "md-url"
+			], ~/^(```setmd\b\s*)(\w*\s*)$/, "md.setmd"));
 			rBase.push(rxPush(function(_) {
 				if (GmlAPI.version == GmlVersion.none) {
 					GmlAPI.version = GmlVersion.v2;
@@ -132,9 +135,14 @@ using tools.NativeString;
 			rxPush("curly.paren.lparen", ~/\{/, "md.expr"),
 			rxRule("curly.paren.rparen", ~/\}/, "pop"),
 		].concat(rHaxe["start"]).concat([rText]);
-		if (dmd) rules["md.md"] = rcct([
-			rxRule("md-pre-end", ~/```/, "pop")
-		], rText);
+		if (dmd) {
+			rules["md.setmd"] = rcct([
+				rxRule("md-pre-end", ~/^```/, "pop")
+			], rText);
+			rules["md.md"] = rcct([
+				rxRule("md-pre-end", ~/```/, "pop")
+			], rText);
+		}
 		//
 		rules["md.pre"] = [rEsc, rxRule("md-pre-end", ~/```/, "pop"), rdef("md-pre")];
 		untyped this.normalizeRules();
