@@ -30,6 +30,7 @@ import electron.FileWrap;
 	//
 	public static var map:Dictionary<GmlVersion> = new Dictionary();
 	public static var list:Array<GmlVersion> = [];
+	public static var hasCustomDialects:Bool = false;
 	//
 	
 	/** API name, for code */
@@ -219,6 +220,7 @@ import electron.FileWrap;
 					if (found.exists(id)) continue;
 					var full = dir + "/" + id;
 					if (!FileSystem.existsSync(full + "/config.json")) continue;
+					if (isCustom) hasCustomDialects = true;
 					found[id] = true;
 					var v:GmlVersion;
 					if (id == "v23") {
