@@ -66,6 +66,7 @@ class PluginManager {
 				if (conf.scripts != null) for (rel in conf.scripts) {
 					queue.push({kind:0, rel:rel});
 				}
+				var suffix = "";// "?t=" + Date.now().getTime();
 				function loadNextResource():Void {
 					var pair = queue.shift();
 					var rel = pair.rel;
@@ -81,7 +82,8 @@ class PluginManager {
 							script.onerror = function(e:ErrorEvent) {
 								state.finish(e.error);
 							};
-							script.src = '$dir/$name/$rel';
+							script.src = '$dir/$name/$rel' + suffix;
+							state.elements.push(script);
 							Main.document.head.appendChild(script);
 						};
 						case 1: {
@@ -96,7 +98,8 @@ class PluginManager {
 								state.finish(e.error);
 							}
 							style.rel = "stylesheet";
-							style.href = '$dir/$name/$rel';
+							style.href = '$dir/$name/$rel' + suffix;
+							state.elements.push(style);
 							Main.document.head.appendChild(style);
 						};
 					}

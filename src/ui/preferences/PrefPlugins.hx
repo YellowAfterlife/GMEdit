@@ -36,6 +36,9 @@ class PrefPlugins {
 				p.destroy();
 				PluginManager.load(p.name, function(e) {
 					p = PluginManager.pluginMap[p.name];
+					if (p.data.init != null) {
+						p.data.init(p);
+					}
 					syncLabelState();
 				});
 			}));
