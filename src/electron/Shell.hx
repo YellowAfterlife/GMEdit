@@ -6,6 +6,9 @@ import js.lib.Error;
  * @author YellowAfterlife
  */
 @:native("Electron_Shell") extern class Shell {
+	/**
+	 * NB! Fails on non-URLs on Linux
+	 */
 	public static function openExternal(url:String, ?opt:Dynamic, ?cb:Error->Void):Bool;
 	/*
 	// https://github.com/electron/electron/issues/4349

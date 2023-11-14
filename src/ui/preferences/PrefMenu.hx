@@ -23,7 +23,7 @@ class PrefMenu {
 			var gr = addGroup(out, "Other useful things"), el:Element;
 			//
 			el = addButton(gr, "GML dialects directory", function() {
-				Shell.openExternal(FileWrap.userPath + "/api");
+				Shell.openItem(FileWrap.userPath + "/api");
 			});
 			addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GML-dialects");
 			//
