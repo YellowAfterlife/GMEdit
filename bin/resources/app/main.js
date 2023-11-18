@@ -68,7 +68,13 @@ function createWindow(first) {
 		show: !showOnceReady,
 		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
 	})
-	if (!isMac) wnd.removeMenu()
+	if (!isMac) {
+		wnd.removeMenu()
+	} else {
+		electron.globalShortcut.register('Command+Q', () => {
+			app.quit();
+		})
+	}
 	activeWindows.push(wnd)
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
