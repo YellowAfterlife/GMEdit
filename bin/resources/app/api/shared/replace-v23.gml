@@ -73,8 +73,8 @@ string_ext(format:string, arg_array:array)->string
 string_trim_start(str:string)->string
 string_trim_end(str:string)->string
 string_trim(str:string)->string
-string_starts_with(str:string,substr:string)->string
-string_ends_with(str:string,substr:string)->string
+string_starts_with(str:string,substr:string)->bool
+string_ends_with(str:string,substr:string)->bool
 string_split(str:string, delim:string, ?remove_empty:bool, ?max_splits:int)->string[]
 string_split_ext(str:string, delim_array:string[], ?remove_empty:bool, ?max_splits:int)->string[]
 string_join(delim:string, ...values)->string

@@ -71,6 +71,7 @@ function createWindow(first) {
 	if (!isMac) {
 		wnd.removeMenu()
 	} else {
+		// https://memorytin.com/2018/04/24/electron-js-handle-cmdq-in-os-x/
 		electron.globalShortcut.register('Command+Q', () => {
 			app.quit();
 		})

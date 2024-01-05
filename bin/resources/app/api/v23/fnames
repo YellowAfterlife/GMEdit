@@ -65,9 +65,10 @@ GM_version#
 GM_runtime_version#
 GM_project_filename#
 GM_build_type#
-_GM_LINE_#
-_GM_FILE_#
-_GM_FUNCTION_#
+_GMLINE_#
+_GMFILE_#
+_GMFUNCTION_#
+nameof(name)
 // section 2.2
 
 is_real(val)
@@ -85,6 +86,7 @@ is_struct(val)
 is_method(val)
 is_instanceof(struct, constructor_name)
 is_callable(val)
+is_handle(val)
 static_get(struct_or_func_name)
 static_set(struct, struct)
 typeof(val)
@@ -504,6 +506,7 @@ game_load(filename)
 game_save(filename)
 game_save_buffer(buffer)
 game_load_buffer(buffer)
+game_change(working_directory,launch_parameters)
 
 scheduler_resolution_set(milliseconds)
 scheduler_resolution_get()
@@ -722,12 +725,32 @@ error_occurred&
 error_last&
 show_debug_message(val_or_format,val0,val1,...)
 show_debug_message_ext(format,array_value)
-show_debug_overlay(enable)
+show_debug_overlay(enable,[minimised],[scale],[alpha],...)
+is_debug_overlay_open()
+show_debug_log(enable)
 debug_mode*
 debug_event(str,...)
 debug_get_callstack([maxdepth],...)
 alarm_get(index)
 alarm_set(index,count)
+dbg_view(name,visible,[x],[y],[width],[height],...)
+dbg_section(name)
+dbg_view_delete(viewPTR)
+dbg_section_delete(sectionPTR)
+dbg_slider(dbgRef,[minimum],[maximum],[label],...)
+dbg_slider_int(dbgRef,[minimum],[maximum],[label],...)
+dbg_drop_down(dbgRef,specifierOrArrayValues,[labelOrArrayLabels],[label]...)
+dbg_watch(dbgRef,[label],...)
+dbg_text(dbgRefOrString)
+dbg_sprite(dbgRefSprite,dbgRefSpriteIndex,[label],...)
+dbg_text_input(dbgRef,[label],...)
+dbg_checkbox(dbgRef,[label],...)
+dbg_colour(dbgRef,[label],...)£
+dbg_color(dbgRef,[label],...)$
+dbg_button(label,dbgRef,[width],[height]...)
+dbg_same_line()
+ref_create(dbgrefOrStruct,dbgrefOrName,[index],...)
+
 
 font_texture_page_size
 
@@ -1236,6 +1259,10 @@ window_get_height()
 window_mouse_get_x()
 window_mouse_get_y()
 window_mouse_set(x,y)
+window_mouse_set_locked(enable)
+window_mouse_get_locked()
+window_mouse_get_delta_x()
+window_mouse_get_delta_y()
 
 // section 5.10
 
@@ -1594,6 +1621,8 @@ font_get_sdf_enabled(ind)!
 font_sdf_spread(ind,spread)!
 font_get_sdf_spread(ind)!
 
+font_enable_effects(ind,enable, [params])!
+
 // section 9.5
 
 path_set_kind(ind,kind)
@@ -1907,6 +1936,7 @@ ds_grid_read(id,str,...)
 ds_grid_sort(id,column,ascending)
 ds_grid_set(id,x,y,value)
 ds_grid_get(id,x,y)
+ds_grid_to_mp_grid(src,dest,[func])
 
 //////////////
 // Chapter 412
@@ -1916,6 +1946,8 @@ ds_grid_get(id,x,y)
 
 effect_create_below(kind,x,y,size,col)
 effect_create_above(kind,x,y,size,col)
+effect_create_layer(layer_id_or_name,kind,x,y,size,col)
+effect_create_depth(depth,kind,x,y,size,col)
 effect_clear()
 ef_explosion#
 ef_ring#
@@ -1938,7 +1970,10 @@ part_type_exists(ind)
 part_type_clear(ind)
 part_type_shape(ind,shape)
 part_type_sprite(ind,sprite,animat,stretch,random)
+part_type_subimage(ind,subimg)
 part_type_size(ind,size_min,size_max,size_incr,size_wiggle)
+part_type_size_x(ind,size_min_x,size_max_x,size_incr_x,size_wiggle_y)
+part_type_size_y(ind,size_min_y,size_max_y,size_incr_y,size_wiggle_y)
 part_type_scale(ind,xscale,yscale)
 part_type_orientation(ind,ang_min,ang_max,ang_incr,ang_wiggle,ang_relative)
 part_type_life(ind,life_min,life_max)
@@ -1988,17 +2023,22 @@ part_system_exists(ind)
 part_system_clear(ind)
 part_system_draw_order(ind,oldtonew)
 part_system_depth(ind,depth)
+part_system_color(ind,color,alpha)$
+part_system_colour(ind,colour,alpha)£
 part_system_position(ind,x,y)
+part_system_angle(ind,angle)
 part_system_automatic_update(ind,automatic)
 part_system_automatic_draw(ind,draw)
 part_system_update(ind)
 part_system_drawit(ind)
 part_system_get_layer(ind)
 part_system_layer(ind,layer)
+part_system_global_space(ind,enable)
 
 part_particles_create(ind,x,y,parttype,number)
 part_particles_create_colour(ind,x,y,parttype,colour,number)£
 part_particles_create_color(ind,x,y,parttype,color,number)$
+part_particles_burst(ind,x,y,partsys)
 part_particles_clear(ind)
 part_particles_count(ind)
 
@@ -2007,11 +2047,15 @@ part_particles_count(ind)
 part_emitter_create(ps)
 part_emitter_destroy(ps,ind)
 part_emitter_destroy_all(ps)
+part_emitter_enable(ps,ind,enable)
 part_emitter_exists(ps,ind)
 part_emitter_clear(ps,ind)
 part_emitter_region(ps,ind,xmin,xmax,ymin,ymax,shape,distribution)
 part_emitter_burst(ps,ind,parttype,number)
 part_emitter_stream(ps,ind,parttype,number)
+part_emitter_delay(ps,ind,delay_min,delay_max,delay_unit)
+part_emitter_interval(ps,ind,interval_min,interval_max,inerval_unit)
+part_emitter_relative(ps,ind,enable)
 ps_distr_linear#
 ps_distr_gaussian#
 ps_distr_invgaussian#
@@ -2198,6 +2242,7 @@ gpu_set_blendenable(enable)
 gpu_set_ztestenable(enable)
 gpu_set_zfunc(cmp_func)
 gpu_set_zwriteenable(enable)
+gpu_set_depth(depth)
 //gpu_set_lightingenable(enable)
 gpu_set_fog(enable,col,start,end,...)
 gpu_set_cullmode(cullmode)
@@ -2234,6 +2279,7 @@ gpu_get_blendenable()
 gpu_get_ztestenable()
 gpu_get_zfunc()
 gpu_get_zwriteenable()
+gpu_get_depth()
 //gpu_get_lightingenable()
 gpu_get_fog()
 gpu_get_cullmode()
@@ -2421,6 +2467,10 @@ json_decode(string)
 json_stringify(val, [prettify])
 json_parse(json)
 zip_unzip(file, destPath)
+zip_unzip_async(file, destPath)
+zip_create()
+zip_add_file(zip_object, dest, src)
+zip_save(zip_object, path)
 
 load_csv(filename)
 
@@ -2803,6 +2853,8 @@ network_config_enable_reliable_udp#
 network_config_disable_reliable_udp#
 network_config_avoid_time_wait#
 network_config_websocket_protocol#
+network_config_enable_multicast#
+network_config_disable_multicast#
 
 network_connect_none#
 network_connect_blocking#
@@ -3885,20 +3937,35 @@ gain?
 effects?
 
 ??AudioEffect
+attack?
 bypass?
 cutoff?
 damp?
+eq1?#*
+eq2?#*
+eq3?#*
+eq4?#*
 factor?
 feedback?
+freq?
 gain?
+hicut?#*
+hishelf?#*
+ingain?
 intensity?
+locut?#*
+loshelf?#*
 mix?
 offset?
+outgain?
 q?
 rate?
+ratio?
+release?
 resolution?
 shape?
 size?
+threshold?
 time?
 type?#*
 
@@ -3912,6 +3979,11 @@ HPF2?#*
 LPF2?#*
 Reverb1?#*
 Tremolo?#*
+PeakEQ?#*
+HiShelf?#*
+LoShelf?#*
+EQ?#*
+Compressor?#*
 
 AudioLFOType#*
 
