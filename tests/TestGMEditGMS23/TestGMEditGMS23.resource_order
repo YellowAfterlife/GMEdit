@@ -102,6 +102,7 @@
     {"name":"coro_self","order":4,"path":"scripts/coro_self/coro_self.yy",},
     {"name":"coro_method","order":5,"path":"scripts/coro_method/coro_method.yy",},
     {"name":"coro_wait","order":2,"path":"scripts/coro_wait/coro_wait.yy",},
+    {"name":"v_callable_to_function","path":"scripts/v_callable_to_function/v_callable_to_function.yy","order":10,},
     {"name":"v_constructor_implicit_types","order":4,"path":"scripts/v_constructor_implicit_types/v_constructor_implicit_types.yy",},
     {"name":"v_struct_constraint","order":6,"path":"scripts/v_struct_constraint/v_struct_constraint.yy",},
     {"name":"v_arrow_funcs","order":2,"path":"scripts/v_arrow_funcs/v_arrow_funcs.yy",},

@@ -133,6 +133,14 @@ class GmlTypeCanCastTo {
 						var nk = GmlAPI.gmlKind[n1];
 						if (nk != null && nk.startsWith("asset.")) return true;
 					case KFunction:
+						if (k1 == KCustom) {
+							return AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
+								var selfCall = ns.instTypes[""];
+								if (selfCall != null) {
+									return canCastTo(selfCall, to, tpl, imp);
+								} else return false;
+							});
+						}
 						if (k1 != KFunction) return false;
 						var i = p2.length;
 						if (i == 0 || p1.length == 0) return true; // any-functions

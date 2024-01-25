@@ -68,6 +68,7 @@
     {"id":{"name":"v_doc_template","path":"scripts/v_doc_template/v_doc_template.yy",},},
     {"id":{"name":"v_doc_implements","path":"scripts/v_doc_implements/v_doc_implements.yy",},},
     {"id":{"name":"tl_test","path":"timelines/tl_test/tl_test.yy",},},
+    {"id":{"name":"v_callable_to_function","path":"scripts/v_callable_to_function/v_callable_to_function.yy",},"order":0,},
     {"id":{"name":"v_imp_func_arg_types","path":"scripts/v_imp_func_arg_types/v_imp_func_arg_types.yy",},},
     {"id":{"name":"me too","path":"notes/me too/me too.yy",},},
     {"id":{"name":"coro_arr_method","path":"scripts/coro_arr_method/coro_arr_method.yy",},},
