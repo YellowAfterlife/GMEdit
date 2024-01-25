@@ -23,7 +23,10 @@
 
       const ogSetText = aceEditor.tooltipManager.ttip.setText;
       aceEditor.tooltipManager.ttip.setText = function() {
-        if (!state.enabled || (state.strictLatest && $gmedit['gml.Project'].current.version.name != 'v23')) {
+        if (!state.enabled
+          || (state.strictLatest && $gmedit['gml.Project'].current.version.name != 'v23')
+          || state.keys == null
+        ) {
           ogSetText.apply(this, arguments);
           return;
         }
