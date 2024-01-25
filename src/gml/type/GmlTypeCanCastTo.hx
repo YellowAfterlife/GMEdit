@@ -150,6 +150,8 @@ class GmlTypeCanCastTo {
 						return true;
 					case KCustomKeyArray if (k1 == KArray):
 						if (p1[0].isAny()) return true;
+					case KCustomKeyStruct if (k1 == KStruct): return true;
+					case KStruct if (k1 == KCustomKeyStruct): return true;
 					default:
 				}
 				
@@ -200,6 +202,9 @@ class GmlTypeCanCastTo {
 			case [TAnon(a1), TInst(_, [TInst(n2, _, KCustom)], KAnyFieldsOf)]: {
 				return canCastAnonToAnyFieldsOf(a1, n2);
 			};
+			case [TAnon(a1), TInst(_, _, KCustomKeyStruct)]: {
+				return a1.fields.isEmpty();
+			}
 			case [TAnon(a1), TAnon(a2)]: {
 				var ok = true;
 				NativeObject.forField(a2.fields, function(fd:String) {

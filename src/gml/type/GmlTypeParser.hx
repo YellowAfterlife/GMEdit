@@ -52,6 +52,8 @@ class GmlTypeParser {
 		r["ckarray"] = KCustomKeyArray;
 		r["CustomKeyArray"] = KCustomKeyArray;
 		r["tuple"] = KTuple;
+		r["ckstruct"] = KCustomKeyStruct;
+		r["CustomKeyStruct"] = KCustomKeyStruct;
 		//
 		r["object"] = KObject;
 		r["instance"] = KObject;

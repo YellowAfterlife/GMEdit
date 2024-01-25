@@ -24,6 +24,9 @@ fe_name ds_priority = id.priority;
 typedef ckarray;
 typedef CustomKeyArray;
 
+typedef ckstruct;
+typedef CustomKeyStruct;
+
 // tuple<int, string> accepts [1, "2"]
 typedef tuple;
 // enum_tuple<my_enum> uses values and metadata from my_enum

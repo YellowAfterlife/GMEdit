@@ -83,11 +83,15 @@ class GmlLinterArrayAccess {
 				self.skip();
 				
 				rc(self.readExpr(newDepth));
-				self.checkTypeCast(self.expr.currType, GmlTypeDef.string, "struct key", self.expr.currValue);
-				
-				if (true) { // todo: validate that object is struct-like
-					currType = currType.unwrapParam(0);
-				} else currType = null;
+				if (currType.getKind() == KCustomKeyStruct) {
+					self.checkTypeCast(self.expr.currType, currType.unwrapParam(0), "struct key", self.expr.currValue);
+					currType = currType.unwrapParam(1);
+				} else {
+					self.checkTypeCast(self.expr.currType, GmlTypeDef.string, "struct key", self.expr.currValue);
+					if (currType.getKind() == KStruct) { // todo: validate that object is struct-like
+						currType = currType.unwrapParam(0);
+					} else currType = null;
+				}
 			};
 			case KHash: { // grid[#x, y]
 				self.skip();
