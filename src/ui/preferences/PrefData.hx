@@ -200,16 +200,16 @@ enum abstract PrefMatchMode(Int) from Int to Int {
 		"Per-section (`icl` -> `instance_create_layer`)",
 	];
 }
-@:enum abstract PrefTooltipKind(Int) from Int to Int {
+enum abstract PrefTooltipKind(Int) from Int to Int {
 	var None = 0;
 	var Custom = 1;
 }
-@:enum abstract PrefFileChangeAction(Int) from Int to Int {
+enum abstract PrefFileChangeAction(Int) from Int to Int {
 	var Nothing = 0;
 	var Ask = 1;
 	var Reload = 2;
 }
-@:enum abstract PrefGMLive(Int) from Int to Int {
+enum abstract PrefGMLive(Int) from Int to Int {
 	var Nowhere = 0;
 	var ItemsOnly = 1;
 	var Everywhere = 2;

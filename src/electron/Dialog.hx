@@ -271,7 +271,7 @@ from DialogFilterImpl to DialogFilterImpl {
 private typedef DialogFilterImpl = {name:String, extensions:Array<String>};
 
 @:build(tools.AutoEnum.build("nq"))
-@:enum abstract DialogOpenFeature(String) from String to String {
+enum abstract DialogOpenFeature(String) from String to String {
 	var openFile;
 	var openDirectory;
 	var multiSelections;
@@ -328,7 +328,7 @@ typedef DialogMessageOptions = {
 	?noLink:Bool,
 };
 @:build(tools.AutoEnum.build("lq"))
-@:enum abstract DialogMessageType(String) from String to String {
+enum abstract DialogMessageType(String) from String to String {
 	var None;
 	/** On Windows, "question" displays the same icon as "info" */
 	var Info;

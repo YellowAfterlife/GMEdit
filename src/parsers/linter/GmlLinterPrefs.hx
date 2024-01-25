@@ -31,6 +31,7 @@ package parsers.linter;
 		implicitNullableCasts: false,
 		implicitBoolIntCasts: true,
 		warnAboutRedundantCasts: false,
+		// todo: warn about mixing exit and return X; warn about not all paths returning
 		strictScriptSelf: false,
 		
 		liveCheckOnEnter: false,

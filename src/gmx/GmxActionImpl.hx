@@ -238,19 +238,19 @@ typedef GmxActionData = {
 	?who:String, ?rel:Bool, ?not:Bool,
 	?args:Array<GmxActionArg>,
 };
-@:enum abstract GmxActionKind(Int) {
+enum abstract GmxActionKind(Int) {
 	var Normal = 0;
 	var CubOpen = 1;
 	var CubClose = 2;
 	var Code = 7;
 }
-@:enum abstract GmxActionExeType(Int) {
+enum abstract GmxActionExeType(Int) {
 	var None = 0;
 	var Func = 1;
 	var Code = 2;
 }
 typedef GmxActionArg = { ?kind:Int, ?s:String };
-@:enum abstract GmxActionArgKind(Int) from Int to Int {
+enum abstract GmxActionArgKind(Int) from Int to Int {
 	var Snip = 0;
 	var Text = 1;
 	var Script = 9;
