@@ -115,8 +115,8 @@ class KGml extends KCode {
 		}
 		//
 		var ctx = nav.ctx;
-		if (ctx != null) {
-			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
+		if (ctx != null || nav.ctxRx != null) {
+			var rxCtx = nav.ctxRx ?? new RegExp(NativeString.escapeRx(ctx));
 			var rxEof = new RegExp("^(#define|#event|#moment|#target)");
 			i = row;
 			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;

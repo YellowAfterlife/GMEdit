@@ -125,8 +125,20 @@
 							label += tailSep + tail;
 							title += "\n" + tail;
 						}
+						var rx;
+						if (mt[2]) {
+							rx = new RegExp("\\b" + name + "\\b\\s*=\\s*function\\b");
+						} else {
+							rx = new RegExp("\\bfunction\\s+" + name + "\\b");
+						}
 						
-						var nav = { def: def, ctx: name, ctxAfter: true, showAtTop: showAtTop };
+						var nav = {
+							def: def,
+							ctx: name,
+							ctxRx: rx,
+							ctxAfter: true,
+							showAtTop: showAtTop
+						};
 						ctx.mark(label, title, nav);
 					} else if (mt = rxPush.exec(line)) {
 						var nav = { def: def, ctx: mt[1], ctxAfter: true, showAtTop: showAtTop };

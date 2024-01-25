@@ -77,6 +77,7 @@
     {"name":"obj_misc_completion","order":7,"path":"objects/obj_misc_completion/obj_misc_completion.yy",},
     {"name":"v_constructor_implements","order":3,"path":"scripts/v_constructor_implements/v_constructor_implements.yy",},
     {"name":"v_func_arg_values","order":1,"path":"scripts/v_func_arg_values/v_func_arg_values.yy",},
+    {"name":"v_outlineview_nav","path":"scripts/v_outlineview_nav/v_outlineview_nav.yy","order":1,},
     {"name":"obj_rename_event","order":10,"path":"objects/obj_rename_event/obj_rename_event.yy",},
     {"name":"obj_variable_overrides","order":9,"path":"objects/obj_variable_overrides/obj_variable_overrides.yy",},
     {"name":"v_typedef","order":6,"path":"scripts/v_typedef/v_typedef.yy",},

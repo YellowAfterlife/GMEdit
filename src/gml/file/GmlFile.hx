@@ -314,6 +314,8 @@ typedef GmlFileNav = {
 	?pos:AcePos,
 	/** code to scroll to */
 	?ctx:String,
+	/** alt. */
+	?ctxRx:RegExp,
 	/** if set, looks for ctx after pos rather than ctx offset by pos */
 	?ctxAfter:Bool,
 	/** file kind override */

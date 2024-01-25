@@ -114,6 +114,7 @@
     {"id":{"name":"obj_not_self_object","path":"objects/obj_not_self_object/obj_not_self_object.yy",},},
     {"id":{"name":"v_comparisons","path":"scripts/v_comparisons/v_comparisons.yy",},},
     {"id":{"name":"v_ternary_ident","path":"scripts/v_ternary_ident/v_ternary_ident.yy",},},
+    {"id":{"name":"v_outlineview_nav","path":"scripts/v_outlineview_nav/v_outlineview_nav.yy",},"order":0,},
     {"id":{"name":"coro_array_map","path":"scripts/coro_array_map/coro_array_map.yy",},},
     {"id":{"name":"obj_user_event_init","path":"objects/obj_user_event_init/obj_user_event_init.yy",},},
     {"id":{"name":"v_buffer_read","path":"scripts/v_buffer_read/v_buffer_read.yy",},},
