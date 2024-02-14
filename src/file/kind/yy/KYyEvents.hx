@@ -35,13 +35,17 @@ class KYyEvents extends file.kind.gml.KGmlEvents {
 	override public function postproc(editor:EditCode, code:String):String {
 		code = super.postproc(editor, code);
 		if (code == null) return null;
-		var obj:YyObject = FileWrap.readYyFileSync(editor.file.path);
+		var origText = FileWrap.readTextFileSync(editor.file.path);
+		var obj:YyObject = YyJson.parse(origText);
+		var oldText = YyJson.stringify(obj, Project.current.yyExtJson);
 		if (!obj.setCode(editor.file.path, code)) {
 			editor.setSaveError("Can't update YY:\n" + YyObject.errorText);
 			return null;
 		}
-		//
-		return YyJson.stringify(obj, Project.current.yyExtJson);
+		// if only field order changed, use original text:
+		var newText = YyJson.stringify(obj, Project.current.yyExtJson);
+		if (newText == oldText) return origText;
+		return newText;
 	}
 	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		return runSync(path, content, sync);
