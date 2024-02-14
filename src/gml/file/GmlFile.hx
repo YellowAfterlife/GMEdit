@@ -208,18 +208,19 @@ class GmlFile {
 		if (q != null) q.getUndoManager().markClean();
 	}
 	//
-	public function savePost(?out:String) {
-		if (path != null) {
-			syncTime();
-			markClean();
-		}
+	public function savePost_shared(out:String, isReload:Bool) {
 		// re-index if needed:
-		if (path != null && out != null && codeEditor != null && codeEditor.kind.indexOnSave) {
+		if (path != null && out != null
+			&& codeEditor != null && (isReload || codeEditor.kind.indexOnSave)
+		) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
 				kind.index(path, out, data.main, true);
+				
 				if (GmlAPI.version.config.indexingMode == Local) liveApply();
+				
 				codeEditor.session.gmlScopes.updateOnSave();
+				
 				var next = GmlSeekData.map[path];
 				if (codeEditor.locals != next.locals) {
 					codeEditor.locals = next.locals;
@@ -235,6 +236,13 @@ class GmlFile {
 			var check = inline parsers.linter.GmlLinter.getOption((q)->q.onSave);
 			if (check) parsers.linter.GmlLinter.runFor(codeEditor);
 		}
+	}
+	public function savePost(?out:String) {
+		if (path != null) {
+			syncTime();
+			markClean();
+		}
+		savePost_shared(out, false);
 		// notify plugins:
 		PluginEvents.fileSave({file:this, code:out});
 	}

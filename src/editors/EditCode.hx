@@ -214,7 +214,8 @@ class EditCode extends Editor {
 		}
 		if (status > 0) try {
 			var prev = file.code;
-			file.load();
+			var newContent = file.readContent();
+			file.load(newContent);
 			//
 			var rxr = new RegExp("\\r", "g");
 			var check_0 = NativeString.trimRight(prev);
@@ -225,24 +226,9 @@ class EditCode extends Editor {
 			function finishChange():Void {
 				session.setValue(file.code);
 				plugins.PluginEvents.fileReload({file:file});
-				var path = file.path;
-				if (path != null) {
-					var data = GmlSeekData.map[path];
-					if (data != null) {
-						kind.index(path, file.readContent(), data.main, true);
-						if (GmlAPI.version.config.indexingMode == Local) file.liveApply();
-						session.gmlScopes.updateOnSave();
-						var next = GmlSeekData.map[path];
-						if (locals != locals) {
-							locals = locals;
-							if (GmlFile.current == file) session.bgTokenizer.start(0);
-						}
-					}
-				}
-				if (Std.is(kind, KGml) && (cast kind:KGml).canSyntaxCheck) {
-					var check = inline parsers.linter.GmlLinter.getOption((q)->q.onLoad);
-					if (check) parsers.linter.GmlLinter.runFor(this);
-				}
+				file.savePost_shared(newContent, true);
+				// TODO: need to also run this if we opened a resource that had changes
+				// since we have last looked at it.
 			}
 			//
 			var dlg:Int = 0;
