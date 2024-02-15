@@ -101,13 +101,19 @@ class YyObjectProperties {
 			}
 			if (valid) {
 				var res = Project.current.yyResources[v22 ? val : vr.name];
-				if (res != null) {
-					if (v22) {
+				if (!v22) {
+					if (res != null) {
+						out += res.id.name + ";";
+					} else {
+						out += vr.name + ";";
+					}
+				} else {
+					if (res != null) {
 						out += res.Value.resourceName + ";";
 					} else {
-						out += res.id.name + ";";
+						out += '"$val"; // amiss'; // puts a GUID in quotes
 					}
-				} else out += '"$val"; // amiss';
+				}
 			} else out += "-1;";
 		}
 		inline function addPrim(key:String, val:Any):Void {
