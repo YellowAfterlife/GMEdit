@@ -78,9 +78,9 @@ string_ends_with(str:string,substr:string)->bool
 string_split(str:string, delim:string, ?remove_empty:bool, ?max_splits:int)->string[]
 string_split_ext(str:string, delim_array:string[], ?remove_empty:bool, ?max_splits:int)->string[]
 string_join(delim:string, ...values)->string
-string_join_ext(delim:string, val_array:array)->string
+string_join_ext(delim:string, val_array:array, ?offset:int, ?length:int)->string
 string_concat(...values)->string
-string_concat_ext(val_array:array)->string
+string_concat_ext(val_array:array, ?offset:int, ?length:int)->string
 string_foreach(str:string,func:function<char:string; pos:int; void>, ?pos:int, ?length:int)->void
 
 #endregion
@@ -134,6 +134,9 @@ sequence_instance@ //TODO
 
 #region 6.3
 audio_system()&->void
+audio_play_sound(soundid:sound,priority:int,loops:bool,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
+audio_play_sound_on(emitterid:audio_emitter,soundid:sound,loops:bool,priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
+audio_play_sound_at(soundid:sound,x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)-
 audio_play_sound_ext(params:any_fields_of<audio_play_sound_ext_t>)->sound_instance
 #endregion
 
@@ -157,7 +160,7 @@ font_texture_page_size:int
 
 #region 9.6
 
-script_execute_ext(ind:script,args:any[],offset:int=0,num_args:int=args_length-offset)->any
+script_execute_ext(ind:script,?args:any[],offset:int=0,num_args:int=args_length-offset)->any
 
 #endregion
 
@@ -211,7 +214,7 @@ os_gxgames#:os_type
 
 event_data*:ds_map<string,any>
 
-json_stringify<T:struct|array|number|string|undefined>(val:T)->string
+json_stringify<T:struct|array|number|string|undefined>(val:T,?prettify:bool)->string
 json_parse(json:string)->any
 
 network_socket_ws#:network_type

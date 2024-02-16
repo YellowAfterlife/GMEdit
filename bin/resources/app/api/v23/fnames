@@ -265,9 +265,9 @@ string_ends_with(str,substr)
 string_split(str,delim,[remove_empty],[max_splits])
 string_split_ext(str,delim_array,[remove_empty],[max_splits])
 string_join(delim,arg0,arg1,...)
-string_join_ext(delim,val_array)
+string_join_ext(delim,val_array,[offset],[length])
 string_concat(arg0,arg1,arg2,...)
-string_concat_ext(val_array)
+string_concat_ext(val_array,[offset],[length])
 string_foreach(str,func,[pos],[length])
 
 clipboard_has_text()
@@ -749,6 +749,7 @@ dbg_colour(dbgRef,[label],...)£
 dbg_color(dbgRef,[label],...)$
 dbg_button(label,dbgRef,[width],[height]...)
 dbg_same_line()
+dbg_add_font_glyphs( filenameTTF,[size],[fontRange]... )
 ref_create(dbgrefOrStruct,dbgrefOrName,[index],...)
 
 
@@ -1505,6 +1506,7 @@ texturegroup_get_textures(groupname)
 texturegroup_get_sprites(groupname)
 texturegroup_get_fonts(groupname)
 texturegroup_get_tilesets(groupname)
+texturegroup_get_names()
 
 texturegroup_load(groupname,[prefetch])
 texturegroup_unload(groupname)
@@ -1577,6 +1579,7 @@ object_is_ancestor(ind_child,ind_parent)
 
 room_exists(ind)
 room_get_name(ind)
+room_get_info(ind,[views],[instances],[layers],[layer_elements],[tilemap_data])
 
 //////////////
 // Chapter 409
@@ -1648,7 +1651,7 @@ path_shift(ind,xshift,yshift)
 // section 9.6
 
 script_execute(ind,arg0,arg1,...)
-script_execute_ext(ind,array,[offset=0],[num_args=array_length(array)-offset],...)
+script_execute_ext(ind,[array],[offset=0],[num_args=array_length(array)-offset],...)
 method_call(method,array,[offset=0],[num_args=array_length(array)-offset],...)
 
 // section 9.8
@@ -1681,6 +1684,7 @@ room_set_camera(ind,vind,camera)
 
 asset_get_index(name)
 asset_get_type(name)
+asset_get_ids(asset_type)
 
 asset_object#
 asset_unknown#
@@ -1756,6 +1760,7 @@ game_project_name*
 game_save_id*
 working_directory*
 temp_directory*
+cache_directory*
 program_directory*
 
 // section 10.3
@@ -2015,6 +2020,7 @@ pt_shape_snow#
 
 // section 12.2
 particle_get_info(ind)
+particle_exists(ind)
 
 part_system_create([partsys])
 part_system_create_layer(layer,persistent,[partsys])
@@ -2034,6 +2040,7 @@ part_system_drawit(ind)
 part_system_get_layer(ind)
 part_system_layer(ind,layer)
 part_system_global_space(ind,enable)
+part_system_get_info(ind)
 
 part_particles_create(ind,x,y,parttype,number)
 part_particles_create_colour(ind,x,y,parttype,colour,number)£
@@ -2196,6 +2203,7 @@ display_set_timing_method(method)
 display_get_timing_method()
 tm_sleep#
 tm_countvsyncs#
+tm_systemtiming#
 
 display_set_sleep_margin(milliseconds)
 display_get_sleep_margin()
@@ -2365,9 +2373,9 @@ achievement_show(type,val)&
 achievement_get_info(userid)&
 
 
-cloud_file_save(filename, description)
-cloud_string_save(data, description)
-cloud_synchronise()
+cloud_file_save(filename, description)&
+cloud_string_save(data, description)&
+cloud_synchronise()&
 
 
 device_get_tilt_x()
@@ -2881,6 +2889,7 @@ buffer_load(filename)
 buffer_load_ext(buffer, filename, offset)
 buffer_load_partial(buffer, filename, src_offset, src_len, dest_offset)
 buffer_copy(src_buffer, src_offset, size, dest_buffer, dest_offset)
+buffer_copy_stride(src_buffer, src_offset, src_size, src_stride, src_count, dest_buffer, dest_offset, dest_stride)
 buffer_fill(buffer, offset, type, value, size)
 buffer_get_size(buffer)
 buffer_tell(buffer)
@@ -3025,6 +3034,7 @@ vertex_format_add_normal()
 vertex_format_add_texcoord()
 vertex_format_add_textcoord()&
 vertex_format_add_custom(type,usage)
+vertex_format_get_info(format_id)
 
 vertex_usage_position#
 vertex_usage_colour#£
@@ -3073,6 +3083,8 @@ vertex_get_number(vbuff)
 vertex_get_buffer_size(vbuff)
 vertex_create_buffer_from_buffer(src_buffer,format)
 vertex_create_buffer_from_buffer_ext(src_buffer,format,src_offset,num_vertices)
+vertex_update_buffer_from_buffer(dest_vbuff,dest_offset,src_buffer,[src_offset],[src_size])
+vertex_update_buffer_from_vertex(dest_vbuff,dest_vert,src_vbuff,[src_vert],[src_vert_num])
 
 push_local_notification(fire_time, title, message, data)&
 push_get_first_local_notification( ds_map )&
@@ -3701,6 +3713,13 @@ objectIndex?
 // Text track
 ??TextTrack
 text?
+wrap?
+alignmentV?
+alignmentH?
+effectsEnabled?
+glowEnabled?
+outlineEnabled?
+dropShadowEnabled?
 
 // Message event
 ??MessageEvent
@@ -3754,6 +3773,30 @@ soundIndex?
 instanceID?
 sequenceID?
 sequence?
+frameSizeX?
+frameSizeY?
+characterSpacing?
+lineSpacing?
+paragraphSpacing?
+thickness?
+coreColor?$
+coreColour?£
+glowStart?
+glowEnd?
+glowColor?$
+glowColour?£
+outlineDist?
+outlineColor?$
+outlineColour?£
+shadowSoftness?
+shadowOffsetX?
+shadowOffsetY?
+shadowColor?$
+shadowColour?£
+effectsEnabled?
+glowEnabled?
+outlineEnabled?
+dropShadowEnabled?
 track?
 parent?
 activeTracks?
@@ -3927,7 +3970,9 @@ player_type*@^rollback
 player_user_id*@^rollback
 
 wallpaper_set_config(config)^rollback
+wallpaper_set_subscriptions(subscriptions)^live_wallpaper_subscription
 wallpaper_config^rollback
+wallpaper_subscription_data^live_wallpaper_subscription
 
 audio_bus_main#
 
