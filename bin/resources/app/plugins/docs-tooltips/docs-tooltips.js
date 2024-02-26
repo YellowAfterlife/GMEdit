@@ -34,8 +34,9 @@
         const text = arguments[0];
         const returnValue = text.split('➜')[1];
 
-        const foundItem = state.keys.find(item => item.name === text.split('(')[0]);
-        if (foundItem && foundItem.topics.length === 1) {
+        let foundItem = Object.keys(state.keys).find(item => item === text.split('(')[0]);
+        if (foundItem) foundItem = state.keys[foundItem];
+        if (foundItem && foundItem.pages.length === 1) {
           const key = foundItem;
           const html = createTooltipHTML(key, returnValue);
 
@@ -68,17 +69,17 @@
     fetch('https://raw.githubusercontent.com/christopherwk210/gm-bot/master/static/docs-index.json')
       .then(res => res.json())
       .then(data => {
-        state.keys = data.keys;
-        Preferences.current.docs_tooltips.keys = data.keys;
+        state.keys = data;
+        Preferences.current.docs_tooltips.keys = data;
         Preferences.save();
       })
       .catch(() => console.error('docs-tooltips: failed to fetch documentation'));
   }
   
   function createTooltipHTML(key, returnValue) {
-    const topic = key.topics[0];
+    const topic = key.pages[0];
   
-    const title = key.name === topic.name ? (topic.syntax || key.name) : `${key.name} - ${topic.name}`;
+    const title = key.name;
   
     let description = `<p>${topic.blurb}</p>`;
     if (topic.args && topic.args.length) {
