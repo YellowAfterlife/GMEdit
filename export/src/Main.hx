@@ -42,6 +42,27 @@ class Main {
 		var e = p.exitCode(true);
 		Sys.stderr().writeInput(p.stderr);
 	}
+	static function runButler(itchName:String, args:Array<String>) {
+		inline function isYeah(c:Int) {
+			return c == "y".code || c == "Y".code;
+		}
+		Sys.println('Want to run Butler for "$itchName" with ' + Json.stringify(args));
+		Sys.print("Do that (y/n)?");
+		var c = Sys.getChar(true);
+		Sys.println("");
+		if (!isYeah(c)) return;
+		Sys.println('Uploading "$itchName"...');
+		while (true) {
+			var e = Sys.command(config.path_butler, args);
+			Sys.println('exitCode: $e');
+			if (e == 0) return;
+			Sys.print("Retry (y/n)?");
+			c = Sys.getChar(true);
+			Sys.println("");
+			if (!isYeah(c)) return;
+		}
+		//Sys.stderr().writeInput(p.stderr);
+	}
 	static function pack(mode:PackMode) {
 		var cwd = Sys.getCwd();
 		var tempDefault = cwd + "temp/default";
@@ -102,8 +123,7 @@ class Main {
 				var itchName = config.itch_path + ":Editor-";
 				if (mode == Beta) itchName += "Beta-";
 				itchName += "App-Only";
-				Sys.println('Uploading $itchName...');
-				Sys.command(config.path_butler, ["push",
+				runButler(itchName, ["push",
 					appOnly, itchName, "--userversion", version,
 				]);
 				continue;
@@ -143,8 +163,7 @@ class Main {
 				}
 				if (arch != null) itchName += "-" + arch.toUpperCase();
 				
-				Sys.println('Uploading $itchName...');
-				Sys.command(config.path_butler, ["push",
+				runButler(itchName, ["push",
 					zipFull, itchName, "--userversion", version,
 				]);
 			}
