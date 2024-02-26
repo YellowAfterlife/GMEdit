@@ -322,7 +322,6 @@ class Preferences {
 	public static function createFuncAnchor(label:String, func:js.html.Event->Void) {
 		var a = document.createAnchorElement();
 		a.href = "javascript:void(0)";
-		a.target = "_blank";
 		a.onclick = function(e) {
 			func(e);
 			return false;
