@@ -34,10 +34,17 @@
         const text = arguments[0];
         const returnValue = text.split('➜')[1];
 
-        const foundItem = state.keys.find(item => item.name === text.split('(')[0]);
-        if (foundItem && foundItem.topics.length === 1) {
+        let foundItem = Object.keys(state.keys).find(item => {
+          if (text.includes('>(')) {
+            return item === text.split('<')[0];
+          } else {
+            return item === text.split('(')[0];
+          }
+        });
+        if (foundItem) foundItem = state.keys[foundItem];
+        if (foundItem && foundItem.pages.length === 1) {
           const key = foundItem;
-          const html = createTooltipHTML(key, returnValue);
+          const html = createTooltipHTML(key, returnValue, text);
 
           aceEditor.tooltipManager.ttip.setHtml.apply(this, [html]);
         } else {
@@ -68,23 +75,32 @@
     fetch('https://raw.githubusercontent.com/christopherwk210/gm-bot/master/static/docs-index.json')
       .then(res => res.json())
       .then(data => {
-        state.keys = data.keys;
-        Preferences.current.docs_tooltips.keys = data.keys;
+        state.keys = data;
+        Preferences.current.docs_tooltips.keys = data;
         Preferences.save();
       })
       .catch(() => console.error('docs-tooltips: failed to fetch documentation'));
   }
   
-  function createTooltipHTML(key, returnValue) {
-    const topic = key.topics[0];
+  function createTooltipHTML(key, returnValue, originalText) {
+    const topic = key.pages[0];
   
-    const title = key.name === topic.name ? (topic.syntax || key.name) : `${key.name} - ${topic.name}`;
+    let title = topic.syntax || key.name;
   
     let description = `<p>${topic.blurb}</p>`;
     if (topic.args && topic.args.length) {
       description += `<div style="margin-bottom: 0.25em; border-bottom: 1px solid #495057;">Arguments</div>`;
       for (const arg of topic.args) {
         description += `<div style="margin-bottom: 0.25em"><strong style="color: #039E5C;">${arg.argument}</strong>: ${arg.description.replace('`OPTIONAL`', '(Optional)')}</div>`;
+      }
+    }
+
+    if (title.includes('(')) {
+      let genericMatches = originalText.match(/(<\S+>)/g);
+      if (genericMatches) {
+        generic = genericMatches[0];
+        generic = generic.replace('<', '&lt;').replace('>', '&gt;');
+        title = title.replace('(', generic + '(');
       }
     }
   
