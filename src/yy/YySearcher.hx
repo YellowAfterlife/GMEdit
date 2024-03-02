@@ -56,6 +56,7 @@ class YySearcher {
 			} else opt.errors = s;
 		}
 		var v22 = yyProject.resourceType != "GMProject";
+		ctx.count++;
 		for (resPair in yyProject.resources) {
 			var _resName:String, _resPath:RelPath, _resFull:String, _resType:String;
 			if (v22) {
@@ -224,6 +225,6 @@ class YySearcher {
 				};
 			} // switch (can continue)
 		} // for
-		if (ctx.count == 0 && ctx.queue.length == 0) done();
+		if (--ctx.count == 0 && ctx.queue.length == 0) done();
 	}
 }
