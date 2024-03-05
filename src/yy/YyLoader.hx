@@ -36,9 +36,11 @@ class YyLoader {
 	
 	static var itemsToInsert:Array<{item:TreeViewElement,dir:TreeViewDir}> = null;
 	
+	static var rxV23 = new RegExp('"resourceType":[ ]*"GMProject"');
 	public static inline function isV23(yypContent:String) {
-		return yypContent.contains('"resourceType": "GMProject"');
+		return yypContent.contains('"resourceType":') && rxV23.test(yypContent);
 	}
+	
 	static var assetColours:Dictionary<Array<String>> = new Dictionary();
 	public static function applyAssetColour(el:TreeViewElement, path:String) {
 		var colors = assetColours[path.ptNoBS()];
