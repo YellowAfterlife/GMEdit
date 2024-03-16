@@ -1,6 +1,7 @@
 package ace;
 import ace.extern.AcePos;
 import ace.extern.AceToken;
+import electron.AppTools;
 import electron.Clipboard;
 import electron.Electron;
 import electron.FileWrap;
@@ -166,6 +167,19 @@ class AceCtxMenu {
 					editor.execCommand("paste", cb().readText());
 				}
 			});
+
+			if(FileWrap.isMac) {
+				menu.appendOpt({
+					id: "quit",
+					label: "Quit",
+					role: "quit",
+					icon: Menu.silkIcon("stop"),
+					accelerator: "command+Q",
+					click: function() {
+						AppTools.quit();
+					}
+				});
+			}
 		}
 		//
 		menu.appendSep("sep-select");
