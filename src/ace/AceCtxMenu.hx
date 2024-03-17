@@ -167,19 +167,6 @@ class AceCtxMenu {
 					editor.execCommand("paste", cb().readText());
 				}
 			});
-
-			if(FileWrap.isMac) {
-				menu.appendOpt({
-					id: "quit",
-					label: "Quit",
-					role: "quit",
-					icon: Menu.silkIcon("stop"),
-					accelerator: "command+Q",
-					click: function() {
-						AppTools.quit();
-					}
-				});
-			}
 		}
 		//
 		menu.appendSep("sep-select");
@@ -201,10 +188,21 @@ class AceCtxMenu {
 		// So we'll bind the one attached to main code editor, whatever
 		if (Electron == null || !FileWrap.isMac) return;
 		var menu = new Menu();
+		var editSubMenu = editor.contextMenu.menu;
+		editSubMenu.appendOpt({
+			id: "quit",
+			label: "Quit",
+			role: "quit",
+			icon: Menu.silkIcon("stop"),
+			accelerator: "command+Q",
+			click: function() {
+				AppTools.quit();
+			}
+		});
 		menu.appendOpt({
 			id: "sub-edit",
 			label: "Edit",
-			submenu: editor.contextMenu.menu,
+			submenu: editSubMenu,
 		});
 		Menu.setApplicationMenu(menu);
 	}
