@@ -7,7 +7,8 @@ package electron;
 @:native("Electron_App") extern class AppTools {
 	static function getAppPath():String;
 	static function getPath(kind:String):String;
-	
+	static function quit():Void;
+
 	/** Windows-only! */
 	static function setUserTasks(arr:Array<AppUserTask>):Void;
 	
