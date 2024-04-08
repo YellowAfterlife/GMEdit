@@ -80,6 +80,7 @@ class YyLoader {
 				if (year == null) year = 0;
 				project.isGM2022 = year >= 2022;
 				project.isGM2023 = year >= 2023;
+				project.isGM2024 = year >= 2024 || yyProjectTxt.contains("\"$GMProject\":");
 				project.usesResourceOrderFile = project.isGM2023 && project.existsSync(project.getResourceOrderFilePath());
 				project.yyResourceVersion = try {
 					Std.parseFloat(yyProject.resourceVersion);

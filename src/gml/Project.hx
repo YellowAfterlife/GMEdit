@@ -131,6 +131,8 @@ import ui.treeview.TreeViewElement;
 	public var isGM2022:Bool = false;
 	/** GM2023 or newer */
 	public var isGM2023:Bool = false;
+	/** GM2024 or newer */
+	public var isGM2024:Bool = false;
 	
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
 	public var yyExtJson:Bool = false;
