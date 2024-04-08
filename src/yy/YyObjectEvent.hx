@@ -13,6 +13,7 @@ import yy.YyObject;
 			if (at != bt) return at - bt;
 			//
 			if (at == 4) { // collision
+				if ((a.id:String) == (b.id:String)) return 0;
 				return (a.id:String) < (b.id:String) ? -1 : 1;
 			} else return a.enumb - b.enumb;
 		} else {
@@ -24,6 +25,7 @@ import yy.YyObject;
 				var bq:YyResourceRef = b.collisionObjectId;
 				var an = aq != null ? aq.name : "";
 				var bn = bq != null ? bq.name : "";
+				if (an == bn) return 0;
 				return an < bn ? -1 : 1;
 			} else return a.eventNum - b.eventNum;
 		}
