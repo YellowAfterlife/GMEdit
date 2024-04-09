@@ -1,4 +1,6 @@
 package parsers.seeker;
+import gml.file.GmlFile;
+import js.lib.RegExp;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.type.GmlType;
@@ -201,9 +203,28 @@ class GmlSeekerProcIdent {
 			}
 			GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, s, args, null, fieldType, argTypes, true);
 			var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
-			if (templateSelf != null && addFieldHint_doc != null) {
-				addFieldHint_doc.templateSelf = templateSelf;
-				addFieldHint_doc.templateItems = templateItems;
+			if (addFieldHint_doc != null) {
+				// similar to GmlSeekerProcVar
+				var nav:GmlFileNav = {
+					ctx: s,
+					ctxAfter: true,
+					ctxRx: new RegExp("\\b" + s + "\\s*" + "\\:?=" + "\\s*function\\b"),
+				};
+				if (seeker.isCreateEvent) {
+					nav.def = seeker.jsDoc.interfaceName ?? "create";
+				} else {
+					nav.def = seeker.jsDoc.interfaceName;
+				}
+				addFieldHint_doc.lookup = {
+					path: seeker.orig,
+					sub: seeker.sub,
+					row: 0,
+				};
+				addFieldHint_doc.nav = nav;
+				if (templateSelf != null) {
+					addFieldHint_doc.templateSelf = templateSelf;
+					addFieldHint_doc.templateItems = templateItems;
+				}
 			}
 		}
 		seeker.restoreReader();

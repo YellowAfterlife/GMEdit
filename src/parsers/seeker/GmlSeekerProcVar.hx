@@ -171,9 +171,23 @@ class GmlSeekerProcVar {
 					asInst, name, args, null, fieldType, argTypes, true);
 					
 					var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
-					if (templateSelf != null && addFieldHint_doc != null) {
-						addFieldHint_doc.templateSelf = templateSelf;
-						addFieldHint_doc.templateItems = templateItems;
+					if (addFieldHint_doc != null) {
+						// similar to GmlSeekerProcIdent
+						addFieldHint_doc.lookup = {
+							path: seeker.orig,
+							sub: seeker.sub,
+							row: 0,
+						};
+						addFieldHint_doc.nav = {
+							ctx: name,
+							ctxAfter: true,
+							def: seeker.jsDoc.interfaceName,
+							ctxRx: new RegExp("\\bstatic\\s+" + name + "\\s*" + "\\:?=" + "\\s*function\\b"),
+						};
+						if (templateSelf != null) {
+							addFieldHint_doc.templateSelf = templateSelf;
+							addFieldHint_doc.templateItems = templateItems;
+						}
 					}
 				}
 				if (isConstructor) addFieldHint(true);

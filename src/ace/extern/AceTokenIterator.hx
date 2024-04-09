@@ -10,6 +10,9 @@ import haxe.DynamicAccess;
 @:using(ace.extern.AceTokenIterator.AceTokenIteratorTools)
 @:native("AceTokenIterator") extern class AceTokenIterator {
 	function new(session:AceSession, row:Int, col:Int);
+	static inline function createForPos(session:AceSession, pos:AcePos) {
+		return new AceTokenIterator(session, pos.row, pos.column);
+	}
 	function getCurrentToken():AceToken;
 	function getCurrentTokenRange():AceRange;
 	function getCurrentTokenPosition():AcePos;
