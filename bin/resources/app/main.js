@@ -173,6 +173,7 @@ app.on('activate', function () {
 	const ipc = electron.ipcMain
 	// https://github.com/electron/electron/issues/4349
 	ipc.on('shell-open', (e, path) => {
+		if (isWindows) path = path.replace(/\//g, "\\")
 		electron.shell.openPath(path)
 	})
 	
