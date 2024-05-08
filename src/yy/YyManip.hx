@@ -378,6 +378,12 @@ class YyManip {
 			if (pyRes != null) {
 				py.resources.remove(pyRes);
 				if (cleanRefs) checkRefs.push(pyRes.id);
+				
+				if (resourceOrder != null) {
+					var ordItem = getProjectOrderItemForTreeEl(el, null, resourceOrder, false);
+					if (ordItem != null) resourceOrder.ResourceOrderSettings.remove(ordItem);
+				}
+				
 				var path = pyRes.id.path;
 				var dir = Path.directory(path);
 				pj.rmdirRecSync(dir);
