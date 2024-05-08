@@ -28,7 +28,6 @@ class KYyUnknown extends FileKind {
 		var project = Project.current;
 		var full = project.fullPath(path);
 		//
-		var mtParentPath = rxParentPath.exec(content);
 		var resource:YyResource = null;
 		var parentPath:String = {
 			var mt = rxParentPath.exec(content);
@@ -114,7 +113,7 @@ class KYyUnknown extends FileKind {
 					dir: dir
 				});
 				var relPath = project.relPath(path);
-				YyLoader.applyAssetColour(item, relPath);
+				if (relPath != null) YyLoader.applyAssetColour(item, relPath);
 				//TreeView.insertSorted(dir, item);
 				switch (resType) {
 					case "GMSprite": TreeView.setThumbSprite(full, name, item);

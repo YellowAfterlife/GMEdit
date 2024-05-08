@@ -1,4 +1,5 @@
 package gml.file;
+import tools.Aliases;
 import tools.Aliases.GmlCode;
 import ace.AceSessionData;
 import ace.extern.*;
@@ -50,7 +51,7 @@ class GmlFile {
 	public var name:String;
 	
 	/** Full path to the source file (null if no source file, e.g. search results) */
-	public var path:String;
+	public var path:FullPath;
 	
 	/**
 	 * If this file-tab represents multiple files that have to be checked for changes,
@@ -62,7 +63,7 @@ class GmlFile {
 	public var time:Float = 0;
 	public function syncTime() {
 		#if !lwedit
-		if (path != null && FileSystem.canSync) {
+		if (path != null && FileSystem.canSync && Path.isAbsolute(path)) {
 			if (kind.checkSelfForChanges) try {
 				time = FileSystem.statSync(path).mtimeMs;
 			} catch (_:Dynamic) { }

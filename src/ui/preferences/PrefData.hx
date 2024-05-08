@@ -36,6 +36,13 @@ import haxe.DynamicAccess;
 		assetThumbs: true,
 		assetCache: false,
 		assetIndexBatchSize: 128,
+		diskAssetCache: {
+			enabled: false,
+			maxSizePerItem: 4096,
+			minItemCount: 512,
+			cacheUpdateThreshold: 15,
+			fileExtensions: ["gml", "yy", "gmx"],
+		},
 		clearAssetThumbsOnRefresh: true,
 		codeLiterals: false,
 		ctrlWheelFontSize: true,
@@ -158,6 +165,14 @@ typedef PrefDataImpl = {
 		initialWidth:Int,
 		initialHeight:Int,
 		initialFilters:DynamicAccess<Bool>,
+	},
+	diskAssetCache: {
+		var enabled:Bool;
+		var minItemCount:Int;
+		var maxSizePerItem:Int;
+		/** in %! **/
+		var cacheUpdateThreshold:Float;
+		var fileExtensions:Array<String>;
 	},
 	chromeTabs: {
 		minWidth:Int,

@@ -22,7 +22,7 @@ class KYyExtension extends FileKind {
 	override public function index(full:String, content:String, main:String, sync:Bool):Bool {
 		var ext:YyExtension = YyJson.parse(content);
 		var pj = gml.Project.current;
-		var extDirRel = pj.relPath(full);
+		var extDirRel = pj.relPath(full) ?? full;
 		var extDir = Path.directory(full);
 		//
 		var parentPath = ext.parent.path;

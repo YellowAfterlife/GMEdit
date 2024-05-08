@@ -48,7 +48,7 @@ import ui.ChromeTabs.ChromeTab;
 	public function saveTabState(tab:ChromeTab):ProjectTabState {
 		var path = tab.gmlFile.path;
 		if (path == null) return null;
-		var rel = gml.Project.current.relPath(path);
+		var rel = gml.Project.current.relPath(path) ?? path;
 		var ts:ProjectTabState = {};
 		if (rel != path) {
 			ts.relPath = rel;

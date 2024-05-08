@@ -17,97 +17,119 @@ import tools.PathTools;
  * @author YellowAfterlife
  */
 @:keep class FileWrap {
+	static inline function impl<T>(path:String, ifFull:String->T, ifRel:Project->String->T) {
+		var project = Project.current;
+		var relPath = project.relPath(path);
+		if (relPath != null) {
+			return ifRel(project, relPath);
+		} else return ifFull(path);
+	}
 	public static function existsSync(path:String):Bool {
 		if (Path.isAbsolute(path)) {
 			return FileSystem.existsSync(path);
 		} else return Project.current.existsSync(path);
 	}
 	public static function mtimeSync(path:String):Null<Float> {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.mtimeSync(path);
-		} else return Project.current.mtimeSync(path);
+		return impl(path,
+			(s) -> FileSystem.mtimeSync(s),
+			(p, s) -> p.mtimeSync(s),
+		);
 	}
 	
 	public static function unlinkSync(path:String):Void {
-		if (Path.isAbsolute(path)) {
-			FileSystem.unlinkSync(path);
-		} else Project.current.unlinkSync(path);
+		impl(path,
+			function(pt) FileSystem.unlinkSync(path),
+			function(pj, pt) pj.unlinkSync(path),
+		);
 	}
 	
 	public static function readTextFile(path:String, fn:Error->String->Void):Void {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.readTextFile(path, fn);
-		} else return Project.current.readTextFile(path, fn);
+		return impl(path,
+			(pt) -> FileSystem.readTextFile(pt, fn),
+			(pj, pt) -> pj.readTextFile(pt, fn)
+		);
 	}
 	public static function readTextFileSync(path:String):String {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.readTextFileSync(path);
-		} else return Project.current.readTextFileSync(path);
+		return impl(path,
+			(pt) -> FileSystem.readTextFileSync(pt),
+			(pj, pt) -> pj.readTextFileSync(pt),
+		);
 	}
 	public static function writeTextFileSync(path:String, text:String) {
-		if (Path.isAbsolute(path)) {
-			FileSystem.writeFileSync(path, text);
-		} else Project.current.writeTextFileSync(path, text);
+		impl(path,
+			function(pt) FileSystem.writeFileSync(pt, text),
+			function(pj, pt) pj.writeTextFileSync(pt, text),
+		);
 	}
 	public static function readJsonFileSync<T>(path:String, ?c:Class<T>):T {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.readJsonFileSync(path);
-		} else return Project.current.readJsonFileSync(path);
+		return impl(path,
+			(pt) -> FileSystem.readJsonFileSync(pt),
+			(pj, pt) -> pj.readJsonFileSync(pt),
+		);
 	}
 	public static inline function writeJsonFileSync(path:String, value:Dynamic) {
 		writeTextFileSync(path, NativeString.yyJson(value));
 	}
 	/** The difference is that YY may contain off-spec JSON */
 	public static function readYyFileSync<T>(path:String, ?c:Class<T>, ?extJson:Bool):T {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.readYyFileSync(path);
-		} else return Project.current.readYyFileSync(path);
+		return impl(path,
+			(pt) -> FileSystem.readYyFileSync(pt),
+			(pj, pt) -> pj.readYyFileSync(pt),
+		);
 	}
 	public static function writeYyFileSync<T>(path:String, value:T, ?extJson:Bool):Void {
 		writeTextFileSync(path, yy.YyJson.stringify(value, extJson));
 	}
 	//
 	public static function readGmxFileSync(path:String):SfGmx {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.readGmxFileSync(path);
-		} else return Project.current.readGmxFileSync(path);
+		return impl(path,
+			(pt) -> FileSystem.readGmxFileSync(pt),
+			(pj, pt) -> pj.readGmxFileSync(pt),
+		);
 	}
 	public static function writeGmxFileSync(path:String, gmx:SfGmx) {
-		if (Path.isAbsolute(path)) {
-			FileSystem.writeFileSync(path, gmx.toGmxString());
-		} else Project.current.writeGmxFileSync(path, gmx);
+		impl(path,
+			function(pt) FileSystem.writeFileSync(pt, gmx.toGmxString()),
+			function(pj, pt) pj.writeGmxFileSync(pt, gmx),
+		);
 	}
 	public static function mkdirSync(path:String):Void {
-		if (Path.isAbsolute(path)) {
-			FileSystem.mkdirSync(path);
-		} else Project.current.mkdirSync(path);
+		impl(path,
+			function(pt) FileSystem.mkdirSync(pt),
+			function(pj, pt) pj.mkdirSync(pt),
+		);
 	}
 	
 	public static function readdirSync(path:String) {
-		if (Path.isAbsolute(path)) {
-			var out:Array<ProjectDirInfo> = [];
-			for (rel in FileSystem.readdirSync(path)) {
-				var itemFull = Path.join([path, rel]);
-				out.push({
-					fileName: rel,
-					relPath: itemFull,
-					fullPath: itemFull,
-					isDirectory: FileSystem.statSync(itemFull).isDirectory()
-				});
-			}
-			return out;
-		} else return Project.current.readdirSync(path);
+		return impl(path,
+			function(pt) {
+				var out:Array<ProjectDirInfo> = [];
+				for (rel in FileSystem.readdirSync(pt)) {
+					var itemFull = Path.join([pt, rel]);
+					out.push({
+						fileName: rel,
+						relPath: itemFull,
+						fullPath: itemFull,
+						isDirectory: FileSystem.statSync(itemFull).isDirectory()
+					});
+				}
+				return out;
+			},
+			(pj, pt) -> pj.readdirSync(path)
+		);
 	}
 	
 	public static function openExternal(path:String):Void {
-		if (Path.isAbsolute(path)) {
-			Shell.openItem(path);
-		} else Project.current.openExternal(path);
+		impl(path,
+			function(pt) Shell.openItem(pt),
+			function(pj, pt) pj.openExternal(pt),
+		);
 	}
 	public static function showItemInFolder(path:String) {
-		if (Path.isAbsolute(path)) {
-			Shell.showItemInFolder(path);
-		} else Project.current.showItemInFolder(path);
+		impl(path,
+			function(pt) Shell.showItemInFolder(pt),
+			function(pj, pt) pj.showItemInFolder(pt),
+		);
 	}
 	
 	public static var isMac:Bool = false;
@@ -172,9 +194,10 @@ import tools.PathTools;
 	//}
 	
 	public static function getImageURL(path:String):Null<String> {
-		if (Path.isAbsolute(path)) {
-			return FileSystem.getImageURL(path);
-		} else return Project.current.getImageURL(path);
+		return impl(path,
+			(pt) -> FileSystem.getImageURL(pt),
+			(pj, pt) -> pj.getImageURL(pt),
+		);
 	}
 	
 	public static function init() {

@@ -1,4 +1,5 @@
 package yy.zip;
+import electron.extern.NodeBuffer;
 import gml.GmlVersion;
 import gml.Project;
 import gmx.SfGmx;
@@ -141,6 +142,9 @@ class YyZip extends Project {
 			var par = yyzDirMap[dir.dir];
 			if (par != null) par.entries.remove(dir);
 		}
+	}
+	override function readNodeFileSync(path:String):NodeBuffer {
+		throw "Not available here!";
 	}
 	override public function readTextFile(path:String, fn:Error->String->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];

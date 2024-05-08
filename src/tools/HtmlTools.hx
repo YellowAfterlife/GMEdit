@@ -145,6 +145,11 @@ class HtmlTools {
 		element.style.position = "absolute";
 		element.style.top = "-99999px";
 	}
+	
+	public static function setTitleLines(el:Element, lines:Array<String>) {
+		el.title = lines.join("\n");
+		return el;
+	}
 }
 extern class ElementList implements ArrayAccess<Element> {
 	public var length(default, never):Int;

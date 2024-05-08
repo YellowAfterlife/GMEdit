@@ -18,7 +18,7 @@ class YyManipExtension {
 		var extStr = FileWrap.readTextFileSync(extensionPath);
 		var ext:YyExtension = YyJson.parse(extStr, true); // need to use a parser not to ruin 64-bit flags
 		var extDir = Path.directory(extensionPath);
-		var extDirRel = Project.current.relPath(extDir);
+		var extDirRel = Project.current.relPath(extDir) ?? extDir;
 		var changed = false;
 		var v23 = Project.current.isGMS23;
 		for (srcFull in filePaths) {

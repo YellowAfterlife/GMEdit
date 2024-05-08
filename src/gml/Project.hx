@@ -1,4 +1,9 @@
 package gml;
+import gml.project.ProjectFileCache;
+import js.lib.DataView;
+import haxe.io.Bytes;
+import haxe.io.BytesOutput;
+import electron.extern.NodeBuffer;
 import ace.extern.*;
 import electron.FileSystem;
 import electron.Electron;
@@ -300,6 +305,7 @@ import ui.treeview.TreeViewElement;
 	#end
 	public function new(_path:String, _load:Bool = true) {
 		path = _path;
+		fileCache = new ProjectFileCache(this);
 		#if !lwedit
 		new_procSingle();
 		#end
@@ -369,6 +375,7 @@ import ui.treeview.TreeViewElement;
 		};
 		PluginEvents.projectStateSave({project:this, state:data});
 		ProjectStateManager.set(path, data);
+		fileCache.onSave();
 	}
 	public var firstLoadState:ProjectState = null;
 	
@@ -376,6 +383,8 @@ import ui.treeview.TreeViewElement;
 	public function finishedIndexing() {
 		nameNode.innerText = displayName;
 		if (current.hasGMLive) GMLive.updateAll();
+		//
+		fileCache.onSave();
 		//
 		if (isGMS23) {
 			@:privateAccess YyLoader.folderMap = null;
@@ -512,6 +521,7 @@ import ui.treeview.TreeViewElement;
 					yySpriteURLs = new Dictionary();
 				}
 			}
+			fileCache.onLoad();
 			reload_1();
 			ace.AceTooltips.resetCache();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
@@ -562,20 +572,33 @@ import ui.treeview.TreeViewElement;
 			func(this, fn, done, opt);
 		} else done();
 	}
-	//
-	public function fullPath(path:String):FullPath {
+	
+	/**
+	Returns an absolute path for the given relative path	
+	**/
+	public function fullPath(path:RelPath):FullPath {
 		if (dir != "") {
 			return (dir + "/" + path).ptNoBS();
 		} else return path;
 	}
+	
+	/**
+	Returns a relative path for the given full path.
+	If the path is not part of the project, returns null.
+	**/
 	public function relPath(path:FullPath):RelPath {
-		if (dir != "" && NativeString.startsWith(path, dir)) {
-			var p = dir.length;
-			switch (path.charCodeAt(p)) {
-				case "/".code, "\\".code: return path.substring(p + 1);
-			}
-		}
-		return path;
+		if (!Path.isAbsolute(path)) return path;
+		
+		if (dir == "") return null;
+		
+		if (NativeString.contains(path, "\\")) path = path.ptNoBS();
+		
+		if (!NativeString.startsWith(path, dir)) return null;
+		
+		var pos = dir.length;
+		if (path.charCodeAt(pos) == "/".code) {
+			return path.substring(pos + 1);
+		} else return null;
 	}
 	public function existsSync(path:String):Bool {
 		return FileSystem.existsSync(fullPath(path));
@@ -592,11 +615,19 @@ import ui.treeview.TreeViewElement;
 		if (existsSync(path)) unlinkSync(path);
 	}
 	//
-	private var fileCache:Dictionary<{data:String, mtime:Float}> = new Dictionary();
+	public function readNodeFileSync(path:String):NodeBuffer {
+		return FileSystem.readNodeFileSync(fullPath(path));
+	}
+	public function writeNodeFileSync(path:String, data:Any) {
+		FileSystem.writeFileSync(path, data);
+	}
+	//
+	private var fileCache:ProjectFileCache;
+	//
 	public function readTextFile(path:String, fn:Error->String->Void):Void {
 		if (Preferences.current.assetCache) {
 			var full = fullPath(path);
-			var pair = fileCache[path];
+			var pair = fileCache.map[path];
 			if (pair != null) {
 				FileSystem.stat(full, function(e, stat) {
 					if (e == null && stat.mtimeMs == pair.mtime) {
@@ -605,9 +636,9 @@ import ui.treeview.TreeViewElement;
 						fn(e2, text);
 						if (e2 == null) {
 							if (e == null) {
-								fileCache[path] = { data: text, mtime: stat.mtimeMs };
+								fileCache.map[path] = { data: text, mtime: stat.mtimeMs };
 							} else FileSystem.stat(full, function(e3, stat2) {
-								if (e3 == null) fileCache[path] = { data: text, mtime: stat2.mtimeMs };
+								if (e3 == null) fileCache.map[path] = { data: text, mtime: stat2.mtimeMs };
 							});
 						}
 					});
@@ -616,7 +647,7 @@ import ui.treeview.TreeViewElement;
 				FileSystem.readTextFile(full, function(e, text) {
 					fn(e, text);
 					if (e == null) FileSystem.stat(full, function(e, stat) {
-						if (e == null) fileCache[path] = { data: text, mtime: stat.mtimeMs };
+						if (e == null) fileCache.map[path] = { data: text, mtime: stat.mtimeMs };
 					});
 				});
 			}
@@ -626,15 +657,22 @@ import ui.treeview.TreeViewElement;
 		if (Preferences.current.assetCache) {
 			var full = fullPath(path);
 			var mtime = FileSystem.mtimeSync(full);
-			var pair = fileCache[path];
+			var pair = fileCache.map[path];
 			if (pair != null && pair.mtime == mtime) return pair.data;
 			var result = FileSystem.readTextFileSync(full);
-			fileCache[path] = { data: result, mtime: mtime };
+			fileCache.map[path] = { data: result, mtime: mtime };
 			return result;
 		} else return FileSystem.readTextFileSync(fullPath(path));
 	}
 	public function writeTextFileSync(path:String, text:String) {
-		FileSystem.writeFileSync(fullPath(path), text);
+		var full = fullPath(path);
+		FileSystem.writeFileSync(full, text);
+		if (Preferences.current.assetCache) {
+			var item = fileCache.map[path];
+			if (item != null) {
+				item.mtime = FileSystem.mtimeSync(full);
+			}
+		}
 	}
 	//
 	public function readJsonFile<T:{}>(path:String, callback:Error->T->Void):Void {
