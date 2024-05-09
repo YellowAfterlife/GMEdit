@@ -1,4 +1,5 @@
 package yy;
+import js.lib.RegExp;
 import haxe.DynamicAccess;
 import haxe.Int64;
 import haxe.Json;
@@ -18,6 +19,7 @@ class YyJsonPrinter {
 	static var trailingCommas:Bool = false;
 	static var wantPrefixFields:Bool = false;
 	static var isGM2023:Bool = false;
+	static var isGM2024:Bool = false;
 	//}
 	
 	static function stringify_string(s:String):String {
@@ -51,6 +53,7 @@ class YyJsonPrinter {
 	
 	public static var mvcOrder22 = ["configDeltas", "id", "modelName", "mvc", "name"];
 	public static var mvcOrder23 = ["parent", "resourceVersion", "name", "path", "tags", "resourceType"];
+	public static final emptyOrder:Array<String> = [];
 	
 	/** in projects with resourceVersion >= 1.6, these appear before everything else */
 	public static var rv1_6_prefixFieldList = ["resourceType", "resourceVersion", "name"];
@@ -75,16 +78,49 @@ class YyJsonPrinter {
 	
 	static var isOrderedCache:Map<Array<String>, Dictionary<Bool>> = new Map();
 	
-	static var fieldComparator:(a:String, b:String)->Int = (function() {
+	static function fieldComparator_fallback(a:String, b:String) {
+		a = a.toLowerCase();
+		b = b.toLowerCase();
+		if (isGM2024) {
+			static var underscores = new RegExp("_", "g");
+			a = a.replaceExt(underscores, "|");
+			b = b.replaceExt(underscores, "|");
+		}
+		return a < b ? -1 : 1;
+	}
+	
+	static var fieldComparator_intl = (function() {
 		try {
 			var cl = new js.lib.intl.Collator();
 			return cl.compare;
 		} catch (_) {
-			return function(a:String, b:String) {
-				return a.toLowerCase() > b.toLowerCase() ? 1 : -1;
-			}
+			return null;
 		}
 	})();
+	
+	static function fieldComparator(a, b) {
+		if (isGM2023 && !isGM2024) {
+			// https://github.com/YoYoGames/GameMaker-Bugs/issues/4713#issuecomment-1961910024
+			if (a == "resourceType") return -1;
+			if (b == "resourceType") return 1;
+			if (a == "resourceVersion") return -1;
+			if (b == "resourceVersion") return 1;
+			if (a == "name") return -1;
+			if (b == "name") return 1;
+		}
+		if (a == b) return 0;
+		//
+		if (!isGM2024 && fieldComparator_intl != null) return fieldComparator_intl(a, b);
+		//
+		a = a.toLowerCase();
+		b = b.toLowerCase();
+		if (isGM2024) {
+			static var underscores = new RegExp("_", "g");
+			a = a.replaceExt(underscores, "|");
+			b = b.replaceExt(underscores, "|");
+		}
+		return a < b ? -1 : 1;
+	}
 	
 	static var indentString:String = "    ";
 	static var nextType:String = null;
@@ -125,12 +161,18 @@ class YyJsonPrinter {
 			var orderedFields = (obj:YyBase).hxOrder;
 			var fieldDigits = (obj:YyBase).hxDigits;
 			var fieldTypes:Dictionary<String> = null;
-			var orderedFieldsFirst = true;
 			var found = 0, sep = false;
-			// where available, use 
+			// where available, use meta
 			var meta:YyJsonMeta;
-			var _2023 = isExt && isV2023();
-			if (nt != null) {
+			var _2024 = isGM2024;
+			var _2023 = !_2024 && isExt && isGM2023;
+			if (_2024) {
+				meta = null;
+				if (Reflect.field(obj, "%Name") == null && obj.resourceType != null) {
+					Reflect.setField(obj, "$" + obj.resourceType, "");
+					Reflect.setField(obj, "%Name", obj.name ?? "");
+				}
+			} else if (nt != null) {
 				meta = isExt ? (_2023 ? metaByResourceType2023[nt] : metaByResourceType[nt]) : metaByModelName[nt];
 				if (meta == null) Main.console.warn('Unknown type $nt');
 			} else if (isExt) {
@@ -140,7 +182,10 @@ class YyJsonPrinter {
 				nt = obj.modelName;
 				meta = JsTools.nca(nt, metaByModelName[nt]);
 			}
-			if (meta != null) {
+			//
+			if (_2024) {
+				orderedFields = emptyOrder;
+			} else if (meta != null) {
 				orderedFields = meta.order;
 				fieldTypes = meta.types;
 				fieldDigits = meta.digits;
@@ -174,7 +219,7 @@ class YyJsonPrinter {
 			function addField(field:String):Void {
 				addSep();
 				found++;
-				r += stringify_string(field) + (compact ? ":" : ": ");
+				r += stringify_string(field) + (compact || isGM2024 ? ":" : ": ");
 				nextType = fieldTypes != null ? fieldTypes[field] : null;
 				r += stringify_rec(Reflect.field(obj, field), indent, compact,
 					fieldDigits != null ? fieldDigits[field] : null
@@ -241,10 +286,12 @@ class YyJsonPrinter {
 		var project = gml.Project.current;
 		if (project != null) {
 			isGM2023 = project.isGM2023;
+			isGM2024 = project.isGM2024;
 			wantPrefixFields = !isGM2023 && project.yyResourceVersion >= 1.6;
 		} else {
 			wantPrefixFields = false;
 			isGM2023 = false;
+			isGM2024 = false;
 		}
 		indentString = extJson ? "  " : "    ";
 		return stringify_rec(obj, 0, false);

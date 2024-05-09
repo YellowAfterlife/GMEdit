@@ -179,7 +179,7 @@ import yy.YyTools;
 					Reflect.setField(ev, "%Name", "");
 					ev.resourceVersion = "2.0";
 				}
-				if (!v2022_8 || col != null) ev.collisionObjectId = col;
+				ev.collisionObjectId = col;
 				if (!v2022_8) {
 					ev.parent = { name: this.name, path: 'objects/${this.name}/${this.name}.yy' };
 					ev.tags = [];
