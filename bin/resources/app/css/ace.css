@@ -115,10 +115,18 @@ textarea#source {
 #app .ace-tm .ace_eventkeyname {
 	color: #308;
 }
+
+#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_quasi.ace_paren {
+	color: #00379B;
+}
+
 #app .ace-tm .ace_function,
 #app .ace-tm .ace_variable,
 #app .ace-tm .ace_constant,
-#app .ace-tm .ace_keyword.ace_kwconst,
+#app .ace-tm .ace_kwconst,
 #app .ace-tm .ace_macro,
 #app .ace-tm .ace_globalvar,
 #app .ace-tm .ace_extfunction,
@@ -149,12 +157,6 @@ textarea#source {
 }
 #app .ace-tm .ace_script {
 	color: #990099;
-}
-#app .ace-tm .ace_keyword,
-#app .ace-tm .ace_type,
-#app .ace-tm .ace_curly.ace_paren,
-#app .ace-tm .ace_quasi.ace_paren {
-	color: #00379B;
 }
 #app .ace-tm .ace_keyword:not(.ace_kwconst),
 #app .ace-tm .ace_type,
