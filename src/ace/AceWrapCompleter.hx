@@ -230,7 +230,7 @@ using tools.NativeString;
 							case "local", "sublocal", "asset.object", "enum": {
 								snip = tk.value;
 							};
-							case "keyword" if (tk.value == "self" || tk.value == "other"):
+							case _ if (tk.type.isKeyword() && (tk.value == "self" || tk.value == "other")):
 								snip = tk.value;
 							default:
 						}

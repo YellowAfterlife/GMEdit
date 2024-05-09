@@ -362,7 +362,7 @@ class Preferences {
 		}
 		return kind.create("Preferences", null, null, null);
 	}
-	public static inline function andSave<T>(fn:EitherType<T->Void, T->T>) {
+	public static function andSave<T>(fn:EitherType<T->Void, T->T>) {
 		return function(val) {
 			(fn:T->Void)(val);
 			save();

@@ -51,11 +51,11 @@ using StringTools;
 		var it = new AceTokenIterator(session, pos.row, pos.column);
 		var tk:AceToken;
 		while ((tk = it.stepBackward()) != null) {
-			var tt:String = tk.type;
+			var tt = tk.type;
 			if (isBlank(tt)) continue;
 			switch (tt) {
-				case "keyword": return JsTools.or(keywordContextKind[tk.value], Unknown);
 				case "eventname", "eventkeyname": return Statement;
+				case _ if (tt.isKeyword()): return JsTools.or(keywordContextKind[tk.value], Unknown);
 				default:
 			}
 			//
@@ -144,11 +144,11 @@ using StringTools;
 						tk = tmpi.stepBackwardNonText();
 						if (tk == null) break; // `<sof>¦(` ..?
 						switch (tk.type) {
-							case "keyword": break;
 							case "paren.rparen", "square.paren.rparen", "curly.paren.rparen": {
 								// `fn()[0]¦(` and other exotic things you can do
 							};
-							default: if (!tk.isIdent()) break;
+							case _ if (!tk.isIdent()): break;
+							case _ if (tk.isKeyword()): break;
 						}
 					}
 				}
@@ -158,7 +158,7 @@ using StringTools;
 					if (depth <= 0) break;
 				}
 				case _ if (tk.isIdent()): {
-					if (depth == 0 && tkType == "keyword") {
+					if (depth == 0 && tkType.isKeyword()) {
 						switch (tk.value) {
 							case "self", "other", "global": {}
 							case "cast", "as": break;

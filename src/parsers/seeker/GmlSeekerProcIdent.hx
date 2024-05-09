@@ -1,4 +1,5 @@
 package parsers.seeker;
+import ace.extern.AceTokenType;
 import gml.file.GmlFile;
 import js.lib.RegExp;
 import gml.GmlAPI;
@@ -75,7 +76,7 @@ class GmlSeekerProcIdent {
 		var kind = GmlAPI.stdKind[s];
 		var addInstField:Bool;
 		if (kind != null) {
-			if (kind == "keyword") {
+			if ((kind:AceTokenType).isKeyword()) {
 				return;
 			} else {
 				var ns = GmlAPI.gmlNamespaces[s];

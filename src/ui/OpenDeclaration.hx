@@ -152,7 +152,7 @@ class OpenDeclaration {
 		if (token == null) return false;
 		var term = token.value;
 		// opening #import "<path>":
-		if (token.type.indexOf("importpath") >= 0) {
+		if (token.type.isImportPath()) {
 			if (openImportFile(term.substring(1, term.length - 1))) return true;
 		}
 		// color picker for hex colors:

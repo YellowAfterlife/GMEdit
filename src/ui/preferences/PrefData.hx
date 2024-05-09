@@ -45,6 +45,7 @@ import haxe.DynamicAccess;
 		},
 		clearAssetThumbsOnRefresh: true,
 		codeLiterals: false,
+		constKeywords: false,
 		ctrlWheelFontSize: true,
 		showArgTypesInStatusBar: false,
 		
@@ -139,6 +140,7 @@ typedef PrefDataImpl = {
 	tooltipDelay:Int,
 	tooltipKeyboardDelay:Int,
 	codeLiterals:Bool,
+	constKeywords:Bool,
 	ctrlWheelFontSize:Bool,
 	showArgTypesInStatusBar:Bool,
 	//

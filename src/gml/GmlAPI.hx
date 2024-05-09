@@ -1,4 +1,5 @@
 package gml;
+import ui.preferences.PrefCode;
 import electron.FileSystem;
 import gml.GmlAPILoader;
 import gml.GmlEnum;
@@ -132,6 +133,8 @@ class GmlAPI {
 		
 		var sk = new Dictionary();
 		for (s in kwList) sk[s] = "keyword";
+		
+		PrefCode.applyConstKeywords(false, sk);
 		
 		var kw2 = version.config.additionalKeywords;
 		if (kw2 != null) for (s in kw2) sk[s] = "keyword";

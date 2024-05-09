@@ -118,6 +118,7 @@ textarea#source {
 #app .ace-tm .ace_function,
 #app .ace-tm .ace_variable,
 #app .ace-tm .ace_constant,
+#app .ace-tm .ace_keyword.ace_kwconst,
 #app .ace-tm .ace_macro,
 #app .ace-tm .ace_globalvar,
 #app .ace-tm .ace_extfunction,
@@ -154,6 +155,11 @@ textarea#source {
 #app .ace-tm .ace_curly.ace_paren,
 #app .ace-tm .ace_quasi.ace_paren {
 	color: #00379B;
+}
+#app .ace-tm .ace_keyword:not(.ace_kwconst),
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_quasi.ace_paren {
 	font-weight: bold;
 }
 #app .ace-tm .ace_preproc {

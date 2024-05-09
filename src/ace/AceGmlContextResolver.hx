@@ -33,7 +33,8 @@ class AceGmlContextResolver {
 		while ((iter_tk = iter.stepBackward()) != null) {
 			var iter_row = iter.getCurrentTokenRow();
 			if (iter_row < startRow) break;
-			switch (iter_tk.type) {
+			var iter_tk_type = iter_tk.type;
+			switch (iter_tk_type) {
 				case "curly.paren.rparen": brackets.push({
 					delta: 1,
 					col: iter.getCurrentTokenColumn(),
@@ -44,7 +45,7 @@ class AceGmlContextResolver {
 					col: iter.getCurrentTokenColumn(),
 					row: iter_row,
 				});
-				case "keyword" if (iter_tk.value == "with"): @:privateAccess {
+				case _ if (iter_tk_type.isKeyword() && iter_tk.value == "with"): @:privateAccess {
 					var iter_col = iter.getCurrentTokenColumn();
 					if (lt == null) {
 						lt = new GmlLinter();

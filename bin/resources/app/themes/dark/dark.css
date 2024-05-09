@@ -379,7 +379,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #app .ace-tm .ace_enum,
 #app .ace-tm .ace_enumfield,
 #app .ace-tm .ace_namespace,
-#app .ace-tm .ace_constant {
+#app .ace-tm .ace_constant,
+#app .ace-tm .ace_keyword.ace_kwconst {
 	color: #FF8080;
 }
 #app .ace-tm .ace_globalvar,

@@ -83,16 +83,6 @@ using tools.NativeArray;
 		function mtIdent(ident:String) {
 			return AceGmlHighlightIdents.getGlobalType(ident, fieldDef);
 		}
-		function mtImport(_import, _, _pkg:String, _, _in, _, _as) {
-			return ["preproc.import",
-				"text",
-				"importfrom",
-				"text",
-				"keyword",
-				"text",
-				_pkg.endsWith(".*") ? "namespace" : "importas",
-			];
-		}
 		//
 		var rPragma_call:AceLangRule = {
 			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
