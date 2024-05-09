@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "v_comparisons",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Casts",
-    "path": "folders/Scripts/Linter/Casts.yy",
+  "$GMScript":"",
+  "%Name":"v_comparisons",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_comparisons",
+  "parent":{
+    "name":"Casts",
+    "path":"folders/Scripts/Linter/Casts.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

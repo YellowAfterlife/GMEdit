@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "v_dq_template_strings",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Highlighting",
-    "path": "folders/Scripts/Highlighting.yy",
+  "$GMScript":"",
+  "%Name":"v_dq_template_strings",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_dq_template_strings",
+  "parent":{
+    "name":"Highlighting",
+    "path":"folders/Scripts/Highlighting.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

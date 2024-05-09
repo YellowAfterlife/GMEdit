@@ -1,5 +1,5 @@
 {
-  "FolderOrderSettings": [
+  "FolderOrderSettings":[
     {"name":"Animation Curves","order":12,"path":"folders/Animation Curves.yy",},
     {"name":"Extensions","order":13,"path":"folders/Extensions.yy",},
     {"name":"Fonts","order":7,"path":"folders/Fonts.yy",},
@@ -29,11 +29,12 @@
     {"name":"Tile Sets","order":2,"path":"folders/Tile Sets.yy",},
     {"name":"Timelines","order":8,"path":"folders/Timelines.yy",},
   ],
-  "ResourceOrderSettings": [
+  "ResourceOrderSettings":[
     {"name":"lint_new","order":4,"path":"scripts/lint_new/lint_new.yy",},
     {"name":"obj_variable_definitions","order":8,"path":"objects/obj_variable_definitions/obj_variable_definitions.yy",},
     {"name":"v_doc_template","order":1,"path":"scripts/v_doc_template/v_doc_template.yy",},
     {"name":"v_doc_implements","order":2,"path":"scripts/v_doc_implements/v_doc_implements.yy",},
+    {"name":"v_callable_to_function","order":10,"path":"scripts/v_callable_to_function/v_callable_to_function.yy",},
     {"name":"v_imp_func_arg_types","order":1,"path":"scripts/v_imp_func_arg_types/v_imp_func_arg_types.yy",},
     {"name":"me too","order":1,"path":"notes/me too/me too.yy",},
     {"name":"coro_arr_method","order":2,"path":"scripts/coro_arr_method/coro_arr_method.yy",},
@@ -71,13 +72,13 @@
     {"name":"obj_not_self_object","order":5,"path":"objects/obj_not_self_object/obj_not_self_object.yy",},
     {"name":"v_comparisons","order":3,"path":"scripts/v_comparisons/v_comparisons.yy",},
     {"name":"v_ternary_ident","order":2,"path":"scripts/v_ternary_ident/v_ternary_ident.yy",},
+    {"name":"v_outlineview_nav","order":1,"path":"scripts/v_outlineview_nav/v_outlineview_nav.yy",},
     {"name":"obj_user_event_init","order":6,"path":"objects/obj_user_event_init/obj_user_event_init.yy",},
     {"name":"v_buffer_read","order":3,"path":"scripts/v_buffer_read/v_buffer_read.yy",},
     {"name":"trace","order":2,"path":"scripts/trace/trace.yy",},
     {"name":"obj_misc_completion","order":7,"path":"objects/obj_misc_completion/obj_misc_completion.yy",},
     {"name":"v_constructor_implements","order":3,"path":"scripts/v_constructor_implements/v_constructor_implements.yy",},
     {"name":"v_func_arg_values","order":1,"path":"scripts/v_func_arg_values/v_func_arg_values.yy",},
-    {"name":"v_outlineview_nav","path":"scripts/v_outlineview_nav/v_outlineview_nav.yy","order":1,},
     {"name":"obj_rename_event","order":10,"path":"objects/obj_rename_event/obj_rename_event.yy",},
     {"name":"obj_variable_overrides","order":9,"path":"objects/obj_variable_overrides/obj_variable_overrides.yy",},
     {"name":"v_typedef","order":6,"path":"scripts/v_typedef/v_typedef.yy",},
@@ -102,7 +103,6 @@
     {"name":"coro_self","order":4,"path":"scripts/coro_self/coro_self.yy",},
     {"name":"coro_method","order":5,"path":"scripts/coro_method/coro_method.yy",},
     {"name":"coro_wait","order":2,"path":"scripts/coro_wait/coro_wait.yy",},
-    {"name":"v_callable_to_function","path":"scripts/v_callable_to_function/v_callable_to_function.yy","order":10,},
     {"name":"v_constructor_implicit_types","order":4,"path":"scripts/v_constructor_implicit_types/v_constructor_implicit_types.yy",},
     {"name":"v_struct_constraint","order":6,"path":"scripts/v_struct_constraint/v_struct_constraint.yy",},
     {"name":"v_arrow_funcs","order":2,"path":"scripts/v_arrow_funcs/v_arrow_funcs.yy",},

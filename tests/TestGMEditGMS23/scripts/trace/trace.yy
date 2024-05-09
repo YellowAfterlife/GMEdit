@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "trace",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Tools",
-    "path": "folders/Scripts/Tools.yy",
+  "$GMScript":"",
+  "%Name":"trace",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"trace",
+  "parent":{
+    "name":"Tools",
+    "path":"folders/Scripts/Tools.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

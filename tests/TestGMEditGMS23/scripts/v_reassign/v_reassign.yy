@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "v_reassign",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Linter",
-    "path": "folders/Scripts/Linter.yy",
+  "$GMScript":"",
+  "%Name":"v_reassign",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_reassign",
+  "parent":{
+    "name":"Linter",
+    "path":"folders/Scripts/Linter.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

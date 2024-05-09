@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "v_array_access",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Types",
-    "path": "folders/Scripts/Linter/Types.yy",
+  "$GMScript":"",
+  "%Name":"v_array_access",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_array_access",
+  "parent":{
+    "name":"Types",
+    "path":"folders/Scripts/Linter/Types.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

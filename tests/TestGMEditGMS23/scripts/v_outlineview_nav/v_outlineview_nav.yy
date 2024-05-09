@@ -1,12 +1,13 @@
 {
-  "parent": {
-    "name": "Other",
-    "path": "folders/Scripts/Other.yy",
+  "$GMScript":"",
+  "%Name":"v_outlineview_nav",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_outlineview_nav",
+  "parent":{
+    "name":"Other",
+    "path":"folders/Scripts/Other.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_outlineview_nav",
-  "tags": [],
-  "resourceType": "GMScript",
-  "isCompatibility": false,
-  "isDnD": false,
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

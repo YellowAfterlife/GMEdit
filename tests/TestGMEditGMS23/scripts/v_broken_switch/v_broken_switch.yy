@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "v_broken_switch",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Syntax",
-    "path": "folders/Scripts/Linter/Syntax.yy",
+  "$GMScript":"",
+  "%Name":"v_broken_switch",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_broken_switch",
+  "parent":{
+    "name":"Syntax",
+    "path":"folders/Scripts/Linter/Syntax.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }
