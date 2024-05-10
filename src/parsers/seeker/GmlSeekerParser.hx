@@ -76,7 +76,7 @@ class GmlSeekerParser {
 					case "*".code: {
 						q.skip();
 						q.skipComment();
-						if (flags.has(ComBlock)) {
+						if (flags.has(ComBlock) || flags.has(Doc) && q.get(start + 2) == "*".code) {
 							return q.substring(start, q.pos);
 						}
 					};

@@ -61,6 +61,7 @@
   "name":"TestGMEditGMS23",
   "resources":[
     {"id":{"name":"lint_new","path":"scripts/lint_new/lint_new.yy",},},
+    {"id":{"name":"v_doc_multi","path":"scripts/v_doc_multi/v_doc_multi.yy",},"order":0,},
     {"id":{"name":"obj_test","path":"objects/obj_test/obj_test.yy",},},
     {"id":{"name":"v_doc_param","path":"scripts/v_doc_param/v_doc_param.yy",},},
     {"id":{"name":"obj_variable_definitions","path":"objects/obj_variable_definitions/obj_variable_definitions.yy",},},

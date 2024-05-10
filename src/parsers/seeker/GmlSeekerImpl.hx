@@ -201,7 +201,9 @@ class GmlSeekerImpl {
 			var s = find(flags);
 			if (s == null) continue;
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
-				jsDoc.proc(this, s);
+				if (s.fastCodeAt(1) == "*".code) {
+					jsDoc.procMultiLine(this, s);
+				} else jsDoc.proc(this, s);
 				continue;
 			}
 			// (known to not be JSDoc from hereafter):

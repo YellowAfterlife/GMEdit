@@ -379,6 +379,7 @@ using tools.NativeArray;
 				~/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
 			),
 		];
+		//
 		function getNamespaceType(name:String) {
 			var ns = GmlAPI.gmlNamespaces[name];
 			return JsTools.orx(
@@ -387,6 +388,29 @@ using tools.NativeArray;
 				"text"
 			);
 		}
+		var rCommentDoc = rComment.concat([
+			rxRule(function(meta, _, type1, _, keyword, _, type2) {
+				var t1 = getNamespaceType(type1);
+				var t2 = getNamespaceType(type2);
+				var dt = commentDocLineType;
+				return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
+			}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
+			rxRule(function(meta, _, prop, _, val) {
+				var dt = commentDocLineType;
+				var valid = parsers.linter.misc.GmlLinterJSDocFlag.map.exists(prop);
+				var kt = valid ? "linterflag" : "linterflag.typeerror";
+				var vt = switch (val) {
+					case "true", "false": "constant.boolean";
+					case "default": "keyword";
+					default: "typeerror";
+				}
+				if (prop == "") dt = "linterflag";
+				return ["comment.meta", dt, kt, dt, vt];
+			}, ~/(@lint)(\s*)(\w*)(\s*)(\w*)/),
+			rxRule("curly.paren.lparen", ~/\{$/),
+			rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
+			rule("comment.meta", "@(?:\\w+|$)"),
+		]);
 		//}
 		//{ string-based
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
@@ -538,28 +562,7 @@ using tools.NativeArray;
 				rxRule("comment.line", ~/$/, "pop"),
 				rdef("comment.line"),
 			]), //}
-			"gml.comment.doc.line": rComment.concat([ //{
-				rxRule(function(meta, _, type1, _, keyword, _, type2) {
-					var t1 = getNamespaceType(type1);
-					var t2 = getNamespaceType(type2);
-					var dt = commentDocLineType;
-					return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
-				}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
-				rxRule(function(meta, _, prop, _, val) {
-					var dt = commentDocLineType;
-					var valid = parsers.linter.misc.GmlLinterJSDocFlag.map.exists(prop);
-					var kt = valid ? "linterflag" : "linterflag.typeerror";
-					var vt = switch (val) {
-						case "true", "false": "constant.boolean";
-						case "default": "keyword";
-						default: "typeerror";
-					}
-					if (prop == "") dt = "linterflag";
-					return ["comment.meta", dt, kt, dt, vt];
-				}, ~/(@lint)(\s*)(\w*)(\s*)(\w*)/),
-				rxRule("curly.paren.lparen", ~/\{$/),
-				rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
-				rule("comment.meta", "@(?:\\w+|$)"),
+			"gml.comment.doc.line": rCommentDoc.concat([ //{
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),
 			]), //}
@@ -585,9 +588,9 @@ using tools.NativeArray;
 				rxRule("comment", ~/.*?\*\//, "pop"),
 				rxRule("comment", ~/.+/)
 			]), //}
-			"gml.comment.doc": rComment.concat(rCommentPop).concat([
+			"gml.comment.doc": rCommentDoc.concat(rCommentPop).concat([
 				rxRule("comment.doc", ~/.*?\*\//, "pop"),
-				rxRule("comment.doc", ~/.+/)
+				rdef("comment.doc")
 			]),
 			"gml.comment.gml": rCommentPop.concat([
 				rxRule("comment", ~/.*?\*\//, "pop"),

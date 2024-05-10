@@ -445,4 +445,15 @@ class GmlSeekerJSDoc {
 			seeker.mainComp.doc = seeker.mainComp.doc.nzcct("\n", s);
 		}
 	}
+	public function procMultiLine(seeker:GmlSeekerImpl, text:String) {
+		static var cr = new RegExp("\r", "g");
+		text = text.substring(3, text.length - 2).trimIfEndsWith("*").trimBoth();
+		text = text.replaceExt(cr, "");
+		for (line in text.split("\n")) {
+			static var starStart = new RegExp("^\\s*" + "\\*+" + "\\s*" + "(.*)");
+			var mt = starStart.exec(line);
+			if (mt != null) line = mt[1];
+			proc(seeker, "///" + line);
+		}
+	}
 }
