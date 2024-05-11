@@ -670,7 +670,11 @@ import ui.treeview.TreeViewElement;
 		if (Preferences.current.assetCache) {
 			var item = fileCache.map[path];
 			if (item != null) {
-				item.mtime = FileSystem.mtimeSync(full);
+				var time = FileSystem.mtimeSync(full);
+				if (time != null) {
+					item.mtime = time;
+					item.data = text;
+				}
 			}
 		}
 	}
