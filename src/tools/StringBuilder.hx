@@ -23,17 +23,17 @@ class StringBuilder extends StringBuf {
 	private static function formatInit() {
 		return [
 			"%s" => function(b:StringBuilder, s:Dynamic, i:Int) {
-				if (Std.is(s, String)) {
+				if (s == null || Std.is(s, String)) {
 					b.addString(s);
 				} else throw 'Expected a string for arg#$i';
 			},
 			"%d" => function(b:StringBuilder, v:Dynamic, i:Int) {
-				if (Std.is(v, Int)) {
+				if (v == null || Std.is(v, Int)) {
 					b.addInt(v);
 				} else throw 'Expected an int for arg#$i';
 			},
 			"%c" => function(b:StringBuilder, v:Dynamic, i:Int) {
-				if (Std.is(v, Int)) {
+				if (v == null || Std.is(v, Int)) {
 					b.addInt(v);
 				} else throw 'Expected a char for arg#$i';
 			},
