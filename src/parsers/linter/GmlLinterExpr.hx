@@ -10,6 +10,7 @@ import gml.type.GmlTypeTools;
 import parsers.linter.GmlLinterArrayAccess;
 import parsers.linter.GmlLinterArrayLiteral;
 import parsers.linter.GmlLinterFuncLiteral;
+import parsers.linter.GmlLinterReadFlags;
 import tools.Aliases;
 import parsers.linter.GmlLinter;
 import tools.JsTools;
@@ -233,7 +234,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 				currFunc = null;
 			};
 			case KNot, KBitNot: {
-				rc(self.readExpr(newDepth));
+				rc(self.readExpr(newDepth, GmlLinterReadFlags.NoOps));
 				nullSafety = this.nullSafety;
 				if (nk == KNot) {
 					self.checkTypeCastBoolOp(this.currType, this.currValue, "!");
