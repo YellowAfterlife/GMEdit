@@ -43,6 +43,7 @@
 				+ "\\s*(\\(.*?\\))" // args
 				+ "(?:.*?\\/\\/(.*))?" // post-comment
 			);
+			var rxShorthandFunc = /(\b\w+\b)\s*=\s*(?:\s*(\([^)]*\))\s*\{|(\([^)]*\))\s*=>\s*\{)/;
 			var rxPush = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
 			var rxPop = /^\s*(?:#endregion|\/\/#endregion)\b/;
 			var rxMark = /^\s*((?:\/\/#mark|#section)\b\s*(.*))$/;
@@ -68,6 +69,10 @@
 						if (def != null) break;
 					} else if (mt = rxSubFunc.exec(rowText)) {
 						ctx = (mt[2] || mt[3]);
+						ctxRow = row;
+						if (def != null) break;
+					} else if (mt = rxShorthandFunc.exec(rowText)) {
+						ctx = mt[1];
 						ctxRow = row;
 						if (def != null) break;
 					}
@@ -139,6 +144,15 @@
 							ctxAfter: true,
 							showAtTop: showAtTop
 						};
+						ctx.mark(label, title, nav);
+					} else if (mt = rxShorthandFunc.exec(line)) { // shorthand
+						var label = mt[1], title = mt[1];
+						rx = new RegExp("\\b" + label + "\\b\\s*=\\s*\\(");
+
+						if (showFuncArgs) label += mt[2] || mt[3];
+						title += mt[2] || mt[3];
+						
+						var nav = { def: def, ctx: mt[1], ctxRx: rx, ctxAfter: true, showAtTop: showAtTop };
 						ctx.mark(label, title, nav);
 					} else if (mt = rxPush.exec(line)) {
 						var nav = { def: def, ctx: mt[1], ctxAfter: true, showAtTop: showAtTop };
