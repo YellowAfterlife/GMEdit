@@ -61,12 +61,12 @@ class GmlLinterExpr extends GmlLinterHelper {
 	
 	function checkConst(currName:GmlName, currKind:GmlLinterKind) @:privateAccess {
 		switch (currKind) {
-			case KIdent: {
-				if (linter.localKinds[currName] == KConst) {
+			case LKIdent: {
+				if (linter.localKinds[currName] == LKConst) {
 					linter.addWarning('Assigning to a `const` local `$currName`');
 				}
 			};
-			case KNullField, KNullArray: {
+			case LKNullField, LKNullArray: {
 				linter.addError("Null-conditional values cannot be assigned to");
 			};
 			default:
@@ -85,7 +85,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 		inline function invalid():FoundError {
 			return this.invalid(flags);
 		}
-		if (nk == KEOF) return invalid();
+		if (nk == LKEOF) return invalid();
 		//
 		inline function hasFlag(flag:GmlLinterReadFlags):Bool {
 			return flags.has(flag);
@@ -97,7 +97,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 		// the thing itself:
 		var statKind = nk;
 		var currKind = nk;
-		var currName = nk == KIdent ? nextVal : null;
+		var currName = nk == LKIdent ? nextVal : null;
 		var isLocalIdent = false;
 		var selfType:GmlType = null;
 		var currType:GmlType = null;
@@ -112,36 +112,36 @@ class GmlLinterExpr extends GmlLinterHelper {
 
 		//
 		switch (nk) {
-			case KNumber: {
+			case LKNumber: {
 				currType = GmlTypeDef.number;
 				var nv = nextVal;
 				currValue = VNumber(Std.parseFloat(nv), nv);
 			};
-			case KString: {
+			case LKString: {
 				currType = GmlTypeDef.string;
 				var nv = nextVal;
 				currValue = VString(null, nv); // todo: probably parse string?
 			};
-			case KUndefined: {
+			case LKUndefined: {
 				currType = GmlTypeDef.undefined;
 				currValue = VUndefined;
 			};
-			case KIdent: {
+			case LKIdent: {
 				if (hasFlag(HasPrefix)) checkConst();
-				if (linter.localKinds[currName] == KGhostVar) {
+				if (linter.localKinds[currName] == LKGhostVar) {
 					addWarning('Trying to access a variable `$currName` outside of its scope');
 				}
 				// linting #properties:
 				if (self.isProperties && isStat()) {
-					if (skipIf(peek() == KColon)) { // name:type
-						rc(readCheckSkip(KIdent, "variable type"));
-						if (skipIf(peek() == KLT)) {
+					if (skipIf(peek() == LKColon)) { // name:type
+						rc(readCheckSkip(LKIdent, "variable type"));
+						if (skipIf(peek() == LKLT)) {
 							// we know that it's valid or else GmlObjectProperties would prevent you from saving
 							var depth = 1;
 							while (q.loop) {
 								switch (next()) {
-									case KLT: depth++;
-									case KGT: if (--depth <= 0) break;
+									case LKLT: depth++;
+									case LKGT: if (--depth <= 0) break;
 									default:
 								}
 							}
@@ -154,13 +154,13 @@ class GmlLinterExpr extends GmlLinterHelper {
 				currFunc = GmlLinterIdent.func;
 				isLocalIdent = GmlLinterIdent.isLocal;
 			};
-			case KParOpen: {
+			case LKParOpen: {
 				var arrowState:GmlLinterFuncLiteralArgsArrowState = null;
 				var arrowArgName:String = null;
-				if (skipIfPeek(KParClose)) {
+				if (skipIfPeek(LKParClose)) {
 					arrowState = AfterEmptyPar;
 				}
-				else if (peek() == KIdent) {
+				else if (peek() == LKIdent) {
 					arrowArgName = nextVal;
 					var peeker = linter.__peekReader;
 					for (iter in 0 ... 2) {
@@ -191,9 +191,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 				if (arrowState == null) { // normal (expr)
 					hasParens = true;
 					rc(self.readExpr(newDepth));
-					readCheckSkip(KParClose, "a `)`");
-					if (this.currKind == KCall) {
-						currKind = statKind = KCall;
+					readCheckSkip(LKParClose, "a `)`");
+					if (this.currKind == LKCall) {
+						currKind = statKind = LKCall;
 					}
 					currType = this.currType;
 					currFunc = this.currFunc;
@@ -218,25 +218,25 @@ class GmlLinterExpr extends GmlLinterHelper {
 					currType = currFunc.getFunctionType();
 				}
 			};
-			case KNew: {
+			case LKNew: {
 				rc(self.readExpr(newDepth, IsNew.with(NoSfx)));
 				currType = JsTools.or(this.currType, GmlTypeDef.simple(this.currName));
 				currFunc = currType.getSelfCallDoc(self.getImports());
 			};
-			case KYield: {
+			case LKYield: {
 				rc(self.readExpr(newDepth));
 			};
-			case KCast: {
+			case LKCast: {
 				rc(self.readExpr(newDepth, GmlLinterReadFlags.NoOps.with(IsCast)));
-				if (this.currKind == KAs) {
+				if (this.currKind == LKAs) {
 					currType = this.currType;
 				} else currType = null;
 				currFunc = null;
 			};
-			case KNot, KBitNot: {
+			case LKNot, LKBitNot: {
 				rc(self.readExpr(newDepth, GmlLinterReadFlags.NoOps));
 				nullSafety = this.nullSafety;
-				if (nk == KNot) {
+				if (nk == LKNot) {
 					self.checkTypeCastBoolOp(this.currType, this.currValue, "!");
 					currType = GmlTypeDef.bool;
 					switch (this.currValue) {
@@ -261,17 +261,17 @@ class GmlLinterExpr extends GmlLinterHelper {
 					}
 				}
 			};
-			case KInc, KDec: {
+			case LKInc, LKDec: {
 				rc(self.readExpr(newDepth, HasPrefix));
-				self.checkTypeCast(this.currType, GmlTypeDef.number, nk == KInc ? "++" : "--", this.currValue);
+				self.checkTypeCast(this.currType, GmlTypeDef.number, nk == LKInc ? "++" : "--", this.currValue);
 				currType = GmlTypeDef.number;
 			};
-			case KSqbOpen: {
+			case LKSqbOpen: {
 				rc(GmlLinterArrayLiteral.read(self, newDepth, targetType));
 				currType = GmlLinterArrayLiteral.outType;
 			};
-			case KLambda, KFunction:
-				rc(self.funcLiteral.read(newDepth, nk == KFunction, isStat(), {
+			case LKLambda, LKFunction:
+				rc(self.funcLiteral.read(newDepth, nk == LKFunction, isStat(), {
 					targetType: targetType,
 					templateTypes: templateTypes,
 				}));
@@ -281,30 +281,30 @@ class GmlLinterExpr extends GmlLinterHelper {
 					flags.add(NoSfx);
 				}
 				currType = currFunc.getFunctionType();
-			case KCubOpen: { // { fd1: v1, fd2: v2 }
+			case LKCubOpen: { // { fd1: v1, fd2: v2 }
 				var anon = new GmlTypeAnon();
 				var anonFields = anon.fields;
-				if (self.skipIf(self.peek() == KCubClose)) {
+				if (self.skipIf(self.peek() == LKCubClose)) {
 					// empty!
 				} else while (q.loop) {
 					var key:String;
 					switch (self.next()) {
-						case KIdent: key = self.nextVal;
-						case KString:
+						case LKIdent: key = self.nextVal;
+						case LKString:
 							try {
 								key = haxe.Json.parse(self.nextVal);
 							} catch (x:Dynamic) {
 								key = null;
 								self.addWarning("Invalid string for key name");
 							}
-						case KCubClose: break;
+						case LKCubClose: break;
 						default: return self.readExpect("a field name");
 					}
 					switch (self.peek()) {
-						case KColon:
+						case LKColon:
 							self.skip();
 							rc(self.readExpr(newDepth));
-						case KComma, KCubClose:
+						case LKComma, LKCubClose:
 							GmlLinterIdent.read(self, key);
 							this.currType = GmlLinterIdent.type;
 							this.currFunc = GmlLinterIdent.func;
@@ -314,8 +314,8 @@ class GmlLinterExpr extends GmlLinterHelper {
 						anonFields[key] = new GmlTypeAnonField(this.currType, this.currFunc);
 					}
 					switch (self.peek()) {
-						case KCubClose: self.skip(); break;
-						case KComma: self.skip();
+						case LKCubClose: self.skip(); break;
+						case LKComma: self.skip();
 						default: return self.readExpect("a `,` or a `}` after a key-value pair in {}");
 					}
 				}
@@ -324,9 +324,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 			default: {
 				if (nk.isUnOp()) { // +v or -v
 					rc(self.readExpr(newDepth, NoOps));
-					self.checkTypeCast(this.currType, GmlTypeDef.number, nk == KAdd ? "+" : "-", this.currValue);
+					self.checkTypeCast(this.currType, GmlTypeDef.number, nk == LKAdd ? "+" : "-", this.currValue);
 					currType = GmlTypeDef.number;
-					if (nk == KAdd) {
+					if (nk == LKAdd) {
 						currValue = this.currValue;
 					} else {
 						switch (this.currValue) {
@@ -349,12 +349,12 @@ class GmlLinterExpr extends GmlLinterHelper {
 			nk = self.peek();
 			var setValue = false;
 			switch (nk) {
-				case KSet: {
+				case LKSet: {
 					if (isStat()) {
 						checkConst();
 						self.skip();
 						flags.remove(AsStat);
-						statKind = KSet;
+						statKind = LKSet;
 						rc(self.readExpr(newDepth, None, null, currType));
 						self.checkTypeCast(this.currType, currType, "assignment", this.currValue);
 						currType = null;
@@ -364,14 +364,14 @@ class GmlLinterExpr extends GmlLinterHelper {
 							self.addWarning("Using single `=` as a comparison operator");
 						}
 						self.skip();
-						var localName = currKind == KIdent && isLocalIdent ? currName : null;
+						var localName = currKind == LKIdent && isLocalIdent ? currName : null;
 						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal, localName));
 						mergeBinOpNullSafety();
 						flags.add(NoSfx);
 						currType = this.currType;
 					}
 				};
-				case KParOpen: { // fn(...)
+				case LKParOpen: { // fn(...)
 					if (self.prefs.forbidNonIdentCalls && !currKind.canCall()) {
 						return self.readError('Expression ${currKind.getName()} is not callable');
 					}
@@ -380,7 +380,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 						return self.readError("Can't call this");
 					}
 					self.skip();
-					var argsSelf = currKind == KIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
+					var argsSelf = currKind == LKIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
 					var argc = self.funcArgs.read(newDepth, currFunc, argsSelf, currType);
 					rc(argc < 0);
 					if (currFunc != null) {
@@ -396,11 +396,11 @@ class GmlLinterExpr extends GmlLinterHelper {
 							}
 						}
 					}
-					statKind = currKind = KCall;
+					statKind = currKind = LKCall;
 					currType = linter.funcArgs.returnType;
 					currFunc = currType.getSelfCallDoc(self.getImports());
 				};
-				case KInc, KDec: { // x++, x--
+				case LKInc, LKDec: { // x++, x--
 					if (hasFlag(NoSfx)) break;
 					if (!currKind.canPostfix()) break;
 					checkConst();
@@ -408,17 +408,17 @@ class GmlLinterExpr extends GmlLinterHelper {
 					statKind = currKind = nk;
 					currType = GmlTypeDef.number;
 				};
-				case KDot, KNullDot: { // x.y
+				case LKDot, LKNullDot: { // x.y
 					if (hasFlag(IsNew)) break;
 					self.skip();
-					rc(self.readCheckSkip(KIdent, "field name after `.`"));
+					rc(self.readCheckSkip(LKIdent, "field name after `.`"));
 					var field = self.nextVal;
 					
 					// extract `Type` from `Type?` when doing `v?.field`
-					if (nk == KNullDot && currType.isNullable()) currType = currType.unwrapParam();
+					if (nk == LKNullDot && currType.isNullable()) currType = currType.unwrapParam();
 					
 					var enumType:GmlEnum, scriptName:String;
-					if (currKind == KIdent) {
+					if (currKind == LKIdent) {
 						enumType = GmlAPI.gmlEnums[currName];
 						scriptName = enumType == null && GmlAPI.gmlKind[currName] == "asset.script" ? currName : null;
 					} else {
@@ -426,7 +426,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 						scriptName = null;
 					}
 					
-					currKind = nk == KDot ? KField : KNullField;
+					currKind = nk == LKDot ? LKField : LKNullField;
 					var isStatic:Bool, nsType:GmlType = null;
 					if (enumType != null) {
 						isStatic = true;
@@ -531,32 +531,32 @@ class GmlLinterExpr extends GmlLinterHelper {
 						}
 					}
 				}; // x.y
-				case KSqbOpen, KNullSqb: { // x[i], x[?i], etc.
+				case LKSqbOpen, LKNullSqb: { // x[i], x[?i], etc.
 					self.skip();
 					rc(GmlLinterArrayAccess.read(self, nk, newDepth, currType, currKind, currValue));
 					currKind = GmlLinterArrayAccess.outKind;
 					currType = GmlLinterArrayAccess.outType;
 				};
-				case KLiveIn: { // field in object
+				case LKLiveIn: { // field in object
 					if (hasFlag(NoOps)) break;
 					self.skip();
 					rc(self.readExpr(newDepth));
-					currKind = KLiveIn;
+					currKind = LKLiveIn;
 					currType = GmlTypeDef.bool;
 				};
-				case KNot: { // field not in object
+				case LKNot: { // field not in object
 					if (hasFlag(NoOps) || self.keywords["in"] == null) break;
 					self.seqStart.setTo(self.reader);
 					self.skip();
-					if (!self.skipIf(self.peek() == KLiveIn)) {
+					if (!self.skipIf(self.peek() == LKLiveIn)) {
 						self.reader.setTo(self.seqStart);
 						break;
 					}
 					rc(self.readExpr(newDepth));
-					currKind = KLiveIn;
+					currKind = LKLiveIn;
 					currType = GmlTypeDef.bool;
 				};
-				case KAs: { // <expr> as <type>
+				case LKAs: { // <expr> as <type>
 					if (hasFlag(NoOps) && !hasFlag(IsCast)) break;
 					self.skip();
 					var tnp = q.pos;
@@ -573,9 +573,9 @@ class GmlLinterExpr extends GmlLinterHelper {
 					}
 					currType = asType;
 					currFunc = null;
-					currKind = KAs;
+					currKind = LKAs;
 				};
-				case KQMark: { // x ? y : z
+				case LKQMark: { // x ? y : z
 					if (hasFlag(NoOps)) break;
 					self.checkTypeCast(currType, GmlTypeDef.bool, "ternary condition", currValue);
 					self.skip();
@@ -583,7 +583,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					nullSafety.prepatch(linter);
 					rc(self.readExpr(newDepth));
 					currType = this.currType;
-					rc(self.readCheckSkip(KColon, "a colon in a ternary operator"));
+					rc(self.readCheckSkip(LKColon, "a colon in a ternary operator"));
 					
 					nullSafety.elsepatch(linter);
 					rc(self.readExpr(newDepth));
@@ -604,15 +604,15 @@ class GmlLinterExpr extends GmlLinterHelper {
 						}
 					} else currType = elseType;
 					nullSafety.postpatch(linter);
-					currKind = KQMark;
+					currKind = LKQMark;
 				};
-				case KNullCoalesce: { // x ?? y
+				case LKNullCoalesce: { // x ?? y
 					if (hasFlag(NoOps)) break;
 					self.skip();
 					rc(self.readExpr(newDepth));
 					if (currType.isNullable()) currType = currType.unwrapParam();
 					self.checkTypeCast(this.currType, currType, "?? operator value", this.currValue);
-					currKind = KNullCoalesce;
+					currKind = LKNullCoalesce;
 				};
 				default: {
 					if (nk.isSetOp()) {
@@ -620,10 +620,10 @@ class GmlLinterExpr extends GmlLinterHelper {
 						checkConst();
 						self.skip();
 						var opv = currType != null ? self.nextVal : null;
-						currKind = statKind = KSet;
+						currKind = statKind = LKSet;
 						rc(self.readExpr(newDepth, None, null, currType));
 						if (currType != null) {
-							var opk:GmlLinterKind = opv == "+=" ? KAdd : KSub;
+							var opk:GmlLinterKind = opv == "+=" ? LKAdd : LKSub;
 							self.checkTypeCastOp(currType, currValue, this.currType, this.currValue, opk, opv);
 						}
 						currType = null;
@@ -632,7 +632,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					else if (nk.isBinOp()) {
 						if (hasFlag(NoOps)) break;
 						self.skip();
-						var localName = currKind == KIdent && isLocalIdent ? currName : null;
+						var localName = currKind == LKIdent && isLocalIdent ? currName : null;
 						rc(self.readOps(newDepth, currType, currValue, nk, self.nextVal, localName));
 						mergeBinOpNullSafety();
 						currType = this.currType;
@@ -642,7 +642,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 				};
 			}
 			if (!setValue) currValue = null;
-			if (nk != KDot && nk != KNullDot) selfType = null;
+			if (nk != LKDot && nk != LKNullDot) selfType = null;
 		}
 		//
 		if (wasStat && !statKind.isStat()) {
@@ -651,8 +651,8 @@ class GmlLinterExpr extends GmlLinterHelper {
 			return self.readExpect("a statement");
 		}
 		//
-		this.currName = currKind == KIdent ? currName : null;
-		this.isLocalIdent = currKind == KIdent && isLocalIdent;
+		this.currName = currKind == LKIdent ? currName : null;
+		this.isLocalIdent = currKind == LKIdent && isLocalIdent;
 		this.currKind = currKind;
 		this.currType = currType;
 		this.selfType = selfType;

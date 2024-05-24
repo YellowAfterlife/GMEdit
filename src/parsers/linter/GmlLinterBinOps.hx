@@ -36,7 +36,7 @@ class GmlLinterBinOps extends GmlLinterHelper {
 			types.push(expr.currType);
 			lvals.push(expr.currValue);
 			var nk = peek();
-			if (nk.isBinOp() || nk == KSet) {
+			if (nk.isBinOp() || nk == LKSet) {
 				skip();
 				ops.push(nk);
 				vals.push(nextVal);
@@ -67,7 +67,7 @@ class GmlLinterBinOps extends GmlLinterHelper {
 						nsName = localNames[i + 1];
 					}
 					if (nsName != null) {
-						var notNull = ops[i] == GmlLinterKind.KNE;
+						var notNull = ops[i] == GmlLinterKind.LKNE;
 						var nsi = inline nullSafety.findFirst((nsi) -> nsi.name == nsName);
 						if (nsi != null) {
 							if (nsi.status != null && nsi.status != notNull) nsi.status = null;

@@ -184,12 +184,12 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 		
 		while (q.loop) {
 			switch (peek()) {
-				case KParClose: {
+				case LKParClose: {
 					skip();
 					closed = true;
 					break;
 				};
-				case KComma: {
+				case LKComma: {
 					if (seenComma) {
 						// todo: check if GML version supports func(,,)
 						skip();

@@ -41,7 +41,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 			}
 		}
 		//
-		var hasName = arrowOpts == null && peek() == KIdent;
+		var hasName = arrowOpts == null && peek() == LKIdent;
 		if (hasName) {
 			skip();
 			name = nextVal;
@@ -95,7 +95,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 			}
 		}
 		if (wantPar == null) { // let's ponder whether we want (...args)
-			if (skipIf(peek() == KParOpen)) {
+			if (skipIf(peek() == LKParOpen)) {
 				wantPar = true;
 			} else if (isFunc) {
 				return readExpect("function literal arguments");
@@ -106,9 +106,9 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 			var reader = reader;
 			while (reader.loop) {
 				switch (next()) {
-					case KParOpen, KSqbOpen, KCubOpen: depth++;
-					case KParClose, KSqbClose, KCubClose: if (--depth <= 0) break;
-					case KIdent: {
+					case LKParOpen, LKSqbOpen, LKCubOpen: depth++;
+					case LKParClose, LKSqbClose, LKCubClose: if (--depth <= 0) break;
+					case LKIdent: {
 						if (awaitArgName) {
 							var argName = nextVal;
 							var argIndex = doc.args.length;
@@ -116,7 +116,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 							doc.args.push(argName);
 							var argTypeStr = null;
 							var t:GmlType;
-							if (skipIf(peek() == KColon)) {
+							if (skipIf(peek() == LKColon)) {
 								// arg:type
 								rc(linter.readTypeName());
 								argTypeStr = GmlLinter.readTypeName_typeStr;
@@ -132,7 +132,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 							procArgTypePost(argName, t, argTypeStr);
 						}
 					};
-					case KComma: if (depth == 1) awaitArgName = true;
+					case LKComma: if (depth == 1) awaitArgName = true;
 					default:
 				}
 			}
@@ -141,7 +141,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 		var nextFuncRetStatus = GmlLinterReturnStatus.NoReturn;
 		if (arrowOpts != null) {
 			if (arrowOpts.state != AfterArrow) {
-				if (next() != KArrowFunc) {
+				if (next() != LKArrowFunc) {
 					var ctx = switch (arrowOpts.state) {
 						case AfterColon: "because it had a (name:type)";
 						case AfterComma: "because it had comma-separated words";
@@ -153,18 +153,18 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 				}
 			}
 		} else {
-			if (skipIf(peek() == KArrow)) { // `->returnType`
+			if (skipIf(peek() == LKArrow)) { // `->returnType`
 				rc(linter.readTypeName());
 				doc.returnTypeString = GmlLinter.readTypeName_typeStr;
 				nextFuncRetStatus = (doc.returnType.getKind() == KVoid ? WantNoReturn : WantReturn);
 			}
-			if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
-				rc(readCheckSkip(KIdent, "a parent type name"));
-				rc(readCheckSkip(KParOpen, "opening bracket"));
+			if (isFunc && skipIf(peek() == LKColon)) { // : <parent>(...super args)
+				rc(readCheckSkip(LKIdent, "a parent type name"));
+				rc(readCheckSkip(LKParOpen, "opening bracket"));
 				rc(linter.funcArgs.read(oldDepth + 1) < 0);
 			}
 			if (isFunc) { // `function() constructor`?
-				skipIf(peek() == KIdent && nextVal == "constructor");
+				skipIf(peek() == LKIdent && nextVal == "constructor");
 			}
 		}
 		//
@@ -181,7 +181,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 		linter.localVarTokenType = nextLocalType;
 		
 		inline function readFuncBody():FoundError {
-			if (arrowOpts == null || skipIfPeek(KSemico) || peek() == KCubOpen) {
+			if (arrowOpts == null || skipIfPeek(LKSemico) || peek() == LKCubOpen) {
 				return readStat(0);
 			} else {
 				var trouble = readExpr(0);

@@ -57,8 +57,8 @@ class GmlLinterParser {
 					default: {
 						if (q.peek() == "=".code) {
 							q.skip();
-							return retv(KSetOp, "/=");
-						} else return retv(KDiv, "/");
+							return retv(LKSetOp, "/=");
+						} else return retv(LKDiv, "/");
 					};
 				};
 				case '"'.code, "'".code, "`".code: {
@@ -68,7 +68,7 @@ class GmlLinterParser {
 						q.row += rows;
 						q.rowStart = q.source.lastIndexOf("\n", q.pos) + 1;
 					}
-					return ret(KString);
+					return ret(LKString);
 				};
 				//
 				case "?".code: {
@@ -76,28 +76,28 @@ class GmlLinterParser {
 						case "?".code: {
 							if (q.peek(1) == "=".code) {
 								q.skip(2);
-								return retv(KSet, "??=");
+								return retv(LKSet, "??=");
 							} else {
 								q.skip(1);
-								return retv(KNullCoalesce, "??");
+								return retv(LKNullCoalesce, "??");
 							}
 						};
 						case ".".code: {
 							c = q.peek(1);
 							if (!c.isDigit()) {
 								q.skip();
-								return retv(KNullDot, "?.");
-							} else return retv(KQMark, "?");
+								return retv(LKNullDot, "?.");
+							} else return retv(LKQMark, "?");
 						};
-						case "[".code: q.skip(); return retv(KNullSqb, "?[");
-						default: return retv(KQMark, "?");
+						case "[".code: q.skip(); return retv(LKNullSqb, "?[");
+						default: return retv(LKQMark, "?");
 					}
 				};
 				case ":".code: {
 					if (q.peek() == "=".code) {
 						q.skip();
-						return retv(KSet, ":=");
-					} else return retv(KColon, ":");
+						return retv(LKSet, ":=");
+					} else return retv(LKColon, ":");
 				};
 				case "@".code: {
 					if (l.version.hasLiteralStrings()) {
@@ -106,10 +106,10 @@ class GmlLinterParser {
 							start();
 							q.skip();
 							q.skipString1(c);
-							return ret(KString);
+							return ret(LKString);
 						}
 					}
-					return retv(KAtSign, "@");
+					return retv(LKAtSign, "@");
 				};
 				case "#".code: {
 					c = q.peek();
@@ -123,14 +123,14 @@ class GmlLinterParser {
 							ci = q.peek(i);
 							if (!ci.isHex()) {
 								q.pos += 6;
-								return retv(KNumber, q.substr(p, 7));
+								return retv(LKNumber, q.substr(p, 7));
 							}
 						}
 					}
 					if (c == '"'.code && l.isProperties) {
 						q.skip();
 						q.skipString2();
-						return retv(KString, q.substr(p, q.pos));
+						return retv(LKString, q.substr(p, q.pos));
 					}
 					else if (c.isIdent0()) {
 						p++;
@@ -145,11 +145,11 @@ class GmlLinterParser {
 									q.skipLineEnd();
 									q.markLine();
 								}
-								return ret(nv == "macro" ? KMacro : KMFuncDecl);
+								return ret(nv == "macro" ? LKMacro : LKMFuncDecl);
 							};
-							case "args": return retv(KArgs, "#args");
-							case "lambda": return retv(KLambda, "#lambda");
-							case "lamdef": return retv(KLamDef, "#lamdef");
+							case "args": return retv(LKArgs, "#args");
+							case "lambda": return retv(LKLambda, "#lambda");
+							case "lamdef": return retv(LKLamDef, "#lamdef");
 							case "import", "hyper": {
 								q.skipLine();
 							};
@@ -166,25 +166,25 @@ class GmlLinterParser {
 									}
 									q.skipLine();
 								} else {
-									q.pos = p; return retv(KHash, "#");
+									q.pos = p; return retv(LKHash, "#");
 								}
 							};
 							case "pragma" if (l.version.config.hasPragma): q.skipLine();
 							case "gmcr": {
 								if (l.keywords["yield"] == null) {
-									l.keywords["yield"] = KYield;
-									l.keywords["label"] = KLabel;
-									l.keywords["goto"] = KGoto;
+									l.keywords["yield"] = LKYield;
+									l.keywords["label"] = LKLabel;
+									l.keywords["goto"] = LKGoto;
 								}
 								q.skipLine();
 							};
 							case "region", "endregion", "section": {
 								q.skipLine();
 							};
-							default: q.pos = p; return retv(KHash, "#");
+							default: q.pos = p; return retv(LKHash, "#");
 						}
 					}
-					else return retv(KHash, "#");
+					else return retv(LKHash, "#");
 				};
 				case "$".code: {
 					if (q.isDqTplStart(l.version)) {
@@ -194,106 +194,106 @@ class GmlLinterParser {
 							q.row += rows;
 							q.rowStart = q.source.lastIndexOf("\n", q.pos) + 1;
 						}
-						return ret(KString);
+						return ret(LKString);
 					}
 					if (q.peek(-2) == '['.code) { // Special case, $ after a [ is always treated as an accessor
-						return retv(KDollar, "$");
+						return retv(LKDollar, "$");
 					}
 					start();
 					if (q.peek().isHex()) {
 						q.skipHex();
-						return ret(KNumber);
-					} else return retv(KDollar, "$");
+						return ret(LKNumber);
+					} else return retv(LKDollar, "$");
 				};
-				case ";".code: return retv(KSemico, ";");
-				case ",".code: return retv(KComma, ",");
+				case ";".code: return retv(LKSemico, ";");
+				case ",".code: return retv(LKComma, ",");
 				//
-				case "(".code: return retv(KParOpen, "(");
-				case ")".code: return retv(KParClose, ")");
-				case "[".code: return retv(KSqbOpen, "[");
-				case "]".code: return retv(KSqbClose, "]");
-				case "{".code: return retv(KCubOpen, "{");
-				case "}".code: return retv(KCubClose, "}");
+				case "(".code: return retv(LKParOpen, "(");
+				case ")".code: return retv(LKParClose, ")");
+				case "[".code: return retv(LKSqbOpen, "[");
+				case "]".code: return retv(LKSqbClose, "]");
+				case "{".code: return retv(LKCubOpen, "{");
+				case "}".code: return retv(LKCubClose, "}");
 				//
 				case "=".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KEQ, "==");
-						case ">".code: q.skip(); return retv(KArrowFunc, "=>");
-						default: return retv(KSet, "=");
+						case "=".code: q.skip(); return retv(LKEQ, "==");
+						case ">".code: q.skip(); return retv(LKArrowFunc, "=>");
+						default: return retv(LKSet, "=");
 					}
 				};
 				case "!".code: {
 					if (q.peek() == "=".code) {
 						q.skip();
-						return retv(KNE, "!=");
-					} else return retv(KNot, "!");
+						return retv(LKNE, "!=");
+					} else return retv(LKNot, "!");
 				};
 				//
 				case "+".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "+=");
-						case "+".code: q.skip(); return retv(KInc, "++");
-						default: return retv(KAdd, "+");
+						case "=".code: q.skip(); return retv(LKSetOp, "+=");
+						case "+".code: q.skip(); return retv(LKInc, "++");
+						default: return retv(LKAdd, "+");
 					}
 				};
 				case "-".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "-=");
-						case "-".code: q.skip(); return retv(KDec, "--");
-						case ">".code: q.skip(); return retv(KArrow, "->");
-						default: return retv(KSub, "-");
+						case "=".code: q.skip(); return retv(LKSetOp, "-=");
+						case "-".code: q.skip(); return retv(LKDec, "--");
+						case ">".code: q.skip(); return retv(LKArrow, "->");
+						default: return retv(LKSub, "-");
 					}
 				};
 				//
 				case "*".code: {
 					if (q.peek() == "=".code) {
 						q.skip();
-						return retv(KSetOp, "*=");
-					} else return retv(KMul, "*");
+						return retv(LKSetOp, "*=");
+					} else return retv(LKMul, "*");
 				};
 				case "%".code: {
 					if (q.peek() == "=".code) {
 						q.skip();
-						return retv(KSetOp, "%=");
-					} else return retv(KMod, "%");
+						return retv(LKSetOp, "%=");
+					} else return retv(LKMod, "%");
 				};
 				//
 				case "|".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "|=");
-						case "|".code: q.skip(); return retv(KBoolOr, "||");
-						default: return retv(KOr, "|");
+						case "=".code: q.skip(); return retv(LKSetOp, "|=");
+						case "|".code: q.skip(); return retv(LKBoolOr, "||");
+						default: return retv(LKOr, "|");
 					}
 				};
 				case "&".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "&=");
-						case "&".code: q.skip(); return retv(KBoolAnd, "&&");
-						default: return retv(KAnd, "&");
+						case "=".code: q.skip(); return retv(LKSetOp, "&=");
+						case "&".code: q.skip(); return retv(LKBoolAnd, "&&");
+						default: return retv(LKAnd, "&");
 					}
 				};
 				case "^".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KSetOp, "^=");
-						case "^".code: q.skip(); return retv(KBoolXor, "^^");
-						default: return retv(KXor, "^");
+						case "=".code: q.skip(); return retv(LKSetOp, "^=");
+						case "^".code: q.skip(); return retv(LKBoolXor, "^^");
+						default: return retv(LKXor, "^");
 					}
 				};
-				case "~".code: return retv(KBitNot, "~");
+				case "~".code: return retv(LKBitNot, "~");
 				//
 				case ">".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KGE, ">=");
-						case ">".code: q.skip(); return retv(KShr, ">>");
-						default: return retv(KGT, ">");
+						case "=".code: q.skip(); return retv(LKGE, ">=");
+						case ">".code: q.skip(); return retv(LKShr, ">>");
+						default: return retv(LKGT, ">");
 					}
 				};
 				case "<".code: {
 					switch (q.peek()) {
-						case "=".code: q.skip(); return retv(KLE, "<=");
-						case "<".code: q.skip(); return retv(KShl, "<<");
-						case ">".code: q.skip(); return retv(KNE, "<>");
-						default: return retv(KLT, "<");
+						case "=".code: q.skip(); return retv(LKLE, "<=");
+						case "<".code: q.skip(); return retv(LKShl, "<<");
+						case ">".code: q.skip(); return retv(LKNE, "<>");
+						default: return retv(LKLT, "<");
 					}
 				};
 				//
@@ -302,8 +302,8 @@ class GmlLinterParser {
 					if (c.isDigit()) {
 						start();
 						q.skipNumber(false);
-						return ret(KNumber);
-					} else return retv(KDot, ".");
+						return ret(LKNumber);
+					} else return retv(LKDot, ".");
 				};
 				default: {
 					if (c.isIdent0()) {
@@ -315,14 +315,14 @@ class GmlLinterParser {
 								var imp = l.editor.imports[l.context];
 								if (imp != null) {
 									var ir = GmlLinterImports.proc(l, q, p, imp, nv);
-									if (ir) return KEOF;
+									if (ir) return LKEOF;
 									if (ir != null) return next(l, q);
 								}
 							}
 							//
 							var mf = GmlAPI.gmlMFuncs[nv];
 							if (mf != null) {
-								if (GmlLinterMFunc.read(l, q, nv)) return KEOF;
+								if (GmlLinterMFunc.read(l, q, nv)) return LKEOF;
 								break;
 							}
 							// expand macros:
@@ -330,11 +330,11 @@ class GmlLinterParser {
 							if (mcr != null) {
 								if (q.depth > 128) {
 									l.setError("Macro stack overflow");
-									return KEOF;
+									return LKEOF;
 								}
 								if (mcr.expr == "var") switch (mcr.name) {
-									case "const": return retv(KConst, nv);
-									case "let": return retv(KLet, nv);
+									case "const": return retv(LKConst, nv);
+									case "let": return retv(LKLet, nv);
 								}
 								var expr = l.macroCache[nv];
 								if (expr == null) {
@@ -352,11 +352,11 @@ class GmlLinterParser {
 							}
 							switch (nv) {
 								case "cast":
-									if (Preferences.current.castOperators) return retv(KCast, nv);
+									if (Preferences.current.castOperators) return retv(LKCast, nv);
 								case "as":
-									if (Preferences.current.castOperators) return retv(KAs, nv);
+									if (Preferences.current.castOperators) return retv(LKAs, nv);
 							}
-							return retv(l.keywords.defget(nv, KIdent), nv);
+							return retv(l.keywords.defget(nv, LKIdent), nv);
 						} while (false);
 					}
 					else if (c.isDigit()) {
@@ -372,16 +372,16 @@ class GmlLinterParser {
 						else {
 							q.skipNumber();
 						}
-						return ret(KNumber);
+						return ret(LKNumber);
 					}
 					else if (c.code > 32) {
 						l.setError("Can't parse `" + String.fromCharCode(c) + "`");
-						return KEOF;
+						return LKEOF;
 					}
 				};
 			}
 		}
 		start();
-		return l.__next_retv(KEOF, "");
+		return l.__next_retv(LKEOF, "");
 	}
 }

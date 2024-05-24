@@ -291,25 +291,25 @@ class GmlTypeParser {
 		var startDepth = reader.depth;
 		var typeStr:String;
 		switch (self.next()) {
-			case KParOpen:
+			case LKParOpen:
 				seqStart.setTo(reader);
 				var t = readNameForLinter(self);
 				if (t == null) return null;
-				if (self.next() != KParClose) {
+				if (self.next() != LKParClose) {
 					self.readSeqStartError("Unclosed type ()");
 					return null;
 				}
 				typeStr = '($t)';
-			case KSqbOpen: {
+			case LKSqbOpen: {
 				typeStr = "[";
 				var depth = 1;
 				seqStart.setTo(reader);
 				while (reader.loop) {
 					switch (self.next()) {
-						case KSqbOpen:
+						case LKSqbOpen:
 							typeStr += "[";
 							depth += 1;
-						case KSqbClose:
+						case LKSqbClose:
 							typeStr += "]";
 							depth -= 1;
 							if (depth <= 0) break;
@@ -322,16 +322,16 @@ class GmlTypeParser {
 					return null;
 				}
 			};
-			case KCubOpen: {
+			case LKCubOpen: {
 				typeStr = "{";
 				var depth = 1;
 				seqStart.setTo(reader);
 				while (reader.loop) {
 					switch (self.next()) {
-						case KCubOpen:
+						case LKCubOpen:
 							typeStr += "{";
 							depth += 1;
-						case KCubClose:
+						case LKCubClose:
 							typeStr += "}";
 							depth -= 1;
 							if (depth <= 0) break;
@@ -344,28 +344,28 @@ class GmlTypeParser {
 					return null;
 				}
 			};
-			case KIdent, KUndefined, KFunction:
+			case LKIdent, LKUndefined, LKFunction:
 				typeStr = self.nextVal;
-				while (self.skipIfPeek(KDot)) {
+				while (self.skipIfPeek(LKDot)) {
 					typeStr += ".";
-					if (self.skipIfPeek(KIdent)) {
+					if (self.skipIfPeek(LKIdent)) {
 						typeStr += self.nextVal;
 					} else break;
 				}
-				if (self.skipIfPeek(KLT)) {
+				if (self.skipIfPeek(LKLT)) {
 					var depth = 1;
 					typeStr += "<";
 					seqStart.setTo(reader);
 					while (reader.loop) {
 						switch (self.next()) {
-							case KLT:
+							case LKLT:
 								typeStr += "<";
 								depth += 1;
-							case KGT:
+							case LKGT:
 								typeStr += ">";
 								depth -= 1;
 								if (depth <= 0) break;
-							case KShr:
+							case LKShr:
 								if (depth == 1) {
 									reader.pos--;
 									typeStr += ">";
@@ -389,14 +389,14 @@ class GmlTypeParser {
 		}
 		while (reader.loop) {
 			switch (self.peek()) {
-				case KSqbOpen:
+				case LKSqbOpen:
 					self.skip();
-					if (self.readCheckSkip(KSqbClose, "a closing `]`")) return null;
+					if (self.readCheckSkip(LKSqbClose, "a closing `]`")) return null;
 					typeStr += "[]";
-				case KQMark:
+				case LKQMark:
 					self.skip();
 					typeStr += "?";
-				case KOr:
+				case LKOr:
 					self.skip();
 					var t = readNameForLinter(self);
 					if (t == null) return null;
