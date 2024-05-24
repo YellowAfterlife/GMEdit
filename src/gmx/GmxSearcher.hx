@@ -56,6 +56,27 @@ class GmxSearcher {
 							next();
 						});
 					};
+					case "room": {
+						full += '.$one.gmx';
+						filesLeft += 1;
+						FileWrap.readTextFile(full, function(err:Error, xml:String) {
+							if (err != null) {
+								next();
+								return;
+							}
+							var room = SfGmx.parse(xml);
+							var node = room.find("code");
+							var curr = node.text;
+							if (curr != null) {
+								var next = fn(name, full, curr);
+								if (next != null && next != curr) {
+									node.text = next;
+									FileWrap.writeTextFileSync(full, room.toGmxString());
+								}
+							}
+							next();
+						});
+					};
 					case "timeline": {
 						full += '.$one.gmx';
 						filesLeft += 1;
@@ -99,6 +120,7 @@ class GmxSearcher {
 		if (opt.checkObjects) for (q in pjGmx.findAll("objects")) findrec(q, "object");
 		if (opt.checkTimelines) for (q in pjGmx.findAll("timelines")) findrec(q, "timeline");
 		if (opt.checkShaders) for (q in pjGmx.findAll("shaders")) findrec(q, "shader");
+		if (opt.checkRooms) for (q in pjGmx.findAll("rooms")) findrec(q, "room");
 		if (opt.checkExtensions) {
 			for (q in pjGmx.findAll("NewExtensions")) for (extNode in q.findAll("extension")) {
 				var extPath = extNode.text + ".extension.gmx";

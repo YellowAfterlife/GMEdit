@@ -6,6 +6,7 @@ import file.kind.gmx.*;
 import file.kind.misc.*;
 import gml.file.*;
 import ui.*;
+import gmx.SfGmx;
 import haxe.macro.Expr.Var;
 import js.html.Element;
 import haxe.io.Path;
@@ -98,6 +99,16 @@ class GmxLoader {
 		loadtop("shader");
 		loadtop("timeline");
 		loadtop("object");
+		if (true) {
+			var dir = TreeView.makeAssetDir("Rooms", "Rooms/", "room");
+			tv.appendChild(dir);
+			var ccs = TreeView.makeAssetItem("roomCreationCodes",
+				project.name, project.path, "roomccs");
+			ccs.removeAttribute(TreeView.attrThumb);
+			ccs.yyOpenAs = KGmxRoomCCs.inst;
+			//ccs.yyOrder = -1;
+			dir.treeItems.appendChild(ccs);
+		}
 		for (rooms in gmx.findAll("rooms")) {
 			var rm = gmx.find("room");
 			if (rm != null) project.gmxFirstRoomName = rm.text;

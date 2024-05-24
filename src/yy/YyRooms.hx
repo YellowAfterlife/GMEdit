@@ -113,6 +113,7 @@ class YyRooms {
 		return {map:map,pairs:pairs};
 	}
 	public static function setCCs(pjPath:String, code:String, extraFiles:Array<GmlFileExtra>):Bool {
+		// todo: use GmlMultifile.split(code, "", "target")
 		var data = parse(code);
 		if (data == null) return false;
 		
