@@ -35,7 +35,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 				mappedType = mappedType.mapTemplateTypes(templateTypes);
 			}
 			switch (mappedType) {
-				case TInst(_, tp, KFunction) if (tp.length > 0):
+				case TInst(_, tp, KFunction | KConstructor) if (tp.length > 0):
 					targetArgTypes = tp.slice(0, tp.length - 1);
 				default:
 			}
@@ -164,7 +164,13 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 				rc(linter.funcArgs.read(oldDepth + 1) < 0);
 			}
 			if (isFunc) { // `function() constructor`?
-				skipIf(peek() == LKIdent && nextVal == "constructor");
+				if (skipIf(peek() == LKIdent && nextVal == "constructor")) {
+					doc.isConstructor = true;
+					doc.hasReturn = true;
+					doc.returnTypeString = "any";
+					nextFuncRetStatus = WantNoReturnConstructor;
+					selfOverride = GmlTypeDef.any;
+				}
 			}
 		}
 		//

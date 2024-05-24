@@ -209,7 +209,9 @@ using StringTools;
 	public static function findSelfCallDoc(type:GmlType, imp:GmlImports):GmlFuncDoc {
 		if (type == null) return null;
 		type = type.resolve();
-		if (type.getKind() == KFunction) {
+		var typeKind = type.getKind();
+		if (typeKind == KFunction || typeKind == KConstructor) {
+			var isConstructor = typeKind == KConstructor;
 			var params = type.unwrapParams();
 			var args = [];
 			var n = params.length - 1;
@@ -223,7 +225,13 @@ using StringTools;
 				} else arg = param.toString();
 				args.push(arg);
 			}
-			var doc = new GmlFuncDoc("function", "function(", GmlFuncDoc.parRetArrow + params[n].toString(), args, rest);
+			var doc = new GmlFuncDoc(
+				isConstructor ? "constructor" : "function",
+				isConstructor ? "constructor(" : "function(",
+				GmlFuncDoc.parRetArrow + params[n].toString(), args, rest
+			);
+			doc.isConstructor = isConstructor;
+			
 			doc.argTypes = params.slice(0, n).map(function(t) {
 				return t.resolve().getKind() == KRest ? t.unwrapParam() : t;
 			});

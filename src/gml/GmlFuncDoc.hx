@@ -220,7 +220,9 @@ class GmlFuncDoc {
 		if (hasReturn) {
 			params.push(returnType);
 		} else params.push(GmlTypeDef.void);
-		return GmlType.TInst("function", params, KFunction);
+		if (isConstructor) {
+			return GmlType.TInst("constructor", params, KConstructor);
+		} else return GmlType.TInst("function", params, KFunction);
 	}
 	
 	public static var nameTrimRegex = new RegExpCache();

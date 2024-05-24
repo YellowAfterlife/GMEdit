@@ -102,6 +102,7 @@
     {"id":{"name":"v_constructor_method_arrow_types","path":"scripts/v_constructor_method_arrow_types/v_constructor_method_arrow_types.yy",},},
     {"id":{"name":"v_constructor_self_index","path":"scripts/v_constructor_self_index/v_constructor_self_index.yy",},},
     {"id":{"name":"obj_implicit_inst_types","path":"objects/obj_implicit_inst_types/obj_implicit_inst_types.yy",},},
+    {"id":{"name":"v_local_constructor","path":"scripts/v_local_constructor/v_local_constructor.yy",},"order":0,},
     {"id":{"name":"v_hint_override","path":"scripts/v_hint_override/v_hint_override.yy",},},
     {"id":{"name":"v_literal_fields","path":"scripts/v_literal_fields/v_literal_fields.yy",},},
     {"id":{"name":"v_constructor_inner_args","path":"scripts/v_constructor_inner_args/v_constructor_inner_args.yy",},},

@@ -333,7 +333,7 @@ class GmlLinter {
 			
 			// also check for other problems while we are here:
 			if (doc.isConstructor) {
-				if (!isNew) addWarning('`$currName` is a constructor, but is not used via `new`');
+				if (!isNew) addWarning('`$currName` is a constructor, but is not being used via `new`');
 			} else {
 				if (isNew) {
 					addWarning('`$currName` is not a constructor, but is being used via `new`');
@@ -805,6 +805,8 @@ class GmlLinter {
 							case NoReturn, WantReturn: currFuncRetStatus = HasReturn;
 							case WantNoReturn: 
 								addWarning("The function is marked as returning nothing but has a return statement.");
+							case WantNoReturnConstructor:
+								addWarning("Should not be returning values from constructors.");
 							default:
 						}
 						if (retType != null && expr.currType != null) {
@@ -1066,4 +1068,5 @@ enum abstract GmlLinterReturnStatus(Int) {
 	var HasReturn;
 	var WantReturn;
 	var WantNoReturn;
+	var WantNoReturnConstructor;
 }

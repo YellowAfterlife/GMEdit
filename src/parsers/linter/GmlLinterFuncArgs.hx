@@ -55,12 +55,20 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 					);
 				}
 			}
-		} else if (fnType != null && (fnType = fnType.resolve()).getKind() == KFunction) {
-			isFuncValue = true;
-			argTypes = fnType.unwrapParams();
-			argTypesLen = argTypes.length - 1;
-			var isRest = argTypesLen > 0 && argTypes[argTypesLen - 1].resolve().getKind() == KRest;
-			argTypeClamp = isRest ? argTypesLen - 1 : 0x7fffffff;
+		} else if (fnType != null) {
+			fnType = fnType.resolve();
+			var fnTypeKind = fnType.getKind();
+			if (fnTypeKind == KFunction || fnTypeKind == KConstructor) {
+				isFuncValue = true;
+				argTypes = fnType.unwrapParams();
+				argTypesLen = argTypes.length - 1;
+				var isRest = argTypesLen > 0 && argTypes[argTypesLen - 1].resolve().getKind() == KRest;
+				argTypeClamp = isRest ? argTypesLen - 1 : 0x7fffffff;
+			} else {
+				argTypes = null;
+				argTypesLen = 0;
+				argTypeClamp = 0;
+			}
 		} else {
 			argTypes = null;
 			argTypesLen = 0;

@@ -317,10 +317,11 @@ import ace.extern.AceTokenType;
 			case TInst(_, [p], KNullable): return toString(p, tpl) + "?";
 			case TInst(_, p, KTemplateItem):
 				return p.length < 3 ? toString(p[0]) : "(" + toString(p[0]) + ":" + toString(p[2]) + ")";
-			case TInst(_, p, KFunction):
+			case TInst(_, p, fk) if (fk == KFunction || fk == KConstructor):
 				var n = p.length - 1;
-				if (n < 0) return "function";
-				var s = "function(";
+				var s = fk == KFunction ? "function" : "constructor";
+				if (n < 0) return s;
+				s += "(";
 				var i = -1; while (++i < n) {
 					if (i > 0) s += ", ";
 					s += ":" + toString(p[i], tpl);

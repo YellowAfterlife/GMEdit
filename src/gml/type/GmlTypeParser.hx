@@ -26,6 +26,7 @@ class GmlTypeParser {
 		r[GmlTypeTools.templateSelfName] = KTemplateSelf;
 		r["global"] = KGlobal;
 		r["function"] = KFunction;
+		r["constructor"] = KConstructor;
 		r["rest"] = KRest;
 		//
 		r["undefined"] = KUndefined;

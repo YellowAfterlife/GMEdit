@@ -82,6 +82,11 @@ enum abstract GmlTypeKind(Int) {
 	var KGlobal = 0x08; // type of `global`
 	var KFunction = 0x09; // (a:int, b:string)->any is function<int, string, any>
 	var KRest = 0x0A; // `...v:T` in functions
+	/**
+		`function Cool(a:int, b:string) constructor`
+		is `constructor<int, string, Cool>`
+	**/
+	var KConstructor = 0x0B;
 	
 	// value types
 	var KUndefined = 0x10;
