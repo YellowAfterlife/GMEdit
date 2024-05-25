@@ -38,8 +38,8 @@ import tools.PathTools;
 	
 	public static function unlinkSync(path:String):Void {
 		impl(path,
-			function(pt) FileSystem.unlinkSync(path),
-			function(pj, pt) pj.unlinkSync(path),
+			function(pt) FileSystem.unlinkSync(pt),
+			function(pj, pt) pj.unlinkSync(pt),
 		);
 	}
 	
@@ -115,7 +115,7 @@ import tools.PathTools;
 				}
 				return out;
 			},
-			(pj, pt) -> pj.readdirSync(path)
+			(pj, pt) -> pj.readdirSync(pt)
 		);
 	}
 	
