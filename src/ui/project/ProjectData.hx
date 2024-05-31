@@ -19,6 +19,7 @@ typedef ProjectData = {
 	?newLineMode:String,
 	
 	?lambdaMode:LambdaMode,
+	?autoArrowFunctions:Bool,
 	
 	?argNameRegex:String,
 	

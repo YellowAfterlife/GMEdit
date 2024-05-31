@@ -129,6 +129,10 @@ class ProjectProperties {
 	
 	static function buildSyntax(project:Project, out:DivElement) {
 		var d = project.properties;
+		inline function autoSave() {
+			save(project, d);
+		}
+		
 		var fs = Preferences.addGroup(out, "Syntax extensions");
 		fs.id = "project-properties-syntax";
 		var lambdaModes = [
@@ -145,6 +149,14 @@ class ProjectProperties {
 		if (project.version.config.projectModeId != 2) {
 			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
 		}
+		
+		//
+		Preferences.addCheckbox(fs, "Automatic arrow functions", d.autoArrowFunctions, (z) -> {
+			d.autoArrowFunctions = z;
+			autoSave();
+		}).setTitleLines([
+			"Auto-collapses function literals into arrow functions without /*=>*/"
+		]);
 		
 		//
 		var argRegexInput:InputElement = null;

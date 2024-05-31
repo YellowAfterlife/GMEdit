@@ -1,9 +1,8 @@
 package synext;
+import gml.Project;
 import editors.EditCode;
-import gml.GmlVersion;
 import parsers.GmlReader;
 import synext.SyntaxExtension;
-import tools.Aliases.GmlCode;
 import tools.CharCode;
 import ui.Preferences;
 
@@ -22,6 +21,7 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 	}
 	override public function preproc(editor:EditCode, code:String):String {
 		var q = new GmlReader(code);
+		var autoArrow = Project.current.properties.autoArrowFunctions;
 		var v = q.version;
 		var start = 0;
 		var out = "";
@@ -34,6 +34,7 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 			var c:CharCode = q.read();
 			if (c != "f".code || !q.skipIfIdentEquals("unction")) continue;
 			q.skipSpaces1_local();
+			
 			// skip over (...)...
 			var parStart = q.pos;
 			if (q.read() != "(".code) continue;
@@ -47,13 +48,23 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 			}
 			if (depth > 0) continue;
 			var parEnd = q.pos;
+			
+			
 			var beforeSpStart = q.pos;
 			q.skipSpaces1_local();
 			var beforeSpEnd = q.pos;
-			if (!q.skipIfStrEquals("/*=>*/")) continue;
-			var afterSpStart = q.pos;
-			q.skipSpaces1_local();
-			var afterSpEnd = q.pos;
+			
+			var afterSpStart, afterSpEnd;
+			if (q.skipIfStrEquals("/*=>*/")) {
+				afterSpStart = q.pos;
+				q.skipSpaces1_local();
+				afterSpEnd = q.pos;
+			} else {
+				if (!autoArrow) continue;
+				afterSpStart = beforeSpStart;
+				afterSpEnd = beforeSpEnd;
+			}
+			
 			if (!q.skipIfEquals("{".code)) continue;
 			if (q.skipIfEquals(";".code)) { // ()=>;stat
 				var statStart = q.pos;
@@ -138,10 +149,10 @@ class GmlExtArrowFunctions extends SyntaxExtension {
 		var afterSpEnd = q.pos;
 		
 		flush(parEnd);
-		out = "function" + out
-			+ q.substring(beforeSpStart, beforeSpEnd)
-			+ "/*=>*/"
-			+ q.substring(afterSpStart, afterSpEnd);
+		out = "function" + out + q.substring(beforeSpStart, beforeSpEnd);
+		if (!Project.current.properties.autoArrowFunctions) {
+			out += "/*=>*/" + q.substring(afterSpStart, afterSpEnd);
+		}
 		
 		if (q.skipIfEquals(";".code)) { // =>;stat
 			var statStart = q.pos;
