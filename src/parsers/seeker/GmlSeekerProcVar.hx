@@ -198,8 +198,8 @@ class GmlSeekerProcVar {
 					q.skipSpaces1_local();
 					var c = q.peek();
 					if (c == ",".code) continue;
-					if (c == ";".code) break;
-					if (c.isIdent0()) break; // static f = function() etc = 1
+					// it's a `var f = function() {}`, what else could follow 
+					break;
 				}
 				if (skipBalancedExpr()) break;
 			}
