@@ -589,6 +589,7 @@ class GmlLinter {
 			case LKVar, LKConst, LKLet, LKGlobalVar, LKArgs, LKStatic: {
 				var varKeyword = nextVal;
 				var isArgs = nk == LKArgs;
+				var isStaticCtr = nk == LKStatic && currFuncDoc.isConstructor;
 				var isCoroutineArgs = isArgs && currFuncDoc != null	&& currFuncDoc.post.startsWith(GmlFuncDoc.parRetArrow + synext.GmlExtCoroutines.arrayTypeResultName);
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
@@ -685,7 +686,13 @@ class GmlLinter {
 							}
 						}
 					}
-					if (setLocalVars && mainKind != LKGlobalVar) {
+					if (!setLocalVars) {
+						// OK!
+					} else if (mainKind == LKGlobalVar) {
+						// don't store globals
+					} else if (isStaticCtr) {
+						
+					} else {
 						if (typeInfo == null && varTypeStr != null) {
 							typeInfo = "type " + varTypeStr;
 						}
