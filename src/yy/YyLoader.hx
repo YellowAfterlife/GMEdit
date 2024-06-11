@@ -196,6 +196,25 @@ class YyLoader {
 			}
 			topLevel.treeItems.appendChild(idir);
 		}
+		if (project.existsSync("options")) {
+			var optDir = TreeView.makeAssetDir("Options", "options/", "options");
+			for (item in project.readdirSync("options")) {
+				if (!item.isDirectory) continue;
+				for (subitem in project.readdirSync(item.relPath)) {
+					if (subitem.isDirectory) continue;
+					if (subitem.relPath.ptExt() != "yy") continue;
+					var optItem = TreeView.makeAssetItem(
+						item.relPath.ptName(),
+						subitem.relPath,
+						subitem.fullPath,
+						"options",
+					);
+					optItem.yyOpenAs = file.kind.misc.KJavaScript.inst;
+					optDir.treeItems.appendChild(optItem);
+				}
+			}
+			topLevel.treeItems.appendChild(optDir);
+		}
 		// restoreOpen runs in Project:reload
 		project.yyObjectNames = new Dictionary();
 		project.yyObjectGUIDs = new Dictionary();
