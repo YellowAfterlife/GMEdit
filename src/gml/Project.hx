@@ -1,4 +1,6 @@
 package gml;
+import gmk.snips.GmkSnipsLoader;
+import gmk.snips.GmkSnipsSearcher;
 import gml.project.ProjectFileCache;
 import js.lib.DataView;
 import haxe.io.Bytes;
@@ -29,6 +31,7 @@ import plugins.PluginEvents;
 import plugins.PluginManager;
 import ace.AceWrap;
 import gmk.*;
+import gmk.snip.*;
 import gmx.*;
 import raw.*;
 import yy.*;
@@ -459,12 +462,14 @@ import ui.treeview.TreeViewElement;
 			"gms1": GmxLoader.run,
 			"gms2": YyLoader.run,
 			"gmk-splitter": GmkLoader.run,
+			"gmk-snip": GmkSnipsLoader.run,
 			"directory": RawLoader.run,
 		};
 		searchMap = {
 			"gms1": GmxSearcher.run,
 			"gms2": YySearcher.run,
 			"gmk-splitter": GmkSearcher.run,
+			"gmk-snip": GmkSnipsSearcher.run,
 			"directory": RawSearcher.run,
 		};
 		//

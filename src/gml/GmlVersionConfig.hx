@@ -93,7 +93,7 @@ typedef GmlVersionConfig = {
 	/**
 	 * 
 	 * "local": Per-file (e.g. NTT mods)
-	 * "directory": For all files inside same directory (as if they are scripts)
+	 * "directory": For all files inside the same directory (as if they are scripts)
 	 * "gms1": GameMaker Studio 1 indexer
 	 * "gms2": GameMaker Studio 2 indexer
 	 */

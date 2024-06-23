@@ -1,0 +1,17 @@
+{
+	"parent": "gm81",
+	"name": "GameMaker-snippet",
+	
+	"docMode": "gmk-snip",
+	"projectMode": "gmk-snip",
+	"indexingMode": "gmk-snip",
+	"loadingMode": "gmk-snip",
+	"searchMode": "gmk-snip",
+	
+	"hasEventSections": false,
+	"hasEventActions": false,
+	
+	"projectRegex": "(^.+)\\.gmk-snips$",
+	"helpURL": "http://docs.yoyogames.com/?tab=i&page=$1",
+	"helpIndex": "helpindexdat.js"
+}

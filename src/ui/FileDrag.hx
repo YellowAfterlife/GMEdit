@@ -19,6 +19,7 @@ import yy.zip.YyZip;
  */
 class FileDrag {
 	public static function handle(path:String, file:js.html.File) {
+		var rel = Path.withoutDirectory(path);
 		var name = Path.withoutDirectory(path);
 		inline function decline():Void {
 			Dialog.showMessageBox({
@@ -27,7 +28,7 @@ class FileDrag {
 				buttons: ["OK"]
 			});
 		}
-		switch (Path.withoutDirectory(path)) {
+		switch (rel) {
 			case "main.cfg", "main.txt": {
 				Project.open(path);
 				return;
@@ -46,6 +47,8 @@ class FileDrag {
 			};
 			case "yyp": Project.open(path);
 			case "gmd", "gmk", "gm81": gmk.GmkSplit.proc(path);
+			case "gmk-snips": Project.open(path);
+			case "xml" if (rel == "Global Game Settings.xml"): Project.open(path);
 			case "gml": {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 				GmlFile.open(Path.withoutExtension(name), path);

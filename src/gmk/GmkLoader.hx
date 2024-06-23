@@ -22,6 +22,7 @@ class GmkLoader {
 		GmlSeeker.start();
 		GmlAPI.gmlClear();
 		GmlAPI.extClear();
+		TreeView.clear();
 		//
 		project.resourceTypes = new tools.Dictionary();
 		var seekSoon = [];
@@ -42,7 +43,7 @@ class GmkLoader {
 				}
 				project.resourceTypes[name] = kind;
 				rel += suffix;
-				var full = project.fullPath(rel);
+				var full = Path.normalize(project.fullPath(rel));
 				//
 				if (name == fname) { // valid identifier
 					var assetKind = "asset." + kind;

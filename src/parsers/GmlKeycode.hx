@@ -33,6 +33,7 @@ class GmlKeycode {
 		add(8, "vk_backspace");
 		add(9, "vk_tab");
 		add(13, "vk_return");
+		add(13, "vk_enter");
 		add(16, "vk_shift");
 		add(17, "vk_control");
 		add(18, "vk_alt");
