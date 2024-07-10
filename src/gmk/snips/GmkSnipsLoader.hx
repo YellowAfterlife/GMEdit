@@ -50,7 +50,7 @@ class GmkSnipsLoader {
 				rel = line;
 				meta = null;
 			}
-			Console.log(line, rel, meta);
+			//Console.log(line, rel, meta);
 			
 			var openAs:FileKind = null;
 			var indexKind:FileKind = null;
