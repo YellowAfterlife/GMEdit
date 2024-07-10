@@ -25,6 +25,33 @@
 	var showFuncArgs = false;
 	var tailSep = " ➜ "; // narrow space, arrow, narrow space
 	//
+	var Menuitem = Electron_MenuItem;
+	var ctxMenu = new Electron_Menu();
+	var ctxItem = null;
+	ctxMenu.append(new Menuitem({
+		id: "open",
+		label: "Open",
+		click: function() {
+			ctxItem.querySelector(".header").click();
+		}
+	}));
+	ctxMenu.append(new Menuitem({
+		id: "copy-name",
+		label: "Copy &name",
+		click: function() {
+			var text = ctxItem.getAttribute("outline-def");
+			navigator.clipboard.writeText(text);
+		}
+	}));
+	ctxMenu.append(new Menuitem({
+		id: "copy-text",
+		label: "Copy &text",
+		click: function() {
+			var text = ctxItem.querySelector(".header").innerText;
+			navigator.clipboard.writeText(text);
+		}
+	}));
+	//
 	var escapeProp = $gmedit["tools.NativeString"].escapeProp;
 	var modeMap = {
 		"ace/mode/gml": (function() {
@@ -178,6 +205,7 @@
 		"ace/mode/markdown": (function() {
 			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}\s])/;
 			var rxDmd2 = /^\s*(#+)(?:\[(.+)\].*|(.+))/;
+			var rxDmd2ex = /^(define\b|macro\b|\W)/;
 			function update_dmd(file, pos) {
 				var row = pos.row;
 				var doc = file.codeEditor.session.doc;
@@ -206,6 +234,7 @@
 						ctx.pop();
 					} else if (mt = rxDmd2.exec(line)) {
 						var name = mt[2] || mt[3];
+						if (rxDmd2ex.test(name)) continue;
 						ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
 					}
 				}
@@ -338,6 +367,21 @@
 			if (dir.outlineViewNav) dir.outlineViewFile.navigate(dir.outlineViewNav);
 		}
 	}
+	function makeNav_contextmenu(e) {
+		var dir = e.target, header;
+		if (dir.classList.contains("header")) {
+			header = dir;
+			dir = dir.parentElement;
+		} else header = dir.querySelector(".header");
+		ctxItem = dir;
+		header.classList.add("selected");
+		ctxMenu.popup({
+			async: true,
+			callback: function() {
+				header.classList.remove("selected");
+			}
+		});
+	}
 	function makeNav(file, label, title, nav) {
 		var r = navPool.pop();
 		if (r) {
@@ -348,6 +392,7 @@
 			r.classList.remove("dir");
 			r.treeHeader.classList.add("item");
 			r.treeHeader.addEventListener("click", makeNav_clicked);
+			r.treeHeader.addEventListener("contextmenu", makeNav_contextmenu);
 		}
 		r.classList.add("open");
 		r.outlineViewFile = file;
