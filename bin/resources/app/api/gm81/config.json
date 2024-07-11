@@ -10,6 +10,7 @@
 	
 	"hasEventSections": true,
 	"hasEventActions": true,
+	"hasVarDeclSet": false,
 	
 	"projectRegex": "Global Game Settings\\.xml$",
 	"helpURL": "http://docs.yoyogames.com/?tab=i&page=$1",

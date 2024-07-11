@@ -1795,7 +1795,7 @@ pt_shape_snow#:particle_shape
 #region 12.2
 
 part_system_create()->particle_system
-part_system_create_layer(layer:layer|string,persistent:bool)->particle_system
+part_system_create_layer(layer:layer|string,persistent:bool, ?partsys)->particle_system
 part_system_destroy(ind:particle_system)->void
 part_system_exists(ind:particle_system)->bool
 part_system_clear(ind:particle_system)->void

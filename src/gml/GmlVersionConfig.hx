@@ -19,6 +19,9 @@ typedef GmlVersionConfig = {
 	/** Display name */
 	var name:String;
 	
+	/** Whether you can do "var a = b" */
+	var hasVarDeclSet:Bool;
+	
 	/** Whether you can do "a \" b" */
 	var hasStringEscapeCharacters:Bool;
 	
@@ -147,6 +150,7 @@ class GmlVersionConfigDefaults {
 			parent: null,
 			name: null,
 			//
+			hasVarDeclSet: true,
 			hasStringEscapeCharacters: v2,
 			hasLiteralStrings: v2,
 			hasSingleQuotedStrings: v1,
