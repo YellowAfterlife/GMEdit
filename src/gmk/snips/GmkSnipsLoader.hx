@@ -60,7 +60,9 @@ class GmkSnipsLoader {
 					case "object": indexKind = KGmkSnipsEvents.inst;
 					default: indexKind = KGmlScript.inst;
 				}
-			} else continue;
+			} else {
+				indexKind = KPlain.inst;
+			}
 			
 			var name = Path.withoutDirectory(rel);
 			var full = project.fullPath(rel);
