@@ -375,7 +375,7 @@ class GmlLinterParser {
 						return ret(LKNumber);
 					}
 					else if (c.code > 32) {
-						l.setError("Can't parse `" + String.fromCharCode(c) + "`");
+						l.setError("Can't parse `" + String.fromCharCode(c) + "` (" + c + ")");
 						return LKEOF;
 					}
 				};
