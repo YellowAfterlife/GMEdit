@@ -171,17 +171,19 @@ class YyManip {
 			var pre = (parDir.treeIsRoot ? "folders/" : parDir.treeRelPath) + name;
 			var folder:YyProjectFolder = {
 				folderPath: pre + ".yy",
-				order: -1,
-				resourceVersion: "1.0",
+				resourceVersion: pj.isGM2024 ? "2.0" : "1.0",
 				name: name,
-				tags: [],
 				resourceType: "GMFolder",
 			};
 			py.Folders.push(folder);
 			if (resourceOrder != null) {
 				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
 				resourceOrder.FolderOrderSettings.push(yyOrderItem);
-			} else yyOrderItem = null;
+			} else {
+				yyOrderItem = null;
+				folder.order = -1;
+				folder.tags = [];
+			}
 			yypItem = folder;
 			ntv = TreeView.makeAssetDir(name, pre + "/", "mixed");
 		}
@@ -308,13 +310,15 @@ class YyManip {
 			//
 			var res:YyProjectResource = {
 				id: { name: name, path: pre + ".yy" },
-				order: -1,
 			};
 			py.resources.insertAtRandom(res);
 			if (resourceOrder != null) {
 				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
 				resourceOrder.ResourceOrderSettings.insertAtRandom(yyOrderItem);
-			} else yyOrderItem = null;
+			} else {
+				yyOrderItem = null;
+				res.order = -1;
+			}
 			yypItem = res;
 			// same trouble as in YyLoader
 			pj.yyResources[name] = res;
@@ -333,7 +337,7 @@ class YyManip {
 		var itemOrder = parItemEls.indexOf(ntv);
 		if (yyOrderItem != null) {
 			yyOrderItem.order = itemOrder;
-			yypItem.order = 0;
+			if (!pj.isGM2024) yypItem.order = 0;
 		} else yypItem.order = itemOrder;
 		offsetTreeItems(py, parItemEls, itemOrder + 1, 1, resourceOrder);
 		
