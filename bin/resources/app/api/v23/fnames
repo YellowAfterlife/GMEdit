@@ -65,6 +65,7 @@ GM_version#
 GM_runtime_version#
 GM_project_filename#
 GM_build_type#
+GM_is_sandboxed#
 _GMLINE_#
 _GMFILE_#
 _GMFUNCTION_#
@@ -109,11 +110,13 @@ variable_struct_remove(struct,name)
 variable_get_hash(name)
 variable_clone(var,[depth])
 struct_exists(struct,name)
+struct_exists_from_hash(struct,hash)
 struct_get(struct,name)
 struct_set(struct,name,val)
 struct_get_names(struct)
 struct_names_count(struct)
 struct_remove(struct,name) 
+struct_remove_from_hash(struct,hash) 
 struct_foreach(struct,func)
 struct_get_from_hash(struct,hash)
 struct_set_from_hash(struct,hash,val)
@@ -137,7 +140,7 @@ array_shuffle(array,[offset],[length])
 array_shuffle_ext(array,[offset],[length])
 array_get_index(array,value,[offset],[length])
 array_contains(array,value,[offset],[length])
-array_contains_ext(array,values,matchAll,[offset],[length])
+array_contains_ext(array,values,[matchAll],[offset],[length])
 array_first(array)
 array_last(array)
 array_create_ext(size,function)
@@ -225,6 +228,7 @@ bool(val)
 string(val_or_template,val0,...)
 int64(val)
 ptr(val)
+handle_parse(val_string)
 string_format(val,total,dec)
 chr(val)
 ansi_char(val)
@@ -727,6 +731,8 @@ show_debug_message(val_or_format,val0,val1,...)
 show_debug_message_ext(format,array_value)
 show_debug_overlay(enable,[minimised],[scale],[alpha],...)
 is_debug_overlay_open()
+is_mouse_over_debug_overlay()
+is_keyboard_used_debug_overlay()
 show_debug_log(enable)
 debug_mode*
 debug_event(str,...)
@@ -734,20 +740,24 @@ debug_get_callstack([maxdepth],...)
 alarm_get(index)
 alarm_set(index,count)
 dbg_view(name,visible,[x],[y],[width],[height],...)
-dbg_section(name)
+dbg_section(name,[open])
 dbg_view_delete(viewPTR)
+dbg_view_exists(viewPTR)
 dbg_section_delete(sectionPTR)
-dbg_slider(dbgRef,[minimum],[maximum],[label],...)
-dbg_slider_int(dbgRef,[minimum],[maximum],[label],...)
-dbg_drop_down(dbgRef,specifierOrArrayValues,[labelOrArrayLabels],[label]...)
-dbg_watch(dbgRef,[label],...)
-dbg_text(dbgRefOrString)
-dbg_sprite(dbgRefSprite,dbgRefSpriteIndex,[label],...)
-dbg_text_input(dbgRef,[label],...)
-dbg_checkbox(dbgRef,[label],...)
-dbg_colour(dbgRef,[label],...)£
-dbg_color(dbgRef,[label],...)$
+dbg_section_exists(sectionPTR)
+dbg_slider(dbgRefOrArrayOfDbgRef,[minimum],[maximum],[label],[step]...)
+dbg_slider_int(dbgRefOrArrayOfDbgRef,[minimum],[maximum],[label],[step]...)
+dbg_drop_down(dbgRefOrArrayOfDbgRef,specifierOrArrayValues,[labelOrArrayLabels],[label]...)
+dbg_watch(dbgRefOrArrayOfDbgRef,[label],...)
+dbg_text(dbgRefOrArrayOfDbgRefOrString)
+dbg_text_separator(dbgRefOrArrayOfDbgRefOrString,[align])
+dbg_sprite(dbgRefSpriteOrArrayOfDbgRef,dbgRefSpriteIndexOrArrayOfDbgRef,[label],[width],[height]...)
+dbg_text_input(dbgRefOrArrayOfDbgRef,[label],[type]...)
+dbg_checkbox(dbgRefOrArrayOfDbgRef,[label],...)
+dbg_colour(dbgRefOrArrayOfDbgRef,[label],...)£
+dbg_color(dbgRefOrArrayOfDbgRef,[label],...)$
 dbg_button(label,dbgRef,[width],[height]...)
+dbg_sprite_button(label,dbgRef,dbgRefSprite,dbgRefSpriteIndex,[width],[height],[xoffset],[yoffset],[widthSprite],[heightSprite]...)
 dbg_same_line()
 dbg_add_font_glyphs( filenameTTF,[size],[fontRange]... )
 ref_create(dbgrefOrStruct,dbgrefOrName,[index],...)
@@ -896,6 +906,7 @@ bboxkind_precise#
 bboxkind_rectangular#
 bboxkind_ellipse#
 bboxkind_diamond#
+bboxkind_spine#
 
 // exception structure entries
 message*@
@@ -937,6 +948,9 @@ draw_sprite_general(sprite,subimg,left,top,width,height,x,y,xscale,yscale,rot,c1
 
 draw_clear(col)
 draw_clear_alpha(col,alpha)
+draw_clear_depth(depth)
+draw_clear_stencil(stencil)
+draw_clear_ext([col],[alpha],[depth],[stencil])
 draw_point(x,y)
 draw_line(x1,y1,x2,y2)
 draw_line_width(x1,y1,x2,y2,w)
@@ -1087,6 +1101,8 @@ bm_normal#
 bm_add#
 bm_max#
 bm_subtract#
+bm_min#
+bm_reverse_subtract#
 bm_zero#
 bm_one#
 bm_src_colour#£
@@ -1102,6 +1118,11 @@ bm_inv_dest_colour#£
 bm_dest_color#$
 bm_inv_dest_color#$
 bm_src_alpha_sat#
+bm_eq_add#
+bm_eq_max#
+bm_eq_subtract#
+bm_eq_min#
+bm_eq_reverse_subtract#
 
 tf_point#
 tf_linear#
@@ -1126,7 +1147,7 @@ audio_new_system#&
 
 audio_mono#
 audio_stereo#
-audio_3D#
+audio_3d#
 
 // section 5.7_1
 
@@ -1138,14 +1159,18 @@ surface_exists(id)
 surface_get_width(id)
 surface_get_height(id)
 surface_get_texture(id)
+surface_get_texture_depth(id)
 surface_get_format(id)
 surface_set_target(id)
+surface_set_target(id,[depth_id])
 surface_set_target_ext(index,id)
 surface_get_target()
+surface_get_target_depth()
 surface_get_target_ext(index)
 surface_reset_target()
 surface_depth_disable(disable)
 surface_get_depth_disable()
+surface_has_depth(id)
 surface_format_is_supported(format)
 draw_surface(id,x,y)
 draw_surface_stretched(id,x,y,w,h)
@@ -1229,6 +1254,8 @@ window_set_max_height(maxheight)
 window_get_visible_rects(startx,starty,endx,endy)
 window_get_caption()
 window_set_cursor(curs)
+window_enable_borderless_fullscreen(enable)
+window_get_borderless_fullscreen()
 cr_default#
 cr_none#
 cr_arrow#
@@ -1359,6 +1386,7 @@ audio_get_master_gain(listenerIndex)
 audio_sound_get_gain(index)
 audio_sound_get_pitch(index)
 audio_get_name(index)
+audio_sound_get_asset(voiceIndex)
 audio_sound_set_track_position(index, time)
 audio_sound_get_track_position(index)
 audio_sound_loop(voiceIndex, loopState)
@@ -1699,6 +1727,7 @@ asset_tiles#
 asset_shader#
 asset_sequence#
 asset_animationcurve#
+asset_particlesystem#
 
 //////////////
 // Chapter 410
@@ -2239,6 +2268,15 @@ cmpfunc_notequal#
 cmpfunc_greaterequal#
 cmpfunc_always#
 
+stencilop_keep#
+stencilop_zero#
+stencilop_replace#
+stencilop_incr_wrap#
+stencilop_decr_wrap#
+stencilop_invert#
+stencilop_incr#
+stencilop_decr#
+
 cull_noculling#
 cull_clockwise#
 cull_counterclockwise#
@@ -2246,6 +2284,16 @@ cull_counterclockwise#
 lighttype_dir#
 lighttype_point#
 
+
+gpu_set_stencil_depth_fail(stencil_op)
+gpu_set_stencil_enable(enable)
+gpu_set_stencil_fail(stencil_op)
+gpu_set_stencil_func(cmp_func)
+gpu_set_stencil_pass(stencil_op)
+gpu_set_stencil_read_mask(mask)
+gpu_set_stencil_ref(ref)
+gpu_set_stencil_write_mask(mask)
+gpu_set_sprite_cull(enable)
 gpu_set_blendenable(enable)
 gpu_set_ztestenable(enable)
 gpu_set_zfunc(cmp_func)
@@ -2257,6 +2305,8 @@ gpu_set_cullmode(cullmode)
 gpu_set_blendmode(mode)
 gpu_set_blendmode_ext(src,dest)
 gpu_set_blendmode_ext_sepalpha(src,dest,srcalpha,destalpha)
+gpu_set_blendequation(equation)
+gpu_set_blendequation_sepalpha(equation, equation_alpha)
 gpu_set_colorwriteenable(red_or_array,green*,blue*,alpha*,...)$
 gpu_set_colourwriteenable(red_or_arry,green*,blue*,alpha*,...)£
 gpu_set_alphatestenable(enable)
@@ -2283,6 +2333,15 @@ gpu_set_tex_max_aniso_ext(sampler_id,maxaniso)
 gpu_set_tex_mip_enable(setting)
 gpu_set_tex_mip_enable_ext(sampler_id,setting)
 
+gpu_get_stencil_enable()
+gpu_get_stencil_func()
+gpu_get_stencil_ref()
+gpu_get_stencil_read_mask()
+gpu_get_stencil_write_mask()
+gpu_get_stencil_fail()
+gpu_get_stencil_depth_fail()
+gpu_get_stencil_pass()
+gpu_get_sprite_cull()
 gpu_get_blendenable()
 gpu_get_ztestenable()
 gpu_get_zfunc()
@@ -2298,6 +2357,8 @@ gpu_get_blendmode_src()
 gpu_get_blendmode_dest()
 gpu_get_blendmode_srcalpha()
 gpu_get_blendmode_destalpha()
+gpu_get_blendequation()
+gpu_get_blendequation_sepalpha()
 gpu_get_colorwriteenable()$
 gpu_get_colourwriteenable()£
 gpu_get_alphatestenable()
@@ -2329,6 +2390,9 @@ gpu_pop_state()
 
 gpu_get_state()
 gpu_set_state(map)
+
+gpu_get_scissor()
+gpu_set_scissor(xOrStruct, [y], [w], [h])
 
 draw_light_define_ambient(col)
 draw_light_define_direction(ind,dx,dy,dz,col)
@@ -2397,14 +2461,14 @@ device_mouse_y_to_gui(device)
 
 
 // In-app purchases functionality
-iap_activate(ds_list)
-iap_status()
-iap_enumerate_products(ds_list)
-iap_restore_all()
-iap_acquire(product_id, payload)
-iap_consume(product_id)
-iap_product_details(product_id, ds_map)
-iap_purchase_details(purchase_id, ds_map)
+iap_activate(ds_list)&
+iap_status()&
+iap_enumerate_products(ds_list)&
+iap_restore_all()&
+iap_acquire(product_id, payload)&
+iap_consume(product_id)&
+iap_product_details(product_id, ds_map)&
+iap_purchase_details(purchase_id, ds_map)&
 
 iap_data*
 iap_ev_storeload#
@@ -2457,6 +2521,7 @@ gamepad_get_mapping(device)
 gamepad_get_guid(device)
 gamepad_set_option(gamepad_id, option_key, option_value)
 gamepad_get_option(gamepad_id, option_key)
+gamepad_enumerate()
 
 // Check to see if a pause event has come from an OS activity this frame
 os_is_paused()
@@ -2470,10 +2535,12 @@ http_post_string(url, string)
 http_request(url, method, header_map, body)
 http_get_request_crossorigin()
 http_set_request_crossorigin(crossorigin_type)
+http_get_connect_timeout()
+http_set_connect_timeout(connect_timeout_ms)
 json_encode(ds_map, [prettify])
 json_decode(string)
-json_stringify(val, [prettify])
-json_parse(json)
+json_stringify(val, [prettify], [filter_func])
+json_parse(json, [filter_func], [inhibit_string_convert])
 zip_unzip(file, destPath)
 zip_unzip_async(file, destPath)
 zip_create()
@@ -2549,34 +2616,34 @@ win8_license_initialize_sandbox(_licenseString)&
 win8_license_trial_version()&
 
 //uwp win8 mirror functions --------
-uwp_livetile_tile_clear()
-uwp_livetile_badge_notification(id)
-uwp_livetile_badge_clear()
-uwp_livetile_queue_enable(flag)
+uwp_livetile_tile_clear()&
+uwp_livetile_badge_notification(id)&
+uwp_livetile_badge_clear()&
+uwp_livetile_queue_enable(flag)&
 
 //uwp secondary tiles
-uwp_secondarytile_pin(tileId, displayName, cmdLineArgs, tileImage, wideTileImage, largeTileImage, textCol, tileSize)
-uwp_secondarytile_badge_notification(id, tileId)
-uwp_secondarytile_delete(tileId)
-uwp_secondarytile_badge_clear(tileId)
-uwp_secondarytile_tile_clear(tileId)
+uwp_secondarytile_pin(tileId, displayName, cmdLineArgs, tileImage, wideTileImage, largeTileImage, textCol, tileSize)&
+uwp_secondarytile_badge_notification(id, tileId)&
+uwp_secondarytile_delete(tileId)&
+uwp_secondarytile_badge_clear(tileId)&
+uwp_secondarytile_tile_clear(tileId)&
 
 //uwp livetile notifications
-uwp_livetile_notification_begin(template)
-uwp_livetile_notification_secondary_begin(template, tileId)
-uwp_livetile_notification_expiry(expiryTime)
-uwp_livetile_notification_tag(tag)
-uwp_livetile_notification_text_add(text)
-uwp_livetile_notification_image_add(image)
-uwp_livetile_notification_end()
-uwp_livetile_notification_template_add(template)
+uwp_livetile_notification_begin(template)&
+uwp_livetile_notification_secondary_begin(template, tileId)&
+uwp_livetile_notification_expiry(expiryTime)&
+uwp_livetile_notification_tag(tag)&
+uwp_livetile_notification_text_add(text)&
+uwp_livetile_notification_image_add(image)&
+uwp_livetile_notification_end()&
+uwp_livetile_notification_template_add(template)&
 
 //uwp appbar commands
 uwp_appbar_enable(flag)&
 uwp_appbar_add_element(id, type, icon, label, section, toolTip, callback)&
 uwp_appbar_remove_element(id)&
 
-uwp_device_touchscreen_available()
+uwp_device_touchscreen_available()&
 //-------------------
 
 // windows phone
@@ -2593,8 +2660,8 @@ winphone_tile_front_image_wide(included_filename)&
 winphone_tile_back_image(included_filename)&
 winphone_tile_back_image_wide(included_filename)&
 
-winphone_tile_background_colour(colour)£
-winphone_tile_background_color(color)$
+winphone_tile_background_colour(colour)£&
+winphone_tile_background_color(color)$&
 winphone_tile_icon_image(included_filename)&
 winphone_tile_small_icon_image(included_filename)&
 winphone_tile_wide_content(content, index)&
@@ -2609,6 +2676,7 @@ physics_world_gravity(gx, gy)
 physics_world_update_speed(speed)
 physics_world_update_iterations(iterations)
 physics_world_draw_debug(draw_flags)
+physics_raycast(xStart,yStart,xEnd,yEnd,ids,[all_hits],[max_fraction],...)
 
 // Pause
 physics_pause_enable(pause)
@@ -2875,7 +2943,9 @@ buffer_write(buffer, type, value)
 buffer_read(buffer, type)
 buffer_seek(buffer, base, offset)
 buffer_get_surface(buffer, surface,offset)
+buffer_get_surface_depth(buffer, surface,offset)
 buffer_set_surface(buffer, surface,offset)
+buffer_set_surface_depth(buffer, surface,offset)
 buffer_set_used_size(buffer,size)
 buffer_delete(buffer)
 buffer_exists(buffer)
@@ -2997,6 +3067,18 @@ gp_axis_orientation_y#
 gp_axis_orientation_z#
 gp_axis_orientation_w#
 
+gp_home#
+gp_extra1#
+gp_extra2#
+gp_extra3#
+gp_extra4#
+gp_paddler#
+gp_paddlel#
+gp_paddlerb#
+gp_paddlelb#
+gp_touchpadbutton#
+gp_extra5#
+gp_extra6#
 
 
 gml_release_mode(enable)
@@ -3078,6 +3160,7 @@ vertex_float3(vbuff,f1,f2,f3)
 vertex_float4(vbuff,f1,f2,f3,f4)
 vertex_ubyte4(vbuff,b1,b2,b3,b4)
 vertex_submit(vbuff,prim,texture)
+vertex_submit_ext(vbuff,prim,texture,offset,num)
 vertex_freeze(vbuff)
 vertex_get_number(vbuff)
 vertex_get_buffer_size(vbuff)
@@ -3102,7 +3185,7 @@ skeleton_animation_set_ext(anim_name, track, [loop])!
 skeleton_animation_get_ext(track)!
 skeleton_animation_get_duration(anim_name)!
 skeleton_animation_get_frames(anim_name)!
-skeleton_animation_clear(track)!
+skeleton_animation_clear(track,[reset],[duration])!
 skeleton_skin_set(skin_name)!
 skeleton_skin_get()!
 skeleton_skin_create(skin_name, base_skins)!
@@ -3212,6 +3295,7 @@ layerelementtype_tilemap#
 layerelementtype_particlesystem#
 layerelementtype_tile#
 layerelementtype_sequence#
+layerelementtype_text#
 
 // Background element
 layer_background_get_id(layer_id)
@@ -3342,30 +3426,30 @@ tile_mirror#
 tile_index_mask#
 
 // Tile element functions
-layer_tile_exists(layer_id,tile_element_id,...)^
+layer_tile_exists(layer_id,tile_element_id,...)^&
 
-layer_tile_create(layer_id,x,y,tileset,left,top,width,height)^
-layer_tile_destroy(tile_element_id)^
+layer_tile_create(layer_id,x,y,tileset,left,top,width,height)^&
+layer_tile_destroy(tile_element_id)^&
 
-layer_tile_change(tile_element_id,sprite)^
-layer_tile_xscale(tile_element_id,scale)^
-layer_tile_yscale(tile_element_id,scale)^
-layer_tile_blend(tile_element_id,col)^
-layer_tile_alpha(tile_element_id,alpha)^
-layer_tile_x(tile_element_id,x)^
-layer_tile_y(tile_element_id,y)^
-layer_tile_region(tile_element_id,left,top,width,height)^
-layer_tile_visible(tile_element_id,visible)^
+layer_tile_change(tile_element_id,sprite)^&
+layer_tile_xscale(tile_element_id,scale)^&
+layer_tile_yscale(tile_element_id,scale)^&
+layer_tile_blend(tile_element_id,col)^&
+layer_tile_alpha(tile_element_id,alpha)^&
+layer_tile_x(tile_element_id,x)^&
+layer_tile_y(tile_element_id,y)^&
+layer_tile_region(tile_element_id,left,top,width,height)^&
+layer_tile_visible(tile_element_id,visible)^&
 
-layer_tile_get_sprite(tile_element_id)^
-layer_tile_get_xscale(tile_element_id)^
-layer_tile_get_yscale(tile_element_id)^
-layer_tile_get_blend(tile_element_id)^
-layer_tile_get_alpha(tile_element_id)^
-layer_tile_get_x(tile_element_id)^
-layer_tile_get_y(tile_element_id)^
-layer_tile_get_region(tile_element_id)^
-layer_tile_get_visible(tile_element_id)^
+layer_tile_get_sprite(tile_element_id)^&
+layer_tile_get_xscale(tile_element_id)^&
+layer_tile_get_yscale(tile_element_id)^&
+layer_tile_get_blend(tile_element_id)^&
+layer_tile_get_alpha(tile_element_id)^&
+layer_tile_get_x(tile_element_id)^&
+layer_tile_get_y(tile_element_id)^&
+layer_tile_get_region(tile_element_id)^&
+layer_tile_get_visible(tile_element_id)^&
 
 // Instance element functions
 layer_instance_get_instance(instance_element_id)
@@ -3565,6 +3649,59 @@ layer_sequence_get_speedscale(sequence_element_id)
 
 layer_sequence_get_length(sequence_element_id)
 
+// text items
+layer_text_get_id(layer_id,text_element_name)
+layer_text_exists(layer_id,text_element_id)
+
+layer_text_create(layer_id,x,y,font,text)
+layer_text_destroy(text_element_id)
+layer_text_x(text_element_id,x)
+layer_text_y(text_element_id,y)
+layer_text_angle(text_element_id,angle)
+layer_text_xscale(text_element_id,scale)
+layer_text_yscale(text_element_id,scale)
+layer_text_blend(text_element_id,col)
+layer_text_alpha(text_element_id,alpha)
+layer_text_font(text_element_id,font)
+layer_text_xorigin(text_element_id,xorigin)
+layer_text_yorigin(text_element_id,yorigin)
+layer_text_text(text_element_id,text)
+layer_text_halign(text_element_id,alignment)
+layer_text_valign(text_element_id,alignment)
+layer_text_charspacing(text_element_id,charspacing)
+layer_text_linespacing(text_element_id,linespacing)
+layer_text_framew(text_element_id,width)
+layer_text_frameh(text_element_id,height)
+layer_text_wrap(text_element_id,wrap)
+
+layer_text_get_x(text_element_id)
+layer_text_get_y(text_element_id)
+layer_text_get_xscale(text_element_id)
+layer_text_get_yscale(text_element_id)
+layer_text_get_angle(text_element_id)
+layer_text_get_blend(text_element_id)
+layer_text_get_alpha(text_element_id)
+layer_text_get_font(text_element_id)
+layer_text_get_xorigin(text_element_id)
+layer_text_get_yorigin(text_element_id)
+layer_text_get_text(text_element_id)
+layer_text_get_halign(text_element_id)
+layer_text_get_valign(text_element_id)
+layer_text_get_charspacing(text_element_id)
+layer_text_get_linespacing(text_element_id)
+layer_text_get_framew(text_element_id)
+layer_text_get_frameh(text_element_id)
+layer_text_get_wrap(text_element_id)
+
+// Text element alignment
+textalign_left#
+textalign_center#
+textalign_right#
+textalign_justify#
+textalign_top#
+textalign_middle#
+textalign_bottom#
+
 // Animation Curves
 animcurve_get(curve_id)
 animcurve_get_channel(curve_struct_or_id,channel_name_or_index)
@@ -3759,6 +3896,9 @@ xorigin?
 yorigin?
 gain?
 pitch?
+falloffRef?
+falloffMax?
+falloffFactor?
 width?
 height?
 imageindex?
@@ -3821,6 +3961,7 @@ seqtracktype_message#
 seqtracktype_moment#
 seqtracktype_text#
 seqtracktype_particlesystem#
+seqtracktype_audioeffect#
 
 // Sequence playback mode constants
 seqplay_oneshot#
@@ -4048,3 +4189,70 @@ audio_bus_clear_emitters(bus)
 
 lin_to_db(x)
 db_to_lin(x)
+
+flexpanel_create_node([struct])
+flexpanel_delete_node(node)
+flexpanel_node_insert_child(node,child,index)
+flexpanel_node_remove_child(node,child)
+flexpanel_node_remove_all_children(node)
+flexpanel_node_get_num_children(node)
+flexpanel_node_get_child(node,indexOrName)
+flexpanel_node_get_child_hash(node,hashOrName)
+flexpanel_node_get_parent(node)
+flexpanel_node_get_name(node)
+flexpanel_node_get_data(node)
+flexpanel_node_set_name(node,name)
+flexpanel_node_set_data(node,dataStruct)
+flexpanel_node_get_struct(node)
+flexpanel_calculate_layout(node,width,height,direction)
+flexpanel_node_layout_get_position(node,[relative])
+flexpanel_node_style_get_align_content(node)
+flexpanel_node_style_get_align_items(node)
+flexpanel_node_style_get_align_self(node)
+flexpanel_node_style_get_aspect_ratio(node)
+flexpanel_node_style_get_display(node)
+flexpanel_node_style_get_flex(node)
+flexpanel_node_style_get_flex_grow(node)
+flexpanel_node_style_get_flex_shrink(node)
+flexpanel_node_style_get_flex_basis(node)
+flexpanel_node_style_get_flex_direction(node)
+flexpanel_node_style_get_flex_wrap(node)
+flexpanel_node_style_get_gap(node,gutter)
+flexpanel_node_style_get_position(node,edge)
+flexpanel_node_style_get_justify_content(node)
+flexpanel_node_style_get_direction(node)
+flexpanel_node_style_get_margin(node,edge)
+flexpanel_node_style_get_padding(node,edge)
+flexpanel_node_style_get_border(node,edge)
+flexpanel_node_style_get_position_type(node)
+flexpanel_node_style_get_min_width(node)
+flexpanel_node_style_get_max_width(node)
+flexpanel_node_style_get_min_height(node)
+flexpanel_node_style_get_max_height(node)
+flexpanel_node_style_get_width(node)
+flexpanel_node_style_get_height(node)
+flexpanel_node_style_set_align_content(node,align)
+flexpanel_node_style_set_align_items(node,align)
+flexpanel_node_style_set_align_self(node,align)
+flexpanel_node_style_set_aspect_ratio(node,aspect_ratio)
+flexpanel_node_style_set_display(node,display)
+flexpanel_node_style_set_flex(node,value)
+flexpanel_node_style_set_flex_grow(node,grow)
+flexpanel_node_style_set_flex_shrink(node,shrink)
+flexpanel_node_style_set_flex_basis(node,value,unit)
+flexpanel_node_style_set_flex_direction(node,direction)
+flexpanel_node_style_set_flex_wrap(node,wrap)
+flexpanel_node_style_set_gap(node,gutter,size)
+flexpanel_node_style_set_position(node,edge,value,unit)
+flexpanel_node_style_set_justify_content(node,justify)
+flexpanel_node_style_set_direction(node,flexpanel_direction)
+flexpanel_node_style_set_margin(node,edge,value)
+flexpanel_node_style_set_padding(node,edge,value)
+flexpanel_node_style_set_border(node,edge,value)
+flexpanel_node_style_set_position_type(node,type)
+flexpanel_node_style_set_min_width(node,value,unit)
+flexpanel_node_style_set_max_width(node,value,unit)
+flexpanel_node_style_set_min_height(node,value,unit)
+flexpanel_node_style_set_max_height(node,value,unit)
+flexpanel_node_style_set_width(node,width,unit)
+flexpanel_node_style_set_height(node,height,unit)
