@@ -5,10 +5,27 @@
 instance_create_depth<T:object>(x:number,y:number,depth:number,obj:T,?vars:any_fields_of<T>)->T
 instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,obj:T,?vars:any_fields_of<T>)->T
 
+#region 2.1
+
+GM_project_filename#:string
+GM_build_type#:string
+GM_is_sandboxed#:bool
+_GMLINE_#:int
+_GMFILE_#:string
+_GMFUNCTION_#:string
+nameof(name:any)->string
+
+#endregion
+
 #region 2.2
 
 is_struct(val:any)->bool
 is_method(val:any)->bool
+is_instanceof<T:struct>(struct:T, constructor_name:constructor)
+is_callable(val:any)->bool
+is_handle(val:any)->bool
+static_get(struct_or_func_name:struct|function)->struct|undefined
+static_set(struct:struct, static_struct:struct)->void
 instanceof<T:struct>(struct:T)->string|undefined
 exception_unhandled_handler(user_handler:function<Exception;any|void>)
 
@@ -18,6 +35,19 @@ variable_struct_set<T:struct>(struct:T,name:string,val:any)->void
 variable_struct_get_names<T:struct>(struct:T)->string[]
 variable_struct_names_count<T:struct>(struct:T)->int
 variable_struct_remove<T:struct>(struct:T,name:string)->void
+variable_get_hash(name:string)->int
+variable_clone<T>(variable:T,?depth:int)->T
+struct_exists<T:struct>(struct:T,name:string)->bool
+struct_exists_from_hash<T:struct>(struct:T,hash:int)->bool
+struct_get<T:struct>(struct:T,name:string)->any|undefined
+struct_set<T:struct>(struct:T,name:string,val:any)->void
+struct_get_names<T:struct>(struct:T)->string[]
+struct_names_count<T:struct>(struct:T)->int
+struct_remove<T:struct>(struct:T,name:string)->void
+struct_remove_from_hash<T:struct>(struct:T,hash:int)->void 
+struct_foreach<T:struct>(struct:T,predicate:function<member_name:string; value:any>)->void
+struct_get_from_hash<T:struct>(struct:T,hash:int)->any
+struct_set_from_hash<T:struct>(struct:T,hash:int,val:any)->void
 array_length<T>(variable:T[])->int
 array_length_1d<T>(variable:T[])&->int
 array_length_2d<T>(variable:T[], index:int)&->int
@@ -28,6 +58,11 @@ array_pop<T>(array:T[])->T
 array_insert<T>(array:T[],index:int,...values:T)->void
 array_delete<T>(array:T[],index:int,number:int)->void
 array_sort<T>(array:T[],sortType_or_function:bool|function<T;T;int>)->void
+array_shuffle<T>(array:T[],?offset:int,?length:int)->T
+array_shuffle_ext<T>(array:T[],?offset:int,?length:int)->void
+array_get_index<T>(array:T[],value:T,?offset:int,?length:int)->int
+array_contains<T>(array:T[],value:T,?offset:int,?length:int)->bool
+array_contains_ext<T>(array:T[],values:T[],?matchAll:bool,?offset:int,?length:int)->bool
 //
 array_first<T>(array:T[])->T
 array_last<T>(array:T[])->T
@@ -60,9 +95,11 @@ weak_ref_any_alive(array:weak_reference[],?index:int,?length:int)->bool
 
 #region 2.3
 
+handle_parse(val_string:string)->any|undefined    /// TODO: Handle type?
+
 method<T:function>(context:instance|struct|undefined,func:T)->T
-method_get_index(method)
-method_get_self(method)
+method_get_index<T:function>(method:T)->T
+method_get_self<T:function>(method:T)->instance|struct|undefined
 
 string_pos_ext(substr:string,str:string,startpos:int)->int
 string_last_pos(substr:string,str:string)->int
@@ -70,9 +107,9 @@ string_last_pos_ext(substr:string,str:string,startpos:int)->int
 
 string(val_or_template, ...values)->string
 string_ext(format:string, arg_array:array)->string
-string_trim_start(str:string)->string
-string_trim_end(str:string)->string
-string_trim(str:string)->string
+string_trim_start(str:string, ?substrs:string[])->string
+string_trim_end(str:string, ?substrs:string[])->string
+string_trim(str:string, ?substrs:string[])->string
 string_starts_with(str:string,substr:string)->bool
 string_ends_with(str:string,substr:string)->bool
 string_split(str:string, delim:string, ?remove_empty:bool, ?max_splits:int)->string[]
@@ -89,6 +126,24 @@ string_foreach(str:string,func:function<char:string; pos:int; void>, ?pos:int, ?
 // Chapter 403
 //////////////
 
+#region 3.1
+
+place_empty<T:object|instance|layer_tilemap|array>(x:number,y:number,obj:T)->bool
+place_meeting<T:object|instance|layer_tilemap|array>(x:number,y:number,obj:T)->bool
+move_and_collide<T:object|instance|layer_tilemap|array>(dx:number,dy:number,obj:T,?num_iterations:int,?xoff:number,?yoff:number,?max_x_move:number,?max_y_move:number)->T[]
+
+#endregion
+
+#region 3.8
+
+game_end(?return_code:int)->void
+game_change(working_directory:string,launch_parameters:string)->void
+
+scheduler_resolution_set(milliseconds:int)->void
+scheduler_resolution_get()->int
+
+#endregion
+
 #region 3.9
 
 // long-gone variables:
@@ -98,6 +153,30 @@ show_health&
 caption_score&
 caption_lives&
 caption_health&
+
+#endregion
+
+#region 3.10
+
+event_perform_async(type:event_type,ds_map:ds_map)->void
+
+ev_pre_create#:event_type
+ev_draw_normal#:event_type
+ev_trigger#:event_type
+ev_audio_playback_ended#:event_type
+ev_async_web_image_load#:event_type
+ev_async_web#:event_type
+ev_async_dialog#:event_type
+ev_async_web_iap#:event_type
+ev_async_web_cloud#:event_type
+ev_async_web_networking#:event_type
+ev_async_web_steam#:event_type
+ev_async_social#:event_type
+ev_async_push_notification#:event_type
+ev_async_audio_recording#:event_type
+ev_async_audio_playback#:event_type
+ev_async_audio_playback_ended#:event_type
+ev_async_system_event#:event_type
 
 #endregion
 
