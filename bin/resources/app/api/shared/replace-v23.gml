@@ -184,7 +184,36 @@ ev_async_system_event#:event_type
 
 show_debug_message(val_or_format, ...values)->void
 show_debug_message_ext(format:string, values_arr:array)->void
+show_debug_overlay(enable:bool,?minimised:bool,?scale:number,?alpha:number)->void
+is_debug_overlay_open()->bool
+is_mouse_over_debug_overlay()->bool
+is_keyboard_used_debug_overlay()->bool
+show_debug_log(enable:bool)->void
+debug_event(string:string,silent:bool)->struct // TODO ResourceCounts and DumpMemory structs
 debug_get_callstack(?maxDepth:int)->string[]
+
+dbg_view(name:string,visible:bool,?x:number,?y:number,?width:number,?height:number)->debug_view
+dbg_section(name:string,?open:bool)->debug_section
+dbg_view_delete(view:debug_view)->void
+dbg_view_exists(view:debug_view)->void
+dbg_section_delete(section:debug_section)->bool
+dbg_section_exists(section:debug_section)->bool
+dbg_slider<T:number>(ref_or_array:debug_reference<T>|debug_reference<T>[],?minimum:number,?maximum:number,?label:string,?step:number)->void
+dbg_slider_int<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?minimum:int,?maximum:int,?label:string,?step:int)->void
+dbg_drop_down<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],specifier:string|string[],label:string)->void
+dbg_watch<T:any>(ref_or_array:debug_reference<T>|debug_reference<T>[],label:string)->void
+dbg_text<T:string>(ref_or_array:T|debug_reference<T>|T[]|debug_reference<T>[])->void
+dbg_text_separator<T:string>(ref_or_array:T|debug_reference<T>|T[]|debug_reference<T>[],?align:horizontal_alignment)->void
+dbg_sprite<T:sprite>(ref_or_array:debug_reference<T>|debug_reference<T>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?label:string,?width:number,?height:number)->void
+dbg_text_input<T:string|int|number>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string,?type:string)->void
+dbg_checkbox<T:bool>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string)->void
+dbg_colour<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string)£->void
+dbg_color<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string)$->void
+dbg_button<T:function>(label:string,callback_ref:T|debug_reference<T>,?width:number,?height:number)->void
+dbg_sprite_button<T:function,R:sprite>(label:string,callback_ref:T|debug_reference<T>,sprite_ref_or_array:debug_reference<R>|debug_reference<R>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?width:number,?height:number,?xoffset:number,?yoffset:number,?widthSprite:number,?heightSprite:number)->void
+dbg_same_line()->void
+dbg_add_font_glyphs(filename_ttf:string,?size:number,?font_range:int)->void
+ref_create<T>(context:instance|struct|debug_reference<instance>|debug_reference<struct>,name:string|debug_reference<string>,?index:int)->debug_reference<T>
 
 #endregion
 
