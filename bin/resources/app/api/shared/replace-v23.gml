@@ -232,7 +232,7 @@ stacktrace?:string[]
 
 // Sequence-related built-ins
 in_sequence@:bool
-sequence_instance@ //TODO
+sequence_instance@:sequence_instance
 
 #endregion
 
@@ -378,9 +378,290 @@ layer_sequence_get_speedscale(sequence_element_id:layer_sequence)->number
 
 layer_sequence_get_length(sequence_element_id:layer_sequence)->int
 
+// Animation Curves
+animcurve_get(curve_id:animcurve)->animcurve_struct
+animcurve_get_channel(curve_struct_or_id:animcurve_struct|animcurve,channel_name_or_index:string|int)->animcurve_channel
+animcurve_get_channel_index(curve_struct_or_id:animcurve_struct|animcurve,channel_name:string)->int
+animcurve_channel_evaluate(channel:animcurve_channel,posx:number)->number
 
-// All sequence functions omitted
+// Sequence resource creation functions
+sequence_create()->sequence_object
+sequence_destroy(sequence_object_or_id:sequence_object|sequence)->void
+sequence_exists(sequence_object_or_id:sequence_object|sequence)->bool
+sequence_get(sequence_id:sequence)->sequence_object
+sequence_keyframe_new(type:sequence_track_type)->sequence_keyframe
+sequence_keyframedata_new<T:sequence_keyframe_data>(type:sequence_track_type)->T
+sequence_track_new(type:sequence_track_type)->sequence_track
 
+sequence_get_objects(sequence_object_or_id:sequence_object|sequence)->object[]
+sequence_instance_override_object(sequence_instance_struct:sequence_instance,object_id:object,instance_or_object_id:instance|object)->void
+
+// Animation curve resource creation functions
+animcurve_create()->animcurve_struct
+animcurve_destroy(curve_struct_or_id:animcurve_struct|animcurve)->void
+animcurve_exists(curve_struct_or_id:animcurve_struct|animcurve)->bool
+animcurve_channel_new()->animcurve_channel
+animcurve_point_new()->animcurve_point
+
+
+// SequenceInstance properties
+??SequenceInstance
+sequence?:sequence_object
+headPosition?:int
+headDirection?:sequence_direction
+speedScale?:number
+volume?:number
+paused?:bool
+finished?:bool
+activeTracks?:sequence_active_track[]
+elementID?:layer_sequence
+
+// Sequence properties
+??Sequence
+name?:string
+loopmode?:sequence_play_mode
+playbackSpeed?:number
+playbackSpeedType?:sprite_speed_type
+length?:int
+volume?:number
+xorigin?:number
+yorigin?:number
+tracks?:sequence_track[]
+messageEventKeyframes?:sequence_keyframe[]
+momentKeyframes?:sequence_keyframe[]
+event_create?:function
+{}
+event_destroy?:function
+{}
+event_clean_up?:function
+{}
+event_step?:function
+{}
+event_step_begin?:function
+{}
+event_step_end?:function
+{}
+event_async_system?:function
+{}
+event_broadcast_message?:function
+{}
+
+// Track properties
+??Track
+name?:string
+type?:sequence_track_type
+subType? // deprecated
+traits? // deprecated
+tracks?:sequence_track[]
+interpolation?:sequence_interpolation
+enabled?:bool
+visible?:bool
+linked? // deprecated
+linkedTrack? // deprecated
+keyframes?:sequence_keyframe[]
+
+// Keyframe properties
+??Keyframe
+frame?:int
+length?:int
+stretch?:bool
+disabled? // deprecated
+channels?:sequence_keyframe_data[]
+
+// Common key channel properties
+??KeyChannel
+channel?:int
+
+// Graphic track key
+??GraphicTrack
+spriteIndex?:sprite
+
+// Sequence track key
+??SequenceTrack
+sequence?:sequence_object
+
+// Audio track key
+??AudioTrack
+soundIndex?:sound_instance
+emitterIndex?:audio_emitter
+playbackMode?:sequence_audio_mode
+
+// Sprite frames track
+??SpriteTrack
+imageIndex?:int
+
+// Bool track
+??BoolTrack
+value?:bool
+
+// String track
+??StringTrack
+value?:string
+
+// Colour track
+??ColourTrack
+colour?:int
+
+??ColorTrack
+color?:int
+
+// Real track
+??RealTrack
+value?:number
+curve?:animcurve_struct
+
+// Instance track
+??InstanceTrack
+objectIndex?:object
+
+// Text track
+??TextTrack
+text?:string
+wrap?:bool
+alignmentV?
+alignmentH?
+fontIndex?:font
+effectsEnabled?:bool
+glowEnabled?:bool
+outlineEnabled?:bool
+dropShadowEnabled?:bool
+
+// Message event
+??MessageEvent
+events?:string[]
+
+// Moment key
+??Moment
+event?:function
+{}
+
+// AnimCurve properties
+??AnimCurve
+name?:string
+graphType?:int
+channels?:animcurve_channel[]
+
+// AnimCurveChannel properties
+??AnimCurveChannel
+type?:animcurve_interpolation
+iterations?:int
+points?:animcurve_point[]
+
+// AnimCurvePoint properties
+??AnimCurvePoint
+posx?:number
+value?:number
+
+// TrackEvalNode properties
+??TrackEvalNode
+activeTracks?:sequence_track[]
+matrix?:number[]
+posx?:number
+posy?:number
+rotation?:number
+scalex?:number
+scaley?:number
+xorigin?:number
+yorigin?:number
+gain?:number
+pitch?:number
+falloffRef?:number
+falloffMax?:number
+falloffFactor?:number
+width?:number
+height?:number
+imageindex?:int
+imagespeed?:number
+colormultiply?:tuple<number,number,number,number>
+colourmultiply?:tuple<number,number,number,number>
+coloradd?:tuple<number,number,number,number>
+colouradd?:tuple<number,number,number,number>
+spriteIndex?:sprite
+emitterIndex?:audio_emitter
+soundIndex?:sound_instance
+instanceID?:instance
+sequenceID?:sequence
+sequence?:sequence_object
+frameSizeX?:number
+frameSizeY?:number
+characterSpacing?:number
+lineSpacing?:number
+paragraphSpacing?:number
+thickness?:number
+coreColor?:tuple<number,number,number,number>
+coreColour?:tuple<number,number,number,number>
+glowStart?:number
+glowEnd?:number
+glowColor?:tuple<number,number,number,number>
+glowColour?:tuple<number,number,number,number>
+outlineDist?:number
+outlineColor?:tuple<number,number,number,number>
+outlineColour?:tuple<number,number,number,number>
+shadowSoftness?:number
+shadowOffsetX?:number
+shadowOffsetY?:number
+shadowColor?:tuple<number,number,number,number>
+shadowColour?:tuple<number,number,number,number>
+effectsEnabled?:bool
+glowEnabled?:bool
+outlineEnabled?:bool
+dropShadowEnabled?:bool
+track?:sequence_track
+parent?:sequence_instance
+activeTracks?:sequence_active_track
+
+// Sequence track types
+seqtracktype_graphic#:sequence_track_type
+seqtracktype_audio#:sequence_track_type
+seqtracktype_real#:sequence_track_type
+seqtracktype_color#:sequence_track_type
+seqtracktype_colour#:sequence_track_type
+seqtracktype_bool#:sequence_track_type
+seqtracktype_string#:sequence_track_type
+seqtracktype_sequence#:sequence_track_type
+seqtracktype_clipmask#:sequence_track_type
+seqtracktype_clipmask_mask#:sequence_track_type
+seqtracktype_clipmask_subject#:sequence_track_type
+seqtracktype_group#:sequence_track_type
+seqtracktype_empty#:sequence_track_type
+seqtracktype_spriteframes#:sequence_track_type
+seqtracktype_instance#:sequence_track_type
+seqtracktype_message#:sequence_track_type
+seqtracktype_moment#:sequence_track_type
+seqtracktype_text#:sequence_track_type
+seqtracktype_particlesystem#:sequence_track_type
+seqtracktype_audioeffect#:sequence_track_type
+
+// Sequence playback mode constants
+seqplay_oneshot#:sequence_play_mode
+seqplay_loop#:sequence_play_mode
+seqplay_pingpong#:sequence_play_mode
+
+// Sequence playback direction constants
+seqdir_right#:sequence_direction
+seqdir_left#:sequence_direction
+
+// Sequence real track interpolation modes
+seqinterpolation_assign#:sequence_interpolation
+seqinterpolation_lerp#:sequence_interpolation
+
+// Sequence audio key play mode
+seqaudiokey_loop#:sequence_audio_mode
+seqaudiokey_oneshot#:sequence_audio_mode
+
+// Text track alignment
+seqtextkey_left#:text_horizontal_alignment
+seqtextkey_center#:text_horizontal_alignment
+seqtextkey_right#:text_horizontal_alignment
+seqtextkey_justify#:text_horizontal_alignment
+seqtextkey_top#:text_vertical_alignment
+seqtextkey_middle#:text_vertical_alignment
+seqtextkey_bottom#:text_vertical_alignment
+
+// Anim curve channel type
+animcurvetype_linear#:animcurve_interpolation
+animcurvetype_catmullrom#:animcurve_interpolation
+animcurvetype_bezier#:animcurve_interpolation
 
 // Garbage collection functions
 gc_collect()->void
