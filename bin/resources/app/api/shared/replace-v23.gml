@@ -218,10 +218,23 @@ ref_create<T>(context:instance|struct|debug_reference<instance>|debug_reference<
 #endregion
 
 //////////////
+// Chapter 404
+//////////////
+
+#region 4.2
+
+mb_side1#:mouse_button
+mb_side2#:mouse_button
+
+#endregion
+
+//////////////
 // Chapter 405
 //////////////
 
 #region 5.1
+
+bboxkind_spine#:bbox_kind
 
 // exception structure entries
 [+message]??Exception
@@ -233,6 +246,93 @@ stacktrace?:string[]
 // Sequence-related built-ins
 in_sequence@:bool
 sequence_instance@:sequence_instance
+drawn_by_sequence@:bool
+
+#endregion
+
+#region 5.4
+
+draw_clear_depth(depth:number)->void
+draw_clear_stencil(stencil:int)->void
+draw_clear_ext(?color:int,alpha:number,depth:number,stencil:int)->void
+
+#endregion
+
+#region 5.6
+
+font_get_info(font:font)->font_info
+font_cache_glyph(font:font,glyphIndex:int)->font_glyph_cache
+
+bm_min#:blendmode
+bm_reverse_subtract#:blendmode
+bm_eq_add#:blendmode_equation
+bm_eq_max#:blendmode_equation
+bm_eq_subtract#:blendmode_equation
+bm_eq_min#:blendmode_equation
+bm_eq_reverse_subtract#:blendmode_equation
+
+audio_falloff_inverse_distance_scaled#:audio_falloff_model
+audio_falloff_exponent_distance_scaled#:audio_falloff_model
+
+#endregion
+
+#region section 5.7_1
+
+surface_create(w:int,h:int,?format:surface_format)->surface
+surface_get_texture_depth(id:surface)->texture
+surface_get_format(id:surface)->surface_format
+surface_set_target(id:surface,?depth_id:surface)->bool
+surface_get_target_depth()->surface
+surface_has_depth(id:surface)->bool
+surface_format_is_supported(format:surface_format)->bool
+
+surface_rgba8unorm#:surface_format
+surface_r16float#:surface_format
+surface_r32float#:surface_format
+surface_rgba4unorm#:surface_format
+surface_r8unorm#:surface_format
+surface_rg8unorm#:surface_format
+surface_rgba16float#:surface_format
+surface_rgba32float#:surface_format
+
+video_open(path:string)->void
+video_close()->void
+video_set_volume(vol:number)->void
+video_draw()->tuple<status:int,surface_rgba_or_yuv:surface,surface_chroma:surface>
+video_pause()->void
+video_resume()->void
+video_enable_loop(enable:bool)->void
+video_seek_to(milliseconds:int)->void
+video_get_duration()->int
+video_get_position()->int
+video_get_status()->video_status
+video_get_format()->video_format
+video_is_looping()->bool
+video_get_volume()->number
+
+video_format_rgba#:video_format
+video_format_yuv#:video_format
+video_status_closed#:video_status
+video_status_preparing#:video_status
+video_status_playing#:video_status
+video_status_paused#:video_status
+
+#endregion
+
+#region 5.8
+
+display_get_frequency()->int
+
+#endregion
+
+#region 5.9
+
+window_enable_borderless_fullscreen(enable:bool)->void
+window_get_borderless_fullscreen()->bool
+window_mouse_set_locked(enable:bool)->void
+window_mouse_get_locked()->bool
+window_mouse_get_delta_x()->number
+window_mouse_get_delta_y()->number
 
 #endregion
 
@@ -241,11 +341,27 @@ sequence_instance@:sequence_instance
 //////////////
 
 #region 6.3
+
 audio_system()&->void
 audio_play_sound(soundid:sound,priority:int,loops:bool,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
 audio_play_sound_on(emitterid:audio_emitter,soundid:sound,loops:bool,priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
 audio_play_sound_at(soundid:sound,x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)-
 audio_play_sound_ext(params:any_fields_of<audio_play_sound_ext_t>)->sound_instance
+
+audio_sound_get_asset(voiceIndex:sound_instance)->sound|undefined
+audio_sound_loop(voiceIndex:sound_instance, loopState:bool)->void
+audio_sound_get_loop(voiceIndex:sound_instance)->bool
+audio_sound_loop_start(index:sound|sound_instance, time:number)->void
+audio_sound_get_loop_start(index:sound|sound_instance)->number
+audio_sound_loop_end(index:sound|sound_instance, time:number)->void
+audio_sound_get_loop_end(index:sound|sound_instance)->number
+
+audio_sync_group_is_paused(sync_group_id:sound_sync_group)->bool
+
+audio_group_get_gain(groupId:audio_group)->number
+audio_group_get_assets(groupId:audio_group)->sound[]
+audio_sound_get_audio_group(index:sound|sound_instance)->audio_group
+
 #endregion
 
 //////////////
@@ -255,6 +371,22 @@ audio_play_sound_ext(params:any_fields_of<audio_play_sound_ext_t>)->sound_instan
 //////////////
 // Chapter 408
 //////////////
+
+#region 8.1
+
+sprite_get_info(ind:sprite)->sprite_info|undefined
+sprite_get_nineslice(ind:sprite)->nineslice
+sprite_set_nineslice(ind:sprite,nineslice:nineslice)->void
+sprite_nineslice_create()->nineslice
+
+texturegroup_get_names()->string[]
+
+texturegroup_load(groupname:string,?prefetch=true)->int
+texturegroup_unload(groupname:string)->void
+texturegroup_get_status(groupname:string)->texture_group_status
+texturegroup_set_mode(explicit:bool,debug:bool,default_sprite:sprite)->void
+
+#endregion
 
 //////////////
 // Chapter 409
@@ -331,6 +463,23 @@ buffer_surface_copy&:any
 buffer_get_surface(buffer:buffer, source_surface:surface,offset:int)->void
 buffer_set_surface(buffer:buffer, dest_surface:surface,offset:int)->void
 
+nineslice_left#:nineslice_tile_index
+nineslice_top#:nineslice_tile_index
+nineslice_right#:nineslice_tile_index
+nineslice_bottom#:nineslice_tile_index
+nineslice_centre#:nineslice_tile_index
+nineslice_center#:nineslice_tile_index
+
+nineslice_stretch#:nineslice_tile_mode
+nineslice_repeat#:nineslice_tile_mode
+nineslice_mirror#:nineslice_tile_mode
+nineslice_blank#:nineslice_tile_mode
+nineslice_hide#:nineslice_tile_mode
+
+texturegroup_status_unloaded#:texture_group_status
+texturegroup_status_loading#:texture_group_status
+texturegroup_status_loaded#:texture_group_status
+texturegroup_status_fetched#:texture_group_status
 
 //tags
 tag_get_asset_ids(tags:string|string[],asset_type:asset_type)->asset[]
@@ -572,10 +721,10 @@ width?:number
 height?:number
 imageindex?:int
 imagespeed?:number
-colormultiply?:tuple<number,number,number,number>
-colourmultiply?:tuple<number,number,number,number>
-coloradd?:tuple<number,number,number,number>
-colouradd?:tuple<number,number,number,number>
+colormultiply?:tuple<a:number,r:number,g:number,b:number>
+colourmultiply?:tuple<a:number,r:number,g:number,b:number>
+coloradd?:tuple<a:number,r:number,g:number,b:number>
+colouradd?:tuple<a:number,r:number,g:number,b:number>
 spriteIndex?:sprite
 emitterIndex?:audio_emitter
 soundIndex?:sound_instance
@@ -588,20 +737,20 @@ characterSpacing?:number
 lineSpacing?:number
 paragraphSpacing?:number
 thickness?:number
-coreColor?:tuple<number,number,number,number>
-coreColour?:tuple<number,number,number,number>
+coreColor?:tuple<a:number,r:number,g:number,b:number>
+coreColour?:tuple<a:number,r:number,g:number,b:number>
 glowStart?:number
 glowEnd?:number
-glowColor?:tuple<number,number,number,number>
-glowColour?:tuple<number,number,number,number>
+glowColor?:tuple<a:number,r:number,g:number,b:number>
+glowColour?:tuple<a:number,r:number,g:number,b:number>
 outlineDist?:number
-outlineColor?:tuple<number,number,number,number>
-outlineColour?:tuple<number,number,number,number>
+outlineColor?:tuple<a:number,r:number,g:number,b:number>
+outlineColour?:tuple<a:number,r:number,g:number,b:number>
 shadowSoftness?:number
 shadowOffsetX?:number
 shadowOffsetY?:number
-shadowColor?:tuple<number,number,number,number>
-shadowColour?:tuple<number,number,number,number>
+shadowColor?:tuple<a:number,r:number,g:number,b:number>
+shadowColour?:tuple<a:number,r:number,g:number,b:number>
 effectsEnabled?:bool
 glowEnabled?:bool
 outlineEnabled?:bool
@@ -688,7 +837,7 @@ num_objects_in_generation?:int
 
 
 time_source_create(parent:time_source, period:number, units:time_source_units, callback:function, ?args:array, ?reps:number, ?expiryType:time_source_expiry)->time_source
-time_source_destroy(id:time_source, [destroyTree:bool])
+time_source_destroy(id:time_source, ?destroyTree:bool)
 time_source_start(id:time_source)
 time_source_stop(id:time_source)
 time_source_pause(id:time_source)
@@ -719,5 +868,5 @@ time_source_state_active#:time_source_state
 time_source_state_paused#:time_source_state
 time_source_state_stopped#:time_source_state
 
-call_later(period:number, units:time_source_units, callback:function<void>, [repeat:bool])->time_source
+call_later(period:number, units:time_source_units, callback:function<void>, ?repeat:bool)->time_source
 call_cancel(handle:time_source)

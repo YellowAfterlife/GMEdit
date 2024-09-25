@@ -29,6 +29,53 @@ typedef debug_section;
 feathername: Id.DbgRef
 typedef debug_reference;
 
+feathername: Struct.FontInfo
+typedef font_info : struct;
+
+feathername: Struct.FontInfoGlyph
+typedef font_info_glyph : struct;
+
+feathername: Struct.FontEffectParams
+typedef font_effect_params : struct;
+
+typedef font_glyph_cache : struct;
+
+typedef sprite_info : struct;
+
+typedef sprite_message : struct;
+
+typedef sprite_frame_info : struct;
+
+typedef sprite_frame : struct;
+
+typedef sprite_spine_bone : struct;
+
+typedef sprite_spine_slot : struct;
+
+feathername: Struct.NineSlice
+typedef nineslice : struct, minus1able;
+
+typedef nineslice_tile_index : uncompareable;
+
+typedef nineslice_tile_mode : uncompareable;
+
+typedef texture_group_status : uncompareable;
+
+feathername: Constant.BlendModeEquation
+typedef blendmode_equation : uncompareable;
+
+feathername: Constant.SurfaceFormatType
+typedef surface_format : uncompareable;
+
+feathername: Constant.VideoStatus
+typedef video_status : uncompareable;
+
+feathername: Constant.VideoFormat
+typedef video_format : uncompareable;
+
+feathername: Struct.SpriteInfo;
+typedef sprite_info;
+
 feathername: Struct.SequenceInstance
 typedef sequence_instance : SequenceInstance;
 
@@ -116,3 +163,5 @@ typedef text_vertical_alignment : uncompareable
 
 feathername: Constant.AnimCurveInterpolationType
 typedef animcurve_interpolation : uncompareable
+
+fe_name mp_grid = Id.MpGrid;
