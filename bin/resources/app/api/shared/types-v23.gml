@@ -61,6 +61,26 @@ typedef nineslice_tile_mode : uncompareable;
 
 typedef texture_group_status : uncompareable;
 
+typedef room_info : struct;
+
+typedef room_info_instance : struct;
+
+typedef room_info_layer : struct;
+
+typedef room_info_view : struct;
+
+typedef room_info_layer_element : struct;
+
+typedef async_load_image = specified_map<
+	filename:string,
+	id:sprite,
+    http_status:int,
+	status:sprite_add_ext_error,
+	void
+>;
+
+typedef sprite_add_ext_error : int;
+
 feathername: Constant.BlendModeEquation
 typedef blendmode_equation : uncompareable;
 

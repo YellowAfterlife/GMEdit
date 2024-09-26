@@ -388,26 +388,53 @@ texturegroup_set_mode(explicit:bool,debug:bool,default_sprite:sprite)->void
 
 #endregion
 
+#region 8.9
+
+room_get_info(room:room,?views:bool,?instances:bool,?layers:bool,?layer_elements:bool,?tilemap_data:bool)->room_info
+
+#endregion
+
 //////////////
 // Chapter 409
 //////////////
 
+#region 9.1
+
+sprite_add_ext(name:string,imgnumb:number,xorig:number,yorig:number,prefetch:bool)->sprite
+
+sprite_add_ext_error_unknown#:sprite_add_ext_error
+sprite_add_ext_error_cancelled#:sprite_add_ext_error
+sprite_add_ext_error_spritenotfound#:sprite_add_ext_error
+sprite_add_ext_error_loadfailed#:sprite_add_ext_error
+sprite_add_ext_error_decompressfailed#:sprite_add_ext_error
+sprite_add_ext_error_setupfailed#:sprite_add_ext_error
+
+#endregion
+
 #region 9.4
-font_enable_sdf(ind:font,enable:bool)
+font_enable_sdf(ind:font,enable:bool)->void
 font_get_sdf_enabled(ind:font)->bool
-font_texture_page_size:int
+font_sdf_spread(ind:font,spread:number)->void
+font_get_sdf_spread(ind:font)->number
+
+font_enable_effects(ind:font, enable:bool, ?params:font_effect_params|struct)
+
 #endregion
 
 #region 9.6
 
-script_execute_ext(ind:script,?args:any[],offset:int=0,num_args:int=args_length-offset)->any
+script_execute_ext(ind:script,?args:any[],?offset:int=0,?num_args:int=args_length-offset)->any
+method_call<T:function>(method:T,args:any[],?offset:int=0,?num_args:int=args_length-offset)->any
 
 #endregion
 
 #region 9.9
 
+asset_get_ids(asset_type:asset_type)->asset[]
+
 asset_sequence#:asset_type
 asset_animationcurve#:asset_type
+asset_particlesystem#:asset_type
 
 #endregion
 
@@ -415,23 +442,87 @@ asset_animationcurve#:asset_type
 // Chapter 410
 //////////////
 
+#region 10.1
+
+cache_directory*:string
+
+#endregion
+
 //////////////
 // Chapter 411
 //////////////
 
+#region 11.0
+
+ds_set_precision(prec:number)->void
+
+#endregion
+
 #region 11.3 - list
 
+ds_list_destroy<T>(list:ds_list<T>)->void
+ds_list_clear<T>(list:ds_list<T>)->void
+ds_list_copy<T>(list:ds_list<T>, source:ds_list<T>)->void
+ds_list_add<T>(list:ds_list<T>, ...values:T)->void
+ds_list_insert<T>(list:ds_list<T>, pos:int, value:T)->void
+ds_list_replace<T>(list:ds_list<T>, pos:int, value:T)->void
+ds_list_delete<T>(list:ds_list<T>, pos:int)->void
 ds_list_is_map<T>(list:ds_list<T>, pos:int)->bool
 ds_list_is_list<T>(list:ds_list<T>, pos:int)->bool
+ds_list_mark_as_list<T>(list:ds_list<T>,pos:int)->void
+ds_list_mark_as_map<T>(list:ds_list<T>,pos:int)->void
+ds_list_sort<T>(list:ds_list<T>,ascending:bool)->void
+ds_list_shuffle<T>(list:ds_list<T>)->void
+ds_list_read<T>(list:ds_list<T>, str:string, ?legacy:bool)->void
+ds_list_set<T>(list:ds_list<T>,pos:int,value:T)->void
 
 #endregion
 
 #region 11.4 - map
 
+ds_map_create()->ds_map
+ds_map_destroy<K;V>(map:ds_map<K;V>)->void
+ds_map_clear<K;V>(map:ds_map<K;V>)->void
+ds_map_copy<K;V>(map:ds_map<K;V>, source:ds_map<K;V>)->void
+ds_map_add_list<K;V>(map:ds_map<K;V>,key:K,value:V)->void
+ds_map_add_map<K;V>(map:ds_map<K;V>,key:K,value:V)->void
+ds_map_replace_map<K;V>(map:ds_map<K;V>,key:K,value:V)->void
+ds_map_replace_list<K;V>(map:ds_map<K;V>,key:K,value:V)->void
+ds_map_delete<K;V>(map:ds_map<K;V>,key:K)->void
 ds_map_keys_to_array<K;V>(map:ds_map<K;V>, ?K[])->K[]
 ds_map_values_to_array<K;V>(map:ds_map<K;V>, ?V[])->V[]
 ds_map_is_map<K;V>(map:ds_map<K;V>,key:K)->bool
 ds_map_is_list<K;V>(map:ds_map<K;V>,key:K)->bool
+ds_map_read<K;V>(map:ds_map<K;V>, str:string, ?legacy:bool)->void
+ds_map_secure_save<K;V>(map:ds_map<K;V>, filename:string)->void
+ds_map_set<K;V>(map:ds_map<K;V>,key:K,value:V)->void
+
+#endregion
+
+#region 11.6
+
+ds_grid_create(w:int,h:int)->ds_grid
+ds_grid_destroy<T>(grid:ds_grid<T>)->void
+ds_grid_copy<T>(grid:ds_grid<T>, source:ds_grid<T>)->void
+ds_grid_resize<T>(grid:ds_grid<T>, w:int, h:int)->void
+ds_grid_clear<T>(grid:ds_grid<T>, val:T)->void
+ds_grid_add<T>(grid:ds_grid<T>,x:int,y:int,val:T)->void
+ds_grid_multiply<T>(grid:ds_grid<T>,x:int,y:int,val:T)->void
+ds_grid_set_region<T>(grid:ds_grid<T>,x1:int,y1:int,x2:int,y2:int,val:T)->void
+ds_grid_add_region<T>(grid:ds_grid<T>,x1:int,y1:int,x2:int,y2:int,val:T)->void
+ds_grid_multiply_region<T>(grid:ds_grid<T>,x1:int,y1:int,x2:int,y2:int,val:T)->void
+ds_grid_set_disk<T>(grid:ds_grid<T>,xm:number,ym:number,r:number,val:T)->void
+ds_grid_add_disk<T>(grid:ds_grid<T>,xm:number,ym:number,r:number,val:T)->void
+ds_grid_multiply_disk<T>(grid:ds_grid<T>,xm:number,ym:number,r:number,val:T)->void
+ds_grid_set_grid_region<T>(grid:ds_grid<T>,source,x1:int,y1:int,x2:int,y2:int,xpos,ypos)->void
+ds_grid_add_grid_region<T>(grid:ds_grid<T>,source,x1:int,y1:int,x2:int,y2:int,xpos,ypos)->void
+ds_grid_multiply_grid_region<T>(grid:ds_grid<T>,source,x1:int,y1:int,x2:int,y2:int,xpos,ypos)->void
+ds_grid_shuffle<T>(grid:ds_grid<T>)->void
+ds_grid_read<T>(grid:ds_grid<T>, str:string, ?legacy:bool)->void
+ds_grid_sort<T>(grid:ds_grid<T>, column:int, ascending:bool)->void
+ds_grid_set<T>(grid:ds_grid<T>, x:int, y:int, value:T)->void
+ds_grid_get<T>(grid:ds_grid<T>, x:int, y:int)->void
+ds_grid_to_mp_grid<T:number>(ds_grid:ds_grid<T>,mp_grid:mp_grid,?func:function<value:T;x:int;y:int,void>)->void
 
 #endregion
 
