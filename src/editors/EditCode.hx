@@ -224,7 +224,9 @@ class EditCode extends Editor {
 			check_1 = NativeString.replaceExt(check_1, rxr, "");
 			//
 			function finishChange():Void {
-				session.setValue(file.code);
+				if (session.getValue() != file.code) {
+					session.setValue(file.code);
+				}
 				plugins.PluginEvents.fileReload({file:file});
 				file.savePost_shared(newContent, true);
 				// TODO: need to also run this if we opened a resource that had changes
