@@ -115,7 +115,7 @@ dot_product_normalized(x1:number,y1:number,x2:number,y2:number)$->number
 dot_product_3d_normalized(x1:number,y1:number,z1:number,x2:number,y2:number,z2:number)$->number
 math_set_epsilon(new_epsilon:number)->void
 math_get_epsilon()->number
-angle_difference(src:number,dest:number)->number
+angle_difference(dest:number,src:number)->number
 point_distance_3d(x1:number,y1:number,z1:number,x2:number,y2:number,z2:number)->number
 point_distance(x1:number,y1:number,x2:number,y2:number)->number
 point_direction(x1:number,y1:number,x2:number,y2:number)->number
