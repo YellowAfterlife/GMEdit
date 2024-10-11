@@ -241,7 +241,7 @@ bboxkind_spine#:bbox_kind
 message?:string
 longMessage?:string
 script?:script
-stacktrace?:string[]
+stacktrace?:Array<string>
 
 // Sequence-related built-ins
 in_sequence@:bool
@@ -534,6 +534,48 @@ os_gxgames#:os_type
 // Chapter 412
 //////////////
 
+#region 12.1a
+
+effect_create_layer(layer_id_or_name:layer|string,kind:effect_king,x:number,y:number,size:number,col:int)->void
+effect_create_depth(depth:int,kind:effect_king,x:number,y:number,size:number,col:int)->void
+effect_clear()->void
+
+#endregion
+
+#region 12
+
+part_type_subimage(ind:particle,subimg:int)->void
+part_type_size_x(ind:particle,size_min_x:number,size_max_x:number,size_incr_x:number,size_wiggle_y:number)->void
+part_type_size_y(ind:particle,size_min_y:number,size_max_y:number,size_incr_y:number,size_wiggle_y:number)->void
+
+#endregion
+
+#region 12.2
+
+particle_get_info(particles:particle_asset)->particle_system_info
+particle_exists(particles:particle_asset)->bool
+
+part_system_create(?particles:particle_asset)->particle_system
+part_system_color(ind:particle_system,color:int,alpha:number)$->void
+part_system_colour(ind:particle_system,colour:int,alpha:number)£->void
+part_system_angle(ind:particle_system,angle:int)->void
+part_system_global_space(ind:particle_system,enable:bool)->void
+part_system_get_info(ind:particle_system)->particle_system_info
+
+part_particles_burst(ind:particle_system,x:number,y:number,particles:particle_asset)->void
+
+#endregion
+
+#region 12.3
+
+part_emitter_enable(ps:particle_system,ind:particle_emitter,enable:bool)->void
+part_emitter_delay(ps:particle_system,ind:particle_emitter,delay_min:number,delay_max:number,delay_unit:time_source_units)->void
+part_emitter_interval(ps:particle_system,ind:particle_emitter,interval_min:number,interval_max:number,inerval_unit:time_source_units)->void
+part_emitter_relative(ps:particle_system,ind:particle_emitter,enable:bool)->void
+ps_mode_stream#:particle_mode
+ps_mode_burst#:particle_mode
+
+#endregion
 
 //////////////
 // Chapter 414
@@ -653,7 +695,7 @@ speedScale?:number
 volume?:number
 paused?:bool
 finished?:bool
-activeTracks?:sequence_active_track[]
+activeTracks?:Array<sequence_active_track>
 elementID?:layer_sequence
 
 // Sequence properties
@@ -666,9 +708,9 @@ length?:int
 volume?:number
 xorigin?:number
 yorigin?:number
-tracks?:sequence_track[]
-messageEventKeyframes?:sequence_keyframe[]
-momentKeyframes?:sequence_keyframe[]
+tracks?:Array<sequence_track>
+messageEventKeyframes?:Array<sequence_keyframe>
+momentKeyframes?:Array<sequence_keyframe>
 event_create?:function
 {}
 event_destroy?:function
@@ -692,13 +734,13 @@ name?:string
 type?:sequence_track_type
 subType? // deprecated
 traits? // deprecated
-tracks?:sequence_track[]
+tracks?:Array<sequence_track>
 interpolation?:sequence_interpolation
 enabled?:bool
 visible?:bool
 linked? // deprecated
 linkedTrack? // deprecated
-keyframes?:sequence_keyframe[]
+keyframes?:Array<sequence_keyframe>
 
 // Keyframe properties
 ??Keyframe
@@ -706,7 +748,7 @@ frame?:int
 length?:int
 stretch?:bool
 disabled? // deprecated
-channels?:sequence_keyframe_data[]
+channels?:Array<sequence_keyframe_data>
 
 // Common key channel properties
 ??KeyChannel
@@ -768,7 +810,7 @@ dropShadowEnabled?:bool
 
 // Message event
 ??MessageEvent
-events?:string[]
+events?:Array<string>
 
 // Moment key
 ??Moment
@@ -779,13 +821,13 @@ event?:function
 ??AnimCurve
 name?:string
 graphType?:int
-channels?:animcurve_channel[]
+channels?:Array<animcurve_channel>
 
 // AnimCurveChannel properties
 ??AnimCurveChannel
 type?:animcurve_interpolation
 iterations?:int
-points?:animcurve_point[]
+points?:Array<animcurve_point>
 
 // AnimCurvePoint properties
 ??AnimCurvePoint
@@ -794,8 +836,8 @@ value?:number
 
 // TrackEvalNode properties
 ??TrackEvalNode
-activeTracks?:sequence_track[]
-matrix?:number[]
+activeTracks?:Array<sequence_track>
+matrix?:Array<number>
 posx?:number
 posy?:number
 rotation?:number

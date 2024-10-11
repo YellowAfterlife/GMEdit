@@ -32,7 +32,7 @@ texture?:texture
 name?:string
 bold?:bool
 italic?:bool
-glyphs?:font_info_glyph[]
+glyphs?:Array<font_info_glyph>
 sdfEnabled?:bool
 sdfSpread?:number
 effectsEnabled?:number
@@ -46,7 +46,7 @@ w?:number
 h?:number
 shift?:number
 offset?:number
-kerning?:int[]
+kerning?:Array<int>
 
 ??font_effect_params
 thickness?:number
@@ -88,18 +88,18 @@ use_mask?:bool
 num_masks?:int
 rotated_bounds?:bool
 nineslice?:nineslice
-messages?:sprite_message[]
-frame_info?:sprite_frame_info[]|undefined
+messages?:Array<sprite_message>
+frame_info?:Array<sprite_frame_info>|undefined
 frame_speed?:number
 frame_type?:sprite_speed_type
-frames?:sprite_frame[]
+frames?:Array<sprite_frame>
 num_atlas:int
-atlas_texture?:texture[]
+atlas_texture?:Array<texture>
 premultiplied?:bool
-animation_names?:string[]
-skin_names?:string[]
-bones?:sprite_spine_bone[]
-slots?:sprite_spine_slot[]
+animation_names?:Array<string>
+skin_names?:Array<string>
+bones?:Array<sprite_spine_bone>
+slots?:Array<sprite_spine_slot>
 
 ??sprite_message
 frame?:int
@@ -151,7 +151,7 @@ dark_red?:number
 dark_green?:number
 dark_blue?:number
 dark_alpha?:number
-attachments?:string[]
+attachments?:Array<string>
 
 ??nineslice
 enabled?:bool
@@ -175,9 +175,9 @@ enableViews?:bool
 clearDisplayBuffer?:bool
 clearViewportBackground?:bool
 colour?:int
-instances?:room_info_instance[]
-layers?:room_info_layer[]
-views?:room_info_view[]
+instances?:Array<room_info_instance>
+layers?:Array<room_info_layer>
+views?:Array<room_info_view>
 
 ??room_info_instance
 id?:instance
@@ -208,7 +208,7 @@ effectEnabled?:bool
 effectToBeEnabled?:bool
 effect?:fx_struct
 shaderID?:shader
-elements?:room_info_layer_element[]
+elements?:Array<room_info_layer_element>
 
 ??room_info_view
 visible?:bool
@@ -265,7 +265,7 @@ x?:number
 y?:number
 tileset_index?:tileset
 data_mask?:int
-tiles?:int[]
+tiles?:Array<int>
 width?:int
 height?:int
 name?:string
@@ -306,3 +306,89 @@ speedType?:sprite_speed_type
 seq_id?:sequence
 name?:string
 head_position?:number
+
+??particle_system_info
+name?:string
+xorigin?:number
+yorigin?:number
+global_space?:bool
+oldtonew?:bool
+emitters?:Array<particle_emitter_info>
+
+??particle_emitter_info
+ind?:particle_emitter
+name?:string
+mode?:particle_mode
+enabled?:bool
+number?:number
+relative?:bool
+xmin?:number
+xmax?:number
+ymin?:number
+ymax?:number
+distribution?:particle_distribution
+shape?:particle_shape
+parttype?:particle_info
+delay_min?:number
+delay_max?:number
+delay_unit?:time_source_units
+interval_min?:number
+interval_max?:number
+interval_unit?:time_source_units
+
+??particle_info
+ind?:particle
+// Shape / Sprite
+sprite?:sprite
+frame?:int
+animate?:bool
+stretch?:bool
+random?:bool
+shape?:particle_shape
+// Size
+size_xmin?:number
+size_ymin?:number
+size_xmax?:number
+size_ymax?:number
+size_xincr?:number
+size_yincr?:number
+size_xwiggle?:number
+size_ywiggle?:number
+// Scale
+xscale?:number
+yscale?:number
+// Life
+life_min?:int
+life_max?:int
+// Secondary Particles
+death_type?:particle
+death_number?:int
+step_type?:particle
+step_number?:int
+// Speed
+speed_min?:number
+speed_max?:number
+speed_incr?:number
+speed_wiggle?:number
+// Direction
+dir_min?:int
+dir_max?:int
+dir_incr?:number
+dir_wiggle?:number
+// Gravity
+grav_amount?:number
+grav_dir?:int
+// Orientation
+ang_min?:int
+ang_max?:int
+ang_incr?:number
+ang_wiggle?:number
+ang_relative?:bool
+// Color & Alpha
+color1?:int
+color2?:int
+color3?:int
+alpha1?:number
+alpha2?:number
+alpha3?:number
+additive?:bool

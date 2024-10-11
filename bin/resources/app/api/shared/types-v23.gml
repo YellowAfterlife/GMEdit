@@ -81,6 +81,18 @@ typedef async_load_image = specified_map<
 
 typedef sprite_add_ext_error : int;
 
+feathername: Asset.GMParticleSystem
+typedef particle_asset : asset, simplename;
+
+typedef particle_system_info : struct;
+
+typedef particle_emitter_info : struct;
+
+typedef particle_info : struct;
+
+feathername: Constant.ParticleEmitterMode
+typedef particle_mode : uncompareable;
+
 feathername: Constant.BlendModeEquation
 typedef blendmode_equation : uncompareable;
 
