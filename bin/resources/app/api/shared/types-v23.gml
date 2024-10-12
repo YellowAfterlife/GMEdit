@@ -242,4 +242,43 @@ typedef audio_effect_type : uncompareable;
 feathername: Enum.AudioLFOType
 typedef audio_lfo_type : uncompareable;
 
+feathername: Pointer.FlexpanelNode
+typedef flexpanel_node;
+
+typedef flexpanel_data : struct;
+
+typedef flexpanel_unit_value : struct;
+
+feathername: Enum.flexpanel_unit_type
+typedef flexpanel_unit_type : uncompareable;
+
+feathername: Enum.flexpanel_direction
+typedef flexpanel_direction_type : string;
+
+typedef flexpanel_position : struct;
+
+feathername: Enum.flexpanel_justify
+typedef flexpanel_justify_type : string;
+
+feathername: Enum.flexpanel_align
+typedef flexpanel_align_type : string;
+
+feathername: Enum.flexpanel_display
+typedef flexpanel_display_type : string;
+
+feathername: Enum.flexpanel_flex_direction
+typedef flexpanel_flex_direction_type : string;
+
+feathername: Enum.flexpanel_wrap
+typedef flexpanel_wrap_type : string;
+
+feathername: Enum.flexpanel_gutter
+typedef flexpanel_gutter_type : string;
+
+feathername: Enum.flexpanel_edge
+typedef flexpanel_edge_type : string;
+
+feathername: Enum.flexpanel_position_type
+typedef flexpanel_position : string;
+
 fe_name mp_grid = Id.MpGrid;

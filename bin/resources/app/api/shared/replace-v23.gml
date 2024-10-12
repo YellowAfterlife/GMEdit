@@ -200,8 +200,8 @@ dbg_section_delete(section:debug_section)->bool
 dbg_section_exists(section:debug_section)->bool
 dbg_slider<T:number>(ref_or_array:debug_reference<T>|debug_reference<T>[],?minimum:number,?maximum:number,?label:string,?step:number)->void
 dbg_slider_int<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?minimum:int,?maximum:int,?label:string,?step:int)->void
-dbg_drop_down<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],specifier:string|string[],label:string)->void
-dbg_watch<T:any>(ref_or_array:debug_reference<T>|debug_reference<T>[],label:string)->void
+dbg_drop_down<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],specifier:string|string[],?label:string)->void
+dbg_watch<T:any>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string)->void
 dbg_text<T:string>(ref_or_array:T|debug_reference<T>|T[]|debug_reference<T>[])->void
 dbg_text_separator<T:string>(ref_or_array:T|debug_reference<T>|T[]|debug_reference<T>[],?align:horizontal_alignment)->void
 dbg_sprite<T:sprite>(ref_or_array:debug_reference<T>|debug_reference<T>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?label:string,?width:number,?height:number)->void
@@ -1286,3 +1286,70 @@ audio_bus_clear_emitters(bus:audio_bus)->void
 
 lin_to_db(x:number)->number
 db_to_lin(x:number)->number
+
+flexpanel_create_node(?struct:flexpanel_data|struct|string)->flexpanel_node
+flexpanel_delete_node(node:flexpanel_node, ?recursive:bool)->void
+flexpanel_node_insert_child(parent:flexpanel_node, node:flexpanel_node, index:int)->void
+flexpanel_node_remove_child(parent:flexpanel_node, child:flexpanel_node)->void
+flexpanel_node_remove_all_children(parent:flexpanel_node)->void
+flexpanel_node_get_num_children(parent:flexpanel_node)->void
+flexpanel_node_get_child(parent:flexpanel_node, index_or_name:int|string)->flexpanel_node|undefined
+flexpanel_node_get_child_hash(parent:flexpanel_node, index_or_name:int|string)->flexpanel_node|undefined
+flexpanel_node_get_parent(child:flexpanel_node)->flexpanel_node|undefined
+flexpanel_node_get_name(node:flexpanel_node)->string|undefined
+flexpanel_node_get_data(node:flexpanel_node)->struct
+flexpanel_node_set_name(node:flexpanel_node, name:string)->void
+flexpanel_node_set_data(node:flexpanel_node, struct:struct)->void
+flexpanel_node_get_struct(node:flexpanel_node)->flexpanel_data
+flexpanel_calculate_layout(node:flexpanel_node, width:number|undefined, height:number|undefined, direction:flexpanel_direction_type)->void
+flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_position
+flexpanel_node_style_get_align_content(node:flexpanel_node)->flexpanel_justify_type
+flexpanel_node_style_get_align_items(node:flexpanel_node)->flexpanel_align_type
+flexpanel_node_style_get_align_self(node:flexpanel_node)->flexpanel_align_type
+flexpanel_node_style_get_aspect_ratio(node:flexpanel_node)->number
+flexpanel_node_style_get_display(node:flexpanel_node)->flexpanel_display_type
+flexpanel_node_style_get_flex(node:flexpanel_node)->number
+flexpanel_node_style_get_flex_grow(node:flexpanel_node)->number
+flexpanel_node_style_get_flex_shrink(node:flexpanel_node)->number
+flexpanel_node_style_get_flex_basis(node:flexpanel_node)->flexpanel_unit_type
+flexpanel_node_style_get_flex_direction(node:flexpanel_node)->flexpanel_flex_direction_type
+flexpanel_node_style_get_flex_wrap(node:flexpanel_node)->flexpanel_wrap_type
+flexpanel_node_style_get_gap(node:flexpanel_node, gutter:flexpanel_gutter_type)->number
+flexpanel_node_style_get_position(node:flexpanel_node, edge:flexpanel_edge_type)->flexpanel_unit_value
+flexpanel_node_style_get_justify_content(node:flexpanel_node)->flexpanel_justify_type
+flexpanel_node_style_get_direction(node:flexpanel_node)->flexpanel_direction_type
+flexpanel_node_style_get_margin(node:flexpanel_node, edge:flexpanel_edge_type)->flexpanel_unit_value
+flexpanel_node_style_get_padding(node:flexpanel_node, edge:flexpanel_edge_type)->flexpanel_unit_value
+flexpanel_node_style_get_border(node:flexpanel_node, edge:flexpanel_edge_type)->flexpanel_unit_value
+flexpanel_node_style_get_position_type(node:flexpanel_node)->flexpanel_position
+flexpanel_node_style_get_min_width(node:flexpanel_node)->flexpanel_unit_value
+flexpanel_node_style_get_max_width(node:flexpanel_node)->flexpanel_unit_value
+flexpanel_node_style_get_min_height(node:flexpanel_node)->flexpanel_unit_value
+flexpanel_node_style_get_max_height(node:flexpanel_node)->flexpanel_unit_value
+flexpanel_node_style_get_width(node:flexpanel_node)->flexpanel_unit_value
+flexpanel_node_style_get_height(node:flexpanel_node)->flexpanel_unit_value
+flexpanel_node_style_set_align_content(node:flexpanel_node, align:flexpanel_justify_type)->void
+flexpanel_node_style_set_align_items(node:flexpanel_node, align:flexpanel_align_type)->void
+flexpanel_node_style_set_align_self(node:flexpanel_node, align:flexpanel_align_type)->void
+flexpanel_node_style_set_aspect_ratio(node:flexpanel_node, aspect_ratio:number)->void
+flexpanel_node_style_set_display(node:flexpanel_node, display:flexpanel_display_type)->void
+flexpanel_node_style_set_flex(node:flexpanel_node, flex:number)->void
+flexpanel_node_style_set_flex_grow(node:flexpanel_node, grow:number)->void
+flexpanel_node_style_set_flex_shrink(node:flexpanel_node, shrink:number)->void
+flexpanel_node_style_set_flex_basis(node:flexpanel_node, value:number, unit:flexpanel_unit_value)->void
+flexpanel_node_style_set_flex_direction(node:flexpanel_node, direction:flexpanel_flex_direction_type)->void
+flexpanel_node_style_set_flex_wrap(node:flexpanel_node, wrap:flexpanel_wrap_type)->void
+flexpanel_node_style_set_gap(node:flexpanel_node, gutter:flexpanel_gutter_type, size:number)->void
+flexpanel_node_style_set_position(node:flexpanel_node, edge:flexpanel_edge_type, value:number, unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_justify_content(node:flexpanel_node, justify:flexpanel_justify_type)->void
+flexpanel_node_style_set_direction(node:flexpanel_node, flexpanel_direction:flexpanel_direction_type)->void
+flexpanel_node_style_set_margin(node:flexpanel_node, edge:flexpanel_edge_type, value:number)->void
+flexpanel_node_style_set_padding(node:flexpanel_node, edge:flexpanel_edge_type, value:number)->void
+flexpanel_node_style_set_border(node:flexpanel_node, edge:flexpanel_edge_type, value:number)->void
+flexpanel_node_style_set_position_type(node:flexpanel_node, type:flexpanel_position)->void
+flexpanel_node_style_set_min_width(node:flexpanel_node, value:number, unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_max_width(node:flexpanel_node, value:number, unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_min_height(node:flexpanel_node, value:number, unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_max_height(node:flexpanel_node, value:number, unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_width(node:flexpanel_node, width:number, unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_height(node:flexpanel_node, height:number, unit:flexpanel_unit_type)->void
