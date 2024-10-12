@@ -182,7 +182,7 @@ ev_async_system_event#:event_type
 
 #region 3.11
 
-show_debug_message(val_or_format, ...values)->void
+show_debug_message(val_or_format:any, ...values:any)->void
 show_debug_message_ext(format:string, values_arr:array)->void
 show_debug_overlay(enable:bool,?minimised:bool,?scale:number,?alpha:number)->void
 is_debug_overlay_open()->bool
@@ -526,10 +526,6 @@ ds_grid_to_mp_grid<T:number>(ds_grid:ds_grid<T>,mp_grid:mp_grid,?func:function<v
 
 #endregion
 
-os_gdk#:os_type
-os_operagx#:os_type
-os_gxgames#:os_type
-
 //////////////
 // Chapter 412
 //////////////
@@ -585,16 +581,172 @@ ps_mode_burst#:particle_mode
 // Chapter 415
 //////////////
 
+matrix_transform_vertex(matrix:number[], x:number, y:number, z:number, ?w:number)->number[]
+
+os_ps4#:os_type
+os_ps5#:os_type
+os_xboxseriesxs#:os_type
+os_gdk#:os_type
+os_operagx#:os_type
+os_gxgames#:os_type
+
+os_request_permission(...permissions:string)->void
+os_set_orientation_lock(landscape_enable:bool,portrait_enable:bool)->void
+
+tm_systemtiming#:display_timing_method
+
+stencilop_keep#:gpu_stencilop
+stencilop_zero#:gpu_stencilop
+stencilop_replace#:gpu_stencilop
+stencilop_incr_wrap#:gpu_stencilop
+stencilop_decr_wrap#:gpu_stencilop
+stencilop_invert#:gpu_stencilop
+stencilop_incr#:gpu_stencilop
+stencilop_decr#:gpu_stencilop
+
+gpu_set_stencil_depth_fail(stencil_op:gpu_stencilop)->void
+gpu_set_stencil_enable(enable:bool)->void
+gpu_set_stencil_fail(stencil_op:gpu_stencilop)->void
+gpu_set_stencil_func(cmp_func:gpu_cmpfunc)->void
+gpu_set_stencil_pass(stencil_op:gpu_stencilop)->void
+gpu_set_stencil_read_mask(mask:int)->void
+gpu_set_stencil_ref(ref:int)->void
+gpu_set_stencil_write_mask(mask:int)->void
+gpu_set_sprite_cull(enable:bool)->void
+gpu_set_depth(depth:int)->void
+gpu_set_blendequation(equation:blendmode_equation)->void
+gpu_set_blendequation_sepalpha(equation:blendmode_equation, equation_alpha:blendmode_equation)->void
+
+gpu_set_tex_mip_enable(setting:texture_mip_state)->void
+gpu_set_tex_mip_enable_ext(sampler_id:shader_sampler,setting:texture_mip_state)->void
+
+gpu_get_stencil_enable()->bool
+gpu_get_stencil_func()->gpu_cmpfunc
+gpu_get_stencil_ref()->int
+gpu_get_stencil_read_mask()->int
+gpu_get_stencil_write_mask()->int
+gpu_get_stencil_fail()->gpu_stencilop
+gpu_get_stencil_depth_fail()->gpu_stencilop
+gpu_get_stencil_pass()->gpu_stencilop
+gpu_get_sprite_cull()->bool
+gpu_get_depth()->int
+gpu_get_blendequation()->blendmode_equation
+gpu_get_blendequation_sepalpha()->tuple<equation:blendmode_equation,equation_alpha:blendmode_equation>
+
+gpu_get_scissor()->{x:number,y:number,w:number,h:number}
+gpu_set_scissor(x_or_struct:number|struct, ?y:number, ?w:number, ?h:number)->void
+
 event_data*:ds_map<string,any>
 
-json_stringify<T:struct|array|number|string|undefined>(val:T,?prettify:bool)->string
-json_parse(json:string)->any
+http_get_connect_timeout()->int
+http_set_connect_timeout(connect_timeout_ms:int)->void
+json_encode(ds_map:ds_map<string;any>, ?prettify:bool)->string
+json_stringify<T:struct|array|number|string|undefined>(val:T,?prettify:bool,?filter_func:function<key:string|int; value:any; any>)->string
+json_parse(json:string, ?filter_func:function<key:string|int; value:any; any>, ?inhibit_string_convert:bool = false)->any
+zip_unzip_async(zip_file:string, target_directory:string)->int
+zip_create()->zip_object
+zip_add_file(zip_object:zip_object, dest:string, src:string)->int
+zip_save(zip_object:zip_object, path:string)->int
+
+os_is_network_connected(?attempt_connection:bool|network_connect_type)->bool
+
+physics_raycast<T:object|instance>(x_start:number, y_start:number, x_end:number, y_end:number, ids:T|T[], ?all_hits:bool = false, ?max_fraction:number)->physics_hitpoint[]?
+
+network_send_raw(socket:network_socket, bufferid:buffer, size:int, ?option:network_send_option)->int
 
 network_socket_ws#:network_type
+network_socket_wss#:network_type
 network_config_avoid_time_wait#:network_config
+network_type_up#:network_async_id
+network_type_up_failed#:network_async_id
+network_type_down#:network_async_id
+network_send_binary#:network_send_option
+network_send_text#:network_send_option
+
+network_config_websocket_protocol#:network_config
+network_config_enable_multicast#:network_config
+network_config_disable_multicast#:network_config
+
+network_connect_none#:network_connect_type
+network_connect_blocking#:network_connect_type
+network_connect_nonblocking#:network_connect_type
+network_connect_active#:network_connect_type
+network_connect_passive#:network_connect_type
+
+buffer_get_surface(buffer:buffer, source_surface:surface, offset:int)->void
+buffer_get_surface_depth(buffer:buffer, source_surface:surface, offset:int)->bool
+buffer_set_surface(buffer:buffer, dest_surface:surface, offset:int)->void
+buffer_set_surface_depth(buffer:buffer, dest_surface:surface, offset:int)->bool
+buffer_set_used_size(buffer:buffer,size:int)->void
+buffer_copy_stride(src_buffer:buffer, src_offset:int, src_size:int, src_stride:int, src_count:int, dest_buffer:buffer, dest_offset:int, dest_stride:int)->void
+
 buffer_surface_copy&:any
-buffer_get_surface(buffer:buffer, source_surface:surface,offset:int)->void
-buffer_set_surface(buffer:buffer, dest_surface:surface,offset:int)->void
+
+gp_axis_acceleration_x#:gamepad_button
+gp_axis_acceleration_y#:gamepad_button
+gp_axis_acceleration_z#:gamepad_button
+
+gp_axis_angular_velocity_x#:gamepad_button
+gp_axis_angular_velocity_y#:gamepad_button
+gp_axis_angular_velocity_z#:gamepad_button
+
+gp_axis_orientation_x#:gamepad_button
+gp_axis_orientation_y#:gamepad_button
+gp_axis_orientation_z#:gamepad_button
+gp_axis_orientation_w#:gamepad_button
+
+gp_home#:gamepad_button
+gp_extra1#:gamepad_button
+gp_extra2#:gamepad_button
+gp_extra3#:gamepad_button
+gp_extra4#:gamepad_button
+gp_paddler#:gamepad_button
+gp_paddlel#:gamepad_button
+gp_paddlerb#:gamepad_button
+gp_paddlelb#:gamepad_button
+gp_touchpadbutton#:gamepad_button
+gp_extra5#:gamepad_button
+gp_extra6#:gamepad_button
+
+shader_set_uniform_f_buffer(uniform_id:shader_uniform,buffer:buffer,offset:int,count:int)->void
+
+vertex_format_get_info(format_id:vertex_format)->vertex_format_info
+
+vertex_submit_ext(vbuff:vertex_buffer,primtype:primitive_type,texture:texture,offset:int,num:int)->void
+vertex_update_buffer_from_buffer(dest_vbuff:vertex_buffer,dest_offset:int,src_buffer:buffer,?src_offset:int,?src_size:int)->void
+vertex_update_buffer_from_vertex(dest_vbuff:vertex_buffer,dest_vert:int,src_vbuff:vertex_buffer,?src_vert:int,?src_vert_num:int)->void
+
+skeleton_animation_set(anim_name:string, ?loop:bool)!->void
+skeleton_animation_set_ext(anim_name:string, track:int, ?loop:bool)!->void
+skeleton_animation_clear(track:int,?reset:bool,duration:number)!->void
+skeleton_skin_set:<T:string|skeleton_skin>(skin_name:T)!->void
+skeleton_skin_create(skin_name:string, base_skins:string[])!->skeleton_skin
+skeleton_attachment_set(slot:string, attachment:string|sprite)!->string
+skeleton_attachment_exists(name:string)!->bool
+skeleton_attachment_replace(name:string, sprite:sprite, ind:int, xorigin:number, yorigin:number, xscale:number, yscale:number, rot:number)!->int
+skeleton_attachment_replace_colour(name:string, sprite:sprite, ind:int, xorigin:number, yorigin:number, xscale:number, yscale:number, rot:number, colour:int, alpha:number)!£->int
+skeleton_attachment_replace_color(name:string, sprite:sprite, ind:int, xorigin:number, yorigin:number, xscale:number, yscale:number, rot:number, color:int, alpha:number)!$->int
+skeleton_attachment_destroy(name:string)!->void
+
+skeleton_animation_get_position(track:int)!->number
+skeleton_animation_set_position(track:int,position:number)!->void
+skeleton_animation_is_looping(track:int)!->bool
+skeleton_animation_is_finished(track:int)!->bool
+
+skeleton_slot_data_instance(list:ds_list<ds_map<string;any>>)!->void
+
+layer_get_all()->layer[]
+
+layerelementtype_text#:layer_element_type
+
+tileset_get_info(tileset_id)->tileset_info|undefined
+
+camera_copy_transforms(dest_camera:camera,src_camera:camera)->void
+
+camera_set_view_target<T:instance|object>(camera:camera,object:T)->void
+camera_get_view_target<T:instance|object>(camera:camera)->T|any
+
+keyboard_virtual_show(virtual_keyboard_type:virtual_keyboard_type, virtual_return_key_type:virtual_keyboard_return_key, auto_capitalization_type:virtual_keyboard_autocapitalization, predictive_text_enabled:bool)->void
 
 nineslice_left#:nineslice_tile_index
 nineslice_top#:nineslice_tile_index
@@ -624,14 +776,16 @@ asset_has_tags(asset_name_or_id:string|asset,tags:string|string[],?asset_type:as
 asset_has_any_tag(asset_name_or_id:string|asset,tags:string|string[],?asset_type:asset_type)->bool
 asset_clear_tags(asset_name_or_id:string|asset,?asset_type:asset_type)->bool
 
-
-//extension_get_string(ext_name:string, option_name:string)->any
-
-
-
+//extension options
+extension_exists(ext_name:string)->bool
+extension_get_version(ext_name:string)->string
+extension_get_option_count(ext_name:string)->int
+extension_get_option_names(ext_name:string)->string[]
+extension_get_option_value(ext_name:string, option_name:string)->any
+extension_get_options(ext_name:string)->struct
 
 //sequences
-layer_sequence_get_instance(sequence_element_id:layer_sequence)->any // TODO
+layer_sequence_get_instance(sequence_element_id:layer_sequence)->sequence_instance
 layer_sequence_create(layer_id:layer|string,x:number,y:number,sequence_id:sequence)->layer_sequence
 layer_sequence_destroy(sequence_element_id:layer_sequence)->void
 layer_sequence_exists(layer_id:layer|string,sequence_element_id:layer_sequence)->bool
@@ -653,12 +807,65 @@ layer_sequence_get_xscale(sequence_element_id:layer_sequence)->number
 layer_sequence_get_yscale(sequence_element_id:layer_sequence)->number
 layer_sequence_get_headpos(sequence_element_id:layer_sequence)->number
 layer_sequence_get_headdir(sequence_element_id:layer_sequence)->number
-layer_sequence_get_sequence(sequence_element_id:layer_sequence)->any // TODO
+layer_sequence_get_sequence(sequence_element_id:layer_sequence)->sequence_object
 layer_sequence_is_paused(sequence_element_id:layer_sequence)->bool
 layer_sequence_is_finished(sequence_element_id:layer_sequence)->bool
 layer_sequence_get_speedscale(sequence_element_id:layer_sequence)->number
 
 layer_sequence_get_length(sequence_element_id:layer_sequence)->int
+
+// text items
+layer_text_get_id(layer_id:layer|string,text_element_name:string)->layer_text
+layer_text_exists(layer_id:layer|string,text_element_id:layer_text)->bool
+
+layer_text_create(layer_id:layer|string,x:number,y:number,font:font,text:string)->layer_text
+layer_text_destroy(text_element_id:layer_text)->void
+layer_text_x(text_element_id:layer_text,x:number)->void
+layer_text_y(text_element_id:layer_text,y:number)->void
+layer_text_angle(text_element_id:layer_text,angle:number)->void
+layer_text_xscale(text_element_id:layer_text,scale:number)->void
+layer_text_yscale(text_element_id:layer_text,scale:number)->void
+layer_text_blend(text_element_id:layer_text,col:int)->void
+layer_text_alpha(text_element_id:layer_text,alpha:number)->void
+layer_text_font(text_element_id:layer_text,font:font)->void
+layer_text_xorigin(text_element_id:layer_text,xorigin:number)->void
+layer_text_yorigin(text_element_id:layer_text,yorigin:number)->void
+layer_text_text(text_element_id:layer_text,text:string)->void
+layer_text_halign(text_element_id:layer_text,alignment:text_horizontal_alignment)->void
+layer_text_valign(text_element_id:layer_text,alignment:text_vertical_alignment)->void
+layer_text_charspacing(text_element_id:layer_text,charspacing:number)->void
+layer_text_linespacing(text_element_id:layer_text,linespacing:number)->void
+layer_text_framew(text_element_id:layer_text,width:number)->void
+layer_text_frameh(text_element_id:layer_text,height:number)->void
+layer_text_wrap(text_element_id:layer_text,wrap:bool)->void
+
+layer_text_get_x(text_element_id:layer_text)->number
+layer_text_get_y(text_element_id:layer_text)->number
+layer_text_get_xscale(text_element_id:layer_text)->number
+layer_text_get_yscale(text_element_id:layer_text)->number
+layer_text_get_angle(text_element_id:layer_text)->number
+layer_text_get_blend(text_element_id:layer_text)->int
+layer_text_get_alpha(text_element_id:layer_text)->number
+layer_text_get_font(text_element_id:layer_text)->font
+layer_text_get_xorigin(text_element_id:layer_text)->number
+layer_text_get_yorigin(text_element_id:layer_text)->number
+layer_text_get_text(text_element_id:layer_text)->string
+layer_text_get_halign(text_element_id:layer_text)->text_horizontal_alignment
+layer_text_get_valign(text_element_id:layer_text)->text_vertical_alignment
+layer_text_get_charspacing(text_element_id:layer_text)->number
+layer_text_get_linespacing(text_element_id:layer_text)->number
+layer_text_get_framew(text_element_id:layer_text)->number
+layer_text_get_frameh(text_element_id:layer_text)->number
+layer_text_get_wrap(text_element_id:layer_text)->bool
+
+// Text element alignment
+textalign_left#:text_horizontal_alignment
+textalign_center#:text_horizontal_alignment
+textalign_right#:text_horizontal_alignment
+textalign_justify#:text_horizontal_alignment
+textalign_top#:text_vertical_alignment
+textalign_middle#:text_vertical_alignment
+textalign_bottom#:text_vertical_alignment
 
 // Animation Curves
 animcurve_get(curve_id:animcurve)->animcurve_struct
@@ -684,6 +891,23 @@ animcurve_destroy(curve_struct_or_id:animcurve_struct|animcurve)->void
 animcurve_exists(curve_struct_or_id:animcurve_struct|animcurve)->bool
 animcurve_channel_new()->animcurve_channel
 animcurve_point_new()->animcurve_point
+
+// Effects functions
+fx_create(filter_or_effect_name:string)->fx_struct
+fx_get_name(filter_or_effect:fx_struct)->string
+fx_get_parameter_names(filter_or_effect:fx_struct)->string[]
+fx_get_parameter<T:number|number[]|bool|texture>(filter_or_effect:fx_struct,parameter_name:string)->T
+fx_get_parameters(filter_or_effect:fx_struct)->struct
+fx_get_single_layer(filter_or_effect:fx_struct)->bool
+fx_set_parameter<T:number|number[]|bool|texture>(filter_or_effect:fx_struct,parameter_name:string,...val:T)->void
+fx_set_parameters(filter_or_effect:fx_struct,parameter_struct:struct)->void
+fx_set_single_layer(filter_or_effect:fx_struct,enable:bool)->void
+
+layer_set_fx(layer_name_or_id:layer|string,filter_or_effect:fx_struct)->void
+layer_get_fx(layer_name_or_id:layer|string)->fx_struct
+layer_clear_fx(layer_name_or_id:layer|string)->void
+layer_enable_fx(layer_name_or_id:layer|string,enable:bool)->void
+layer_fx_is_enabled(layer_name_or_id:layer|string)->bool
 
 
 // SequenceInstance properties
@@ -949,11 +1173,7 @@ animcurvetype_bezier#:animcurve_interpolation
 gc_collect()->void
 gc_enable(enable:bool)->void
 gc_is_enabled()->bool
-
-// This actually returns GCStats as defined below, by the original fnames
-gc_get_stats()->any // where any:struct
-
-
+gc_get_stats()->gc_stats
 gc_target_frame_time(time:int)->void
 gc_get_target_frame_time()->int
 
@@ -968,18 +1188,27 @@ generation_collected?:int
 num_generations?:int
 num_objects_in_generation?:int
 
+// weak reference functions
+weak_ref_create<T:struct|instance>(thing_to_track:T)->weak_reference<T>
+
+// weak reference structure
+??WeakRef
+ref?:struct|instance
+
+time_source_global#:time_source
+time_source_game#:time_source
 
 time_source_create(parent:time_source, period:number, units:time_source_units, callback:function, ?args:array, ?reps:number, ?expiryType:time_source_expiry)->time_source
-time_source_destroy(id:time_source, ?destroyTree:bool)
-time_source_start(id:time_source)
-time_source_stop(id:time_source)
-time_source_pause(id:time_source)
-time_source_resume(id:time_source)
-time_source_reset(id:time_source)
-time_source_reconfigure(id:time_source, period:number, units:time_source_units, callback:function, ?args:array, ?reps:number, ?expiryType:time_source_expiry)
+time_source_destroy(id:time_source, ?destroyTree:bool)->void
+time_source_start(id:time_source)->void
+time_source_stop(id:time_source)->void
+time_source_pause(id:time_source)->void
+time_source_resume(id:time_source)->void
+time_source_reset(id:time_source)->void
+time_source_reconfigure(id:time_source, period:number, units:time_source_units, callback:function, ?args:array, ?reps:int, ?expiryType:time_source_expiry)->void
 time_source_get_period(id:time_source)->number
-time_source_get_reps_completed(id:time_source)->number
-time_source_get_reps_remaining(id:time_source)->number
+time_source_get_reps_completed(id:time_source)->int
+time_source_get_reps_remaining(id:time_source)->int
 time_source_get_units(id:time_source)->time_source_units
 time_source_get_time_remaining(id:time_source)->number
 time_source_get_state(id:time_source)->time_source_state
@@ -1002,4 +1231,58 @@ time_source_state_paused#:time_source_state
 time_source_state_stopped#:time_source_state
 
 call_later(period:number, units:time_source_units, callback:function<void>, ?repeat:bool)->time_source
-call_cancel(handle:time_source)
+call_cancel(handle:time_source)->void
+
+audio_bus_main#:audio_bus
+
+??AudioBus
+bypass?:bool
+gain?:number
+effects?:Array<audio_effect>
+
+??AudioEffect
+attack?:number
+bypass?:bool
+cutoff?:number
+damp?:number
+eq1?:audio_effect
+eq2?:audio_effect
+eq3?:audio_effect
+eq4?:audio_effect
+factor?:number
+feedback?:number
+freq?:number
+gain?:number
+hicut?:audio_effect
+hishelf?:audio_effect
+ingain?:number
+intensity?:number
+locut?:audio_effect
+loshelf?:audio_effect
+mix?:number
+offset?:number
+outgain?:number
+q?:number
+rate?:number
+ratio?:number
+release?:number
+resolution?:number
+shape?:audio_lfo_type
+size?:number
+threshold?:number
+time?:number
+type?:audio_effect_type
+
+AudioEffectType#:audio_effect_type_enum
+
+AudioLFOType#:audio_lfo_type_enum
+
+audio_bus_create()->audio_bus
+audio_effect_create(type:audio_effect_type, ?params:struct)->audio_effect
+audio_emitter_bus(emitter:audio_emitter, bus:audio_bus)->void
+audio_emitter_get_bus(emitter:audio_emitter)->audio_bus
+audio_bus_get_emitters(bus:audio_bus)->audio_emitter[]
+audio_bus_clear_emitters(bus:audio_bus)->void
+
+lin_to_db(x:number)->number
+db_to_lin(x:number)->number

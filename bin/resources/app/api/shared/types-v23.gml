@@ -1,6 +1,6 @@
 //
 feathername: Struct.WeakRef
-typedef weak_reference;
+typedef weak_reference : WeakRef;
 
 feathername: Asset.GMSequence
 typedef sequence : asset, simplename;
@@ -93,6 +93,9 @@ typedef particle_info : struct;
 feathername: Constant.ParticleEmitterMode
 typedef particle_mode : uncompareable;
 
+feathername: Constant.StencilOp
+typedef gpu_stencilop : uncompareable;
+
 feathername: Constant.BlendModeEquation
 typedef blendmode_equation : uncompareable;
 
@@ -105,8 +108,33 @@ typedef video_status : uncompareable;
 feathername: Constant.VideoFormat
 typedef video_format : uncompareable;
 
+feathername: Struct.Zip;
+typedef zip_object;
+
+typedef physics_hitpoint : struct;
+
+feathername: Constant.SendOption
+typedef network_send_option : uncompareable;
+
+feathername: Constant.NetworkConnectType
+typedef network_connect_type : uncompareable;
+
+feathername: Struct.VertexFormatInfo
+typedef vertex_format_info : struct;
+
+typedef vertex_format_element: struct;
+
+feathername: Struct.SkeletonSkin
+typedef skeleton_skin : struct;
+
+feathername: Struct.TileSetInfo
+typedef tileset_info;
+
 feathername: Struct.SpriteInfo;
 typedef sprite_info;
+
+feathername: Id.TextElement
+typedef layer_text : layer_element
 
 feathername: Struct.SequenceInstance
 typedef sequence_instance : SequenceInstance;
@@ -187,13 +215,31 @@ typedef sequence_interpolation : uncompareable;
 feathername: Constant.SequenceAudioKey
 typedef sequence_audio_mode : uncompareable;
 
-feathername: Constant.SequenceTextKey
-typedef text_horizontal_alignment : uncompareable
+feathername: Constant.TextAlign
+typedef text_horizontal_alignment : uncompareable;
 
-feathername: Constant.SequenceTextKey
-typedef text_vertical_alignment : uncompareable
+feathername: Constant.TextAlign
+typedef text_vertical_alignment : uncompareable;
 
 feathername: Constant.AnimCurveInterpolationType
-typedef animcurve_interpolation : uncompareable
+typedef animcurve_interpolation : uncompareable;
+
+feathername: Struct.Fx
+typedef fx_struct : minus1able;
+
+feathername: Struct.GCStats
+typedef gc_stats : GCStats;
+
+feathername: Struct.AudioBus
+typedef audio_bus : AudioBus;
+
+feathername: Struct.AudioEffect
+typedef audio_effect : AudioEffect : struct;
+
+feathername: Enum.AudioEffectType
+typedef audio_effect_type : uncompareable;
+
+feathername: Enum.AudioLFOType
+typedef audio_lfo_type : uncompareable;
 
 fe_name mp_grid = Id.MpGrid;
