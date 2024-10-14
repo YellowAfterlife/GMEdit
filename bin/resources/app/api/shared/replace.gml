@@ -130,7 +130,7 @@ real(val:string)->number
 bool(val:number)->bool
 string(val:any)->string
 int64(val:number|string|pointer)->int
-ptr(val:number|string|ptr|struct|function)->pointer
+ptr(val:number|string|pointer|struct|function)->pointer
 string_format(val:number,total:int,dec:int)->string
 chr(val:int)->string
 ansi_char(val:int)->string
