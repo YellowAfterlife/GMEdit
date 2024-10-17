@@ -237,7 +237,7 @@ mb_side2#:mouse_button
 bboxkind_spine#:bbox_kind
 
 // exception structure entries
-[+message]??Exception
+[+message*@]??Exception
 message?:string
 longMessage?:string
 script?:script
