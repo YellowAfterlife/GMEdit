@@ -35,7 +35,7 @@ italic?:bool
 glyphs?:Array<font_info_glyph>
 sdfEnabled?:bool
 sdfSpread?:number
-effectsEnabled?:number
+effectsEnabled?:bool
 effectParams?:font_effect_params
 
 ??font_info_glyph

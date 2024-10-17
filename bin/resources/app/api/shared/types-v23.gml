@@ -29,6 +29,8 @@ typedef debug_section;
 feathername: Id.DbgRef
 typedef debug_reference;
 
+fe_name Exception = Struct.Exception;
+
 feathername: Struct.FontInfo
 typedef font_info : struct;
 
