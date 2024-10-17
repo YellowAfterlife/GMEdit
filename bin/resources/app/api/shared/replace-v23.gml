@@ -21,13 +21,13 @@ nameof(name:any)->string
 
 is_struct(val:any)->bool
 is_method(val:any)->bool
-is_instanceof<T:struct>(struct:T, constructor_name:constructor)
+is_instanceof<T:struct>(struct:T, constructor_name:constructor)->bool
 is_callable(val:any)->bool
 is_handle(val:any)->bool
 static_get(struct_or_func_name:struct|function)->struct|undefined
 static_set(struct:struct, static_struct:struct)->void
 instanceof<T:struct>(struct:T)->string|undefined
-exception_unhandled_handler(user_handler:function<Exception;any|void>)
+exception_unhandled_handler(user_handler:function<Exception;any|void>)->function|undefined
 
 variable_struct_exists<T:struct>(struct:T,name:string)->bool
 variable_struct_get<T:struct>(struct:T,name:string)->any
@@ -55,6 +55,7 @@ array_height_2d<T>(variable:T[])&->int
 array_resize<T>(variable:T[],newsize:int)->void
 array_push<T>(array:T[],...values:T)->void
 array_pop<T>(array:T[])->T
+array_shift<T>(array:T[])->T
 array_insert<T>(array:T[],index:int,...values:T)->void
 array_delete<T>(array:T[],index:int,number:int)->void
 array_sort<T>(array:T[],sortType_or_function:bool|function<T;T;int>)->void
@@ -327,6 +328,8 @@ display_get_frequency()->int
 
 #region 5.9
 
+window_set_showborder(show:bool)->void
+window_get_showborder()->bool
 window_enable_borderless_fullscreen(enable:bool)->void
 window_get_borderless_fullscreen()->bool
 window_mouse_set_locked(enable:bool)->void
@@ -345,8 +348,9 @@ window_mouse_get_delta_y()->number
 audio_system()&->void
 audio_play_sound(soundid:sound,priority:int,loops:bool,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
 audio_play_sound_on(emitterid:audio_emitter,soundid:sound,loops:bool,priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
-audio_play_sound_at(soundid:sound,x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)-
+audio_play_sound_at(soundid:sound,x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
 audio_play_sound_ext(params:any_fields_of<audio_play_sound_ext_t>)->sound_instance
+audio_system_is_initialised()->bool
 
 audio_sound_get_asset(voiceIndex:sound_instance)->sound|undefined
 audio_sound_loop(voiceIndex:sound_instance, loopState:bool)->void
@@ -417,7 +421,7 @@ font_get_sdf_enabled(ind:font)->bool
 font_sdf_spread(ind:font,spread:number)->void
 font_get_sdf_spread(ind:font)->number
 
-font_enable_effects(ind:font, enable:bool, ?params:font_effect_params|struct)
+font_enable_effects(ind:font, enable:bool, ?params:font_effect_params|struct)->void
 
 #endregion
 
@@ -592,6 +596,7 @@ os_gxgames#:os_type
 
 os_request_permission(...permissions:string)->void
 os_set_orientation_lock(landscape_enable:bool,portrait_enable:bool)->void
+event_data*:ds_map<string,any>
 
 tm_systemtiming#:display_timing_method
 
@@ -636,7 +641,7 @@ gpu_get_blendequation_sepalpha()->tuple<equation:blendmode_equation,equation_alp
 gpu_get_scissor()->{x:number,y:number,w:number,h:number}
 gpu_set_scissor(x_or_struct:number|struct, ?y:number, ?w:number, ?h:number)->void
 
-event_data*:ds_map<string,any>
+gamepad_enumerate()->void
 
 http_get_connect_timeout()->int
 http_set_connect_timeout(connect_timeout_ms:int)->void
@@ -1024,8 +1029,8 @@ objectIndex?:object
 ??TextTrack
 text?:string
 wrap?:bool
-alignmentV?
-alignmentH?
+alignmentV?:text_vertical_alignment
+alignmentH?:text_horizontal_alignment
 fontIndex?:font
 effectsEnabled?:bool
 glowEnabled?:bool
@@ -1114,7 +1119,6 @@ outlineEnabled?:bool
 dropShadowEnabled?:bool
 track?:sequence_track
 parent?:sequence_instance
-activeTracks?:sequence_active_track
 
 // Sequence track types
 seqtracktype_graphic#:sequence_track_type
