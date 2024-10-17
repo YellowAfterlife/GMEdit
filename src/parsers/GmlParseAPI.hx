@@ -131,7 +131,7 @@ class GmlParseAPI {
 				return;
 			}
 			var typeStr = mt[2];
-			var type = GmlTypeDef.simple(typeStr);
+			var type = GmlTypeDef.parse(typeStr, currStruct);
 			var cinf = "from " + currStruct;
 			if (typeStr != null) cinf += "\ntype " + typeStr;
 			var comp = new AceAutoCompleteItem(name, "variable", cinf);
