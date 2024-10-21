@@ -72,9 +72,6 @@ class YyJsonPrinter {
 	public static var metaByResourceType:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByResourceType();
 	/** >=2023 */
 	public static var metaByResourceType2023:Dictionary<YyJsonMeta> = @:privateAccess YyJsonMeta.initByResourceType2023();
-	static inline function isV2023() {
-		return gml.Project.current != null && gml.Project.current.isGM2023;
-	}
 	
 	static var isOrderedCache:Map<Array<String>, Dictionary<Bool>> = new Map();
 	
@@ -124,7 +121,9 @@ class YyJsonPrinter {
 	
 	static var indentString:String = "    ";
 	static var nextType:String = null;
+	#if js
 	static var _Int64:Class<Dynamic> = null;
+	#end
 	static function stringify_rec(obj:Dynamic, indent:Int, compact:Bool, ?digits:Int):String {
 		var nt:String = nextType; nextType = null;
 		if (obj == null) { // also hits "undefined"
@@ -154,7 +153,9 @@ class YyJsonPrinter {
 		}
 		else if (Reflect.isObject(obj)) {
 			if (obj.__int64) return "" + (obj:Int64);
+			#if js
 			if (_Int64 != null && js.Syntax.instanceof(obj, _Int64)) return "" + (obj:Int64);
+			#end
 			var indentString = YyJsonPrinter.indentString;
 			indent += 1;
 			var r = (compact ? "{" : "{\r\n" + indentString.repeat(indent));
@@ -283,6 +284,7 @@ class YyJsonPrinter {
 		wantCompact = extJson;
 		trailingCommas = extJson;
 		isExt = extJson;
+		#if js
 		var project = gml.Project.current;
 		if (project != null) {
 			isGM2023 = project.isGM2023;
@@ -293,12 +295,15 @@ class YyJsonPrinter {
 			isGM2023 = false;
 			isGM2024 = false;
 		}
+		#end
 		indentString = extJson ? "  " : "    ";
 		return stringify_rec(obj, 0, false);
 	}
 	
 	public static function init() {
+		#if js
 		_Int64 = Type.resolveClass("haxe._Int64.___Int64");
 		if (_Int64 == null) Console.error("Couldn't find Int64 implementation!");
+		#end
 	}
 }

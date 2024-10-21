@@ -361,7 +361,7 @@ class YyObjectProperties {
 						}
 					} else {
 						prop.resourceType = "GMObjectProperty";
-						prop.resourceVersion = "1.0";
+						prop.resourceVersion = Project.current.isGM2024_8 ? "2.0" : "1.0";
 						prop.name = name;
 						prop.hxOrder = propFieldOrder23;
 						prop.hxDigits = digitCount23;

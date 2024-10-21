@@ -175,7 +175,11 @@ import yy.YyTools;
 					name: "",
 				};
 				if (project.isGM2024) {
-					Reflect.setField(ev, "$GMEvent", "");
+					if (project.isGM2024_8) {
+						Reflect.setField(ev, "$GMEvent", "v1");
+					} else {
+						Reflect.setField(ev, "$GMEvent", "");
+					}
 					Reflect.setField(ev, "%Name", "");
 					ev.resourceVersion = "2.0";
 				}

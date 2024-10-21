@@ -203,6 +203,7 @@ class YyManip {
 			};
 			var itemRelPath:String = yyPath;
 			var itemFullPath:String = yyFullPath;
+			var resourceVersion = pj.isGM2024_8 ? "2.0" : "1.0";
 			switch (kind) {
 				case "script": {
 					itemFullPath = Path.withExtension(itemFullPath, "gml");
@@ -210,7 +211,7 @@ class YyManip {
 						"isDnD": false,
 						"isCompatibility": false,
 						"parent": yyParent,
-						"resourceVersion": "1.0",
+						"resourceVersion": resourceVersion,
 						"name": name,
 						"tags": [],
 						"resourceType": "GMScript",
@@ -248,7 +249,7 @@ class YyManip {
 						"properties": [],
 						"overriddenProperties": [],
 						"parent": yyParent,
-						"resourceVersion": "1.0",
+						"resourceVersion": resourceVersion,
 						"name": name,
 						"tags": [],
 						"resourceType": "GMObject",
@@ -258,7 +259,7 @@ class YyManip {
 					var sh:YyShader = {
 						"type": 1,
 						"parent": yyParent,
-						"resourceVersion": "1.0",
+						"resourceVersion": resourceVersion,
 						"name": name,
 						"tags": [],
 						"resourceType": "GMShader",

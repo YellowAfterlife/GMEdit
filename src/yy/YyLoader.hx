@@ -75,12 +75,18 @@ class YyLoader {
 		if (project.isGMS23) {
 			var metaData = yyProject.MetaData;
 			if (metaData != null && metaData.IDEVersion != null) {
-				var mt = new RegExp("^(20\\d{2})\\.").exec(metaData.IDEVersion);
-				var year = mt != null ? Std.parseInt(mt[1]) : null;
+				var mt = new RegExp("^(20\\d{2})\\.(\\d+)?").exec(metaData.IDEVersion);
+				var year = null, mon = null;
+				if (mt != null) {
+					year = Std.parseInt(mt[1]);
+					mon = Std.parseInt(mt[2]);
+				}
 				if (year == null) year = 0;
+				if (mon == null) mon = 0;
 				project.isGM2022 = year >= 2022;
 				project.isGM2023 = year >= 2023;
 				project.isGM2024 = year >= 2024 || yyProjectTxt.contains("\"$GMProject\":");
+				project.isGM2024_8 = project.isGM2024 && mon >= 8;
 				project.usesResourceOrderFile = project.isGM2023 && project.existsSync(project.getResourceOrderFilePath());
 				project.yyResourceVersion = try {
 					Std.parseFloat(yyProject.resourceVersion);

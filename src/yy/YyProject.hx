@@ -20,7 +20,7 @@ typedef YyProject = {
 typedef YyProjectFolder = {
 	>YyBase,
 	folderPath:String,
-	order:Int,
+	?order:Int,
 	name:String,
 }
 typedef YyTextureGroup = {

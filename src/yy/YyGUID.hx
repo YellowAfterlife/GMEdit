@@ -1,6 +1,7 @@
 package yy;
-import tools.Random;
+#if js
 import js.lib.RegExp;
+#end
 
 /**
  * ...
@@ -16,10 +17,17 @@ abstract YyGUID(String) to String {
 		return v22 ? zero : blank;
 	}
 	
+	#if js
 	public static var test:RegExp = {
 		var h = '[0-9a-fA-F]';
 		new RegExp('^$h{8}-$h{4}-$h{4}-$h{4}-$h{12}' + "$");
 	};
+	#else
+	public static var test:EReg = {
+		var h = '[0-9a-fA-F]';
+		new EReg('^$h{8}-$h{4}-$h{4}-$h{4}-$h{12}' + "$", "");
+	};
+	#end
 	static function create() {
 		var result = "";
 		for (j in 0 ... 32) {
@@ -30,14 +38,15 @@ abstract YyGUID(String) to String {
 				result += "4";
 			}
 			else if (j == 16) {
-				result += "89ab".charAt(Random.integer(4));
+				result += "89ab".charAt(Std.random(4));
 			}
 			else {
-				result += "0123456789abcdef".charAt(Random.integer(16));
+				result += "0123456789abcdef".charAt(Std.random(16));
 			}
 		}
 		return result;
 	}
+	#if js
 	public static function createNum(count:Int, ?pj:YyProject):Array<YyGUID> {
 		var out = [];
 		var taken = new Map();
@@ -54,6 +63,7 @@ abstract YyGUID(String) to String {
 		}
 		return out;
 	}
+	#end
 	public inline function new() {
 		this = create();
 	}
