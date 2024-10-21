@@ -532,8 +532,8 @@ ds_grid_to_mp_grid<T:number>(ds_grid:ds_grid<T>,mp_grid:mp_grid,?func:function<v
 
 #region 12.1a
 
-effect_create_layer(layer_id_or_name:layer|string,kind:effect_king,x:number,y:number,size:number,col:int)->void
-effect_create_depth(depth:int,kind:effect_king,x:number,y:number,size:number,col:int)->void
+effect_create_layer(layer_id_or_name:layer|string,kind:effect_kind,x:number,y:number,size:number,col:int)->void
+effect_create_depth(depth:int,kind:effect_kind,x:number,y:number,size:number,col:int)->void
 effect_clear()->void
 
 #endregion
@@ -719,7 +719,7 @@ vertex_update_buffer_from_vertex(dest_vbuff:vertex_buffer,dest_vert:int,src_vbuf
 skeleton_animation_set(anim_name:string, ?loop:bool)!->void
 skeleton_animation_set_ext(anim_name:string, track:int, ?loop:bool)!->void
 skeleton_animation_clear(track:int,?reset:bool,duration:number)!->void
-skeleton_skin_set:<T:string|skeleton_skin>(skin_name:T)!->void
+skeleton_skin_set<T:string|skeleton_skin>(skin_name:T)!->void
 skeleton_skin_create(skin_name:string, base_skins:string[])!->skeleton_skin
 skeleton_attachment_set(slot:string, attachment:string|sprite)!->string
 skeleton_attachment_exists(name:string)!->bool

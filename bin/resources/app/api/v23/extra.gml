@@ -93,7 +93,7 @@ frame_info?:Array<sprite_frame_info>|undefined
 frame_speed?:number
 frame_type?:sprite_speed_type
 frames?:Array<sprite_frame>
-num_atlas:int
+num_atlas?:int
 atlas_texture?:Array<texture>
 premultiplied?:bool
 animation_names?:Array<string>
