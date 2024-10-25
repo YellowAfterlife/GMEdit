@@ -1,6 +1,7 @@
 package tools;
 
 import js.Syntax;
+import yy.YyResourceRef;
 
 /**
  * ...
@@ -75,6 +76,37 @@ import js.Syntax;
 		arr.insert(at, item);
 		return at;
 	}
+	static inline function insertSorted<T>(arr:Array<T>, item:T, getName:T->String) {
+		var pos = 0;
+		var nameLq = getName(item);
+		nameLq = nameLq.toLowerCase();
+		while (pos < arr.length) {
+			var cur = arr[pos];
+			var clq = getName(cur);
+			clq = clq.toLowerCase();
+			// TODO: but "obj_unit_mover" should come after "obj_unit"!
+			if (nameLq < clq) {
+				arr.insert(pos, item);
+				break;
+			} else pos += 1;
+		}
+		if (pos >= arr.length) {
+			arr.push(item);
+		}
+	}
+	public static function insertNameSorted<T:{name:String}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.name);
+	}
+	public static function insertPathSorted<T:{path:String}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.path);
+	}
+	public static function insertFolderPathSorted<T:{folderPath:String}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.folderPath);
+	}
+	public static function insertYyRefSorted<T:{id:YyResourceRef}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.id.path);
+	}
+	
 	public static function replaceOne<T>(arr:Array<T>, replaceWhat:T, withWhat:T):Bool {
 		var i = arr.indexOf(replaceWhat);
 		if (i >= 0) {

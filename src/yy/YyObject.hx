@@ -333,6 +333,7 @@ typedef YyObjectImpl = {
 	
 	physicsShape:Int,
 	physicsShapePoints:Array<YyObjectPhysicsShapePoint>,
+	?managed:Bool,
 };
 typedef YyObjectPhysicsShapePoint = {
 	>YyBase, // GMPoint 1.0

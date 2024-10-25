@@ -14,7 +14,7 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 	 * Create a new YyFont with the default values found in 2.3
 	 */
 	public static function generateDefault(parent: YyResourceRef, name: String):YyFont {
-		return {
+		var font:YyFont = {
 			"hinting": 0,
 			"glyphOperations": 0,
 			"interpreter": 0,
@@ -48,9 +48,10 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 			"parent": parent,
 			"resourceVersion": "1.0",
 			"name": name,
-			"tags": [],
 			"resourceType": "GMFont",
-		}
+		};
+		if (!gml.Project.current.isGM2024) font.tags = [];
+		return font;
 	}
 
 	public var characterCount(get,never): Int;

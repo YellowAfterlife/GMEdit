@@ -111,7 +111,11 @@ class YyManip {
 		if (item == null && createIfNeeded) {
 			// OK, here comes the fun part: items with order==0 are removed from the file.
 			item = { name: el.treeIdent, order: 0, path: path };
-			arr.insertAtRandom(item);
+			if (Project.current.isGM2024_8) {
+				arr.insertPathSorted(item);
+			} else {
+				arr.insertAtRandom(item);
+			}
 		}
 		return item;
 	}
@@ -175,10 +179,18 @@ class YyManip {
 				name: name,
 				resourceType: "GMFolder",
 			};
-			py.Folders.push(folder);
+			if (pj.isGM2024_8) {
+				py.Folders.insertFolderPathSorted(folder);
+			} else {
+				py.Folders.push(folder);
+			}
 			if (resourceOrder != null) {
 				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
-				resourceOrder.FolderOrderSettings.push(yyOrderItem);
+				if (pj.isGM2024_8) {
+					resourceOrder.FolderOrderSettings.insertPathSorted(yyOrderItem);
+				} else {
+					resourceOrder.FolderOrderSettings.push(yyOrderItem);
+				}
 			} else {
 				yyOrderItem = null;
 				folder.order = -1;
@@ -203,7 +215,8 @@ class YyManip {
 			};
 			var itemRelPath:String = yyPath;
 			var itemFullPath:String = yyFullPath;
-			var resourceVersion = pj.isGM2024_8 ? "2.0" : "1.0";
+			var needsPercMeta = pj.isGM2024_8;
+			var resourceVersion = needsPercMeta ? "2.0" : "1.0";
 			switch (kind) {
 				case "script": {
 					itemFullPath = Path.withExtension(itemFullPath, "gml");
@@ -213,9 +226,10 @@ class YyManip {
 						"parent": yyParent,
 						"resourceVersion": resourceVersion,
 						"name": name,
-						"tags": [],
 						"resourceType": "GMScript",
 					};
+					if (!pj.isGM2024) scr.tags = [];
+					if (needsPercMeta) Reflect.setField(scr, "$GMScript", "v1");
 					yyResource = scr;
 					//
 					var gml = args.gmlCode;
@@ -251,9 +265,14 @@ class YyManip {
 						"parent": yyParent,
 						"resourceVersion": resourceVersion,
 						"name": name,
-						"tags": [],
 						"resourceType": "GMObject",
-					}; yyResource = obj;
+					};
+					if (!pj.isGM2024) {
+						obj.tags = [];
+					} else {
+						obj.managed = true;
+					}
+					yyResource = obj;
 				};
 				case "shader": {
 					var sh:YyShader = {
@@ -261,9 +280,10 @@ class YyManip {
 						"parent": yyParent,
 						"resourceVersion": resourceVersion,
 						"name": name,
-						"tags": [],
 						"resourceType": "GMShader",
-					}; yyResource = sh;
+					};
+					if (!pj.isGM2024) sh.tags = [];
+					yyResource = sh;
 					//
 					pj.writeTextFileSync(pre + ".fsh", YyShaderDefaults.baseFragGLSL);
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
@@ -274,9 +294,9 @@ class YyManip {
 						parent: yyParent,
 						resourceVersion: "1.1",
 						name: name,
-						tags: [],
 						resourceType: "GMNotes",
 					}
+					if (!pj.isGM2024) note.tags = [];
 					yyResource = note;
 					pj.writeTextFileSync(pre + ".txt", "");
 					args.npath = pre + ".txt";
@@ -312,10 +332,18 @@ class YyManip {
 			var res:YyProjectResource = {
 				id: { name: name, path: pre + ".yy" },
 			};
-			py.resources.insertAtRandom(res);
+			if (pj.isGM2024_8) {
+				py.resources.insertYyRefSorted(res);
+			} else {
+				py.resources.insertAtRandom(res);
+			}
 			if (resourceOrder != null) {
 				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
-				resourceOrder.ResourceOrderSettings.insertAtRandom(yyOrderItem);
+				if (pj.isGM2024_8) {
+					resourceOrder.ResourceOrderSettings.insertPathSorted(yyOrderItem);
+				} else {
+					resourceOrder.ResourceOrderSettings.insertAtRandom(yyOrderItem);
+				}
 			} else {
 				yyOrderItem = null;
 				res.order = -1;
@@ -473,10 +501,22 @@ class YyManip {
 			var dirPath = path + ".yy";
 			//
 			if (folder == null) folder = getProjectFolderForTreeDir(py, dir);
-			if (folder != null) folder.folderPath = dirPath;
+			if (folder != null) {
+				folder.folderPath = dirPath;
+				if (pj.isGM2024_8) {
+					// move to a new spot in array
+					var arr = py.Folders;
+					arr.remove(folder);
+					arr.insertFolderPathSorted(folder);
+				}
+			}
 			if (resourceOrder != null) {
-				var ordItem = getProjectOrderItemForTreeEl(dir, null, resourceOrder, false);
-				if (ordItem != null) ordItem.asOrderItem().path = dirPath;
+				var ordItem:YyResourceOrderItem = getProjectOrderItemForTreeEl(dir, null, resourceOrder, false);
+				if (ordItem != null) {
+					ordItem.path = dirPath;
+					resourceOrder.FolderOrderSettings.remove(ordItem);
+					resourceOrder.FolderOrderSettings.insertPathSorted(ordItem);
+				}
 			}
 			//
 			var dirPrefix = path + "/";
@@ -583,6 +623,12 @@ class YyManip {
 			for (res in py.resources) updateResourceSafe(res);
 		} else {
 			updateResourceSafe(pyRes);
+		}
+		//
+		if (pj.isGM2024_8) {
+			var arr = py.resources;
+			arr.remove(pyRes);
+			arr.insertYyRefSorted(pyRes);
 		}
 		//
 		pj.renameSync(curPath, curDir + "/" + newName + ".yy");

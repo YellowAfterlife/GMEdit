@@ -170,7 +170,8 @@ class YyJsonPrinter {
 			if (_2024) {
 				meta = null;
 				if (Reflect.field(obj, "%Name") == null && obj.resourceType != null) {
-					Reflect.setField(obj, "$" + obj.resourceType, "");
+					var tfd = "$" + obj.resourceType;
+					if (!Reflect.hasField(obj, tfd)) Reflect.setField(obj, tfd, "");
 					Reflect.setField(obj, "%Name", obj.name ?? "");
 				}
 			} else if (nt != null) {
