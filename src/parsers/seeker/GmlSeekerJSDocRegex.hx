@@ -53,13 +53,13 @@ class GmlSeekerJSDocRegex {
 	
 	public static var jsDoc_interface = new RegExp("^///\\s*"
 		+ "@interface\\b\\s*"
-		+ "(?:\\{(\\w+)\\})?"
+		+ "(?:\\{(\\w+)\\})?" // name (opt.)
 	);
 	
 	public static var jsDoc_is = new RegExp("^///\\s*"
-		+ "@is(?:s)?"
-		+ "\\b\\s*\\{(.+?)\\}"
-		+ "\\s*(.*)"
+		+ "@is\\b\\s*"
+		+ "(?:\\{(.+?)\\}\\s*)?" // type (opt.)
+		+ "(.*)"
 	);
 	public static var jsDoc_is_line = (function() {
 		var id = "[_a-zA-Z]\\w*";
