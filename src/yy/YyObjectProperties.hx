@@ -174,7 +174,7 @@ class YyObjectProperties {
 					if (prop.rangeEnabled) {
 						out += '<' + prop.rangeMin + ', ' + prop.rangeMax + '>';
 					}
-					out += ' = ' + (isInt ? prop.value : printExpr(prop.value));
+					out += ' = ' + printExpr(prop.value);
 				};
 				case TString: out += 'string = ' + Json.stringify(prop.value);
 				case TBool: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
@@ -217,7 +217,7 @@ class YyObjectProperties {
 							out += ">";
 						}
 					}
-					out += ' = ' + prop.value;
+					out += ' = ' + printExpr(prop.value);
 				};
 				case TList: {
 					out += prop.multiselect ? 'mlist<' : 'list<';
@@ -415,6 +415,7 @@ class YyObjectProperties {
 						var asset = switch (value) {
 							case Ident(s): s;
 							case Number(f): Json.stringify(f);
+							case EString(s): s;
 							default: throw 'Expected an asset, got $value';
 						};
 						if (v22) {
