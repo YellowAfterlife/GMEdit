@@ -380,8 +380,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 						return self.readError("Can't call this");
 					}
 					self.skip();
-					var argsSelf = currKind == LKIdent && currName == "method" ? GmlTypeDef.methodSelf : selfType;
-					var argc = self.funcArgs.read(newDepth, currFunc, argsSelf, currType);
+					var argc = self.funcArgs.read(newDepth, currFunc, selfType, currType);
 					rc(argc < 0);
 					if (currFunc != null) {
 						self.checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));

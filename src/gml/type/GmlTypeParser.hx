@@ -62,6 +62,9 @@ class GmlTypeParser {
 		r["asset"] = KAsset;
 		//
 		r["any_fields_of"] = KAnyFieldsOf;
+		r["params_of"] = KParamsOf;
+		r["method_auto_func"] = KMethodFunc;
+		r["method_auto_self"] = KMethodSelf;
 		//
 		return r;
 	})();

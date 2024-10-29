@@ -110,6 +110,9 @@ enum abstract GmlTypeKind(Int) {
 	var KAsset = 0x32; // any asset types and objects cast to this
 	
 	// Special:
-	var KMethodSelf = 0x40; // used exclusively by linter to redirect `self` in second arg
-	var KAnyFieldsOf = 0x41; // 
+	var KAnyFieldsOf = 0x1000; // e.g. in instance_create_depth()
+	var KParamsOf = 0x1001; // e.g. in instance_create_depth()
+	var KMethodSelf = 0x1010; // e.g. in method()
+	var KMethodFunc = 0x1011; // also in method()
+	var KBufferAutoType = 0x1020; // in buffer functions
 }

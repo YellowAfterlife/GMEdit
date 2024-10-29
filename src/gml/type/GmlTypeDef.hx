@@ -25,7 +25,6 @@ import tools.JsTools;
 	public static var asset:GmlType = TInst("asset", [], KAsset);
 	public static var global:GmlType = TInst("global", [], KGlobal);
 	public static var anyFunction:GmlType = TInst("function", [], KFunction);
-	public static var methodSelf:GmlType = TInst("methodSelf", [], KMethodSelf);
 	
 	public static inline function arrayOf(itemType:GmlType):GmlType {
 		return TInst("array", [itemType], KArray);

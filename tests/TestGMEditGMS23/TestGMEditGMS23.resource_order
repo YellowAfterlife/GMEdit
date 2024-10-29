@@ -41,6 +41,7 @@
     {"name":"v_imp_typed_let","order":2,"path":"scripts/v_imp_typed_let/v_imp_typed_let.yy",},
     {"name":"v_imp_return_type","order":3,"path":"scripts/v_imp_return_type/v_imp_return_type.yy",},
     {"name":"v_hint_template","order":3,"path":"scripts/v_hint_template/v_hint_template.yy",},
+    {"name":"v_params_of","order":11,"path":"scripts/v_params_of/v_params_of.yy",},
     {"name":"obj_one","order":1,"path":"objects/obj_one/obj_one.yy",},
     {"name":"obj_two","order":2,"path":"objects/obj_two/obj_two.yy",},
     {"name":"v_op_checks","order":1,"path":"scripts/v_op_checks/v_op_checks.yy",},

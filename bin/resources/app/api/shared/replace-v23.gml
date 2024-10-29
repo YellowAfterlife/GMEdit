@@ -98,7 +98,7 @@ weak_ref_any_alive(array:weak_reference[],?index:int,?length:int)->bool
 
 handle_parse(val_string:string)->any|undefined    /// TODO: Handle type?
 
-method<T:function>(context:instance|struct|undefined,func:T)->T
+method<T:function>(context:method_auto_self<instance|struct|undefined>,func:method_auto_func<T>)->T
 method_get_index<T:function>(method:T)->T
 method_get_self<T:function>(method:T)->instance|struct|undefined
 
