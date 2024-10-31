@@ -1,6 +1,6 @@
 /// @template {function} T
 /// @param {T} func 
-/// @param {params_of<T>} ...args 
+/// @param {params_of_nl<T>} ...args 
 function v_params_of_test() {
 	
 }
@@ -21,5 +21,5 @@ function v_params_of() {
 	v_params_of_test(function() /*=>*/ {});
 	v_params_of_test(function() /*=>*/ {}, 0); ///want_warn
 	v_params_of_test(function() /*=>*/ {return 1});
-	v_params_of_test(function() /*=>*/ {return 1}, 0);
+	v_params_of_test(function() /*=>*/ {return 1}, 0); ///want_warn
 }

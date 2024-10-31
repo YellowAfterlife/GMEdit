@@ -63,6 +63,7 @@ class GmlTypeParser {
 		//
 		r["any_fields_of"] = KAnyFieldsOf;
 		r["params_of"] = KParamsOf;
+		r["params_of_nl"] = KParamsOfNL;
 		r["method_auto_func"] = KMethodFunc;
 		r["method_auto_self"] = KMethodSelf;
 		//

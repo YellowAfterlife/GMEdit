@@ -83,18 +83,23 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 		var methodAutoSelf:GmlType = null;
 		//
 		var hasRestParams = false;
+		var restParamsNL = false;
 		var restParams = null;
 		var restParamsBase = null;
-		if (argTypeClamp != 0x7fffffff && argTypes != null) do {
-			// rt1: params_of<function<int;string;void>>
-			var rt1 = switch (argTypes[argTypeClamp]) {
-				case null: continue;
-				case TInst(_, [t], KParamsOf): t;
-				default: continue;
+		var restParamsDefault = GmlTypeDef.void;
+		if (argTypeClamp != 0x7fffffff && argTypes != null) switch (argTypes[argTypeClamp]) {
+			case null: {};
+			case TInst(_, tp, tk = KParamsOf | KParamsOfNL) if (tp.length > 0): {
+				// params_of<function<int;string;void>>
+				restParamsBase = tp[0];
+				if (tp.length > 1) {
+					restParamsDefault = tp[1];
+				}
+				restParamsNL = tk == KParamsOfNL;
+				hasRestParams = true;
 			}
-			restParamsBase = rt1;
-			hasRestParams = true;
-		} while (false);
+			default: {};
+		}
 		//
 		var coroutineStatus = 0; // [none, init, continue]
 		var coroutineResult:GmlType = null;
@@ -133,12 +138,16 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 							case TInst(_, tp, _): tp;
 							default: [];
 						}
+						if (restParamsNL) {
+							var n = restParams.length;
+							if (n > 0) restParams = restParams.slice(0, n - 1);
+						}
 					}
 					var restInd = argTypeInd - argTypeClamp;
 					if (restInd < restParams.length) {
 						argType = restParams[restInd];
 					} else {
-						argType = GmlTypeDef.void;
+						argType = restParamsDefault;
 					}
 				} else {
 					if (argTypeInd > argTypeClamp) {
