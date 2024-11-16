@@ -66,6 +66,7 @@ class GmlTypeParser {
 		r["params_of_nl"] = KParamsOfNL;
 		r["method_auto_func"] = KMethodFunc;
 		r["method_auto_self"] = KMethodSelf;
+		r["buffer_auto_type"] = KBufferAutoType;
 		//
 		return r;
 	})();
