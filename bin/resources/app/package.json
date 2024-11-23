@@ -14,7 +14,7 @@
   },
   "author": "YellowAfterlife",
   "dependencies": {
-    "@electron/remote": "^2.0.8"
+    "@electron/remote": "^2.1.2"
   },
   "devDependencies": {
     "electron-builder": "^23.0.3"
