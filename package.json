@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+	"postinstall": "(cd bin/resources/app && npm install)",
     "compile": "haxe build.hxml",
-    "start": "electron ./bin/resources/app"
+    "start": "(cd bin/resources/app && npm start)"
   },
   "author": "YellowAfterlife"
 }
