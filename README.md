@@ -36,27 +36,32 @@ Same page also houses screenshots and development log.
 ## Building
 
 ### First time setup
-* Download/clone the repository
-* Download [a pre-built 18.x Electron binary](https://github.com/electron/electron/releases)
-  and extract the files into bin/ directory (so that you have `bin/electron.exe` on Windows or `bin/electron` on Mac/Linux).
+* Download/clone the repository.
+* Install a [current version of Haxe](https://haxe.org/download/).
+* Setup Electron by your preferred method:
 
-  You can find which exact version GMEdit is using by evaluating `process.versions.electron` in the JS console (Ctrl+Shift+I).
-  
-  Alternatively, extract an existing GMEdit Beta to `bin/` without replacing files.
+  * Run `npm install`.
+
+  * Download [a pre-built 33.x Electron binary](https://github.com/electron/electron/releases) and
+    extract the files into `bin/` directory (so that you have `bin/electron.exe` on Windows or
+    `bin/electron` on Mac/Linux). In `bin/resources/app`, run `npm install` to grab needed native
+    packages.
+
+  * Extract an existing GMEdit Beta to `bin/` without replacing files.
   
 ### Compiling
 * Build the project via  
   ```
   haxe build.hxml
   ```
-  ,
+  or
   ```
   npm run compile
   ```
-  , or open and run the included FlashDevelop/HaxeDevelop project.
+  or open and run the included FlashDevelop/HaxeDevelop project.
 
-  You'll need a [current version of Haxe](https://haxe.org/download/) installed.
-* Run the compiled output with electron via `npm start` or just run the according Electron binary in `bin/`.
+* Run the compiled output with electron via `npm start` or just run the according Electron binary in
+  `bin/`, if you chose this option.
 
 ### Credits
 
