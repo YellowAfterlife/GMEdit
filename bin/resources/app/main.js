@@ -13,7 +13,7 @@ if (remoteAsModule) {
 }
 
 const minVersion = 11
-const maxVersion = 18
+const maxVersion = 33
 if (electronVersion < minVersion) {
 	throw new Error([
 		"Hey, this Electron version is too old!",

@@ -10,13 +10,14 @@
   "license": "MIT",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "npx electron ."
   },
   "author": "YellowAfterlife",
   "dependencies": {
-    "@electron/remote": "^2.0.8"
+    "@electron/remote": "^2.1.2"
   },
   "devDependencies": {
+    "electron": "^33.2.0",
     "electron-builder": "^23.0.3"
   }
 }
