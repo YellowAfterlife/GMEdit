@@ -2147,10 +2147,10 @@ gp_padu#:gamepad_button
 gp_padd#:gamepad_button
 gp_padl#:gamepad_button
 gp_padr#:gamepad_button
-gp_axislh#:gamepad_button
-gp_axislv#:gamepad_button
-gp_axisrh#:gamepad_button
-gp_axisrv#:gamepad_button
+gp_axislh#:gamepad_axis
+gp_axislv#:gamepad_axis
+gp_axisrh#:gamepad_axis
+gp_axisrv#:gamepad_axis
 
 #endregion
 

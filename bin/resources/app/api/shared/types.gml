@@ -372,6 +372,9 @@ typedef iap_async_storeload : uncompareable
 
 
 typedef gamepad_button : uncompareable
+fe_name gamepad_button = constant.gamepadbutton
+typedef gamepad_axis : uncompareable
+fe_name gamepad_axis = constant.gamepadaxis
 
 
 typedef physics_debug_flag : int
