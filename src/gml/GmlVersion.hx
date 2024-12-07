@@ -105,7 +105,7 @@ import electron.FileWrap;
 						config = c;
 						Console.log('Loaded config for $name');
 					} else {
-						Console.error('Failed to load config for $name:', e);
+						Console.error('Failed to load config for $name:' + e);
 					}
 					if (callback != null) callback(e, this);
 				});
