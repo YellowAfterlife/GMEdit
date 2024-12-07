@@ -47,6 +47,7 @@ import ui.ext.GMLive;
 import yy.YyProject.YyResourceOrderSettings;
 import yy.zip.YyZip;
 using tools.PathTools;
+using tools.NativeString;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
 import ui.project.ProjectProperties;
@@ -179,13 +180,50 @@ import ui.treeview.TreeViewElement;
 	
 	/** name -> exclude? */
 	public var libraryResourceMap:Dictionary<Bool> = new Dictionary();
+	public var libraryResourceRegex:Array<RegExp> = [];
 	public function updateLibraryResourceMap(?lrList:Array<String>) {
 		if (lrList == null) lrList = properties.libraryResources;
 		var lrMap = new Dictionary();
+		function makeRegex(pattern:String) {
+			var rs = "^" + pattern.split("*").map(NativeString.escapeRx).join(".+?") + "$";
+			return new RegExp(rs);
+		}
 		if (lrList != null) for (lrName in lrList) {
 			lrName = NativeString.trimBoth(lrName);
 			if (lrName == "") continue;
-			if (NativeString.startsWith(lrName, "//")) continue;
+			if (lrName.startsWith("//")) continue;
+			if (lrName.startsWith("/")) {
+				var rx = makeRegex(lrName.substring(1));
+				yyResourceTypes.forEach(function(name, type) {
+					var item:TreeViewItem = cast TreeView.find(true, { ident: name });
+					if (item == null) return;
+					var dir = item.treeParentDir;
+					if (dir == null) return;
+					//
+					var path = dir.treeRelPath;
+					if (current.isGMS23 && path.startsWith("folders/")) {
+						path = path.substring("folders/".length);
+					}
+					if (!path.endsWith("/")) path += "/";
+					path += name;
+					//
+					if (rx.test(path)) {
+						lrMap[name] = true;
+						//Console.log(path, name);
+					}
+				});
+				continue;
+			}
+			if (lrName.contains("*")) {
+				var rx = makeRegex(lrName);
+				yyResourceTypes.forEach(function(name, type) {
+					if (rx.test(name)) {
+						lrMap[name] = true;
+						//Console.log(lrName, name);
+					}
+				});
+				continue;
+			}
 			lrMap[lrName] = true;
 		}
 		libraryResourceMap = lrMap;
@@ -400,6 +438,8 @@ import ui.treeview.TreeViewElement;
 				if (th != null) TreeView.setThumb(null, th, el);
 			}
 		}
+		//
+		updateLibraryResourceMap(properties.libraryResources);
 		// try restoring tabs:
 		var state = firstLoadState;
 		if (state != null) {
@@ -515,7 +555,6 @@ import ui.treeview.TreeViewElement;
 			var state:ProjectState = null;
 			if (first) {
 				properties = ProjectProperties.load(this);
-				updateLibraryResourceMap(properties.libraryResources);
 				
 				GmlAPI.forceTemplateStrings = properties.templateStringScript != null;
 				GmlSeekData.map = new Dictionary();
