@@ -317,16 +317,16 @@ class GmlSeekerJSDoc {
 				if (argValueWrap != null && i == argNameArr.length - 1) {
 					if (arg.endsWith("]")) {
 						arg = arg.substring(0, arg.length - 1);
-						if (showArgTypes) arg += ":" + argType;
+						if (showArgTypes && argType != null) arg += ":" + argType;
 						arg += argValueWrap + "]";
 					} else {
-						if (showArgTypes) arg += ":" + argType;
+						if (showArgTypes && argType != null) arg += ":" + argType;
 						arg += argValueWrap;
 					}
-				} else if (showArgTypes) {
+				} else if (showArgTypes && argType != null) {
 					if (arg.endsWith("]")) {
 						arg = arg.substring(0, arg.length - 1) + ":" + argType + "]";
-					} else if (argType != null) arg += ":" + argType;
+					} else arg += ":" + argType;
 				}
 				args.push(arg);
 				types.push(argType);
