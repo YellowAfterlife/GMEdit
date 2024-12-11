@@ -328,8 +328,8 @@ https://stackoverflow.com/a/36247448/5578773
 .resinfo.sprite {
 	display: flex;
 	flex-direction: column;
-	height: var(--main-height);
-	height: var(--main-height-vh);
+	/*height: var(--main-height);
+	height: var(--main-height-vh);*/
 	padding: 0;
 	outline: 0 solid transparent;
 }
