@@ -53,6 +53,7 @@ using tools.HtmlTools;
 	public static var cbCheckMacros:InputElement;
 	public static var cbCheckShaders:InputElement;
 	public static var cbCheckExtensions:InputElement;
+	public static var cbCheckLibResources:InputElement;
 	public static var cbExpandLambdas:InputElement;
 	public static var cbRegExp:InputElement;
 	public static var cbUnique:InputElement;
@@ -83,6 +84,7 @@ using tools.HtmlTools;
 			checkMacros: true,
 			checkShaders: false,
 			checkExtensions: true,
+			checkLibResources: true,
 			expandLambdas: true,
 			checkRefKind: true,
 		};
@@ -139,6 +141,7 @@ using tools.HtmlTools;
 			checkMacros: cbCheckMacros.checked,
 			checkShaders: cbCheckShaders.checked,
 			checkExtensions: cbCheckExtensions.checked,
+			checkLibResources: cbCheckLibResources.checked,
 			expandLambdas: cbExpandLambdas.checked
 		};
 	}
@@ -238,6 +241,8 @@ using tools.HtmlTools;
 					/><label for="global-search-check-shaders">Shaders</label><br/>
 					<input    id="global-search-check-extensions" type="checkbox"
 					/><label for="global-search-check-extensions">Extensions</label><br/>
+					<input    id="global-search-check-lib-resources" type="checkbox"
+					/><label for="global-search-check-lib-resources" title="Library resources, set in project properties">Lib. Res.</label><br/>
 				</fieldset>
 			</div>
 		</form>);
@@ -266,6 +271,7 @@ using tools.HtmlTools;
 		cbCheckMacros = element.querySelectorAuto('#global-search-check-macros');
 		cbCheckShaders = element.querySelectorAuto('#global-search-check-shaders');
 		cbCheckExtensions = element.querySelectorAuto('#global-search-check-extensions');
+		cbCheckLibResources = element.querySelectorAuto('#global-search-check-lib-resources');
 		cbCheckRooms = element.querySelectorAuto('#global-search-check-rooms');
 		cbExpandLambdas = element.querySelectorAuto('#global-search-expand-lambdas');
 		cbRegExp = element.querySelectorAuto('#global-search-regexp');
@@ -329,6 +335,7 @@ typedef GlobalSearchOpt = {
 	?checkRooms:Bool,
 	?checkShaders:Bool,
 	?checkExtensions:Bool,
+	?checkLibResources:Bool,
 	/** Whether to expand pre-2.3 lambdas instead of showing them separately */
 	?expandLambdas:Bool,
 	/** Whether to display type of reference (read, write, define, etc.) */
