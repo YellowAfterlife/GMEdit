@@ -14,6 +14,7 @@ typedef YyProject = {
 	?Folders:Array<YyProjectFolder>,
 	/** Exists 2.3 and forward */
 	?TextureGroups:Array<YyTextureGroup>,
+	?AudioGroups:Array<YyAudioGroup>,
 	//
 	?MetaData: { IDEVersion: String },
 };
@@ -31,6 +32,11 @@ typedef YyTextureGroup = {
 	border:Int,
 	mipsToGenerate:Int,
 	groupParent:String,
+	targets:Int,
+}
+typedef YyAudioGroup = {
+	>YyBase,
+	name:String,
 	targets:Int,
 }
 

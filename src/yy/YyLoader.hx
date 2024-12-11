@@ -255,6 +255,13 @@ class YyLoader {
 		for (texturepage in yyProject.TextureGroups) {
 			project.yyTextureGroups.push(texturepage.name);
 		}
+		//
+		if (yyProject.AudioGroups != null) for (ag in yyProject.AudioGroups) {
+			GmlAPI.gmlKind[ag.name] = "asset.audio_group";
+			var ac = new AceAutoCompleteItem(ag.name, "audio_group");
+			GmlAPI.gmlAssetComp[ag.name] = ac;
+			GmlAPI.gmlComp.push(ac);
+		}
 	}
 }
 private class YyLoaderFolder {
