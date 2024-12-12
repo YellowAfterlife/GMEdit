@@ -316,9 +316,9 @@ collision_line<T:object|instance>(x1:number,y1:number,x2:number,y2:number,obj:T,
 point_in_rectangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number)->bool
 point_in_triangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->bool
 point_in_circle(px:number,py:number,cx:number,cy:number,rad:number)->bool
-rectangle_in_rectangle(sx1:number,sy1:number,sx2:number,sy2:number,dx1:number,dy1:number,dx2:number,dy2:number)->bool
-rectangle_in_triangle(sx1:number,sy1:number,sx2:number,sy2:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->bool
-rectangle_in_circle(sx1:number,sy1:number,sx2:number,sy2:number,cx:number,cy:number,rad:number)->bool
+rectangle_in_rectangle(sx1:number,sy1:number,sx2:number,sy2:number,dx1:number,dy1:number,dx2:number,dy2:number)->int
+rectangle_in_triangle(sx1:number,sy1:number,sx2:number,sy2:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->int
+rectangle_in_circle(sx1:number,sy1:number,sx2:number,sy2:number,cx:number,cy:number,rad:number)->int
 
 #endregion
 
@@ -1633,7 +1633,7 @@ ds_map_replace_map<K;V>(map:ds_map<K;V>,key:K,value:V)
 ds_map_replace_list<K;V>(map:ds_map<K;V>,key:K,value:V)
 ds_map_delete<K;V>(map:ds_map<K;V>,key:K)
 ds_map_exists<K;V>(map:ds_map<K;V>,key:K)->bool
-ds_map_find_value<K;V>(map:ds_map<K;V>,key)->V
+ds_map_find_value<K;V>(map:ds_map<K;V>,key:K)->V
 ds_map_find_previous<K;V>(map:ds_map<K;V>,key:K)->K
 ds_map_find_next<K;V>(map:ds_map<K;V>,key:K)->K
 ds_map_find_first<K;V>(map:ds_map<K;V>)->K
@@ -2126,7 +2126,7 @@ gamepad_button_check_pressed(device:int, buttonIndex:gamepad_button)->bool
 gamepad_button_check_released(device:int, buttonIndex:gamepad_button)->bool
 gamepad_button_value(device:int, buttonIndex:gamepad_button)->number
 gamepad_axis_count(device:int)->int
-gamepad_axis_value(device:int, axisIndex:gamepad_button)->number
+gamepad_axis_value(device:int, axisIndex:gamepad_axis)->number
 gamepad_set_vibration(device:int, leftMotorSpeed:number, rightMotorSpeed:number)->void
 gamepad_set_colour(index:int,colour:int)£->void
 gamepad_set_color(index:int,color:int)$->void

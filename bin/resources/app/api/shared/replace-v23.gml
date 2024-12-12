@@ -162,7 +162,7 @@ caption_health&
 event_perform_async(type:event_type,ds_map:ds_map)->void
 
 ev_pre_create#:event_type
-ev_draw_normal#:event_type
+ev_draw_normal#:event_number
 ev_trigger#:event_type
 ev_audio_playback_ended#:event_type
 ev_async_web_image_load#:event_type
