@@ -58,7 +58,7 @@ class GmlSeekerJSDocRegex {
 	
 	public static var jsDoc_is = new RegExp("^///\\s*"
 		+ "@is\\b\\s*"
-		+ "(?:\\{(.+?)\\}\\s*)?" // type (opt.)
+		+ "(?:\\{(.+)\\}\\s*)?" // type (opt.)
 		+ "(.*)"
 	);
 	public static var jsDoc_is_line = (function() {
