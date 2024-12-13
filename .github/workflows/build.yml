@@ -50,7 +50,7 @@ jobs:
           name: GMEdit-Linux
           path:
             bin/resources/app/dist/*.zip
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: GMEdit-AppOnly
           path:
