@@ -106,7 +106,7 @@ class GmlFuncDocParser {
 			var rxt = rxArgType;
 			var showArgTypes = Preferences.current.showArgTypesInStatusBar;
 			for (i => arg in args) {
-				var hadBrackets = !showArgTypes && arg.startsWith("[") && arg.endsWith("]");
+				var hadBrackets = arg.startsWith("[") && arg.endsWith("]");
 				if (hadBrackets) arg = arg.substring(1, arg.length - 1);
 				arg = arg.replaceExt(rxt, function(argStr, t1, t2) {
 					var typeStr = JsTools.or(t1, t2).trimRight();
