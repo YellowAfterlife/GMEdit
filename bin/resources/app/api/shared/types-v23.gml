@@ -113,6 +113,8 @@ typedef video_format : uncompareable;
 feathername: Struct.Zip;
 typedef zip_object;
 
+typedef buffer_write_error : int;
+
 typedef physics_hitpoint : struct;
 
 feathername: Constant.SendOption
