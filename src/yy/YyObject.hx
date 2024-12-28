@@ -206,7 +206,9 @@ import yy.YyTools;
 	}
 	private function getParentJson():YyObject {
 		var parentName:String;
-		if (this.parentObjectId is String) {
+		if (this.parentObjectId == null) {
+			parentName = null;
+		} else if (this.parentObjectId is String) {
 			parentName = Project.current.yyObjectNames[this.parentObjectId];
 		} else {
 			parentName = (this.parentObjectId:YyResourceRef).name;
