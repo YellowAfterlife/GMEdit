@@ -291,6 +291,11 @@ class YyJsonPrinter {
 			isGM2023 = project.isGM2023;
 			isGM2024 = project.isGM2024;
 			wantPrefixFields = !isGM2023 && project.yyResourceVersion >= 1.6;
+			// objects DO NOT have prefix fields for some reason in LTS
+			if (wantPrefixFields
+				&& Reflect.isObject(obj)
+				&& (obj:YyBase).resourceType == "GMObject"
+			) wantPrefixFields = false;
 		} else {
 			wantPrefixFields = false;
 			isGM2023 = false;
