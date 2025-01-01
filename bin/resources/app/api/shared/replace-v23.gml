@@ -190,7 +190,7 @@ is_debug_overlay_open()->bool
 is_mouse_over_debug_overlay()->bool
 is_keyboard_used_debug_overlay()->bool
 show_debug_log(enable:bool)->void
-debug_event(string:string,silent:bool)->struct // TODO ResourceCounts and DumpMemory structs
+debug_event(string:string,?silent:bool)->struct // TODO ResourceCounts and DumpMemory structs
 debug_get_callstack(?maxDepth:int)->string[]
 
 dbg_view(name:string,visible:bool,?x:number,?y:number,?width:number,?height:number)->debug_view
@@ -211,7 +211,7 @@ dbg_checkbox<T:bool>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label
 dbg_colour<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string)£->void
 dbg_color<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?label:string)$->void
 dbg_button<T:function>(label:string,callback_ref:T|debug_reference<T>,?width:number,?height:number)->void
-dbg_sprite_button<T:function,R:sprite>(label:string,callback_ref:T|debug_reference<T>,sprite_ref_or_array:debug_reference<R>|debug_reference<R>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?width:number,?height:number,?xoffset:number,?yoffset:number,?widthSprite:number,?heightSprite:number)->void
+dbg_sprite_button<T:function,R:sprite>(callback_ref:T|debug_reference<T>,sprite_ref_or_array:debug_reference<R>|debug_reference<R>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?width:number,?height:number,?xoffset:number,?yoffset:number,?widthSprite:number,?heightSprite:number)->void
 dbg_same_line()->void
 dbg_add_font_glyphs(filename_ttf:string,?size:number,?font_range:int)->void
 ref_create<T>(context:instance|struct|debug_reference<instance>|debug_reference<struct>,name:string|debug_reference<string>,?index:int)->debug_reference<T>
@@ -332,6 +332,9 @@ window_set_showborder(show:bool)->void
 window_get_showborder()->bool
 window_enable_borderless_fullscreen(enable:bool)->void
 window_get_borderless_fullscreen()->bool
+window_minimise()£->void
+window_minimize()$->void
+window_restore()->void
 window_mouse_set_locked(enable:bool)->void
 window_mouse_get_locked()->bool
 window_mouse_get_delta_x()->number
@@ -361,6 +364,8 @@ audio_sound_loop_end(index:sound|sound_instance, time:number)->void
 audio_sound_get_loop_end(index:sound|sound_instance)->number
 
 audio_sync_group_is_paused(sync_group_id:sound_sync_group)->bool
+
+audio_throw_on_error(enable:bool)->void
 
 audio_group_get_gain(groupId:audio_group)->number
 audio_group_get_assets(groupId:audio_group)->sound[]
@@ -428,7 +433,7 @@ font_enable_effects(ind:font, enable:bool, ?params:font_effect_params|struct)->v
 #region 9.6
 
 script_execute_ext(ind:script,?args:any[],?offset:int=0,?num_args:int=args_length-offset)->any
-method_call<T:function>(method:T,args:any[],?offset:int=0,?num_args:int=args_length-offset)->any
+method_call<T:function>(method:T,?args:any[],?offset:int=0,?num_args:int=args_length-offset)->any
 
 #endregion
 
@@ -586,6 +591,7 @@ ps_mode_burst#:particle_mode
 //////////////
 
 matrix_transform_vertex(matrix:number[], x:number, y:number, z:number, ?w:number)->number[]
+matrix_inverse(matrix:number[])->number[]
 
 os_ps4#:os_type
 os_ps5#:os_type
@@ -599,6 +605,10 @@ os_set_orientation_lock(landscape_enable:bool,portrait_enable:bool)->void
 event_data*:ds_map<string,any>
 
 tm_systemtiming#:display_timing_method
+
+draw_enable_svg_aa(enable:bool)!->void
+draw_set_svg_aa_level(aa_level:number)!->void
+draw_get_svg_aa_level()!->number
 
 stencilop_keep#:gpu_stencilop
 stencilop_zero#:gpu_stencilop
@@ -678,6 +688,7 @@ network_connect_nonblocking#:network_connect_type
 network_connect_active#:network_connect_type
 network_connect_passive#:network_connect_type
 
+buffer_write(buffer:buffer, type:buffer_type, value:buffer_auto_type)->buffer_write_error
 buffer_get_surface(buffer:buffer, source_surface:surface, offset:int)->void
 buffer_get_surface_depth(buffer:buffer, source_surface:surface, offset:int)->bool
 buffer_set_surface(buffer:buffer, dest_surface:surface, offset:int)->void
@@ -686,6 +697,9 @@ buffer_set_used_size(buffer:buffer,size:int)->void
 buffer_copy_stride(src_buffer:buffer, src_offset:int, src_size:int, src_stride:int, src_count:int, dest_buffer:buffer, dest_offset:int, dest_stride:int)->void
 
 buffer_surface_copy&:any
+buffer_error_general#:buffer_write_error
+buffer_error_out_of_space#:buffer_write_error
+buffer_error_invalid_type#:buffer_write_error
 
 gp_axis_acceleration_x#:gamepad_button
 gp_axis_acceleration_y#:gamepad_button
@@ -1296,7 +1310,7 @@ flexpanel_delete_node(node:flexpanel_node, ?recursive:bool)->void
 flexpanel_node_insert_child(parent:flexpanel_node, node:flexpanel_node, index:int)->void
 flexpanel_node_remove_child(parent:flexpanel_node, child:flexpanel_node)->void
 flexpanel_node_remove_all_children(parent:flexpanel_node)->void
-flexpanel_node_get_num_children(parent:flexpanel_node)->void
+flexpanel_node_get_num_children(parent:flexpanel_node)->int
 flexpanel_node_get_child(parent:flexpanel_node, index_or_name:int|string)->flexpanel_node|undefined
 flexpanel_node_get_child_hash(parent:flexpanel_node, index_or_name:int|string)->flexpanel_node|undefined
 flexpanel_node_get_parent(child:flexpanel_node)->flexpanel_node|undefined
@@ -1306,7 +1320,7 @@ flexpanel_node_set_name(node:flexpanel_node, name:string)->void
 flexpanel_node_set_data(node:flexpanel_node, struct:struct)->void
 flexpanel_node_get_struct(node:flexpanel_node)->flexpanel_data
 flexpanel_calculate_layout(node:flexpanel_node, width:number|undefined, height:number|undefined, direction:flexpanel_direction_type)->void
-flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_position
+flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_layout
 flexpanel_node_style_get_align_content(node:flexpanel_node)->flexpanel_justify_type
 flexpanel_node_style_get_align_items(node:flexpanel_node)->flexpanel_align_type
 flexpanel_node_style_get_align_self(node:flexpanel_node)->flexpanel_align_type
