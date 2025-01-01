@@ -190,7 +190,7 @@ is_debug_overlay_open()->bool
 is_mouse_over_debug_overlay()->bool
 is_keyboard_used_debug_overlay()->bool
 show_debug_log(enable:bool)->void
-debug_event(string:string,silent:bool)->struct // TODO ResourceCounts and DumpMemory structs
+debug_event(string:string,?silent:bool)->struct // TODO ResourceCounts and DumpMemory structs
 debug_get_callstack(?maxDepth:int)->string[]
 
 dbg_view(name:string,visible:bool,?x:number,?y:number,?width:number,?height:number)->debug_view
@@ -1310,7 +1310,7 @@ flexpanel_delete_node(node:flexpanel_node, ?recursive:bool)->void
 flexpanel_node_insert_child(parent:flexpanel_node, node:flexpanel_node, index:int)->void
 flexpanel_node_remove_child(parent:flexpanel_node, child:flexpanel_node)->void
 flexpanel_node_remove_all_children(parent:flexpanel_node)->void
-flexpanel_node_get_num_children(parent:flexpanel_node)->void
+flexpanel_node_get_num_children(parent:flexpanel_node)->int
 flexpanel_node_get_child(parent:flexpanel_node, index_or_name:int|string)->flexpanel_node|undefined
 flexpanel_node_get_child_hash(parent:flexpanel_node, index_or_name:int|string)->flexpanel_node|undefined
 flexpanel_node_get_parent(child:flexpanel_node)->flexpanel_node|undefined
@@ -1320,7 +1320,7 @@ flexpanel_node_set_name(node:flexpanel_node, name:string)->void
 flexpanel_node_set_data(node:flexpanel_node, struct:struct)->void
 flexpanel_node_get_struct(node:flexpanel_node)->flexpanel_data
 flexpanel_calculate_layout(node:flexpanel_node, width:number|undefined, height:number|undefined, direction:flexpanel_direction_type)->void
-flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_position
+flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_layout
 flexpanel_node_style_get_align_content(node:flexpanel_node)->flexpanel_justify_type
 flexpanel_node_style_get_align_items(node:flexpanel_node)->flexpanel_align_type
 flexpanel_node_style_get_align_self(node:flexpanel_node)->flexpanel_align_type

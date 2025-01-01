@@ -454,7 +454,7 @@ tilemap_set(tilemap_element_id:layer_tilemap,tiledata:tilemap_data,cell_x:int,ce
 tilemap_set_at_pixel(tilemap_element_id:layer_tilemap,tiledata:tilemap_data,x:number,y:number)->bool
 
 tileset_get_texture(tileset:tileset)->texture
-tileset_get_uvs(tileset:tileset)->int[]
+tileset_get_uvs(tileset:tileset)->number[]
 tileset_get_name(tileset:tileset)->string
 
 tilemap_get_tileset(tilemap_element_id:layer_tilemap)->tileset

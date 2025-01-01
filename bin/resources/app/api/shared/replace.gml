@@ -896,13 +896,13 @@ draw_vertex(x:number,y:number)->void
 draw_vertex_colour(x:number,y:number,col:int,alpha:number)£->void
 draw_vertex_color(x:number,y:number,col:int,alpha:number)$->void
 draw_primitive_end()->void
-sprite_get_uvs(spr:sprite,subimg:int)->int[]
+sprite_get_uvs(spr:sprite,subimg:int)->number[]
 font_get_uvs(font:font)->font[]
 sprite_get_texture(spr:sprite,subimg:int)->texture
 font_get_texture(font:font)->texture
 texture_get_width(texid:texture)->int
 texture_get_height(texid:texture)->int
-texture_get_uvs(texid:texture)->int[]
+texture_get_uvs(texid:texture)->number[]
 draw_primitive_begin_texture(kind:primitive_type,texid:texture)->void
 draw_vertex_texture(x:number,y:number,xtex:number,ytex:number)->void
 draw_vertex_texture_colour(x:number,y:number,xtex:number,ytex:number,col:int,alpha:number)£->void
