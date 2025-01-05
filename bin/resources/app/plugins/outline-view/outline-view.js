@@ -694,12 +694,6 @@
 	 */
 	function onFileRename({ file }) {
 		
-		const tab = file.tabEl;
-		
-		if (tab === null) {
-			return;
-		}
-		
 		if (currOnly && file !== currFile()) {
 			return;
 		}
@@ -793,7 +787,7 @@
 				forceRefresh();
 			});
 		});
-		
+
 		GMEdit.on("fileRename", onFileRename);
 
 	}
