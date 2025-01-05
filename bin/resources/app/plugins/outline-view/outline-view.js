@@ -693,10 +693,6 @@
 	 * @param {{ file: GMEdit.GmlFile }} event 
 	 */
 	function onFileRename({ file }) {
-		
-		if (currOnly && file !== currFile()) {
-			return;
-		}
 
 		if ('outlineView' in file) {
 			setNavItemLabel(file.outlineView, file.name);
