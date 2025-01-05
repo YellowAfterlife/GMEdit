@@ -198,6 +198,8 @@ class GmlFile {
 			this.tabEl.refresh();
 		}
 		
+		PluginEvents.fileRename({ file: this });
+
 	}
 
 	//
