@@ -342,17 +342,15 @@
 	var currEl = null;
 	//
 	function currFile() { return $gmedit["gml.file.GmlFile"].current; }
-	// maybe this should be a "built-in" function instead
+	
+	/**
+	 * Focus the given file's tab.
+	 * @param {GMEdit.GmlFile} file
+	 */
 	function activateFile(file) {
-		var tabs = document.querySelectorAll(".chrome-tab");
-		for (var i = 0; i < tabs.length; i++) {
-			if (tabs[i].gmlFile == file) {
-				tabs[i].click();
-				return tabs[i];
-			}
-		}
-		return null;
+		file.tabEl?.click();
 	}
+
 	//
 	var TreeView = $gmedit["ui.treeview.TreeView"];
 	var makeDir = TreeView.makeDir;
@@ -382,10 +380,21 @@
 			}
 		});
 	}
+
+	/**
+	 * Change the label for the given navigation item.
+	 * 
+	 * @param {HTMLDivElement} item 
+	 * @param {string} label 
+	 */
+	function setNavItemLabel(item, label) {
+		item.treeHeader.querySelector("span.label").textContent = label;
+	}
+
 	function makeNav(file, label, title, nav) {
 		var r = navPool.pop();
 		if (r) {
-			r.querySelector(".header span").textContent = label;
+			setNavItemLabel(r, label);
 		} else {
 			r = makeDir(label);
 			r.classList.add("outline-item");
@@ -678,6 +687,29 @@
 			} else outer.parentElement.removeChild(outer);
 		}
 	}
+
+	/**
+	 * Update a file's name and path in the outline view when it is modified.
+	 * @param {{ file: GMEdit.GmlFile }} event 
+	 */
+	function onFileRename({ file }) {
+		
+		const tab = file.tabEl;
+		
+		if (tab === null) {
+			return;
+		}
+		
+		if (currOnly && file !== currFile()) {
+			return;
+		}
+
+		if ('outlineView' in file) {
+			setNavItemLabel(file.outlineView, file.name);
+		}
+
+	}
+
 	function init() {
 		AceCommands.add({
 			name: "toggleOutlineView",
@@ -761,7 +793,11 @@
 				forceRefresh();
 			});
 		});
+		
+		GMEdit.on("fileRename", onFileRename);
+
 	}
+
 	GMEdit.register("outline-view", {
 		init: init,
 		cleanup: function() {
@@ -769,4 +805,5 @@
 		},
 		_modeMap: modeMap
 	});
+
 })();
