@@ -150,15 +150,16 @@ class GmlEvent {
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
 				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
-				case "#".code: {
+				case "#".code: { // #meta
+					// line start only!
 					if (q.pos > 1) switch (q.get(q.pos - 2)) {
 						case "\r".code, "\n".code: { };
 						default: continue;
 					}
-					if (q.substr(q.pos, 5) == "event") {
-						//
-						flush(q.pos - 1, false);
-						q.skip(5);
+					//
+					var hashPos = q.pos - 1;
+					if (q.skipIfIdentEquals("event")) {
+						flush(hashPos, false);
 						// skip spaces:
 						q.skipSpaces0();
 						// read name:
@@ -186,9 +187,9 @@ class GmlEvent {
 						q.skipLineEnd();
 						//
 						evStart = q.pos;
-					}
-					else if (version.config.hasEventSections && q.substr(q.pos, 7) == "section") {
-						q.skip(7);
+						continue;
+					} // event
+					if (version.config.hasEventSections && q.skipIfIdentEquals("section")) {
 						//
 						var nameStart = q.pos;
 						var nameEnd = -1;
@@ -207,23 +208,33 @@ class GmlEvent {
 							default: q.skip();
 						}
 						if (nameEnd < 0) nameEnd = q.length;
-						flush(nameStart - 8, true);
+						flush(hashPos, true);
 						sctName = q.substring(nameStart, nameEnd);
 						if (sctName.charCodeAt(0) == "|".code) {
 							sctName = sctName.substring(1);
 						}
 						//
 						evStart = q.pos;
+						continue;
 					}
-					else if (version.config.hasEventActions && q.substr(q.pos, 6) == "action") {
-						q.skip(6);
-						flush(q.pos - 7, true);
-						evStart = q.pos - 7;
+					if (q.skipIfIdentEquals("with")) {
+						flush(hashPos, true);
+						q.skipLine();
+						q.skipLineEnd();
+						evStart = hashPos;
+						continue;
+					}
+					if (version.config.hasEventActions && q.skipIfIdentEquals("action")) {
+						// we flush twice because action lines are their own blocks
+						flush(hashPos, true);
+						evStart = hashPos;
 						q.skipLine();
 						q.skipLineEnd();
 						flush(q.pos, true);
 						evStart = q.pos;
+						continue;
 					}
+					// #something else
 				};
 				default:
 			} // switch (q.read)

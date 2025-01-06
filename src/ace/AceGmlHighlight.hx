@@ -26,6 +26,7 @@ import ace.raw.*;
 import haxe.extern.EitherType;
 import tools.HighlightTools.*;
 import tools.JsTools;
+import tools.JsTools.*;
 import ui.Preferences;
 using tools.NativeString;
 using tools.NativeArray;
@@ -120,6 +121,23 @@ using tools.NativeArray;
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
 		var rPragma = rxRule(["preproc.pragma", "keyword", "string"], ~/^(#pragma\b[ \t]*)(\w*[ \t]*)(.*)/);
+		var rActionWith = rxRule(function(start, with, s1, obj, s2, command) {
+			return [
+				"preproc.action",
+				"keyword",
+				"text",
+				obj == "self" || obj == "other" ? "keyword" : AceGmlHighlightIdents.getGlobalType(obj, "text"),
+				"text",
+				"actionname",
+			];
+		}, [
+			~/#action\b[ \t]*/,
+			~/with\b/, 
+			~/\s*/,
+			~/\w*/,
+			~/\s*/,
+			~/\w*/,
+		]);
 		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
 		var rKeyEvent = rulePairs([
 			"^#event", "preproc.event",
@@ -136,6 +154,15 @@ using tools.NativeArray;
 			~/^(#moment[ \t]+)(\d+)(.*)/
 		);
 		var rSection = rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/);
+		var rWith = rxRule(function(s, obj) {
+			var tt:AceTokenType;
+			if (obj == "self" || obj == "other") {
+				tt = "keyword";
+			} else {
+				tt = AceGmlHighlightIdents.getGlobalType(obj, "text");
+			}
+			return ["preproc.section", tt];
+		}, ~/^(#with[ \t]*)(\w*)/);
 		var commentDocLineType:String = "comment.doc.line";
 		//
 		var rGmlComment = (fakeMultiline
@@ -171,7 +198,12 @@ using tools.NativeArray;
 			fakeMultiline
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
-			rDefine, rAction, rKeyEvent, rEvent, rEventBlank, rMoment, rTarget,
+			// #stuff:
+			rDefine,
+			rActionWith, rAction,
+			rKeyEvent, rEvent, rEventBlank,
+			rMoment,
+			rTarget,
 		].concat(version.config.hasPragma ? [rPragma] : []).concat([
 			//rxRule(["keyword", "text", "local"], ~/(static)(\s+)([_a-zA-Z]\w*)/),
 			//{ macros
@@ -211,11 +243,14 @@ using tools.NativeArray;
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
 			rxRule(["preproc.gmcr", "regionname"], ~/(#gmcr)\b(.*)/),
 		]); //}
-		if (version.config.hasRegions) { // regions
+		// regions
+		if (version.config.hasRegions) {
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
 		}
 		rBase.push(rSection); // only used in v2 for object info
+		if (version.config.hasEventSections) rBase.push(rWith);
+		//
 		if (version.hasStringEscapeCharacters()) {
 			rBase.push(rxPush("string", ~/"/, "gml.string.esc"));
 		} else {

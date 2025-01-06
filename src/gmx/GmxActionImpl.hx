@@ -1,4 +1,5 @@
 package gmx;
+import tools.JsTools;
 import gmx.SfGmx;
 import js.lib.RegExp;
 import parsers.GmlReader;
@@ -54,12 +55,20 @@ class GmxActionImpl {
 		if (getLibraryID(action) != "1") {
 			return error("Actions from user-created libraries are not supported.");
 		}
-		if (getApplyTo(action) != "self") {
-			return error("Non-self-applied actions are not supported.");
-		}
+		//
+		var applyTo = getApplyTo(action);
+		var applyNS = applyTo != "self";
+		//
 		var aid = getActionID(action);
 		var a:String;
 		switch (aid) {
+			case 603: { // execute code
+				var code = getFirstArgString(action);
+				if (applyNS) {
+					code = "#with " + applyTo + "\r\n" + code;
+				}
+				return code;
+			};
 			case 601: {
 				var args = getArgs(action);
 				a = "action_execute_script " + getArgScript(args[0]);
@@ -67,17 +76,18 @@ class GmxActionImpl {
 					a += ", " + getArgString(args[i]);
 				}
 			};
-			case 603: return getFirstArgString(action);
 			case 604: a = "action_inherited";
 			case 605: a = "// " + getFirstArgString(action);
 			case 203: a = "action_kill_object";
 			case 408: a = "action_if" + (getNotFlag(action) ? "_not " : " ") + getFirstArgString(action);
 			case 422: a = "{";
 			case 424: a = "}";
-			default: return error("DnD action #" + aid + " `"
-				+ getFunctionName(action) + "` is not supported.");
+			default: return error("DnD action #" + aid
+				+ " (" + getFunctionName(action) + ") is not supported.");
 		}
-		return '#action $a\r\n';
+		if (applyNS) {
+			return '#action with $applyTo $a\r\n';
+		} else return '#action $a\r\n';
 	}
 	
 	function makeDndBlock(d:GmxActionData):SfGmx {
@@ -128,21 +138,45 @@ class GmxActionImpl {
 	
 	private static var rxActionPre = new RegExp("^#action\\b");
 	private static var rxActionSplit = new RegExp("^(\\w+\\b|\\{|\\}|//)\\s*(.*)$");
+	//
+	private static inline var rsWithCtx = "\\b(\\w+)\\b";
+	private static inline var rsWithEither = '(?:\\(\\s*$rsWithCtx\\s*\\)|$rsWithCtx)';
+	private static var rxActionWith = new RegExp("^#action"
+		+ "\\s+" + "with\\b"
+		+ "\\s*" + rsWithEither // -> context
+		+ "\\s*([\\s\\S]+)"
+	+ "$");
+	private static var rxWith = new RegExp("^#with\\b"
+		+ "\\s*" + rsWithEither // -> context
+		+ "\\s*([\\s\\S]*)"
+	+ "$");
 	public function makeCodeBlock(code:GmlCode):SfGmx {
 		errorText = null;
 		inline function error(s:ErrorText):SfGmx {
 			errorText = s;
 			return null;
 		}
+		// code?
+		inline function plainCode(text:String, who:String) {
+			return makeDndBlock({
+				id: 603,
+				kind: GmxActionKind.Code,
+				exeType: GmxActionExeType.Code,
+				who: who,
+				args: [{ s: text }]
+			});
+		}
+		var mtWith = rxWith.exec(code);
+		if (mtWith != null) return plainCode(mtWith[3], JsTools.or(mtWith[1], mtWith[2]));
+		if (!rxActionPre.test(code)) return plainCode(code, "self");
 		//
-		if (!rxActionPre.test(code)) return makeDndBlock({
-			id: 603,
-			kind: GmxActionKind.Code,
-			exeType: GmxActionExeType.Code,
-			who: "self",
-			args: [{ s: code }]
-		});
-		//
+		var who = "self";
+		mtWith = rxActionWith.exec(code);
+		if (mtWith != null) {
+			who = JsTools.or(mtWith[1], mtWith[2]);
+			code = "#action " + mtWith[3];
+		}
+		// comment?
 		var actData = code.substring(7).trimBoth();
 		if (actData.startsWith("//")) {
 			actData = actData.substring(actData.charCodeAt(2) == " ".code ? 3 : 2);
@@ -197,7 +231,7 @@ class GmxActionImpl {
 				return makeDndBlock({
 					id: 601,
 					fn: "action_execute_script",
-					who: "self",
+					who: who,
 					args: args,
 				});
 			};
@@ -207,12 +241,12 @@ class GmxActionImpl {
 			};
 			case "action_kill_object": {
 				if (actData != "") return noArgs();
-				return makeDndFuncBlock(203, "action_kill_object", "self");
+				return makeDndFuncBlock(203, "action_kill_object", who);
 			};
 			case "action_if", "action_if_not": {
 				return makeDndBlock({
 					id: 408, isQuestion: true, exeType: Func,
-					fn: "action_if", who: "self",
+					fn: "action_if", who: who,
 					not: actName == "action_if_not",
 					args: [{s:actData}]
 				});

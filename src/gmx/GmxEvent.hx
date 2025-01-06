@@ -1,5 +1,7 @@
 package gmx;
+import tools.JsTools;
 import ace.AceWrap;
+import gmx.GmxAction;
 import parsers.GmlEvent;
 import haxe.ds.StringMap;
 import haxe.io.Path;
@@ -23,10 +25,12 @@ class GmxEvent {
 	public static inline function fromString(name:String):GmlEventData {
 		return GmlEvent.fromString(name);
 	}
-	private static var rxHeader = ~/^\/\/\/\/?(.*)/;
 	public static function isEmpty(event:SfGmx) {
 		return event.find("action") == null;
 	}
+	
+	private static var rxHeader = ~/^\/\/\/\/?(.*)/;
+	private static var rxHashStart = JsTools.rx(~/^#(?:action|with)\b/);
 	public static function getCode(event:SfGmx) {
 		var out:String = "";
 		var actions = event.findAll("action");
@@ -34,7 +38,7 @@ class GmxEvent {
 			//if (head) out += "\n";
 			var code = GmxAction.getCode(action);
 			if (code == null) return false;
-			if (head && !code.startsWith("#action ")) {
+			if (head && !rxHashStart.test(code)) {
 				var addSection = true;
 				code = rxHeader.map(code, function(e:EReg) {
 					var cap = e.matched(1);
@@ -49,10 +53,10 @@ class GmxEvent {
 			out += code;
 			return true;
 		}
-		if (actions.length != 0) {
-			if (!addAction(actions[0], false)) return null;
-			for (i in 1 ... actions.length) {
-				if (!addAction(actions[i], true)) return null;
+		for (i => action in actions) {
+			if (!addAction(action, i > 0)) {
+				GmxAction.errorText = "[action " + (i + 1) + "/" + actions.length + "] " + GmxAction.errorText;
+				return null;
 			}
 		}
 		return out;

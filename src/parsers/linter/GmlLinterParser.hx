@@ -181,6 +181,10 @@ class GmlLinterParser {
 							case "region", "endregion", "section": {
 								q.skipLine();
 							};
+							case "with" if (l.version.config.hasEventSections): {
+								// todo: #with should change self, but this is hardly used
+								q.skipLine();
+							}
 							default: q.pos = p; return retv(LKHash, "#");
 						}
 					}
