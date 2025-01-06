@@ -78,6 +78,11 @@ extern class PluginEvents {
 	 * (automatically or with user permit)
 	 */
 	static function fileReload(e:{file:GmlFile}):Void;
+
+	/**
+	 * Dispatches after a file's name or path changes.
+	 */
+	static function fileRename(e:{file:GmlFile}):Void;
 	
 	/**
 	 * Called after constructing the preferences menu.

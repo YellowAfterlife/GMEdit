@@ -430,7 +430,6 @@ class TreeViewItemMenus {
 				var chromeTab:ChromeTab = cast tab;
 				if (chromeTab.gmlFile.path == oldPath) {
 					chromeTab.gmlFile.rename(s, el.treeFullPath);
-					chromeTab.refresh();
 				}
 			}
 		});
