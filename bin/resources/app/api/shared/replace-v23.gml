@@ -434,7 +434,7 @@ method_call<T:function>(method:T,args:any[],?offset:int=0,?num_args:int=args_len
 
 #region 9.9
 
-asset_get_ids(asset_type:asset_type)->asset[]
+asset_get_ids(asset_type:asset_type)->array
 
 asset_sequence#:asset_type
 asset_animationcurve#:asset_type
