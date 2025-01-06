@@ -46,7 +46,7 @@ abstract YyGUID(String) to String {
 		}
 		return result;
 	}
-	#if js
+	#if (js && !not_gmedit)
 	public static function createNum(count:Int, ?pj:YyProject):Array<YyGUID> {
 		var out = [];
 		var taken = new Map();
