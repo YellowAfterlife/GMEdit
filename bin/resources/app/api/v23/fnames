@@ -757,7 +757,7 @@ dbg_checkbox(dbgRefOrArrayOfDbgRef,[label],...)
 dbg_colour(dbgRefOrArrayOfDbgRef,[label],...)£
 dbg_color(dbgRefOrArrayOfDbgRef,[label],...)$
 dbg_button(label,dbgRef,[width],[height]...)
-dbg_sprite_button(label,dbgRef,dbgRefSprite,dbgRefSpriteIndex,[width],[height],[xoffset],[yoffset],[widthSprite],[heightSprite]...)
+dbg_sprite_button(dbgRef,dbgRefSprite,dbgRefSpriteIndex,[width],[height],[xoffset],[yoffset],[widthSprite],[heightSprite]...)
 dbg_same_line()
 dbg_add_font_glyphs( filenameTTF,[size],[fontRange]... )
 ref_create(dbgrefOrStruct,dbgrefOrName,[index],...)
@@ -1256,6 +1256,9 @@ window_get_caption()
 window_set_cursor(curs)
 window_enable_borderless_fullscreen(enable)
 window_get_borderless_fullscreen()
+window_minimise()£
+window_minimize()$
+window_restore()
 cr_default#
 cr_none#
 cr_arrow#
@@ -1409,6 +1412,7 @@ audio_sync_group_debug(sync_group_id)
 audio_sync_group_is_playing(sync_group_id)
 audio_sync_group_is_paused(sync_group_id)
 audio_debug(enable)
+audio_throw_on_error(enable)
 
 audio_group_load( groupId )
 audio_group_unload( groupId )
@@ -1680,7 +1684,7 @@ path_shift(ind,xshift,yshift)
 
 script_execute(ind,arg0,arg1,...)
 script_execute_ext(ind,[array],[offset=0],[num_args=array_length(array)-offset],...)
-method_call(method,array,[offset=0],[num_args=array_length(array)-offset],...)
+method_call(method,[array],[offset=0],[num_args=array_length(array)-offset],...)
 
 // section 9.8
 
@@ -1828,7 +1832,7 @@ ds_type_priority#
 ds_stack_create()
 ds_stack_destroy(id)
 ds_stack_clear(id)
-ds_stack_copy(id,source)
+ds_stack_copy(destination,source)
 ds_stack_size(id)
 ds_stack_empty(id)
 ds_stack_push(id,value,...)
@@ -1842,7 +1846,7 @@ ds_stack_read(id,str,...)
 ds_queue_create()
 ds_queue_destroy(id)
 ds_queue_clear(id)
-ds_queue_copy(id,source)
+ds_queue_copy(destination,source)
 ds_queue_size(id)
 ds_queue_empty(id)
 ds_queue_enqueue(id,value,...)
@@ -1857,7 +1861,7 @@ ds_queue_read(id,str,...)
 ds_list_create()
 ds_list_destroy(id)
 ds_list_clear(id)
-ds_list_copy(id,source)
+ds_list_copy(destination,source)
 ds_list_size(id)
 ds_list_empty(id)
 ds_list_add(id,value,...)
@@ -1882,7 +1886,7 @@ ds_list_set(id,pos,value)
 ds_map_create()
 ds_map_destroy(id)
 ds_map_clear(id)
-ds_map_copy(id,source)
+ds_map_copy(destination,source)
 ds_map_size(id)
 ds_map_empty(id)
 ds_map_add(id,key,value)
@@ -1916,7 +1920,7 @@ ds_map_set(id,key,value)
 ds_priority_create()
 ds_priority_destroy(id)
 ds_priority_clear(id)
-ds_priority_copy(id,source)
+ds_priority_copy(destination,source)
 ds_priority_size(id)
 ds_priority_empty(id)
 ds_priority_add(id,value,priority)
@@ -1934,7 +1938,7 @@ ds_priority_read(id,str,...)
 
 ds_grid_create(w,h)
 ds_grid_destroy(id)
-ds_grid_copy(id,source)
+ds_grid_copy(destination,source)
 ds_grid_resize(id,w,h)
 ds_grid_width(id)
 ds_grid_height(id)
@@ -2132,6 +2136,7 @@ matrix_build_projection_perspective(width,height,znear,zfar)
 matrix_build_projection_perspective_fov(fov_y,aspect,znear,zfar)
 matrix_multiply(matrix,matrix)
 matrix_transform_vertex(matrix, x, y, z, [w])
+matrix_inverse(matrix)
 
 matrix_stack_push(...)
 matrix_stack_pop()
@@ -2253,6 +2258,9 @@ draw_enable_drawevent(enable)
 draw_enable_swf_aa(enable)!
 draw_set_swf_aa_level(aa_level)!
 draw_get_swf_aa_level()!
+draw_enable_svg_aa(enable)!
+draw_set_svg_aa_level(aa_level)!
+draw_get_svg_aa_level()!
 draw_texture_flush()
 draw_flush()
 
@@ -3004,6 +3012,9 @@ buffer_surface_copy&
 buffer_seek_start#
 buffer_seek_relative#
 buffer_seek_end#
+buffer_error_general#
+buffer_error_out_of_space#
+buffer_error_invalid_type#
 
 
 

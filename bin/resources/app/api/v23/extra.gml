@@ -530,7 +530,7 @@ RTL?:flexpanel_direction_type
 
 flexpanel_direction#:flexpanel_direction_enum
 
-??flexpanel_position
+??flexpanel_layout
 left?:number
 top?:number
 width?:number
@@ -613,4 +613,4 @@ relative?:flexpanel_position
 absolute?:flexpanel_position
 static?:flexpanel_position
 
-flexpanel_position_type#:flexpanel_gutter_enum
+flexpanel_position_type#:flexpanel_position_enum

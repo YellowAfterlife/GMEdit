@@ -113,6 +113,8 @@ typedef video_format : uncompareable;
 feathername: Struct.Zip;
 typedef zip_object;
 
+typedef buffer_write_error : int;
+
 typedef physics_hitpoint : struct;
 
 feathername: Constant.SendOption
@@ -257,7 +259,7 @@ typedef flexpanel_unit_type : uncompareable;
 feathername: Enum.flexpanel_direction
 typedef flexpanel_direction_type : string;
 
-typedef flexpanel_position : struct;
+typedef flexpanel_layout : struct;
 
 feathername: Enum.flexpanel_justify
 typedef flexpanel_justify_type : string;
