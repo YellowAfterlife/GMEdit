@@ -1,4 +1,5 @@
 package ace;
+import js.html.Window;
 #if !starter
 import ace.AceMacro;
 import ace.extern.*;
@@ -20,7 +21,13 @@ using tools.HtmlTools;
 abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 	static var vimReady:Bool = false;
 	public function new(el:EitherType<String, Element>, ?o:AceWrapOptions) {
-		this = AceEditor.edit(el);
+		if (o == null) o = {};
+		//
+		if (o.create != null) {
+			this = o.create(el);
+		} else {
+			this = AceEditor.edit(el);
+		}
 		
 		(cast this.container).aceEditor = this;
 		var self = this;
@@ -41,7 +48,6 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 			this.getFontFamily = function() return this.getOption("fontFamily");
 			this.setFontFamily = function(v) this.setOption("fontFamily", v);
 		};
-		if (o == null) o = {};
 		if (o.statusBar != false) new AceStatusBar().bind(this);
 		if (o.completers != false) new AceWrapCommonCompleters().bind(this);
 		if (o.linter != false) new ace.gml.AceGmlLinter().bind(this);
@@ -126,6 +132,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 	}
 }
 typedef AceWrapOptions = {
+	?create:Element->AceWrap,
 	?isPrimary:Bool,
 	?statusBar:Bool,
 	?completers:Bool,
@@ -186,7 +193,7 @@ extern class AceEditor {
 	public function setOptions(opt:Dynamic):Void;
 	// globals:
 	public static var config:Dynamic;
-	public static function edit(el:EitherType<String, Element>):AceEditor;
+	public static function edit(el:EitherType<String, Element>, ?opt:Any):AceEditor;
 	public static function require(path:String):Dynamic;
 	public static function define(path:String, require:Array<String>, impl:AceImpl):Void;
 }

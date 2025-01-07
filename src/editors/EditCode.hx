@@ -1,34 +1,24 @@
 package editors;
-import ace.AceWrap;
+import js.html.Window;
 import ace.extern.*;
 import ace.*;
 import editors.Editor;
 import electron.Dialog;
 import file.kind.KCode;
-import file.kind.KGml;
 import file.kind.misc.*;
 import gml.GmlLocals;
-import gml.GmlScopes;
 import gml.file.*;
 import gml.GmlAPI;
-import gml.GmlVersion;
 import gml.GmlImports;
 import gml.Project;
-import electron.FileWrap;
-import electron.FileSystem;
 import parsers.*;
 import js.lib.RegExp;
 import js.html.Element;
 import synext.GmlExtImport;
 import synext.GmlExtLambda;
 import ui.Preferences;
-import gmx.*;
-import yy.*;
-import tools.NativeArray;
 import tools.NativeString;
 import tools.Dictionary;
-import tools.StringBuilder;
-import haxe.Json;
 
 /**
  * ...
@@ -49,11 +39,20 @@ class EditCode extends Editor {
 	public var lambdaMap:Dictionary<String> = new Dictionary();
 	public var lambdas:Dictionary<GmlExtLambda> = new Dictionary();
 	
+	/**
+		Pop-out windows associated with this file
+	**/
+	public var acePopouts:Array<AcePopout> = [];
+	
 	public function new(file:GmlFile, modePath:String) {
 		super(file);
 		kind = cast(file.kind, KCode);
 		this.modePath = modePath;
 		element = container;
+	}
+	override function destroy() {
+		for (p in acePopouts) p.destroy();
+		super.destroy();
 	}
 	
 	override public function ready():Void {

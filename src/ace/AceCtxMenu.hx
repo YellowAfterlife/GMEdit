@@ -102,7 +102,7 @@ class AceCtxMenu {
 			tk = editor.session.getTokenAtPos(pos);
 			if (tk.value.trimBoth() == "") tk = null;
 		}
-		var findRefs = menu.appendOpt({
+		menu.appendOpt({
 			id: "open-definition",
 			label: "Open definition",
 			icon: Menu.silkIcon("brick_go"),
@@ -112,7 +112,7 @@ class AceCtxMenu {
 				if (tk != null) OpenDeclaration.proc(editor.session, pos, tk);
 			}
 		});
-		var findRefs = menu.appendOpt({
+		menu.appendOpt({
 			id: "find-references",
 			label: "Find references",
 			icon: Menu.silkIcon("find_references"),
@@ -181,6 +181,21 @@ class AceCtxMenu {
 			redo.enabled = um.hasRedo();
 			menu.popupAsync(ev);
 			return false;
+		});
+		//
+		menu.appendSep("sep-popout");
+		menu.appendOpt({
+			id: "popout-editor",
+			label: "Copy into New Window",
+			icon: Menu.silkIcon("application_add"),
+			click: function() {
+				var file = gml.file.GmlFile.current;
+				if (file == null) return;
+				if (file.codeEditor == null) return;
+				var p = new AcePopout();
+				file.codeEditor.acePopouts.push(p);
+				p.bind(file.codeEditor);
+			}
 		});
 	}
 	public static function initMac(editor:AceWrap) {
