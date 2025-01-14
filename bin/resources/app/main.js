@@ -97,7 +97,7 @@ app.on("browser-window-created", (e, wnd) => {
 
 function createWindow(first) {
 	//
-	let windowWidth = 960, windowHeight = 720, windowFrame = false
+	let windowWidth = 960, windowHeight = 720, windowFrame = false, zoomLevel = 0
 	try {
 		const configPath = app.getPath("userData") + "/GMEdit/config/user-preferences.json"
 		if (fs.existsSync(configPath)) {
@@ -105,6 +105,7 @@ function createWindow(first) {
 			windowWidth = config.app?.windowWidth ?? windowWidth
 			windowHeight = config.app?.windowHeight ?? windowHeight
 			windowFrame = config.app?.windowFrame ?? windowFrame
+			zoomLevel = config.app?.zoomLevel ?? zoomLevel
 		}
 	} catch (x) {
 		console.warn('Error reading preferences:', x)
@@ -125,6 +126,9 @@ function createWindow(first) {
 		show: !showOnceReady,
 		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
 	})
+
+	wnd.webContents.setZoomLevel(zoomLevel);
+
 	activeWindows.push(wnd)
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
@@ -255,6 +259,16 @@ app.on('activate', function () {
 		}
 		wnd.setSize(width, height)
 	})
+
+	ipc.on('zoom-set-global-level', (_, level) => 
+		BrowserWindow
+			.getAllWindows()
+			.forEach(window => window.webContents.setZoomLevel(level))
+	)
+
+	ipc.on('zoom-in', ({ sender }) => sender.setZoomLevel(sender.getZoomLevel() + 1))
+
+	ipc.on('zoom-out', ({ sender }) => sender.setZoomLevel(sender.getZoomLevel() - 1))
 	
 	ipc.on('add-recent-document', (e, path) => {
 		if (isWindows) path = path.replace(/\//g, "\\")

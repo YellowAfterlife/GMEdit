@@ -23,6 +23,11 @@ class PrefApp {
 			IPC.send('resize-window', null, v);
 			save();
 		});
+		addFloatInput(out, "Default zoom level", current.app.zoomLevel, function(v) {
+			current.app.zoomLevel = v;
+			IPC.send('zoom-set-global-level', v);
+			save();
+		});
 		addCheckbox(out, "Use native window border (requires restart)", current.app.windowFrame, function(v) {
 			current.app.windowFrame = v;
 			save();
