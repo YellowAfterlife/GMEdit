@@ -69,7 +69,6 @@ import haxe.DynamicAccess;
 		app: {
 			windowWidth: 960,
 			windowHeight: 720,
-			zoomLevel: 0,
 			windowFrame: false,
 		},
 		globalLookup: {
@@ -160,7 +159,6 @@ typedef PrefDataImpl = {
 	app: {
 		windowWidth:Int,
 		windowHeight:Int,
-		zoomLevel: Float,
 		windowFrame:Bool,
 	},
 	globalLookup: {
