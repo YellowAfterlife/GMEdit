@@ -4391,7 +4391,7 @@ var MouseHandler = function(editor) {
             renderer.$keepTextAreaAtCursor = null;
 
         var self = this;
-        var continueCapture = false;
+        var continueCapture = false; // +y: Backport of https://github.com/ajaxorg/ace/pull/5717
 
         var onMouseMove = function(e) {
             if (!e) return;
