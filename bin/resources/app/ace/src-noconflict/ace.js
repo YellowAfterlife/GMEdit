@@ -4391,6 +4391,8 @@ var MouseHandler = function(editor) {
             renderer.$keepTextAreaAtCursor = null;
 
         var self = this;
+        var continueCapture = false; // +y: Backport of https://github.com/ajaxorg/ace/pull/5717
+
         var onMouseMove = function(e) {
             if (!e) return;
             if (useragent.isWebKit && !e.which && self.releaseMouse)
@@ -4405,8 +4407,8 @@ var MouseHandler = function(editor) {
 
         var onCaptureEnd = function(e) {
             editor.off("beforeEndOperation", onOperationEnd);
-            clearInterval(timerId);
-            onCaptureInterval();
+            continueCapture = false;
+            if (editor.session) onCaptureUpdate();
             self[self.state + "End"] && self[self.state + "End"](e);
             self.state = "";
             if (renderer.$keepTextAreaAtCursor == null) {
@@ -4419,9 +4421,16 @@ var MouseHandler = function(editor) {
             editor.endOperation();
         };
 
-        var onCaptureInterval = function() {
+        var onCaptureUpdate = function() {
             self[self.state] && self[self.state]();
             self.$mouseMoved = false;
+        };
+
+        var onCaptureInterval = function() {
+            if (continueCapture) {
+                onCaptureUpdate();
+                event.nextFrame(onCaptureInterval);
+            }
         };
 
         if (useragent.isOldIE && ev.domEvent.type == "dblclick") {
@@ -4442,7 +4451,9 @@ var MouseHandler = function(editor) {
 
         self.$onCaptureMouseMove = onMouseMove;
         self.releaseMouse = event.capture(this.editor.container, onMouseMove, onCaptureEnd);
-        var timerId = setInterval(onCaptureInterval, 20);
+
+        continueCapture = true;
+        onCaptureInterval();
     };
     this.releaseMouse = null;
     this.cancelContextMenu = function() {
