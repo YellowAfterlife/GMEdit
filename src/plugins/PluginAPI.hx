@@ -7,7 +7,7 @@ import ace.AceTools;
  * Exposes a globally visible GMEdit object that you can use for some random bits
  * @author YellowAfterlife
  */
-@:keep @:expose("GMEdit")
+@:expose("GMEdit")
 class PluginAPI {
 	
 	/**
