@@ -125,6 +125,13 @@ function createWindow(first) {
 		show: !showOnceReady,
 		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
 	})
+
+	wnd.webContents.on('did-create-window', (childWnd) => {
+		childWnd.once('ready-to-show', () => {
+			childWnd.webContents.setZoomLevel(wnd.webContents.getZoomLevel())
+		})
+	})
+
 	activeWindows.push(wnd)
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
@@ -255,6 +262,10 @@ app.on('activate', function () {
 		}
 		wnd.setSize(width, height)
 	})
+
+	ipc.on('zoom-in', ({ sender }) => sender.setZoomLevel(sender.getZoomLevel() + 1))
+
+	ipc.on('zoom-out', ({ sender }) => sender.setZoomLevel(sender.getZoomLevel() - 1))
 	
 	ipc.on('add-recent-document', (e, path) => {
 		if (isWindows) path = path.replace(/\//g, "\\")
