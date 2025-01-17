@@ -135,10 +135,10 @@ class Main {
 		PluginManager.initApi();
 		Project.init();
 		aceEditor.statusBar.update();
+		Project.nameNode.innerText = "Loading project...";
+		Project.openInitialProject();
 		Project.nameNode.innerText = "Loading plugins...";
 		PluginManager.loadInstalledPlugins(function() {
-			Project.nameNode.innerText = "Loading project...";
-			Project.openInitialProject();
 			#if lwedit
 			aceEditor.session = WelcomePage.init(aceEditor);
 			LiveWeb.init();
