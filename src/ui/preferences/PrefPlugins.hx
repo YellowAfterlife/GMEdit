@@ -1,4 +1,6 @@
 package ui.preferences;
+import js.html.LegendElement;
+import js.html.AnchorElement;
 import js.html.Element;
 import tools.NativeString;
 import ui.Preferences.*;
@@ -16,36 +18,64 @@ using tools.HtmlTools;
 class PrefPlugins {
 	static function makePluginItem(out:Element, p:PluginState) {
 		var group = addGroup(out, "");
-		var el:Element = group.querySelectorAuto("legend");
+		var legend:LegendElement = group.querySelectorAuto("legend");
 		group.classList.add("plugin-info");
 		group.setAttribute("for", p.name);
 		var syncLabelState:Void->Void = null;
 		//
 		var p_label = document.createLabelElement();
 		p_label.appendChild(document.createTextNode(p.name));
-		el.appendChild(p_label);
-		//
-		el.appendChild(document.createTextNode(" ("));
-		el.append(createShellAnchor(p.dir, "open"));
+		legend.appendChild(p_label);
 		//
 		var p_conf:Element = null;
-		var p_reload = document.createSpanElement(); {
-			p_reload.appendChild(document.createTextNode("; "));
-			p_reload.appendChild(createFuncAnchor("reload", function(_) {
+
+		legend.appendChild(document.createTextNode("("));
+		
+		final openButton = createShellAnchor(p.dir, "open");
+		legend.appendChild(openButton);
+
+		final toggleButton = createFuncAnchor("", function(_) {
+
+			if (PluginManager.isDisabledByUser(p.name)) {
+				PluginManager.enable(p.name);
+			} else {
 				p_conf.clearInner();
-				p.destroy();
-				PluginManager.load(p.name, function(e) {
-					p = PluginManager.pluginMap[p.name];
-					if (p.data.init != null) {
-						p.data.init(p);
-					}
-					syncLabelState();
-				});
-			}));
-			el.append(p_reload);
-		};
-		//
-		el.appendChild(document.createTextNode(")"));
+				PluginManager.disable(p.name);
+			}
+
+			syncLabelState();
+
+		});
+
+		final toggleButtonContainer = document.createSpanElement();
+		toggleButtonContainer.appendChild(document.createTextNode("; "));
+		toggleButtonContainer.appendChild(toggleButton);
+		legend.appendChild(toggleButtonContainer);
+
+		final reloadButton = createFuncAnchor("reload", function(_) {
+
+			p_conf.clearInner();
+			PluginManager.stop(p.name);
+
+			PluginManager.load(p.name, function(_) {
+				p = PluginManager.pluginMap[p.name];
+
+				if (p.data.init != null) {
+					p.data.init(p);
+				}
+				
+				syncLabelState();
+			});
+
+		});
+
+		final reloadButtonContainer = document.createSpanElement();
+		reloadButtonContainer.appendChild(document.createTextNode("; "));
+		reloadButtonContainer.appendChild(reloadButton);
+		legend.appendChild(reloadButtonContainer);
+
+		legend.appendChild(document.createTextNode(")"));
+
 		//
 		var p_desc = document.createDivElement();
 		p_desc.classList.add("plugin-description");
@@ -55,19 +85,37 @@ class PrefPlugins {
 		p_conf.classList.add("plugin-settings");
 		p_conf.setAttribute("for", p.name);
 		group.appendChild(p_conf);
-		//
-		syncLabelState = function syncLabelState() {
+		
+		syncLabelState = function() {
+
+			final canCleanUp = (p.data?.cleanup != null);
+			final enabled = !PluginManager.isDisabledByUser(p.name);
+
 			p_label.classList.setTokenFlag("error", p.error != null);
+			
 			if (p.error != null) {
 				p_label.style.pointerEvents = "";
 				p_label.title = Std.string(p.error);
 			} else p_label.style.pointerEvents = "none";
-			p_reload.setDisplayFlag(p.data == null || p.data.cleanup != null);
-			//
+
+			reloadButtonContainer.setDisplayFlag(enabled && (p.data == null || canCleanUp));
+
 			var desc = p.config.description;
 			if (desc != null && NativeString.trimBoth(desc) == "") desc = null;
 			if (desc != null) p_desc.setInnerText(desc);
+
+			toggleButton.textContent = (enabled) 
+				? "disable" 
+				: "enable";
+				
+			toggleButton.title = (enabled && !canCleanUp)
+				? "Requires a restart."
+				: "";
+
+			group.setGroupVisibility(enabled);
+
 		}
+
 		syncLabelState();
 	}
 	public static function build(out:Element) {

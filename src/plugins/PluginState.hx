@@ -33,15 +33,7 @@ class PluginState {
 		this.name = name;
 		this.dir = dir;
 	}
-	public function destroy() {
-		if (data != null && data.cleanup != null) data.cleanup();
-		for (el in elements) {
-			var p = el.parentElement;
-			if (p != null) p.removeChild(el);
-		}
-		PluginManager.pluginMap.remove(name);
-		PluginManager.registerMap.remove(config.name);
-	}
+
 	public function finish(?error:Error):Void {
 		ready = true;
 		if (error == null && data == null) {

@@ -1,4 +1,5 @@
 package plugins;
+import ui.Preferences;
 import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
@@ -17,13 +18,13 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 class PluginManager {
-	/** name from config.json */
+	/** name from `config.json` */
 	public static var pluginList:Array<String> = [];
 	/** name -> state */
 	public static var pluginMap:Dictionary<PluginState> = new Dictionary();
 	/** name -> containing directory */
 	public static var pluginDir:Dictionary<String> = new Dictionary();
-	/** name from config.json -> state */
+	/** name from `config.json` -> state */
 	public static var registerMap:Dictionary<PluginState> = new Dictionary();
 	
 	public static function load(name:String, ?cb:PluginCallback) {
@@ -195,12 +196,86 @@ class PluginManager {
 		next(null);
 		ready = true;
 	}
+	
+	/**
+		Start the loaded and enabled plugins.
+	**/
 	public static function dispatchInitCallbacks() {
-		for (pluginName in PluginManager.pluginList) {
-			var pluginState = PluginManager.pluginMap[pluginName];
-			if (pluginState.error == null && pluginState.data.init != null) {
-				pluginState.data.init(pluginState);
+		for (pluginName in pluginList) {
+
+			if (isDisabledByUser(pluginName)) {
+				continue;
 			}
+
+			start(pluginName);
+
 		}
 	}
+
+	/**
+		Start the given registered plugin.
+	**/
+	public static function start(pluginName:String): Null<Error> {
+		final pluginState = pluginMap[pluginName] ?? return null;
+
+		if (pluginState.error != null) {
+			return pluginState.error;
+		}
+
+		if (pluginState.data?.init != null) {
+			pluginState.data.init(pluginState);
+		}
+		
+		return null;
+	}
+
+	/**
+		Stop the given registered plugin, calling its clean-up and removing its content from the
+		DOM.
+	**/
+	public static function stop(pluginName:String) {
+
+		final pluginState = pluginMap[pluginName] ?? return;
+
+		if (pluginState.data.cleanup != null) {
+			pluginState.data.cleanup();
+		}
+
+		for (el in pluginState.elements) {
+			el.remove();
+		}
+		
+	}
+
+	/**
+		Returns whether the given plugin has been disabled by the user.
+	**/
+	public static function isDisabledByUser(pluginName:String): Bool {
+		return Preferences.current.disabledPlugins.contains(pluginName);
+	}
+
+	/**
+		Enable the given plugin.
+	**/
+	public static function enable(pluginName:String) {
+
+		Preferences.current.disabledPlugins.remove(pluginName);
+		Preferences.save();
+
+		start(pluginName);
+
+	}
+
+	/**
+		Disable the given plugin.
+	**/
+	public static function disable(pluginName:String) {
+
+		Preferences.current.disabledPlugins.push(pluginName);
+		Preferences.save();
+
+		stop(pluginName);
+
+	}
+
 }

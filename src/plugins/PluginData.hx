@@ -11,7 +11,8 @@ typedef PluginData = {
 	?init:(state:PluginState)->Void,
 	
 	/**
-	 * Called before unloading the plugin (currently you cannot)
+	 * Called to unload the plugin. This is the plugin's opportunity to de-register anything it has
+	 * set up.
 	 */
 	?cleanup:()->Void,
 }
