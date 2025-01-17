@@ -23,6 +23,8 @@
     });
   }
   
+  const ogSetText = aceEditor.tooltipManager.ttip.setText;
+
   GMEdit.register('docs-tooltips', {
     init: () => {
 
@@ -40,7 +42,6 @@
       state.strictLatest = Preferences.current.docs_tooltips.strictLatest;
       state.keys = Preferences.current.docs_tooltips.keys;
 
-      const ogSetText = aceEditor.tooltipManager.ttip.setText;
       aceEditor.tooltipManager.ttip.setText = function() {
         if (!state.enabled
           || (state.strictLatest && $gmedit['gml.Project'].current.version.name != 'v23')
@@ -73,6 +74,7 @@
     },
     cleanup: () => {
       GMEdit.off('preferencesBuilt', onPreferencesBuilt);
+      aceEditor.tooltipManager.ttip.setText = ogSetText;
     }
   });
 
