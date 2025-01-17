@@ -18,6 +18,7 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 class PluginManager {
+
 	/** name from `config.json` */
 	public static var pluginList:Array<String> = [];
 	/** name -> state */
@@ -124,17 +125,20 @@ class PluginManager {
 			} else loadResources();
 		});
 	}
-	
-	// Set to true whenever manager is initalised
-	public static var ready:Bool = false;
-	public static function init(cb:Void->Void) {
+
+	/**
+		Initialise the plugins API. Until this method has been executed, `PluginAPI` cannot be used,
+		and plugins should not be initialised as they will not be able to access events.
+	**/
+	public static function initApi() {
+
 		try {
-			Type.resolveClass("Main");
 			js.Syntax.code("window.$hxClasses = $hxClasses");
 			js.Syntax.code("window.$gmedit = $hxClasses");
 		} catch (x:Dynamic) {
 			Console.error("Couldn't expose hxClasses:", x);
 		}
+
 		try {
 			PluginAPI.extend = js.Syntax.code("$extend");
 		} catch (x:Dynamic) {
@@ -149,12 +153,22 @@ class PluginManager {
 			}*/
 			Console.error("Couldn't expose $extend:", x);
 		}
+
 		try {
 			var EventEmitter = AceWrap.require("ace/lib/event_emitter").EventEmitter;
 			ace.extern.AceOOP.implement(PluginAPI, EventEmitter);
 		} catch (x:Dynamic) {
 			Console.error("Couldn't add event emitting:", x);
 		}
+
+	}
+	
+	/**
+		Load and initialise the list of installed plugins.
+		Executes `onLoaded` on completion.
+	**/
+	public static function loadInstalledPlugins(onLoaded:Void->Void) {
+		
 		//
 		var list:Array<String>;
 		if (FileSystem.canSync) {
@@ -186,21 +200,26 @@ class PluginManager {
 		}
 		//
 		var pluginsLeft = 1;
+
 		function next(_) {
-			if (--pluginsLeft <= 0) cb();
+			if (--pluginsLeft <= 0) {
+				startEnabledPlugins();
+				onLoaded();
+			}
 		}
+
 		for (name in list) {
 			pluginsLeft += 1;
 			load(name, next);
 		}
+
 		next(null);
-		ready = true;
 	}
 	
 	/**
 		Start the loaded and enabled plugins.
 	**/
-	public static function dispatchInitCallbacks() {
+	static function startEnabledPlugins() {
 		for (pluginName in pluginList) {
 
 			if (!isEnabled(pluginName)) {
