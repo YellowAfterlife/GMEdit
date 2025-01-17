@@ -37,10 +37,10 @@
 			file.editor = new ImageViewer(file);
 		}
 	});
+	var kimg = new KImage();
 	//
 	GMEdit.register("image-viewer", {
 		init: function() {
-			var kimg = new KImage();
 			FileKind.register("png", kimg);
 			FileKind.register("jpg", kimg);
 			FileKind.register("jpeg", kimg);
@@ -48,7 +48,11 @@
 			FileKind.register("bmp", kimg);
 		},
 		cleanup: function() {
-			// todo
+			FileKind.deregister("png", kimg);
+			FileKind.deregister("jpg", kimg);
+			FileKind.deregister("jpeg", kimg);
+			FileKind.deregister("gif", kimg);
+			FileKind.deregister("bmp", kimg);
 		}
 	});
 })();
