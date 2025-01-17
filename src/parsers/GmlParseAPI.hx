@@ -354,7 +354,7 @@ typedef GmlParseAPIArgs = {
 	?instKind:Dictionary<AceTokenType>,
 	?instType:Dictionary<GmlType>,
 	?fieldHints:Array<GmlSeekDataHint>,
-	?featherAliases:Dictionary<String>
+	?featherAliases:Dictionary<String>,
 	#if lwedit
 	?lwArg0:Dictionary<Int>,
 	?lwArg1:Dictionary<Int>,
