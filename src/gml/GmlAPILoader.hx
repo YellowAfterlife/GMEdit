@@ -301,7 +301,7 @@ using tools.ERegTools;
 					init += 'lwInst:"' + arr.join("|") + '"\n';
 					//
 					init += "}";
-					//Main.console.log(init);
+					//Console.log(init);
 					#end
 					LiveWeb.api.setAPI(data);
 				}

@@ -7,6 +7,7 @@ import tools.Aliases;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewElement.TreeViewDir;
 import yy.YyExtension;
+import js.html.Console;
 using tools.NativeArray;
 
 /**

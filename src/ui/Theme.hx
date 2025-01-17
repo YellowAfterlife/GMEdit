@@ -9,6 +9,7 @@ import electron.FileWrap;
 import haxe.io.Path;
 import js.html.Element;
 import js.html.HTMLDocument;
+import js.html.Console;
 
 /**
  * Handles theme state and loading.

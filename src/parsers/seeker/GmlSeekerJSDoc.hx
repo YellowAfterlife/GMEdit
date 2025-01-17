@@ -6,6 +6,7 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTemplateItem;
 import gml.type.GmlTypeTools;
 import js.lib.RegExp;
+import js.html.Console;
 import parsers.GmlReader;
 import parsers.GmlSeekData;
 import parsers.seeker.GmlSeekerImpl;

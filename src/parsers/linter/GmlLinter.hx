@@ -28,6 +28,7 @@ import tools.JsTools;
 import tools.NativeObject;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
+import js.html.Console;
 using gml.type.GmlTypeTools;
 using tools.NativeArray;
 using tools.NativeString;
@@ -232,7 +233,7 @@ class GmlLinter {
 	}
 	//
 	function __next_ret(nvk:GmlLinterKind, src:String, nv0:Int, nv1:Int):GmlLinterKind {
-		//if (!__next_isPeek) Main.console.log(reader.getTopPosString(), nvk, nvk.getName(), src.substring(nv0, nv1));
+		//if (!__next_isPeek) Console.log(reader.getTopPosString(), nvk, nvk.getName(), src.substring(nv0, nv1));
 		__nextVal_cache = null;
 		__nextVal_source = src;
 		__nextVal_start = nv0;
@@ -241,7 +242,7 @@ class GmlLinter {
 		return nvk;
 	}
 	function __next_retv(nvk:GmlLinterKind, nv:String):GmlLinterKind {
-		//if (!__next_isPeek) Main.console.log(reader.getTopPosString(), nvk, nvk.getName(), nv);
+		//if (!__next_isPeek) Console.log(reader.getTopPosString(), nvk, nvk.getName(), nv);
 		__nextVal_cache = nv;
 		nextKind = nvk;
 		return nvk;

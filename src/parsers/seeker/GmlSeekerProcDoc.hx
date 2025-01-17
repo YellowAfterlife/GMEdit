@@ -3,6 +3,7 @@ import gml.GmlFuncDoc;
 import gml.type.GmlTypeDef;
 import parsers.GmlSeekData.GmlSeekDataNamespaceHint;
 import synext.GmlExtCoroutines;
+import js.html.Console;
 
 /**
  * ...
@@ -103,7 +104,7 @@ class GmlSeekerProcDoc {
 			if (arr == null) { arr = []; out.namespaceImplements[ownType] = arr; }
 			//
 			if (ownType == null) {
-				Main.console.warn("Trying to add @implements without a known self-type", arr);
+				Console.warn("Trying to add @implements without a known self-type", arr);
 			} else for (nsi in jsDoc.implementsNames) {
 				if (arr.indexOf(nsi) < 0) arr.push(nsi);
 			}

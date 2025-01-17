@@ -122,7 +122,7 @@ class GmlNullCoalescingOperator extends SyntaxExtension {
 						out += pre(expr) + spaceStr + "??";
 					}
 					start = q.pos;
-					//Main.console.log(id);
+					//Console.log(id);
 				};
 				default:
 			}

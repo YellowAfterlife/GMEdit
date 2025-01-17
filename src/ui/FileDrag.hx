@@ -90,7 +90,7 @@ class FileDrag {
 		document.body.addEventListener("dragenter", cancelDefault);
 		document.body.addEventListener("drop", function(e:DragEvent) {
 			e.preventDefault();
-			//Main.console.log(e.dataTransfer.files);
+			//Console.log(e.dataTransfer.files);
 			#if lwedit
 			for (file in e.dataTransfer.files) {
 				ui.liveweb.LiveWebIO.acceptFile(file);

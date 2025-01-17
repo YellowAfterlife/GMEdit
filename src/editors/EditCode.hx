@@ -1,5 +1,6 @@
 package editors;
 import js.html.Window;
+import js.html.Console;
 import ace.extern.*;
 import ace.*;
 import editors.Editor;
@@ -242,8 +243,8 @@ class EditCode extends Editor {
 			} else dlg = 2;
 			//
 			if (dlg != 0) {
-				//Main.console.log(StringTools.replace(prev, "\r", "\\r"));
-				//Main.console.log(StringTools.replace(file.code, "\r", "\\r"));
+				//Console.log(StringTools.replace(prev, "\r", "\\r"));
+				//Console.log(StringTools.replace(file.code, "\r", "\\r"));
 				function printSize(b:Float) {
 					inline function toFixed(f:Float):String {
 						return (untyped f.toFixed)(2);
@@ -280,7 +281,7 @@ class EditCode extends Editor {
 				}
 			}
 		} catch (e:Dynamic) {
-			Main.console.error("Error applying changes: ", e);
+			Console.error("Error applying changes: ", e);
 		}
 	}
 }

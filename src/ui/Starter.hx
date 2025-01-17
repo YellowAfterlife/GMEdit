@@ -7,6 +7,7 @@ import js.lib.Error;
 import ui.Theme;
 import haxe.Json;
 import js.Browser.window;
+import js.html.Console;
 
 /**
  * A lightweight (~25KB) application that loads your preferences

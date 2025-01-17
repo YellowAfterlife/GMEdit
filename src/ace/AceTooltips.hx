@@ -21,6 +21,7 @@ import synext.GmlExtLambda;
 import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;
+import js.html.Console;
 using tools.NativeString;
 
 /**

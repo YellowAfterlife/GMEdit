@@ -1,5 +1,6 @@
 package electron;
 import js.html.CustomEvent;
+import js.html.Console;
 import js.html.Element;
 import js.html.FileList;
 import js.html.FormElement;
@@ -18,7 +19,7 @@ class Dialog {
 	 */
 	public static function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int {
 		if (Electron == null) {
-			Main.console.error("Don't have a showMessageBox here");
+			Console.error("Don't have a showMessageBox here");
 			return -1;
 		} else if (async != null) {
 			Electron_Dialog.showMessageBox(options).then(function(result) {
@@ -103,7 +104,7 @@ class Dialog {
 	
 	public static function showOpenDialog(options:DialogOpenOptions, ?async:Array<String>->Void):Array<String> {
 		if (Electron == null) {
-			Main.console.log("Don't have sync showOpenDialog here");
+			Console.log("Don't have sync showOpenDialog here");
 			return null;
 		} else if (async != null) {
 			Electron_Dialog.showOpenDialog(options).then(function(result) {

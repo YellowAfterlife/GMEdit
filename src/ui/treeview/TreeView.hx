@@ -13,6 +13,7 @@ import js.html.DragEvent;
 import js.html.Element;
 import js.html.DivElement;
 import js.html.Event;
+import js.html.Console;
 import js.html.MouseEvent;
 import Main.*;
 import js.html.SpanElement;
@@ -423,11 +424,11 @@ using tools.PathTools;
 	}
 	// EventEmitter:
 	@:native("_emit") public static dynamic function emit<E:{}>(eventName:String, ?e:E):Dynamic {
-		console.error("EventEmitter is not hooked for TreeView!");
+		Console.error("EventEmitter is not hooked for TreeView!");
 		return null;
 	}
 	@:native("_signal") public static dynamic function signal<E>(eventName:String, e:E):Void {
-		console.error("EventEmitter is not hooked for TreeView!");
+		Console.error("EventEmitter is not hooked for TreeView!");
 	}
 }
 typedef TreeViewQuery = {

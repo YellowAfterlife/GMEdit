@@ -7,6 +7,7 @@ import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeParser;
 import js.RegExp.RegExpMatch;
+import js.html.Console;
 import js.lib.RegExp;
 import parsers.GmlSeekData.GmlSeekDataHint;
 import tools.Dictionary;

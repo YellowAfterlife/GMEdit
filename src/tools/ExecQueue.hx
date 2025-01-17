@@ -1,4 +1,5 @@
 package tools;
+import js.html.Console;
 
 /**
  * As of yet, unused
@@ -28,7 +29,7 @@ class ExecQueue<T> {
 			proc(queue.shift());
 		} else if (numRunning <= 0) {
 			if (isDone) {
-				if (onDone != null) Main.console.warn("Last item finished but we've already dispatched onDone");
+				if (onDone != null) Console.warn("Last item finished but we've already dispatched onDone");
 			} else {
 				isDone = true;
 				if (onDone != null) onDone();
