@@ -6,29 +6,11 @@
     strictLatest: false,
     keys: []
   };
-
-  function onPreferencesBuilt(e) {
-    var out = e.target.querySelector('.plugin-settings[for="docs-tooltips"]');
-  
-    Preferences.addCheckbox(out, 'Enabled', state.enabled, () => {
-      state.enabled = !state.enabled;
-      Preferences.current.docs_tooltips.enabled = state.enabled;
-      Preferences.save();
-    });
-
-    Preferences.addCheckbox(out, 'Disable for non GMS2.3+ projects', state.strictLatest, () => {
-      state.strictLatest = !state.strictLatest;
-      Preferences.current.docs_tooltips.strictLatest = state.strictLatest;
-      Preferences.save();
-    });
-  }
   
   const ogSetText = aceEditor.tooltipManager.ttip.setText;
 
   GMEdit.register('docs-tooltips', {
     init: () => {
-
-      GMEdit.on('preferencesBuilt', onPreferencesBuilt);
 
       downloadLatestDocs();
 
@@ -73,8 +55,22 @@
       }
     },
     cleanup: () => {
-      GMEdit.off('preferencesBuilt', onPreferencesBuilt);
       aceEditor.tooltipManager.ttip.setText = ogSetText;
+    },
+    buildPreferences: (out) => {
+    
+      Preferences.addCheckbox(out, 'Enabled', state.enabled, () => {
+        state.enabled = !state.enabled;
+        Preferences.current.docs_tooltips.enabled = state.enabled;
+        Preferences.save();
+      });
+  
+      Preferences.addCheckbox(out, 'Disable for non GMS2.3+ projects', state.strictLatest, () => {
+        state.strictLatest = !state.strictLatest;
+        Preferences.current.docs_tooltips.strictLatest = state.strictLatest;
+        Preferences.save();
+      });
+
     }
   });
 
