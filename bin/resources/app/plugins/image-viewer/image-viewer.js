@@ -1,58 +1,65 @@
 (function() {
 	//
-	var Panner = $gmedit["editors.Panner"];
-	var Editor = $gmedit["editors.Editor"];
-	function ImageViewer(file) {
-		Editor.call(this, file);
-		this.element = document.createElement("div");
-		this.element.classList.add("resinfo");
-		this.element.classList.add("sprite");
-		//
-		var panner = null;
-		var pandiv = document.createElement("div");
-		this.element.appendChild(pandiv);
-		//
-		var image = document.createElement("img");
-		image.onload = function(_) {
-			panner.recenter();
-		};
-		pandiv.appendChild(image);
-		this.image = image;
-		//
-		panner = new Panner(pandiv, image);
-		this.panner = panner;
-	}
-	ImageViewer.prototype = GMEdit.extend(Editor.prototype, {
-		load: function(data) {
+	const Panner = $gmedit["editors.Panner"];
+	const Editor = $gmedit["editors.Editor"];
+	const FileKind = $gmedit["file.FileKind"];
+
+	class ImageViewer extends Editor {
+
+		constructor(file) {
+
+			super(file);
+			
+			this.element = document.createElement("div");
+			this.element.classList.add("resinfo");
+			this.element.classList.add("sprite");
+			//
+			var panner = null;
+			var pandiv = document.createElement("div");
+			this.element.appendChild(pandiv);
+			//
+			var image = document.createElement("img");
+			image.onload = function(_) {
+				panner.recenter();
+			};
+			pandiv.appendChild(image);
+			this.image = image;
+			//
+			panner = new Panner(pandiv, image);
+			this.panner = panner;
+			
+		}
+
+		load(_) {
 			this.image.src = this.file.path;
 		}
-	});
-	//
-	var FileKind = $gmedit["file.FileKind"];
-	function KImage() {
-		FileKind.call(this);
+
 	}
-	KImage.prototype = GMEdit.extend(FileKind.prototype, {
-		init: function(file, data) {
+
+	class KImage extends FileKind {
+
+		static inst = new KImage();
+
+		init(file, _) {
 			file.editor = new ImageViewer(file);
 		}
-	});
-	var kimg = new KImage();
-	//
+
+	}
+
 	GMEdit.register("image-viewer", {
 		init: function() {
-			FileKind.register("png", kimg);
-			FileKind.register("jpg", kimg);
-			FileKind.register("jpeg", kimg);
-			FileKind.register("gif", kimg);
-			FileKind.register("bmp", kimg);
+			FileKind.register("png", KImage.inst);
+			FileKind.register("jpg", KImage.inst);
+			FileKind.register("jpeg", KImage.inst);
+			FileKind.register("gif", KImage.inst);
+			FileKind.register("bmp", KImage.inst);
 		},
 		cleanup: function() {
-			FileKind.deregister("png", kimg);
-			FileKind.deregister("jpg", kimg);
-			FileKind.deregister("jpeg", kimg);
-			FileKind.deregister("gif", kimg);
-			FileKind.deregister("bmp", kimg);
+			FileKind.deregister("png", KImage.inst);
+			FileKind.deregister("jpg", KImage.inst);
+			FileKind.deregister("jpeg", KImage.inst);
+			FileKind.deregister("gif", KImage.inst);
+			FileKind.deregister("bmp", KImage.inst);
 		}
 	});
 })();
