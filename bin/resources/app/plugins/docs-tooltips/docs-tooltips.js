@@ -1,8 +1,8 @@
 (() => {
   const Preferences = $gmedit['ui.Preferences'];
-  
+  const Project = $gmedit['gml.Project'];
+
   const state = {
-    enabled: true,
     strictLatest: false,
     keys: []
   };
@@ -15,20 +15,15 @@
       downloadLatestDocs();
 
       if (!Preferences.current.docs_tooltips) Preferences.current.docs_tooltips = {
-        enabled: true,
         strictLatest: false,
         keys: []
       };
 
-      state.enabled = Preferences.current.docs_tooltips.enabled;
       state.strictLatest = Preferences.current.docs_tooltips.strictLatest;
       state.keys = Preferences.current.docs_tooltips.keys;
 
       aceEditor.tooltipManager.ttip.setText = function() {
-        if (!state.enabled
-          || (state.strictLatest && $gmedit['gml.Project'].current.version.name != 'v23')
-          || state.keys == null
-        ) {
+        if ((state.strictLatest && !Project.current.isGMS23) || state.keys == null) {
           ogSetText.apply(this, arguments);
           return;
         }
@@ -58,12 +53,6 @@
       aceEditor.tooltipManager.ttip.setText = ogSetText;
     },
     buildPreferences: (out) => {
-    
-      Preferences.addCheckbox(out, 'Enabled', state.enabled, () => {
-        state.enabled = !state.enabled;
-        Preferences.current.docs_tooltips.enabled = state.enabled;
-        Preferences.save();
-      });
   
       Preferences.addCheckbox(out, 'Disable for non GMS2.3+ projects', state.strictLatest, () => {
         state.strictLatest = !state.strictLatest;
