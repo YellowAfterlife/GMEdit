@@ -1,4 +1,7 @@
 package plugins;
+import js.html.LinkElement;
+import js.html.StyleElement;
+import js.html.ScriptElement;
 import ace.AceWrap;
 import electron.FileSystem;
 import electron.FileWrap;
@@ -25,8 +28,8 @@ class PluginState {
 	public var listeners:Array<PluginCallback> = [];
 	public var data:PluginData = null;
 	
-	/** Scripts and styles */
-	public var elements:Array<Element> = [];
+	public var styles:Array<LinkElement> = [];
+	public var scripts:Array<ScriptElement> = [];
 	
 	//
 	public function new(name:String, dir:String) {

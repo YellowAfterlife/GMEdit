@@ -85,7 +85,7 @@ class PluginManager {
 								state.finish(e.error);
 							};
 							script.src = '$dir/$name/$rel' + suffix;
-							state.elements.push(script);
+							state.scripts.push(script);
 							Main.document.head.appendChild(script);
 						};
 						case 1: {
@@ -101,7 +101,7 @@ class PluginManager {
 							}
 							style.rel = "stylesheet";
 							style.href = '$dir/$name/$rel' + suffix;
-							state.elements.push(style);
+							state.styles.push(style);
 							Main.document.head.appendChild(style);
 						};
 					}
@@ -219,7 +219,17 @@ class PluginManager {
 
 		stop(pluginName);
 
-		final registeredName = pluginMap[pluginName]?.config?.name;
+		final pluginState = pluginMap[pluginName];
+
+		for (script in pluginState.scripts) {
+			script.remove();
+		}
+
+		for (style in pluginState.styles) {
+			style.remove();
+		}
+
+		final registeredName = pluginState.config?.name;
 
 		if (registeredName != null) {
 			registerMap.remove(registeredName);
@@ -247,6 +257,10 @@ class PluginManager {
 		if (pluginState.data.init != null) {
 			pluginState.data.init(pluginState);
 		}
+
+		for (style in pluginState.styles) {
+			style.disabled = false;
+		}
 		
 		return null;
 	}
@@ -263,8 +277,8 @@ class PluginManager {
 			pluginState.data.cleanup();
 		}
 
-		for (el in pluginState.elements) {
-			el.remove();
+		for (style in pluginState.styles) {
+			style.disabled = true;
 		}
 		
 	}
