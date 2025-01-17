@@ -4,6 +4,7 @@ import gml.GmlObjectInfo;
 import haxe.Json;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
+import js.html.Console;
 import parsers.GmlEvent;
 import gml.file.GmlFile;
 import gml.file.GmlFileExtra;
@@ -47,7 +48,7 @@ import yy.YyTools;
 			var code = try {
 				FileWrap.readTextFileSync(full);
 			} catch (x:Dynamic) {
-				Main.console.warn("Missing event file: " + full);
+				Console.warn("Missing event file: " + full);
 				"";
 			}
 			if (out != "") out += "\n\n";

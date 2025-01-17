@@ -4,6 +4,7 @@ import file.FileKind;
 import gml.GmlAPI;
 import gml.*;
 import js.lib.Error;
+import js.html.Console;
 import parsers.GmlSeekData;
 import parsers.seeker.GmlSeekerImpl;
 import tools.Aliases;
@@ -29,9 +30,9 @@ class GmlSeeker {
 		FileWrap.readTextFile(item.path, function ready(err:Error, text:String) {
 			if (err != null) {
 				if ((cast err).errno == -4058) {
-					Main.console.warn("Can't index `" + item.path + "` - file is missing.");
+					Console.warn("Can't index `" + item.path + "` - file is missing.");
 				} else {
-					Main.console.error("Can't index `" + item.path + "`:", err);
+					Console.error("Can't index `" + item.path + "`:", err);
 				}
 				runNext();
 			} else try {
@@ -39,7 +40,7 @@ class GmlSeeker {
 					runNext();
 				}
 			} catch (ex:Dynamic) {
-				Main.console.error("Can't index `" + item.path + "`:", ex);
+				Console.error("Can't index `" + item.path + "`:", ex);
 				runNext();
 			}
 		});

@@ -1,5 +1,6 @@
 package tools;
 import js.lib.RegExp;
+import js.html.Console;
 
 /**
  * Caches a RegExp for the given pattern so that we don't re-construct it too often.
@@ -20,7 +21,7 @@ class RegExpCache {
 			try {
 				regex = new RegExp(pt, flags);
 			} catch (x:Dynamic) {
-				Main.console.error('Error compiling a regular expression from pattern `$pt`:', x);
+				Console.error('Error compiling a regular expression from pattern `$pt`:', x);
 				regex = null;
 			}
 		} else regex = null;

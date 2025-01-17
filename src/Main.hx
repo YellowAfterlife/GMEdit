@@ -37,11 +37,6 @@ class Main {
 		return js.Syntax.code("window");
 	}
 	//
-	public static var console(get, never):RawConsole;
-	private static inline function get_console() {
-		return js.Syntax.code("console");
-	}
-	//
 	public static var document(get, never):HTMLDocument;
 	private static inline function get_document() {
 		return js.Syntax.code("document");
@@ -81,8 +76,7 @@ class Main {
 					for (v in infos.customParams) out.push(v);
 				}
 			}
-			var console = window.console;
-			Reflect.callMethod(console, console.log, out);
+			Console.log(out);
 		};
 		Electron.init();
 		yy.YyJsonPrinter.init();
@@ -150,7 +144,7 @@ class Main {
 			#end
 			PluginManager.dispatchInitCallbacks();
 		});
-		console.log("hello!");
+		Console.log("hello!");
 		StartupTests.main();
 	}
 }

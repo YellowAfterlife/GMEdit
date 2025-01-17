@@ -6,6 +6,7 @@ import gml.type.GmlType;
 import gml.type.GmlTypeCanCastTo;
 import haxe.ds.ReadOnlyArray;
 import js.lib.RegExp;
+import js.html.Console;
 import parsers.GmlReader;
 import tools.Dictionary;
 import tools.JsTools;

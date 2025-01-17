@@ -6,6 +6,7 @@ import gml.Project;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import js.html.Console;
 import ui.ChromeTabs;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewItemMenus;

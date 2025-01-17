@@ -4,6 +4,7 @@ import electron.Menu;
 #if !starter
 import Main.window;
 import js.Syntax;
+import js.html.Console;
 import electron.FontScanner.FontScannerFallback;
 import electron.extern.ElectronRemote;
 import electron.extern.*;
@@ -55,7 +56,7 @@ import electron.ElectronMacros.*;
 			try {
 				setExternType(FontScanner, req("./native/font-scanner/index.js"));
 			} catch (x:Dynamic) {
-				Main.console.warn("font-scanner failed to load: ", x);
+				Console.warn("font-scanner failed to load: ", x);
 				setExternType(FontScanner, cast FontScannerFallback);
 			}
 			

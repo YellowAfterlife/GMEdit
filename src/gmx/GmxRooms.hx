@@ -6,6 +6,7 @@ import gmx.SfGmx;
 import haxe.io.Path;
 import parsers.GmlMultifile;
 import tools.Dictionary;
+import js.html.Console;
 using tools.NativeString;
 using tools.PathTools;
 

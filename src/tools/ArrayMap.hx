@@ -1,6 +1,7 @@
 package tools;
 import haxe.iterators.ArrayIterator;
 import haxe.iterators.ArrayKeyValueIterator;
+import js.html.Console;
 
 /**
  * A paired structure containing an (ordered) list of items
@@ -81,7 +82,7 @@ import haxe.iterators.ArrayKeyValueIterator;
 	public function addn(val:T):Void {
 		var name:String = (cast val).name;
 		if (name == null) {
-			Main.console.error("Trying to assign a value into a null-field", this, val);
+			Console.error("Trying to assign a value into a null-field", this, val);
 		} else set(name, val);
 	}
 	/*public function addNamed<K:{name:String} & T>(val:K) {

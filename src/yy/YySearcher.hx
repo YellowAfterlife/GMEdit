@@ -4,6 +4,7 @@ import electron.FileWrap;
 import gml.Project;
 import haxe.io.Path;
 import js.lib.Error;
+import js.html.Console;
 import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.NativeString;
@@ -97,7 +98,7 @@ class YySearcher {
 								if (gml1 != null && gml1 != code) {
 									resCtx.project.writeTextFileSync(gmlPath, gml1);
 								}
-							} else Main.console.warn(error);
+							} else Console.warn(error);
 							next();
 						});
 					});
@@ -118,7 +119,7 @@ class YySearcher {
 								}
 							} catch (x:Dynamic) {
 								addError("Failed to modify " + resCtx.resName + ":\n" + x);
-							} else Main.console.warn(error);
+							} else Console.warn(error);
 							next();
 						});
 					});
@@ -139,7 +140,7 @@ class YySearcher {
 								}
 							} catch (x:Dynamic) {
 								addError("Failed to modify " + resCtx.resName + ":\n" + x);
-							} else Main.console.warn(error);
+							} else Console.warn(error);
 							next();
 						});
 					});
@@ -159,7 +160,7 @@ class YySearcher {
 									if (gml1 != null && gml1 != code) {
 										shCtx.project.writeTextFileSync(shCtx.shPath, gml1);
 									}
-								} else Main.console.warn(err);
+								} else Console.warn(err);
 								next();
 							});
 						});
@@ -173,7 +174,7 @@ class YySearcher {
 					ctx.proc(packResCtx(), function(resCtx) resCtx.project.readYyFile(resCtx.resPath,
 					function(err, ext:YyExtension) {
 						if (err != null) {
-							Main.console.warn(err);
+							Console.warn(err);
 							next();
 							return;
 						}
@@ -191,7 +192,7 @@ class YySearcher {
 							var filePath = extCtx.filePath;
 							extCtx.project.readTextFile(filePath, function(err, code) {
 								if (err != null) {
-									Main.console.warn(err);
+									Console.warn(err);
 									next();
 									return;
 								}
@@ -217,7 +218,7 @@ class YySearcher {
 									if (gml1 != null && gml1 != code) {
 										FileWrap.writeTextFileSync(rccPath, gml1);
 									}
-								} else Main.console.warn(error);
+								} else Console.warn(error);
 								next();
 							});
 						} else next();

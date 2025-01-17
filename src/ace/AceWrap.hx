@@ -33,7 +33,7 @@ abstract AceWrap(AceEditor) from AceEditor to AceEditor {
 		var self = this;
 		this.on("focus", function() {
 			Main.window.setTimeout(function() {
-				//Main.console.warn(Date.now().getTime(), "Focus for ", self, self.container);
+				//Console.warn(Date.now().getTime(), "Focus for ", self, self.container);
 				for (el in HtmlTools.querySelectorEls(Main.document, "pre.ace_editor")) {
 					if (el.classList.contains("ace_focus")) continue;
 					for (cursor in el.querySelectorEls(".ace_cursor-layer")) {

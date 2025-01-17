@@ -5,6 +5,7 @@ import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
 import js.lib.RegExp;
+import js.html.Console;
 import synext.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
@@ -167,7 +168,7 @@ class YyLoader {
 			var parentPath = folderPath.substring(0, lastSlash);
 			var parentDir = folderMap[parentPath];
 			if (parentDir == null) {
-				Main.console.log("Folder without parent", folderPath);
+				Console.log("Folder without parent", folderPath);
 				continue;
 			}
 			if (parentDir == pair.dir) continue;

@@ -22,8 +22,8 @@ import js.html.LegendElement;
 import js.html.MouseEvent;
 import js.html.SelectElement;
 import js.html.Window;
+import js.html.Console;
 import Main.document;
-import Main.console;
 import js.lib.RegExp;
 import tools.Dictionary;
 import tools.JsTools;
@@ -376,7 +376,7 @@ class Preferences {
 		try {
 			pref = FileWrap.readConfigSync("config", path);
 		} catch (e:Dynamic) {
-			console.error("Error loading preferences: ", e);
+			Console.error("Error loading preferences: ", e);
 		}
 		// migrations:
 		if (pref != null) {
@@ -479,7 +479,7 @@ class Preferences {
 				opts.remove("theme");
 				opts.remove("enableSnippets");
 				FileWrap.writeConfigSync("config", "aceOptions", cast opts);
-				//Main.console.log("Ace settings saved.");
+				//Console.log("Ace settings saved.");
 			}
 		};
 	}
@@ -493,7 +493,7 @@ class Preferences {
 				editor.setOptions(opts);
 			}
 		} catch (e:Dynamic) {
-			console.error("Error loading Ace options: " + e);
+			Console.error("Error loading Ace options: " + e);
 		};
 		editor.setOption("fixedWidthGutter", true);
 		// flush Ace options on changes (usually only via Ctrl+,):

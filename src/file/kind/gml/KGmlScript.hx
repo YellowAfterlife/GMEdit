@@ -9,6 +9,7 @@ import synext.GmlExtCoroutines;
 import synext.GmlExtHyper;
 import synext.GmlExtLambda;
 import ui.Preferences;
+import js.html.Console;
 
 /**
  * ...
@@ -31,7 +32,7 @@ class KGmlScript extends KGml {
 			doesNotExist = false;
 			return text;
 		} else {
-			Main.console.warn('`${editor.file.path}` is amiss, assuming to be empty.');
+			Console.warn('`${editor.file.path}` is amiss, assuming to be empty.');
 			doesNotExist = true;
 			return "";
 		}

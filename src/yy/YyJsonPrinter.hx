@@ -2,6 +2,7 @@ package yy;
 import haxe.iterators.RestIterator;
 #if js
 import js.lib.RegExp;
+import js.html.Console;
 #end
 using tools.NativeString;
 import haxe.DynamicAccess;
@@ -213,7 +214,7 @@ class YyJsonPrinter {
 			} else if (nt != null) {
 				meta = isExt ? (_2023 ? metaByResourceType2023[nt] : metaByResourceType[nt]) : metaByModelName[nt];
 				#if (js && !not_gmedit)
-				if (meta == null) Main.console.warn('Unknown type $nt');
+				if (meta == null) Console.warn('Unknown type $nt');
 				#end
 			} else if (isExt) {
 				nt = obj.resourceType;

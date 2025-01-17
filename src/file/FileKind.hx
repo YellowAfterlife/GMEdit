@@ -11,6 +11,7 @@ import gml.file.GmlFile;
 import gml.project.ProjectState.ProjectTabState;
 import tools.Dictionary;
 import ui.ChromeTabs.ChromeTab;
+import js.html.Console;
 
 /**
  * ...
@@ -118,7 +119,7 @@ import ui.ChromeTabs.ChromeTab;
 				changed = true;
 			}
 		} catch (e:Dynamic) {
-			Main.console.error("Error checking " + path + ": ", e);
+			Console.error("Error checking " + path + ": ", e);
 		}
 		//
 		for (pair in file.extraFiles) try {
@@ -130,7 +131,7 @@ import ui.ChromeTabs.ChromeTab;
 				changed = true;
 			}
 		} catch (e:Dynamic) {
-			Main.console.error("Error checking " + pair.path + ": ", e);
+			Console.error("Error checking " + pair.path + ": ", e);
 		}
 		//
 		return changed ? 1 : 0;

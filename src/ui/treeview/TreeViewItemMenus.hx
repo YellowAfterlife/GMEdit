@@ -9,6 +9,7 @@ import electron.Menu;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import js.html.Console;
 import tools.JsTools;
 import ui.treeview.TreeViewMenus.items;
 import ui.treeview.TreeViewMenus.add;
@@ -377,7 +378,7 @@ class TreeViewItemMenus {
 				case "notes", "extension": dlgMode = 1;
 				default: dlgMode = 2;
 			}
-			//Main.console.log(kind, dlgMode);
+			//Console.log(kind, dlgMode);
 			if (dlgMode > 0) {
 				var msg = "Would you like to rename references as well?";
 				var exp = "(experimental, make sure to have backups/version control)";
@@ -510,7 +511,7 @@ class TreeViewItemMenus {
 					try {
 						c.gmlCode = electron.FileWrap.readTextFileSync(fp);
 					} catch (x:Dynamic) {
-						Main.console.error('Error reading `$fp`:', x);
+						Console.error('Error reading `$fp`:', x);
 						c.gmlCode = "";
 					}
 					return c;

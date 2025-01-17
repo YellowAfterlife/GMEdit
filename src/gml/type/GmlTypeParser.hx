@@ -6,6 +6,7 @@ import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
 import ace.AceMacro.jsRx;
+import js.html.Console;
 using tools.NativeString;
 
 /**

@@ -6,6 +6,7 @@ import haxe.DynamicAccess;
 import js.html.Element;
 import js.lib.Error;
 import js.html.ErrorEvent;
+import js.html.Console;
 import plugins.PluginAPI;
 import plugins.PluginConfig;
 import plugins.PluginState;
@@ -47,8 +48,8 @@ class PluginState {
 			error = new Error('Plugin did not call register()');
 		}
 		if (error != null) {
-			Main.console.error('Plugin load failed for $name:', error);
-		} else Main.console.log("Plugin loaded: " + name);
+			Console.error('Plugin load failed for $name:', error);
+		} else Console.log("Plugin loaded: " + name);
 		if (PluginManager.pluginList.indexOf(name) < 0) {
 			PluginManager.pluginList.push(name);
 		}
@@ -61,7 +62,7 @@ class PluginState {
 			var t = Date.now().getTime();
 			data.init(this);
 			var dt = Date.now().getTime() - t;
-			if (dt > 500) Main.console.warn('init() for $name took ${dt}ms.');
+			if (dt > 500) Console.warn('init() for $name took ${dt}ms.');
 		}*/
 	}
 }

@@ -5,6 +5,7 @@ import gml.GmlLocals;
 import gml.type.GmlType;
 import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
+import js.html.Console;
 import parsers.seeker.GmlSeekerParser;
 import parsers.seeker.GmlSeekerProcExpr;
 import synext.GmlExtLambda;
@@ -31,14 +32,14 @@ class GmlSeekerProcVar {
 				project.readTextFileSync(rel);
 			} catch (_:Dynamic) null;
 			if (lgml == null) {
-				Main.console.warn("Lambda missing: " + s);
+				Console.warn("Lambda missing: " + s);
 				lgml = "";
 			}
 			//
 			GmlSeeker.runSync(full, lgml, "", KGmlLambdas.inst);
 			var d = GmlSeekData.map[full];
 			if (d == null) {
-				Main.console.warn("We just asked to index a lambda script and it's not there..?");
+				Console.warn("We just asked to index a lambda script and it's not there..?");
 				lfLocals = new GmlLocals(s);
 			} else lfLocals = d.locals[""];
 			seekData.locals.set(s, lfLocals);

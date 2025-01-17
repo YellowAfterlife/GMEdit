@@ -4,6 +4,7 @@ import electron.FileSystem;
 import electron.FileWrap;
 import haxe.DynamicAccess;
 import js.html.Element;
+import js.html.Console;
 import js.lib.Error;
 import js.html.ErrorEvent;
 import plugins.PluginAPI;
@@ -131,7 +132,7 @@ class PluginManager {
 			js.Syntax.code("window.$hxClasses = $hxClasses");
 			js.Syntax.code("window.$gmedit = $hxClasses");
 		} catch (x:Dynamic) {
-			Main.console.error("Couldn't expose hxClasses:", x);
+			Console.error("Couldn't expose hxClasses:", x);
 		}
 		try {
 			PluginAPI.extend = js.Syntax.code("$extend");
@@ -145,13 +146,13 @@ class PluginManager {
 				}
 				return proto;
 			}*/
-			Main.console.error("Couldn't expose $extend:", x);
+			Console.error("Couldn't expose $extend:", x);
 		}
 		try {
 			var EventEmitter = AceWrap.require("ace/lib/event_emitter").EventEmitter;
 			ace.extern.AceOOP.implement(PluginAPI, EventEmitter);
 		} catch (x:Dynamic) {
-			Main.console.error("Couldn't add event emitting:", x);
+			Console.error("Couldn't add event emitting:", x);
 		}
 		//
 		var list:Array<String>;

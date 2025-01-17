@@ -215,7 +215,7 @@ class GmlExtImport {
 				cache.set(rel, rules);
 			}
 		} else rules = null;
-		//Main.console.log("parse", rel);
+		//Console.log("parse", rel);
 		//
 		var full = Path.join([Project.current.dir, "#import", rel]);
 		if (!FileWrap.existsSync(full)) {

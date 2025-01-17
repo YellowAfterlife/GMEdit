@@ -5,6 +5,7 @@ import electron.FileWrap;
 import gml.Project;
 import gml.file.GmlFileExtra;
 import haxe.Json;
+import js.html.Console;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.Dictionary;
@@ -34,7 +35,7 @@ class YyRooms {
 				out += "#target " + pair.id.name + "\n" + rcc;
 				extraFiles.push(new GmlFileExtra(pj.fullPath(rccPath)));
 			} catch (x:Dynamic) {
-				Main.console.error('Error reading RCC from room ${pair.id.name}: ', x);
+				Console.error('Error reading RCC from room ${pair.id.name}: ', x);
 			}
 		}
 		else for (pair in pjd.resources) {
@@ -143,7 +144,7 @@ class YyRooms {
 				}
 				FileWrap.unlinkSync(xf.path);
 			} catch (x:Dynamic) {
-				Main.console.error("Error removing creation code for " + name + ":", x);
+				Console.error("Error removing creation code for " + name + ":", x);
 			}
 			extraFiles.splice(xi, 1);
 		}

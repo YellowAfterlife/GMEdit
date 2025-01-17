@@ -10,6 +10,7 @@ import ui.Preferences;
 import gml.GmlAPI;
 import ace.extern.AceAutoCompleteItem;
 import parsers.GmlReader;
+import js.html.Console;
 
 /**
  * This handles
@@ -110,7 +111,7 @@ class GmlExtMFunc {
 				}
 			}
 			inline function error(s:String) {
-				Main.console.error('[mfunc] for ${mf.name}: ' + s);
+				Console.error('[mfunc] for ${mf.name}: ' + s);
 			}
 			var start = q.pos;
 			var ind = 1;
@@ -220,7 +221,7 @@ class GmlExtMFunc {
 					default:
 				}
 			}
-			Main.console.error("Unclosed mfunc " + mf.name);
+			Console.error("Unclosed mfunc " + mf.name);
 			q.pos = orig_pos;
 			return pre + "0";
 		}
@@ -726,7 +727,7 @@ class GmlExtMFunc {
 		}
 		flush(q.pos);
 		if (false) {
-			Main.console.log(out);
+			Console.log(out);
 			return null;
 		} else return out;
 	}

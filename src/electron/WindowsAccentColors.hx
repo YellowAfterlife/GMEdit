@@ -1,5 +1,6 @@
 package electron;
 import js.Browser.document;
+import js.html.Console;
 #if starter
 import ui.Starter.ElectronMin in Electron;
 #end
@@ -57,7 +58,7 @@ class WindowsAccentColors {
 		var fc0 = impl.inactiveTitlebarTextColor;
 		var fc1 = impl.titlebarTextColor;
 		var html = document.documentElement;
-		//Main.console.log(fc0, fc1);
+		//Console.log(fc0, fc1);
 		html.setAttribute("hasAccentColors", "");
 		html.setAttribute("active-titlebar-foreground-is-light", "" + (fc1 == "#ffffff"));
 		html.setAttribute("inactive-titlebar-foreground-is-light", "" + (fc0 == "#ffffff"));

@@ -1,6 +1,7 @@
 package yy;
 using StringTools;
 import haxe.Json;
+import js.html.Console;
 
 /**
  * This is largely a copy of haxe.format.JsonParser, except:
@@ -69,7 +70,7 @@ class YyJsonParser {
 						var val = parseRec();
 						if (Reflect.hasField(obj, field)) {
 							#if (js && !not_gmedit)
-							Main.console.log('Duplicate field definition: $field', val);
+							Console.log('Duplicate field definition: $field', val);
 							#else
 							trace('Duplicate field definition: $field', val);
 							#end

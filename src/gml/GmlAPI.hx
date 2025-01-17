@@ -9,6 +9,7 @@ import gml.type.GmlTypeTools;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.lib.RegExp.RegExpMatch;
+import js.html.Console;
 import parsers.GmlParseAPI;
 import parsers.GmlSeekData.GmlSeekDataHint;
 import synext.GmlExtMFunc;
