@@ -53,17 +53,10 @@ class PrefPlugins {
 		legend.appendChild(toggleButtonContainer);
 
 		final reloadButton = createFuncAnchor("reload", function(_) {
-
+			
 			p_conf.clearInner();
-			PluginManager.stop(p.name);
 
-			PluginManager.load(p.name, function(_) {
-				p = PluginManager.pluginMap[p.name];
-
-				if (p.data.init != null) {
-					p.data.init(p);
-				}
-				
+			PluginManager.reload(p.name, function(_) {
 				syncLabelState();
 			});
 

@@ -213,6 +213,28 @@ class PluginManager {
 	}
 
 	/**
+		Reload the given plugin. If the plugin is enabled, it will be initialised immediately.
+	**/
+	public static function reload(pluginName:String, onLoad:PluginState -> Void) {
+
+		stop(pluginName);
+
+		final registeredName = pluginMap[pluginName]?.config?.name;
+
+		if (registeredName != null) {
+			registerMap.remove(registeredName);
+		}
+		
+		pluginMap.remove(pluginName);
+
+		load(pluginName, function(_) {
+			start(pluginName);
+			onLoad(pluginMap[pluginName]);
+		});
+
+	}
+
+	/**
 		Start the given registered plugin.
 	**/
 	public static function start(pluginName:String): Null<Error> {
