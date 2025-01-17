@@ -1,4 +1,5 @@
 package file;
+import ui.ChromeTabs;
 import editors.EditCode;
 import editors.Editor;
 import electron.FileSystem;
@@ -41,6 +42,12 @@ import js.html.Console;
 		clean-up of a plugin which registers any file types.
 	**/
 	public static function deregister(fileExt:String, file:FileKind):Void {
+
+		for (tab in ChromeTabs.getTabs()) {
+			if (tab.gmlFile?.kind == file) {
+				tab.closeButton.click();
+			}
+		}
 		
 		final arr = map[fileExt];
 
