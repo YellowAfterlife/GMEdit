@@ -21,13 +21,20 @@ class PrefPlugins {
 		var legend:LegendElement = group.querySelectorAuto("legend");
 		group.classList.add("plugin-info");
 		group.setAttribute("for", p.name);
-		var syncLabelState:Void->Void = null;
+		var syncState:Void->Void = null;
 		//
 		var p_label = document.createLabelElement();
 		p_label.appendChild(document.createTextNode(p.name));
 		legend.appendChild(p_label);
-		//
-		var p_conf:Element = null;
+
+		final p_desc = document.createDivElement();
+		p_desc.classList.add("plugin-description");
+		group.appendChild(p_desc);
+
+		final p_conf:Element = document.createDivElement();
+		p_conf.classList.add("plugin-settings");
+		p_conf.setAttribute("for", p.name);
+		group.appendChild(p_conf);
 
 		legend.appendChild(document.createTextNode("("));
 		
@@ -43,7 +50,7 @@ class PrefPlugins {
 				PluginManager.disable(p.name);
 			}
 
-			syncLabelState();
+			syncState();
 
 		});
 
@@ -57,7 +64,7 @@ class PrefPlugins {
 			p_conf.clearInner();
 
 			PluginManager.reload(p.name, function(_) {
-				syncLabelState();
+				syncState();
 			});
 
 		});
@@ -68,18 +75,8 @@ class PrefPlugins {
 		legend.appendChild(reloadButtonContainer);
 
 		legend.appendChild(document.createTextNode(")"));
-
-		//
-		var p_desc = document.createDivElement();
-		p_desc.classList.add("plugin-description");
-		group.appendChild(p_desc);
-		//
-		p_conf = document.createDivElement();
-		p_conf.classList.add("plugin-settings");
-		p_conf.setAttribute("for", p.name);
-		group.appendChild(p_conf);
 		
-		syncLabelState = function() {
+		syncState = function() {
 
 			final canCleanUp = (p.data?.cleanup != null);
 			final enabled = !PluginManager.isDisabledByUser(p.name);
@@ -106,10 +103,16 @@ class PrefPlugins {
 				: "";
 
 			group.setGroupVisibility(enabled);
+			
+			if (enabled) {
+				if (p.data.buildPreferences != null) {
+					p.data.buildPreferences(p_conf);
+				}
+			}
 
 		}
 
-		syncLabelState();
+		syncState();
 	}
 	public static function build(out:Element) {
 		out = addGroup(out, "Plugins");

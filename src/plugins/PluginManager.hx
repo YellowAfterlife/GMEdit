@@ -244,7 +244,7 @@ class PluginManager {
 			return pluginState.error;
 		}
 
-		if (pluginState.data?.init != null) {
+		if (pluginState.data.init != null) {
 			pluginState.data.init(pluginState);
 		}
 		

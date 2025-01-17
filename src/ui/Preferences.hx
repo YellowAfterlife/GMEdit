@@ -1,4 +1,5 @@
 package ui;
+import plugins.PluginManager;
 import haxe.extern.EitherType;
 #if !starter
 import ace.AceWrap;
