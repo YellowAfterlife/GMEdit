@@ -522,7 +522,7 @@ import ui.treeview.TreeViewElement;
 	public static function openInitialProject() {
 		#if !lwedit
 		var path = moduleArgs["open"];
-		if (path != null) {
+		if (path != null && path != ".") {
 			var tmp = new Project("", false);
 			current = tmp;
 			window.setTimeout(function() {
