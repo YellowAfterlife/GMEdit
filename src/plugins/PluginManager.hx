@@ -203,7 +203,7 @@ class PluginManager {
 	public static function dispatchInitCallbacks() {
 		for (pluginName in pluginList) {
 
-			if (isDisabledByUser(pluginName)) {
+			if (!isEnabled(pluginName)) {
 				continue;
 			}
 
@@ -284,10 +284,10 @@ class PluginManager {
 	}
 
 	/**
-		Returns whether the given plugin has been disabled by the user.
+		Returns whether the given plugin is enabled, as the user may disable plugins.
 	**/
-	public static function isDisabledByUser(pluginName:String): Bool {
-		return Preferences.current.disabledPlugins.contains(pluginName);
+	public static function isEnabled(pluginName:String): Bool {
+		return !Preferences.current.disabledPlugins.contains(pluginName);
 	}
 
 	/**

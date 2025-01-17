@@ -43,7 +43,7 @@ class PrefPlugins {
 
 		final toggleButton = createFuncAnchor("", function(_) {
 
-			if (PluginManager.isDisabledByUser(p.name)) {
+			if (!PluginManager.isEnabled(p.name)) {
 				PluginManager.enable(p.name);
 			} else {
 				p_conf.clearInner();
@@ -79,7 +79,7 @@ class PrefPlugins {
 		syncState = function() {
 
 			final canCleanUp = (p.data?.cleanup != null);
-			final enabled = !PluginManager.isDisabledByUser(p.name);
+			final enabled = PluginManager.isEnabled(p.name);
 
 			p_label.classList.setTokenFlag("error", p.error != null);
 			
