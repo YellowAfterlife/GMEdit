@@ -39,7 +39,7 @@ class PrefPlugins {
 
 		addText(group, "Currently loaded plugins:");
 
-		for (_ => p in PluginManager.pluginMap) {
+		for (_ => p in PluginManager.registry) {
 			p.prefItem = new PluginPrefItemImpl(group, p);
 		}
 		
@@ -56,7 +56,7 @@ interface PluginPrefItem {
 
 class PluginPrefItemImpl implements PluginPrefItem {
 
-	var p:PluginState;
+	final p:PluginState;
 
 	final group:FieldSetElement;
 	final legend:LegendElement;
@@ -91,7 +91,7 @@ class PluginPrefItemImpl implements PluginPrefItem {
 
 		legend.appendChild(document.createTextNode("("));
 		
-		openButton = createShellAnchor(p.dir, "open");
+		openButton = createShellAnchor(p.path, "open");
 		legend.appendChild(openButton);
 
 		toggleButton = createFuncAnchor("", function(_) toggle());
@@ -168,13 +168,8 @@ class PluginPrefItemImpl implements PluginPrefItem {
 		Reload the linked plugin from disk.
 	**/
 	function reload() {
-		PluginManager.reload(p.config.name, function(pluginState) {
-
-			p = pluginState;
-			p.prefItem = this;
-
+		PluginManager.reload(p).then(function(_) {
 			sync();
-
 		});
 	}
 

@@ -138,11 +138,12 @@ class Main {
 		Project.nameNode.innerText = "Loading project...";
 		Project.openInitialProject();
 		Project.nameNode.innerText = "Loading plugins...";
-		PluginManager.loadInstalledPlugins(function() {
+		PluginManager.loadInstalledPlugins().then(function(_) {
 			#if lwedit
 			aceEditor.session = WelcomePage.init(aceEditor);
 			LiveWeb.init();
 			#end
+			PluginManager.startPlugins();
 		});
 		Console.log("hello!");
 		StartupTests.main();

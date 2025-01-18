@@ -1,32 +1,40 @@
 package plugins;
 import ui.preferences.PrefPlugins.PluginPrefItem;
 import js.html.LinkElement;
-import js.html.StyleElement;
 import js.html.ScriptElement;
-import ace.AceWrap;
-import electron.FileSystem;
-import electron.FileWrap;
-import haxe.DynamicAccess;
-import js.html.Element;
-import js.lib.Error;
-import js.html.ErrorEvent;
 import js.html.Console;
-import plugins.PluginAPI;
+import js.lib.Error;
 import plugins.PluginConfig;
-import plugins.PluginState;
-import tools.Dictionary;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 class PluginState {
-	public var name:PluginDirName;
-	public var config:PluginConfig;
-	public var dir:String;
-	public var ready:Bool = false;
-	public var error:Null<Error> = null;
-	public var listeners:Array<PluginCallback> = [];
+
+	/**
+		The name of the directory that this plugin's `config.json` resides in.
+	**/
+	public final name:PluginDirName;
+
+	/**
+		The path to this plugin's directory.
+	**/
+	public final path:String;
+
+	/**
+		The configuration file of this plugin.
+	**/
+	public var config:Null<PluginConfig> = null;
+
+	/**
+		Some kind of error that occurred while loading or initialising this plugin.
+	**/
+	public var error(default, set):Null<Error> = null;
+	
+	/**
+		The registered data as provided by the plugin's script invoking `GMEdit.register(...)`.
+	**/
 	public var data:Null<PluginData> = null;
 
 	/**
@@ -35,7 +43,7 @@ class PluginState {
 
 		Plugins which fail to initialise correctly are also assumed to be incapable of cleaning up.
 	**/
-	public var canCleanUp(default, null):Bool = false;
+	public var canCleanUp(get, never):Bool;
 
 	/**
 		The preferences item associated with this plugin.
@@ -48,34 +56,12 @@ class PluginState {
 	**/
 	public var initialised:Bool = false;
 	
-	public var styles:Array<LinkElement> = [];
-	public var scripts:Array<ScriptElement> = [];
+	public final styles:Array<LinkElement> = [];
+	public final scripts:Array<ScriptElement> = [];
 	
 	public function new(name:String, dir:String) {
 		this.name = name;
-		this.dir = dir;
-	}
-
-	public function finish(?error:Error):Void {
-		
-		ready = true;
-
-		if (data != null) {
-			canCleanUp = (data.cleanup != null);
-		} else if (error == null) {
-			error = new Error("Plugin did not call register()");
-		}
-
-		if (error != null) {
-			Console.error('Plugin load failed for $name:', error);
-			canCleanUp = false;
-		} else Console.log("Plugin loaded: " + name);
-
-		PluginManager.registry[config.name] = this;
-		
-		this.error = error;
-		for (fn in listeners) fn(error);
-		listeners.resize(0);
+		this.path = dir;
 	}
 
 	/**
@@ -87,6 +73,18 @@ class PluginState {
 		}
 	}
 
+	function get_canCleanUp():Bool {
+		return data?.cleanup != null;
+	}
+
+	function set_error(value:Null<Error>):Null<Error> {
+		
+		if (value != null) {
+			Console.error('Error in plugin $name: ', value);
+		}
+
+		return error = value;
+	}
 }
 
 typedef PluginCallback = (error:Null<Error>)->Void;

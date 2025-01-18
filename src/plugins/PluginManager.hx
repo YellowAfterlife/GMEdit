@@ -1,4 +1,5 @@
 package plugins;
+import js.html.ScriptElement;
 import tools.Result;
 import js.lib.Promise;
 import ui.Preferences;
@@ -13,6 +14,7 @@ import plugins.PluginConfig;
 import plugins.PluginState;
 import tools.Dictionary;
 using plugins.PluginManager.ConfigLoadErrorMethods;
+using tools.ArrayTools;
 
 /**
  * ...
@@ -20,10 +22,6 @@ using plugins.PluginManager.ConfigLoadErrorMethods;
  */
 class PluginManager {
 
-	/** name -> state */
-	public static var pluginMap:Map<PluginDirName, PluginState> = new Map();
-	/** name -> containing directory */
-	public static var pluginDir:Dictionary<PluginDirName> = new Dictionary();
 	/** name from `config.json` -> state */
 	public static var registry:Map<PluginRegName, PluginState> = new Map();
 
@@ -65,28 +63,25 @@ class PluginManager {
 	}
 	
 	/**
-		Load and initialise the list of installed plugins.
-		Executes `onLoaded` on completion.
+		Find and load the installed plugins.
 	**/
-	public static function loadInstalledPlugins(onLoaded:Void->Void) {
-		
-		//
-		var list:Array<PluginDirName>;
+	public static function loadInstalledPlugins(): Promise<Void> {
+
+		final pluginPaths = new Map<String, Array<PluginDirName>>();
+
 		if (FileSystem.canSync) {
-			list = [];
-			for (dir in [
-				FileWrap.userPath + "/plugins",
-				Main.relPath("plugins"),
-			]) if (FileSystem.existsSync(dir)
-			) for (name in FileSystem.readdirSync(dir)) {
-				var full = '$dir/$name/config.json';
-				if (FileSystem.existsSync(full) && list.indexOf(name) < 0) {
-					list.push(name);
-					pluginDir.set(name, dir);
-				}
+			
+			final dirPaths = [FileWrap.userPath + "/plugins", Main.relPath("plugins")]
+				.filter(FileSystem.existsSync);
+
+			for (dirPath in dirPaths) {
+				pluginPaths[dirPath] = FileSystem.readdirSync(dirPath);
 			}
-		} else { // base package for web version
-			list = [
+
+		} else {
+
+			// Bundled web-version plugins.
+			pluginPaths["plugins"] = [
 				"outline-view",
 				#if !lwedit
 				"image-viewer",
@@ -95,186 +90,209 @@ class PluginManager {
 				"gen-enum-names",
 				"show-aside",
 			];
-			for (name in list) {
-				pluginDir[name] = "plugins";
+
+		}
+
+		final skeletonPromises: Array<Promise<PluginState>> = [];
+
+		for (dirPath => names in pluginPaths) {
+			for (name in names) {
+
+				final path = '$dirPath/$name';
+				final plugin = new PluginState(name, path);
+
+				skeletonPromises.push(loadConfig(path, name).then(function(result) {
+					
+					switch (result) {
+						case Ok(data): plugin.config = data;
+						case Err(err): plugin.error = err.toJsError();
+					}
+
+					return plugin;
+
+				}));
+
 			}
 		}
-		//
-		var pluginsLeft = 1;
-
-		function next(_) {
-			if (--pluginsLeft <= 0) {
-				startEnabledPlugins();
-				onLoaded();
-			}
-		}
-
-		for (name in list) {
-			pluginsLeft += 1;
-			load(name, next);
-		}
-
-		next(null);
+		
+		return Promise.all(skeletonPromises)
+			.then(function(plugins) {
+				final validPlugins = plugins.filter(function(plugin) return plugin.error == null);
+				return Promise.all(validPlugins.map(load));
+			})
+			.then(function(plugins) {});
+		
 	}
 	
 	/**
 		Start the loaded and enabled plugins.
 	**/
-	static function startEnabledPlugins() {
-		for (name => _ in registry) {
+	public static function startPlugins() {
+		for (name => plugin in registry) {
 
 			if (!isEnabled(name)) {
 				continue;
 			}
 
-			start(name, false);
+			start(plugin, false);
 
 		}
 	}
 
 	/**
 		Load the configuration file (`config.json`) of the given plugin.
-		Returns a promise that resolves when the configuration has loaded.
+
+		Returns a promise that resolves when the configuration has loaded, and contains a skeleton
+		un-initialised plugin instance.
 
 		If the `config.json` file fails to load - for instance, if it does not exist, or it has an
-		invalid schema (is missing required props, e.g. registry name), an error is returned.
+		invalid schema (is missing required props, e.g. registry name), the returned plugin will
+		**NOT** be valid, and instead will have a populated `error` property.
 
-		@param pluginsDir The source directory in which the plugin is located.
+		@param path Path to the plugin's content directory.
 		@param name The directory name of the plugin to be loaded.
 	**/
 	static function loadConfig(
-		pluginsDir:String,
+		path:String,
 		name:PluginDirName
 	): Promise<Result<PluginConfig, ConfigLoadError>> return new Promise(function(res, _) {
-		FileSystem.readJsonFile('$pluginsDir/$name/config.json', function(
+
+		final configPath = '$path/config.json';
+
+		FileSystem.readJsonFile(configPath, function(
 			error:Null<Error>,
 			config:PluginConfig
 		) {
 
 			if (error != null) {
-				return res(Err(ConfigLoadError.NoSuchFile));
+				return res(Err(ConfigLoadError.NoSuchFile(name, configPath)));
 			}
-
+			
 			if (config.name == null) {
-				return res(Err(ConfigLoadError.InvalidSchema("Plugin's config.json has no name")));
+				return res(Err(ConfigLoadError.InvalidSchema(name, "Config does not specify plugin's registry name")));
+			}
+			
+			if (config.scripts == null) {
+				return res(Err(ConfigLoadError.InvalidSchema(name, "Config does not specify any scripts, plugin cannot register if it has no content")));
 			}
 
 			return res(Ok(config));
 
 		});
+		
 	});
 	
-	static function load(name:PluginDirName, ?cb:PluginCallback) {
-		var state = pluginMap[name];
-		if (state != null) {
-			if (state.ready) {
-				cb(state.error);
-			} else {
-				state.listeners.push(cb);
+	/**
+		Load the contents of a plugin - its scripts and stylesheets. Returns a promise that resolves
+		when the plugin has either loaded successfully, or when an error is encountered whilst
+		loading.
+
+		A plugin has successfully loaded once:
+		1. All of its scripts have finished loading.
+		2. It calls `GMEdit.register(...)` for the name specified in its config.
+
+		If all scripts have executed, but the plugin has *not* been registered, the plugin is
+		considered to have failed to load.
+
+		If any of the scripts included in the plugin fail to execute, the plugin is also considered
+		to have failed to load.
+
+		@param plugin The uninitialised plugin to be loaded.
+	**/
+	static function load(plugin:PluginState): Promise<Null<Error>> {
+
+		registry[plugin.config.name] ??= plugin;
+
+		// We can just let styles load up asynchronously.
+		if (plugin.config.stylesheets != null) {
+			for (styleName in plugin.config.stylesheets) {
+
+				final link = Main.document.createLinkElement();
+				link.setAttribute("data-plugin", plugin.config.name);
+				link.rel = "stylesheet";
+				link.href = '${plugin.path}/$styleName';
+
+				plugin.styles.push(link);
+
 			}
-			return;
 		}
-		//
-		var dir = pluginDir[name];
-		if (dir == null) {
-			if (cb != null) cb(new Error('Plugin $name does not exist'));
-			return;
+
+		// Some plugins might rely on script load order to be correctly assembled on the other side.
+		// Due to this, we need to load scripts one-by-one, in the order they were stated in the
+		// config file.
+		final scriptsToLoad = Main.window.structuredClone(plugin.config.scripts);
+		var nextScriptName = scriptsToLoad.shift();
+
+		function loadNextScript(): Promise<Null<Error>> {
+			return loadScript('${plugin.path}/$nextScriptName').then(function(result) {
+
+				final script = switch (result) {
+					case Ok(data): data;
+					case Err(err): return err.error;
+				}
+
+				script.setAttribute("data-plugin", plugin.config.name);
+				plugin.scripts.push(script);
+
+				if (scriptsToLoad.length == 0) {
+					return null;
+				}
+
+				nextScriptName = scriptsToLoad.shift();
+				return loadNextScript();
+
+			});
 		}
-		//
-		var state = new PluginState(name, dir + "/" + name);
-		if (cb != null) state.listeners.push(cb);
-		pluginMap.set(name, state);
 
-		loadConfig(dir, name).then(function(result) {
+		final scriptsLoaded = loadNextScript();
+		return scriptsLoaded.then(function(error:Null<Error>) {
 
-			final conf = switch (result) {
-				case Ok(data): data;
-				case Err(err): return state.finish(err.toJsError());
-			};
-
-			state.config = conf;
-			registry.set(conf.name, state);
-
-			//
-			function loadResources():Void {
-				var queue:Array<{kind:Int,rel:String}> = [];
-				if (conf.stylesheets != null) for (rel in conf.stylesheets) {
-					queue.push({kind:1, rel:rel});
-				}
-				if (conf.scripts != null) for (rel in conf.scripts) {
-					queue.push({kind:0, rel:rel});
-				}
-				var suffix = "";// "?t=" + Date.now().getTime();
-				function loadNextResource():Void {
-					var pair = queue.shift();
-					var rel = pair.rel;
-					switch (pair.kind) {
-						case 0: {
-							var script = Main.document.createScriptElement();
-							script.setAttribute("plugin", conf.name);
-							script.onload = function(_) {
-								if (queue.length > 0) {
-									loadNextResource();
-								} else state.finish();
-							};
-							script.onerror = function(e:ErrorEvent) {
-								state.finish(e.error);
-							};
-							script.src = '$dir/$name/$rel' + suffix;
-							state.scripts.push(script);
-							Main.document.head.appendChild(script);
-						};
-						case 1: {
-							var style = Main.document.createLinkElement();
-							style.setAttribute("plugin", conf.name);
-							style.onload = function(_) {
-								if (queue.length > 0) {
-									loadNextResource();
-								} else state.finish();
-							};
-							style.onerror = function(e:ErrorEvent) {
-								state.finish(e.error);
-							}
-							style.rel = "stylesheet";
-							style.href = '$dir/$name/$rel' + suffix;
-							state.styles.push(style);
-							Main.document.head.appendChild(style);
-						};
-					}
-				}
-				if (queue.length > 0) {
-					loadNextResource();
-				} else state.finish();
+			if (error != null) {
+				plugin.error = error;
 			}
-			//
-			var deps = conf.dependencies;
-			if (deps != null && deps.length > 0) {
-				var depc = deps.length;
-				// TODO: evil cast! - we cannot know the name of plugins until their manifests are
-				// loaded. We should load those first, then come back and load their scripts.
-				for (dep in deps) load(cast dep, function(e:Error) {
-					if (e != null) {
-						state.finish(e);
-					} else if (!state.ready) {
-						if (--depc <= 0) loadResources();
-					}
-				});
-			} else loadResources();
+			
+			if (plugin.data == null) {
+				plugin.error = new Error("Plugin finished loading but did not call `GMEdit.register(...)`");
+			}
+
+			if (plugin.error != null) {
+				return plugin.error;
+			}
+
+			Console.log('Plugin loaded: ${plugin.name}');
+			return null;
+
 		});
 
 	}
 
 	/**
+		Load the script at the provided path. Returns a promise that resolves when either the script
+		has successfully loaded and executed, or returns an error if it fails.
+
+		Scripts are executed immediately upon loading, so the `onload` event fires once the script
+		body has been executed.
+	**/
+	static function loadScript(path:String): Promise<Result<ScriptElement, ErrorEvent>> {
+		return new Promise(function(res, _) {
+
+			final script = Main.document.createScriptElement();
+			script.onload = function() return res(Ok(script));
+			script.onerror = function(e) return res(Err(e));
+			script.src = path;
+
+			Main.document.head.appendChild(script);
+
+		});
+	}
+
+	/**
 		Reload the given plugin. If the plugin is enabled, it will be initialised immediately.
 		Reloading also triggers a reload of any dependent plugins.
-
-		@param onFinished Optional callback to execute with the reloaded plugin state.
 	**/
-	public static function reload(name:PluginRegName, onFinished:Null<PluginState -> Void> = null) {
+	public static function reload(plugin:PluginState): Promise<Void> {
 
-		stop(name);
-
-		final plugin = registry[name];
+		stop(plugin);
 
 		for (script in plugin.scripts) {
 			script.remove();
@@ -284,23 +302,35 @@ class PluginManager {
 			style.remove();
 		}
 
-		registry.remove(name);
-		pluginMap.remove(plugin.name);
+		plugin.scripts.resize(0);
+		plugin.styles.resize(0);
+		plugin.error = null;
+		plugin.data = null;
 
-		load(plugin.name, function(_) {
+		return loadConfig(plugin.path, plugin.name)
+			.then(function(result) {
+
+				final config = switch (result) {
+					case Ok(data): data;
+					case Err(err): return Promise.resolve(err.toJsError());
+				}
+
+				return load(plugin);
+
+			})
+			.then(function(error:Null<Error>) {
+
+				if (error != null) {
+					plugin.error = error;
+					return Promise.resolve();
+				}
 			
-			start(name, true);
+				start(plugin, true);
 
-			for (dependent in getDependents(name)) {
-				Console.info('Reloading dependent: ${dependent.name}');
-				reload(dependent.config.name);
-			}
+				final dependentPromises = getDependents(plugin.config.name).map(reload);
+				return Promise.all(dependentPromises).then(function(_) {});
 
-			if (onFinished != null) {
-				onFinished(registry[name]);
-			}
-			
-		});
+			});
 
 	}
 
@@ -312,9 +342,7 @@ class PluginManager {
 						  if `false`, if this plugin has dependencies that have been disabled by the
 						  user, we will bail on starting this plugin.
 	**/
-	public static function start(name:PluginRegName, enableDeps:Bool): Null<Error> {
-
-		final plugin = registry[name] ?? return null;
+	public static function start(plugin:PluginState, enableDeps:Bool): Null<Error> {
 
 		if (plugin.initialised) {
 			plugin.syncPrefs();
@@ -343,10 +371,10 @@ class PluginManager {
 
 				if (isEnabled(dep.config.name)) {
 
-					final error = start(dep.config.name, enableDeps);
+					final error = start(dep, enableDeps);
 
 					if (error != null) {
-						plugin.error = new Error('Cannot satisfy dependency $regName: $error');
+						plugin.error = new Error('Cannot satisfy dependency $regName as it failed to start: $error');
 						plugin.syncPrefs();
 						return plugin.error;
 					}
@@ -368,8 +396,8 @@ class PluginManager {
 			}
 		}
 
-		for (style in plugin.styles) {
-			style.disabled = false;
+		for (link in plugin.styles) {
+			Main.document.head.appendChild(link);
 		}
 
 		if (plugin.data.init != null) {
@@ -397,9 +425,7 @@ class PluginManager {
 		Stop the given registered plugin, calling its clean-up and removing its content from the
 		DOM.
 	**/
-	public static function stop(name:PluginRegName) {
-
-		final plugin = registry[name] ?? return;
+	public static function stop(plugin:PluginState) {
 
 		if (!plugin.initialised) {
 			plugin.syncPrefs();
@@ -417,8 +443,8 @@ class PluginManager {
 			plugin.error = err;
 		}
 
-		for (style in plugin.styles) {
-			style.disabled = true;
+		for (link in plugin.styles) {
+			link.remove();
 		}
 
 		plugin.initialised = false;
@@ -471,7 +497,11 @@ class PluginManager {
 			Preferences.save();
 		}
 
-		start(name, true);
+		final plugin = registry[name];
+
+		if (plugin != null) {
+			start(plugin, true);
+		}
 
 	}
 
@@ -490,7 +520,11 @@ class PluginManager {
 			disable(dependent.config.name);
 		}
 
-		stop(name);
+		final plugin = registry[name];
+
+		if (plugin != null) {
+			stop(plugin);
+		}
 
 	}
 
@@ -500,13 +534,13 @@ class PluginManager {
 	An error encountered whilst attempting to load a plugin's configuration file.
 **/
 private enum ConfigLoadError {
-	NoSuchFile;
-	InvalidSchema(info:String);
+	NoSuchFile(pluginName:PluginDirName, path:String);
+	InvalidSchema(pluginName:PluginDirName, info:String);
 }
 
 private class ConfigLoadErrorMethods {
 	public static inline function toJsError(error:ConfigLoadError): Error return switch (error) {
-		case NoSuchFile: new Error("Plugin's config.json does not exist");
-		case InvalidSchema(info): new Error('Plugin\'s config.json is invalid: $info');
+		case NoSuchFile(pluginName, path): new Error('$pluginName\'s config.json ("$path") does not exist');
+		case InvalidSchema(pluginName, info): new Error('$pluginName\'s config.json is invalid: $info');
 	};
 }

@@ -27,8 +27,12 @@ class PluginAPI {
 	 * This must be called by your plugin's script.
 	 */
 	public static function register(pluginName:PluginRegName, data:PluginData) {
-		var state = PluginManager.registry[pluginName];
-		if (state == null) throw 'There\'s no plugin named $pluginName';
+		final state = PluginManager.registry[pluginName];
+		
+		if (state == null) {
+			throw 'There\'s no plugin named $pluginName';
+		}
+
 		state.data = data;
 	}
 	

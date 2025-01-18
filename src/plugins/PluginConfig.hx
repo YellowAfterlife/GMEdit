@@ -1,9 +1,12 @@
 package plugins;
 
 /**
- * ...
- * @author YellowAfterlife
- */
+	The configuration data from `config.json` of a plugin. Holds the registry name of the plugin,
+	which should always be preferred over the dir name if available, along with the list of resource
+	names and dependencies of the plugin.
+
+	@author YellowAfterLife
+**/
 typedef PluginConfig = {
 	
 	/** One of the scripts then should do GMEdit.register(name, {...}) */
@@ -12,8 +15,8 @@ typedef PluginConfig = {
 	/** Optional - shows in Preferences */
 	?description:String,
 	
-	/** Relative paths to .js files (if any) */
-	?scripts:Array<String>,
+	/** Relative paths to .js files */
+	scripts:Array<String>,
 	
 	/** relative paths to .css files(if any) */
 	?stylesheets:Array<String>,
