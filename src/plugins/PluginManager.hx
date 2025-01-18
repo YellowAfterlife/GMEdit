@@ -292,7 +292,9 @@ class PluginManager {
 	**/
 	public static function reload(plugin:PluginState): Promise<Void> {
 
-		stop(plugin);
+		if (plugin.initialised) {
+			stop(plugin);
+		}
 
 		for (script in plugin.scripts) {
 			script.remove();
@@ -342,16 +344,11 @@ class PluginManager {
 						  if `false`, if this plugin has dependencies that have been disabled by the
 						  user, we will bail on starting this plugin.
 	**/
-	public static function start(plugin:PluginState, enableDeps:Bool): Null<Error> {
-
-		if (plugin.initialised) {
-			plugin.syncPrefs();
-			return null;
-		}
+	public static function start(plugin:PluginState, enableDeps:Bool) {
 
 		if (plugin.error != null) {
 			plugin.syncPrefs();
-			return plugin.error;
+			return;
 		}
 
 		for (regName in plugin.config.dependencies ?? []) {
@@ -362,7 +359,7 @@ class PluginManager {
 				plugin.error = new Error('Cannot satisfy dependency $regName: plugin not found');
 				plugin.syncPrefs();
 
-				return plugin.error;
+				return;
 			}
 
 			if (isEnabled(dep.config.name)) {
@@ -371,11 +368,16 @@ class PluginManager {
 					continue;
 				}
 
-				final error = start(dep, enableDeps) ?? continue;
-				plugin.error = new Error('Cannot satisfy dependency $regName as it failed to start: $error');
+				start(dep, enableDeps);
+
+				if (dep.error == null) {
+					continue;
+				}
+
+				plugin.error = new Error('Cannot satisfy dependency $regName as it failed to start: ${dep.error}');
 				plugin.syncPrefs();
 
-				return plugin.error;
+				return;
 
 			}
 
@@ -383,7 +385,7 @@ class PluginManager {
 				plugin.error = new Error('Cannot satisfy dependency on $regName: disabled by the user.');
 				plugin.syncPrefs();
 
-				return plugin.error;
+				return;
 			}
 
 			Console.info('Enabling dependency: $regName');
@@ -403,7 +405,7 @@ class PluginManager {
 				plugin.error = err;
 				plugin.syncPrefs();
 
-				return err;
+				return;
 
 			}
 		}
@@ -413,7 +415,7 @@ class PluginManager {
 		plugin.syncPrefs();
 
 		Console.info('Plugin started: ${plugin.config.name}');
-		return null;
+
 	}
 
 	/**
@@ -421,11 +423,6 @@ class PluginManager {
 		DOM.
 	**/
 	public static function stop(plugin:PluginState) {
-
-		if (!plugin.initialised) {
-			plugin.syncPrefs();
-			return;
-		}
 
 		if (!plugin.canCleanUp) {
 			plugin.syncPrefs();
@@ -487,13 +484,17 @@ class PluginManager {
 	**/
 	public static function enable(name:PluginRegName): Null<Error> {
 
-		if (!isEnabled(name)) {
-			Preferences.current.disabledPlugins.remove(name);
-			Preferences.save();
-		}
+		Preferences.current.disabledPlugins.remove(name);
+		Preferences.save();
 
 		final plugin = registry[name] ?? return new Error('Cannot start non-existent plugin $name');
-		return start(plugin, true);
+
+		if (!plugin.initialised) {
+			start(plugin, true);
+		}
+		
+		plugin.syncPrefs();
+		return plugin.error;
 
 	}
 
@@ -502,21 +503,27 @@ class PluginManager {
 	**/
 	public static function disable(name:PluginRegName) {
 
-		if (isEnabled(name)) {
-			Preferences.current.disabledPlugins.push(name);
-			Preferences.save();
-		}
+		Preferences.current.disabledPlugins.push(name);
+		Preferences.save();
 
 		for (dependent in getDependents(name)) {
-			Console.info('Disabling dependent plugin: ${dependent.name}');
-			disable(dependent.config.name);
+			if (isEnabled(dependent.config.name)) {
+
+				Console.info('Disabling dependent plugin: ${dependent.name}');
+				disable(dependent.config.name);
+
+			} else if (dependent.initialised) {
+				stop(dependent);
+			}
 		}
 
-		final plugin = registry[name];
+		final plugin = registry[name] ?? return;
 
-		if (plugin != null) {
+		if (plugin.initialised) {
 			stop(plugin);
 		}
+
+		plugin.syncPrefs();
 
 	}
 
