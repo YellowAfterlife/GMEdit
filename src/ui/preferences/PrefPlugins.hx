@@ -168,9 +168,7 @@ class PluginPrefItemImpl implements PluginPrefItem {
 		Reload the linked plugin from disk.
 	**/
 	function reload() {
-		PluginManager.reload(p).then(function(_) {
-			sync();
-		});
+		PluginManager.reload(p).then(_ -> sync());
 	}
 
 }
