@@ -12,9 +12,9 @@ import js.html.ErrorEvent;
 import plugins.PluginAPI;
 import plugins.PluginConfig;
 import plugins.PluginState;
+import tools.Dictionary;
 using plugins.PluginManager.ConfigLoadErrorMethods;
 using tools.ArrayTools;
-using StringTools;
 
 /**
  * ...
@@ -257,7 +257,9 @@ class PluginManager {
 
 			if (error != null) {
 				plugin.error = error;
-			} else if (plugin.data == null) {
+			}
+			
+			if (plugin.data == null) {
 				plugin.error = new Error("Plugin finished loading but did not call `GMEdit.register(...)`");
 			}
 
@@ -283,24 +285,17 @@ class PluginManager {
 		return new Promise(function(res, _) {
 
 			final script = Main.document.createScriptElement();
-
-			function errorEventListener(event:ErrorEvent) {
-				if (event.filename.endsWith(path)) {
-					Main.window.removeEventListener("error", errorEventListener);
-					script.onload = null;
-					
-					return res(Err(event.error));
-				}
-			}
-
-			Main.window.addEventListener("error", errorEventListener);
 			
 			script.onload = function() {
-				
-				Main.window.removeEventListener("error", errorEventListener);
 				script.onload = null;
-				
+				script.onerror = null;
 				return res(Ok(script));
+			};
+
+			script.onerror = function(e) {
+				script.onload = null;
+				script.onerror = null;
+				return res(Err(e));
 			};
 				
 			script.src = path;
