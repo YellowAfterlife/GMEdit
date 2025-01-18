@@ -277,8 +277,19 @@ class PluginManager {
 		return new Promise(function(res, _) {
 
 			final script = Main.document.createScriptElement();
-			script.onload = function() return res(Ok(script));
-			script.onerror = function(e) return res(Err(e));
+			
+			script.onload = function() {
+				script.onload = null;
+				script.onerror = null;
+				return res(Ok(script));
+			};
+
+			script.onerror = function(e) {
+				script.onload = null;
+				script.onerror = null;
+				return res(Err(e));
+			};
+				
 			script.src = path;
 
 			Main.document.head.appendChild(script);
