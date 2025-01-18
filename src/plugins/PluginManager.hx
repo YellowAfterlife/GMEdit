@@ -218,13 +218,13 @@ class PluginManager {
 		Start the loaded and enabled plugins.
 	**/
 	static function startEnabledPlugins() {
-		for (pluginName in pluginList) {
+		for (name in pluginList) {
 
-			if (!isEnabled(pluginName)) {
+			if (!isEnabled(name)) {
 				continue;
 			}
 
-			start(pluginName, false);
+			start(name, false);
 
 		}
 	}
@@ -235,39 +235,39 @@ class PluginManager {
 
 		@param onFinished Optional callback to execute with the reloaded plugin state.
 	**/
-	public static function reload(pluginName:String, onFinished:Null<PluginState -> Void> = null) {
+	public static function reload(name:String, onFinished:Null<PluginState -> Void> = null) {
 
-		stop(pluginName);
+		stop(name);
 
-		final pluginState = pluginMap[pluginName];
+		final plugin = pluginMap[name];
 
-		for (script in pluginState.scripts) {
+		for (script in plugin.scripts) {
 			script.remove();
 		}
 
-		for (style in pluginState.styles) {
+		for (style in plugin.styles) {
 			style.remove();
 		}
 
-		final registeredName = pluginState.config?.name;
+		final regName = plugin.config?.name;
 
-		if (registeredName != null) {
-			registerMap.remove(registeredName);
+		if (regName != null) {
+			registerMap.remove(regName);
 		}
 		
-		pluginMap.remove(pluginName);
+		pluginMap.remove(name);
 
-		load(pluginName, function(_) {
+		load(name, function(_) {
 			
-			start(pluginName, true);
+			start(name, true);
 
-			for (dependent in getDependents(pluginName)) {
+			for (dependent in getDependents(name)) {
 				Console.info('Reloading dependent: ${dependent.name}');
 				reload(dependent.name);
 			}
 
 			if (onFinished != null) {
-				onFinished(pluginMap[pluginName]);
+				onFinished(pluginMap[name]);
 			}
 			
 		});
@@ -282,29 +282,29 @@ class PluginManager {
 						  if `false`, if this plugin has dependencies that have been disabled by the
 						  user, we will bail on starting this plugin.
 	**/
-	public static function start(pluginName:String, enableDeps:Bool): Null<Error> {
+	public static function start(name:String, enableDeps:Bool): Null<Error> {
 
-		final pluginState = pluginMap[pluginName] ?? return null;
+		final plugin = pluginMap[name] ?? return null;
 
-		if (pluginState.initialised) {
-			pluginState.syncPrefs();
+		if (plugin.initialised) {
+			plugin.syncPrefs();
 			return null;
 		}
 
-		if (pluginState.error != null) {
-			pluginState.syncPrefs();
-			return pluginState.error;
+		if (plugin.error != null) {
+			plugin.syncPrefs();
+			return plugin.error;
 		}
 
-		if (pluginState.config.dependencies != null) {
-			for (regName in pluginState.config.dependencies) {
+		if (plugin.config.dependencies != null) {
+			for (regName in plugin.config.dependencies) {
 
 				final dep = registerMap[regName];
 
 				if (dep == null) {
-					pluginState.error = new Error('Cannot satisfy dependency $regName: plugin not found');
-					pluginState.syncPrefs();
-					return pluginState.error;
+					plugin.error = new Error('Cannot satisfy dependency $regName: plugin not found');
+					plugin.syncPrefs();
+					return plugin.error;
 				}
 
 				if (dep.initialised) {
@@ -316,9 +316,9 @@ class PluginManager {
 					final error = start(dep.name, enableDeps);
 
 					if (error != null) {
-						pluginState.error = new Error('Cannot satisfy dependency $regName: $error');
-						pluginState.syncPrefs();
-						return pluginState.error;
+						plugin.error = new Error('Cannot satisfy dependency $regName: $error');
+						plugin.syncPrefs();
+						return plugin.error;
 					}
 
 					continue;
@@ -326,10 +326,10 @@ class PluginManager {
 				}
 
 				if (!enableDeps) {
-					pluginState.error = new Error('Cannot satisfy dependency on $regName: disabled by the user.');
-					pluginState.syncPrefs();
+					plugin.error = new Error('Cannot satisfy dependency on $regName: disabled by the user.');
+					plugin.syncPrefs();
 
-					return pluginState.error;
+					return plugin.error;
 				}
 
 				Console.info('Enabling dependency: $regName');
@@ -338,28 +338,28 @@ class PluginManager {
 			}
 		}
 
-		for (style in pluginState.styles) {
+		for (style in plugin.styles) {
 			style.disabled = false;
 		}
 
-		if (pluginState.data.init != null) {
+		if (plugin.data.init != null) {
 			try {
-				pluginState.data.init(pluginState);
+				plugin.data.init(plugin);
 			} catch (err:Error) {
 
-				pluginState.error = err;
-				pluginState.syncPrefs();
+				plugin.error = err;
+				plugin.syncPrefs();
 
 				return err;
 
 			}
 		}
 
-		pluginState.error = null;
-		pluginState.initialised = true;
-		pluginState.syncPrefs();
+		plugin.error = null;
+		plugin.initialised = true;
+		plugin.syncPrefs();
 
-		Console.info('Plugin started: $pluginName');
+		Console.info('Plugin started: ${plugin.config.name}');
 		return null;
 	}
 
@@ -367,44 +367,44 @@ class PluginManager {
 		Stop the given registered plugin, calling its clean-up and removing its content from the
 		DOM.
 	**/
-	public static function stop(pluginName:String) {
+	public static function stop(name:String) {
 
-		final pluginState = pluginMap[pluginName] ?? return;
+		final plugin = pluginMap[name] ?? return;
 
-		if (!pluginState.initialised) {
-			pluginState.syncPrefs();
+		if (!plugin.initialised) {
+			plugin.syncPrefs();
 			return;
 		}
 
-		if (!pluginState.canCleanUp) {
-			pluginState.syncPrefs();
+		if (!plugin.canCleanUp) {
+			plugin.syncPrefs();
 			return;
 		}
 
 		try {
-			pluginState.data.cleanup();
+			plugin.data.cleanup();
 		} catch (err:Error) {
-			pluginState.error = err;
+			plugin.error = err;
 		}
 
-		for (style in pluginState.styles) {
+		for (style in plugin.styles) {
 			style.disabled = true;
 		}
 
-		pluginState.initialised = false;
-		pluginState.syncPrefs();
+		plugin.initialised = false;
+		plugin.syncPrefs();
 
-		Console.info('Plugin stopped: $pluginName');
+		Console.info('Plugin stopped: ${plugin.config.name}');
 		
 	}
 
 	/**
 		Get the list of plugins which are dependent on the given plugin.
 	**/
-	static function getDependents(pluginName:String): Array<PluginState> {
+	static function getDependents(name:String): Array<PluginState> {
 
-		final pluginState = pluginMap[pluginName];
-		final pluginRegName = pluginState.config.name;
+		final plugin = pluginMap[name];
+		final pluginRegName = plugin.config.name;
 		final dependents: Array<PluginState> = [];
 
 		for (regName in pluginList) {
@@ -429,40 +429,40 @@ class PluginManager {
 	/**
 		Returns whether the given plugin is enabled, as the user may disable plugins.
 	**/
-	public static function isEnabled(pluginName:String): Bool {
-		return !Preferences.current.disabledPlugins.contains(pluginName);
+	public static function isEnabled(name:String): Bool {
+		return !Preferences.current.disabledPlugins.contains(name);
 	}
 
 	/**
 		Enable the given plugin.
 	**/
-	public static function enable(pluginName:String) {
+	public static function enable(name:String) {
 
-		if (!isEnabled(pluginName)) {
-			Preferences.current.disabledPlugins.remove(pluginName);
+		if (!isEnabled(name)) {
+			Preferences.current.disabledPlugins.remove(name);
 			Preferences.save();
 		}
 
-		start(pluginName, true);
+		start(name, true);
 
 	}
 
 	/**
 		Disable the given plugin.
 	**/
-	public static function disable(pluginName:String) {
+	public static function disable(name:String) {
 
-		if (isEnabled(pluginName)) {
-			Preferences.current.disabledPlugins.push(pluginName);
+		if (isEnabled(name)) {
+			Preferences.current.disabledPlugins.push(name);
 			Preferences.save();
 		}
 
-		for (dependent in getDependents(pluginName)) {
+		for (dependent in getDependents(name)) {
 			Console.info('Disabling dependent plugin: ${dependent.name}');
 			disable(dependent.name);
 		}
 
-		stop(pluginName);
+		stop(name);
 
 	}
 
