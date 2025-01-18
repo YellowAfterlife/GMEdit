@@ -128,7 +128,7 @@ class PluginManager {
 				final validPlugins = plugins.filter(function(plugin) return plugin.error == null);
 				return Promise.all(validPlugins.map(load));
 			})
-			.then(function(plugins) {});
+			.then(_ -> null);
 		
 	}
 	
