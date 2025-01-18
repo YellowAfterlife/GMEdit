@@ -21,13 +21,13 @@ import tools.Dictionary;
  * @author YellowAfterlife
  */
 class PluginState {
-	public var name:String;
+	public var name:PluginDirName;
 	public var config:PluginConfig;
 	public var dir:String;
 	public var ready:Bool = false;
-	public var error:Error = null;
+	public var error:Null<Error> = null;
 	public var listeners:Array<PluginCallback> = [];
-	public var data:PluginData = null;
+	public var data:Null<PluginData> = null;
 
 	/**
 		Whether this plugin registered a `cleanup()` handler. Plugins that cannot clean up cannot be
@@ -70,8 +70,9 @@ class PluginState {
 			Console.error('Plugin load failed for $name:', error);
 			canCleanUp = false;
 		} else Console.log("Plugin loaded: " + name);
-		if (PluginManager.pluginList.indexOf(name) < 0) {
-			PluginManager.pluginList.push(name);
+
+		if (PluginManager.pluginList.indexOf(config.name) < 0) {
+			PluginManager.pluginList.push(config.name);
 		}
 		
 		this.error = error;

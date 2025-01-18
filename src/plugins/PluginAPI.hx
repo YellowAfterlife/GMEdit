@@ -1,4 +1,5 @@
 package plugins;
+import plugins.PluginConfig.PluginRegName;
 import haxe.DynamicAccess;
 import ui.Sidebar;
 import ace.AceTools;
@@ -25,9 +26,9 @@ class PluginAPI {
 	 * Registers a plugin in GMEdit.
 	 * This must be called by your plugin's script.
 	 */
-	public static function register(pluginName:String, data:PluginData) {
-		var state = PluginManager.registerMap[pluginName];
-		if (state == null) throw "There's no plugin named " + pluginName;
+	public static function register(pluginName:PluginRegName, data:PluginData) {
+		var state = PluginManager.registry[pluginName];
+		if (state == null) throw 'There\'s no plugin named $pluginName';
 		state.data = data;
 	}
 	

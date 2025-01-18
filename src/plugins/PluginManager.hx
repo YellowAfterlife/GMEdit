@@ -18,15 +18,15 @@ import tools.Dictionary;
 class PluginManager {
 
 	/** name from `config.json` */
-	public static var pluginList:Array<String> = [];
+	public static var pluginList:Array<PluginRegName> = [];
 	/** name -> state */
-	public static var pluginMap:Dictionary<PluginState> = new Dictionary();
+	public static var pluginMap:Map<PluginDirName, PluginState> = new Map();
 	/** name -> containing directory */
-	public static var pluginDir:Dictionary<String> = new Dictionary();
+	public static var pluginDir:Dictionary<PluginDirName> = new Dictionary();
 	/** name from `config.json` -> state */
-	public static var registerMap:Dictionary<PluginState> = new Dictionary();
+	public static var registry:Map<PluginRegName, PluginState> = new Map();
 	
-	public static function load(name:String, ?cb:PluginCallback) {
+	public static function load(name:PluginDirName, ?cb:PluginCallback) {
 		var state = pluginMap[name];
 		if (state != null) {
 			if (state.ready) {
@@ -56,7 +56,7 @@ class PluginManager {
 				return;
 			} else {
 				state.config = conf;
-				registerMap.set(conf.name, state);
+				registry.set(conf.name, state);
 			}
 			//
 			function loadResources():Void {
@@ -113,7 +113,9 @@ class PluginManager {
 			var deps = conf.dependencies;
 			if (deps != null && deps.length > 0) {
 				var depc = deps.length;
-				for (dep in deps) load(dep, function(e:Error) {
+				// TODO: evil cast! - we cannot know the name of plugins until their manifests are
+				// loaded. We should load those first, then come back and load their scripts.
+				for (dep in deps) load(cast dep, function(e:Error) {
 					if (e != null) {
 						state.finish(e);
 					} else if (!state.ready) {
@@ -168,7 +170,7 @@ class PluginManager {
 	public static function loadInstalledPlugins(onLoaded:Void->Void) {
 		
 		//
-		var list:Array<String>;
+		var list:Array<PluginDirName>;
 		if (FileSystem.canSync) {
 			list = [];
 			for (dir in [
@@ -235,11 +237,11 @@ class PluginManager {
 
 		@param onFinished Optional callback to execute with the reloaded plugin state.
 	**/
-	public static function reload(name:String, onFinished:Null<PluginState -> Void> = null) {
+	public static function reload(name:PluginRegName, onFinished:Null<PluginState -> Void> = null) {
 
 		stop(name);
 
-		final plugin = pluginMap[name];
+		final plugin = registry[name];
 
 		for (script in plugin.scripts) {
 			script.remove();
@@ -249,25 +251,20 @@ class PluginManager {
 			style.remove();
 		}
 
-		final regName = plugin.config?.name;
+		registry.remove(name);
+		pluginMap.remove(plugin.name);
 
-		if (regName != null) {
-			registerMap.remove(regName);
-		}
-		
-		pluginMap.remove(name);
-
-		load(name, function(_) {
+		load(plugin.name, function(_) {
 			
 			start(name, true);
 
 			for (dependent in getDependents(name)) {
 				Console.info('Reloading dependent: ${dependent.name}');
-				reload(dependent.name);
+				reload(dependent.config.name);
 			}
 
 			if (onFinished != null) {
-				onFinished(pluginMap[name]);
+				onFinished(registry[name]);
 			}
 			
 		});
@@ -282,9 +279,9 @@ class PluginManager {
 						  if `false`, if this plugin has dependencies that have been disabled by the
 						  user, we will bail on starting this plugin.
 	**/
-	public static function start(name:String, enableDeps:Bool): Null<Error> {
+	public static function start(name:PluginRegName, enableDeps:Bool): Null<Error> {
 
-		final plugin = pluginMap[name] ?? return null;
+		final plugin = registry[name] ?? return null;
 
 		if (plugin.initialised) {
 			plugin.syncPrefs();
@@ -299,7 +296,7 @@ class PluginManager {
 		if (plugin.config.dependencies != null) {
 			for (regName in plugin.config.dependencies) {
 
-				final dep = registerMap[regName];
+				final dep = registry[regName];
 
 				if (dep == null) {
 					plugin.error = new Error('Cannot satisfy dependency $regName: plugin not found');
@@ -311,9 +308,9 @@ class PluginManager {
 					continue;
 				}
 
-				if (isEnabled(dep.name)) {
+				if (isEnabled(dep.config.name)) {
 
-					final error = start(dep.name, enableDeps);
+					final error = start(dep.config.name, enableDeps);
 
 					if (error != null) {
 						plugin.error = new Error('Cannot satisfy dependency $regName: $error');
@@ -333,7 +330,7 @@ class PluginManager {
 				}
 
 				Console.info('Enabling dependency: $regName');
-				enable(dep.name);
+				enable(dep.config.name);
 
 			}
 		}
@@ -367,9 +364,9 @@ class PluginManager {
 		Stop the given registered plugin, calling its clean-up and removing its content from the
 		DOM.
 	**/
-	public static function stop(name:String) {
+	public static function stop(name:PluginRegName) {
 
-		final plugin = pluginMap[name] ?? return;
+		final plugin = registry[name] ?? return;
 
 		if (!plugin.initialised) {
 			plugin.syncPrefs();
@@ -401,9 +398,9 @@ class PluginManager {
 	/**
 		Get the list of plugins which are dependent on the given plugin.
 	**/
-	static function getDependents(name:String): Array<PluginState> {
+	static function getDependents(name:PluginRegName): Array<PluginState> {
 
-		final plugin = pluginMap[name];
+		final plugin = registry[name];
 		final pluginRegName = plugin.config.name;
 		final dependents: Array<PluginState> = [];
 
@@ -413,7 +410,7 @@ class PluginManager {
 				continue;
 			}
 
-			final maybeDependent = registerMap[regName] ?? continue;
+			final maybeDependent = registry[regName] ?? continue;
 			final dependencies = maybeDependent.config.dependencies ?? continue;
 
 			if (dependencies.contains(pluginRegName)) {
@@ -429,14 +426,14 @@ class PluginManager {
 	/**
 		Returns whether the given plugin is enabled, as the user may disable plugins.
 	**/
-	public static function isEnabled(name:String): Bool {
+	public static function isEnabled(name:PluginRegName): Bool {
 		return !Preferences.current.disabledPlugins.contains(name);
 	}
 
 	/**
 		Enable the given plugin.
 	**/
-	public static function enable(name:String) {
+	public static function enable(name:PluginRegName) {
 
 		if (!isEnabled(name)) {
 			Preferences.current.disabledPlugins.remove(name);
@@ -450,7 +447,7 @@ class PluginManager {
 	/**
 		Disable the given plugin.
 	**/
-	public static function disable(name:String) {
+	public static function disable(name:PluginRegName) {
 
 		if (isEnabled(name)) {
 			Preferences.current.disabledPlugins.push(name);
@@ -459,7 +456,7 @@ class PluginManager {
 
 		for (dependent in getDependents(name)) {
 			Console.info('Disabling dependent plugin: ${dependent.name}');
-			disable(dependent.name);
+			disable(dependent.config.name);
 		}
 
 		stop(name);

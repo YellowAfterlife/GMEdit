@@ -39,8 +39,7 @@ class PrefPlugins {
 
 		addText(group, "Currently loaded plugins:");
 
-		for (p_name in PluginManager.pluginList) {
-			final p = PluginManager.pluginMap[p_name];
+		for (_ => p in PluginManager.pluginMap) {
 			p.prefItem = new PluginPrefItemImpl(group, p);
 		}
 		
@@ -117,7 +116,7 @@ class PluginPrefItemImpl implements PluginPrefItem {
 
 	public function sync(): Void {
 
-		final enabled = PluginManager.isEnabled(p.name);
+		final enabled = PluginManager.isEnabled(p.config.name);
 
 		p_label.classList.setTokenFlag("error", p.error != null);
 		
@@ -158,10 +157,10 @@ class PluginPrefItemImpl implements PluginPrefItem {
 		Toggle whether the linked plugin is enabled.
 	**/
 	function toggle() {
-		if (PluginManager.isEnabled(p.name)) {
-			PluginManager.disable(p.name);
+		if (PluginManager.isEnabled(p.config.name)) {
+			PluginManager.disable(p.config.name);
 		} else {
-			PluginManager.enable(p.name);
+			PluginManager.enable(p.config.name);
 		}
 	}
 
@@ -169,7 +168,7 @@ class PluginPrefItemImpl implements PluginPrefItem {
 		Reload the linked plugin from disk.
 	**/
 	function reload() {
-		PluginManager.reload(p.name, function(pluginState) {
+		PluginManager.reload(p.config.name, function(pluginState) {
 
 			p = pluginState;
 			p.prefItem = this;
