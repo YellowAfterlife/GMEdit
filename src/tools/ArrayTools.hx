@@ -11,8 +11,6 @@ class ArrayTools {
 	public static inline function flatMap<T, R>(
 		array:Array<T>,
 		callbackFn:T -> Array<R>
-	): Array<R> {
-		return Reflect.callMethod(array, Reflect.field(array, "flatMap"), [callbackFn]);
-	}
+	): Array<R> return (cast array).flatMap(callbackFn);
 
 }
