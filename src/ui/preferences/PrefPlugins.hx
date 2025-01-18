@@ -1,10 +1,14 @@
 package ui.preferences;
-import js.html.LegendElement;
+import js.html.SpanElement;
 import js.html.AnchorElement;
+import js.html.DivElement;
+import js.html.LabelElement;
+import js.html.FieldSetElement;
+import js.html.LegendElement;
 import js.html.Element;
+import js.html.Console;
 import tools.NativeString;
 import ui.Preferences.*;
-import gml.GmlVersion;
 import electron.FileSystem;
 import electron.FileWrap;
 import plugins.*;
@@ -16,123 +20,163 @@ using tools.HtmlTools;
  * @author YellowAfterlife
  */
 class PrefPlugins {
-	static function makePluginItem(out:Element, p:PluginState) {
-		var group = addGroup(out, "");
-		var legend:LegendElement = group.querySelectorAuto("legend");
+
+	public static function build(parent:Element) {
+		
+		final group = addGroup(parent, "Plugins");
+		group.id = "pref-plugins";
+		
+		final legend:LegendElement = group.querySelectorAuto("legend");
+		legend.appendChild(document.createTextNode(" ("));
+		legend.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-plugins", "wiki"));
+		
+		if (FileSystem.canSync) {
+			legend.appendChild(document.createTextNode("; "));
+			legend.append(createShellAnchor(FileWrap.userPath + "/plugins", "manage"));
+		}
+		
+		legend.appendChild(document.createTextNode(")"));
+
+		addText(group, "Currently loaded plugins:");
+
+		for (p_name in PluginManager.pluginList) {
+			final p = PluginManager.pluginMap[p_name];
+			p.prefItem = new PluginPrefItemImpl(group, p);
+		}
+		
+	}
+
+}
+
+interface PluginPrefItem {
+	/**
+		Sync preferences visual state with the underlying plugin state.
+	**/
+	public function sync(): Void;
+}
+
+class PluginPrefItemImpl implements PluginPrefItem {
+
+	var p:PluginState;
+
+	final group:FieldSetElement;
+	final legend:LegendElement;
+	final p_label:LabelElement = document.createLabelElement();
+	final p_desc:DivElement = document.createDivElement();
+	final p_conf:Element = document.createDivElement();
+
+	final openButton:AnchorElement;
+	final toggleButton:AnchorElement;
+	final toggleButtonContainer:SpanElement;
+	final reloadButton:AnchorElement;
+	final reloadButtonContainer:SpanElement;
+	
+	public function new(out:Element, pluginState:PluginState) {
+
+		p = pluginState;
+
+		group = addGroup(out, "");
+		legend = group.querySelectorAuto("legend");
 		group.classList.add("plugin-info");
 		group.setAttribute("for", p.name);
-		var syncState:Void->Void = null;
-		//
-		var p_label = document.createLabelElement();
+		
 		p_label.appendChild(document.createTextNode(p.name));
 		legend.appendChild(p_label);
 
-		final p_desc = document.createDivElement();
 		p_desc.classList.add("plugin-description");
 		group.appendChild(p_desc);
 
-		final p_conf:Element = document.createDivElement();
 		p_conf.classList.add("plugin-settings");
 		p_conf.setAttribute("for", p.name);
 		group.appendChild(p_conf);
 
 		legend.appendChild(document.createTextNode("("));
 		
-		final openButton = createShellAnchor(p.dir, "open");
+		openButton = createShellAnchor(p.dir, "open");
 		legend.appendChild(openButton);
 
-		final toggleButton = createFuncAnchor("", function(_) {
+		toggleButton = createFuncAnchor("", function(_) toggle());
 
-			if (!PluginManager.isEnabled(p.name)) {
-				PluginManager.enable(p.name);
-			} else {
-				p_conf.clearInner();
-				PluginManager.disable(p.name);
-			}
-
-			syncState();
-
-		});
-
-		final toggleButtonContainer = document.createSpanElement();
+		toggleButtonContainer = document.createSpanElement();
 		toggleButtonContainer.appendChild(document.createTextNode("; "));
 		toggleButtonContainer.appendChild(toggleButton);
 		legend.appendChild(toggleButtonContainer);
 
-		final reloadButton = createFuncAnchor("reload", function(_) {
-			
-			p_conf.clearInner();
+		reloadButton = createFuncAnchor("reload", function(_) reload());
 
-			PluginManager.reload(p.name, function(_) {
-				syncState();
-			});
-
-		});
-
-		final reloadButtonContainer = document.createSpanElement();
+		reloadButtonContainer = document.createSpanElement();
 		reloadButtonContainer.appendChild(document.createTextNode("; "));
 		reloadButtonContainer.appendChild(reloadButton);
 		legend.appendChild(reloadButtonContainer);
 
 		legend.appendChild(document.createTextNode(")"));
 		
-		syncState = function() {
+		sync();
 
-			final canCleanUp = (p.data?.cleanup != null);
-			final enabled = PluginManager.isEnabled(p.name);
+	}
 
-			p_label.classList.setTokenFlag("error", p.error != null);
+	public function sync(): Void {
+
+		final enabled = PluginManager.isEnabled(p.name);
+
+		p_label.classList.setTokenFlag("error", p.error != null);
+		
+		if (p.error != null) {
+			p_label.style.pointerEvents = "";
+			p_label.title = Std.string(p.error);
+		} else p_label.style.pointerEvents = "none";
+
+		reloadButtonContainer.setDisplayFlag(enabled && (p.data == null || p.canCleanUp));
+
+		var desc = p.config.description;
+		if (desc != null && NativeString.trimBoth(desc) == "") desc = null;
+		if (desc != null) p_desc.setInnerText(desc);
+
+		toggleButton.textContent = (enabled) 
+			? "disable" 
+			: "enable";
 			
-			if (p.error != null) {
-				p_label.style.pointerEvents = "";
-				p_label.title = Std.string(p.error);
-			} else p_label.style.pointerEvents = "none";
+		toggleButton.title = (enabled && !p.canCleanUp)
+			? "Requires a restart."
+			: "";
 
-			reloadButtonContainer.setDisplayFlag(enabled && (p.data == null || canCleanUp));
+		group.setGroupVisibility(enabled);
 
-			var desc = p.config.description;
-			if (desc != null && NativeString.trimBoth(desc) == "") desc = null;
-			if (desc != null) p_desc.setInnerText(desc);
-
-			toggleButton.textContent = (enabled) 
-				? "disable" 
-				: "enable";
-				
-			toggleButton.title = (enabled && !canCleanUp)
-				? "Requires a restart."
-				: "";
-
-			group.setGroupVisibility(enabled);
-			
+		if (p.canCleanUp) {
+			p_conf.clearInner();
+		}
+		
+		if (p.data?.buildPreferences != null) {
 			if (enabled) {
-				if (p.data.buildPreferences != null) {
-					p.data.buildPreferences(p_conf);
-				}
+				p.data.buildPreferences(p_conf);
 			}
-
 		}
 
-		syncState();
 	}
-	public static function build(out:Element) {
-		out = addGroup(out, "Plugins");
-		out.id = "pref-plugins";
-		var el:Element;
-		//
-		addText(out, "Currently loaded plugins:");
-		for (p_name in PluginManager.pluginList) {
-			var p = PluginManager.pluginMap[p_name];
-			makePluginItem(out, p);
+
+	/**
+		Toggle whether the linked plugin is enabled.
+	**/
+	function toggle() {
+		if (PluginManager.isEnabled(p.name)) {
+			PluginManager.disable(p.name);
+		} else {
+			PluginManager.enable(p.name);
 		}
-		//
-		el = out.querySelector('legend');
-		el.appendChild(document.createTextNode(" ("));
-		el.append(createShellAnchor("https://github.com/GameMakerDiscord/GMEdit/wiki/Using-plugins", "wiki"));
-		if (FileSystem.canSync) {
-			el.appendChild(document.createTextNode("; "));
-			el.append(createShellAnchor(FileWrap.userPath + "/plugins", "manage"));
-		}
-		el.appendChild(document.createTextNode(")"));
-		//
 	}
+
+	/**
+		Reload the linked plugin from disk.
+	**/
+	function reload() {
+		PluginManager.reload(p.name, function(pluginState) {
+
+			p = pluginState;
+			p.prefItem = this;
+
+			sync();
+
+		});
+	}
+
 }
