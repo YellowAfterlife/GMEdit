@@ -165,15 +165,15 @@ class PluginManager {
 		) {
 
 			if (error != null) {
-				return res(Err(ConfigLoadError.NoSuchFile(name, configPath)));
+				return res(Err(ConfigLoadError.NoSuchFile(configPath)));
 			}
 			
 			if (config.name == null) {
-				return res(Err(ConfigLoadError.InvalidSchema(name, "Config does not specify plugin's registry name")));
+				return res(Err(ConfigLoadError.InvalidSchema("Config does not specify plugin's registry name")));
 			}
 			
 			if (config.scripts == null) {
-				return res(Err(ConfigLoadError.InvalidSchema(name, "Config does not specify any scripts, plugin cannot register if it has no content")));
+				return res(Err(ConfigLoadError.InvalidSchema("Config does not specify any scripts, plugin cannot register if it has no content")));
 			}
 
 			return res(Ok(config));
@@ -526,13 +526,13 @@ class PluginManager {
 	An error encountered whilst attempting to load a plugin's configuration file.
 **/
 private enum ConfigLoadError {
-	NoSuchFile(pluginName:PluginDirName, path:String);
-	InvalidSchema(pluginName:PluginDirName, info:String);
+	NoSuchFile(path:String);
+	InvalidSchema(info:String);
 }
 
 private class ConfigLoadErrorMethods {
 	public static inline function toJsError(error:ConfigLoadError): Error return switch (error) {
-		case NoSuchFile(pluginName, path): new Error('$pluginName\'s config.json ("$path") does not exist');
-		case InvalidSchema(pluginName, info): new Error('$pluginName\'s config.json is invalid: $info');
+		case NoSuchFile(path): new Error('"$path" does not exist');
+		case InvalidSchema(info): new Error('config.json is invalid: $info');
 	};
 }
