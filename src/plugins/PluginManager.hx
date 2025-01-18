@@ -1,4 +1,6 @@
 package plugins;
+import tools.Result;
+import js.lib.Promise;
 import ui.Preferences;
 import ace.AceWrap;
 import electron.FileSystem;
@@ -10,6 +12,7 @@ import plugins.PluginAPI;
 import plugins.PluginConfig;
 import plugins.PluginState;
 import tools.Dictionary;
+using plugins.PluginManager.ConfigLoadErrorMethods;
 
 /**
  * ...
@@ -128,6 +131,38 @@ class PluginManager {
 
 		}
 	}
+
+	/**
+		Load the configuration file (`config.json`) of the given plugin.
+		Returns a promise that resolves when the configuration has loaded.
+
+		If the `config.json` file fails to load - for instance, if it does not exist, or it has an
+		invalid schema (is missing required props, e.g. registry name), an error is returned.
+
+		@param pluginsDir The source directory in which the plugin is located.
+		@param name The directory name of the plugin to be loaded.
+	**/
+	static function loadConfig(
+		pluginsDir:String,
+		name:PluginDirName
+	): Promise<Result<PluginConfig, ConfigLoadError>> return new Promise(function(res, _) {
+		FileSystem.readJsonFile('$pluginsDir/$name/config.json', function(
+			error:Null<Error>,
+			config:PluginConfig
+		) {
+
+			if (error != null) {
+				return res(Err(ConfigLoadError.NoSuchFile));
+			}
+
+			if (config.name == null) {
+				return res(Err(ConfigLoadError.InvalidSchema("Plugin's config.json has no name")));
+			}
+
+			return res(Ok(config));
+
+		});
+	});
 	
 	static function load(name:PluginDirName, ?cb:PluginCallback) {
 		var state = pluginMap[name];
@@ -149,18 +184,17 @@ class PluginManager {
 		var state = new PluginState(name, dir + "/" + name);
 		if (cb != null) state.listeners.push(cb);
 		pluginMap.set(name, state);
-		FileSystem.readJsonFile('$dir/$name/config.json', function(err, conf:PluginConfig) {
-			if (err != null) {
-				state.finish(err);
-				return;
-			}
-			if (conf.name == null) {
-				state.finish(new Error("Plugin's config.json has no name"));
-				return;
-			} else {
-				state.config = conf;
-				registry.set(conf.name, state);
-			}
+
+		loadConfig(dir, name).then(function(result) {
+
+			final conf = switch (result) {
+				case Ok(data): data;
+				case Err(err): return state.finish(err.toJsError());
+			};
+
+			state.config = conf;
+			registry.set(conf.name, state);
+
 			//
 			function loadResources():Void {
 				var queue:Array<{kind:Int,rel:String}> = [];
@@ -227,6 +261,7 @@ class PluginManager {
 				});
 			} else loadResources();
 		});
+
 	}
 
 	/**
@@ -459,4 +494,19 @@ class PluginManager {
 
 	}
 
+}
+
+/**
+	An error encountered whilst attempting to load a plugin's configuration file.
+**/
+private enum ConfigLoadError {
+	NoSuchFile;
+	InvalidSchema(info:String);
+}
+
+private class ConfigLoadErrorMethods {
+	public static inline function toJsError(error:ConfigLoadError): Error return switch (error) {
+		case NoSuchFile: new Error("Plugin's config.json does not exist");
+		case InvalidSchema(info): new Error('Plugin\'s config.json is invalid: $info');
+	};
 }
