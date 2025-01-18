@@ -26,6 +26,13 @@ class PluginManager {
 	public static var registry:Map<PluginRegName, PluginState> = new Map();
 
 	/**
+		List of known plugins, registered or not. Used to keep track of plugins for which loading
+		their configuration failed, so we can still show them in the UI, for instance for a plugin
+		dev to be able to attempt to reload immediately rather than reloading GMEdit entirely.
+	**/
+	public static final knownPlugins:Array<PluginState> = [];
+
+	/**
 		Initialise the plugins API. Until this method has been executed, `PluginAPI` cannot be used,
 		and plugins should not be initialised as they will not be able to access events.
 	**/
@@ -100,6 +107,7 @@ class PluginManager {
 
 				final path = '$dirPath/$name';
 				final plugin = new PluginState(name, path);
+				knownPlugins.push(plugin);
 
 				skeletonPromises.push(loadConfig(path, name).then(function(result) {
 					

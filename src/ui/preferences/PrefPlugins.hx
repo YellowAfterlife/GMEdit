@@ -39,7 +39,7 @@ class PrefPlugins {
 
 		addText(group, "Currently loaded plugins:");
 
-		for (_ => p in PluginManager.registry) {
+		for (p in PluginManager.knownPlugins) {
 			p.prefItem = new PluginPrefItemImpl(group, p);
 		}
 		
