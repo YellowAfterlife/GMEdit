@@ -3,7 +3,7 @@ package tools;
 /**
 	Extra utilities for working with arrays.
 **/
-class ArrayUtils {
+class ArrayTools {
 
 	/**
 		Return a new, flattened array based on the result of the callback function.
