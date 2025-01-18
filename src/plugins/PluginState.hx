@@ -71,9 +71,7 @@ class PluginState {
 			canCleanUp = false;
 		} else Console.log("Plugin loaded: " + name);
 
-		if (PluginManager.pluginList.indexOf(config.name) < 0) {
-			PluginManager.pluginList.push(config.name);
-		}
+		PluginManager.registry[config.name] = this;
 		
 		this.error = error;
 		for (fn in listeners) fn(error);

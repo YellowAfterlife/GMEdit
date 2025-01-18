@@ -17,8 +17,6 @@ import tools.Dictionary;
  */
 class PluginManager {
 
-	/** name from `config.json` */
-	public static var pluginList:Array<PluginRegName> = [];
 	/** name -> state */
 	public static var pluginMap:Map<PluginDirName, PluginState> = new Map();
 	/** name -> containing directory */
@@ -220,7 +218,7 @@ class PluginManager {
 		Start the loaded and enabled plugins.
 	**/
 	static function startEnabledPlugins() {
-		for (name in pluginList) {
+		for (name => _ in registry) {
 
 			if (!isEnabled(name)) {
 				continue;
@@ -400,20 +398,18 @@ class PluginManager {
 	**/
 	static function getDependents(name:PluginRegName): Array<PluginState> {
 
-		final plugin = registry[name];
-		final pluginRegName = plugin.config.name;
 		final dependents: Array<PluginState> = [];
 
-		for (regName in pluginList) {
+		for (depName => _ in registry) {
 			
-			if (regName == pluginRegName) {
+			if (depName == name) {
 				continue;
 			}
 
-			final maybeDependent = registry[regName] ?? continue;
+			final maybeDependent = registry[depName] ?? continue;
 			final dependencies = maybeDependent.config.dependencies ?? continue;
 
-			if (dependencies.contains(pluginRegName)) {
+			if (dependencies.contains(name)) {
 				dependents.push(maybeDependent);
 			}
 
