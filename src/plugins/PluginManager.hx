@@ -349,7 +349,7 @@ class PluginManager {
 				start(plugin, true);
 
 				final dependentPromises = getDependents(plugin.config.name).map(reload);
-				return Promise.all(dependentPromises).then(function(_) {});
+				return Promise.all(dependentPromises).then(_ -> null);
 
 			});
 
