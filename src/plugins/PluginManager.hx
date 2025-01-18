@@ -173,7 +173,7 @@ class PluginManager {
 		) {
 
 			if (error != null) {
-				return res(Err(ConfigLoadError.NoSuchFile(configPath)));
+				return res(Err(ConfigLoadError.IOError(configPath, error)));
 			}
 			
 			if (config.name == null) {
@@ -552,13 +552,13 @@ class PluginManager {
 	An error encountered whilst attempting to load a plugin's configuration file.
 **/
 private enum ConfigLoadError {
-	NoSuchFile(path:String);
+	IOError(path:String, error:Error);
 	InvalidSchema(info:String);
 }
 
 private class ConfigLoadErrorMethods {
 	public static inline function toJsError(error:ConfigLoadError): Error return switch (error) {
-		case NoSuchFile(path): new Error('"$path" does not exist');
+		case IOError(path, error): new Error('IO error reading from "$path": $error');
 		case InvalidSchema(info): new Error('config.json is invalid: $info');
 	};
 }
