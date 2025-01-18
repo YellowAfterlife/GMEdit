@@ -210,7 +210,7 @@ class PluginManager {
 				final link = Main.document.createLinkElement();
 				link.setAttribute("data-plugin", plugin.config.name);
 				link.rel = "stylesheet";
-				link.href = '${plugin.path}/$styleName';
+				link.href = '${plugin.dir}/$styleName';
 
 				plugin.styles.push(link);
 
@@ -224,7 +224,7 @@ class PluginManager {
 		var nextScriptName = scriptsToLoad.shift();
 
 		function loadNextScript(): Promise<Null<Error>> {
-			return loadScript('${plugin.path}/$nextScriptName').then(function(result) {
+			return loadScript('${plugin.dir}/$nextScriptName').then(function(result) {
 
 				final script = switch (result) {
 					case Ok(data): data;
@@ -307,7 +307,7 @@ class PluginManager {
 		plugin.error = null;
 		plugin.data = null;
 
-		return loadConfig(plugin.path, plugin.name)
+		return loadConfig(plugin.dir, plugin.name)
 			.then(function(result) {
 
 				final config = switch (result) {

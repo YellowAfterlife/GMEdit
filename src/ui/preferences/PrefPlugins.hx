@@ -91,7 +91,7 @@ class PluginPrefItemImpl implements PluginPrefItem {
 
 		legend.appendChild(document.createTextNode("("));
 		
-		openButton = createShellAnchor(p.path, "open");
+		openButton = createShellAnchor(p.dir, "open");
 		legend.appendChild(openButton);
 
 		toggleButton = createFuncAnchor("", function(_) toggle());

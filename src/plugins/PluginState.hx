@@ -20,7 +20,7 @@ class PluginState {
 	/**
 		The path to this plugin's directory.
 	**/
-	public final path:String;
+	public final dir:String;
 
 	/**
 		The configuration file of this plugin.
@@ -61,7 +61,7 @@ class PluginState {
 	
 	public function new(name:String, dir:String) {
 		this.name = name;
-		this.path = dir;
+		this.dir = dir;
 	}
 
 	/**
