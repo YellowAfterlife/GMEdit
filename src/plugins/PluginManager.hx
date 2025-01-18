@@ -354,46 +354,41 @@ class PluginManager {
 			return plugin.error;
 		}
 
-		if (plugin.config.dependencies != null) {
-			for (regName in plugin.config.dependencies) {
+		for (regName in plugin.config.dependencies ?? []) {
 
-				final dep = registry[regName];
+			final dep = registry[regName];
 
-				if (dep == null) {
-					plugin.error = new Error('Cannot satisfy dependency $regName: plugin not found');
-					plugin.syncPrefs();
-					return plugin.error;
-				}
+			if (dep == null) {
+				plugin.error = new Error('Cannot satisfy dependency $regName: plugin not found');
+				plugin.syncPrefs();
 
+				return plugin.error;
+			}
+
+			if (isEnabled(dep.config.name)) {
+				
 				if (dep.initialised) {
 					continue;
 				}
 
-				if (isEnabled(dep.config.name)) {
+				final error = start(dep, enableDeps) ?? continue;
+				plugin.error = new Error('Cannot satisfy dependency $regName as it failed to start: $error');
+				plugin.syncPrefs();
 
-					final error = start(dep, enableDeps);
-
-					if (error != null) {
-						plugin.error = new Error('Cannot satisfy dependency $regName as it failed to start: $error');
-						plugin.syncPrefs();
-						return plugin.error;
-					}
-
-					continue;
-
-				}
-
-				if (!enableDeps) {
-					plugin.error = new Error('Cannot satisfy dependency on $regName: disabled by the user.');
-					plugin.syncPrefs();
-
-					return plugin.error;
-				}
-
-				Console.info('Enabling dependency: $regName');
-				enable(dep.config.name);
+				return plugin.error;
 
 			}
+
+			if (!enableDeps) {
+				plugin.error = new Error('Cannot satisfy dependency on $regName: disabled by the user.');
+				plugin.syncPrefs();
+
+				return plugin.error;
+			}
+
+			Console.info('Enabling dependency: $regName');
+			enable(dep.config.name);
+
 		}
 
 		for (link in plugin.styles) {
@@ -490,18 +485,15 @@ class PluginManager {
 	/**
 		Enable the given plugin.
 	**/
-	public static function enable(name:PluginRegName) {
+	public static function enable(name:PluginRegName): Null<Error> {
 
 		if (!isEnabled(name)) {
 			Preferences.current.disabledPlugins.remove(name);
 			Preferences.save();
 		}
 
-		final plugin = registry[name];
-
-		if (plugin != null) {
-			start(plugin, true);
-		}
+		final plugin = registry[name] ?? return new Error('Cannot start non-existent plugin $name');
+		return start(plugin, true);
 
 	}
 
