@@ -23,106 +23,6 @@ class PluginManager {
 	public static var pluginDir:Dictionary<PluginDirName> = new Dictionary();
 	/** name from `config.json` -> state */
 	public static var registry:Map<PluginRegName, PluginState> = new Map();
-	
-	public static function load(name:PluginDirName, ?cb:PluginCallback) {
-		var state = pluginMap[name];
-		if (state != null) {
-			if (state.ready) {
-				cb(state.error);
-			} else {
-				state.listeners.push(cb);
-			}
-			return;
-		}
-		//
-		var dir = pluginDir[name];
-		if (dir == null) {
-			if (cb != null) cb(new Error('Plugin $name does not exist'));
-			return;
-		}
-		//
-		var state = new PluginState(name, dir + "/" + name);
-		if (cb != null) state.listeners.push(cb);
-		pluginMap.set(name, state);
-		FileSystem.readJsonFile('$dir/$name/config.json', function(err, conf:PluginConfig) {
-			if (err != null) {
-				state.finish(err);
-				return;
-			}
-			if (conf.name == null) {
-				state.finish(new Error("Plugin's config.json has no name"));
-				return;
-			} else {
-				state.config = conf;
-				registry.set(conf.name, state);
-			}
-			//
-			function loadResources():Void {
-				var queue:Array<{kind:Int,rel:String}> = [];
-				if (conf.stylesheets != null) for (rel in conf.stylesheets) {
-					queue.push({kind:1, rel:rel});
-				}
-				if (conf.scripts != null) for (rel in conf.scripts) {
-					queue.push({kind:0, rel:rel});
-				}
-				var suffix = "";// "?t=" + Date.now().getTime();
-				function loadNextResource():Void {
-					var pair = queue.shift();
-					var rel = pair.rel;
-					switch (pair.kind) {
-						case 0: {
-							var script = Main.document.createScriptElement();
-							script.setAttribute("plugin", conf.name);
-							script.onload = function(_) {
-								if (queue.length > 0) {
-									loadNextResource();
-								} else state.finish();
-							};
-							script.onerror = function(e:ErrorEvent) {
-								state.finish(e.error);
-							};
-							script.src = '$dir/$name/$rel' + suffix;
-							state.scripts.push(script);
-							Main.document.head.appendChild(script);
-						};
-						case 1: {
-							var style = Main.document.createLinkElement();
-							style.setAttribute("plugin", conf.name);
-							style.onload = function(_) {
-								if (queue.length > 0) {
-									loadNextResource();
-								} else state.finish();
-							};
-							style.onerror = function(e:ErrorEvent) {
-								state.finish(e.error);
-							}
-							style.rel = "stylesheet";
-							style.href = '$dir/$name/$rel' + suffix;
-							state.styles.push(style);
-							Main.document.head.appendChild(style);
-						};
-					}
-				}
-				if (queue.length > 0) {
-					loadNextResource();
-				} else state.finish();
-			}
-			//
-			var deps = conf.dependencies;
-			if (deps != null && deps.length > 0) {
-				var depc = deps.length;
-				// TODO: evil cast! - we cannot know the name of plugins until their manifests are
-				// loaded. We should load those first, then come back and load their scripts.
-				for (dep in deps) load(cast dep, function(e:Error) {
-					if (e != null) {
-						state.finish(e);
-					} else if (!state.ready) {
-						if (--depc <= 0) loadResources();
-					}
-				});
-			} else loadResources();
-		});
-	}
 
 	/**
 		Initialise the plugins API. Until this method has been executed, `PluginAPI` cannot be used,
@@ -227,6 +127,106 @@ class PluginManager {
 			start(name, false);
 
 		}
+	}
+	
+	static function load(name:PluginDirName, ?cb:PluginCallback) {
+		var state = pluginMap[name];
+		if (state != null) {
+			if (state.ready) {
+				cb(state.error);
+			} else {
+				state.listeners.push(cb);
+			}
+			return;
+		}
+		//
+		var dir = pluginDir[name];
+		if (dir == null) {
+			if (cb != null) cb(new Error('Plugin $name does not exist'));
+			return;
+		}
+		//
+		var state = new PluginState(name, dir + "/" + name);
+		if (cb != null) state.listeners.push(cb);
+		pluginMap.set(name, state);
+		FileSystem.readJsonFile('$dir/$name/config.json', function(err, conf:PluginConfig) {
+			if (err != null) {
+				state.finish(err);
+				return;
+			}
+			if (conf.name == null) {
+				state.finish(new Error("Plugin's config.json has no name"));
+				return;
+			} else {
+				state.config = conf;
+				registry.set(conf.name, state);
+			}
+			//
+			function loadResources():Void {
+				var queue:Array<{kind:Int,rel:String}> = [];
+				if (conf.stylesheets != null) for (rel in conf.stylesheets) {
+					queue.push({kind:1, rel:rel});
+				}
+				if (conf.scripts != null) for (rel in conf.scripts) {
+					queue.push({kind:0, rel:rel});
+				}
+				var suffix = "";// "?t=" + Date.now().getTime();
+				function loadNextResource():Void {
+					var pair = queue.shift();
+					var rel = pair.rel;
+					switch (pair.kind) {
+						case 0: {
+							var script = Main.document.createScriptElement();
+							script.setAttribute("plugin", conf.name);
+							script.onload = function(_) {
+								if (queue.length > 0) {
+									loadNextResource();
+								} else state.finish();
+							};
+							script.onerror = function(e:ErrorEvent) {
+								state.finish(e.error);
+							};
+							script.src = '$dir/$name/$rel' + suffix;
+							state.scripts.push(script);
+							Main.document.head.appendChild(script);
+						};
+						case 1: {
+							var style = Main.document.createLinkElement();
+							style.setAttribute("plugin", conf.name);
+							style.onload = function(_) {
+								if (queue.length > 0) {
+									loadNextResource();
+								} else state.finish();
+							};
+							style.onerror = function(e:ErrorEvent) {
+								state.finish(e.error);
+							}
+							style.rel = "stylesheet";
+							style.href = '$dir/$name/$rel' + suffix;
+							state.styles.push(style);
+							Main.document.head.appendChild(style);
+						};
+					}
+				}
+				if (queue.length > 0) {
+					loadNextResource();
+				} else state.finish();
+			}
+			//
+			var deps = conf.dependencies;
+			if (deps != null && deps.length > 0) {
+				var depc = deps.length;
+				// TODO: evil cast! - we cannot know the name of plugins until their manifests are
+				// loaded. We should load those first, then come back and load their scripts.
+				for (dep in deps) load(cast dep, function(e:Error) {
+					if (e != null) {
+						state.finish(e);
+					} else if (!state.ready) {
+						if (--depc <= 0) loadResources();
+					}
+				});
+			} else loadResources();
+		});
 	}
 
 	/**
