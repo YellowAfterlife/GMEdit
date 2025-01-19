@@ -125,7 +125,7 @@ class PluginManager {
 		
 		return Promise.all(skeletonPromises)
 			.then(function(plugins) {
-				final validPlugins = plugins.filter(function(plugin) return plugin.error == null);
+				final validPlugins = plugins.filter(plugin -> plugin.error == null);
 				return Promise.all(validPlugins.map(load));
 			})
 			.then(_ -> null);
