@@ -115,8 +115,9 @@ class PluginPrefItemImpl implements PluginPrefItem {
 	}
 
 	public function sync(): Void {
-
-		final enabled = PluginManager.isEnabled(p.config.name);
+		
+		final config = p.config;
+		final enabled = (config == null) || PluginManager.isEnabled(p.config.name);
 
 		p_label.classList.setTokenFlag("error", p.error != null);
 		
@@ -127,18 +128,23 @@ class PluginPrefItemImpl implements PluginPrefItem {
 
 		reloadButtonContainer.setDisplayFlag(enabled && (p.data == null || p.canCleanUp));
 
-		var desc = p.config.description;
-		if (desc != null && NativeString.trimBoth(desc) == "") desc = null;
-		if (desc != null) p_desc.setInnerText(desc);
+		if (config != null) {
+			final desc = config.description;
+			
+			if (desc != null && NativeString.trimBoth(desc) != "") {
+				p_desc.setInnerText(desc);
+			}
+		}
 
 		toggleButton.textContent = (enabled) 
 			? "disable" 
 			: "enable";
-			
+
 		toggleButton.title = (enabled && !p.canCleanUp)
 			? "Requires a restart."
 			: "";
-
+		
+		toggleButtonContainer.setDisplayFlag(config != null);
 		group.setGroupVisibility(enabled);
 
 		if (p.canCleanUp) {
