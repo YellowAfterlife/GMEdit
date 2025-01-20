@@ -133,14 +133,14 @@ private class PrefsGroup {
 		openButton = createShellAnchor(p.dir, "open");
 		legend.appendChild(openButton);
 
-		toggleButton = createFuncAnchor("", function(_) toggle());
+		toggleButton = createFuncAnchor("", _ -> toggle());
 
 		toggleButtonContainer = document.createSpanElement();
 		toggleButtonContainer.appendChild(document.createTextNode("; "));
 		toggleButtonContainer.appendChild(toggleButton);
 		legend.appendChild(toggleButtonContainer);
 
-		reloadButton = createFuncAnchor("reload", function(_) reload());
+		reloadButton = createFuncAnchor("reload", _ -> reload());
 
 		reloadButtonContainer = document.createSpanElement();
 		reloadButtonContainer.appendChild(document.createTextNode("; "));
