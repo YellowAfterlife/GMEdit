@@ -1,4 +1,5 @@
 package ui.preferences;
+import plugins.PluginConfig.PluginRegName;
 import haxe.DynamicAccess;
 
 /**
@@ -201,7 +202,7 @@ typedef PrefDataImpl = {
 	/**
 		List of plugin names which have been disabled by the user.
 	**/
-	disabledPlugins: Array<String>
+	disabledPlugins: Array<PluginRegName>
 }
 enum abstract PrefAssetOrder23(Int) from Int to Int {
 	var Custom = 0;
