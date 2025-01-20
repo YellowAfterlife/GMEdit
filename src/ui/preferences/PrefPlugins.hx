@@ -128,7 +128,7 @@ private class PrefsGroup {
 		p_conf.setAttribute("for", p.name);
 		group.appendChild(p_conf);
 
-		legend.appendChild(document.createTextNode("("));
+		legend.appendChild(document.createTextNode(" ("));
 		
 		openButton = createShellAnchor(p.dir, "open");
 		legend.appendChild(openButton);
