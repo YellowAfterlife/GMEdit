@@ -98,6 +98,9 @@ extern class PluginEvents {
 	 * Called after constructing the preferences menu.
 	 * You can use this to insert your plugin-specific DOM elements into it.
 	 * ui.Preferences is similarly used here.
+	 * 
+	 * @deprecated Consider implementing `PluginData.buildProjectProperties` instead, for similar
+	 * 			   reasons to that stated above.
 	 */
 	static function projectPropertiesBuilt(e:{project:Project, target:Element}):Void;
 	

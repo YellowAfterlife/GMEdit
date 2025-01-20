@@ -1,5 +1,6 @@
 package plugins;
 
+import gml.Project;
 import js.html.Element;
 
 /**
@@ -30,4 +31,19 @@ typedef PluginData = {
 		build their preferences list when the plugin is reloaded in-place.
 	**/
 	?buildPreferences:(element:Element)->Void,
+
+	/**
+		Called to build out the project properties for this plugin, in its respective group, just
+		like the above `buildPreferences`.
+
+		This method is, equally, preferable over `PluginEvents.projectPropertiesBuilt`, for the same
+		reasons.
+
+		Unlike the mentioned event, this method matches the preferences menu by providing a group
+		for the plugin implicitly, if the plugin implements this method.
+
+		@param element The body of the group element belonging to this plugin.
+		@param project The project for which this properties menu is for.
+	**/
+	?buildProjectProperties:(element:Element, project:Project)->Void,
 }

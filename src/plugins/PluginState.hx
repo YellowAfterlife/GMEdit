@@ -1,5 +1,5 @@
 package plugins;
-import ui.preferences.PrefPlugins.PluginPrefItem;
+import ui.preferences.PrefPlugins;
 import js.html.LinkElement;
 import js.html.ScriptElement;
 import js.html.Console;
@@ -46,12 +46,6 @@ class PluginState {
 	public var canCleanUp(get, never):Bool;
 
 	/**
-		The preferences item associated with this plugin.
-		TODO: this is some binding that I'm not a big fan of.
-	**/
-	public var prefItem(null, default):Null<PluginPrefItem>;
-
-	/**
 		Whether this plugin has been started (`init()` has been called.)
 	**/
 	public var initialised:Bool = false;
@@ -65,12 +59,10 @@ class PluginState {
 	}
 
 	/**
-		Re-sync state of the associated preferences item, if one exists.
+		Re-sync state of the associated preferences items, if they exist.
 	**/
 	public inline function syncPrefs() {
-		if (prefItem != null) {
-			prefItem.sync();
-		}
+		PrefPlugins.sync(this);
 	}
 
 	function get_canCleanUp():Bool {

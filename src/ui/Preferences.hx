@@ -88,15 +88,25 @@ class Preferences {
 		lg.prepend(cb);*/
 	}
 	public static function addGroup(out:Element, legend:String):FieldSetElement {
-		var fs = document.createFieldSetElement();
-		fs.classList.add("group");
-		var lg = document.createLegendElement();
-		lg.appendChild(document.createTextNode(legend));
-		fs.appendChild(lg);
-		addGroupToggle(fs);
-		out.appendChild(fs);
-		return fs;
+		final group = createGroup(legend);
+		out.appendChild(group);
+
+		return group;
 	}
+
+	public static function createGroup(name:String):FieldSetElement {
+		final group = document.createFieldSetElement();
+		group.classList.add("group");
+		
+		final legend = document.createLegendElement();
+		legend.appendChild(document.createTextNode(name));
+		group.appendChild(legend);
+
+		addGroupToggle(group);
+
+		return group;
+	}
+
 	public static function addRadios(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
 		var fs = document.createFieldSetElement();
 		fs.classList.add("radios");

@@ -1,4 +1,5 @@
 package ui.preferences;
+import gml.Project;
 import js.html.SpanElement;
 import js.html.AnchorElement;
 import js.html.DivElement;
@@ -21,7 +22,32 @@ using tools.HtmlTools;
  */
 class PrefPlugins {
 
-	public static function build(parent:Element) {
+	static final prefGroups:Map<PluginState, PrefsGroup> = new Map();
+	static final propGroups:Map<PluginState, ProjectPropsGroup> = new Map();
+
+	/**
+		Re-sync the preferences state for the provided plugin.
+	**/
+	public static function sync(plugin:PluginState) {
+
+		final prefGroup = prefGroups[plugin];
+		
+		if (prefGroup != null) {
+			prefGroup.sync();
+		}
+
+		final propGroup = propGroups[plugin];
+
+		if (propGroup != null) {
+			propGroup.sync();
+		}
+
+	}
+
+	/**
+		Build and append preference groups for loaded plugins.
+	**/
+	public static function buildPreferences(parent:Element) {
 		
 		final group = addGroup(parent, "Plugins");
 		group.id = "pref-plugins";
@@ -40,21 +66,34 @@ class PrefPlugins {
 		addText(group, "Currently loaded plugins:");
 
 		for (p in PluginManager.knownPlugins) {
-			p.prefItem = new PluginPrefItemImpl(group, p);
+			prefGroups[p] = new PrefsGroup(group, p);
 		}
 		
 	}
 
-}
-
-interface PluginPrefItem {
 	/**
-		Sync preferences visual state with the underlying plugin state.
+		Build project-properties groups for loaded plugins. Plugins which do not implement
+		`PluginData.buildProjectProperties` will not have their group appended.
 	**/
-	public function sync(): Void;
+	public static function buildProjectProperties(parent:Element, project:Project) {
+		for (plugin in PluginManager.knownPlugins) {
+			
+			var propGroup = propGroups[plugin];
+
+			if (propGroup == null) {
+				propGroup = new ProjectPropsGroup(plugin);
+				propGroups[plugin] = propGroup;
+			}
+
+			propGroup.project = project;
+			propGroup.sync();
+
+		}
+	}
+
 }
 
-class PluginPrefItemImpl implements PluginPrefItem {
+private class PrefsGroup {
 
 	final p:PluginState;
 
@@ -175,6 +214,44 @@ class PluginPrefItemImpl implements PluginPrefItem {
 	**/
 	function reload() {
 		PluginManager.reload(p).then(_ -> sync());
+	}
+
+}
+
+private class ProjectPropsGroup {
+
+	public var project:Null<Project> = null;
+
+	final p:PluginState;
+	final group:FieldSetElement;
+	final content:Element = document.createDivElement();
+
+	public function new(plugin:PluginState) {
+		p = plugin;
+		group = createGroup(p.name);
+		group.appendChild(content);
+	}
+
+	public function sync() {
+
+		content.clearInner();
+
+		if ((project == null)
+			|| (p.error != null)
+			|| !PluginManager.isEnabled(p.config.name)
+			|| (p.data.buildProjectProperties == null)
+		) {
+			group.remove();
+			return;
+		}
+
+		p.data.buildProjectProperties(content, project);
+
+		if (group.parentElement != project.propertiesElement) {
+			group.remove();
+			project.propertiesElement.appendChild(group);
+		}
+
 	}
 
 }

@@ -1,4 +1,6 @@
 package ui.project;
+import gml.file.GmlFile;
+import ui.preferences.PrefPlugins;
 import gml.GmlAPI;
 import haxe.Json;
 import js.html.DivElement;
@@ -220,21 +222,32 @@ class ProjectProperties {
 		buildSearch(project, out);
 		buildSyntax(project, out);
 		ui.preferences.PrefLinter.build(out, project);
+		PrefPlugins.buildProjectProperties(out, project);
 		//
 		plugins.PluginEvents.projectPropertiesBuilt({
 			project: project,
 			target: out,
 		});
 	}
-	public static function open() {
-		var kind = KProjectProperties.inst;
-		var pj = Project.current;
+
+	public static function open():Null<GmlFile> {
+
+		final kind = KProjectProperties.inst;
+		final pj = Project.current;
+
+		if (pj.path == "") {
+			return null;
+		}
+		
 		for (tab in ChromeTabs.getTabs()) {
 			if (tab.gmlFile.kind != kind) continue;
 			if ((cast tab.gmlFile.editor:KProjectPropertiesEditor).project != pj) continue;
 			tab.click();
 			return tab.gmlFile;
 		}
+
 		return kind.create("Project properties", null, pj, null);
+		
 	}
+
 }
