@@ -54,6 +54,16 @@ class HtmlTools {
 	public static function setDisplayFlag(el:Element, visible:Bool):Void {
 		el.style.display = visible ? "" : "none";
 	}
+	/**
+		Set whether the given group is collapsed or expanded.
+	**/
+	public static function setGroupVisibility(el:FieldSetElement, visible:Bool) {
+		if (visible) {
+			el.classList.remove("collapsed");
+		} else {
+			el.classList.add("collapsed");
+		}
+	}
 	public static function setDatasetValue(el:Element, key:String, value:String) {
 		var dataset:DynamicAccess<String> = cast el.dataset;
 		if (value == null) {

@@ -12,7 +12,9 @@ import ui.project.ProjectProperties;
  * @author YellowAfterlife
  */
 class KProjectProperties extends KPreferencesBase {
-	public static var inst = new KProjectProperties();
+	
+	public static final inst = new KProjectProperties();
+
 	override public function init(file:GmlFile, data:Dynamic):Void {
 		file.editor = new KProjectPropertiesEditor(file, data);
 	}
@@ -23,23 +25,30 @@ class KProjectProperties extends KPreferencesBase {
 	}
 	public static function loadTabState(tabState:ProjectTabState):GmlFile {
 		if (tabState.kind != tabStateKind) return null;
-		var file = ProjectProperties.open();
+		var file = ProjectProperties.open() ?? return null;
 		file.editor.element.scrollTop = tabState.data.top;
 		return file;
 	}
 }
+
 class KProjectPropertiesEditor extends Editor {
-	public var project:Project;
+
+	public final project:Project;
+
 	public function new(file:GmlFile, pj:Project) {
+
 		super(file);
 		project = pj;
+
 		if (pj.propertiesElement == null) {
 			pj.propertiesElement = Main.document.createDivElement();
 			pj.propertiesElement.classList.add("popout-window");
 			pj.propertiesElement.classList.add("project-properties");
 			ProjectProperties.build(pj, pj.propertiesElement);
 		}
+
 		element = pj.propertiesElement;
+
 		/*if (el == null) {
 			el = Main.document.createDivElement();
 			el.classList.add("popout-window");

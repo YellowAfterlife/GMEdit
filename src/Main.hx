@@ -132,17 +132,18 @@ class Main {
 		ProjectStyle.init();
 		FileDrag.init();
 		ChromeTabs.init();
+		PluginManager.initApi();
 		Project.init();
 		aceEditor.statusBar.update();
+		Project.nameNode.innerText = "Loading project...";
+		Project.openInitialProject();
 		Project.nameNode.innerText = "Loading plugins...";
-		plugins.PluginManager.init(function() {
-			Project.nameNode.innerText = "Loading project...";
-			Project.openInitialProject();
+		PluginManager.loadInstalledPlugins().then(function(_) {
 			#if lwedit
 			aceEditor.session = WelcomePage.init(aceEditor);
 			LiveWeb.init();
 			#end
-			PluginManager.dispatchInitCallbacks();
+			PluginManager.startPlugins();
 		});
 		Console.log("hello!");
 		StartupTests.main();

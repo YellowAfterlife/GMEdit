@@ -593,7 +593,7 @@ import ui.treeview.TreeViewElement;
 				} else electron.IPC.send("set-taskbar-icon", null, "");
 			} catch (x:Dynamic) {}
 			
-			if (PluginManager.ready == true && version != GmlVersion.none) {
+			if (version != GmlVersion.none) {
 				PluginEvents.projectOpen({project:this});
 			}
 			ui.ProjectStyle.reload();

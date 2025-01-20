@@ -18,7 +18,7 @@ class PrefMenu {
 		PrefMagic.build(out);
 		PrefApp.build(out);
 		PrefBackups.build(out);
-		PrefPlugins.build(out);
+		PrefPlugins.buildPreferences(out);
 		if (electron.Electron.isAvailable()) {
 			var gr = addGroup(out, "Other useful things"), el:Element;
 			//
