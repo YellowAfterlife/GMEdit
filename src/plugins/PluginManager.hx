@@ -202,9 +202,6 @@ class PluginManager {
 		If all scripts have executed, but the plugin has *not* been registered, the plugin is
 		considered to have failed to load.
 
-		If any of the scripts included in the plugin fail to execute, the plugin is also considered
-		to have failed to load.
-
 		@param plugin The uninitialised plugin to be loaded.
 	**/
 	static function load(plugin:PluginState): Promise<Null<Error>> {
