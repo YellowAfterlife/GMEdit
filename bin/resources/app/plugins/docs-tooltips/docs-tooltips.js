@@ -30,7 +30,6 @@
   /** @type {Record<string, ManualEntry>} */
   let keys = {};
 
-  keys = null;
   GMEdit.register('docs-tooltips', {
     init: () => {
 
