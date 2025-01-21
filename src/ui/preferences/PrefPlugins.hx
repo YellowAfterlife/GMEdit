@@ -156,7 +156,7 @@ private class PrefsGroup {
 	public function sync(): Void {
 		
 		final config = p.config;
-		final enabled = (config == null) || PluginManager.isEnabled(p.config.name);
+		final enabled = (config == null) || PluginManager.isEnabled(p);
 
 		p_label.classList.setTokenFlag("error", p.error != null);
 		
@@ -202,10 +202,10 @@ private class PrefsGroup {
 		Toggle whether the linked plugin is enabled.
 	**/
 	function toggle() {
-		if (PluginManager.isEnabled(p.config.name)) {
-			PluginManager.disable(p.config.name);
+		if (PluginManager.isEnabled(p)) {
+			PluginManager.disable(p);
 		} else {
-			PluginManager.enable(p.config.name);
+			PluginManager.enable(p);
 		}
 	}
 
@@ -238,7 +238,7 @@ private class ProjectPropsGroup {
 
 		if ((project == null)
 			|| (p.error != null)
-			|| !PluginManager.isEnabled(p.config.name)
+			|| !PluginManager.isEnabled(p)
 			|| (p.data.buildProjectProperties == null)
 		) {
 			group.remove();

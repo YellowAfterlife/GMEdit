@@ -136,9 +136,9 @@ class PluginManager {
 		Start the loaded and enabled plugins.
 	**/
 	public static function startPlugins() {
-		for (name => plugin in registry) {
+		for (_ => plugin in registry) {
 
-			if (!isEnabled(name)) {
+			if (!isEnabled(plugin)) {
 				continue;
 			}
 
@@ -389,7 +389,7 @@ class PluginManager {
 				return;
 			}
 
-			if (isEnabled(dep.config.name)) {
+			if (isEnabled(dep)) {
 				
 				if (dep.initialised) {
 					continue;
@@ -416,7 +416,7 @@ class PluginManager {
 			}
 
 			Console.info('Enabling dependency: $regName');
-			enable(dep.config.name);
+			enable(dep);
 
 		}
 
@@ -502,19 +502,17 @@ class PluginManager {
 	/**
 		Returns whether the given plugin is enabled, as the user may disable plugins.
 	**/
-	public static function isEnabled(name:PluginRegName): Bool {
-		return !Preferences.current.disabledPlugins.contains(name);
+	public static function isEnabled(plugin:PluginState): Bool {
+		return !Preferences.current.disabledPlugins.contains(plugin.name);
 	}
 
 	/**
 		Enable the given plugin.
 	**/
-	public static function enable(name:PluginRegName): Null<Error> {
+	public static function enable(plugin:PluginState): Null<Error> {
 
-		Preferences.current.disabledPlugins.remove(name);
+		Preferences.current.disabledPlugins.remove(plugin.name);
 		Preferences.save();
-
-		final plugin = registry[name] ?? return new Error('Cannot start non-existent plugin $name');
 
 		if (!plugin.initialised) {
 			start(plugin, true);
@@ -528,26 +526,26 @@ class PluginManager {
 	/**
 		Disable the given plugin.
 	**/
-	public static function disable(name:PluginRegName) {
+	public static function disable(plugin:PluginState) {
 
-		Preferences.current.disabledPlugins.push(name);
+		Preferences.current.disabledPlugins.push(plugin.name);
 		Preferences.save();
 
-		for (dependent in getDependents(name)) {
-			if (isEnabled(dependent.config.name)) {
+		if (plugin.config != null) {
+			for (dependent in getDependents(plugin.config.name)) {
+				if (isEnabled(dependent)) {
 
-				Console.info('Disabling dependent plugin: ${dependent.name}');
-				disable(dependent.config.name);
+					Console.info('Disabling dependent plugin: ${dependent.name}');
+					disable(dependent);
 
-			} else if (dependent.initialised) {
-				stop(dependent);
+				} else if (dependent.initialised) {
+					stop(dependent);
+				}
 			}
-		}
 
-		final plugin = registry[name] ?? return;
-
-		if (plugin.initialised) {
-			stop(plugin);
+			if (plugin.initialised) {
+				stop(plugin);
+			}
 		}
 
 		plugin.syncPrefs();
