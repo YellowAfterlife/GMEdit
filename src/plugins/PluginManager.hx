@@ -333,6 +333,7 @@ class PluginManager {
 					case Err(err): return Promise.resolve(err.toJsError());
 				}
 
+				plugin.config = config;
 				return load(plugin);
 
 			})
