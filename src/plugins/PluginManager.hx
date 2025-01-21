@@ -206,7 +206,11 @@ class PluginManager {
 	**/
 	static function load(plugin:PluginState): Promise<Null<Error>> {
 
-		registry[plugin.config.name] ??= plugin;
+		if (registry[plugin.config.name] != null) {
+			return Promise.resolve(new Error('Registry name "${plugin.config.name}" is already in use and cannot be re-registered!'));
+		}
+
+		registry[plugin.config.name] = plugin;
 
 		// We can just let styles load up asynchronously.
 		if (plugin.config.stylesheets != null) {
@@ -324,6 +328,8 @@ class PluginManager {
 		plugin.styles.resize(0);
 		plugin.error = null;
 		plugin.data = null;
+
+		registry[plugin.config.name] = null;
 
 		return loadConfig(plugin.dir, plugin.name)
 			.then(function(result) {
