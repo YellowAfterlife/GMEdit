@@ -78,5 +78,3 @@ class PluginState {
 		return error = value;
 	}
 }
-
-typedef PluginCallback = (error:Null<Error>)->Void;
