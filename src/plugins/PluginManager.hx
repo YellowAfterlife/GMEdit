@@ -96,6 +96,7 @@ class PluginManager {
 				#end
 				"gen-enum-names",
 				"show-aside",
+				"docs-tooltips"
 			];
 
 		}
