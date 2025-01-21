@@ -207,7 +207,8 @@ class PluginManager {
 	static function load(plugin:PluginState): Promise<Null<Error>> {
 
 		if (registry[plugin.config.name] != null) {
-			return Promise.resolve(new Error('Registry name "${plugin.config.name}" is already in use and cannot be re-registered!'));
+			plugin.error = new Error('Registry name "${plugin.config.name}" is already in use and cannot be re-registered!');
+			return Promise.resolve(plugin.error);
 		}
 
 		registry[plugin.config.name] = plugin;
