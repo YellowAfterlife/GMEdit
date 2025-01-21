@@ -330,7 +330,10 @@ class PluginManager {
 		plugin.error = null;
 		plugin.data = null;
 
-		registry[plugin.config.name] = null;
+		// Duplicate plugin names shouldn't de-reg the first plugin.
+		if (isRegistered(plugin)) {
+			registry[plugin.config.name] = null;
+		}
 
 		return loadConfig(plugin.dir, plugin.name)
 			.then(function(result) {
@@ -549,6 +552,14 @@ class PluginManager {
 
 		plugin.syncPrefs();
 
+	}
+
+	/**
+		Returns whether the given plugin is registered. Plugins are not registered in the case that
+		their name is already taken, or that their config is missing or invalid.
+	**/
+	static inline function isRegistered(plugin:PluginState):Bool {
+		return (plugin.config != null) && (registry[plugin.config.name] == plugin);
 	}
 
 }
