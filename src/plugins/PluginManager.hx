@@ -26,18 +26,18 @@ using tools.ArrayTools;
 class PluginManager {
 
 	/**
-		Plugins register themselves by a name specified in their configuration file. This is a
-		unique identifier for that plugin, and the manager uses this to differentiate plugins when
-		they call `GMEdit.register(...)` with their methods struct, and to resolve dependencies.
-	**/
-	public static var registry:Map<PluginRegName, PluginState> = new Map();
-
-	/**
 		List of known plugins, registered or not. Used to keep track of plugins for which loading
 		their configuration failed, so we can still show them in the UI, for instance for a plugin
 		dev to be able to attempt to reload immediately rather than reloading GMEdit entirely.
 	**/
 	public static final knownPlugins:Array<PluginState> = [];
+
+	/**
+		Plugins register themselves by a name specified in their configuration file. This is a
+		unique identifier for that plugin, and the manager uses this to differentiate plugins when
+		they call `GMEdit.register(...)` with their methods struct, and to resolve dependencies.
+	**/
+	static final registry:Map<PluginRegName, PluginState> = new Map();
 
 	/**
 		Initialise the plugins API. Until this method has been executed, `PluginAPI` cannot be used,
@@ -281,6 +281,22 @@ class PluginManager {
 			return null;
 
 		});
+
+	}
+	
+	/**
+		Register the plugin with the given name in the registry.
+	**/
+	public static function register(name:PluginRegName, data:PluginData):Null<Error> {
+
+		final plugin = registry[name] ?? return new Error('There\'s no plugin named $name');
+
+		if (plugin.data != null) {
+			return new Error('Cannot register previously-registered plugin $name');
+		}
+
+		plugin.data = data;
+		return null;
 
 	}
 

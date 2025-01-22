@@ -26,14 +26,14 @@ class PluginAPI {
 	 * Registers a plugin in GMEdit.
 	 * This must be called by your plugin's script.
 	 */
-	public static function register(pluginName:PluginRegName, data:PluginData) {
-		final state = PluginManager.registry[pluginName];
+	public static function register(name:PluginRegName, data:PluginData) {
 		
-		if (state == null) {
-			throw 'There\'s no plugin named $pluginName';
+		final error = PluginManager.register(name, data);
+
+		if (error != null) {
+			throw error;
 		}
 
-		state.data = data;
 	}
 	
 	// The following just point to specific classes for convenience
