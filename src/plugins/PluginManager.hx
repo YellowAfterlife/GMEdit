@@ -17,12 +17,19 @@ using plugins.PluginManager.ConfigLoadErrorMethods;
 using tools.ArrayTools;
 
 /**
- * ...
- * @author YellowAfterlife
- */
+	Singleton that manages loading and running of plugins. This class should **never** be directly
+	interacted with by plugins.
+
+	@see https://github.com/YellowAfterlife/GMEdit/wiki/Using-plugins
+	@author YellowAfterlife
+**/
 class PluginManager {
 
-	/** name from `config.json` -> state */
+	/**
+		Plugins register themselves by a name specified in their configuration file. This is a
+		unique identifier for that plugin, and the manager uses this to differentiate plugins when
+		they call `GMEdit.register(...)` with their methods struct, and to resolve dependencies.
+	**/
 	public static var registry:Map<PluginRegName, PluginState> = new Map();
 
 	/**
