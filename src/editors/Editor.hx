@@ -21,7 +21,7 @@ class Editor {
 		The scroll position of `element` when it was last in focus. Restored on bringing this tab
 		back into view.
 	**/
-	private var savedScrollTop:Int = 0;
+	private var savedScrollTop:Null<Int> = null;
 	
 	public function new(file:GmlFile) {
 		this.file = file;
@@ -45,8 +45,13 @@ class Editor {
 	
 	public function focusGain(prev:Editor):Void {
 		if (prev.element != element) {
+			
 			container.appendChild(element);
-			element.scrollTop = savedScrollTop;
+
+			if (savedScrollTop != null) {
+				element.scrollTop = savedScrollTop;
+			}
+
 		}
 	}
 	
