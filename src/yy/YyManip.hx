@@ -269,9 +269,8 @@ class YyManip {
 					};
 					if (!pj.isGM2024) {
 						obj.tags = [];
-					} else {
-						obj.managed = true;
 					}
+					obj.managed = true;
 					yyResource = obj;
 				};
 				case "shader": {
