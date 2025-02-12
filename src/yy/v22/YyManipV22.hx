@@ -10,6 +10,7 @@ import haxe.ds.Map;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import js.html.Console;
 import tools.NativeString;
 import ui.ChromeTabs;
 import ui.treeview.TreeView;
@@ -309,7 +310,7 @@ class YyManipV22 {
 							pj.unlinkSync(path);
 						} catch (_:Dynamic) {}
 					} catch (x:Dynamic) {
-						Main.console.warn(x);
+						Console.warn(x);
 					}
 				};
 				case "GMScript", "GMObject", "GMSprite", "GMShader": {

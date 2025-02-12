@@ -1,6 +1,7 @@
 package gml.project;
 
 import js.lib.DataView;
+import js.html.Console;
 import haxe.io.Bytes;
 import haxe.io.BytesOutput;
 import tools.Dictionary;

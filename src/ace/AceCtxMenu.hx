@@ -7,6 +7,7 @@ import electron.Electron;
 import electron.FileWrap;
 import electron.Menu;
 import js.Promise;
+import js.html.Console;
 import tools.Dictionary;
 import ui.GlobalSearch;
 import ui.OpenDeclaration;
@@ -36,7 +37,7 @@ class AceCtxMenu {
 			try {
 				return editor.commands.commands[cmd].getAccelerator();
 			} catch (x:Dynamic) {
-				Main.console.log('Error retrieving accelerator for $cmd:', x);
+				Console.log('Error retrieving accelerator for $cmd:', x);
 				return null;
 			}
 		}

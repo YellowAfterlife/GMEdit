@@ -3,6 +3,7 @@ import ace.AceWrap;
 import gml.GmlAPI;
 import haxe.DynamicAccess;
 import js.html.ScriptElement;
+import js.html.Console;
 import js.lib.RegExp;
 import tools.Dictionary;
 import ui.Preferences;

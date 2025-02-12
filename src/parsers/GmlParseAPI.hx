@@ -7,6 +7,7 @@ import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeParser;
 import js.RegExp.RegExpMatch;
+import js.html.Console;
 import js.lib.RegExp;
 import parsers.GmlSeekData.GmlSeekDataHint;
 import tools.Dictionary;
@@ -353,7 +354,7 @@ typedef GmlParseAPIArgs = {
 	?instKind:Dictionary<AceTokenType>,
 	?instType:Dictionary<GmlType>,
 	?fieldHints:Array<GmlSeekDataHint>,
-	?featherAliases:Dictionary<String>
+	?featherAliases:Dictionary<String>,
 	#if lwedit
 	?lwArg0:Dictionary<Int>,
 	?lwArg1:Dictionary<Int>,

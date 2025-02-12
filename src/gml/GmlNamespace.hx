@@ -192,7 +192,7 @@ class GmlNamespace {
 		// no changes?:
 		if (maxID == compInstCacheID && !forceUpdate) return compInstCache;
 		
-		//Main.console.log('Updating $name...');
+		//Console.log('Updating $name...');
 		var list = compInst.array.copy();
 		compInstCacheID = maxID;
 		compInstCache = list;

@@ -1,6 +1,7 @@
 package tools;
 import haxe.io.Bytes;
 import js.html.Blob;
+import js.html.Console;
 
 /**
  * ...
@@ -31,7 +32,7 @@ class BufferTools {
 			//
 			return js.html.URL.createObjectURL(blob);
 		} catch (err:Dynamic) {
-			Main.console.error("Failed to make blob", err);
+			Console.error("Failed to make blob", err);
 			return "data:" + type + ";base64," + toBase64(bytes, 0, bytes.length);
 		}
 	}

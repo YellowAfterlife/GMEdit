@@ -190,8 +190,8 @@ class GmlSeekerImpl {
 		while (q.loop) {
 			/*//
 			if (q.pos < oldPos && debug) {
-				Main.console.warn("old", oldPos, oldSource.length);
-				Main.console.warn("new", q.pos, q.source.length, q.source == oldSource);
+				Console.warn("old", oldPos, oldSource.length);
+				Console.warn("new", q.pos, q.source.length, q.source == oldSource);
 			}
 			oldPos = q.pos;
 			oldSource = q.source;

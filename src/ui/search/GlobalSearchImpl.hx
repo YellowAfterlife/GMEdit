@@ -13,6 +13,7 @@ import synext.GmlExtLambda;
 import haxe.Constraints.Function;
 import js.lib.RegExp;
 import js.Syntax;
+import js.html.Console;
 using tools.NativeString;
 
 /**
@@ -45,7 +46,7 @@ class GlobalSearchImpl {
 		if (Std.is(opt.find, RegExp)) {
 			rx = opt.find;
 			if (!rx.global) {
-				Main.console.warn("This is not a /g regexp and you are potentially in trouble.");
+				Console.warn("This is not a /g regexp and you are potentially in trouble.");
 			}
 			term = rx.toString();
 		} else {

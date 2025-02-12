@@ -14,6 +14,7 @@ import js.lib.RegExp;
 import js.html.FormElement;
 import js.html.InputElement;
 import js.html.Blob;
+import js.html.Console;
 import tools.Dictionary;
 import tools.JsTools;
 import yy.zip.YyZipTools;
@@ -85,7 +86,7 @@ class YyZip extends Project {
 			Project.current = new YyZip(path, main, entries);
 			return true;
 		} catch (e:Dynamic) {
-			Main.console.log('Error processing YYZ ($fileName)', e);
+			Console.log('Error processing YYZ ($fileName)', e);
 			return false;
 		}
 	}

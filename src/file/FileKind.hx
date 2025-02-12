@@ -1,4 +1,5 @@
 package file;
+import ui.ChromeTabs;
 import editors.EditCode;
 import editors.Editor;
 import electron.FileSystem;
@@ -11,6 +12,7 @@ import gml.file.GmlFile;
 import gml.project.ProjectState.ProjectTabState;
 import tools.Dictionary;
 import ui.ChromeTabs.ChromeTab;
+import js.html.Console;
 
 /**
  * ...
@@ -20,6 +22,12 @@ import ui.ChromeTabs.ChromeTab;
 	public static var inst:FileKind = new FileKind();
 	/** file extension -> handlers */
 	public static var map:Dictionary<Array<FileKind>> = new Dictionary();
+
+	/**
+		Register a `FileKind` to handle files with the given extension. There may be multiple kinds
+		registered for the same extension. To disambiguate, for a file extension which may have
+		multiple content types, `FileKind.detect()` should be overridden.
+	**/
 	public static function register(fileExt:String, file:FileKind):Void {
 		var arr = map[fileExt];
 		if (arr == null) {
@@ -28,7 +36,31 @@ import ui.ChromeTabs.ChromeTab;
 		}
 		arr.unshift(file);
 	}
-	//
+
+	/**
+		De-register a `FileKind` as a handler for the given extension. This should be called on
+		clean-up of a plugin which registers any file types.
+	**/
+	public static function deregister(fileExt:String, file:FileKind):Void {
+
+		for (tab in ChromeTabs.getTabs()) {
+			if (tab.gmlFile?.kind == file) {
+				tab.closeButton.click();
+			}
+		}
+		
+		final arr = map[fileExt];
+
+		if (arr == null) {
+			Console.error('Tried to de-register a file kind for the extension "$fileExt", which has none registered.');
+			return;
+		}
+
+		if (!arr.remove(file)) {
+			Console.error('Tried to de-register file kind ${file.getName()} for the extension "$fileExt", of which it is not registered to.');
+		}
+
+	}
 	
 	public var checkSelfForChanges:Bool = true;
 	
@@ -118,7 +150,7 @@ import ui.ChromeTabs.ChromeTab;
 				changed = true;
 			}
 		} catch (e:Dynamic) {
-			Main.console.error("Error checking " + path + ": ", e);
+			Console.error("Error checking " + path + ": ", e);
 		}
 		//
 		for (pair in file.extraFiles) try {
@@ -130,7 +162,7 @@ import ui.ChromeTabs.ChromeTab;
 				changed = true;
 			}
 		} catch (e:Dynamic) {
-			Main.console.error("Error checking " + pair.path + ": ", e);
+			Console.error("Error checking " + pair.path + ": ", e);
 		}
 		//
 		return changed ? 1 : 0;

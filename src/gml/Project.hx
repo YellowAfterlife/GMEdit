@@ -3,6 +3,7 @@ import gmk.snips.GmkSnipsLoader;
 import gmk.snips.GmkSnipsSearcher;
 import gml.project.ProjectFileCache;
 import js.lib.DataView;
+import js.html.Console;
 import haxe.io.Bytes;
 import haxe.io.BytesOutput;
 import electron.extern.NodeBuffer;
@@ -491,7 +492,7 @@ import ui.treeview.TreeViewElement;
 					if (i == state.activeTab) activeFile = file;
 				}
 			} catch (x:Dynamic) {
-				Main.console.error("Error recovering " + path + ":", x);
+				Console.error("Error recovering " + path + ":", x);
 			}
 			if (activeFile != null) activeFile.tabEl.click();
 			//
@@ -521,7 +522,7 @@ import ui.treeview.TreeViewElement;
 	public static function openInitialProject() {
 		#if !lwedit
 		var path = moduleArgs["open"];
-		if (path != null) {
+		if (path != null && path != ".") {
 			var tmp = new Project("", false);
 			current = tmp;
 			window.setTimeout(function() {
@@ -592,7 +593,7 @@ import ui.treeview.TreeViewElement;
 				} else electron.IPC.send("set-taskbar-icon", null, "");
 			} catch (x:Dynamic) {}
 			
-			if (PluginManager.ready == true && version != GmlVersion.none) {
+			if (version != GmlVersion.none) {
 				PluginEvents.projectOpen({project:this});
 			}
 			ui.ProjectStyle.reload();
@@ -790,7 +791,7 @@ import ui.treeview.TreeViewElement;
 				try {
 					return readJsonFileSync(full);
 				} catch (x:Dynamic) {
-					Main.console.error('Failed to read `$full`:', x);
+					Console.error('Failed to read `$full`:', x);
 				}
 			}
 		}

@@ -5,6 +5,7 @@ import gml.Project;
 import gml.file.GmlFile;
 import haxe.io.Path;
 import js.html.DivElement;
+import js.html.Console;
 import js.lib.RegExp;
 import ui.treeview.TreeView;
 import yy.*;
@@ -119,7 +120,7 @@ class KYyUnknown extends FileKind {
 					case "GMSprite": TreeView.setThumbSprite(full, name, item);
 				}
 			}
-		} else Main.console.error('`$path` has missing parent `$parentPath`');
+		} else Console.error('`$path` has missing parent `$parentPath`');
 		return detect.kind.index(full, content, main, sync);
 	}
 }

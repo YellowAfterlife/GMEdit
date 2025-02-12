@@ -14,6 +14,7 @@ import gml.file.GmlFile;
 import gmx.SfGmx;
 import haxe.DynamicAccess;
 import js.lib.RegExp;
+import js.html.Console;
 import synext.GmlExtArgs;
 import synext.SyntaxExtension;
 import tools.Dictionary;
@@ -110,7 +111,7 @@ class GmlExtLambda {
 				try {
 					impl = data.project.readTextFileSync(path);
 				} catch (x:Dynamic) {
-					Main.console.error("Failed to fetch lambda from " + path, x);
+					Console.error("Failed to fetch lambda from " + path, x);
 					return false;
 				}
 			} else {

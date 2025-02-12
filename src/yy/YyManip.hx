@@ -14,6 +14,7 @@ import haxe.ds.Map;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import js.html.Console;
 import tools.NativeString;
 import ui.ChromeTabs;
 import ui.GlobalSearch;
@@ -477,7 +478,7 @@ class YyManip {
 						pj.writeTextFileSync(res.id.path, yyText);
 					}
 				} catch (x:Dynamic) {
-					Main.console.warn(x);
+					Console.warn(x);
 				}
 			}
 			if (log.length > 0) {
@@ -615,7 +616,7 @@ class YyManip {
 			try {
 				updateResource(res);
 			} catch (x:Dynamic) {
-				Main.console.warn(x);
+				Console.warn(x);
 			}
 		}
 		if (args.patchRefs) {
@@ -703,7 +704,7 @@ class YyManip {
 		//
 		var newDir = q.tvDir;
 		var newDirPath = newDir.treeRelPath;
-		//Main.console.log(q, dragElPath, newDirPath);
+		//Console.log(q, dragElPath, newDirPath);
 		//
 		if (oldDir == newDir) {
 			// just changing order

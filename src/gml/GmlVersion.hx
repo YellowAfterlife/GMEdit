@@ -4,6 +4,7 @@ import gml.GmlVersionV23;
 import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
+import js.html.Console;
 import tools.Dictionary;
 import tools.JsTools;
 import tools.NativeObject;
@@ -156,7 +157,7 @@ import electron.FileWrap;
 						if (!parentVer.isReady) loadVer(parentVer);
 						parentConf = parentVer.config;
 					} else {
-						Main.console.error('Parent `$parentName` for `${v.name}` is missing');
+						Console.error('Parent `$parentName` for `${v.name}` is missing');
 						parentConf = null;
 					}
 				};
@@ -178,7 +179,7 @@ import electron.FileWrap;
 				try {
 					selfConf.projectRegexCached = new RegExp(rs, "i");
 				} catch (x:Dynamic) {
-					Main.console.error('Regexp `$rs` from `${v.name}` is invalid:', x);
+					Console.error('Regexp `$rs` from `${v.name}` is invalid:', x);
 				}
 			}
 			//

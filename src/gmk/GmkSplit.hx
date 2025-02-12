@@ -6,6 +6,7 @@ import electron.Shell;
 import gml.Project;
 import haxe.io.Path;
 import ui.Preferences;
+import js.html.Console;
 
 /**
  * ...
@@ -96,10 +97,10 @@ class GmkSplit {
 			var cpr:Dynamic = (cast Main.window).require("child_process");
 			var proc = cpr.spawn(gmkSplitPath, gmkSplitArgs);
 			proc.stdout.on('data', function(data) {
-				Main.console.log('gmksplit:\n' + data);
+				Console.log('gmksplit:\n' + data);
 			});
 			proc.stderr.on('data', function(data) {
-				Main.console.error('gmksplit:\n' + data);
+				Console.error('gmksplit:\n' + data);
 			});
 			proc.on("close", function(code) {
 				if (code != 0) {

@@ -145,7 +145,7 @@ class TreeViewDnD {
 				}
 			}
 			el.addEventListener("drop", (e:DragEvent) -> {
-				//Main.console.log(e);
+				//Console.log(e);
 				updateAuto(e);
 				var dst = currEl;
 				if (dst == null) return;

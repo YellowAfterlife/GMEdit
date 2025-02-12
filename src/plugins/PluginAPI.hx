@@ -1,4 +1,5 @@
 package plugins;
+import plugins.PluginConfig.PluginRegName;
 import haxe.DynamicAccess;
 import ui.Sidebar;
 import ace.AceTools;
@@ -7,7 +8,7 @@ import ace.AceTools;
  * Exposes a globally visible GMEdit object that you can use for some random bits
  * @author YellowAfterlife
  */
-@:keep @:expose("GMEdit")
+@:expose("GMEdit")
 class PluginAPI {
 	
 	/**
@@ -25,10 +26,14 @@ class PluginAPI {
 	 * Registers a plugin in GMEdit.
 	 * This must be called by your plugin's script.
 	 */
-	public static function register(pluginName:String, data:PluginData) {
-		var state = PluginManager.registerMap[pluginName];
-		if (state == null) throw "There's no plugin named " + pluginName;
-		state.data = data;
+	public static function register(name:PluginRegName, data:PluginData) {
+		
+		final error = PluginManager.register(name, data);
+
+		if (error != null) {
+			throw error;
+		}
+
 	}
 	
 	// The following just point to specific classes for convenience
