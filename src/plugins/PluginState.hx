@@ -1,69 +1,80 @@
 package plugins;
-import ace.AceWrap;
-import electron.FileSystem;
-import electron.FileWrap;
-import haxe.DynamicAccess;
-import js.html.Element;
-import js.lib.Error;
-import js.html.ErrorEvent;
+import ui.preferences.PrefPlugins;
+import js.html.LinkElement;
+import js.html.ScriptElement;
 import js.html.Console;
-import plugins.PluginAPI;
+import js.lib.Error;
 import plugins.PluginConfig;
-import plugins.PluginState;
-import tools.Dictionary;
 
 /**
  * ...
  * @author YellowAfterlife
  */
 class PluginState {
-	public var name:String;
-	public var config:PluginConfig;
-	public var dir:String;
-	public var ready:Bool = false;
-	public var error:Error = null;
-	public var listeners:Array<PluginCallback> = [];
-	public var data:PluginData = null;
+
+	/**
+		The name of the directory that this plugin's `config.json` resides in.
+	**/
+	public final name:PluginDirName;
+
+	/**
+		The path to this plugin's directory.
+	**/
+	public final dir:String;
+
+	/**
+		The configuration file of this plugin.
+	**/
+	public var config:Null<PluginConfig> = null;
+
+	/**
+		Some kind of error that occurred while loading or initialising this plugin.
+	**/
+	public var error(default, set):Null<Error> = null;
 	
-	/** Scripts and styles */
-	public var elements:Array<Element> = [];
+	/**
+		The registered data as provided by the plugin's script invoking `GMEdit.register(...)`.
+	**/
+	public var data:Null<PluginData> = null;
+
+	/**
+		Whether this plugin registered a `cleanup()` handler. Plugins that cannot clean up cannot be
+		stopped at runtime and require a restart to take effect.
+
+		Plugins which fail to initialise correctly are also assumed to be incapable of cleaning up.
+	**/
+	public var canCleanUp(get, never):Bool;
+
+	/**
+		Whether this plugin has been started (`init()` has been called.)
+	**/
+	public var initialised:Bool = false;
 	
-	//
+	public final styles:Array<LinkElement> = [];
+	public final scripts:Array<ScriptElement> = [];
+	
 	public function new(name:String, dir:String) {
 		this.name = name;
 		this.dir = dir;
 	}
-	public function destroy() {
-		if (data != null && data.cleanup != null) data.cleanup();
-		for (el in elements) {
-			var p = el.parentElement;
-			if (p != null) p.removeChild(el);
-		}
-		PluginManager.pluginMap.remove(name);
-		PluginManager.registerMap.remove(config.name);
+
+	/**
+		Re-sync state of the associated preferences items, if they exist.
+	**/
+	public inline function syncPrefs() {
+		PrefPlugins.sync(this);
 	}
-	public function finish(?error:Error):Void {
-		ready = true;
-		if (error == null && data == null) {
-			error = new Error('Plugin did not call register()');
+
+	function get_canCleanUp():Bool {
+		return data?.cleanup != null;
+	}
+
+	function set_error(value:Null<Error>):Null<Error> {
+		
+		if (value != null) {
+			Console.error('Error in plugin $name: ', value);
 		}
-		if (error != null) {
-			Console.error('Plugin load failed for $name:', error);
-		} else Console.log("Plugin loaded: " + name);
-		if (PluginManager.pluginList.indexOf(name) < 0) {
-			PluginManager.pluginList.push(name);
-		}
-		//
-		this.error = error;
-		for (fn in listeners) fn(error);
-		listeners.resize(0);
-		// moved to PluginManager.dispatchInitCallbacks
-		/*if (error == null && data.init != null) {
-			var t = Date.now().getTime();
-			data.init(this);
-			var dt = Date.now().getTime() - t;
-			if (dt > 500) Console.warn('init() for $name took ${dt}ms.');
-		}*/
+
+		return error = value;
 	}
 }
-typedef PluginCallback = (error:Null<Error>)->Void;

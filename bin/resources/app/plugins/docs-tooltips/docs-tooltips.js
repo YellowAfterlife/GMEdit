@@ -1,32 +1,52 @@
+
+/**
+ * @typedef ManualEntry
+ * @prop {string} name
+ * @prop {ManualPage[]} pages
+ */
+
+/**
+ * @typedef ManualPage
+ * @prop {string} title
+ * @prop {string} blurb
+ * @prop {string} url
+ * @prop {string} syntax
+ * @prop {ManualArg[]} args
+ */
+
+/**
+ * @typedef ManualArg
+ * @prop {string} argument
+ * @prop {string} description
+ */
+
 (() => {
   const Preferences = $gmedit['ui.Preferences'];
-  
-  const state = {
-    enabled: true,
-    strictLatest: false,
-    keys: []
-  };
-  
+  const ProjectProperties = $gmedit['ui.project.ProjectProperties'];
+  const Project = $gmedit['gml.Project'];
+
+  const ogSetText = aceEditor.tooltipManager.ttip.setText;
+
+  /** @type {Record<string, ManualEntry>} */
+  let keys = {};
+
   GMEdit.register('docs-tooltips', {
     init: () => {
-      downloadLatestDocs();
 
       if (!Preferences.current.docs_tooltips) Preferences.current.docs_tooltips = {
-        enabled: true,
         strictLatest: false,
-        keys: []
+        keys: {}
       };
 
-      state.enabled = Preferences.current.docs_tooltips.enabled;
-      state.strictLatest = Preferences.current.docs_tooltips.strictLatest;
-      state.keys = Preferences.current.docs_tooltips.keys;
+      keys = Preferences.current.docs_tooltips.keys;
 
-      const ogSetText = aceEditor.tooltipManager.ttip.setText;
+      downloadLatestDocs();
+
       aceEditor.tooltipManager.ttip.setText = function() {
-        if (!state.enabled
-          || (state.strictLatest && $gmedit['gml.Project'].current.version.name != 'v23')
-          || state.keys == null
-        ) {
+
+        const project = Project.current;
+
+        if (project == null || !isEnabled(project)) {
           ogSetText.apply(this, arguments);
           return;
         }
@@ -34,54 +54,96 @@
         const text = arguments[0];
         const returnValue = text.split('➜')[1];
 
-        let foundItem = Object.keys(state.keys).find(item => {
+        const foundItem = Object.values(keys).find(item => {
           if (text.includes('>(')) {
-            return item === text.split('<')[0];
+            return item.name === text.split('<')[0];
           } else {
-            return item === text.split('(')[0];
+            return item.name === text.split('(')[0];
           }
         });
-        if (foundItem) foundItem = state.keys[foundItem];
+        
         if (foundItem && foundItem.pages.length === 1) {
           const key = foundItem;
           const html = createTooltipHTML(key, returnValue, text);
 
-          aceEditor.tooltipManager.ttip.setHtml.apply(this, [html]);
+          aceEditor.tooltipManager.ttip.setHtml.call(this, html);
         } else {
           ogSetText.apply(this, arguments);
         }
-      }
-    },
-    cleanup: () => {}
-  });
-  
-  GMEdit.on('preferencesBuilt', function(e) {
-    var out = e.target.querySelector('.plugin-settings[for="docs-tooltips"]');
-  
-    Preferences.addCheckbox(out, 'Enabled', state.enabled, () => {
-      state.enabled = !state.enabled;
-      Preferences.current.docs_tooltips.enabled = state.enabled;
-      Preferences.save();
-    });
 
-    Preferences.addCheckbox(out, 'Disable for non GMS2.3+ projects', state.strictLatest, () => {
-      state.strictLatest = !state.strictLatest;
-      Preferences.current.docs_tooltips.strictLatest = state.strictLatest;
-      Preferences.save();
-    });
+      };
+
+    },
+    cleanup: () => {
+      aceEditor.tooltipManager.ttip.setText = ogSetText;
+    },
+    buildPreferences: (out) => {
+  
+      Preferences.addCheckbox(out, 'Disable for non GMS2.3+ projects', isStrict23(), (strict23) => {
+        Preferences.current.docs_tooltips.strictLatest = strict23;
+        Preferences.save();
+      });
+
+    },
+    buildProjectProperties: (out, project) => {
+
+      Preferences.addCheckbox(out, 'Disable for this project', projectHasDisabled(project), (disabled) => {
+
+        const properties = project.properties;
+        properties.docs_tooltips ??= {};
+        properties.docs_tooltips.disabled = disabled;
+
+        ProjectProperties.save(project, properties);
+        
+      });
+
+    }
   });
+
+  /**
+   * Returns whether tooltips should be used for the given project.
+   * @returns {boolean}
+   */
+  function isEnabled(project) {
+    return !projectHasDisabled(project)
+        && (project.isGMS23 || !isStrict23())
+        && (keys != null);
+  }
+
+  /**
+   * Returns whether the given project has explicitly disabled tooltips.
+   * @returns {boolean}
+   */
+  function projectHasDisabled(project) {
+    return (project.properties?.docs_tooltips?.disabled) == true;
+  }
+
+  /**
+   * Returns whether strict GMv2.3+ mode is enabled.
+   * @returns {boolean}
+   */
+  function isStrict23() {
+    return (Preferences.current.docs_tooltips?.strictLatest) == true;
+  }
 
   function downloadLatestDocs() {
     fetch('https://raw.githubusercontent.com/christopherwk210/gm-bot/master/static/docs-index.json')
       .then(res => res.json())
       .then(data => {
-        state.keys = data;
+        keys = data;
         Preferences.current.docs_tooltips.keys = data;
         Preferences.save();
       })
       .catch(() => console.error('docs-tooltips: failed to fetch documentation'));
   }
   
+  /**
+   * 
+   * @param {ManualEntry} key 
+   * @param {string} returnValue 
+   * @param {string} originalText 
+   * @returns 
+   */
   function createTooltipHTML(key, returnValue, originalText) {
     const topic = key.pages[0];
   
@@ -98,7 +160,7 @@
     if (title.includes('(')) {
       let genericMatches = originalText.match(/(<\S+>)/g);
       if (genericMatches) {
-        generic = genericMatches[0];
+        let generic = genericMatches[0];
         generic = generic.replace('<', '&lt;').replace('>', '&gt;');
         title = title.replace('(', generic + '(');
       }

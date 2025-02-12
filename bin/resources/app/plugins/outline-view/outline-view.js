@@ -700,55 +700,85 @@
 
 	}
 
-	function init() {
-		AceCommands.add({
-			name: "toggleOutlineView",
-			//bindKey: "Ctrl-Shift-O", // if you'd like
-			exec: function(editor) {
-				toggle();
-				var currPrefs = FileWrap.readConfigSync("config", Preferences.path);
-				if (currPrefs) {
-					var currOV = currPrefs.outlineView;
-					if (currOV == null) currOV = currPrefs.outlineView = {};
-					currOV.hide = !visible;
-					FileWrap.writeConfigSync("config", Preferences.path, currPrefs);
+	function opt(ov, name, def) {
+		if (!ov) return def;
+		var val = ov[name];
+		return val !== undefined ? val : def;
+	}
+
+	function getDisplayMode(currOV) {
+		var dm = opt(currOV, "displayMode", null);
+		if (dm == null) dm = opt(currOV, "currOnly", false) ? 0 : 1;
+		return dm;
+	}
+
+	var toggleOutlineViewCommand;
+	var toggleOutlineViewPaletteCommand;
+
+	var currPrefs = Preferences.current;
+	var currOV = currPrefs.outlineView;
+	
+	function prepareOV() {
+		currOV = Preferences.current.outlineView;
+		if (!currOV) currOV = Preferences.current.outlineView = {};
+		return currOV;
+	}
+
+	GMEdit.register("outline-view", {
+		init: () => {
+
+			toggleOutlineViewCommand = {
+				name: "toggleOutlineView",
+				//bindKey: "Ctrl-Shift-O", // if you'd like
+				exec: function(editor) {
+					toggle();
+					var currPrefs = FileWrap.readConfigSync("config", Preferences.path);
+					if (currPrefs) {
+						currOV = currPrefs.outlineView;
+						if (currOV == null) currOV = currPrefs.outlineView = {};
+						currOV.hide = !visible;
+						FileWrap.writeConfigSync("config", Preferences.path, currPrefs);
+					}
 				}
+			};
+
+			toggleOutlineViewPaletteCommand = {
+				name: "Toggle outline view",
+				exec: "toggleOutlineView",
+				title: ""
+			};
+
+			AceCommands.add(toggleOutlineViewCommand);
+			AceCommands.addToPalette(toggleOutlineViewPaletteCommand);
+			
+			setDisplayMode(getDisplayMode(currOV))
+			showAtTop = opt(currOV, "showAtTop", true);
+			showFuncArgs = opt(currOV, "showFuncArgs", true);
+	
+			GMEdit.on("fileRename", onFileRename);
+
+			if (!(currOV && currOV.hide)) {
+				toggle();
 			}
-		});
-		AceCommands.addToPalette({
-			name: "Toggle outline view",
-			exec: "toggleOutlineView",
-			title: ""
-		});
-		//
-		var currPrefs = Preferences.current;
-		var currOV = currPrefs.outlineView;
-		function opt(ov, name, def) {
-			if (!ov) return def;
-			var val = ov[name];
-			return val !== undefined ? val : def;
-		}
-		function prepareOV() {
-			var currOV = Preferences.current.outlineView;
-			if (!currOV) currOV = Preferences.current.outlineView = {};
-			return currOV;
-		}
-		if (!(currOV && currOV.hide)) toggle();
-		function getDisplayMode(currOV) {
-			var dm = opt(currOV, "displayMode", null);
-			if (dm == null) dm = opt(currOV, "currOnly", false) ? 0 : 1;
-			return dm;
-		}
-		setDisplayMode(getDisplayMode(currOV))
-		showAtTop = opt(currOV, "showAtTop", true);
-		showFuncArgs = opt(currOV, "showFuncArgs", true);
-		//
-		GMEdit.on("preferencesBuilt", function(e) {
-			var out = e.target.querySelector('.plugin-settings[for="outline-view"]');
-			var currOV = Preferences.current.outlineView;
+	
+		},
+		cleanup: function() {
+
+			AceCommands.remove(toggleOutlineViewCommand);
+			AceCommands.removeFromPalette(toggleOutlineViewPaletteCommand);
+
+			GMEdit.off("fileRename", onFileRename);
+
+			if (visible) {
+				toggle();
+			}
+
+		},
+		buildPreferences: (out) => {
+			currOV = Preferences.current.outlineView;
 			var hideCtr = Preferences.addCheckbox(out, "Hide", currOV && currOV.hide, function(val) {
 				toggle();
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				currOV.hide = !visible;
 				Preferences.save();
 			});
@@ -761,7 +791,7 @@
 			];
 			Preferences.addDropdown(out, "Display mode", displayModes[getDisplayMode(currOV)], displayModes, function(val) {
 				var i = displayModes.indexOf(val);
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				currOV.displayMode = i;
 				setDisplayMode(i);
 				Preferences.save();
@@ -769,29 +799,19 @@
 				forceRefresh();
 			})
 			Preferences.addCheckbox(out, "Show 2.3 function arguments", opt(currOV, "showFuncArgs", true), function(val) {
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				showFuncArgs = currOV.showFuncArgs = val;
 				currEl = null;
 				Preferences.save();
 				forceRefresh();
 			});
 			Preferences.addCheckbox(out, "Scroll to top upon navigation", opt(currOV, "showAtTop", true), function(val) {
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				showAtTop = currOV.showAtTop = val;
 				currEl = null;
 				Preferences.save();
 				forceRefresh();
 			});
-		});
-
-		GMEdit.on("fileRename", onFileRename);
-
-	}
-
-	GMEdit.register("outline-view", {
-		init: init,
-		cleanup: function() {
-			// todo
 		},
 		_modeMap: modeMap
 	});
