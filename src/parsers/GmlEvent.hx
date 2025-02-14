@@ -25,8 +25,13 @@ class GmlEvent {
 	static var t2s:Array<String> = [];
 	static var t2sc:Array<String> = [];
 	static var s2t:Dictionary<Int> = new Dictionary();
+	static var sc2t:Dictionary<Int> = new Dictionary();
 	static var i2s:Array<Array<String>> = [];
 	static var s2i:Dictionary<GmlEventData> = new Dictionary();
+	/** Returns index for a CapitalizedName **/
+	public static inline function getCapTypeIndex(name:String):Null<Int> {
+		return sc2t[name];
+	}
 	/** Returns rawname of given event type */
 	public static inline function getTypeName(type:Int):String {
 		return t2s[type];
@@ -54,6 +59,7 @@ class GmlEvent {
 		t2s[type] = nlq;
 		t2sc[type] = name;
 		s2t.set(nlq, type);
+		sc2t.set(name, type);
 	}
 	//
 	public static function toString(type:Int, numb:Int, name:String) {
@@ -109,7 +115,7 @@ class GmlEvent {
 		**/
 		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
 			var flushCode = q.substring(evStart, till);
-			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 2));
+			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 1));
 			if (evName == null) {
 				if (flushCode != "") {
 					errors += "There's code prior to first event definition.\n";

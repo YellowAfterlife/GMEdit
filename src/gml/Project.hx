@@ -32,6 +32,7 @@ import plugins.PluginEvents;
 import plugins.PluginManager;
 import ace.AceWrap;
 import gmk.*;
+import gmk.gm82.*;
 import gmk.snip.*;
 import gmx.*;
 import raw.*;
@@ -506,6 +507,7 @@ import ui.treeview.TreeViewElement;
 			"gms2": YyLoader.run,
 			"gmk-splitter": GmkLoader.run,
 			"gmk-snip": GmkSnipsLoader.run,
+			"gm82": Gm82Loader.run,
 			"directory": RawLoader.run,
 		};
 		searchMap = {

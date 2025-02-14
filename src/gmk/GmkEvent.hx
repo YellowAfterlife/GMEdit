@@ -49,30 +49,7 @@ class GmkEvent {
 			for (action in actionRoot.findAll("action")) actions.push(action);
 		}
 		if (actions.length == 0) return "";
-		var out = "";
-		function addAction(action:SfGmx, head:Bool) {
-			var code = GmkAction.getCode(action);
-			if (code == null) return false;
-			if (!code.endsWith("\n")) code += "\n";
-			if (head && !code.startsWith("#action ")) {
-				var addSection = true;
-				code = rxHeader.map(code, function(e:EReg) {
-					var cap = e.matched(1);
-					out += "#section";
-					if (cap.charCodeAt(0) != " ".code) out += "|";
-					out += cap;
-					addSection = false;
-					return "";
-				});
-				if (addSection) out += "#section\n";
-			}
-			out += code;
-			return true;
-		}
-		if (!addAction(actions[0], false)) return null;
-		for (i in 1 ... actions.length) {
-			if (!addAction(actions[i], true)) return null;
-		}
-		return out;
+		var code = GmkAction.getCodeMulti(actions);
+		return code;
 	}
 }

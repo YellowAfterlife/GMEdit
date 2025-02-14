@@ -62,9 +62,10 @@ class KGmxEvents extends file.kind.gml.KGmlEvents {
 			var locals = new GmlLocals(name);
 			out.locals.set(name, locals);
 			for (action in event.findAll("action")) {
-				var code = GmxAction.getCode(action);
-				if (code != null) {
-					GmlSeeker.runSyncImpl(path, code, null, out, locals, this);
+				var data = GmxAction.getGmxActionData(action);
+				var pair = GmxActionDecoder.decode(data);
+				if (pair != null && pair.kind == Code) {
+					GmlSeeker.runSyncImpl(path, pair.code, null, out, locals, this);
 				}
 			}
 		}

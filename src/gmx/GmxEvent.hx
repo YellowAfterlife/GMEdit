@@ -32,33 +32,6 @@ class GmxEvent {
 	private static var rxHeader = ~/^\/\/\/\/?(.*)/;
 	private static var rxHashStart = JsTools.rx(~/^#(?:action|with)\b/);
 	public static function getCode(event:SfGmx) {
-		var out:String = "";
-		var actions = event.findAll("action");
-		function addAction(action:SfGmx, head:Bool) {
-			//if (head) out += "\n";
-			var code = GmxAction.getCode(action);
-			if (code == null) return false;
-			if (head && !rxHashStart.test(code)) {
-				var addSection = true;
-				code = rxHeader.map(code, function(e:EReg) {
-					var cap = e.matched(1);
-					out += "#section";
-					if (cap.charCodeAt(0) != " ".code) out += "|";
-					out += cap;
-					addSection = false;
-					return "";
-				});
-				if (addSection) out += "#section\n";
-			}
-			out += code;
-			return true;
-		}
-		for (i => action in actions) {
-			if (!addAction(action, i > 0)) {
-				GmxAction.errorText = "[action " + (i + 1) + "/" + actions.length + "] " + GmxAction.errorText;
-				return null;
-			}
-		}
-		return out;
+		return GmxAction.getCodeMulti(event.findAll("action"));
 	}
 }
