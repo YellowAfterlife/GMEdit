@@ -5,6 +5,7 @@ import haxe.extern.EitherType;
 import js.lib.RegExp;
 import js.Syntax;
 import tools.CharCode;
+using tools.NativeString;
 
 /**
  * There are many JS-specific things that you can do with strings.
@@ -202,5 +203,49 @@ import tools.CharCode;
 			rowStart = rowStart > 0 ? s.lastIndexOf("\n", rowStart - 1) : -1;
 		}
 		return new AcePos(col, row);
+	}
+	
+	public static inline function splitIter(string:String, splitter:String) {
+		return new StringSplitIter(string, splitter);
+	}
+}
+class StringSplitIter {
+	public var string:String;
+	public var splitter:String;
+	public var step:Int;
+	//
+	public var start:Int;
+	public var end:Int;
+	public var value(get, never):String;
+	inline function get_value() {
+		return string.substring(start, end);
+	}
+	//
+	public var index = -1;
+	public var last = false;
+	public var first(get, never):Bool;
+	inline function get_first():Bool return (index == 0);
+	//
+	public inline function new(string, splitter) {
+		this.string = string;
+		this.splitter = splitter;
+		this.step = js.lib.Math.max(1, splitter.length);
+		this.end = -step;
+	}
+	public inline function hasNext() {
+		if (last) return false;
+		end += step;
+		start = end;
+		end = string.indexOf(splitter, end);
+		last = end < 0;
+		if (last) end = string.length;
+		index += 1;
+		return true;
+	}
+	public inline function next() {
+		return this;
+	}
+	public inline function substring(start, end) {
+		return string.substring(start, end);
 	}
 }

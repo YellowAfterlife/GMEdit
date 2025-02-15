@@ -20,12 +20,13 @@ class Gm82Object {
 			var splitAt = type_numb.indexOf("_");
 			var type = type_numb.substring(0, splitAt);
 			var arg = type_numb.substring(splitAt + 1);
+			var eventName:String;
 			var typeInd = GmlEvent.getCapTypeIndex(type);
 			var argInd:Null<Int> = null;
-			if (typeInd != GmlEvent.typeCollision) {
+			if (typeInd != GmlEvent.typeCollision && typeInd != GmlEvent.typeTrigger) {
 				argInd = Std.parseInt(arg);
 			}
-			var eventName = GmlEvent.toString(typeInd, argInd, arg);
+			eventName = GmlEvent.toString(typeInd, argInd, arg);
 			//
 			if (sep) {
 				out.add("\n");
@@ -42,11 +43,10 @@ class Gm82Object {
 			return null;
 		}
 		var out = new StringBuf();
-		var sep = false;
 		for (event in eventData) {
 			var data = event.data;
 			var name = GmlEvent.getTypeNameCap(data.type) + "_";
-			if (data.type == GmlEvent.typeCollision) {
+			if (data.type == GmlEvent.typeCollision || data.type == GmlEvent.typeTrigger) {
 				name += data.name;
 			} else name += data.numb;
 			//

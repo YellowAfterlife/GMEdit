@@ -3,26 +3,18 @@ package;
 import ace.*;
 import ace.AceWrap;
 import electron.*;
-import electron.Dialog;
 import gml.*;
 import shaders.*;
 import file.kind.misc.KPlain;
-import haxe.io.Path;
-import js.Lib;
 import tools.*;
 import js.html.Console;
-import js.html.DivElement;
-import js.html.DragEvent;
-import js.html.Element;
 import js.html.HTMLDocument;
-import js.html.KeyboardEvent;
 import js.html.Window;
+import js.lib.Function;
 import parsers.GmlEvent;
 import plugins.PluginManager;
-import tools.HtmlTools;
 import ui.ChromeTabs;
 import ui.*;
-import ui.liveweb.LiveWeb;
 import ui.treeview.TreeView;
 import ui.treeview.TreeViewMenus;
 
@@ -77,6 +69,7 @@ class Main {
 				}
 			}
 			Console.log(out);
+			//(cast Console.log:Function).apply(js.Browser.console, out);
 		};
 		Electron.init();
 		yy.YyJsonPrinter.init();

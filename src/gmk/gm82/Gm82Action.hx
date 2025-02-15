@@ -4,16 +4,32 @@ import gmx.GmxActionEncoder;
 import gmx.GmxActionDecoder;
 import gmx.GmxAction;
 using StringTools;
+using tools.NativeString;
 
 class Gm82Action {
 	public static var errorText:String;
+	public static inline var trimTrailingSpaces = true;
 	static var header = "/*\"/*'/**//* YYD ACTION\n";
 	public static function preproc(eventCode:String) {
 		eventCode = eventCode.replace("\r", "");
 		var parts = eventCode.split(header);
 		parts.shift(); // anything before the first header doesn't count
 		var out = "";
-		for (i => part in parts) {
+		var wantSep = false;
+		var prevSnip = null;
+		for (iter in eventCode.splitIter(header)) {
+			if (iter.first) {
+				var part = iter.value;
+				if (part.trimBoth() == "") continue;
+				wantSep = true;
+				out += part;
+				continue;
+			}
+			var partStart = iter.start;
+			var partEnd = iter.end;
+			if (!iter.last && eventCode.unsafeCodeAt(partEnd - 1) == "\n".code) partEnd--;
+			var part = iter.substring(partStart, partEnd);
+			//
 			var metaEnd = part.indexOf("*/");
 			var metaLines = part.substring(0, metaEnd).split("\n");
 			var data:GmxActionData = {};
@@ -43,12 +59,14 @@ class Gm82Action {
 			//
 			var snip = GmxActionDecoder.decode(data);
 			if (snip != null) {
-				if (i > 0) out += GmxActionDecoder.actionSep(snip);
+				if (wantSep) out += GmxActionDecoder.actionSep(snip);
 				out += snip.code;
-			} else {
-				out += "\n";
+				if (trimTrailingSpaces && snip.kind != Action) out += "\n";
+			} else { // can't pretty-print this one!
+				if (wantSep) out += "\n";
 				out += header + part;
 			}
+			wantSep = true;
 		}
 		//
 		return out;
@@ -66,6 +84,7 @@ class Gm82Action {
 			case 603: { // code
 				tail = args[0].s;
 				args = null;
+				if (tail.startsWith(header)) return tail;
 			}
 			case 605: { // comment
 				invert = false;
@@ -90,12 +109,13 @@ class Gm82Action {
 			pair('arg$i', arg.s ?? "");
 		}
 		//
-		return header + meta.join("\n") + "\n*/" + (tail != null ? "\n" + tail : "");
+		return header + meta.join("\n") + "\n*/" + (tail != null && tail != "" ? "\n" + tail : "");
 	}
 	public static function postproc(parts:Array<String>) {
 		var out = [];
 		for (i => part in parts) {
 			part = part.replace("\r", "");
+			if (trimTrailingSpaces) part = part.trimRight();
 			var data = GmxActionEncoder.encode(part);
 			if (data == null) return null;
 			var snip = makeAction(data);
@@ -106,6 +126,6 @@ class Gm82Action {
 				out.push(snip);
 			}
 		}
-		return out.join("");
+		return out.join("\n");
 	}
 }

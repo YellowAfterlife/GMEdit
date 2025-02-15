@@ -184,9 +184,14 @@ class PrefNav {
 			+ " over the GMEdit icon (Windows-only?)"
 		);
 		//
-		if (Electron != null) addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
-			current.gmkSplitPath = v; save();
-		});
+		if (Electron != null) {
+			addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
+				current.gmkSplitPath = v; save();
+			});
+			addInput(out, "GM≤8.1 extension directory", current.gmkExtensionFolder ?? "", function(v) {
+				current.gmkExtensionFolder = v; save();
+			});
+		}
 	}
 	static function buildLookup(out:Element) {
 		out = addGroup(out, "Global lookup (default: Ctrl+T)");

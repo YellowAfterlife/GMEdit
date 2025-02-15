@@ -153,9 +153,10 @@ typedef PrefDataImpl = {
 	extensionAPIOrder:Int,
 	backupCount:DynamicAccess<Int>,
 	linterPrefs:parsers.linter.GmlLinterPrefs,
-	//
+	// GM8 stuff
 	?gmkSplitPath:String,
 	?gmkSplitOpenExisting:Bool,
+	?gmkExtensionFolder:String,
 	
 	/** section -> commandName -> keybinds */
 	customizedKeybinds:DynamicAccess<DynamicAccess<Array<String>>>,

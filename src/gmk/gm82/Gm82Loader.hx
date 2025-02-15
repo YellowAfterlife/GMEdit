@@ -1,5 +1,11 @@
 package gmk.gm82;
 
+import haxe.io.Bytes;
+import js.lib.Uint8Array;
+import electron.FileSystem;
+import electron.Electron;
+import js.html.Console;
+import ui.Preferences;
 import ace.extern.AceAutoCompleteItem;
 import file.kind.gmk.*;
 import file.kind.gml.*;
@@ -112,6 +118,33 @@ class Gm82Loader {
 		loadRecRoot("timelines", "timeline");
 		loadRecRoot("objects", "object");
 		loadRecRoot("rooms", "room");
+		//
+		var extensionList = project.readTextFileSync("settings/extensions.txt").replace("\r", "");
+		var extensionFolder = Preferences.current.gmkExtensionFolder;
+		for (extName in extensionList.split("\n")) {
+			extName = extName.trim();
+			if (extName == "") continue;
+			//
+			if (extensionFolder == null || extensionFolder == "") {
+				Console.warn('Project uses extension "$extName" but extension folder is not set in Preferences.');
+				continue;
+			}
+			//
+			var path = Path.join([extensionFolder, extName + ".ged"]);
+			if (!FileSystem.existsSync(path)) {
+				Console.warn('Project uses extension "$extName" but it\'s not in the extension folder.');
+				continue;
+			}
+			//
+			//try {
+				var raw = FileSystem.readFileSync(path);
+				var ua:Uint8Array = untyped Uint8Array.from(raw);
+				var abuf = ua.buffer;
+				GedLoader.run(Bytes.ofData(abuf));
+			//} catch (x:Dynamic) {
+				//Console.error('Failed ')
+			//}
+		}
 		//
 		for (item in seekSoon) {
 			GmlSeeker.run(item.full, item.name, item.kind);
