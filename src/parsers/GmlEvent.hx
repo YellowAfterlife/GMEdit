@@ -16,6 +16,8 @@ using tools.NativeString;
  */
 class GmlEvent {
 	public static inline var typeCollision:Int = 4;
+	/** GM8 only! **/
+	public static inline var typeTrigger:Int = 11;
 	/** GMEdit-specific, not a real event */
 	public static inline var typeMagic:Int = -1;
 	public static inline var kindMagicProperties:Int = 1;
@@ -63,9 +65,9 @@ class GmlEvent {
 	}
 	//
 	public static function toString(type:Int, numb:Int, name:String) {
-		if (type == typeCollision) {
-			return "collision:" + name;
-		}
+		if (type == typeCollision) return "collision:" + name;
+		if (type == typeTrigger) return "trigger:" + name;
+		//
 		var arr = i2s[type];
 		if (arr != null) {
 			var out = arr[numb];
@@ -84,7 +86,10 @@ class GmlEvent {
 		var type = s2t[name.substring(0, i)];
 		var name = name.substring(i + 1);
 		if (type == null) return null;
-		if (type == typeCollision) return { type: type, numb: null, name: name };
+		switch (type) {
+			case typeCollision, typeTrigger:
+				return { type: type, numb: null, name: name };
+		}
 		if (isKeyType(type)) {
 			var key = GmlKeycode.fromName(name);
 			if (key == null) return null;
@@ -108,6 +113,7 @@ class GmlEvent {
 		var evCode:Array<String> = [];
 		var evName = null;
 		var sctName = null;
+		var isAutoSection = true;
 		/**
 		   @param	till	Final character to grab data till
 		   @param	cont	Whether this is a section/action, continuing same event
@@ -115,7 +121,8 @@ class GmlEvent {
 		**/
 		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
 			var flushCode = q.substring(evStart, till);
-			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 1));
+			// sections are followed by 1 newline between actions, 2 between events, and 0 at EOF
+			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 2));
 			if (evName == null) {
 				if (flushCode != "") {
 					errors += "There's code prior to first event definition.\n";
@@ -129,7 +136,10 @@ class GmlEvent {
 				var flushData = GmlEvent.fromString(evName);
 				if (flushData != null) {
 					//
-					if (eof || flushCode != "") {
+					if (!isAutoSection
+						|| !cont && evCode.length == 0
+						|| flushCode.trimBoth() != ""
+					) {
 						evCode.push(flushCode);
 					}
 					//
@@ -146,6 +156,8 @@ class GmlEvent {
 			}
 		}
 		//
+		var hasEventSections = version.config.hasEventSections;
+		var hasEventActions = version.config.hasEventActions;
 		while (q.loop) {
 			var c = q.read();
 			switch (c) {
@@ -193,9 +205,10 @@ class GmlEvent {
 						q.skipLineEnd();
 						//
 						evStart = q.pos;
+						isAutoSection = true;
 						continue;
 					} // event
-					if (version.config.hasEventSections && q.skipIfIdentEquals("section")) {
+					if (hasEventSections && q.skipIfIdentEquals("section")) {
 						//
 						var nameStart = q.pos;
 						var nameEnd = -1;
@@ -221,16 +234,18 @@ class GmlEvent {
 						}
 						//
 						evStart = q.pos;
+						isAutoSection = false;
 						continue;
 					}
-					if (q.skipIfIdentEquals("with")) {
+					if (hasEventSections && q.skipIfIdentEquals("with")) {
 						flush(hashPos, true);
 						q.skipLine();
 						q.skipLineEnd();
 						evStart = hashPos;
+						isAutoSection = false;
 						continue;
 					}
-					if (version.config.hasEventActions && q.skipIfIdentEquals("action")) {
+					if (hasEventActions && q.skipIfIdentEquals("action")) {
 						// we flush twice because action lines are their own blocks
 						flush(hashPos, true);
 						evStart = hashPos;
@@ -238,6 +253,7 @@ class GmlEvent {
 						q.skipLineEnd();
 						flush(q.pos, true);
 						evStart = q.pos;
+						isAutoSection = true;
 						continue;
 					}
 					// #something else
@@ -266,6 +282,7 @@ class GmlEvent {
 		linkType(8, "Draw");
 		linkType(9, "KeyPress");
 		linkType(10, "KeyRelease");
+		linkType(11, "Trigger");
 		linkType(12, "CleanUp");
 		linkType(13, "Gesture");
 		// set up auto-completion for events that have ":id" suffix:

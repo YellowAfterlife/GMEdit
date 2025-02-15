@@ -64,7 +64,7 @@ class GmxActionDecoder {
 				out += cap;
 				return "";
 			});
-			return out ?? "\n#section\n";
+			return out ?? ("\n#section" + (snip.code != "" ? "\n" : ""));
 		} else return "\n";
 	}
 	public static function decodeArray(actions:Array<GmxActionData>):GmlCode {
