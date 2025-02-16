@@ -1,4 +1,5 @@
 package synext;
+import tools.JsTools;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.CharCode;
@@ -46,13 +47,38 @@ class GmlExtArgs {
 		}
 		return rx;
 	}
-	private static var rxOptStrict:RegExp = null;
+	private static var rxOptStrict:RegExp = null; // set by rxOpt_init
 	private static var rxOpt:RegExp = rxOpt_init();
 	private static inline var rxOpt_name = 1;
 	private static inline var rxOpt_type = 2;
 	private static inline var rxOpt_then = 3;
 	private static inline var rxOpt_tern = 7;
 	private static inline var rxOpt_value = 9;
+	//
+	static function rxGM8Req_init() {
+		var rx:RegExp;
+		for (it in 0 ... 2) {
+			var lean = it > 0;
+			var s1p = lean ? "\\s+" : " ";
+			var s1x = lean ? "\\s*" : " ";
+			var s0x = lean ? "\\s*" : "";
+			//
+			rx = new RegExp("^var" + s1p + "(\\w+)" // -> name
+				+ "(?:" + GmlExtImport.rsLocalType + ")?" // -> :type (opt.)
+				+ ';${s1x}(\\w+)${s1x}=${s1x}'
+				+ 'argument(?:(\\d+)|$s0x\\[$s0x(\\d+)$s0x\\])' // -> index, index2
+			+ ";", "");
+			if (!lean) rxGM8Req_strict = rx;
+		}
+		return rx;
+	}
+	private static var rxGM8Req_strict:RegExp = null; // set by rxGM8Req_init
+	private static var rxGM8Req:RegExp = rxGM8Req_init();
+	private static inline var rxGM8Req_name1 = 1;
+	private static inline var rxGM8Req_type = 2;
+	private static inline var rxGM8Req_name2 = 3;
+	private static inline var rxGM8Req_ind1 = 4;
+	private static inline var rxGM8Req_ind2 = 5;
 	
 	private static var rxHasOpt = new RegExp('(?:\\?|=|,\\s*$)');
 	private static var rxHasTail = new RegExp(',\\s*$');
@@ -68,21 +94,22 @@ class GmlExtArgs {
 		var version = GmlAPI.version;
 		if (!Preferences.current.argsMagic) return code;
 		if (strict == null) strict = Preferences.current.argsStrict;
-		var hasFunctionLiterals = gml.Project.current.version.hasFunctionLiterals();
+		var hasFunctionLiterals = version.hasFunctionLiterals();
+		var hasVarDeclSet = version.config.hasVarDeclSet;
+		//
 		var q = new GmlReader(code);
 		var out = "";
 		var start = 0;
 		inline function flush(till:Int) {
 			out += q.substring(start, till);
 		}
-		var rxOpt = strict ? GmlExtArgs.rxOptStrict : GmlExtArgs.rxOpt;
-		var rxType = GmlExtImport.rxLocalType;
+		var rxOpt = strict ? rxOptStrict : rxOpt;
+		var rxReq = hasVarDeclSet ? null : (strict ? rxGM8Req_strict : rxGM8Req);
 		function proc() {
 			var args = "#args";
 			var argv = false;
 			var found = 0;
 			var pos:Int;
-			var proc_start = q.pos;
 			var c:CharCode;
 			var s:String;
 			var spStart:Int;
@@ -95,7 +122,7 @@ class GmlExtArgs {
 			pos = q.pos;
 			q.skipLine();
 			rxOpt.lastIndex = 0;
-			var hasReq = !rxOpt.test(q.substring(pos, q.pos));
+			var hasReq = hasVarDeclSet && !rxOpt.test(q.substring(pos, q.pos));
 			q.pos = pos + (hasReq ? 3 : 0);
 			// pass 1: required arguments (could do regexp..?)
 			if (hasReq) while (q.loop) {
@@ -188,9 +215,36 @@ class GmlExtArgs {
 					default: if (c.isIdent0()) break; else return null;
 				}
 			}
+			var till = q.pos;
+			
+			// pass 1a: required arguments (for GM versions without `var a = v`)
+			if (!hasVarDeclSet) while (q.loop) {
+				q.skipSpaces1();
+				pos = q.pos;
+				q.skipIdent1();
+				s = q.substring(pos, q.pos);
+				if (s != "var") { q.pos = till; break; }
+				q.skipLine();
+				var mt = rxReq.exec(q.substring(pos, q.pos));
+				if (mt == null) { q.pos = till; break; }
+				//
+				var name = mt[rxGM8Req_name1];
+				var name2 = mt[rxGM8Req_name2];
+				if (name != name2) { q.pos = till; break; }
+				//
+				var argInd = JsTools.or(mt[rxGM8Req_ind1], mt[rxGM8Req_ind2]);
+				if (argInd != "" + found) { q.pos = till; break; }
+				//
+				var type = mt[rxGM8Req_type];
+				if (found > 0) args += ",";
+				args += " " + name + (type != null ? ":" + type : "");
+				found += 1;
+				//
+				till = q.pos;
+			}
+			
 			// pass 2: optional arguments
 			var req = found;
-			var till = q.pos;
 			while (q.loop) {
 				q.skipSpaces1();
 				pos = q.pos;
@@ -205,11 +259,11 @@ class GmlExtArgs {
 				//
 				var name = mt[rxOpt_name];
 				var type:Null<String> = mt[rxOpt_type];
-				var fs = "" + found;
+				var foundStr = "" + found;
 				if (mt[rxOpt_then] != null
-					? (mt[rxOpt_then] != fs || mt[rxOpt_then + 1] != name
-					|| mt[rxOpt_then + 2] != fs || mt[rxOpt_then + 3] != name)
-					: (mt[rxOpt_tern] != fs || mt[rxOpt_tern + 1] != fs)
+					? (mt[rxOpt_then] != foundStr || mt[rxOpt_then + 1] != name
+					|| mt[rxOpt_then + 2] != foundStr || mt[rxOpt_then + 3] != name)
+					: (mt[rxOpt_tern] != foundStr || mt[rxOpt_tern + 1] != foundStr)
 				) { q.pos = till; break; }
 				//
 				var val = mt[rxOpt_value];
@@ -299,6 +353,9 @@ class GmlExtArgs {
 	}
 	public static function post(code:String):Null<String> {
 		var version = GmlAPI.version;
+		var hasVarDeclSet = version.config.hasVarDeclSet;
+		var hasTernary = version.hasTernaryOperator();
+		//
 		argData = null;
 		if (!Preferences.current.argsMagic || code.indexOf("#args") < 0) return code;
 		var data = new Dictionary();
@@ -399,20 +456,25 @@ class GmlExtArgs {
 						reqDone = true;
 						out += ";\r\n";
 					}
-					if (version.hasTernaryOperator()) {
+					if (hasTernary) {
 						out += 'var $name$type = argument_count > $found'
 							+ ' ? argument[$found] : $val;\r\n';
 					} else {
 						out += 'var $name$type; if (argument_count > $found)'
 							+ ' $name = argument[$found]; else $name = $val;\r\n';
 					}
-				} else {
+				} else if (hasVarDeclSet) {
 					if (reqDone) return error('Can\'t have required arguments after optional arguments.');
 					reqDone = false;
 					if (found == 0) {
 						out += "var ";
 					} else if (found > 0) out += ", ";
 					out += '$name$type = argument' + (hasOpt ? '[$found]' : "" + found);
+				} else { // gm8
+					out += ('var $name$type; $name = argument'
+						+ (hasOpt ? '[$found]' : "" + found)
+						+ ";\r\n"
+					);
 				}
 				argNames.push(docName);
 				argTypes.push(docType);
