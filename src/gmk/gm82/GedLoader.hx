@@ -74,7 +74,7 @@ class GedLoader {
 				GmlAPI.extKind[constName] = "extmacro";
 				if (!constHidden) {
 					GmlAPI.extCompAdd(new AceAutoCompleteItem(
-						constName, "macro", constValue
+						constName, "macro", '($constValue)'
 					));
 				}
 			}

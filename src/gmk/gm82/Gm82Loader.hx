@@ -19,6 +19,7 @@ import gml.GmlAPI;
 import parsers.GmlSeeker;
 import gml.Project;
 using StringTools;
+using tools.NativeString;
 
 class Gm82Loader {
 	public static function run(project:Project) {
@@ -36,7 +37,7 @@ class Gm82Loader {
 			var treePath = Path.join([dir, "tree.yyd"]);
 			if (!project.existsSync(treePath)) return;
 			//
-			var rootDir = TreeView.makeAssetDir(dir, dir, kind);
+			var rootDir = TreeView.makeAssetDir(dir.capitalize(), dir, kind);
 			var treeDirs:Array<TreeViewDir> = [rootDir];
 			var treeNames:Array<String> = [];
 			//
@@ -119,6 +120,19 @@ class Gm82Loader {
 		loadRecRoot("objects", "object");
 		loadRecRoot("rooms", "room");
 		//
+		{ // constants
+			var constRel = "settings/constants.txt";
+			var constFull = project.fullPath(constRel);
+			var tvItem = TreeView.makeAssetItem("Constants", constRel, constFull, "script");
+			tvItem.yyOpenAs = KGm82Constants.inst;
+			TreeView.element.appendChild(tvItem);
+			if (project.existsSync(constRel)) seekSoon.push({
+				full: constFull,
+				name: "Constants",
+				kind: KGm82Constants.inst
+			});
+		}
+		//
 		var extensionList = project.readTextFileSync("settings/extensions.txt").replace("\r", "");
 		var extensionFolder = Preferences.current.gmkExtensionFolder;
 		for (extName in extensionList.split("\n")) {
@@ -136,15 +150,17 @@ class Gm82Loader {
 				continue;
 			}
 			//
-			//try {
+			try {
 				var raw = FileSystem.readFileSync(path);
 				var ua:Uint8Array = untyped Uint8Array.from(raw);
 				var abuf = ua.buffer;
 				GedLoader.run(Bytes.ofData(abuf));
-			//} catch (x:Dynamic) {
-				//Console.error('Failed ')
-			//}
+			} catch (x:Dynamic) {
+				Console.error('Failed to index extension "$extName": $x');
+			}
 		}
+		//
+		
 		//
 		for (item in seekSoon) {
 			GmlSeeker.run(item.full, item.name, item.kind);
