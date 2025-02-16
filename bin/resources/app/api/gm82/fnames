@@ -97,6 +97,8 @@ string_format(val,total,dec)
 chr(val)
 ansi_char(val)
 ord(char)
+string_byte_length(str)
+string_byte_at(str,index)
 string_length(str)
 string_pos(substr,str)
 string_copy(str,index,count)
@@ -633,6 +635,7 @@ background_alpha[0..7]
 // section 5.3
 
 draw_self()
+YoYo_GetDevice()
 YoYo_GetPlatform()
 YoYo_EnableAlphaBlend(enable)
 draw_sprite(sprite,subimg,x,y)
@@ -1213,7 +1216,7 @@ sprite_create_from_surface(id,x,y,w,h,removeback,smooth,xorig,yorig)
 sprite_add_from_surface(ind,id,x,y,w,h,removeback,smooth)
 sprite_delete(ind)
 sprite_set_alpha_from_sprite(ind,spr)
-sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbright,bbtop,bbbottom,kind,tolerance)
+sprite_collision_mask(ind,sepmasks,bboxmode,bbleft,bbtop,bbright,bbbottom,kind,tolerance)
 
 // section 9.2
 
@@ -1842,23 +1845,6 @@ d3d_model_ellipsoid(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat,steps)
 d3d_model_wall(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat)
 d3d_model_floor(ind,x1,y1,z1,x2,y2,z2,hrepeat,vrepeat)
 
-
-// YoYo extension stuff
-os_win32#
-os_win64#
-os_macosx#
-os_psp#
-os_ios#
-os_android#
-
-device_ios_iphone#
-device_ios_iphone_retina#
-device_ios_ipad#
-
-os_type*
-os_device*
-display_aa*
-
 text_type#
 button_type#
 input_type#
@@ -1882,4 +1868,34 @@ THAI_CHARSET#
 MAC_CHARSET#
 BALTIC_CHARSET#
 OEM_CHARSET#
+
+// YoYo extension stuff
+os_unknown#
+os_win32#
+os_win64#
+os_macosx#
+os_psp#
+os_ios#
+os_android#
+os_linux#
+
+device_ios_unknown#
+device_ios_iphone#
+device_ios_iphone_retina#
+device_ios_ipad#
+
+browser_not_a_browser#
+browser_unknown#
+browser_ie#
+browser_firefox#
+browser_chrome#
+browser_safari#
+browser_safari_mobile#
+browser_opera#
+
+os_type*
+os_device*
+os_browser*
+display_aa*
+
 

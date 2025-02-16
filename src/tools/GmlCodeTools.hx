@@ -130,6 +130,10 @@ class GmlCodeTools {
 		while (--pos >= 0) {
 			var c:CharCode = src.fastCodeAt(pos);
 			switch (c) {
+				case "\n".code: {
+					// todo: have to parse the file from the beginning... just for this?
+					return true;
+				}
 				case '"'.code, "'".code: return true;
 				case ")".code, "]".code, "{".code, "}".code: return true;
 				case "[".code: return false;

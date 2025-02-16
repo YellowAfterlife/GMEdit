@@ -22,6 +22,9 @@ typedef GmlVersionConfig = {
 	/** Whether you can do "var a = b" */
 	var hasVarDeclSet:Bool;
 	
+	/** Whether `list[|ind]` / `map[?key]` / `grid[#x, y]` are supported **/
+	var hasDsAccessors:Bool;
+	
 	/** Whether you can do "a \" b" */
 	var hasStringEscapeCharacters:Bool;
 	
@@ -151,6 +154,7 @@ class GmlVersionConfigDefaults {
 			name: null,
 			//
 			hasVarDeclSet: true,
+			hasDsAccessors: true,
 			hasStringEscapeCharacters: v2,
 			hasLiteralStrings: v2,
 			hasSingleQuotedStrings: v1,

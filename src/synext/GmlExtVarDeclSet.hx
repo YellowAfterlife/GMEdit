@@ -136,6 +136,7 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 			start = q.pos;
 		}
 		//
+		if (start == 0) return code;
 		flush(q.length);
 		return out;
 	}
@@ -213,6 +214,7 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 			out += decl + sets;
 			start = q.pos;
 		}
+		if (start == 0) return code;
 		flush(q.length);
 		return out;
 	}

@@ -11,6 +11,7 @@
 	"hasEventSections": true,
 	"hasEventActions": true,
 	"hasVarDeclSet": false,
+	"hasDsAccessors": false,
 	
 	"projectRegex": "Global Game Settings\\.xml$",
 	"helpURL": "http://docs.yoyogames.com/?tab=i&page=$1",
