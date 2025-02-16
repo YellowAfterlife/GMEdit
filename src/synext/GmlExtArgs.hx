@@ -65,7 +65,8 @@ class GmlExtArgs {
 			//
 			rx = new RegExp("^var" + s1p + "(\\w+)" // -> name
 				+ "(?:" + GmlExtImport.rsLocalType + ")?" // -> :type (opt.)
-				+ ';${s1x}(\\w+)${s1x}=${s1x}'
+				+ '(?:;${s1x}(\\w+))?'
+				+ '${s1x}=${s1x}'
 				+ 'argument(?:(\\d+)|$s0x\\[$s0x(\\d+)$s0x\\])' // -> index, index2
 			+ ";", "");
 			if (!lean) rxGM8Req_strict = rx;
@@ -230,7 +231,7 @@ class GmlExtArgs {
 				//
 				var name = mt[rxGM8Req_name1];
 				var name2 = mt[rxGM8Req_name2];
-				if (name != name2) { q.pos = till; break; }
+				if (name2 != null && name != name2) { q.pos = till; break; }
 				//
 				var argInd = JsTools.or(mt[rxGM8Req_ind1], mt[rxGM8Req_ind2]);
 				if (argInd != "" + found) { q.pos = till; break; }

@@ -71,6 +71,7 @@ class KGml extends KCode {
 			GmlExtCast.inst,
 			GmlExtHashColorLiterals.inst,
 			GmlExtHyper.inst,
+			GmlExtVarDeclSet.inst,
 			// GmlExtArgs.inst, // also done in KGmlScript AND it's done out of order
 		];
 	}
