@@ -118,7 +118,7 @@ class Main {
 				var appOnly = out + "/GMEdit-AppOnly.zip";
 				File.copy(verFull, appOnly);
 				Sys.setCwd(tempDefaultApp);
-				run7z(["a", appOnly].concat(appPaths));
+				run7z(["a", "-xr!godot", appOnly].concat(appPaths));
 				if (!wantUpload) continue;
 				var itchName = config.itch_path + ":Editor-";
 				if (mode == Beta) itchName += "Beta-";
