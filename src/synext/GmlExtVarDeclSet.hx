@@ -15,6 +15,19 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 	//
 	static var rxGlobalVar = new RegExp("\\b" + "globalvar" + "[ \t]+" + "\\w");
 	//
+	static function getForLoop(q:GmlReader, varAt:Int, isPost:Bool) {
+		var p = varAt;
+		while (--p >= 0) {
+			var c = q.get(p);
+			if (c.isSpace1()) continue;
+			if (!isPost) {
+				return (c == "{".code && q.get(p - 1) == "(".code) ? p + 1 : -1;
+			} else {
+				return (c == "(".code) ? p + 1 : -1;
+			}
+		}
+		return -1;
+	}
 	override function preproc(editor:EditCode, code:String):String {
 		var version = GmlAPI.version;
 		var hasVarDeclSet = version.config.hasVarDeclSet;
@@ -29,6 +42,7 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 		//
 		while (q.loopLocal) {
 			if (q.skipCommon() >= 0) continue;
+			var beforeVar = q.pos;
 			var c = q.peek();
 			var isGlobalVar;
 			if (c == "v".code) {
@@ -131,8 +145,14 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 			if (!valid || found == 0) {
 				continue;
 			}
-			flush(afterVar);
-			out += decl;
+			var forAt = getForLoop(q, beforeVar, false);
+			if (forAt != -1 && q.skipIfEquals("}".code)) {
+				flush(forAt - 1);
+				out += q.substring(forAt, afterVar) + decl;
+			} else {
+				flush(afterVar);
+				out += decl;
+			}
 			start = q.pos;
 		}
 		//
@@ -156,6 +176,7 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 		//
 		while (q.loopLocal) {
 			if (q.skipCommon() >= 0) continue;
+			var beforeVar = q.pos;
 			var c = q.peek();
 			var isGlobalVar;
 			if (c == "v".code) {
@@ -210,8 +231,14 @@ class GmlExtVarDeclSet extends SyntaxExtension {
 			if (!valid || found == 0) {
 				continue;
 			}
-			flush(afterVar);
-			out += decl + sets;
+			var forAt = getForLoop(q, beforeVar, true);
+			if (forAt != -1) {
+				flush(forAt);
+				out += "{" + q.substring(forAt, afterVar) + decl + sets + "}";
+			} else {
+				flush(afterVar);
+				out += decl + sets;
+			}
 			start = q.pos;
 		}
 		if (start == 0) return code;
