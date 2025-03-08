@@ -204,8 +204,9 @@
 		})(),
 		"ace/mode/markdown": (function() {
 			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}\s])/;
-			var rxDmd2 = /^\s*(#+)(?:\[(.+)\].*|(.+))/;
-			var rxDmd2ex = /^(define\b|macro\b|\W)/;
+			//                 ##     [Title]
+			var rxDmd2 = /^\s*(#+)(?:\[(.+)\]|(.+))/;
+			var rxDmd2ex = /^(define\b|macro\b)/;
 			function update_dmd(file, pos) {
 				var row = pos.row;
 				var doc = file.codeEditor.session.doc;
@@ -222,6 +223,7 @@
 				var doc = file.codeEditor.session.doc;
 				var n = doc.getLength();
 				var stack = [], eos;
+				var depth = 0;
 				for (var row = 0; row < n; row++) {
 					var line = doc.getLine(row);
 					var mt;
@@ -235,7 +237,19 @@
 					} else if (mt = rxDmd2.exec(line)) {
 						var name = mt[2] || mt[3];
 						if (rxDmd2ex.test(name)) continue;
-						ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
+						var newDepth = mt[1].length;
+						if (newDepth > depth) {
+							ctx.push(name, mt[0], { ctx: name,ctxAfter:true});
+						} else if (newDepth < depth) {
+							ctx.pop();
+							ctx.pop();
+							ctx.push(name, mt[0], { ctx: name,ctxAfter:true});
+						} else {
+							ctx.pop();
+							ctx.push(name, mt[0], { ctx: name,ctxAfter:true});
+							//ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
+						}
+						depth = newDepth;
 					}
 				}
 			}
