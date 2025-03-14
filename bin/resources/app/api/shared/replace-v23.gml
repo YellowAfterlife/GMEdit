@@ -59,7 +59,7 @@ array_shift<T>(array:T[])->T
 array_insert<T>(array:T[],index:int,...values:T)->void
 array_delete<T>(array:T[],index:int,number:int)->void
 array_sort<T>(array:T[],sortType_or_function:bool|function<T;T;int>)->void
-array_shuffle<T>(array:T[],?offset:int,?length:int)->T
+array_shuffle<T>(array:T[],?offset:int,?length:int)->T[]
 array_shuffle_ext<T>(array:T[],?offset:int,?length:int)->void
 array_get_index<T>(array:T[],value:T,?offset:int,?length:int)->int
 array_contains<T>(array:T[],value:T,?offset:int,?length:int)->bool
