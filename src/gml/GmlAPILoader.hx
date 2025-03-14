@@ -236,29 +236,38 @@ using tools.ERegTools;
 		#if !lwedit
 		if (FileSystem.canSync) {
 			var xdir = FileWrap.userPath + "/api/" + version.getName();
-			if (FileSystem.existsSync(xdir))
-			for (xrel in FileSystem.readdirSync(xdir)) {
-				var xfull = xdir + "/" + xrel;
-				if (FileSystem.statSync(xfull).isDirectory()) continue;
-				if (xrel == "fnames") {
-					cx.call(getContent, xfull, function(s:String) {
-						ctx.raw += "\n" + s;
-					});
-					continue;
-				}
-				var xp = new Path(xrel);
-				if (xp.ext != null && xp.ext.toLowerCase() == "gml") {
-					if (Path.extension(xp.file).toLowerCase() == "replace") {
+
+			var xsearch:String->Void = null;
+			xsearch = function(xdir:String) {
+				for (xrel in FileSystem.readdirSync(xdir)) {
+					var xfull = xdir + "/" + xrel;
+					if (FileSystem.statSync(xfull).isDirectory()) {
+						xsearch(xfull);
+						continue;
+					}
+					if (xrel == "fnames") {
 						cx.call(getContent, xfull, function(s:String) {
-							ctx.raw = applyPatchFile(ctx.raw, s);
+							ctx.raw += "\n" + s;
 						});
 						continue;
 					}
-					cx.call(getContent, xfull, function(s:String) {
-						ctx.raw += "\n" + s;
-					});
+					var xp = new Path(xrel);
+					if (xp.ext != null && xp.ext.toLowerCase() == "gml") {
+						if (Path.withoutExtension(xp.file).toLowerCase() == "replace") {
+							cx.call(getContent, xfull, function(s:String) {
+								ctx.raw = applyPatchFile(ctx.raw, s);
+							});
+							continue;
+						}
+						cx.call(getContent, xfull, function(s:String) {
+							ctx.raw += "\n" + s;
+						});
+					}
 				}
 			}
+			
+			if (FileSystem.existsSync(xdir))
+				xsearch(xdir);
 		}
 		#end
 		
