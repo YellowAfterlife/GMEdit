@@ -166,6 +166,9 @@ class GmlTypeCanCastTo {
 						if (p1[0].isAny()) return true;
 					case KCustomKeyStruct if (k1 == KStruct): return true;
 					case KStruct if (k1 == KCustomKeyStruct): return true;
+					case KAnyFieldsOf:
+						if (k1 == KCustom) return canCastTo(from, p2[0], tpl, imp);
+
 					default:
 				}
 				
