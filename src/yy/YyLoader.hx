@@ -174,18 +174,29 @@ class YyLoader {
 			if (parentDir == pair.dir) continue;
 			TreeView.insertSorted(parentDir, pair.dir);
 		}
-		if (true) {
-			var ccs = TreeView.makeAssetItem("roomCreationCodes",
-				project.name, project.path, "roomccs");
-			ccs.removeAttribute(TreeView.attrThumb);
-			ccs.yyOpenAs = KYyRoomCCs.inst;
-			ccs.yyOrder = -1;
-			var ccsPar:TreeViewDir = JsTools.orx(
+		inline function getRoomsFolder():TreeViewDir {
+			return JsTools.orx(
 				folderMap["folders/Rooms"],
 				folderMap["folders/rooms"],
 				topLevel
 			);
-			ccsPar.treeItems.appendChild(ccs);
+		}
+		if (true) { // RoomOrder
+			var ord = TreeView.makeAssetItem("Room Order",
+				project.name, project.path, "roomorder"
+			);
+			ord.removeAttribute(TreeView.attrThumb);
+			ord.yyOpenAs = KYyRoomOrder.inst;
+			ord.yyOrder = -1;
+			getRoomsFolder().treeItems.appendChild(ord);
+		}
+		if (true) { // RoomCCs
+			var ccs = TreeView.makeAssetItem("Room Creation Codes",
+				project.name, project.path, "roomccs");
+			ccs.removeAttribute(TreeView.attrThumb);
+			ccs.yyOpenAs = KYyRoomCCs.inst;
+			ccs.yyOrder = -1;
+			getRoomsFolder().treeItems.appendChild(ccs);
 		}
 		if (project.existsSync("#import")) {
 			var idir = TreeView.makeAssetDir("Imports", "#import/", "file");

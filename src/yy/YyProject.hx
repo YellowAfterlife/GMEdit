@@ -15,6 +15,7 @@ typedef YyProject = {
 	/** Exists 2.3 and forward */
 	?TextureGroups:Array<YyTextureGroup>,
 	?AudioGroups:Array<YyAudioGroup>,
+	?RoomOrderNodes:Array<{roomId:YyResourceRef}>,
 	//
 	?MetaData: { IDEVersion: String },
 };
