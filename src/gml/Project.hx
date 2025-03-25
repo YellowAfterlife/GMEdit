@@ -596,7 +596,11 @@ import ui.treeview.TreeViewElement;
 			} catch (x:Dynamic) {}
 			
 			if (version != GmlVersion.none) {
-				PluginEvents.projectOpen({project:this});
+				if (PluginManager.isReady) {
+					PluginEvents.projectOpen({project:this});
+				} else {
+					PluginManager.dispatchProjectOpenOnReady = true;
+				}
 			}
 			ui.ProjectStyle.reload();
 		}, 1);

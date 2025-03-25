@@ -1,5 +1,7 @@
 package plugins;
+import gml.Project;
 import js.html.ScriptElement;
+import plugins.PluginEvents;
 import tools.Result;
 import js.lib.Promise;
 import ui.Preferences;
@@ -24,6 +26,9 @@ using tools.ArrayTools;
 	@author YellowAfterlife
 **/
 class PluginManager {
+	
+	public static var isReady = false;
+	public static var dispatchProjectOpenOnReady = false;
 
 	/**
 		List of known plugins, registered or not. Used to keep track of plugins for which loading
@@ -80,7 +85,7 @@ class PluginManager {
 		Find and load the installed plugins.
 	**/
 	public static function loadInstalledPlugins(): Promise<Void> {
-
+		
 		final pluginPaths = new Map<String, Array<PluginDirName>>();
 
 		if (FileSystem.canSync) {
@@ -152,6 +157,14 @@ class PluginManager {
 
 			start(plugin, false);
 
+		}
+		isReady = true;
+		if (dispatchProjectOpenOnReady) {
+			dispatchProjectOpenOnReady = false;
+			var project = Project.current;
+			if (project.path != "") {
+				PluginEvents.projectOpen({ project: project });
+			}
 		}
 	}
 
