@@ -1,0 +1,3 @@
+-cp src
+-neko bin/Packager.n
+-main Main

@@ -34,16 +34,28 @@ class CopySync {
 		} else return deleteFile(path);
 	}
 	
-	static function copyFile(from:String, to:String) {
+	static function copyFile(from:String, to:String, rel:String) {
+		//rel = "+ " + rel;
+		//Sys.print(rel);
+		var x = null;
 		try {
 			File.copy(from, to);
-			return true;
-		} catch (x:Dynamic) {
-			Sys.println('Failed to copy `$from` to `$to`: $x');
-			return false;
+		} catch (_x:Dynamic) {
+			x = _x;
+			false;
 		}
+		//
+		//var bksp = StringTools.rpad("", String.fromCharCode(8), rel.length);
+		//Sys.print(bksp);
+		//Sys.print(StringTools.rpad("", " ", rel.length));
+		//Sys.print(bksp);
+		//
+		if (x != null) {
+			Sys.println('Failed to copy `$from` to `$to`: $x');
+		}
+		return x == null;
 	}
-	public static function copyDir(from:String, to:String, ?fromFiles:Array<String>) {
+	public static function copyDir(from:String, to:String, dirRel:String, ?fromFiles:Array<String>) {
 		var found = new Map();
 		if (fromFiles == null) fromFiles = FileSystem.readDirectory(from);
 		for (rel in fromFiles) found[rel] = true;
@@ -60,7 +72,9 @@ class CopySync {
 			FileSystem.createDirectory(to);
 		}
 		
-		for (rel in fromFiles) copy('$from/$rel', '$to/$rel');
+		for (rel in fromFiles) {
+			copy('$from/$rel', '$to/$rel', '$dirRel/$rel');
+		}
 		return true;
 	}
 	public static function ensureDirectory(dir:String) {
@@ -71,9 +85,9 @@ class CopySync {
 			if (!FileSystem.exists(sub)) FileSystem.createDirectory(sub);
 		}
 	}
-	public static function copy(from:String, to:String) {
+	public static function copy(from:String, to:String, rel:String) {
 		if (FileSystem.isDirectory(from)) {
-			copyDir(from, to);
-		} else copyFile(from, to);
+			copyDir(from, to, rel);
+		} else copyFile(from, to, rel);
 	}
 }
