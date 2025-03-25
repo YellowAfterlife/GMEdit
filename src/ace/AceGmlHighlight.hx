@@ -39,8 +39,15 @@ using tools.NativeArray;
  */
 @:expose("AceGmlHighlight")
 @:keep class AceGmlHighlight extends AceHighlight {
+	// these are done like this because app-starter loads the theme before app runs:
 	public static var useBracketDepth:Bool = (function() {
 		return Main.document.documentElement.getAttribute("data-theme-uses-bracket-depth") != null;
+	})();
+	public static var maxBracketDepth:Int = (function() {
+		var s = Main.document.documentElement.getAttribute("data-theme-max-bracket-depth");
+		var i = null;
+		if (s != null) i = Std.parseInt(s);
+		return i ?? 256;
 	})();
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
@@ -274,7 +281,8 @@ using tools.NativeArray;
 			regex: "\\{",
 			onMatch: function(value:String, state:AceLangRuleState, stack, line, row) {
 				if (useBracketDepth) {
-					return "curly.paren.lparen.depth" + AceGmlState.getDepth(state);
+					return "curly.paren.lparen.depth"
+						+ (AceGmlState.getDepth(state) % maxBracketDepth);
 				}
 				return "curly.paren.lparen";
 			},
@@ -289,7 +297,8 @@ using tools.NativeArray;
 			regex: "\\}",
 			onMatch: function(value:String, state:AceLangRuleState, stack, line, row) {
 				if (useBracketDepth) {
-					return "curly.paren.rparen.depth" + (AceGmlState.getDepth(state) - 1);
+					return "curly.paren.rparen.depth"
+						+ ((AceGmlState.getDepth(state) - 1) % maxBracketDepth);
 				}
 				return "curly.paren.rparen";
 			},

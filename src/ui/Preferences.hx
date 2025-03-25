@@ -1,7 +1,7 @@
 package ui;
-import plugins.PluginManager;
-import haxe.extern.EitherType;
 #if !starter
+import haxe.extern.EitherType;
+import plugins.PluginManager;
 import ace.AceWrap;
 import electron.AppTools;
 import electron.Dialog;

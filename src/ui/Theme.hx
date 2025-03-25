@@ -79,13 +79,24 @@ class Theme {
 			if (theme.windowsAccentColors) electron.WindowsAccentColors.update(true);
 			if (theme.backgroundColor != null) setBackgroundColor(theme.backgroundColor);
 			if (theme.useBracketDepth != null) {
+				var de = document.documentElement;
 				if (theme.useBracketDepth) {
-					document.documentElement.setAttribute("data-theme-uses-bracket-depth", "");
+					de.setAttribute("data-theme-uses-bracket-depth", "");
 				} else {
-					document.documentElement.removeAttribute("data-theme-uses-bracket-depth");
+					de.removeAttribute("data-theme-uses-bracket-depth");
+				}
+				if (theme.maxBracketDepth != null) {
+					de.setAttribute("data-theme-max-bracket-depth", "" + theme.maxBracketDepth);
+				} else {
+					de.removeAttribute("data-theme-max-bracket-depth");
 				}
 				#if !starter
 				ace.AceGmlHighlight.useBracketDepth = theme.useBracketDepth;
+				if (theme.useBracketDepth) {
+					ace.AceGmlHighlight.maxBracketDepth = theme.maxBracketDepth ?? 256;
+				} else {
+					ace.AceGmlHighlight.maxBracketDepth = 256;
+				}
 				#end
 			}
 			//
@@ -133,6 +144,7 @@ class Theme {
 		reset();
 		#if !starter
 		ace.AceGmlHighlight.useBracketDepth = false;
+		ace.AceGmlHighlight.maxBracketDepth = 256;
 		#end
 		add(name, cb);
 		return name;
@@ -156,4 +168,5 @@ typedef ThemeImpl = {
 	?darkChromeTabs:Bool,
 	?windowsAccentColors:Bool,
 	?useBracketDepth:Bool,
+	?maxBracketDepth:Int,
 }
