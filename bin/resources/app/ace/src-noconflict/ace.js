@@ -17435,7 +17435,7 @@ right: 0;\
 .ace_hidpi .ace_content,\
 .ace_hidpi .ace_gutter {\
 contain: strict;\
-will-change: transform;\
+/* will-change: transform; // -y: causes blurry text*/\
 }\
 .ace_hidpi .ace_text-layer > .ace_line, \
 .ace_hidpi .ace_text-layer > .ace_line_group {\
