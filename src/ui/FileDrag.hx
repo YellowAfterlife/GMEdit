@@ -98,7 +98,15 @@ class FileDrag {
 			#else
 			var file = e.dataTransfer.files[0];
 			if (file == null) return;
-			handle(untyped file.path || file.name, file);
+			var path = file.name;
+			if (electron.Electron.isAvailable()) {
+				var fpath = (cast file).path;
+				if (fpath == null && electron.Electron.webUtils != null) {
+					fpath = electron.Electron.webUtils.getPathForFile(file);
+				}
+				if (fpath != null) path = fpath;
+			}
+			handle(path, file);
 			#end
 		});
 	}

@@ -22,6 +22,7 @@ import electron.ElectronMacros.*;
 	public static var remote:ElectronRemote;
 	public static var clipboard:Clipboard;
 	public static var ipcRenderer:Dynamic;
+	public static var webUtils:WebUtils;
 	
 	public static inline function init():Void {
 		inline function load(hxname:String, ename:String):Void {
