@@ -147,9 +147,20 @@ enum abstract GmxActionExeType(Int) {
 		return this;
 	}
 }
-typedef GmxActionArg = { ?kind:GmxActionArgKind, ?s:String };
+@:forward abstract GmxActionArg(GmxActionArgImpl) from GmxActionArgImpl to GmxActionArgImpl {
+	public var int(get, set):Int;
+	inline function get_int():Int {
+		return Std.parseInt(this.s);
+	}
+	inline function set_int(v:Int) {
+		this.s = Std.string(v);
+		return v;
+	}
+}
+typedef GmxActionArgImpl = { ?kind:GmxActionArgKind, ?s:String };
 enum abstract GmxActionArgKind(Int) from Int to Int {
 	var Snip = 0;
 	var Text = 1;
+	var Menu = 4;
 	var Script = 9;
 }

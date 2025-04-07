@@ -65,12 +65,13 @@ class GmxActionEncoder {
 		var actMt = rxActionSplit.exec(actData);
 		if (actMt == null) return error("Action `" + code.trimRight() + "` is not supported.");
 		//
-		inline function makeDndFuncBlock(id:Int, fn:String, who:String):GmxActionData {
+		inline function makeDndFuncBlock(id:Int, fn:String, who:String, ?args:Array<GmxActionArg>):GmxActionData {
 			return {
 				id: id,
 				fn: fn,
 				who: who,
 				exeType: Func,
+				args: args,
 			};
 		}
 		//
@@ -142,6 +143,13 @@ class GmxActionEncoder {
 				if (actData != "") return noArgs();
 				return { id: 424, kind: CubClose };
 			};
+			//
+			case "action_wrap": {
+				return makeDndFuncBlock(112, "action_wrap", who, [
+					{ kind: Menu, s: "" + GmxActionValues.action_wrap_args.indexOf(actData) },
+				]);
+			};
+			//
 			default: return error("Action `" + code.trimRight() + "` is not supported.");
 		}
 	}

@@ -1,6 +1,7 @@
 package gmx;
 
 import gmx.GmxAction;
+import gmx.GmxActionValues;
 import tools.Aliases;
 
 class GmxActionDecoder {
@@ -40,6 +41,8 @@ class GmxActionDecoder {
 			case 408: result = "action_if" + (a.not ? "_not " : " ") + a.args[0].s;
 			case 422: result = "{";
 			case 424: result = "}";
+			//
+			case 112: result = "action_wrap " + GmxActionValues.action_wrap_args[a.args[0].int];
 			default: return error('DnD action #${a.id} (${a.fn}) is not supported.');
 		}
 		//
