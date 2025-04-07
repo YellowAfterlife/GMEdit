@@ -42,16 +42,24 @@ class GmxAction {
 		var actionArgs = action.find("arguments");
 		if (actionArgs != null) {
 			d.args = actionArgs.findAll("argument").map(argumentMapper);
+			if (d.libid == 1 && d.id == 603 && d.args[0] != null) {
+				// GM:S code blocks have a trailing \r\n, unless empty
+				d.args[0].s = d.args[0].s.trimTrailRn();
+			}
 		}
 		return d;
 	}
 	public static function getCode(node:SfGmx):GmlCode {
 		var out = GmxActionDecoder.decode(getGmxActionData(node));
-		return out?.code;
+		if (out != null) return out.code;
+		errorText = GmxActionDecoder.errorText;
+		return null;
 	}
 	public static function getCodeMulti(nodes:Array<SfGmx>) {
 		var actions = nodes.map(getGmxActionData);
-		return GmxActionDecoder.decodeArray(actions);
+		var snip = GmxActionDecoder.decodeArray(actions);
+		if (snip == null) errorText = GmxActionDecoder.errorText;
+		return snip;
 	}
 	//
 	public static function makeGmxActionBlock(d:GmxActionData):SfGmx {
@@ -59,7 +67,8 @@ class GmxAction {
 			return "" + (c != null ? c : d);
 		}
 		var action = new SfGmx("action");
-		action.addTextChild("libid", s(d.libid, 1));
+		var libid = d.libid ?? 1;
+		action.addTextChild("libid", "" + libid);
 		action.addTextChild("id", "" + d.id);
 		action.addTextChild("kind", s(d.kind, GmxActionKind.Normal));
 		action.addTextChild("userelative", d.rel != null ? "-1" : "0");
@@ -71,10 +80,16 @@ class GmxAction {
 		action.addTextChild("whoName", s(d.who, "self"));
 		action.addTextChild("relative", d.rel ? "1" : "0");
 		action.addTextChild("isnot", d.not ? "1" : "0");
-		if (d.args != null) {
+		var args = d.args;
+		if (args != null) {
+			if (libid == 1 && d.id == 603 && args.length == 1 && args[0].s != "") {
+				// GM:S code blocks have a trailing \r\n, unless empty
+				var arg = args[0];
+				args = [{ kind: arg.kind, s: arg.s + "\r\n" }];
+			}
 			var arguments = new SfGmx("arguments");
 			action.addChild(arguments);
-			for (arg in d.args) {
+			for (arg in args) {
 				var argument = new SfGmx("argument");
 				var kind:GmxActionArgKind = arg.kind ?? Text;
 				argument.addTextChild("kind", "" + kind);

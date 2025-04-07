@@ -121,7 +121,22 @@ class GmlEvent {
 		**/
 		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
 			var flushCode = q.substring(evStart, till);
-			// sections are followed by 1 newline between actions, 2 between events, and 0 at EOF
+			/*
+			Expected structure:
+			<snip>#event properties
+			parent_index = -1;
+			
+			#event create
+			// code with no trailing newlines
+			#section
+			// code with no trailing newlines
+			
+			#event draw
+			// code with no trailing newlines</snip>
+			So events are separated with 2 newlines (one empty),
+			actions/sections are separated by 1 (tight fit if there are no trailing ones),
+			and no extra newlines are kept at EOF.
+			*/
 			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 2));
 			if (evName == null) {
 				if (flushCode != "") {

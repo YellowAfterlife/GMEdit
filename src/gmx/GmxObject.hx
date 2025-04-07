@@ -18,7 +18,6 @@ class GmxObject {
 	public static var errorText:String;
 	public static function getCode(gmx:SfGmx):String {
 		var out = GmxObjectProperties.get(gmx);
-		if (out != "") out += "\n";
 		var errors = "";
 		var objectIDs = GmlAPI.gmlAssetIDs["object"];
 		for (evOuter in gmx.findAll("events")) {
@@ -44,7 +43,7 @@ class GmxObject {
 			});
 			//
 			for (event in events) {
-				if (out != "") out += "\n";
+				if (out != "") out += "\n\n";
 				var name = GmxEvent.toStringGmx(event);
 				out += "#event " + name;
 				// to say, GMS will usually purge empty events on save, but just in case:
