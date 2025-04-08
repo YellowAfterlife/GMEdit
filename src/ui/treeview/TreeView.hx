@@ -276,11 +276,14 @@ using tools.PathTools;
 		var item:TreeViewItem = cast element;
 		if (!item.treeIsItem) return null;
 		
-		var openAs = (cast element:TreeViewItem).yyOpenAs;
+		var openAs = item.yyOpenAs;
 		if (openAs != null) {
 			if (nav == null) {
 				nav = { kind: openAs };
 			} else nav.kind = openAs;
+			if (item.yyOpenData != null) {
+				nav.data = item.yyOpenData;
+			}
 		}
 		return GmlFile.open(element.innerText, element.getAttribute(attrPath), nav);
 	}

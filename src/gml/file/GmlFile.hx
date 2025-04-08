@@ -154,7 +154,7 @@ class GmlFile {
 		var kind:FileKind, data:Dynamic;
 		if (nav != null && nav.kind != null) {
 			kind = nav.kind;
-			data = null;
+			data = nav.data;
 		} else {
 			var kd = GmlFileKindTools.detect(path);
 			kind = kd.kind;
@@ -313,17 +313,26 @@ class GmlFile {
 typedef GmlFileNav = {
 	/** definition (script/event) */
 	?def:String,
+	
 	/** row-column */
 	?pos:AcePos,
+	
 	/** code to scroll to */
 	?ctx:String,
+	
 	/** alt. */
 	?ctxRx:RegExp,
+	
 	/** if set, looks for ctx after pos rather than ctx offset by pos */
 	?ctxAfter:Bool,
+	?showAtTop:Bool,
+	
 	/** file kind override */
 	?kind:FileKind,
-	?showAtTop:Bool,
-	/// Opens Extern files as Plain instead
+	
+	/** file data override */
+	?data:Any,
+	
+	/** Opens unrecognized file types as Plain instead of opening an external editor */
 	?noExtern:Bool,
 }

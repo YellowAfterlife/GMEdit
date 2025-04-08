@@ -137,6 +137,9 @@ extern class TreeViewItem extends TreeViewElement {
 	/** If not null, overrides the FileKind that will be used for this element. */
 	public var yyOpenAs:FileKind;
 	
+	/** If not null, overrides `data` for above */
+	public var yyOpenData:Any;
+	
 	/** like "Scripts/Tools/trace.yy" for "Scripts/Tools/trace" - used in .yyp/.resource_order */
 	public var treeResourcePath23(get, never):String;
 	private inline function get_treeResourcePath23():String {
