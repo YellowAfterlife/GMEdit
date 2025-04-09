@@ -1,5 +1,6 @@
 package gmk.gm82;
 
+import file.kind.misc.KPlain;
 import haxe.io.Bytes;
 import js.lib.Uint8Array;
 import electron.FileSystem;
@@ -86,6 +87,10 @@ class Gm82Loader {
 					case "room": {
 						relPath = 'rooms/$name';
 					}
+					case "timeline": {
+						relPath = 'timelines/$name.gml';
+						openAs = indexKind = KPlain.inst;
+					};
 					default: {
 						relPath = '$dir/$name.txt';
 					}
