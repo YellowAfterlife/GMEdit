@@ -191,6 +191,9 @@ class GmlLinterParser {
 					else return retv(LKHash, "#");
 				};
 				case "$".code: {
+					if (q.peek(-2) == '['.code) { // Special case, $ after a [ is always treated as an accessor
+						return retv(LKDollar, "$");
+					}
 					if (q.isDqTplStart(l.version)) {
 						start();
 						var rows = q.skipDqTplString(l.version);
@@ -199,9 +202,6 @@ class GmlLinterParser {
 							q.rowStart = q.source.lastIndexOf("\n", q.pos) + 1;
 						}
 						return ret(LKString);
-					}
-					if (q.peek(-2) == '['.code) { // Special case, $ after a [ is always treated as an accessor
-						return retv(LKDollar, "$");
 					}
 					start();
 					if (q.peek().isHex()) {
