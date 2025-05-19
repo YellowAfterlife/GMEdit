@@ -386,7 +386,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 						self.checkCallArgs(currFunc, currName, argc, !isStat(), hasFlag(IsNew));
 
 						// Check that the function's self doc matches the current context
-						if (currFunc.selfType != null) {
+						if (currFunc.selfType != null && currFunc.selfType.getKind() != KVoid) {
 							var currSelfType = self.getSelfType();
 							if (GmlTypeTools.canCastTo(currSelfType, currFunc.selfType) == false) {
 								self.addWarning(currFunc.name
