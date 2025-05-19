@@ -126,8 +126,8 @@ lengthdir_y(len:number,dir:number)->number
 
 #region 2.3
 
-real(val:string)->number
-bool(val:number)->bool
+real(val:any)->number
+bool(val:any)->bool
 string(val:any)->string
 int64(val:number|string|pointer)->int
 ptr(val:number|string|pointer|struct|function)->pointer
