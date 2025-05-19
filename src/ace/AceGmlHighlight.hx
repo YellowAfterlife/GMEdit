@@ -127,7 +127,7 @@ using tools.NativeArray;
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
-		var rPragma = rxRule(["preproc.pragma", "keyword", "string"], ~/^(#pragma\b[ \t]*)(\w*[ \t]*)(.*)/);
+		var rPragma = rxRule(["preproc.pragma", "keyword", "string"], ~/(#pragma\b[ \t]*)(\w*[ \t]*)(.*)/);
 		var rActionWith = rxRule(function(start, with, s1, obj, s2, command) {
 			return [
 				"preproc.action",
