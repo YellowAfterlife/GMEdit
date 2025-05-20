@@ -379,8 +379,19 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 #app .ace-tm .ace_enum,
 #app .ace-tm .ace_enumfield,
 #app .ace-tm .ace_namespace,
-#app .ace-tm .ace_constant {
+#app .ace-tm .ace_constant,
+#app .ace-tm .ace_kwconst {
 	color: #FF8080;
+}
+#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_function,
+#app .ace-tm .ace_extfunction,
+#app .ace-tm .ace_extmacro,
+#app .ace-tm .ace_script,
+#app .ace-tm .ace_quasi.ace_paren {
+	color: #FFB871;
 }
 #app .ace-tm .ace_globalvar,
 #app .ace-tm .ace_globalfield {
@@ -395,16 +406,6 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }
 #app .ace-tm .ace_sublocal {
 	color: #FF99F8;
-}
-#app .ace-tm .ace_keyword,
-#app .ace-tm .ace_type,
-#app .ace-tm .ace_curly.ace_paren,
-#app .ace-tm .ace_function,
-#app .ace-tm .ace_extfunction,
-#app .ace-tm .ace_extmacro,
-#app .ace-tm .ace_script,
-#app .ace-tm .ace_quasi.ace_paren {
-	color: #FFB871;
 }
 #app .ace-tm .ace_preproc {
 	/*color: rgb(0, 120, 170);*/

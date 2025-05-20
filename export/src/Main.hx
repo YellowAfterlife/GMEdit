@@ -42,13 +42,34 @@ class Main {
 		var e = p.exitCode(true);
 		Sys.stderr().writeInput(p.stderr);
 	}
+	static function runButler(itchName:String, args:Array<String>) {
+		inline function isYeah(c:Int) {
+			return c == "y".code || c == "Y".code;
+		}
+		Sys.println('Want to run Butler for "$itchName" with ' + Json.stringify(args));
+		Sys.print("Do that (y/n)?");
+		var c = Sys.getChar(true);
+		Sys.println("");
+		if (!isYeah(c)) return;
+		Sys.println('Uploading "$itchName"...');
+		while (true) {
+			var e = Sys.command(config.path_butler, args);
+			Sys.println('exitCode: $e');
+			if (e == 0) return;
+			Sys.print("Retry (y/n)?");
+			c = Sys.getChar(true);
+			Sys.println("");
+			if (!isYeah(c)) return;
+		}
+		//Sys.stderr().writeInput(p.stderr);
+	}
 	static function pack(mode:PackMode) {
 		var cwd = Sys.getCwd();
 		var tempDefault = cwd + "temp/default";
 		var tempDefaultApp = cwd + "temp/default/resources/app";
 		var tempMac = cwd + "temp/mac";
 		var tempMacApp = tempMac + "/GMEdit.app/Contents/Resources/app";
-		var out = cwd + "out";
+		var out = cwd + "../out";
 		var extras = ["-y" , "-bb0", "-bd"];
 		CopySync.ensureDirectory("temp/default/resources/app");
 		CopySync.ensureDirectory("temp/mac/GMEdit.app/Contents/Resources/app");
@@ -65,20 +86,19 @@ class Main {
 		}
 		Sys.println("Version: " + version);
 		
-		var appPaths = FileSystem.readDirectory(appDir);
-		appPaths.remove("node_modules");
-		appPaths.remove("dist");
+		//
 		Sys.println("Copying base app...");
-		CopySync.copyDir(appDir, tempDefaultApp, appPaths);
-		Sys.println("Unzipping node_modules...");
-		run7z(["x",
-			electronDir + "/GMEdit-AppOnly.zip",
-			"node_modules",
-			"-o" + tempDefault,
-		]);
+		var appPaths = FileSystem.readDirectory(appDir);
+		appPaths.remove("dist");
+		appPaths.remove("node_modules");
+		CopySync.copyDir(appDir, tempDefaultApp, "", appPaths);
+		
+		// how come all of this garbage gets downloaded if it's not used
+		Sys.println("Copying node_modules...");
+		var usedNodeModules = ["@electron"];
+		CopySync.copyDir(appDir + "/node_modules", tempDefaultApp + "/node_modules", "", usedNodeModules);
 		
 		var hasMac = false;
-		var rxVer = ~/\w+-\d+\.\d+\.\d+(?:\.\d+)?-(?:(\w+)-)?(\w+)\.zip/;
 		var baseDir = cwd + electronDir;
 		if (wantUpload) {
 			if (config.path_butler == null) {
@@ -90,34 +110,43 @@ class Main {
 				flushConfig();
 			}
 		}
-		for (verRel in FileSystem.readDirectory(baseDir)) {
-			var verFull = baseDir + "/" + verRel;
-			if (verRel.indexOf("AppOnly") >= 0) {
-				Sys.println('Packing GMEdit-AppOnly.zip...');
-				var appOnly = out + "/GMEdit-AppOnly.zip";
-				File.copy(verFull, appOnly);
-				Sys.setCwd(tempDefaultApp);
-				run7z(["a", appOnly].concat(appPaths));
-				if (!wantUpload) continue;
+		
+		if (true) {
+			var appOnly = out + "/GMEdit-AppOnly.zip";
+			Sys.setCwd(tempDefaultApp);
+			run7z(["a",
+				// Godot theme is *huge* because of embedding a font, so let's not pack it in
+				"-xr!godot",
+				appOnly,
+			].concat(appPaths).concat(["node_modules"]));
+			//
+			if (wantUpload) {
 				var itchName = config.itch_path + ":Editor-";
 				if (mode == Beta) itchName += "Beta-";
 				itchName += "App-Only";
-				Sys.println('Uploading $itchName...');
-				Sys.command(config.path_butler, ["push",
+				runButler(itchName, ["push",
 					appOnly, itchName, "--userversion", version,
 				]);
-				continue;
 			}
-			if (mode == AppOnly) continue;
+		}
+		
+		var linuxExeHint = 'GMEdit is an executable!';
+		File.saveContent('$tempDefault/$linuxExeHint', "You may need to mark it as +x to run it");
+		
+		//         GMEdit-1   .0   .0      .0    -   [ia32-]  win  .zip
+		var rxVer = ~/\w+-\d+\.\d+\.\d+(?:\.\d+)?-(?:(\w+)-)?(\w+)\.zip/;
+		if (mode != AppOnly) for (verRel in FileSystem.readDirectory(baseDir)) {
+			var verFull = baseDir + "/" + verRel;
 			if (!rxVer.match(verRel)) continue;
 			var arch = rxVer.matched(1);
 			var platform = rxVer.matched(2);
 			var isMac = platform == "mac";
+			var isLinux = platform == "linux";
 			
 			if (isMac && !hasMac) {
 				hasMac = true;
 				Sys.println("Copying base files for Mac...");
-				CopySync.copyDir(tempDefaultApp, tempMacApp);
+				CopySync.copyDir(tempDefaultApp, tempMacApp, "");
 			}
 			
 			var platformCap = platform.charAt(0).toUpperCase() + platform.substr(1);
@@ -131,7 +160,9 @@ class Main {
 				run7z(["a", zipFull, "GMEdit.app"]);
 			} else {
 				Sys.setCwd(tempDefault);
-				run7z(["a", zipFull, "resources"]);
+				var zipItems = ["resources"];
+				if (isLinux) zipItems.push(linuxExeHint);
+				run7z(["a", zipFull].concat(zipItems));
 			}
 			
 			if (wantUpload) {
@@ -143,22 +174,21 @@ class Main {
 				}
 				if (arch != null) itchName += "-" + arch.toUpperCase();
 				
-				Sys.println('Uploading $itchName...');
-				Sys.command(config.path_butler, ["push",
+				runButler(itchName, ["push",
 					zipFull, itchName, "--userversion", version,
 				]);
 			}
 		}
-		CopySync.copyDir(tempDefault, tempMacApp);
+		//CopySync.copyDir(tempDefault, tempMacApp);
 	}
 	static function main() {
 		configPath = Sys.getCwd() + configPath;
 		preinit();
 		Sys.println("What would you like to do?");
-		Sys.println("s\tPack and upload stable");
-		Sys.println("b\tPack and upload beta");
-		Sys.println("p\tPack without uploading");
-		Sys.println("a\tPack an app-only ZIP");
+		Sys.println("s" + "\t" + "Pack and upload stable");
+		Sys.println("b" + "\t" + "Pack and upload beta");
+		Sys.println("p" + "\t" + "Pack without uploading");
+		Sys.println("a" + "\t" + "Pack an app-only ZIP");
 		Sys.print("> ");
 		var c = String.fromCharCode(Sys.getChar(true)).toLowerCase();
 		Sys.println("");

@@ -19,6 +19,7 @@ import yy.zip.YyZip;
  */
 class FileDrag {
 	public static function handle(path:String, file:js.html.File) {
+		var rel = Path.withoutDirectory(path);
 		var name = Path.withoutDirectory(path);
 		inline function decline():Void {
 			Dialog.showMessageBox({
@@ -27,7 +28,7 @@ class FileDrag {
 				buttons: ["OK"]
 			});
 		}
-		switch (Path.withoutDirectory(path)) {
+		switch (rel) {
 			case "main.cfg", "main.txt": {
 				Project.open(path);
 				return;
@@ -46,6 +47,8 @@ class FileDrag {
 			};
 			case "yyp": Project.open(path);
 			case "gmd", "gmk", "gm81": gmk.GmkSplit.proc(path);
+			case "gmk-snips": Project.open(path);
+			case "xml" if (rel == "Global Game Settings.xml"): Project.open(path);
 			case "gml": {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 				GmlFile.open(Path.withoutExtension(name), path);
@@ -87,7 +90,7 @@ class FileDrag {
 		document.body.addEventListener("dragenter", cancelDefault);
 		document.body.addEventListener("drop", function(e:DragEvent) {
 			e.preventDefault();
-			//Main.console.log(e.dataTransfer.files);
+			//Console.log(e.dataTransfer.files);
 			#if gmedit.live
 			for (file in e.dataTransfer.files) {
 				ui.liveweb.LiveWebIO.acceptFile(file);
@@ -95,7 +98,15 @@ class FileDrag {
 			#else
 			var file = e.dataTransfer.files[0];
 			if (file == null) return;
-			handle(untyped file.path || file.name, file);
+			var path = file.name;
+			if (electron.Electron.isAvailable()) {
+				var fpath = (cast file).path;
+				if (fpath == null && electron.Electron.webUtils != null) {
+					fpath = electron.Electron.webUtils.getPathForFile(file);
+				}
+				if (fpath != null) path = fpath;
+			}
+			handle(path, file);
 			#end
 		});
 	}

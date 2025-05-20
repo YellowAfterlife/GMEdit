@@ -14,6 +14,7 @@ import tools.Dictionary;
 import ace.AceWrap;
 import ace.extern.AceAutoCompleter;
 import tools.JsTools;
+import js.html.Console;
 using tools.NativeString;
 
 /**
@@ -55,7 +56,7 @@ class AceSnippets {
 			manager.register(file.snippets, file.scope);
 			return true;
 		} catch (x:Dynamic) {
-			Main.console.error("Couldn't refresh snippets:", x);
+			Console.error("Couldn't refresh snippets:", x);
 		}
 		return false;
 	}

@@ -17,8 +17,9 @@ class GmlSeekerJSDocRegex {
 	);
 	public static var jsDoc_param = new RegExp("^///\\s*"
 		+ "@(?:arg|param|argument)\\s+"
-		+ "(?:\\{(.*?)\\}\\s*)?" // {type}?
-		+ "(\\S+(?:\\s+=.+)?)" // `arg` or `arg=value` -> $1
+		+ "(?:\\{" + "(.*?)" + "\\}\\s*)?" // {type}? -> $1
+		+ "(" + "(\\S+)" + "(\\s+=" + "(.+)" + ")?)" // `arg` or `arg=value` -> $2
+		// arg name -> $3, arg value wrap -> $4, arg value -> $5
 	);
 	public static var jsDoc_hint = new RegExp("^///\\s*"
 		+ "@hint\\b\\s*"
@@ -52,13 +53,13 @@ class GmlSeekerJSDocRegex {
 	
 	public static var jsDoc_interface = new RegExp("^///\\s*"
 		+ "@interface\\b\\s*"
-		+ "(?:\\{(\\w+)\\})?"
+		+ "(?:\\{(\\w+)\\})?" // name (opt.)
 	);
 	
 	public static var jsDoc_is = new RegExp("^///\\s*"
-		+ "@is(?:s)?"
-		+ "\\b\\s*\\{(.+?)\\}"
-		+ "\\s*(.*)"
+		+ "@is\\b\\s*"
+		+ "(?:\\{(.+)\\}\\s*)?" // type (opt.)
+		+ "(.*)"
 	);
 	public static var jsDoc_is_line = (function() {
 		var id = "[_a-zA-Z]\\w*";
@@ -78,6 +79,15 @@ class GmlSeekerJSDocRegex {
 		+ "\\{(.*?)\\}\\s*"
 		+ "(\\w+)\\s*"
 		+ "(?:<(.*?)>)?"
+	);
+	
+	public static var jsDoc_static = new RegExp("^///\\s*"
+		+ "@static\\b\\s*"
+	);
+	
+	public static var jsDoc_index_redirect = new RegExp("^///\\s*"
+		+ "@index_redirect\\b\\s*"
+		+ "(.*)"
 	);
 	
 	public static var gmlDoc_full = new RegExp("^\\s*\\w*\\s*\\(.*\\)");

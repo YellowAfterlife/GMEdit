@@ -75,6 +75,8 @@ class GmlSeekData {
 	// features
 	public var imports:Dictionary<GmlImports> = null;
 	public var hasCoroutines:Bool = false;
+	public var coroutineMode:GmlExtCoroutineMode = null;
+	public var yieldScripts:Array<String> = [];
 	public var hasGMLive:Bool = false;
 	
 	//

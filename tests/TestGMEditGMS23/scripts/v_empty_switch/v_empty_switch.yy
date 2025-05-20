@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Syntax",
-    "path": "folders/Scripts/Linter/Syntax.yy",
+  "$GMScript":"",
+  "%Name":"v_empty_switch",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_empty_switch",
+  "parent":{
+    "name":"Syntax",
+    "path":"folders/Scripts/Linter/Syntax.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_empty_switch",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

@@ -114,7 +114,9 @@ class GmlTypeCanCastTo {
 			case [TInst(_, [], KMap), TSpecifiedMap(_)]: return true;
 			case [TInst(n1, p1, k1), TInst(n2, p2, k2)]: {
 				// allow function->script casts
-				if (k1 == KFunction && n2 == "script") return true;
+				if ((k1 == KFunction || k1 == KConstructor)
+					&& n2 == "script"
+				) return true;
 				
 				switch (k2) {
 					// allow bool<->number casts:
@@ -132,8 +134,20 @@ class GmlTypeCanCastTo {
 						if (JsTools.nca(ns, ns.isObject)) return true;
 						var nk = GmlAPI.gmlKind[n1];
 						if (nk != null && nk.startsWith("asset.")) return true;
-					case KFunction:
-						if (k1 != KFunction) return false;
+					case KFunction, KConstructor:
+						if (k1 == KCustom) {
+							return AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
+								var selfCall = ns.instTypes[""];
+								if (selfCall != null) {
+									return canCastTo(selfCall, to, tpl, imp);
+								} else return false;
+							});
+						}
+						if (k2 == KFunction) {
+							if (k1 != KFunction && k1 != KConstructor) return false;
+						} else {
+							if (k1 != KConstructor) return false;
+						}
 						var i = p2.length;
 						if (i == 0 || p1.length == 0) return true; // any-functions
 						if (p1.length != i) return false;
@@ -150,6 +164,11 @@ class GmlTypeCanCastTo {
 						return true;
 					case KCustomKeyArray if (k1 == KArray):
 						if (p1[0].isAny()) return true;
+					case KCustomKeyStruct if (k1 == KStruct): return true;
+					case KStruct if (k1 == KCustomKeyStruct): return true;
+					case KAnyFieldsOf:
+						if (k1 == KCustom) return canCastTo(from, p2[0], tpl, imp);
+
 					default:
 				}
 				
@@ -200,6 +219,9 @@ class GmlTypeCanCastTo {
 			case [TAnon(a1), TInst(_, [TInst(n2, _, KCustom)], KAnyFieldsOf)]: {
 				return canCastAnonToAnyFieldsOf(a1, n2);
 			};
+			case [TAnon(a1), TInst(_, _, KCustomKeyStruct)]: {
+				return a1.fields.isEmpty();
+			}
 			case [TAnon(a1), TAnon(a2)]: {
 				var ok = true;
 				NativeObject.forField(a2.fields, function(fd:String) {

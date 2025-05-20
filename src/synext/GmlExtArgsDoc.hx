@@ -4,6 +4,7 @@ import ace.extern.*;
 import gml.Project;
 import gml.file.GmlFile;
 import js.lib.RegExp;
+import js.html.Console;
 import synext.GmlExtArgs;
 import tools.NativeArray;
 import tools.RegExpCache;
@@ -120,7 +121,7 @@ class GmlExtArgsDoc {
 			if (s != null && s.trim() != "") try {
 				rxTrim = new RegExp(s);
 			} catch (x:Dynamic) {
-				Main.console.error("Error parsing argument regex: ", x);
+				Console.error("Error parsing argument regex: ", x);
 			}
 		};
 		var rxSimpleVal = GmlExtArgsDoc.rxSimpleVal;

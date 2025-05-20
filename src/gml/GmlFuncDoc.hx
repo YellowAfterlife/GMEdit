@@ -1,5 +1,7 @@
 package gml;
+import gml.GmlAPI.GmlLookup;
 import gml.funcdoc.*;
+import gml.file.GmlFile;
 import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTools;
@@ -53,6 +55,10 @@ class GmlFuncDoc {
 	
 	/** Type of `self` set via `/// @self` */
 	public var selfType:GmlType = null;
+	
+	// these are currently only set for sub-functions so that you can navigate to them
+	public var lookup:GmlLookup = null;
+	public var nav:GmlFileNav = null;
 	
 	var minArgsCache:Null<Int> = null;
 	
@@ -214,7 +220,9 @@ class GmlFuncDoc {
 		if (hasReturn) {
 			params.push(returnType);
 		} else params.push(GmlTypeDef.void);
-		return GmlType.TInst("function", params, KFunction);
+		if (isConstructor) {
+			return GmlType.TInst("constructor", params, KConstructor);
+		} else return GmlType.TInst("function", params, KFunction);
 	}
 	
 	public static var nameTrimRegex = new RegExpCache();

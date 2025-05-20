@@ -11,17 +11,27 @@
           <defs>
             <symbol id="topleft" viewBox="0 0 214 29" >
               <path class="curvy" d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/>
+            </symbol>
+			<symbol id="topleft-flat" viewBox="0 0 214 29" >
               <rect class="flat" width="210" height="29" x="7"/>
             </symbol>
             <symbol id="topleft-pinline">
               <path class="curvy pinned" d="M 14.162109 0.037109375 C 14.024609 0.099609375 13.749219 0.34960938 13.199219 1.0996094 C 13.154145 1.1672199 12.840393 1.8359117 12.751953 2 L 214 2 L 214 0.099609375 L 14.300781 0.099609375 C 14.300781 0.099609375 14.299609 -0.025390625 14.162109 0.037109375 z " />
+            </symbol>
+			<symbol id="topleft-pinline-flat">
               <rect class="flat pinned" width="210" height="2" x="7"/>
             </symbol>
             <symbol id="topright" viewBox="0 0 214 29">
               <use xlink:href="#topleft"/>
             </symbol>
+			<symbol id="topright-flat" viewBox="0 0 214 29">
+              <use xlink:href="#topleft-flat"/>
+            </symbol>
             <symbol id="topright-pinline" viewBox="0 0 214 29">
               <use xlink:href="#topleft-pinline"/>
+            </symbol>
+			<symbol id="topright-pinline-flat" viewBox="0 0 214 29">
+              <use xlink:href="#topleft-pinline-flat"/>
             </symbol>
             <clipPath id="crop">
               <rect class="mask" width="100%" height="100%" x="0"/>
@@ -36,14 +46,20 @@
             </filter>
           </defs>
           <svg width="51%" height="100%" transfrom="scale(-1, 1)">
-            <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/>
-            <use xlink:href="#topleft-pinline" width="214" height="29" class="chrome-tab-pinline"/>
-            <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/>
+            <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background curvy"/>
+            <use xlink:href="#topleft-flat" width="214" height="29" class="chrome-tab-background flat"/>
+            <use xlink:href="#topleft-pinline" width="214" height="29" class="chrome-tab-pinline curvy"/>
+            <use xlink:href="#topleft-pinline-flat" width="214" height="29" class="chrome-tab-pinline flat"/>
+            <use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow curvy"/>
+            <use xlink:href="#topleft-flat" width="214" height="29" class="chrome-tab-shadow flat"/>
           </svg>
           <g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0">
-            <use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/>
-            <use xlink:href="#topright-pinline" width="214" height="29" class="chrome-tab-pinline"/>
-            <use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/>
+            <use xlink:href="#topright" width="214" height="29" class="chrome-tab-background curvy"/>
+			<use xlink:href="#topright-flat" width="214" height="29" class="chrome-tab-background flat"/>
+            <use xlink:href="#topright-pinline" width="214" height="29" class="chrome-tab-pinline curvy"/>
+			<use xlink:href="#topright-pinline-flat" width="214" height="29" class="chrome-tab-pinline flat"/>
+            <use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow curvy"/>
+			<use xlink:href="#topright-flat" width="214" height="29" class="chrome-tab-shadow flat"/>
           </svg></g>
         </svg>
       </div>
@@ -109,43 +125,66 @@
       this.animationStyleEl = document.createElement('style')
       this.el.appendChild(this.animationStyleEl)
     }
+    
+    getTabPinLayer(tabEl) {
+      return tabEl.classList.contains("chrome-tab-pinned") ? (0|tabEl.dataset.pinLayer) : 0;
+    }
+    setTabPinLayer(target, pinLayer, move) {
+      if (pinLayer > 0) {
+        if (this.getTabPinLayer(target) == pinLayer) return;
+        target.classList.add("chrome-tab-pinned");
+        target.dataset.pinLayer = pinLayer;
+      } else {
+        if (!target.classList.contains("chrome-tab-pinned")) return;
+        target.classList.remove("chrome-tab-pinned");
+        delete target.dataset.pinLayer;
+      }
+      
+      if (!move) return;
+      let insertAfter = null;
+      let tabEls = this.tabEls;
+      for (let tabEl of tabEls) {
+        if (tabEl == target) continue;
+        let tabPinLayer = this.getTabPinLayer(tabEl);
+        if (tabPinLayer >= pinLayer) insertAfter = tabEl;
+      }
+      if (insertAfter) {
+        insertAfter.after(target);
+      } else {
+        if (target != tabEls[0]) tabEls[0].before(target);
+      }
+    }
 
     setupEvents() {
       window.addEventListener('resize', event => {
         if (!this.ignoreResize) this.layoutTabs()
       })
 
-      //this.el.addEventListener('dblclick', event => this.addTab())
-      this.el.addEventListener('mouseup', ({which, target}) => {
-        if (which != 2) return;
+      this.el.addEventListener('mousedown', (e) => {
+        if (e.button == 1) {
+          // have to preventDefault() on middle click or the browser might start scrolling the container when closing a tab
+          e.preventDefault()
+          return false
+        }
+      })
+      
+      this.el.addEventListener('mouseup', (e) => {
+        if (e.button != 1) return;
+        let target = e.target;
         let tcl = target.classList;
         if (tcl.contains('chrome-tab') || tcl.contains('chrome-tab-close') || tcl.contains('chrome-tab-title') || tcl.contains('chrome-tab-title-text') || tcl.contains('chrome-tab-favicon')) {
           let tab = tcl.contains('chrome-tab') ? target : target.parentElement;
           if (tcl.contains('chrome-tab-title-text')) tab = tab.parentElement;
           if (tab) tab.querySelector('.chrome-tab-close').click();
         }
+        return false;
       })
 
       this.el.addEventListener('click', (e) => {
         let target = e.target
         if (target.classList.contains('chrome-tab')) {
-          if (e.ctrlKey) {
-            if (target.classList.toggle("chrome-tab-pinned")) {
-              for (let tabEl of this.tabEls) {
-                if (!tabEl.classList.contains("chrome-tab-pinned")) {
-                  tabEl.before(target)
-                  break
-                }
-              }
-            } else {
-              let lastPinned = null
-              for (let tabEl of this.tabEls) {
-                if (tabEl.classList.contains("chrome-tab-pinned")) {
-                  lastPinned = tabEl
-                }
-              }
-              if (lastPinned) lastPinned.after(target)
-            }
+          if (e.ctrlKey) { // pin/unpin
+            this.setTabPinLayer(target, target.classList.contains("chrome-tab-pinned") ? 0 : 1, true)
             this.layoutTabs()
           } else this.setCurrentTab(target)
         } else if (target.classList.contains('chrome-tab-close')) {
@@ -224,7 +263,7 @@
       let overflow = false
       //console.log(tabEffectiveWidth, tabsContentWidth)
       
-      let wasPinned = false
+      let lastPinLayer = 0
       for (let tabEl of tabEls) {
         //console.log({ i, row, column, left, top, right: left + tabEffectiveWidth })
         let width
@@ -247,9 +286,9 @@
             lineBreak = true
             fitToWidth = true
           } else if (rowBreakAfterPinnedTabs) {
-            let isPinned = tabEl.classList.contains("chrome-tab-pinned")
-            if (!isPinned && wasPinned) lineBreak = true
-            wasPinned = isPinned
+            let pinLayer = this.getTabPinLayer(tabEl)
+            if (pinLayer < lastPinLayer) lineBreak = true
+            lastPinLayer = pinLayer
           }
         }
         if (lineBreak) {
@@ -295,7 +334,7 @@
             overflow = true
             tabsContentWidth += systemButtons.offsetWidth;
           }
-        } else {
+        } else { // not linebreak
           tabsPerRow += 1
         }
         positions.push({ tabEl, left, top, row, column, width })
@@ -460,22 +499,23 @@
             
             if (source.parentElement != target.parentElement) return
             
+            let insertAfter = false
             if (source.nextElementSibling == target) {
               let t = target
               target = source
               source = t
+            } else if (e.offsetX > target.offsetWidth / 2) {
+              insertAfter = true
             }
             
-            if (source.classList.contains('chrome-tab-pinned') != target.classList.contains('chrome-tab-pinned')) {
-              for (let tabEl of this.tabEls) {
-                if (!tabEl.classList.contains('chrome-tab-pinned')) {
-                  target = tabEl
-                  break
-                }
-              }
-            }
+            // when dropping the tab to another row, update its pinned status accordingly
+            this.setTabPinLayer(source, this.getTabPinLayer(target))
             
-            source.parentElement.insertBefore(source, target)
+            if (insertAfter) {
+              target.after(source)
+            } else {
+              source.parentElement.insertBefore(source, target)
+            }
             this.simpleDragTab = null
             this.layoutTabs()
             GMEdit._emit("tabsReorder", {target:this})

@@ -1,0 +1,14 @@
+{
+  "$GMScript":"",
+  "%Name":"v_local_constructor",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_local_constructor",
+  "parent":{
+    "name":"Constructors",
+    "path":"folders/Scripts/Linter/Constructors.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"1.0",
+  "tags":[],
+}

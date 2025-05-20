@@ -5,6 +5,7 @@ import gml.GmlLocals;
 import gml.type.GmlType;
 import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
+import js.html.Console;
 import parsers.seeker.GmlSeekerParser;
 import parsers.seeker.GmlSeekerProcExpr;
 import synext.GmlExtLambda;
@@ -31,14 +32,14 @@ class GmlSeekerProcVar {
 				project.readTextFileSync(rel);
 			} catch (_:Dynamic) null;
 			if (lgml == null) {
-				Main.console.warn("Lambda missing: " + s);
+				Console.warn("Lambda missing: " + s);
 				lgml = "";
 			}
 			//
 			GmlSeeker.runSync(full, lgml, "", KGmlLambdas.inst);
 			var d = GmlSeekData.map[full];
 			if (d == null) {
-				Main.console.warn("We just asked to index a lambda script and it's not there..?");
+				Console.warn("We just asked to index a lambda script and it's not there..?");
 				lfLocals = new GmlLocals(s);
 			} else lfLocals = d.locals[""];
 			seekData.locals.set(s, lfLocals);
@@ -56,6 +57,17 @@ class GmlSeekerProcVar {
 		var isStatic = kind == "static";
 		var isConstructor = seeker.doc != null && seeker.doc.isConstructor;
 		var isStaticCtr = isStatic && isConstructor;
+		var addStaticHint = {
+			var add = q.version.hasScriptDotStatic();
+			if (add) {
+				if (isStaticCtr && seeker.strictStaticJSDoc) {
+					if (seeker.jsDoc.isStatic) {
+						seeker.jsDoc.isStatic = false;
+					} else add = false;
+				}
+			}
+			add;
+		};
 		while (q.loop) {
 			q.skipSpaces1();
 			var c:CharCode = q.peek();
@@ -72,7 +84,7 @@ class GmlSeekerProcVar {
 			};
 			
 			if (name == null) break;
-			if (name == "var") { // `var var`
+			if (name == (isStatic ? "static" : "var")) { // `var var`
 				name = seeker.find(Ident);
 			} else if (GmlAPI.kwFlow[name]) {
 				// might eat a structure but that code's broken anyway
@@ -89,34 +101,7 @@ class GmlSeekerProcVar {
 				}
 				s = seeker.find(flags);
 			}
-			if (s == ",") {
-				// OK, next
-			}
-			else if (s == "=" && isStaticCtr) {
-				var oldLocalKind = seeker.localKind;
-				seeker.localKind = "sublocal";
-				GmlSeekerProcExpr.proc(seeker, name, true);
-				if (GmlSeekerProcExpr.isFunction) {
-					seeker.doLoop(seeker.curlyDepth);
-				}
-				var args:String = GmlSeekerProcExpr.args;
-				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
-				var isConstructor = GmlSeekerProcExpr.isConstructor;
-				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
-				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
-				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
-				
-				GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, name, args, null, fieldType, argTypes, true);
-				var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
-				if (templateSelf != null && addFieldHint_doc != null) {
-					addFieldHint_doc.templateSelf = templateSelf;
-					addFieldHint_doc.templateItems = templateItems;
-				}
-				seeker.localKind = oldLocalKind;
-				break;
-			}
-			else if (s == "=") {
-				// name = (balanced expression)[,;]
+			function skipBalancedExpr() {
 				var depth = 0;
 				var exit = false;
 				while (q.loop) {
@@ -132,7 +117,9 @@ class GmlSeekerProcVar {
 						case "(", "[", "{": depth += 1;
 						case ")", "]", "}": {
 							depth -= 1;
-							if (depth < 0) {
+							if (depth < 0) { // `if (...) { var v = ... }¦`
+								// find() would decrement curlyDepth so if we're backing off
+								// we need to increment it back
 								if (s == "}") seeker.curlyDepth++;
 								q.pos--;
 								break;
@@ -160,7 +147,66 @@ class GmlSeekerProcVar {
 						};
 					}
 				}
-				if (exit) break;
+				return exit;
+			}
+			if (s == ",") {
+				// OK, next
+			}
+			else if (s == "=" && isStatic) {
+				var oldLocalKind = seeker.localKind;
+				seeker.localKind = "sublocal";
+				GmlSeekerProcExpr.proc(seeker, name, true);
+				var exprIsFunction = GmlSeekerProcExpr.isFunction;
+				if (exprIsFunction) {
+					seeker.doLoop(seeker.curlyDepth);
+				}
+				var args:String = GmlSeekerProcExpr.args;
+				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
+				var exprIsConstructor = GmlSeekerProcExpr.isConstructor;
+				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
+				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
+				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
+				
+				inline function addFieldHint(asInst:Bool) {
+					GmlSeekerProcField.addFieldHint(seeker, exprIsConstructor, seeker.jsDoc.interfaceName,
+					asInst, name, args, null, fieldType, argTypes, true);
+					
+					var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
+					if (addFieldHint_doc != null) {
+						// similar to GmlSeekerProcIdent
+						addFieldHint_doc.lookup = {
+							path: seeker.orig,
+							sub: seeker.sub,
+							row: 0,
+						};
+						addFieldHint_doc.nav = {
+							ctx: name,
+							ctxAfter: true,
+							def: seeker.jsDoc.interfaceName,
+							ctxRx: new RegExp("\\bstatic\\s+" + name + "\\s*" + "\\:?=" + "\\s*function\\b"),
+						};
+						if (templateSelf != null) {
+							addFieldHint_doc.templateSelf = templateSelf;
+							addFieldHint_doc.templateItems = templateItems;
+						}
+					}
+				}
+				if (isConstructor) addFieldHint(true);
+				if (addStaticHint) addFieldHint(false);
+				
+				seeker.localKind = oldLocalKind;
+				if (exprIsFunction) {
+					q.skipSpaces1_local();
+					var c = q.peek();
+					if (c == ",".code) continue;
+					// it's a `var f = function() {}`, what else could follow 
+					break;
+				}
+				if (skipBalancedExpr()) break;
+			}
+			else if (s == "=") {
+				// name = (balanced expression)[,;]
+				if (skipBalancedExpr()) break;
 			} else {
 				// EOF or `var name something_else`
 				seeker.restoreReader();

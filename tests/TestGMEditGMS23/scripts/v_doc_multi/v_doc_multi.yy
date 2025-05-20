@@ -1,0 +1,14 @@
+{
+  "$GMScript":"",
+  "%Name":"v_doc_multi",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_doc_multi",
+  "parent":{
+    "name":"JSDoc",
+    "path":"folders/Scripts/Linter/JSDoc.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"1.0",
+  "tags":[],
+}

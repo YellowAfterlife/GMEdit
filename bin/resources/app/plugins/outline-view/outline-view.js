@@ -25,6 +25,33 @@
 	var showFuncArgs = false;
 	var tailSep = " ➜ "; // narrow space, arrow, narrow space
 	//
+	var Menuitem = Electron_MenuItem;
+	var ctxMenu = new Electron_Menu();
+	var ctxItem = null;
+	ctxMenu.append(new Menuitem({
+		id: "open",
+		label: "Open",
+		click: function() {
+			ctxItem.querySelector(".header").click();
+		}
+	}));
+	ctxMenu.append(new Menuitem({
+		id: "copy-name",
+		label: "Copy &name",
+		click: function() {
+			var text = ctxItem.getAttribute("outline-def");
+			navigator.clipboard.writeText(text);
+		}
+	}));
+	ctxMenu.append(new Menuitem({
+		id: "copy-text",
+		label: "Copy &text",
+		click: function() {
+			var text = ctxItem.querySelector(".header").innerText;
+			navigator.clipboard.writeText(text);
+		}
+	}));
+	//
 	var escapeProp = $gmedit["tools.NativeString"].escapeProp;
 	var modeMap = {
 		"ace/mode/gml": (function() {
@@ -43,6 +70,12 @@
 				+ "\\s*(\\(.*?\\))" // args
 				+ "(?:.*?\\/\\/(.*))?" // post-comment
 			);
+			var rxShorthandFunc = new RegExp("^\\s*"
+				+ "(?:static\\b\\s*)?"
+				+ "(\\w+)"
+				+ "\\s*=\\s*"
+				+ "(\\(.*?\\))" + "\\s*=>\\s*" + "\\{"
+			)
 			var rxPush = /^\s*((?:#region|\/\/#region)\b\s*(.*))$/;
 			var rxPop = /^\s*(?:#endregion|\/\/#endregion)\b/;
 			var rxMark = /^\s*((?:\/\/#mark|#section)\b\s*(.*))$/;
@@ -68,6 +101,10 @@
 						if (def != null) break;
 					} else if (mt = rxSubFunc.exec(rowText)) {
 						ctx = (mt[2] || mt[3]);
+						ctxRow = row;
+						if (def != null) break;
+					} else if (mt = rxShorthandFunc.exec(rowText)) {
+						ctx = mt[1];
 						ctxRow = row;
 						if (def != null) break;
 					}
@@ -125,8 +162,29 @@
 							label += tailSep + tail;
 							title += "\n" + tail;
 						}
+						var rx;
+						if (mt[2]) {
+							rx = new RegExp("\\b" + name + "\\b\\s*=\\s*function\\b");
+						} else {
+							rx = new RegExp("\\bfunction\\s+" + name + "\\b");
+						}
 						
-						var nav = { def: def, ctx: name, ctxAfter: true, showAtTop: showAtTop };
+						var nav = {
+							def: def,
+							ctx: name,
+							ctxRx: rx,
+							ctxAfter: true,
+							showAtTop: showAtTop
+						};
+						ctx.mark(label, title, nav);
+					} else if (mt = rxShorthandFunc.exec(line)) { // shorthand
+						var label = mt[1], title = mt[1];
+						rx = new RegExp("\\b" + label + "\\b\\s*=\\s*\\(");
+
+						if (showFuncArgs) label += mt[2];
+						title += mt[2];
+						
+						var nav = { def: def, ctx: mt[1], ctxRx: rx, ctxAfter: true, showAtTop: showAtTop };
 						ctx.mark(label, title, nav);
 					} else if (mt = rxPush.exec(line)) {
 						var nav = { def: def, ctx: mt[1], ctxAfter: true, showAtTop: showAtTop };
@@ -146,7 +204,9 @@
 		})(),
 		"ace/mode/markdown": (function() {
 			var rxDmd = /^(\s*)(#\[(.+)\](?:\(.*\))?)\s*\{\s*(?:$|[^\}\s])/;
-			var rxDmd2 = /^\s*(#+)(?:\[(.+)\].*|(.+))/;
+			//                 ##     [Title]
+			var rxDmd2 = /^\s*(#+)(?:\[(.+)\]|(.+))/;
+			var rxDmd2ex = /^(define\b|macro\b)/;
 			function update_dmd(file, pos) {
 				var row = pos.row;
 				var doc = file.codeEditor.session.doc;
@@ -163,6 +223,7 @@
 				var doc = file.codeEditor.session.doc;
 				var n = doc.getLength();
 				var stack = [], eos;
+				var depth = 0;
 				for (var row = 0; row < n; row++) {
 					var line = doc.getLine(row);
 					var mt;
@@ -175,7 +236,20 @@
 						ctx.pop();
 					} else if (mt = rxDmd2.exec(line)) {
 						var name = mt[2] || mt[3];
-						ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
+						if (rxDmd2ex.test(name)) continue;
+						var newDepth = mt[1].length;
+						if (newDepth > depth) {
+							ctx.push(name, mt[0], { ctx: name,ctxAfter:true});
+						} else if (newDepth < depth) {
+							ctx.pop();
+							ctx.pop();
+							ctx.push(name, mt[0], { ctx: name,ctxAfter:true});
+						} else {
+							ctx.pop();
+							ctx.push(name, mt[0], { ctx: name,ctxAfter:true});
+							//ctx.mark(name, mt[0], { ctx: name, ctxAfter: true });
+						}
+						depth = newDepth;
 					}
 				}
 			}
@@ -282,17 +356,15 @@
 	var currEl = null;
 	//
 	function currFile() { return $gmedit["gml.file.GmlFile"].current; }
-	// maybe this should be a "built-in" function instead
+	
+	/**
+	 * Focus the given file's tab.
+	 * @param {GMEdit.GmlFile} file
+	 */
 	function activateFile(file) {
-		var tabs = document.querySelectorAll(".chrome-tab");
-		for (var i = 0; i < tabs.length; i++) {
-			if (tabs[i].gmlFile == file) {
-				tabs[i].click();
-				return tabs[i];
-			}
-		}
-		return null;
+		file.tabEl?.click();
 	}
+
 	//
 	var TreeView = $gmedit["ui.treeview.TreeView"];
 	var makeDir = TreeView.makeDir;
@@ -307,16 +379,43 @@
 			if (dir.outlineViewNav) dir.outlineViewFile.navigate(dir.outlineViewNav);
 		}
 	}
+	function makeNav_contextmenu(e) {
+		var dir = e.target, header;
+		if (dir.classList.contains("header")) {
+			header = dir;
+			dir = dir.parentElement;
+		} else header = dir.querySelector(".header");
+		ctxItem = dir;
+		header.classList.add("selected");
+		ctxMenu.popup({
+			async: true,
+			callback: function() {
+				header.classList.remove("selected");
+			}
+		});
+	}
+
+	/**
+	 * Change the label for the given navigation item.
+	 * 
+	 * @param {HTMLDivElement} item 
+	 * @param {string} label 
+	 */
+	function setNavItemLabel(item, label) {
+		item.treeHeader.querySelector("span.label").textContent = label;
+	}
+
 	function makeNav(file, label, title, nav) {
 		var r = navPool.pop();
 		if (r) {
-			r.querySelector(".header span").textContent = label;
+			setNavItemLabel(r, label);
 		} else {
 			r = makeDir(label);
 			r.classList.add("outline-item");
 			r.classList.remove("dir");
 			r.treeHeader.classList.add("item");
 			r.treeHeader.addEventListener("click", makeNav_clicked);
+			r.treeHeader.addEventListener("contextmenu", makeNav_contextmenu);
 		}
 		r.classList.add("open");
 		r.outlineViewFile = file;
@@ -602,55 +701,98 @@
 			} else outer.parentElement.removeChild(outer);
 		}
 	}
-	function init() {
-		AceCommands.add({
-			name: "toggleOutlineView",
-			//bindKey: "Ctrl-Shift-O", // if you'd like
-			exec: function(editor) {
-				toggle();
-				var currPrefs = FileWrap.readConfigSync("config", Preferences.path);
-				if (currPrefs) {
-					var currOV = currPrefs.outlineView;
-					if (currOV == null) currOV = currPrefs.outlineView = {};
-					currOV.hide = !visible;
-					FileWrap.writeConfigSync("config", Preferences.path, currPrefs);
+
+	/**
+	 * Update a file's name and path in the outline view when it is modified.
+	 * @param {{ file: GMEdit.GmlFile }} event 
+	 */
+	function onFileRename({ file }) {
+
+		if ('outlineView' in file) {
+			setNavItemLabel(file.outlineView, file.name);
+		}
+
+	}
+
+	function opt(ov, name, def) {
+		if (!ov) return def;
+		var val = ov[name];
+		return val !== undefined ? val : def;
+	}
+
+	function getDisplayMode(currOV) {
+		var dm = opt(currOV, "displayMode", null);
+		if (dm == null) dm = opt(currOV, "currOnly", false) ? 0 : 1;
+		return dm;
+	}
+
+	var toggleOutlineViewCommand;
+	var toggleOutlineViewPaletteCommand;
+
+	var currPrefs = Preferences.current;
+	var currOV = currPrefs.outlineView;
+	
+	function prepareOV() {
+		currOV = Preferences.current.outlineView;
+		if (!currOV) currOV = Preferences.current.outlineView = {};
+		return currOV;
+	}
+
+	GMEdit.register("outline-view", {
+		init: () => {
+
+			toggleOutlineViewCommand = {
+				name: "toggleOutlineView",
+				//bindKey: "Ctrl-Shift-O", // if you'd like
+				exec: function(editor) {
+					toggle();
+					var currPrefs = FileWrap.readConfigSync("config", Preferences.path);
+					if (currPrefs) {
+						currOV = currPrefs.outlineView;
+						if (currOV == null) currOV = currPrefs.outlineView = {};
+						currOV.hide = !visible;
+						FileWrap.writeConfigSync("config", Preferences.path, currPrefs);
+					}
 				}
+			};
+
+			toggleOutlineViewPaletteCommand = {
+				name: "Toggle outline view",
+				exec: "toggleOutlineView",
+				title: ""
+			};
+
+			AceCommands.add(toggleOutlineViewCommand);
+			AceCommands.addToPalette(toggleOutlineViewPaletteCommand);
+			
+			setDisplayMode(getDisplayMode(currOV))
+			showAtTop = opt(currOV, "showAtTop", true);
+			showFuncArgs = opt(currOV, "showFuncArgs", true);
+	
+			GMEdit.on("fileRename", onFileRename);
+
+			if (!(currOV && currOV.hide)) {
+				toggle();
 			}
-		});
-		AceCommands.addToPalette({
-			name: "Toggle outline view",
-			exec: "toggleOutlineView",
-			title: ""
-		});
-		//
-		var currPrefs = Preferences.current;
-		var currOV = currPrefs.outlineView;
-		function opt(ov, name, def) {
-			if (!ov) return def;
-			var val = ov[name];
-			return val !== undefined ? val : def;
-		}
-		function prepareOV() {
-			var currOV = Preferences.current.outlineView;
-			if (!currOV) currOV = Preferences.current.outlineView = {};
-			return currOV;
-		}
-		if (!(currOV && currOV.hide)) toggle();
-		function getDisplayMode(currOV) {
-			var dm = opt(currOV, "displayMode", null);
-			if (dm == null) dm = opt(currOV, "currOnly", false) ? 0 : 1;
-			return dm;
-		}
-		setDisplayMode(getDisplayMode(currOV))
-		showAtTop = opt(currOV, "showAtTop", true);
-		showFuncArgs = opt(currOV, "showFuncArgs", true);
-		//
-		GMEdit.on("preferencesBuilt", function(e) {
-			var out = e.target.querySelector('.plugin-settings[for="outline-view"]');
-			var currOV = Preferences.current.outlineView;
+	
+		},
+		cleanup: function() {
+
+			AceCommands.remove(toggleOutlineViewCommand);
+			AceCommands.removeFromPalette(toggleOutlineViewPaletteCommand);
+
+			GMEdit.off("fileRename", onFileRename);
+
+			if (visible) {
+				toggle();
+			}
+
+		},
+		buildPreferences: (out) => {
+			currOV = Preferences.current.outlineView;
 			var hideCtr = Preferences.addCheckbox(out, "Hide", currOV && currOV.hide, function(val) {
 				toggle();
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				currOV.hide = !visible;
 				Preferences.save();
 			});
@@ -663,7 +805,7 @@
 			];
 			Preferences.addDropdown(out, "Display mode", displayModes[getDisplayMode(currOV)], displayModes, function(val) {
 				var i = displayModes.indexOf(val);
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				currOV.displayMode = i;
 				setDisplayMode(i);
 				Preferences.save();
@@ -671,26 +813,21 @@
 				forceRefresh();
 			})
 			Preferences.addCheckbox(out, "Show 2.3 function arguments", opt(currOV, "showFuncArgs", true), function(val) {
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				showFuncArgs = currOV.showFuncArgs = val;
 				currEl = null;
 				Preferences.save();
 				forceRefresh();
 			});
 			Preferences.addCheckbox(out, "Scroll to top upon navigation", opt(currOV, "showAtTop", true), function(val) {
-				var currOV = prepareOV();
+				currOV = prepareOV();
 				showAtTop = currOV.showAtTop = val;
 				currEl = null;
 				Preferences.save();
 				forceRefresh();
 			});
-		});
-	}
-	GMEdit.register("outline-view", {
-		init: init,
-		cleanup: function() {
-			// todo
 		},
 		_modeMap: modeMap
 	});
+
 })();

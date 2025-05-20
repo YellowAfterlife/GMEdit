@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Syntax extensions",
-    "path": "folders/Scripts/Syntax extensions.yy",
+  "$GMScript":"",
+  "%Name":"v_mfunc_crash",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_mfunc_crash",
+  "parent":{
+    "name":"Syntax extensions",
+    "path":"folders/Scripts/Syntax extensions.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_mfunc_crash",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

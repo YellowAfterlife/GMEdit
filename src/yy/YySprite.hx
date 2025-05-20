@@ -47,7 +47,7 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 		var spritePath:String = 'sprites/${name}/${name}.yy';
 		var spriteReference:YyResourceRef = {name: name, path: spritePath};
 		
-		return {
+		var spr:YySprite23 = {
 			"bboxMode": cast 0,
 			"collisionKind": cast 1,
 			"type": 0,
@@ -80,9 +80,10 @@ abstract YySprite23(YySprite23Impl) from YySprite23Impl to YySprite23Impl {
 			"parent": parent,
 			"resourceVersion": "1.0",
 			"name": name,
-			"tags": [],
 			"resourceType": "GMSprite",
-		  };
+		};
+		if (!gml.Project.current.isGM2024) spr.tags = [];
+		return spr;
 	}
 
 	/**Clears current frames and replaces them with new ones*/

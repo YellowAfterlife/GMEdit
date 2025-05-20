@@ -5,6 +5,7 @@ import file.FileKind;
 import file.kind.gml.KGmlScript;
 import haxe.io.Path;
 import ui.Preferences;
+import js.html.Console;
 using tools.NativeString;
 using tools.NativeArray;
 
@@ -72,7 +73,7 @@ class GmlFileBackup {
 			code = "// " + Date.now().toString() + "\r\n" + code;
 			FileSystem.writeFileSync(indexPath(path, 0), code);
 		} catch (e:Dynamic) {
-			Main.console.log("Error making backup: ", e);
+			Console.log("Error making backup: ", e);
 		}
 	}
 	static function load(name:String, path:String, kind:FileKind) {

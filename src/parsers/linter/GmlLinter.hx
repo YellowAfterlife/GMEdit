@@ -28,6 +28,7 @@ import tools.JsTools;
 import tools.NativeObject;
 import tools.macros.GmlLinterMacros.*;
 import gml.GmlAPI;
+import js.html.Console;
 using gml.type.GmlTypeTools;
 using tools.NativeArray;
 using tools.NativeString;
@@ -63,12 +64,12 @@ class GmlLinter {
 	//
 	public var warnings:Array<GmlLinterProblem> = [];
 	function addWarning(text:String):Void {
-		if (prefs.suppressAll) return;
+		if (prefs.suppressAll || isProperties) return;
 		warnings.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	public var errors:Array<GmlLinterProblem> = [];
 	function addError(text:String):Void {
-		if (prefs.suppressAll) return;
+		if (prefs.suppressAll || isProperties) return;
 		errors.push(new GmlLinterProblem(text + reader.getStack(), reader.getTopPos()));
 	}
 	//
@@ -209,7 +210,7 @@ class GmlLinter {
 		initModules();
 	}
 	//{
-	var nextKind:GmlLinterKind = KEOF;
+	var nextKind:GmlLinterKind = LKEOF;
 	var nextVal(get, set):String;
 	function get_nextVal():String {
 		if (__nextVal_cache == null) {
@@ -232,7 +233,7 @@ class GmlLinter {
 	}
 	//
 	function __next_ret(nvk:GmlLinterKind, src:String, nv0:Int, nv1:Int):GmlLinterKind {
-		//if (!__next_isPeek) Main.console.log(reader.getTopPosString(), nvk, nvk.getName(), src.substring(nv0, nv1));
+		//if (!__next_isPeek) Console.log(reader.getTopPosString(), nvk, nvk.getName(), src.substring(nv0, nv1));
 		__nextVal_cache = null;
 		__nextVal_source = src;
 		__nextVal_start = nv0;
@@ -241,7 +242,7 @@ class GmlLinter {
 		return nvk;
 	}
 	function __next_retv(nvk:GmlLinterKind, nv:String):GmlLinterKind {
-		//if (!__next_isPeek) Main.console.log(reader.getTopPosString(), nvk, nvk.getName(), nv);
+		//if (!__next_isPeek) Console.log(reader.getTopPosString(), nvk, nvk.getName(), nv);
 		__nextVal_cache = nv;
 		nextKind = nvk;
 		return nvk;
@@ -333,7 +334,7 @@ class GmlLinter {
 			
 			// also check for other problems while we are here:
 			if (doc.isConstructor) {
-				if (!isNew) addWarning('`$currName` is a constructor, but is not used via `new`');
+				if (!isNew) addWarning('`$currName` is a constructor, but is not being used via `new`');
 			} else {
 				if (isNew) {
 					addWarning('`$currName` is not a constructor, but is being used via `new`');
@@ -384,7 +385,7 @@ class GmlLinter {
 		while (localNamesPerDepth.length > newDepth) {
 			var arr = localNamesPerDepth.pop();
 			if (arr != null) {
-				for (name in arr) localKinds[name] = KGhostVar;
+				for (name in arr) localKinds[name] = LKGhostVar;
 			}
 		}
 	}
@@ -456,33 +457,33 @@ class GmlLinter {
 		op:GmlLinterKind, opv:String
 	):GmlType {
 		switch (op) {
-			case KAdd: {
+			case LKAdd: {
 				if (left.equals(GmlTypeDef.string) || left.equals(GmlTypeDef.number)) {
 					return checkTypeCast(right, left, opv, rightVal) ? left : null;
 				} else if (right.equals(GmlTypeDef.string) || right.equals(GmlTypeDef.number)) {
 					return checkTypeCast(left, right, opv, leftVal) ? right : null;
 				}
 			};
-			case KBoolAnd, KBoolOr, KBoolXor: {
+			case LKBoolAnd, LKBoolOr, LKBoolXor: {
 				checkTypeCastBoolOp(left, leftVal, opv);
 				checkTypeCastBoolOp(right, rightVal, opv);
 				return GmlTypeDef.bool;
 			};
-			case KEQ, KNE, KSet: {
+			case LKEQ, LKNE, LKSet: {
 				checkTypeCastEq(left, right, opv);
 				return GmlTypeDef.bool;
 			};
-			case KLT, KLE, KGT, KGE: {
+			case LKLT, LKLE, LKGT, LKGE: {
 				checkTypeCast(left, GmlTypeDef.number, opv, leftVal);
 				checkTypeCast(right, GmlTypeDef.number, opv, rightVal);
 				return GmlTypeDef.bool;
 			};
-			case KAnd, KOr, KXor, KShl, KShr: {
+			case LKAnd, LKOr, LKXor, LKShl, LKShr: {
 				checkTypeCast(left, GmlTypeDef.int, opv, leftVal);
 				checkTypeCast(right, GmlTypeDef.int, opv, rightVal);
 				return GmlTypeDef.int;
 			};
-			case KIntDiv: {
+			case LKIntDiv: {
 				checkTypeCast(left, GmlTypeDef.number, opv, leftVal);
 				checkTypeCast(right, GmlTypeDef.number, opv, rightVal);
 				return GmlTypeDef.int;
@@ -498,7 +499,7 @@ class GmlLinter {
 	
 	function readSwitch(oldDepth:Int):FoundError {
 		var newDepth = oldDepth + 1;
-		rc(readCheckSkip(KCubOpen, "an opening `{` for switch-block"));
+		rc(readCheckSkip(LKCubOpen, "an opening `{` for switch-block"));
 		//
 		var isInCase = false;
 		inline function resetCase():Void {
@@ -514,24 +515,24 @@ class GmlLinter {
 		var q = reader;
 		while (q.loop) {
 			switch (peek()) {
-				case KCubClose: {
+				case LKCubClose: {
 					skip();
 					if (caseCount == 0 && !hasDefault) return readSeqStartError(
 						"Empty switch-blocks are forbidden in GML");
 					return false;
 				};
-				case KDefault: {
+				case LKDefault: {
 					skip();
 					if (hasDefault) return readError("That's default-case redefinition");
 					hasDefault = true;
-					rc(readCheckSkip(KColon, "a colon after default-case"));
+					rc(readCheckSkip(LKColon, "a colon after default-case"));
 					resetCase();
 				};
-				case KCase: {
+				case LKCase: {
 					caseCount += 1;
 					skip();
 					rc(readExpr(newDepth));
-					rc(readCheckSkip(KColon, "a colon after a case"));
+					rc(readCheckSkip(LKColon, "a colon after a case"));
 					resetCase();
 				};
 				default: {
@@ -546,20 +547,20 @@ class GmlLinter {
 	}
 	function readEnum(oldDepth:Int):FoundError {
 		var newDepth = oldDepth + 1;
-		rc(readCheckSkip(KIdent, "an enum name"));
-		rc(readCheckSkip(KCubOpen, "an opening `{` for enum"));
+		rc(readCheckSkip(LKIdent, "an enum name"));
+		rc(readCheckSkip(LKCubOpen, "an opening `{` for enum"));
 		var seenComma = true;
 		while (reader.loop) {
 			switch (next()) {
-				case KCubClose: return false;
-				case KIdent: {
+				case LKCubClose: return false;
+				case LKIdent: {
 					if (!seenComma) return readExpect("a `,` or `}` in enum");
 					var nk = peek();
-					if (skipIf(nk == KSet)) {
+					if (skipIf(nk == LKSet)) {
 						rc(readExpr(newDepth));
 						nk = peek();
 					}
-					seenComma = skipIf(nk == KComma);
+					seenComma = skipIf(nk == LKComma);
 				};
 				default: {
 					return readExpect("an enum field or `}`");
@@ -584,11 +585,13 @@ class GmlLinter {
 			}
 		}
 		switch (nk) {
-			case KMFuncDecl, KMacro: {};
-			case KEnum: rc(readEnum(newDepth));
-			case KVar, KConst, KLet, KGlobalVar, KArgs, KStatic: {
+			case LKMFuncDecl, LKMacro: {};
+			case LKEnum: rc(readEnum(newDepth));
+			case LKVar, LKConst, LKLet, LKGlobalVar, LKArgs, LKStatic: {
 				var varKeyword = nextVal;
-				var isArgs = nk == KArgs;
+				var isArgs = nk == LKArgs;
+				var isStaticCtr = nk == LKStatic && currFuncDoc.isConstructor;
+				var isCoroutineArgs = isArgs && currFuncDoc != null	&& currFuncDoc.post.startsWith(GmlFuncDoc.parRetArrow + synext.GmlExtCoroutines.arrayTypeResultName);
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
 				var found = 0;
@@ -597,15 +600,15 @@ class GmlLinter {
 					nk = peek();
 					// #args-specific: quit on linebreak, allow ?arg:
 					if (isArgs && __peekReader.row > startRow) break;
-					if (isArgs && nk == KQMark) { skip(); nk = peek(); }
+					if (isArgs && nk == LKQMark) { skip(); nk = peek(); }
 					//
-					if (!skipIf(nk == KIdent)) break;
+					if (!skipIf(nk == LKIdent)) break;
 					var varName = nextVal;
 					var allowTypeRedefinition = false;
-					if (mainKind != KGlobalVar && mainKind != KStatic) {
+					if (mainKind != LKGlobalVar && mainKind != LKStatic) {
 						var lk = localKinds[varName];
-						if (mainKind != KVar || prefs.blockScopedVar) {
-							if (lk != null && lk != KGhostVar) {
+						if (mainKind != LKVar || prefs.blockScopedVar) {
+							if (lk != null && lk != LKGhostVar) {
 								addWarning('Redefinition of a variable `$varName`');
 							} else {
 								allowTypeRedefinition = true;
@@ -616,7 +619,7 @@ class GmlLinter {
 								}
 								arr.push(varName);
 							}
-						} else if (lk == null || lk == KGhostVar) {
+						} else if (lk == null || lk == LKGhostVar) {
 							allowTypeRedefinition = true;
 						}
 						localKinds[varName] = mainKind;
@@ -625,7 +628,7 @@ class GmlLinter {
 					//
 					nk = peek();
 					var varType:GmlType, varTypeStr:String;
-					if (nk == KColon) { // `name:type`
+					if (nk == LKColon) { // `name:type`
 						skip();
 						var varTypeStart = q.pos;
 						rc(readTypeName());
@@ -637,6 +640,8 @@ class GmlLinter {
 						varType = null;
 						varTypeStr = null;
 						if (isArgs && currFuncDoc != null && currFuncDoc.argTypes != null) {
+							// linear coroutines have a prefix argument
+							if (isCoroutineArgs) argIndex += 1;
 							varType = currFuncDoc.argTypes[argIndex];
 							varTypeStr = varType != null ? varType.toString() : null;
 							if (varType != null && setLocalTypes) {
@@ -646,12 +651,12 @@ class GmlLinter {
 					}
 					//
 					var typeInfo:String = null;
-					if (nk == KSet) { // `name = val`
+					if (nk == LKSet) { // `name = val`
 						skip();
 						var setToken = nextVal;
 						rc(readExpr(newDepth, None, null, varType));
 						var varExprType = expr.currType;
-						if (mainKind == KGlobalVar) {
+						if (mainKind == LKGlobalVar) {
 							// not today
 						} else if (varType != null) {
 							checkTypeCast(varExprType, varType, "variable declaration", expr.currValue);
@@ -659,9 +664,9 @@ class GmlLinter {
 							var apply = setLocalTypes && (
 								prefs.specTypeColon && setToken == ":="
 							|| switch (mainKind) {
-								case KLet: prefs.specTypeLet;
-								case KConst: prefs.specTypeConst;
-								case KStatic: prefs.specTypeStatic;
+								case LKLet: prefs.specTypeLet;
+								case LKConst: prefs.specTypeConst;
+								case LKStatic: prefs.specTypeStatic;
 								default: keywordStr == "var" || keywordStr == "static"
 									? prefs.specTypeVar : prefs.specTypeMisc;
 							});
@@ -682,7 +687,13 @@ class GmlLinter {
 							}
 						}
 					}
-					if (setLocalVars && mainKind != KGlobalVar) {
+					if (!setLocalVars) {
+						// OK!
+					} else if (mainKind == LKGlobalVar) {
+						// don't store globals
+					} else if (isStaticCtr) {
+						
+					} else {
 						if (typeInfo == null && varTypeStr != null) {
 							typeInfo = "type " + varTypeStr;
 						}
@@ -695,15 +706,15 @@ class GmlLinter {
 						} else locals.add(varName, localVarTokenType, typeInfo);
 					}
 					//
-					if (!skipIf(peek() == KComma)) break;
+					if (!skipIf(peek() == LKComma)) break;
 				}
 				if (found == 0) readSeqStartWarn("This `"+varKeyword+"` has no declarations.");
 			};
-			case KCubOpen: {
+			case LKCubOpen: {
 				z = false;
 				seqStart.setTo(reader);
 				while (q.loop) {
-					if (skipIf(peek() == KCubClose)) {
+					if (skipIf(peek() == LKCubClose)) {
 						z = true;
 						break;
 					}
@@ -711,39 +722,39 @@ class GmlLinter {
 				}
 				if (!z) return readSeqStartError("Unclosed {}");
 			};
-			case KSemico: {
+			case LKSemico: {
 				if (prefs.requireSemicolons) {
 					addWarning("Stray semicolon");
 				}
 			};
-			case KIf: {
+			case LKIf: {
 				rc(expr.read(newDepth));
 				var nullSafety = expr.nullSafety;
 				checkParens();
 				checkTypeCastBoolOp(expr.currType, expr.currValue, "an if condition");
-				skipIf(peek() == KThen);
-				if (skipIf(peek() == KSemico)) {
+				skipIf(peek() == LKThen);
+				if (skipIf(peek() == LKSemico)) {
 					return readError("You have a semicolon before your then-expression.");
 				}
 				nullSafety.prepatch(this);
 				rc(readStat(newDepth));
-				if (skipIf(peek() == KElse)) {
+				if (skipIf(peek() == LKElse)) {
 					nullSafety.elsepatch(this);
 					rc(readStat(newDepth));
 				}
 				nullSafety.postpatch(this);
 			};
-			case KWhile, KRepeat: {
+			case LKWhile, LKRepeat: {
 				rc(readExpr(newDepth));
 				checkParens();
 				switch (nk) {
-					case KWhile: checkTypeCastBoolOp(expr.currType, expr.currValue, "a while-loop condition");
-					case KRepeat: checkTypeCast(expr.currType, GmlTypeDef.number, "a repeat-loop count", expr.currValue);
+					case LKWhile: checkTypeCastBoolOp(expr.currType, expr.currValue, "a while-loop condition");
+					case LKRepeat: checkTypeCast(expr.currType, GmlTypeDef.number, "a repeat-loop count", expr.currValue);
 					default:
 				}
 				rc(readLoopStat(newDepth));
 			};
-			case KWith: {
+			case LKWith: {
 				var locals = editor.locals[context];
 				if (locals != null) locals.hasWith = true;
 				rc(readExpr(newDepth));
@@ -763,10 +774,10 @@ class GmlLinter {
 				__selfType_set = self0z;
 				__selfType_type = self0t;
 			};
-			case KDo: {
+			case LKDo: {
 				rc(readLoopStat(newDepth));
 				switch (next()) {
-					case KUntil, KWhile: {
+					case LKUntil, LKWhile: {
 						rc(readExpr(newDepth));
 						checkParens();
 						checkTypeCastBoolOp(expr.currType, expr.currValue, "an do-loop condition");
@@ -774,27 +785,27 @@ class GmlLinter {
 					default: return readExpect("an `until` or `while` for a do-loop");
 				}
 			};
-			case KFor: {
-				if (next() != KParOpen) return readExpect("a `(` to open a for-loop");
-				if (!skipIf(peek() == KSemico)) { // init
+			case LKFor: {
+				if (next() != LKParOpen) return readExpect("a `(` to open a for-loop");
+				if (!skipIf(peek() == LKSemico)) { // init
 					rc(readStat(newDepth));
 				}
-				if (!skipIf(peek() == KSemico)) { // condition
+				if (!skipIf(peek() == LKSemico)) { // condition
 					rc(readExpr(newDepth));
 					checkTypeCastBoolOp(expr.currType, expr.currValue, "an if condition");
-					skipIf(peek() == KSemico);
+					skipIf(peek() == LKSemico);
 				}
-				if (!skipIf(peek() == KParClose)) { // post
+				if (!skipIf(peek() == LKParClose)) { // post
 					rc(readLoopStat(newDepth, NoSemico));
-					if (next() != KParClose) return readExpect("a `)` to close a for-loop");
+					if (next() != LKParClose) return readExpect("a `)` to close a for-loop");
 				}
 				rc(readLoopStat(newDepth));
 			};
-			case KExit: {};
-			case KReturn: {
+			case LKExit: {};
+			case LKReturn: {
 				switch (peek()) {
-					case KSemico: skip(); flags.add(NoSemico);
-					case KCubClose: flags.add(NoSemico);
+					case LKSemico: skip(); flags.add(NoSemico);
+					case LKCubClose: flags.add(NoSemico);
 					default:
 						var retType = currFuncDoc != null ? currFuncDoc.returnType : null;
 						rc(readExpr(newDepth, None, null, retType));
@@ -802,6 +813,8 @@ class GmlLinter {
 							case NoReturn, WantReturn: currFuncRetStatus = HasReturn;
 							case WantNoReturn: 
 								addWarning("The function is marked as returning nothing but has a return statement.");
+							case WantNoReturnConstructor:
+								addWarning("Should not be returning values from constructors.");
 							default:
 						}
 						if (retType != null && expr.currType != null) {
@@ -809,13 +822,13 @@ class GmlLinter {
 						}
 				}
 			};
-			case KBreak: {
+			case LKBreak: {
 				if (!canBreak) addError("Can't use `break` here");
 			};
-			case KContinue: {
+			case LKContinue: {
 				if (!canContinue) addError("Can't use `continue` here");
 			};
-			case KSwitch: {
+			case LKSwitch: {
 				z = canBreak;
 				canBreak = true;
 				rc(readExpr(newDepth));
@@ -826,47 +839,53 @@ class GmlLinter {
 				} else canBreak = z;
 			};
 			//
-			case KLiveWait, KYield, KGoto, KThrow, KDelete: { // keyword <value>
-				rc(readExpr(newDepth));// wait <time>
+			case LKLiveWait, LKThrow, LKDelete: { // keyword <value>
+				rc(readExpr(newDepth)); // wait <time>
 			}
-			case KLabel: { // label <name>[:]
+			case LKGoto: { // goto <label name>
 				switch (peek()) {
-					case KIdent, KString: {
+					case LKIdent, LKString: skip();
+					default: return readExpect("a label name");
+				}
+			};
+			case LKLabel: { // label <name>[:]
+				switch (peek()) {
+					case LKIdent, LKString: {
 						skip();
 					};
 					default: return readExpect("a label name");
 				}
-				skipIf(peek() == KColon);
+				skipIf(peek() == LKColon);
 			};
-			case KTry: {
+			case LKTry: {
 				rc(readStat(newDepth));
-				rc(readCheckSkip(KCatch, "a `catch` after a `try` block"));
+				rc(readCheckSkip(LKCatch, "a `catch` after a `try` block"));
 				// catch (<name>)
-				var hasPar = skipIf(peek() == KParOpen);
-				rc(readCheckSkip(KIdent, "an exception name"));
+				var hasPar = skipIf(peek() == LKParOpen);
+				rc(readCheckSkip(LKIdent, "an exception name"));
 				var varName = nextVal;
 				localKinds[varName] = mainKind;
-				if (setLocalVars && mainKind != KGlobalVar) {
+				if (setLocalVars && mainKind != LKGlobalVar) {
 					var locals = editor.locals[context];
 					if (!locals.kind.exists(varName)) {
 						locals.add(varName, localVarTokenType, "try-catch");
 					}
 				}
-				if (hasPar) rc(readCheckSkip(KParClose, "a closing `)`"));
+				if (hasPar) rc(readCheckSkip(LKParClose, "a closing `)`"));
 				//
 				rc(readStat(newDepth)); // catch-block
-				if (skipIf(peek() == KFinally)) {
+				if (skipIf(peek() == LKFinally)) {
 					rc(readStat(newDepth));
 				}
 			};
 			//
-			case KLamDef: rc(funcLiteral.read(newDepth, false, true));
+			case LKLamDef: rc(funcLiteral.read(newDepth, false, true));
 			default: {
 				rc(readExpr(newDepth, flags.with(AsStat), nk));
 			};
 		}
 		//
-		if (skipIf(peek() == KSemico)) {
+		if (skipIf(peek() == LKSemico)) {
 			// OK!
 		} else if (prefs.requireSemicolons && mainKind.needSemico() && !flags.has(NoSemico)) {
 			switch (q.peek( -1)) {
@@ -913,7 +932,7 @@ class GmlLinter {
 		var ohno = false;
 		while (q.loop) {
 			var nk = next();
-			if (nk == KEOF) break;
+			if (nk == LKEOF) break;
 			if (readStat(0, None, nk)) {
 				errors.push(new GmlLinterProblem(errorText, errorPos));
 				ohno = true;
@@ -1057,4 +1076,5 @@ enum abstract GmlLinterReturnStatus(Int) {
 	var HasReturn;
 	var WantReturn;
 	var WantNoReturn;
+	var WantNoReturnConstructor;
 }

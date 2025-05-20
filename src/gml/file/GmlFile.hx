@@ -1,37 +1,24 @@
 package gml.file;
+import js.html.Window;
+import tools.Aliases;
 import tools.Aliases.GmlCode;
-import ace.AceSessionData;
 import ace.extern.*;
 import editors.*;
 import electron.Dialog;
 import electron.FileSystem;
-import parsers.*;
 import parsers.GmlMultifile;
 import electron.FileWrap;
 import file.FileKind;
 import file.kind.gml.KGmlSearchResults;
-import file.kind.yy.KYyEvents;
 import js.lib.RegExp;
-import js.html.Element;
-import ace.AceWrap;
 import gml.GmlAPI;
 import gmx.*;
-import Main.document;
 import haxe.io.Path;
-import parsers.GmlReader;
 import parsers.GmlSeekData;
-import parsers.GmlSeeker;
 import plugins.PluginEvents;
-import shaders.ShaderHighlight;
-import shaders.ShaderKind;
 import synext.GmlExtCoroutines;
-import tools.Dictionary;
-import tools.NativeString;
-import tools.StringBuilder;
-import yy.*;
 import ui.ChromeTabs.ChromeTab;
 import ui.search.GlobalSeachData;
-import ui.Preferences;
 using tools.HtmlTools;
 
 /**
@@ -50,7 +37,7 @@ class GmlFile {
 	public var name:String;
 	
 	/** Full path to the source file (null if no source file, e.g. search results) */
-	public var path:String;
+	public var path:FullPath;
 	
 	/**
 	 * If this file-tab represents multiple files that have to be checked for changes,
@@ -62,7 +49,7 @@ class GmlFile {
 	public var time:Float = 0;
 	public function syncTime() {
 		#if !gmedit.live
-		if (path != null && FileSystem.canSync) {
+		if (path != null && FileSystem.canSync && Path.isAbsolute(path)) {
 			if (kind.checkSelfForChanges) try {
 				time = FileSystem.statSync(path).mtimeMs;
 			} catch (_:Dynamic) { }
@@ -171,7 +158,7 @@ class GmlFile {
 		var kind:FileKind, data:Dynamic;
 		if (nav != null && nav.kind != null) {
 			kind = nav.kind;
-			data = null;
+			data = nav.data;
 		} else {
 			var kd = GmlFileKindTools.detect(path);
 			kind = kd.kind;
@@ -191,10 +178,18 @@ class GmlFile {
 		ui.ChromeTabs.addTab(file.name);
 	}
 	public function rename(newName:String, newPath:String) {
+		
 		this.name = newName;
 		this.path = newPath;
 		//
 		this.context = kind.getTabContext(this, {});
+
+		if (this.tabEl != null) {
+			this.tabEl.refresh();
+		}
+		
+		PluginEvents.fileRename({ file: this });
+
 	}
 
 	//
@@ -212,18 +207,19 @@ class GmlFile {
 		if (q != null) q.getUndoManager().markClean();
 	}
 	//
-	public function savePost(?out:String) {
-		if (path != null) {
-			syncTime();
-			markClean();
-		}
+	public function savePost_shared(out:String, isReload:Bool) {
 		// re-index if needed:
-		if (path != null && out != null && codeEditor != null && codeEditor.kind.indexOnSave) {
+		if (path != null && out != null
+			&& codeEditor != null && (isReload || codeEditor.kind.indexOnSave)
+		) {
 			var data = GmlSeekData.map[path];
 			if (data != null) {
 				kind.index(path, out, data.main, true);
+				
 				if (GmlAPI.version.config.indexingMode == Local) liveApply();
+				
 				codeEditor.session.gmlScopes.updateOnSave();
+				
 				var next = GmlSeekData.map[path];
 				if (codeEditor.locals != next.locals) {
 					codeEditor.locals = next.locals;
@@ -239,6 +235,13 @@ class GmlFile {
 			var check = inline parsers.linter.GmlLinter.getOption((q)->q.onSave);
 			if (check) parsers.linter.GmlLinter.runFor(codeEditor);
 		}
+	}
+	public function savePost(?out:String) {
+		if (path != null) {
+			syncTime();
+			markClean();
+		}
+		savePost_shared(out, false);
 		// notify plugins:
 		PluginEvents.fileSave({file:this, code:out});
 	}
@@ -314,15 +317,26 @@ class GmlFile {
 typedef GmlFileNav = {
 	/** definition (script/event) */
 	?def:String,
+	
 	/** row-column */
 	?pos:AcePos,
+	
 	/** code to scroll to */
 	?ctx:String,
+	
+	/** alt. */
+	?ctxRx:RegExp,
+	
 	/** if set, looks for ctx after pos rather than ctx offset by pos */
 	?ctxAfter:Bool,
+	?showAtTop:Bool,
+	
 	/** file kind override */
 	?kind:FileKind,
-	?showAtTop:Bool,
-	/// Opens Extern files as Plain instead
+	
+	/** file data override */
+	?data:Any,
+	
+	/** Opens unrecognized file types as Plain instead of opening an external editor */
 	?noExtern:Bool,
 }

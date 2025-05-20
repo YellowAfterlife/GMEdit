@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Constructors",
-    "path": "folders/Scripts/Linter/Constructors.yy",
+  "$GMScript":"",
+  "%Name":"v_private_fields",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_private_fields",
+  "parent":{
+    "name":"Constructors",
+    "path":"folders/Scripts/Linter/Constructors.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_private_fields",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

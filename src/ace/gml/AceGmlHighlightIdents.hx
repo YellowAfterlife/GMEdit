@@ -1,4 +1,5 @@
 package ace.gml;
+import ui.Preferences;
 import ace.extern.AceLangRule;
 import ace.extern.AceToken;
 import ace.extern.AceTokenType;
@@ -116,7 +117,7 @@ class AceGmlHighlightIdents {
 			var objType:AceTokenType, fdType:AceTokenType;
 			//
 			if (object == "global") {
-				objType = "keyword";
+				objType = GmlAPI.stdKind["global"];
 				fdType = "globalfield";
 			} else {
 				objType = null;
@@ -131,10 +132,10 @@ class AceGmlHighlightIdents {
 					// save some trouble:
 					var checkStatics = false;
 					if (object == "self") {
-						objType = "keyword";
+						objType = GmlAPI.stdKind["self"];
 						localType = AceGmlTools.getSelfType({session:editor.session, scope:scope});
 					} else if (object == "other") {
-						objType = "keyword";
+						objType = GmlAPI.stdKind["other"];
 						localType = null;
 						// we could, but we would be consistently wrong inside with(){} blocks
 						//localType = AceGmlTools.getOtherType({session:editor.session, scope:scope});

@@ -43,7 +43,6 @@ class LiveWeb {
 	
 	//
 	public static function init() {
-		#if gmedit.live
 		var init:LiveWebInit = {};
 		init.aceEditor = Main.aceEditor;
 		init.isElectron = electron.Electron.isAvailable();
@@ -138,7 +137,6 @@ class LiveWeb {
 			textarea.select();
 		}
 		LiveWebState.init();
-		#end
 	}
 }
 #end

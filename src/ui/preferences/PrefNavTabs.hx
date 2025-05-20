@@ -78,6 +78,10 @@ class PrefNavTabs {
 			current.chromeTabs.rowBreakAfterPinnedTabs = v;
 			syncOptions();
 		});
+		addCheckbox(sub, "Multiple tab pin layers (best used with above)", cur.pinLayers, function(v) {
+			current.chromeTabs.pinLayers = v;
+			syncOptions();
+		});
 		addCheckbox(sub, "Let the buttons flow around the system buttons", cur.flowAroundSystemButtons, function(v) {
 			current.chromeTabs.flowAroundSystemButtons = v;
 			syncOptions();

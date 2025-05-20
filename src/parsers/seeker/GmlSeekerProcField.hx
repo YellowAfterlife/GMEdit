@@ -43,7 +43,12 @@ class GmlSeekerProcField {
 		
 		var hintDoc:GmlFuncDoc = null;
 		if (args != null) {
-			var fa = name + GmlFuncDoc.patchArrow(args);
+			var fa = name;
+			if (field == "" && isInst) {
+				// self-call, we check for this in GmlLinterFuncArgs
+				fa += ":";
+			}
+			fa += GmlFuncDoc.patchArrow(args);
 			hintDoc = GmlFuncDoc.parse(fa);
 			hintDoc.trimArgs();
 			hintDoc.isConstructor = isConstructor;

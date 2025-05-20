@@ -4,6 +4,7 @@ import file.FileKind;
 import gml.GmlAPI;
 import gml.*;
 import js.lib.Error;
+import js.html.Console;
 import parsers.GmlSeekData;
 import parsers.seeker.GmlSeekerImpl;
 import tools.Aliases;
@@ -17,7 +18,6 @@ using tools.PathTools;
  * @author YellowAfterlife
  */
 class GmlSeeker {
-	public static inline var maxAtOnce = 16;
 	public static var itemsLeft:Int = 0;
 	static var itemQueue:Array<GmlSeekerItem> = [];
 	static var lastLabelUpdateTime:Float = 0;
@@ -30,9 +30,9 @@ class GmlSeeker {
 		FileWrap.readTextFile(item.path, function ready(err:Error, text:String) {
 			if (err != null) {
 				if ((cast err).errno == -4058) {
-					Main.console.warn("Can't index `" + item.path + "` - file is missing.");
+					Console.warn("Can't index `" + item.path + "` - file is missing.");
 				} else {
-					Main.console.error("Can't index `" + item.path + "`:", err);
+					Console.error("Can't index `" + item.path + "`:", err);
 				}
 				runNext();
 			} else try {
@@ -40,14 +40,14 @@ class GmlSeeker {
 					runNext();
 				}
 			} catch (ex:Dynamic) {
-				Main.console.error("Can't index `" + item.path + "`:", ex);
+				Console.error("Can't index `" + item.path + "`:", ex);
 				runNext();
 			}
 		});
 	}
 	public static function run(path:FullPath, main:GmlName, kind:FileKind) {
 		var item:GmlSeekerItem = {path:path.ptNoBS(), main:main, kind:kind};
-		if (itemsLeft < maxAtOnce) {
+		if (itemsLeft < ui.Preferences.current.assetIndexBatchSize) {
 			runItem(item);
 		} else itemQueue.push(item);
 	}

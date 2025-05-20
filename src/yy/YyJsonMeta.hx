@@ -37,9 +37,30 @@ import haxe.DynamicAccess;
 		//
 		return q;
 	}
+	static function initByResourceType2023():Dictionary<YyJsonMeta> {
+		var q = new Dictionary<YyJsonMeta>();
+		var base = ["resourceType", "resourceVersion", "name"];
+		function withBase(fields:Array<String>) {
+			return base.concat(fields);
+		}
+		inline function tt(o:Dynamic):Dictionary<String> { return o; }
+		inline function td(o:Dynamic):DynamicAccess<Int> { return o; }
+		q["GMProjectConfig"] = {
+			order: ["children", "name"],
+			types: tt({ children: "GMProjectConfig" }),
+		}
+		q["GMProject"] = {
+			order: withBase([]),
+			types: tt({ configs: "GMProjectConfig" }),
+		};
+		return q;
+	}
 	static function initByResourceType():Dictionary<YyJsonMeta> {
 		var q = new Dictionary<YyJsonMeta>();
 		var base = ["parent", "resourceVersion", "name", "tags", "resourceType"];
+		function withBase(fields:Array<String>) {
+			return fields.concat(base);
+		}
 		//
 		inline function tt(o:Dynamic):Dictionary<String> { return o; }
 		inline function td(o:Dynamic):DynamicAccess<Int> { return o; }
@@ -50,7 +71,7 @@ import haxe.DynamicAccess;
 		}
 		//
 		q["GMScript"] = {
-			order: ["isDnD", "isCompatibility"].concat(base),
+			order: withBase(["isDnD", "isCompatibility"]),
 		};
 		//
 		q["GMObject"] = {

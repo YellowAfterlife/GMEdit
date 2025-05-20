@@ -126,9 +126,10 @@ class PrefLinter {
 		
 		out = addGroup(orig, "Scripts and functions");
 		addf(aBool, "Warn about missing functions", opt.requireFunctions);
-		el = addf(aBool, "Warn about trying to use result of a script/function with no returned values", opt.checkHasReturn);
-		el.title = "For functions, the list of functions without return values can be found in resources/app/api/<version>/noret.gml";
+		el = addf(aBool, "Warn about trying to use result of a script/function with (supposedly) no returned values", opt.checkHasReturn);
 		addf(aBool, "Warn about mismatched argument counts on user-defined scripts/functions", opt.checkScriptArgumentCounts);
+		el = addf(aBool, "Add missing named arguments to JSDoc", opt.addMissingArgsToJSDoc);
+		el.title = "If JSDoc lists fewer arguments than function() itself, they will be mixed together.";
 		
 		out = addGroup(orig, "Misc.");
 		addf(aBool, "Warn about missing fields on a.b access", opt.requireFields);
@@ -136,6 +137,7 @@ class PrefLinter {
 		addf(aBool, "Allow implicitly casting between bool and int", opt.implicitBoolIntCasts);
 		addf(aBool, "Warn about redundant casts (e.g. for `4 as number`)", opt.warnAboutRedundantCasts);
 		addf(aBool, "Treat scripts without @self as having `void` self", opt.strictScriptSelf);
+		addf(aBool, "Only show Constructor.staticVars that have a @static JSDoc", opt.strictStaticJSDoc);
 		
 		out = addGroup(orig, "Block scoping");
 		el = addf(aBool, "Treat `var` as block-scoped", opt.blockScopedVar);

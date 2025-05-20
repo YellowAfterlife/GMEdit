@@ -54,6 +54,16 @@ class HtmlTools {
 	public static function setDisplayFlag(el:Element, visible:Bool):Void {
 		el.style.display = visible ? "" : "none";
 	}
+	/**
+		Set whether the given group is collapsed or expanded.
+	**/
+	public static function setGroupVisibility(el:FieldSetElement, visible:Bool) {
+		if (visible) {
+			el.classList.remove("collapsed");
+		} else {
+			el.classList.add("collapsed");
+		}
+	}
 	public static function setDatasetValue(el:Element, key:String, value:String) {
 		var dataset:DynamicAccess<String> = cast el.dataset;
 		if (value == null) {
@@ -144,6 +154,11 @@ class HtmlTools {
 	public static function moveOffScreen(element:Element) {
 		element.style.position = "absolute";
 		element.style.top = "-99999px";
+	}
+	
+	public static function setTitleLines(el:Element, lines:Array<String>) {
+		el.title = lines.join("\n");
+		return el;
 	}
 }
 extern class ElementList implements ArrayAccess<Element> {

@@ -1,34 +1,25 @@
 package editors;
-import ace.AceWrap;
+import js.html.Window;
+import js.html.Console;
 import ace.extern.*;
 import ace.*;
 import editors.Editor;
 import electron.Dialog;
 import file.kind.KCode;
-import file.kind.KGml;
 import file.kind.misc.*;
 import gml.GmlLocals;
-import gml.GmlScopes;
 import gml.file.*;
 import gml.GmlAPI;
-import gml.GmlVersion;
 import gml.GmlImports;
 import gml.Project;
-import electron.FileWrap;
-import electron.FileSystem;
 import parsers.*;
 import js.lib.RegExp;
 import js.html.Element;
 import synext.GmlExtImport;
 import synext.GmlExtLambda;
 import ui.Preferences;
-import gmx.*;
-import yy.*;
-import tools.NativeArray;
 import tools.NativeString;
 import tools.Dictionary;
-import tools.StringBuilder;
-import haxe.Json;
 
 /**
  * ...
@@ -49,11 +40,20 @@ class EditCode extends Editor {
 	public var lambdaMap:Dictionary<String> = new Dictionary();
 	public var lambdas:Dictionary<GmlExtLambda> = new Dictionary();
 	
+	/**
+		Pop-out windows associated with this file
+	**/
+	public var acePopouts:Array<AcePopout> = [];
+	
 	public function new(file:GmlFile, modePath:String) {
 		super(file);
 		kind = cast(file.kind, KCode);
 		this.modePath = modePath;
 		element = container;
+	}
+	override function destroy() {
+		for (p in acePopouts) p.destroy();
+		super.destroy();
 	}
 	
 	override public function ready():Void {
@@ -214,7 +214,8 @@ class EditCode extends Editor {
 		}
 		if (status > 0) try {
 			var prev = file.code;
-			file.load();
+			var newContent = file.readContent();
+			file.load(newContent);
 			//
 			var rxr = new RegExp("\\r", "g");
 			var check_0 = NativeString.trimRight(prev);
@@ -223,26 +224,13 @@ class EditCode extends Editor {
 			check_1 = NativeString.replaceExt(check_1, rxr, "");
 			//
 			function finishChange():Void {
-				session.setValue(file.code);
+				if (session.getValue() != file.code) {
+					session.setValue(file.code);
+				}
 				plugins.PluginEvents.fileReload({file:file});
-				var path = file.path;
-				if (path != null) {
-					var data = GmlSeekData.map[path];
-					if (data != null) {
-						kind.index(path, file.readContent(), data.main, true);
-						if (GmlAPI.version.config.indexingMode == Local) file.liveApply();
-						session.gmlScopes.updateOnSave();
-						var next = GmlSeekData.map[path];
-						if (locals != locals) {
-							locals = locals;
-							if (GmlFile.current == file) session.bgTokenizer.start(0);
-						}
-					}
-				}
-				if (Std.is(kind, KGml) && (cast kind:KGml).canSyntaxCheck) {
-					var check = inline parsers.linter.GmlLinter.getOption((q)->q.onLoad);
-					if (check) parsers.linter.GmlLinter.runFor(this);
-				}
+				file.savePost_shared(newContent, true);
+				// TODO: need to also run this if we opened a resource that had changes
+				// since we have last looked at it.
 			}
 			//
 			var dlg:Int = 0;
@@ -255,8 +243,8 @@ class EditCode extends Editor {
 			} else dlg = 2;
 			//
 			if (dlg != 0) {
-				//Main.console.log(StringTools.replace(prev, "\r", "\\r"));
-				//Main.console.log(StringTools.replace(file.code, "\r", "\\r"));
+				//Console.log(StringTools.replace(prev, "\r", "\\r"));
+				//Console.log(StringTools.replace(file.code, "\r", "\\r"));
 				function printSize(b:Float) {
 					inline function toFixed(f:Float):String {
 						return (untyped f.toFixed)(2);
@@ -293,7 +281,7 @@ class EditCode extends Editor {
 				}
 			}
 		} catch (e:Dynamic) {
-			Main.console.error("Error applying changes: ", e);
+			Console.error("Error applying changes: ", e);
 		}
 	}
 }

@@ -3,12 +3,13 @@ function namespace_Class() constructor {};
 // note: the following should not be shortened since it is before the #import:
 /// @hint new namespace_Class()
 // furthermore, `#import namespace.*`` will not work for classes that have no definitions yet
-
 //!#import namespace.*
 /// @hint namespace_Class:hello()->void
 /// @hint namespace_Class:copy()->namespace_Class
-var something/*:namespace_Class*/ = new namespace_Class();
-something.hello();
+if (false) {
+	var something/*:namespace_Class*/ = new namespace_Class();
+	something.hello();
+}
 
 function v_imp_namespace_class(_arg/*:namespace_Class*/)/*->namespace_Class*/ {
 	let _c = new namespace_Class();

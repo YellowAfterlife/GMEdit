@@ -1,4 +1,5 @@
 package ui;
+import electron.IPC;
 import Main.*;
 import electron.Electron;
 import electron.FileSystem;
@@ -105,6 +106,14 @@ class KeyboardShortcuts {
 			addCommand("toggleFullscreen", "f11", function() {
 				var wnd = electron.Electron.remote.getCurrentWindow();
 				wnd.setFullScreen(!wnd.fullScreen);
+			});
+
+			addCommand("zoomIn", "mod-=", function() {
+				IPC.send("zoom-in");
+			});
+
+			addCommand("zoomOut", "mod--", function() {
+				IPC.send("zoom-out");
 			});
 		}
 		//

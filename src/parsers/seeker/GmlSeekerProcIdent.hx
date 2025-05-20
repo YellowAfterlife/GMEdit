@@ -1,4 +1,7 @@
 package parsers.seeker;
+import ace.extern.AceTokenType;
+import gml.file.GmlFile;
+import js.lib.RegExp;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
 import gml.type.GmlType;
@@ -73,7 +76,7 @@ class GmlSeekerProcIdent {
 		var kind = GmlAPI.stdKind[s];
 		var addInstField:Bool;
 		if (kind != null) {
-			if (kind == "keyword") {
+			if ((kind:AceTokenType).isKeyword()) {
 				return;
 			} else {
 				var ns = GmlAPI.gmlNamespaces[s];
@@ -148,7 +151,7 @@ class GmlSeekerProcIdent {
 					skip = q.peek() == "=".code;
 				} else skip = true;
 				break;
-			case ":".code: {
+			/*case ":".code: {
 				// todo: I don't remember what this is supposed to be
 				var swapReader = seeker.swapReader;
 				var k = swapReader.pos;
@@ -167,7 +170,7 @@ class GmlSeekerProcIdent {
 					}
 				}
 				break;
-			};
+			};*/
 			default: skip = true; break;
 		}
 		if (skip) { seeker.restoreReader(); return; }
@@ -201,9 +204,28 @@ class GmlSeekerProcIdent {
 			}
 			GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, s, args, null, fieldType, argTypes, true);
 			var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
-			if (templateSelf != null && addFieldHint_doc != null) {
-				addFieldHint_doc.templateSelf = templateSelf;
-				addFieldHint_doc.templateItems = templateItems;
+			if (addFieldHint_doc != null) {
+				// similar to GmlSeekerProcVar
+				var nav:GmlFileNav = {
+					ctx: s,
+					ctxAfter: true,
+					ctxRx: new RegExp("\\b" + s + "\\s*" + "\\:?=" + "\\s*function\\b"),
+				};
+				if (seeker.isCreateEvent) {
+					nav.def = seeker.jsDoc.interfaceName ?? "create";
+				} else {
+					nav.def = seeker.jsDoc.interfaceName;
+				}
+				addFieldHint_doc.lookup = {
+					path: seeker.orig,
+					sub: seeker.sub,
+					row: 0,
+				};
+				addFieldHint_doc.nav = nav;
+				if (templateSelf != null) {
+					addFieldHint_doc.templateSelf = templateSelf;
+					addFieldHint_doc.templateItems = templateItems;
+				}
 			}
 		}
 		seeker.restoreReader();

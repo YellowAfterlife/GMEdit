@@ -7,7 +7,7 @@ Press Ctrl+R to reload the project.
 
 Don't forget to backup your work!
 
-Editor compiled at %%VERSION%%.
+Editor compiled on %%VERSION%%.
 Offline versions can be found at
 https://yellowafterlife.itch.io/gmedit
 

@@ -8,6 +8,7 @@ import tools.Dictionary;
 import ui.miniweb.MiniWebRunnerAPI;
 import ui.liveweb.*;
 import ui.miniweb.MiniWebEditorAPI;
+import js.html.Console;
 using tools.HtmlTools;
 
 /**

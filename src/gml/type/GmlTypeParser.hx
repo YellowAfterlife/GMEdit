@@ -5,6 +5,8 @@ import parsers.linter.GmlLinter;
 import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
+import ace.AceMacro.jsRx;
+import js.html.Console;
 using tools.NativeString;
 
 /**
@@ -13,7 +15,7 @@ using tools.NativeString;
  */
 class GmlTypeParser {
 	static var kindMeta:Dictionary<GmlTypeKind> = (function() {
-		var r = new Dictionary();
+		var r:Dictionary<GmlTypeKind> = new Dictionary();
 		r["any"] = KAny;
 		r["Any"] = KAny;
 		r["Null"] = KNullable;
@@ -25,6 +27,7 @@ class GmlTypeParser {
 		r[GmlTypeTools.templateSelfName] = KTemplateSelf;
 		r["global"] = KGlobal;
 		r["function"] = KFunction;
+		r["constructor"] = KConstructor;
 		r["rest"] = KRest;
 		//
 		r["undefined"] = KUndefined;
@@ -33,6 +36,7 @@ class GmlTypeParser {
 		r["number"] = KNumber;
 		r["Number"] = KNumber;
 		r["real"] = KNumber;
+		r["Real"] = KNumber;
 		r["string"] = KString;
 		r["String"] = KString;
 		r["bool"] = KBool;
@@ -41,13 +45,17 @@ class GmlTypeParser {
 		//
 		r["array"] = KArray;
 		r["Array"] = KArray;
+		//
 		r["ds_list"] = KList;
 		r["ds_grid"] = KGrid;
 		r["ds_map"] = KMap;
+		
 		//
 		r["ckarray"] = KCustomKeyArray;
 		r["CustomKeyArray"] = KCustomKeyArray;
 		r["tuple"] = KTuple;
+		r["ckstruct"] = KCustomKeyStruct;
+		r["CustomKeyStruct"] = KCustomKeyStruct;
 		//
 		r["object"] = KObject;
 		r["instance"] = KObject;
@@ -55,6 +63,11 @@ class GmlTypeParser {
 		r["asset"] = KAsset;
 		//
 		r["any_fields_of"] = KAnyFieldsOf;
+		r["params_of"] = KParamsOf;
+		r["params_of_nl"] = KParamsOfNL;
+		r["method_auto_func"] = KMethodFunc;
+		r["method_auto_self"] = KMethodSelf;
+		r["buffer_auto_type"] = KBufferAutoType;
 		//
 		return r;
 	})();
@@ -100,7 +113,7 @@ class GmlTypeParser {
 		var c = q.read();
 		var result:GmlType;
 		switch (c) {
-			case "[".code:
+			case "[".code: { // `[int, string]` (tuples)
 				var params = [];
 				while (q.loop) {
 					var t = parseRec(q, ctx, FCanAlias);
@@ -114,8 +127,9 @@ class GmlTypeParser {
 						default: return parseError("Expected a `,`/`;` or a `]` in `[]`");
 					}
 				}
-				result = TInst("tuple",  params, KTuple);
-			case "{".code:
+				result = TInst("tuple", params, KTuple);
+			};
+			case "{".code: { // `{ a:int, b:string }` (anon structs)
 				var ani = new GmlTypeAnon();
 				while (q.loop) {
 					parseRec_skip(q);
@@ -136,19 +150,27 @@ class GmlTypeParser {
 					}
 				}
 				result = TAnon(ani);
-			case "(".code:
+			};
+			case "(".code: { // `(type)` for clarity
 				result = parseRec(q, ctx, FCanAlias);
 				if (result == null) return null;
 				parseRec_skip(q);
 				if (q.read() != ")".code) return parseError("Unclosed ()", start);
-			case _ if (c.isIdent0()):
-				q.skipIdent1();
+			};
+			case _ if (c.isIdent0()): {
+				q.skipDotIdent1();
 				var name = q.substring(start, q.pos);
 				parseRec_skip(q);
 				
 				if ((flags & FCanAlias) != 0 && q.peek() == ":".code) {
 					q.skip();
 					return THint(name, parseRec(q, ctx, flags));
+				}
+				
+				if (name.contains(".")) {
+					var nameLq = name.toLowerCase();
+					var alt = GmlAPI.featherAliases[nameLq];
+					if (alt != null) name = alt;
 				}
 				
 				var kind = JsTools.or(kindMeta[name], KCustom);
@@ -226,10 +248,11 @@ class GmlTypeParser {
 						&& !GmlAPI.stdKind.exists(name)
 						&& !GmlAPI.stdTypeExists.exists(name)
 						&& !GmlTypeTools.kindMap.exists(name)
-						&& name != "undefined"
+						&& !kindMeta.exists(name)
 					) typeWarn.push(name);
 					result = TInst(name, params, kind);
 				}
+			};
 			default:
 				return parseError("Expected a type name");
 		}
@@ -275,25 +298,25 @@ class GmlTypeParser {
 		var startDepth = reader.depth;
 		var typeStr:String;
 		switch (self.next()) {
-			case KParOpen:
+			case LKParOpen:
 				seqStart.setTo(reader);
 				var t = readNameForLinter(self);
 				if (t == null) return null;
-				if (self.next() != KParClose) {
+				if (self.next() != LKParClose) {
 					self.readSeqStartError("Unclosed type ()");
 					return null;
 				}
 				typeStr = '($t)';
-			case KSqbOpen: {
+			case LKSqbOpen: {
 				typeStr = "[";
 				var depth = 1;
 				seqStart.setTo(reader);
 				while (reader.loop) {
 					switch (self.next()) {
-						case KSqbOpen:
+						case LKSqbOpen:
 							typeStr += "[";
 							depth += 1;
-						case KSqbClose:
+						case LKSqbClose:
 							typeStr += "]";
 							depth -= 1;
 							if (depth <= 0) break;
@@ -306,16 +329,16 @@ class GmlTypeParser {
 					return null;
 				}
 			};
-			case KCubOpen: {
+			case LKCubOpen: {
 				typeStr = "{";
 				var depth = 1;
 				seqStart.setTo(reader);
 				while (reader.loop) {
 					switch (self.next()) {
-						case KCubOpen:
+						case LKCubOpen:
 							typeStr += "{";
 							depth += 1;
-						case KCubClose:
+						case LKCubClose:
 							typeStr += "}";
 							depth -= 1;
 							if (depth <= 0) break;
@@ -328,22 +351,28 @@ class GmlTypeParser {
 					return null;
 				}
 			};
-			case KIdent, KUndefined, KFunction:
+			case LKIdent, LKUndefined, LKFunction:
 				typeStr = self.nextVal;
-				if (self.skipIf(self.peek() == KLT)) {
+				while (self.skipIfPeek(LKDot)) {
+					typeStr += ".";
+					if (self.skipIfPeek(LKIdent)) {
+						typeStr += self.nextVal;
+					} else break;
+				}
+				if (self.skipIfPeek(LKLT)) {
 					var depth = 1;
 					typeStr += "<";
 					seqStart.setTo(reader);
 					while (reader.loop) {
 						switch (self.next()) {
-							case KLT:
+							case LKLT:
 								typeStr += "<";
 								depth += 1;
-							case KGT:
+							case LKGT:
 								typeStr += ">";
 								depth -= 1;
 								if (depth <= 0) break;
-							case KShr:
+							case LKShr:
 								if (depth == 1) {
 									reader.pos--;
 									typeStr += ">";
@@ -367,14 +396,14 @@ class GmlTypeParser {
 		}
 		while (reader.loop) {
 			switch (self.peek()) {
-				case KSqbOpen:
+				case LKSqbOpen:
 					self.skip();
-					if (self.readCheckSkip(KSqbClose, "a closing `]`")) return null;
+					if (self.readCheckSkip(LKSqbClose, "a closing `]`")) return null;
 					typeStr += "[]";
-				case KQMark:
+				case LKQMark:
 					self.skip();
 					typeStr += "?";
-				case KOr:
+				case LKOr:
 					self.skip();
 					var t = readNameForLinter(self);
 					if (t == null) return null;
@@ -410,7 +439,7 @@ class GmlTypeParser {
 				q.skip();
 				if (!q.skipTypeParams(till, "{".code, "}".code)) return rewind();
 			case _ if (c.isIdent0()): // name<...params>
-				q.skipIdent1();
+				q.skipDotIdent1();
 				start = q.pos;
 				q.skipSpaces1x(till);
 				if (q.peek() == "<".code) {

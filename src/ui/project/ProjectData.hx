@@ -19,6 +19,7 @@ typedef ProjectData = {
 	?newLineMode:String,
 	
 	?lambdaMode:LambdaMode,
+	?autoArrowFunctions:Bool,
 	
 	?argNameRegex:String,
 	
@@ -31,6 +32,8 @@ typedef ProjectData = {
 	?nullConditionalVal:GmlName,
 	
 	?linterPrefs:parsers.linter.GmlLinterPrefs,
+	
+	?libraryResources:Array<String>,
 }
 enum abstract LambdaMode(Int) from Int to Int {
 	/// may also be null

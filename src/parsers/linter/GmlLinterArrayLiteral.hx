@@ -57,11 +57,11 @@ class GmlLinterArrayLiteral {
 		self.seqStart.setTo(q);
 		while (q.loop) {
 			switch (self.peek()) {
-				case KSqbClose:
+				case LKSqbClose:
 					self.skip();
 					closed = true;
 					break;
-				case KComma:
+				case LKComma:
 					if (seenComma) {
 						return self.readError("Unexpected `,`");
 					} else {

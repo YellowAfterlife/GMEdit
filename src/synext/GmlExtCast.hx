@@ -63,6 +63,7 @@ class GmlExtCast extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
+				case "$".code if (q.isDqTplStart(v)): q.skipDqTplString(v);
 				case "#".code: {
 					if (q.skipIfIdentEquals("import")) {
 						q.skipLine();
@@ -94,6 +95,7 @@ class GmlExtCast extends SyntaxExtension {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, v);
+				case "$".code if (q.isDqTplStart(v)): q.skipDqTplString(v);
 				case "#".code: {
 					if (q.skipIfIdentEquals("import")) {
 						q.skipLine();

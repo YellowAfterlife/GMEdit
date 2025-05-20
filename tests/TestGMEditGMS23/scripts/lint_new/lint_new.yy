@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"lint_new",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"lint_new",
+  "parent":{
+    "name":"Syntax",
+    "path":"folders/Scripts/Linter/Syntax.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

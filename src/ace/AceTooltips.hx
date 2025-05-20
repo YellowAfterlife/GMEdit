@@ -21,6 +21,7 @@ import synext.GmlExtLambda;
 import tools.Dictionary;
 import tools.JsTools;
 import ui.Preferences;
+import js.html.Console;
 using tools.NativeString;
 
 /**
@@ -40,6 +41,46 @@ class AceTooltips {
 	public static function resetCache():Void {
 		spriteThumbs = new Dictionary();
 	}
+	
+	public static var getDocAt_extra:String;
+	public static function getDocAt(session:AceSession, pos:AcePos, token:AceToken) {
+		var scope = session.gmlScopes.get(pos.row);
+		var codeEditor = session.gmlEditor;
+		var iter = new AceTokenIterator(session, pos.row, pos.column);
+		//
+		var feit = new AceTokenIterator(session, pos.row, pos.column);
+		var funcEnd:AcePos;
+		if (feit.stepForward() == null) {
+			funcEnd = session.getEOF();
+		} else funcEnd = feit.getCurrentTokenPosition();
+		//
+		var ctx:AceStatusBarDocSearch = {
+			session: session, scope: scope,
+			imports: codeEditor.imports[scope],
+			lambdas: codeEditor.lambdas[scope],
+			tk: token, doc: null, docs: null,
+			iter: iter,
+			exprStart: iter.getCurrentTokenPosition(),
+			funcEnd: funcEnd,
+		};
+		var doc:GmlFuncDoc = null;
+		if (AceStatusBar.getDocData(ctx)) {
+			doc = ctx.doc;
+			if (doc == null) {
+				AceStatusBar.procDocImport(ctx);
+				doc = ctx.doc;
+			}
+		}
+		//
+		if (ctx.typeText != null) {
+			getDocAt_extra = ctx.typeText;
+		} else if (ctx.type != null) {
+			getDocAt_extra = "type " + ctx.type.toString();
+		} else {
+			getDocAt_extra = null;
+		}
+		return doc;
+	}
 	//
 	function update(session:AceSession, pos:AcePos, token:AceToken) {
 		var t = token.type;
@@ -49,54 +90,22 @@ class AceTooltips {
 		var z:Bool = false;
 		//
 		var doc:GmlFuncDoc = null;
-		var iter:AceTokenIterator;
 		//
 		if (AceStatusBar.canDocData.exists(t) || Std.is(session.gmlFile.kind, file.kind.KGml)) {
-			var scope = session.gmlScopes.get(pos.row);
-			var codeEditor = session.gmlEditor;
-			var iter = new AceTokenIterator(session, pos.row, pos.column);
-			//
-			var feit = new AceTokenIterator(session, pos.row, pos.column);
-			var funcEnd:AcePos;
-			if (feit.stepForward() == null) {
-				funcEnd = session.getEOF();
-			} else funcEnd = feit.getCurrentTokenPosition();
-			//
-			var ctx:AceStatusBarDocSearch = {
-				session: session, scope: scope,
-				imports: codeEditor.imports[scope],
-				lambdas: codeEditor.lambdas[scope],
-				tk: token, doc: null, docs: null,
-				iter: iter,
-				exprStart: iter.getCurrentTokenPosition(),
-				funcEnd: funcEnd,
-			};
-			if (AceStatusBar.getDocData(ctx)) {
-				doc = ctx.doc;
-				if (doc == null) {
-					AceStatusBar.procDocImport(ctx);
-					doc = ctx.doc;
-				}
-			}
-			//
-			if (ctx.typeText != null) {
-				extra = extra.nzcct("\n", ctx.typeText);
-			} else if (ctx.type != null) {
-				extra = extra.nzcct("\n", "type " + ctx.type.toString());
-			}
-			
+			doc = getDocAt(session, pos, token);
+			extra = extra.nzcct("\n", getDocAt_extra);
+			/*
 			// the following doesn't work quite right,
 			// have to figure out why it can get offset
 			// (probably because of my changes to line count gutter width)
-			if (false) {
-				if (marker != null) markerSession.removeMarker(marker);
-				var to = ctx.funcEnd;
-				var from = ctx.exprStart;
-				//to = to.add(1, 0);
-				//Console.log(from, to);
-				marker = session.addMarker(AceRange.fromPair(from, to), "debugShowToken", "text");
-				markerSession = session;
-			}
+			if (marker != null) markerSession.removeMarker(marker);
+			var to = ctx.funcEnd;
+			var from = ctx.exprStart;
+			//to = to.add(1, 0);
+			//Console.log(from, to);
+			marker = session.addMarker(AceRange.fromPair(from, to), "debugShowToken", "text");
+			markerSession = session;
+			*/
 		}
 		inline function calcRow(row:Int) {
 			var showRow = row;
@@ -149,28 +158,37 @@ class AceTooltips {
 				if (comp != null) r = comp.doc;
 			};
 			case "numeric": {
-				var bgr:String;
-				if (v.length == 8 && v.startsWith("0x")) {
-					bgr = v.substring(2);
-				} else if (v.length == 7 && v.charCodeAt(0) == "$".code) {
-					bgr = v.substring(1);
-				} else bgr = null;
-				if (bgr != null) {
-					r = "color:0x" + bgr;
+				var isRGB = false;
+				var hex = switch (v.length) {
+					case 8 if (v.startsWith("0x")): v.substring(2);
+					case 7 if (v.charCodeAt(0) == "$".code): v.substring(1);
+					case 7 if (v.charCodeAt(0) == "#".code): isRGB = true; v.substring(1);
+					default: null;
+				}
+				if (hex != null) {
+					r = isRGB ? "color:#" +hex : "color:0x" + hex;
 					if (text != r) {
 						text = r;
-						var bit = Std.parseInt("0x" + bgr);
-						var rgb = bgr.substr(4, 2) + bgr.substr(2, 2) + bgr.substr(0, 2);
+						var int = Std.parseInt("0x" + hex);
+						var rgb = isRGB ? hex
+							: hex.substr(4, 2) + hex.substr(2, 2) + hex.substr(0, 2);
+						var rgbStr:String;
+						if (isRGB) {
+							rgbStr = ((int >> 16) & 0xff)
+								+ ', ' + ((int >> 8) & 0xff)
+								+ ', ' + (int & 0xff);
+						} else {
+							rgbStr = (int & 0xff)
+								+ ', ' + ((int >> 8) & 0xff)
+								+ ', ' + ((int >> 16) & 0xff);
+						}
 						ttip.setHtml('<span style="'
 							+ 'display: inline-block;'
 							+ 'background-color: #$rgb;'
 							+ 'vertical-align: middle;'
 							+ 'width: 0.8em;'
 							+ 'height: 0.8em;'
-						+ '"></span> RGB(' + (bit & 0xff)
-							+ ', ' + ((bit >> 8) & 0xff)
-							+ ', ' + ((bit >> 16) & 0xff)
-						+ ')');
+						+ '"></span> RGB($rgbStr)');
 					}
 				}
 			};

@@ -9,6 +9,7 @@ import parsers.*;
 import synext.*;
 import tools.CharCode;
 import tools.JsTools;
+import synext.GmlExtCoroutines;
 using tools.NativeString;
 
 /**
@@ -70,6 +71,8 @@ class KGml extends KCode {
 			GmlExtCast.inst,
 			GmlExtHashColorLiterals.inst,
 			GmlExtHyper.inst,
+			GmlExtDsAccessor.inst,
+			GmlExtVarDeclSet.inst,
 			// GmlExtArgs.inst, // also done in KGmlScript AND it's done out of order
 		];
 	}
@@ -114,8 +117,8 @@ class KGml extends KCode {
 		}
 		//
 		var ctx = nav.ctx;
-		if (ctx != null) {
-			var rxCtx = new RegExp(NativeString.escapeRx(ctx));
+		if (ctx != null || nav.ctxRx != null) {
+			var rxCtx = nav.ctxRx ?? new RegExp(NativeString.escapeRx(ctx));
 			var rxEof = new RegExp("^(#define|#event|#moment|#target)");
 			i = row;
 			if (nav.ctxAfter && nav.pos != null) i += nav.pos.row;
@@ -166,9 +169,26 @@ class KGml extends KCode {
 	override public function index(path:String, content:String, main:String, sync:Bool):Bool {
 		var content_noCoroutines = content;
 		content = GmlExtCoroutines.pre(content);
-		//
+		
 		var out = new GmlSeekData(this);
+		//
 		out.hasCoroutines = content != content_noCoroutines;
+		var crResult = GmlExtCoroutines.result;
+		if (crResult != null) {
+			out.yieldScripts = crResult.yieldScripts;
+			out.coroutineMode = crResult.mode;
+			if ((crResult.mode:GmlExtCoroutineMode) == Constructor) {
+				for (scr in out.yieldScripts) {
+					// we are indexing the original code so that the user sees their variables
+					// and such, but we do also need coroutine-constructor information
+					// for type checking and auto-completion
+					var ctr = GmlExtCoroutines.constructorFor(scr);
+					content += "\n/// @hint {any} " + ctr + ":result";
+					content += "\n/// @hint {bool} " + ctr + ":next()";
+				}
+			}
+		}
+		//
 		out.main = main;
 		var locals = new gml.GmlLocals();
 		out.locals.set("", locals);
@@ -214,9 +234,8 @@ class KGml extends KCode {
 						q.skipLine();
 					case "*".code: q.skip(); lineNumber += q.skipComment();
 				};
-				case '"'.code, "'".code, "@".code, "`".code: {
-					lineNumber += q.skipStringAuto(c, version);
-				};
+				case '"'.code, "'".code, "@".code, "`".code: lineNumber += q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): lineNumber += q.skipDqTplString(version);
 				case "#".code: {
 					if (q.skipIfIdentEquals("region")) {
 						at = q.pos;

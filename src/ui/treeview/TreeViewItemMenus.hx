@@ -9,6 +9,7 @@ import electron.Menu;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import js.html.Console;
 import tools.JsTools;
 import ui.treeview.TreeViewMenus.items;
 import ui.treeview.TreeViewMenus.add;
@@ -157,7 +158,7 @@ class TreeViewItemMenus {
 				}
 			}
 		} else {
-			if (kind != "note" && !(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
+			if (kind != "notes" && !(new RegExp("^[a-zA-Z_]\\w*$")).test(s)) {
 				Dialog.showError("Name contains illegal characters!");
 				return false;
 			}
@@ -381,7 +382,7 @@ class TreeViewItemMenus {
 				case "notes", "extension": dlgMode = 1;
 				default: dlgMode = 2;
 			}
-			//Main.console.log(kind, dlgMode);
+			//Console.log(kind, dlgMode);
 			if (dlgMode > 0) {
 				var msg = "Would you like to rename references as well?";
 				var exp = "(experimental, make sure to have backups/version control)";
@@ -436,7 +437,6 @@ class TreeViewItemMenus {
 				var chromeTab:ChromeTab = cast tab;
 				if (chromeTab.gmlFile.path == oldPath) {
 					chromeTab.gmlFile.rename(s, el.treeFullPath);
-					chromeTab.refresh();
 				}
 			}
 		});
@@ -452,7 +452,7 @@ class TreeViewItemMenus {
 			
 			// NB! You'll need to add a "resource_<name>_add.png" to /icons/silk
 			// when you add new resource types here.
-			var resourceTypes = ["sprite", "sound", "script", "note", "shader", "font", "object"];
+			var resourceTypes = ["sprite", "sound", "script", "notes", "shader", "font", "object"];
 
 			if (Preferences.current.assetOrder23 == PrefAssetOrder23.Ascending) {
 				resourceTypes.sort((a,b) -> a < b ? -1 : 1);
@@ -517,7 +517,7 @@ class TreeViewItemMenus {
 					try {
 						c.gmlCode = electron.FileWrap.readTextFileSync(fp);
 					} catch (x:Dynamic) {
-						Main.console.error('Error reading `$fp`:', x);
+						Console.error('Error reading `$fp`:', x);
 						c.gmlCode = "";
 					}
 					return c;

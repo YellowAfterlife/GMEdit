@@ -78,18 +78,29 @@ extern class PluginEvents {
 	 * (automatically or with user permit)
 	 */
 	static function fileReload(e:{file:GmlFile}):Void;
+
+	/**
+	 * Dispatches after a file's name or path changes.
+	 */
+	static function fileRename(e:{file:GmlFile}):Void;
 	
 	/**
 	 * Called after constructing the preferences menu.
 	 * You can use this to insert your plugin-specific DOM elements into it.
 	 * ui.Preferences offers a large set of helpers for all kinds of helpers.
+	 * 
+	 * @deprecated Consider implementing `PluginData.buildPreferences` instead, which doesn't
+	 *             require manual location of the plugin's preferences element, and fires on reloads.
 	 */
 	static function preferencesBuilt(e:{target:Element}):Void;
-	
+
 	/**
 	 * Called after constructing the preferences menu.
 	 * You can use this to insert your plugin-specific DOM elements into it.
 	 * ui.Preferences is similarly used here.
+	 * 
+	 * @deprecated Consider implementing `PluginData.buildProjectProperties` instead, for similar
+	 * 			   reasons to that stated above.
 	 */
 	static function projectPropertiesBuilt(e:{project:Project, target:Element}):Void;
 	

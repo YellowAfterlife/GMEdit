@@ -53,25 +53,25 @@ class GmlSeekerProcExpr {
 			} else return false;
 		}
 		switch (c) {
-			case "[".code:
+			case "[".code: // [...]
 				if (specTypeInst) {
 					fieldType = GmlTypeDef.anyArray;
 					q.skip(); q.skipBalancedParenExpr();
 					procAs();
 				}
 				return;
-			case '"'.code:
+			case '"'.code: // "str"
 				if (specTypeInst) fieldType = GmlTypeDef.string;
 				return;
-			case "'".code if (!seeker.version.hasLiteralStrings()):
+			case "'".code if (!seeker.version.hasLiteralStrings()): // 'str'
 				if (specTypeInst) fieldType = GmlTypeDef.string;
 				return;
-			case "@".code if (seeker.version.hasLiteralStrings() && (
+			case "@".code if (seeker.version.hasLiteralStrings() && ( // @"str"/@'str'
 				q.peek(1) == '"'.code || q.peek(1) == "'".code
 			)):
 				if (specTypeInst) fieldType = GmlTypeDef.string;
 				return;
-			case "-".code, "+".code:
+			case "-".code, "+".code: // +1/-1
 				if (specTypeInst) { // maybe "-1 as X"
 					fieldType = GmlTypeDef.number;
 					var start = q.pos++;
@@ -87,17 +87,20 @@ class GmlSeekerProcExpr {
 					}
 				}
 				return;
-			case _ if (c.isDigit()):
+			case _ if (c.isDigit()): // 4
 				if (specTypeInst) fieldType = GmlTypeDef.number;
 				return;
-			case _ if (c.isIdent0()):
+			case _ if (c.isIdent0()): // some
 				// OK!
 			default: return;
 		}
 		if (!c.isIdent0_ni()) return;
+		// from hereafter, we know that it's an identifier
+		
 		var start = q.pos;
 		q.skipIdent1();
 		var ident = q.substring(start, q.pos);
+		
 		var normalIdent = false;
 		switch (ident) {
 			case "function":
@@ -119,6 +122,7 @@ class GmlSeekerProcExpr {
 			default:
 				normalIdent = true;
 		}
+		
 		if (normalIdent) {
 			if (!specTypeInst) return;
 			var doc = GmlAPI.stdDoc[ident];
@@ -187,7 +191,9 @@ class GmlSeekerProcExpr {
 			}
 			procAs();
 			return;
-		}
+		} // normalIdent
+		
+		// from hereafter, we know that it's a `function`
 		q.skipSpaces1();
 		if (q.peek().isIdent0_ni()) {
 			// though you've messed up if you did `static name = function name`
@@ -228,9 +234,8 @@ class GmlSeekerProcExpr {
 		var returnType:String = null;
 		if (asStatic) {
 			// OK!
-		} else if (q.peekstr(4) == "/*->") {
-			var p = q.pos + 4;
-			q.skip(4);
+		} else if (q.skipIfStrEquals("/*->")) {
+			var p = q.pos;
 			q.skipComment();
 			if (q.peekstr(2, -2) == "*/") {
 				returnType = q.substring(p, q.pos - 2);
@@ -257,10 +262,12 @@ class GmlSeekerProcExpr {
 		q.skipSpaces1();
 		if (q.peek() == ":".code) {
 			isConstructor = true;
+			// `function(...) ¦: parent(...) constructor {...}`
 		} else if (q.peek() == "c".code) {
 			var ctStart = q.pos;
 			q.skipIdent1();
 			isConstructor = q.substring(ctStart, q.pos) == "constructor";
-		}
+			// `function(...) constructor¦ {...}`
+		} // else `function(...) ¦{...}`
 	}
 }

@@ -12,6 +12,7 @@ import gml.GmlNamespace;
 import gml.GmlScopes;
 import gml.type.GmlType;
 import gml.file.GmlFile;
+import gml.type.GmlTypeDef;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
 import parsers.GmlKeycode;
@@ -220,19 +221,24 @@ using tools.NativeString;
 					var type:GmlType;
 					if (!isGlobal) {
 						// some special cases where we know that we don't have to parse anything:
+						var isNamespace = false;
 						var snip:GmlCode = null;
 						switch (tk.type) {
-							case "local", "sublocal", "asset.object", "namespace", "enum": {
+							case "namespace":
+								snip = tk.value;
+								isNamespace = true;
+							case "local", "sublocal", "asset.object", "enum": {
 								snip = tk.value;
 							};
-							case "keyword" if (tk.value == "self" || tk.value == "other"): snip = tk.value;
+							case _ if (tk.type.isKeyword() && (tk.value == "self" || tk.value == "other")):
+								snip = tk.value;
 							default:
 						}
 						// ... unless they are preceded by "as", of course
 						if (snip != null) {
 							var btk = iter.peekBackwardNonText();
 							if (btk != null && btk.ncType == "keyword") switch (btk.value) {
-								case "as", "cast": snip = null;
+								case "as", "cast": snip = null; isNamespace = false;
 							}
 						}
 						if (snip == null) {
@@ -240,7 +246,9 @@ using tools.NativeString;
 							snip = session.getTextRange(AceRange.fromPair(from, dotPos));
 						}
 						
-						type = GmlLinter.getType(snip, session.gmlEditor, scope, dotPos).type;
+						if (isNamespace) {
+							type = GmlType.TInst("type", [GmlTypeDef.simple(snip)], KType);
+						} else type = GmlLinter.getType(snip, session.gmlEditor, scope, dotPos).type;
 						dkSmart_type = type;
 						
 						var ctr = editor.completer.getPopup().container;

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"v_outlineview_nav",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_outlineview_nav",
+  "parent":{
+    "name":"Other",
+    "path":"folders/Scripts/Other.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

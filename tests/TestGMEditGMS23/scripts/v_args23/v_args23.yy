@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Syntax extensions",
-    "path": "folders/Scripts/Syntax extensions.yy",
+  "$GMScript":"",
+  "%Name":"v_args23",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_args23",
+  "parent":{
+    "name":"Syntax extensions",
+    "path":"folders/Scripts/Syntax extensions.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_args23",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

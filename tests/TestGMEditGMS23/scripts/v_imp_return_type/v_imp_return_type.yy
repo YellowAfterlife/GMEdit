@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Import",
-    "path": "folders/Scripts/Import.yy",
+  "$GMScript":"",
+  "%Name":"v_imp_return_type",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_imp_return_type",
+  "parent":{
+    "name":"Import",
+    "path":"folders/Scripts/Import.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_imp_return_type",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

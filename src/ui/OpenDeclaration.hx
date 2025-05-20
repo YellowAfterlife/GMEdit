@@ -1,4 +1,7 @@
 package ui;
+import ace.AceTooltips;
+import gml.GmlFuncDoc;
+import ace.AceStatusBar;
 import ace.AceWrap;
 import ace.extern.*;
 import js.lib.RegExp;
@@ -62,6 +65,7 @@ class OpenDeclaration {
 		openLocal(name, pos, nav);
 		return true;
 	}
+	
 	public static function openLookup(lookup:GmlLookup, ?nav:GmlFileNav) {
 		if (lookup == null) return false;
 		var path = lookup.path;
@@ -70,6 +74,7 @@ class OpenDeclaration {
 		if (treeEl != null) {
 			name = treeEl.title;
 		} else {
+			// not part of the project, but maybe it's an open tab?
 			name = null;
 			for (tabEl in ui.ChromeTabs.element.querySelectorEls('.chrome-tab')) {
 				var gmlFile:GmlFile = untyped tabEl.gmlFile;
@@ -81,19 +86,32 @@ class OpenDeclaration {
 			if (name == null) return false;
 		}
 		
+		var navMode = 0;
 		if (nav != null) {
 			if (nav.def == null) nav.def = lookup.sub;
 			if (nav.pos != null) {
+				navMode = 1;
 				nav.pos.row += lookup.row;
 				nav.pos.column += lookup.col;
-			} else nav.pos = { row: lookup.row, column: lookup.col };
+			} else {
+				nav.pos = { row: lookup.row, column: lookup.col };
+				navMode = 2;
+			}
 		}; else nav = {
 			def: lookup.sub,
 			pos: { row: lookup.row, column: lookup.col }
 		};
 		GmlFile.open(name, path, nav);
+		switch (navMode) {
+			case 1:
+				nav.pos.row -= lookup.row;
+				nav.pos.column -= lookup.col;
+			case 2:
+				js.Syntax.delete(nav, "pos");
+		}
 		return true;
 	}
+	
 	public static function openLocal(name:String, pos:AcePos, ?nav:GmlFileNav):Bool {
 		if (openLookup(GmlAPI.gmlLookup[name], nav)) return true;
 		//
@@ -110,6 +128,7 @@ class OpenDeclaration {
 		//
 		return false;
 	}
+	
 	public static function openImportFile(rel:String) {
 		var dir = "#import";
 		if (!FileWrap.existsSync(dir)) {
@@ -128,11 +147,12 @@ class OpenDeclaration {
 		GmlFile.openTab(file);
 		return true;
 	}
+	
 	public static function proc(session:AceSession, pos:AcePos, token:AceToken) {
 		if (token == null) return false;
 		var term = token.value;
 		// opening #import "<path>":
-		if (token.type.indexOf("importpath") >= 0) {
+		if (token.type.isImportPath()) {
 			if (openImportFile(term.substring(1, term.length - 1))) return true;
 		}
 		// color picker for hex colors:
@@ -147,29 +167,29 @@ class OpenDeclaration {
 			if (vals != null) openLink(vals[1], pos);
 			return true;
 		}
-		//
+		// `http[s]://` links in comments:
 		if (token.type.contains("link.url")) {
 			Shell.openExternal(term);
 		}
+		//
+		var scope = session.gmlScopes.get(pos.row);
 		// parent event navigation overrides early:
 		if (term == "event_inherited" || term == "action_inherited") {
-			var def = session.gmlScopes.get(pos.row);
-			if (def == "") return false;
+			if (scope == "") return false;
 			var file = session.gmlFile;
 			var path = file.path;
 			#if !gmedit.no_gmx
 			if (Std.is(file.kind, KGmxEvents)) {
-				return gmx.GmxObject.openEventInherited(path, def) != null;
+				return gmx.GmxObject.openEventInherited(path, scope) != null;
 			} else // ->
 			#end
 			if (Std.is(file.kind, KYyEvents)) {
-				return yy.YyObject.openEventInherited(path, def) != null;
+				return yy.YyObject.openEventInherited(path, scope) != null;
 			} else return false;
 			return true;
 		}
 		// handle namespace.term | localTyped.term:
 		do {
-			var scope = session.gmlScopes.get(pos.row);
 			if (scope == null) break;
 			var imp = session.gmlFile.codeEditor.imports[scope];
 			if (imp == null) break;
@@ -214,6 +234,11 @@ class OpenDeclaration {
 		} while (false);
 		//
 		if (openLocal(term, pos, null)) return true;
+		// try to do the sort of resolution that we do in AceTooltips
+		var doc = AceTooltips.getDocAt(session, pos, token);
+		if (doc != null && doc.lookup != null) {
+			return openLookup(doc.lookup, doc.nav);
+		}
 		//
 		var helpURL = GmlAPI.helpURL;
 		if (helpURL != null) {
@@ -229,6 +254,7 @@ class OpenDeclaration {
 					return true;
 				}
 			} else {
+				if (!electron.Dialog.showConfirm('Open manual search for "$term"?')) return false;
 				Shell.openExternal(helpURL.replace("$1", term));
 				return true;
 			}

@@ -1,6 +1,10 @@
 {
+    "builderSettings": {
+        "runtimeVersion": "runtime-2023.6.0.139"
+    },
     "indentWithTabs": true,
     "linterPrefs": {
+        "addMissingArgsToJSDoc": true,
         "implicitBoolIntCasts": false,
         "requireFields": true,
         "specTypeColon": true,
@@ -10,6 +14,7 @@
         "specTypeLet": true,
         "specTypeVar": false,
         "strictScriptSelf": true,
+        "strictStaticJSDoc": true,
         "warnAboutRedundantCasts": true
     },
     "nullConditionalSet": "nc_set",

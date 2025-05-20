@@ -273,9 +273,8 @@ class GmlExtTemplateStrings extends SyntaxExtension {
 									case "*".code: q.skip(); q.skipComment();
 									default:
 								};
-								case '"'.code, "'".code, "@".code, "`".code: {
-									q.skipStringAuto(c, version);
-								};
+								case '"'.code, "'".code, "@".code, "`".code: q.skipStringAuto(c, version);
+								case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 							}
 						}
 						if (argEnd < 0) argEnd = q.pos;

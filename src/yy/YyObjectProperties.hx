@@ -101,13 +101,19 @@ class YyObjectProperties {
 			}
 			if (valid) {
 				var res = Project.current.yyResources[v22 ? val : vr.name];
-				if (res != null) {
-					if (v22) {
+				if (!v22) {
+					if (res != null) {
+						out += res.id.name + ";";
+					} else {
+						out += vr.name + ";";
+					}
+				} else {
+					if (res != null) {
 						out += res.Value.resourceName + ";";
 					} else {
-						out += res.id.name + ";";
+						out += '"$val"; // amiss'; // puts a GUID in quotes
 					}
-				} else out += '"$val"; // amiss';
+				}
 			} else out += "-1;";
 		}
 		inline function addPrim(key:String, val:Any):Void {
@@ -168,7 +174,7 @@ class YyObjectProperties {
 					if (prop.rangeEnabled) {
 						out += '<' + prop.rangeMin + ', ' + prop.rangeMax + '>';
 					}
-					out += ' = ' + (isInt ? prop.value : printExpr(prop.value));
+					out += ' = ' + printExpr(prop.value);
 				};
 				case TString: out += 'string = ' + Json.stringify(prop.value);
 				case TBool: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
@@ -211,7 +217,7 @@ class YyObjectProperties {
 							out += ">";
 						}
 					}
-					out += ' = ' + prop.value;
+					out += ' = ' + printExpr(prop.value);
 				};
 				case TList: {
 					out += prop.multiselect ? 'mlist<' : 'list<';
@@ -355,7 +361,11 @@ class YyObjectProperties {
 						}
 					} else {
 						prop.resourceType = "GMObjectProperty";
-						prop.resourceVersion = "1.0";
+						var project = Project.current;
+						prop.resourceVersion = project.isGM2024_8 ? "2.0" : "1.0";
+						if (project.isGM2024_8) {
+							Reflect.setField(prop, "$GMObjectProperty", "v1");
+						}
 						prop.name = name;
 						prop.hxOrder = propFieldOrder23;
 						prop.hxDigits = digitCount23;
@@ -409,6 +419,7 @@ class YyObjectProperties {
 						var asset = switch (value) {
 							case Ident(s): s;
 							case Number(f): Json.stringify(f);
+							case EString(s): s;
 							default: throw 'Expected an asset, got $value';
 						};
 						if (v22) {

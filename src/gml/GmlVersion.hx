@@ -4,6 +4,7 @@ import gml.GmlVersionV23;
 import haxe.io.Path;
 import js.lib.Error;
 import js.lib.RegExp;
+import js.html.Console;
 import tools.Dictionary;
 import tools.JsTools;
 import tools.NativeObject;
@@ -30,6 +31,7 @@ import electron.FileWrap;
 	//
 	public static var map:Dictionary<GmlVersion> = new Dictionary();
 	public static var list:Array<GmlVersion> = [];
+	public static var hasCustomDialects:Bool = false;
 	//
 	
 	/** API name, for code */
@@ -109,7 +111,7 @@ import electron.FileWrap;
 						config = c;
 						Console.log('Loaded config for $name');
 					} else {
-						Console.error('Failed to load config for $name:', e);
+						Console.error('Failed to load config for $name:' + e);
 					}
 					if (callback != null) callback(e, this);
 				});
@@ -126,11 +128,15 @@ import electron.FileWrap;
 	public function hasTemplateStrings():Bool {
 		return config.hasTemplateStrings || GmlAPI.forceTemplateStrings;
 	}
+	public function hasQuoteTemplateStrings():Bool {
+		return config.hasQuoteTemplateStrings;
+	}
 	public function hasFunctionLiterals():Bool {
 		return config.additionalKeywords != null && config.additionalKeywords.contains("function");
 	}
 	public function hasJSDoc() return config.hasJSDoc;
 	public function hasScriptArgs() return config.hasDefineArgs;
+	public function hasScriptDotStatic() return config.hasScriptDotStatic;
 	public function resetOnDefine() return config.resetLineCounterOnDefine;
 	public function getName() return name;
 	//
@@ -156,7 +162,7 @@ import electron.FileWrap;
 						if (!parentVer.isReady) loadVer(parentVer);
 						parentConf = parentVer.config;
 					} else {
-						Main.console.error('Parent `$parentName` for `${v.name}` is missing');
+						Console.error('Parent `$parentName` for `${v.name}` is missing');
 						parentConf = null;
 					}
 				};
@@ -178,7 +184,7 @@ import electron.FileWrap;
 				try {
 					selfConf.projectRegexCached = new RegExp(rs, "i");
 				} catch (x:Dynamic) {
-					Main.console.error('Regexp `$rs` from `${v.name}` is invalid:', x);
+					Console.error('Regexp `$rs` from `${v.name}` is invalid:', x);
 				}
 			}
 			//
@@ -226,6 +232,7 @@ import electron.FileWrap;
 					if (found.exists(id)) continue;
 					var full = dir + "/" + id;
 					if (!FileSystem.existsSync(full + "/config.json")) continue;
+					if (isCustom) hasCustomDialects = true;
 					found[id] = true;
 					var v:GmlVersion;
 					if (id == "v23") {
@@ -258,6 +265,7 @@ import electron.FileWrap;
 				});
 				list.push(v);
 			}
+			init_1();
 		}
 		#end
 	}

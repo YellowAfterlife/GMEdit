@@ -19,11 +19,11 @@ class GmxObject {
 	public static var errorText:String;
 	public static function getCode(gmx:SfGmx):String {
 		var out = GmxObjectProperties.get(gmx);
-		if (out != "") out += "\n";
 		var errors = "";
 		var objectIDs = GmlAPI.gmlAssetIDs["object"];
 		for (evOuter in gmx.findAll("events")) {
 			var events = evOuter.findAll("event");
+			//
 			events.sort(function(a:SfGmx, b:SfGmx) {
 				var atype = Std.parseInt(a.get("eventtype"));
 				var btype = Std.parseInt(b.get("eventtype"));
@@ -42,8 +42,9 @@ class GmxObject {
 				var bnumb = Std.parseInt(b.get("enumb"));
 				return anumb - bnumb;
 			});
+			//
 			for (event in events) {
-				if (out != "") out += "\n";
+				if (out != "") out += "\n\n";
 				var name = GmxEvent.toStringGmx(event);
 				out += "#event " + name;
 				// to say, GMS will usually purge empty events on save, but just in case:
@@ -62,7 +63,7 @@ class GmxObject {
 		if (errors != "") {
 			errorText = errors;
 			return null;
-		} else return tools.NativeString.trimTrailRn(out);
+		} else return out;
 	}
 	
 	/**
@@ -128,7 +129,7 @@ class GmxObject {
 			//
 			if (source.code.length > 0) {
 				for (gml in source.code) {
-					var a = GmxAction.makeCodeBlock(gml + "\r\n");
+					var a = GmxAction.makeCodeBlock(gml);
 					if (a == null) {
 						errorText = GmxAction.errorText;
 						return false;

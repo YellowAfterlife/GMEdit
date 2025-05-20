@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Types",
-    "path": "folders/Scripts/Linter/Types.yy",
+  "$GMScript":"",
+  "%Name":"v_tuples",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_tuples",
+  "parent":{
+    "name":"Types",
+    "path":"folders/Scripts/Linter/Types.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_tuples",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

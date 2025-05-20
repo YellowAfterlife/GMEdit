@@ -5,6 +5,7 @@ import gml.Project;
 import gml.file.GmlFile;
 import haxe.io.Path;
 import js.html.DivElement;
+import js.html.Console;
 import js.lib.RegExp;
 import ui.treeview.TreeView;
 import yy.*;
@@ -28,7 +29,6 @@ class KYyUnknown extends FileKind {
 		var project = Project.current;
 		var full = project.fullPath(path);
 		//
-		var mtParentPath = rxParentPath.exec(content);
 		var resource:YyResource = null;
 		var parentPath:String = {
 			var mt = rxParentPath.exec(content);
@@ -72,7 +72,7 @@ class KYyUnknown extends FileKind {
 			switch (resType) {
 				case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 					"GMScript", "GMShader", "GMFont", "GMTimeline",
-					"GMObject", "GMRoom"
+					"GMObject", "GMRoom", "GMAnimCurve"
 				: { // assets
 					var aceKind = "asset." + kind;
 					GmlAPI.gmlKind.set(name, aceKind);
@@ -98,7 +98,9 @@ class KYyUnknown extends FileKind {
 				};
 				case "GMNotes": {
 					full = Path.withExtension(full, "txt");
-					content = electron.FileWrap.readTextFileSync(full);
+					if (electron.FileWrap.existsSync(full)) {
+						content = electron.FileWrap.readTextFileSync(full);
+					} else content = "";
 					detect.kind = file.kind.misc.KPlain.inst;
 				};
 				case "GMExtension": makeEl = false;
@@ -112,13 +114,13 @@ class KYyUnknown extends FileKind {
 					dir: dir
 				});
 				var relPath = project.relPath(path);
-				YyLoader.applyAssetColour(item, relPath);
+				if (relPath != null) YyLoader.applyAssetColour(item, relPath);
 				//TreeView.insertSorted(dir, item);
 				switch (resType) {
 					case "GMSprite": TreeView.setThumbSprite(full, name, item);
 				}
 			}
-		} else Main.console.error('`$path` has missing parent `$parentPath`');
+		} else Console.error('`$path` has missing parent `$parentPath`');
 		return detect.kind.index(full, content, main, sync);
 	}
 }

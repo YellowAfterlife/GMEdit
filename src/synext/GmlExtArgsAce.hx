@@ -1,18 +1,20 @@
 package synext;
+import gml.GmlAPI;
 import tools.CharCode;
 using StringTools;
 
 /**
- * ...
+ * This gets exported for mode-gml.js to use!
  * @author YellowAfterlife
  */
 @:keep class GmlExtArgsAce {
 	public static function getHiddenLines(args:String):Int {
 		var i = 0;
 		var depth = 0;
-		var state = 0;
+		var state = 0; // 0: before name, 1: after name, 2: reading value
 		var found = 0;
 		var seenOpt = false;
+		var hasVarDeclSet = GmlAPI.version.config.hasVarDeclSet;
 		while (i < args.length) {
 			var c:CharCode = args.fastCodeAt(i++);
 			switch (c) {
@@ -22,18 +24,19 @@ using StringTools;
 					if (depth == 0) {
 						state = 0;
 						seenOpt = false;
+						if (!hasVarDeclSet) found += 1;
 					}
 				};
 				case "?".code: {
 					if (state == 0 && !seenOpt) {
 						seenOpt = true;
-						found += 1;
+						if (hasVarDeclSet) found += 1;
 					}
 				};
 				case "=".code: {
 					if (state == 1) {
 						state = 2;
-						found += 1;
+						if (hasVarDeclSet) found += 1;
 					}
 				};
 				case '"'.code: {

@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Highlighting",
-    "path": "folders/Scripts/Highlighting.yy",
+  "$GMScript":"",
+  "%Name":"v_common_namespace_names",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_common_namespace_names",
+  "parent":{
+    "name":"Highlighting",
+    "path":"folders/Scripts/Highlighting.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_common_namespace_names",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

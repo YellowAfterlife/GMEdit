@@ -37,7 +37,16 @@ using tools.NativeString;
 	public var version:GmlVersion;
 	public function new(gmlCode:String, ?version:GmlVersion) {
 		super(gmlCode);
-		this.version = version != null ? version : gml.Project.current.version;
+		if (version != null) {
+			this.version = version;
+		} else {
+			var project = gml.Project.current;
+			if (project != null) {
+				this.version = project.version;
+			} else {
+				this.version = GmlVersion.v2;
+			}
+		}
 	}
 	
 	/** Skips to the end of the current line */
@@ -127,23 +136,41 @@ using tools.NativeString;
 		return n;
 	}
 	
-	public function skipStringTemplate(version:GmlVersion):Int {
+	/**
+	 * 
+	 * @param	version
+	 * @param	isDqTpl Whether this is a $"string"
+	 * @return	number of lines skipped
+	 */
+	public function skipStringTemplate(version:GmlVersion, ?isDqTpl:Bool):Int {
 		var n = 0;
 		var esc = version.hasStringEscapeCharacters();
+		var stop = isDqTpl ? '"'.code : '`'.code;
 		while (loop) {
 			var c = read();
 			if (c == "\\".code) {
 				if (esc) {
-					switch (read()) {
-						case "x".code: pos += 2;
-						case "u".code: pos += 4;
+					var c = read();
+					var max = -1;
+					switch (c) {
+						// todo: was it "\u22" that you could do
+						case "x".code: max = 2;
+						case "u".code: max = 6;
+						// no need to check for stop-char, we've just read it
+					}
+					if (max > 0) for (_ in 0 ... max) {
+						c = peek();
+						if (inline c.isHex()) skip(); else break;
 					}
 				} else {
-					if (peek() == "`".code) skip();
+					if (peek() == stop) skip();
 				}
-			} else if (c == "`".code) {
+			} else if (c == stop) {
 				break;
-			} else if (c == "$".code && peek() == "{".code) {
+			} else if (isDqTpl
+				? (c == "{".code)
+				: (c == "$".code && peek() == "{".code)
+			) {
 				skip();
 				var depth = 0;
 				while (loop) {
@@ -162,6 +189,7 @@ using tools.NativeString;
 						case '"'.code, "'".code, "@".code, "`".code: {
 							skipStringAuto(c, version);
 						};
+						case "$".code if (isDqTplStart(version)): skipDqTplString(version);
 					}
 				}
 			} else if (c == "\n".code) n++;
@@ -177,7 +205,7 @@ using tools.NativeString;
 					canDot = false;
 					skip();
 				} else break;
-			} else if (c.isDigit()) {
+			} else if (c.isDigit() || c == "_".code) {
 				skip();
 			} else break;
 			c = peek();
@@ -196,7 +224,17 @@ using tools.NativeString;
 	public function skipHex():Void {
 		var c = peek();
 		while (loopLocal) {
-			if (c.isHex()) {
+			if (c == "_".code || c.isHex()) {
+				skip();
+				c = peek();
+			} else break;
+		}
+	}
+	
+	public function skipBinary():Void {
+		var c = peek();
+		while (loopLocal) {
+			if (c == "_".code || c == "0".code || c == "1".code) {
 				skip();
 				c = peek();
 			} else break;
@@ -238,6 +276,15 @@ using tools.NativeString;
 			};
 			default: return 0;
 		}
+	}
+	
+	/** Is this a `$¦"health: {hp}"`? */
+	public inline function isDqTplStart(version:GmlVersion):Bool {
+		return peek() == '"'.code && version.hasQuoteTemplateStrings();
+	}
+	public inline function skipDqTplString(version:GmlVersion):Int {
+		skip(1);
+		return skipStringTemplate(version, true);
 	}
 
 	public function readStringAuto(startquote:CharCode):String {
@@ -320,6 +367,16 @@ using tools.NativeString;
 	public function skipIdent1() {
 		while (loopLocal) {
 			if (peek().isIdent1()) {
+				skip();
+			} else break;
+		}
+	}
+	public function skipDotIdent1() {
+		while (loopLocal) {
+			var c = peek();
+			if (c.isIdent1()) {
+				skip();
+			} else if (c == ".".code) {
 				skip();
 			} else break;
 		}

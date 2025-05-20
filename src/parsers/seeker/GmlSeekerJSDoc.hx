@@ -6,6 +6,8 @@ import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTemplateItem;
 import gml.type.GmlTypeTools;
 import js.lib.RegExp;
+import js.html.Console;
+import parsers.GmlReader;
 import parsers.GmlSeekData;
 import parsers.seeker.GmlSeekerImpl;
 import parsers.seeker.GmlSeekerJSDocRegex.*;
@@ -27,6 +29,8 @@ class GmlSeekerJSDoc {
 	public var interfaceName:String = null;
 	public var implementsNames:Array<String> = null;
 	public var templateItems:Array<GmlTypeTemplateItem> = null;
+	public var isStatic:Bool = false;
+	public var redirectCount = 0;
 	
 	public function reset(resetInterf = true):Void {
 		args = null;
@@ -91,10 +95,11 @@ class GmlSeekerJSDoc {
 		mt = jsDoc_is.exec(s);
 		if (mt != null) {
 			var typeStr = mt[1];
+			var hasType = typeStr != null;
 			var doc = mt[2];
 			inline function procComp(comp:AceAutoCompleteItem):Void {
 				if (comp != null) {
-					comp.setDocTag("type", typeStr);
+					if (hasType) comp.setDocTag("type", typeStr);
 					if (doc != null && doc.trimBoth() != "") comp.setDocTag("ℹ", doc);
 				}
 			}
@@ -108,12 +113,12 @@ class GmlSeekerJSDoc {
 			if (lineMatch[1] != null) {
 				tools.RegExpTools.each(JsTools.rx(~/\w+/g), lineMatch[1], function(mt) {
 					name = mt[0];
-					out.globalVarTypes[name] = type;
+					if (hasType) out.globalVarTypes[name] = type;
 					procComp(out.comps[name]);
 				});
 			} else if (lineMatch[2] != null) {
 				name = lineMatch[2];
-				out.globalTypes[name] = type;
+				if (hasType) out.globalTypes[name] = type;
 				var globalField = out.globalFields[name];
 				if (globalField != null) {
 					procComp(globalField.comp);
@@ -129,7 +134,7 @@ class GmlSeekerJSDoc {
 				} else return;
 				var hint = out.fieldHints[namespace + ":" + name];
 				if (hint != null) {
-					hint.type = type;
+					if (hasType) hint.type = type;
 					procComp(hint.comp);
 				}
 			}
@@ -223,14 +228,14 @@ class GmlSeekerJSDoc {
 				fdName = hr.readIdent();
 				if (fdName != null) {
 					hr.skipSpaces0_local();
-					if (hr.peek() == "<".code) { // namespace<params>
-						hp = hr.pos;
-						if (hr.skipTypeParams()) {
-							var fdp = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
-							templateItems = templateItems.nzcct(fdp);
-							hr.skipSpaces0_local();
-						} else return;
-					}
+				}
+				if (hr.peek() == "<".code) { // namespace<params>
+					hp = hr.pos;
+					if (hr.skipTypeParams()) {
+						var fdp = GmlTypeTemplateItem.parseSplit(hr.substring(hp + 1, hr.pos - 1));
+						templateItems = templateItems.nzcct(fdp);
+						hr.skipSpaces0_local();
+					} else return;
 				}
 			}
 			
@@ -303,12 +308,29 @@ class GmlSeekerJSDoc {
 				args = [];
 				types = [];
 			}
-			var argText = mt[2];
 			var argType = mt[1];
-			for (arg in argText.split(",")) {
+			var argNames = mt[3];
+			var argValueWrap = mt[4];
+			var showArgTypes = ui.Preferences.current.showArgTypesInStatusBar;
+			var argNameArr = argNames.split(",");
+			for (i => arg in argNameArr) {
+				if (arg.contains("...")) rest = true;
+				if (argValueWrap != null && i == argNameArr.length - 1) {
+					if (arg.endsWith("]")) {
+						arg = arg.substring(0, arg.length - 1);
+						if (showArgTypes && argType != null) arg += ":" + argType;
+						arg += argValueWrap + "]";
+					} else {
+						if (showArgTypes && argType != null) arg += ":" + argType;
+						arg += argValueWrap;
+					}
+				} else if (showArgTypes && argType != null) {
+					if (arg.endsWith("]")) {
+						arg = arg.substring(0, arg.length - 1) + ":" + argType + "]";
+					} else arg += ":" + argType;
+				}
 				args.push(arg);
 				types.push(argType);
-				if (arg.contains("...")) rest = true;
 			}
 			return; // found!
 		}
@@ -331,6 +353,53 @@ class GmlSeekerJSDoc {
 				seeker.setLookup(fn, false, "asset.script");
 				return;
 			}
+		}
+		
+		mt = jsDoc_static.exec(s);
+		if (mt != null) {
+			isStatic = true;
+			return;
+		}
+		
+		mt = jsDoc_index_redirect.exec(s);
+		if (mt != null) {
+			var code:String;
+			var rel = mt[1];
+			if (rel != null && ++redirectCount > 32) {
+				Console.error('More than 32 layers of @index_redirect in file "${seeker.orig}');
+				rel = null;
+			}
+			if (rel != null) {
+				var full:String;
+				if (rel.startsWith("/")) {
+					full = gml.Project.current.fullPath(rel.substring(1));
+				} else {
+					var dir = tools.PathTools.ptDir(seeker.orig);
+					full = tools.PathTools.ptJoin(dir, rel);
+				}
+				if (electron.FileWrap.existsSync(full)) {
+					try {
+						code = electron.FileWrap.readTextFileSync(full);
+					} catch (x:Dynamic) {
+						Console.error('Error loading @index_redirect file "$rel" requested from "${seeker.orig}', x);
+						code = null;
+					}
+				} else {
+					Console.error('Specified @index_redirect file "$rel" requested from "${seeker.orig} doesn\'t exist');
+					code = null;
+				}
+			} else code = null;
+			//
+			var reader = seeker.reader;
+			var oldName = reader.name;
+			if (code != null) {
+				var tmp = new GmlReaderExt(code, reader.version);
+				reader.setTo(tmp);
+			} else {
+				reader.clear();
+			}
+			reader.name = oldName;
+			return;
 		}
 		
 		// tags from hereafter have no meaning outside of a script/function
@@ -368,7 +437,7 @@ class GmlSeekerJSDoc {
 					seeker.doc.pre = seeker.main + "(";
 				} else seeker.doc.post += " " + s;
 			}
-			seeker.mainComp.doc = seeker.doc.getAcText();
+			if (seeker.mainComp != null) seeker.mainComp.doc = seeker.doc.getAcText();
 			return; // found!
 		}
 		
@@ -376,6 +445,17 @@ class GmlSeekerJSDoc {
 		s = s.substring(3).trimBoth();
 		if (seeker.mainComp != null) {
 			seeker.mainComp.doc = seeker.mainComp.doc.nzcct("\n", s);
+		}
+	}
+	public function procMultiLine(seeker:GmlSeekerImpl, text:String) {
+		static var cr = new RegExp("\r", "g");
+		text = text.substring(3, text.length - 2).trimIfEndsWith("*").trimBoth();
+		text = text.replaceExt(cr, "");
+		for (line in text.split("\n")) {
+			static var starStart = new RegExp("^\\s*" + "\\*+" + "\\s*" + "(.*)");
+			var mt = starStart.exec(line);
+			if (mt != null) line = mt[1];
+			proc(seeker, "///" + line);
 		}
 	}
 }

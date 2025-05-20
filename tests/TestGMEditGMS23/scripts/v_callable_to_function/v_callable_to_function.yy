@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"v_callable_to_function",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_callable_to_function",
+  "parent":{
+    "name":"Types",
+    "path":"folders/Scripts/Linter/Types.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

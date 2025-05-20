@@ -14,6 +14,7 @@ import haxe.ds.Map;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.html.Element;
+import js.html.Console;
 import tools.NativeString;
 import ui.ChromeTabs;
 import ui.GlobalSearch;
@@ -29,11 +30,11 @@ using tools.NativeArray;
 using tools.NativeString;
 
 /**
- * ...
+ * "Add a resource to the project? How hard can it be?"
  * @author YellowAfterlife
  */
 class YyManip {
-	static function prepare(q:TreeViewItemBase) {
+	static function prepare(q:TreeViewItemBase):{pj:Project, py:YyProject} {
 		var pj = Project.current;
 		var py = q.py;
 		if (py == null) py = pj.readYyFileSync(pj.name);
@@ -73,14 +74,11 @@ class YyManip {
 	);
 	
 	static function getProjectFolderForTreeDir(py:YyProject, el:TreeViewDir):YyProjectFolder {
-		var path = el.treeRelPath;
-		path = path.trimIfEndsWith("/") + ".yy";
+		var path = el.treeFolderPath23;
 		return py.Folders.findFirst((f) -> f.folderPath == path);
 	}
 	static function getProjectResourceForTreeItem(py:YyProject, el:TreeViewItem):YyProjectResource {
-		var path = el.treeRelPath;
-		var pt = new Path(path);
-		if (pt.ext == "gml") { pt.ext = "yy"; path = pt.toString(); }
+		var path = el.treeResourcePath23;
 		return py.resources.findFirst((r) -> r.id.path == path);
 	}
 	static function getProjectItemForTreeEl(py:YyProject, el:TreeViewElement):YyProjectFolderOrResource {
@@ -91,15 +89,64 @@ class YyManip {
 		}
 	}
 	
-	static function offsetTreeItems(py:YyProject, items:ElementListOf<TreeViewElement>, start:Int, offset:Int):Bool {
+	/**
+	 * For GM2023+, this pulls up an element from .resoure_order
+	 * For older versions, this pulls up an element from .yyp
+	 */
+	static function getProjectOrderItemForTreeEl(
+		el:TreeViewElement,
+		yyProject:YyProject,
+		orderConf:YyResourceOrderSettings,
+		createIfNeeded:Bool
+	):YyProjectFolderOrResource {
+		var isDir = el.treeIsDir;
+		if (orderConf == null) {
+			if (yyProject == null) return null;
+			if (isDir) {
+				return getProjectFolderForTreeDir(yyProject, el.asTreeDir());
+			} else return getProjectResourceForTreeItem(yyProject, el.asTreeItem());
+		}
+		var path = el.treeYyPath23;
+		var arr = isDir ? orderConf.FolderOrderSettings : orderConf.ResourceOrderSettings;
+		var item = arr.findFirst(q -> q.path == path);
+		if (item == null && createIfNeeded) {
+			// OK, here comes the fun part: items with order==0 are removed from the file.
+			item = { name: el.treeIdent, order: 0, path: path };
+			if (Project.current.isGM2024_8) {
+				arr.insertPathSorted(item);
+			} else {
+				arr.insertAtRandom(item);
+			}
+		}
+		return item;
+	}
+	
+	/**
+	 * Used when inserting and removing elements - we gotta change the offsets
+	 * of subsequent elements, both in resource tree and in YYP.
+	 */
+	static function offsetTreeItems(
+		yyProject:YyProject,
+		items:ElementListOf<TreeViewElement>,
+		start:Int, offset:Int,
+		orderConf:YyResourceOrderSettings
+	):Bool {
 		var changed = false;
 		for (i in start ... items.length) {
 			var el = items[i];
 			el.yyOrder += offset;
-			var item = getProjectItemForTreeEl(py, el);
+			var item = getProjectOrderItemForTreeEl(el, yyProject, orderConf, true);
 			if (item != null) {
 				changed = true;
 				item.order += offset;
+				if (item.order <= 0 && orderConf != null) {
+					// per above, the first item must be omitted:
+					if (el.treeIsDir) {
+						orderConf.FolderOrderSettings.remove(item);
+					} else {
+						orderConf.ResourceOrderSettings.remove(item);
+					}
+				}
 			}
 		}
 		return changed;
@@ -107,35 +154,55 @@ class YyManip {
 	
 	public static function add(args:TreeViewItemCreate) {
 		var pdat = prepare(args);
-		var pj = pdat.pj, py = pdat.py;
+		var pj:Project = pdat.pj;
+		var py:YyProject = pdat.py;
 		var name = args.name;
 		var parDir = args.tvDir;
 		
 		// create the resource itself:
 		var kind = args.kind;
 		var yypItem:YyProjectFolderOrResource;
+		var yyOrderItem:YyResourceOrderItem;
 		var ntv:TreeViewElement;
 		var yyResource:YyResource = null;
 		var yyResourceText:String = null;
 		var yyPath:String = null;
 		var yyFullPath:String = null;
 		var indexText:String = null;
+		
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
+		
 		if (args.mkdir) {
 			var pre = (parDir.treeIsRoot ? "folders/" : parDir.treeRelPath) + name;
 			var folder:YyProjectFolder = {
 				folderPath: pre + ".yy",
-				order: -1,
-				resourceVersion: "1.0",
+				resourceVersion: pj.isGM2024 ? "2.0" : "1.0",
 				name: name,
-				tags: [],
 				resourceType: "GMFolder",
 			};
-			py.Folders.push(folder);
+			if (pj.isGM2024_8) {
+				py.Folders.insertFolderPathSorted(folder);
+			} else {
+				py.Folders.push(folder);
+			}
+			if (resourceOrder != null) {
+				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
+				if (pj.isGM2024_8) {
+					resourceOrder.FolderOrderSettings.insertPathSorted(yyOrderItem);
+				} else {
+					resourceOrder.FolderOrderSettings.push(yyOrderItem);
+				}
+			} else {
+				yyOrderItem = null;
+				folder.order = -1;
+				folder.tags = [];
+			}
 			yypItem = folder;
 			ntv = TreeView.makeAssetDir(name, pre + "/", "mixed");
 		}
-		else {
-			var kindRoot = kind + "s";
+		else { // not a folder
+			var kindRoot = kind;
+			if (!kindRoot.endsWith("s")) kindRoot += "s";
 			if (!pj.existsSync(kindRoot)) pj.mkdirSync(kindRoot);
 			var dir = '$kindRoot/$name';
 			var pre = '$dir/$name';
@@ -149,6 +216,8 @@ class YyManip {
 			};
 			var itemRelPath:String = yyPath;
 			var itemFullPath:String = yyFullPath;
+			var needsPercMeta = pj.isGM2024_8;
+			var resourceVersion = needsPercMeta ? "2.0" : "1.0";
 			switch (kind) {
 				case "script": {
 					itemFullPath = Path.withExtension(itemFullPath, "gml");
@@ -156,11 +225,12 @@ class YyManip {
 						"isDnD": false,
 						"isCompatibility": false,
 						"parent": yyParent,
-						"resourceVersion": "1.0",
+						"resourceVersion": resourceVersion,
 						"name": name,
-						"tags": [],
 						"resourceType": "GMScript",
 					};
+					if (!pj.isGM2024) scr.tags = [];
+					if (needsPercMeta) Reflect.setField(scr, "$GMScript", "v1");
 					yyResource = scr;
 					//
 					var gml = args.gmlCode;
@@ -194,33 +264,39 @@ class YyManip {
 						"properties": [],
 						"overriddenProperties": [],
 						"parent": yyParent,
-						"resourceVersion": "1.0",
+						"resourceVersion": resourceVersion,
 						"name": name,
-						"tags": [],
 						"resourceType": "GMObject",
-					}; yyResource = obj;
+					};
+					if (!pj.isGM2024) {
+						obj.tags = [];
+					}
+					obj.managed = true;
+					yyResource = obj;
 				};
 				case "shader": {
 					var sh:YyShader = {
 						"type": 1,
 						"parent": yyParent,
-						"resourceVersion": "1.0",
+						"resourceVersion": resourceVersion,
 						"name": name,
-						"tags": [],
 						"resourceType": "GMShader",
-					}; yyResource = sh;
+					};
+					if (!pj.isGM2024) sh.tags = [];
+					yyResource = sh;
 					//
 					pj.writeTextFileSync(pre + ".fsh", YyShaderDefaults.baseFragGLSL);
 					pj.writeTextFileSync(pre + ".vsh", YyShaderDefaults.baseVertGLSL);
 				};
-				case "note": {
+				case "notes": {
+					itemFullPath = Path.withExtension(itemFullPath, "txt");
 					var note:YyResource = {
 						parent: yyParent,
 						resourceVersion: "1.1",
 						name: name,
-						tags: [],
 						resourceType: "GMNotes",
 					}
+					if (!pj.isGM2024) note.tags = [];
 					yyResource = note;
 					pj.writeTextFileSync(pre + ".txt", "");
 					args.npath = pre + ".txt";
@@ -255,9 +331,23 @@ class YyManip {
 			//
 			var res:YyProjectResource = {
 				id: { name: name, path: pre + ".yy" },
-				order: -1,
 			};
-			py.resources.push(res);
+			if (pj.isGM2024_8) {
+				py.resources.insertYyRefSorted(res);
+			} else {
+				py.resources.insertAtRandom(res);
+			}
+			if (resourceOrder != null) {
+				yyOrderItem = { name: name, path: pre + ".yy", order: -1 };
+				if (pj.isGM2024_8) {
+					resourceOrder.ResourceOrderSettings.insertPathSorted(yyOrderItem);
+				} else {
+					resourceOrder.ResourceOrderSettings.insertAtRandom(yyOrderItem);
+				}
+			} else {
+				yyOrderItem = null;
+				res.order = -1;
+			}
 			yypItem = res;
 			// same trouble as in YyLoader
 			pj.yyResources[name] = res;
@@ -268,17 +358,21 @@ class YyManip {
 			}
 			//
 			ntv = TreeView.makeAssetItem(name, itemRelPath, itemFullPath, kind);
-		}
+		} // end of folder/not folder
 		
 		// add the treeview and realign YYP items:
-		TreeViewItemMenus.insertImplTV(parDir, args.tvRef, ntv, args.order);
+		TreeViewItemMenus.insertImplTV(parDir, args.tvRef, ntv, args .order);
 		var parItemEls = parDir.treeItemEls;
 		var itemOrder = parItemEls.indexOf(ntv);
-		yypItem.order = itemOrder;
-		offsetTreeItems(py, parItemEls, itemOrder + 1, 1);
+		if (yyOrderItem != null) {
+			yyOrderItem.order = itemOrder;
+			if (!pj.isGM2024) yypItem.order = 0;
+		} else yypItem.order = itemOrder;
+		offsetTreeItems(py, parItemEls, itemOrder + 1, 1, resourceOrder);
 		
 		// Update the YYP:
 		if (args.py == null) pj.writeYyFileSync(pj.name, py);
+		if (resourceOrder != null) pj.writeResourceOrderFileSync(resourceOrder);
 		
 		// index the new item:
 		if (args.mkdir) {
@@ -307,26 +401,37 @@ class YyManip {
 	public static function remove(args:TreeViewItemRemove) {
 		var pdat = prepare(args);
 		var pj = pdat.pj, py = pdat.py;
-		Main.console.log(args);
 		var cleanRefs:Bool = args.cleanRefs;
 		var checkRefs:Array<YyResourceRef> = [];
-		var removeRec:TreeViewItem->Void = null;
+		var removeRec:TreeViewElement->Void = null;
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
+		
 		function removeItem(el:TreeViewItem):Void {
 			var pyRes = getProjectResourceForTreeItem(py, el);
 			if (pyRes != null) {
 				py.resources.remove(pyRes);
 				if (cleanRefs) checkRefs.push(pyRes.id);
+				
+				if (resourceOrder != null) {
+					var ordItem = getProjectOrderItemForTreeEl(el, null, resourceOrder, false);
+					if (ordItem != null) resourceOrder.ResourceOrderSettings.remove(ordItem);
+				}
+				
 				var path = pyRes.id.path;
 				var dir = Path.directory(path);
 				pj.rmdirRecSync(dir);
 			}
 		}
-		function removeRec(el:TreeViewElement):Void {
+		removeRec = function(el:TreeViewElement):Void {
 			if (el.treeIsDir) {
 				var dir = el.asTreeDir();
 				var pyFolder = getProjectFolderForTreeDir(py, dir);
 				if (pyFolder != null) {
 					py.Folders.remove(pyFolder);
+				}
+				if (resourceOrder != null) {
+					var ordFolder = getProjectOrderItemForTreeEl(dir, null, resourceOrder, false);
+					if (ordFolder != null) resourceOrder.FolderOrderSettings.remove(ordFolder);
 				}
 				for (ch in dir.treeItemEls) {
 					removeRec(ch);
@@ -337,7 +442,7 @@ class YyManip {
 		var el:TreeViewElement = cast args.tvRef;
 		removeRec(el);
 		var order = args.tvDir.treeItemEls.indexOf(el);
-		offsetTreeItems(py, args.tvDir.treeItemEls, order + 1, -1);
+		offsetTreeItems(py, args.tvDir.treeItemEls, order + 1, -1, resourceOrder);
 		el.parentElement.removeChild(el);
 		//
 		if (checkRefs.length > 0) {
@@ -373,7 +478,7 @@ class YyManip {
 						pj.writeTextFileSync(res.id.path, yyText);
 					}
 				} catch (x:Dynamic) {
-					Main.console.warn(x);
+					Console.warn(x);
 				}
 			}
 			if (log.length > 0) {
@@ -383,18 +488,36 @@ class YyManip {
 		}
 		//
 		pj.writeYyFileSync(pj.name, py);
+		if (resourceOrder != null) pj.writeResourceOrderFileSync(resourceOrder);
 		return true;
 	}
 	public static function rename(args:TreeViewItemRename) {
 		var pdat = prepare(args);
 		var pj = pdat.pj, py = pdat.py;
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
 		/** path is "folders/A/B" */
 		function renameDirRec(dir:TreeViewDir, path:String, ?folder:YyProjectFolder) {
 			var dirName = Path.withoutDirectory(path);
 			var dirPath = path + ".yy";
 			//
 			if (folder == null) folder = getProjectFolderForTreeDir(py, dir);
-			if (folder != null) folder.folderPath = dirPath;
+			if (folder != null) {
+				folder.folderPath = dirPath;
+				if (pj.isGM2024_8) {
+					// move to a new spot in array
+					var arr = py.Folders;
+					arr.remove(folder);
+					arr.insertFolderPathSorted(folder);
+				}
+			}
+			if (resourceOrder != null) {
+				var ordItem:YyResourceOrderItem = getProjectOrderItemForTreeEl(dir, null, resourceOrder, false);
+				if (ordItem != null) {
+					ordItem.path = dirPath;
+					resourceOrder.FolderOrderSettings.remove(ordItem);
+					resourceOrder.FolderOrderSettings.insertPathSorted(ordItem);
+				}
+			}
 			//
 			var dirPrefix = path + "/";
 			dir.treeRelPath = dirPrefix;
@@ -407,6 +530,13 @@ class YyManip {
 				}
 			}
 		}
+		//
+		inline function finish() {
+			pj.writeYyFileSync(pj.name, py);
+			pj.writeResourceOrderFileSync(resourceOrder);
+			return false;
+		}
+		//
 		var el:TreeViewElement = cast args.tvRef;
 		if (el.treeIsDir) {
 			var dir = el.asTreeDir();
@@ -417,115 +547,132 @@ class YyManip {
 			dir.treeText = newName;
 			var newPath = Path.directory(folder.folderPath) + "/" + args.name;
 			renameDirRec(dir, newPath);
+			return finish();
 		}
-		else {
-			var item = el.asTreeItem();
-			//
-			var pyRes = getProjectResourceForTreeItem(py, item);
-			var curName = pyRes.id.name;
-			var curPath = pyRes.id.path;
-			var curDir = Path.directory(curPath);
-			//
-			var newName = args.name;
-			var newDir = Path.directory(curDir) + "/" + newName;
-			var newPath = newDir + "/" + newName + ".yy";
-			//
-			item.treeIdent = newName;
-			item.treeText = newName;
-			item.treeRelPath = newPath;
-			item.treeFullPath = pj.fullPath(newPath);
-			if (args.kind == "script") item.treeFullPath = Path.withExtension(item.treeFullPath, "gml");
-			//
-			var log = [];
-			//
-			var rxRef = new RegExp(
-				'(:\\s*{\\s*"name":\\s*")' + curName
-				+ '(",\\s*"path":\\s*")' + curPath.escapeRx() + '(",?\\s*})'
-			, 'g');
-			var rxDef = new RegExp('("value":\\s*")' + curName + '(")', 'g');
-			function updateResource(res:YyProjectResource) {
-				var yyPath = res.id.path;
-				var yyText = pj.readTextFileSync(yyPath);
-				var changed = false;
-				if (res == pyRes) {
-					var rxName = new RegExp('^(  "name":\\s+")$curName(")', 'gm');
-					var rxPath = new RegExp('"' + curPath.escapeRx() + '"', 'g');
-					yyText = yyText.replaceExt(rxName, function(_, s1, s2) {
-						changed = true;
-						return s1 + newName + s2;
-					});
-					yyText = yyText.replaceExt(rxPath, function(_) {
-						changed = true;
-						return '"' + newPath + '"';
-					});
-					pyRes.id.name = newName;
-					pyRes.id.path = newPath;
-				}
-				yyText = yyText.replaceExt(rxRef, function(_, s1, s2, s3) {
-					log.push('// Updated a reference to ${newName} in @[${res.id.name}]');
-					changed = true;
-					return s1 + newName + s2 + newPath + s3;
-				});
-				yyText = yyText.replaceExt(rxDef, function(_, s1, s2) {
-					log.push('// Updated a definition reference to ${newName} in @[${res.id.name}]');
+		// not a directory
+		var item = el.asTreeItem();
+		//
+		var pyRes = getProjectResourceForTreeItem(py, item);
+		var curName = pyRes.id.name;
+		var curPath = pyRes.id.path;
+		var curDir = Path.directory(curPath);
+		//
+		var newName = args.name;
+		var newDir = Path.directory(curDir) + "/" + newName;
+		var newPath = newDir + "/" + newName + ".yy";
+		//
+		if (resourceOrder != null) {
+			var ordItem:YyResourceOrderItem = getProjectOrderItemForTreeEl(el, null, resourceOrder, false);
+			if (ordItem != null) {
+				ordItem.name = newName;
+				ordItem.path = newPath;
+			}
+		}
+		// update treeview item:
+		item.treeIdent = newName;
+		item.treeText = newName;
+		item.treeRelPath = newPath;
+		item.treeFullPath = pj.fullPath(newPath);
+		if (args.kind == "script") item.treeFullPath = Path.withExtension(item.treeFullPath, "gml");
+		
+		// update references:
+		var log = [];
+		var rxRef = new RegExp(
+			'(:\\s*{\\s*"name":\\s*")' + curName
+			+ '(",\\s*"path":\\s*")' + curPath.escapeRx() + '(",?\\s*})'
+		, 'g');
+		var rxDef = new RegExp('("value":\\s*")' + curName + '(")', 'g');
+		function updateResource(res:YyProjectResource) {
+			var yyPath = res.id.path;
+			var yyText = pj.readTextFileSync(yyPath);
+			var changed = false;
+			if (res == pyRes) {
+				var rxName = new RegExp('^(  "(?:name|%Name)":\\s*")' + curName + '(")', 'gm');
+				var rxPath = new RegExp('"' + curPath.escapeRx() + '"', 'g');
+				yyText = yyText.replaceExt(rxName, function(_, s1, s2) {
 					changed = true;
 					return s1 + newName + s2;
 				});
-				if (changed) pj.writeTextFileSync(yyPath, yyText);
-			}
-			function updateResourceSafe(res:YyProjectResource) {
-				try {
-					updateResource(res);
-				} catch (x:Dynamic) {
-					Main.console.warn(x);
-				}
-			}
-			if (args.patchRefs) {
-				for (res in py.resources) updateResourceSafe(res);
-			} else updateResourceSafe(pyRes);
-			//
-			pj.renameSync(curPath, curDir + "/" + newName + ".yy");
-			pj.renameSync(curDir, newDir);
-			if (args.kind == "script") pj.renameSync('$newDir/$curName.gml', '$newDir/$newName.gml');
-			//
-			var comp = GmlAPI.gmlComp.findFirst((c) -> c.name == curName);
-			if (comp != null) comp.name = newName;
-			GmlAPI.gmlKind.move(curName, newName);
-			var lookup = GmlAPI.gmlLookup[curName];
-			if (lookup != null) {
-				lookup.path = newPath;
-				GmlAPI.gmlLookup.move(curName, newName);
-				var rxLookup = new RegExp('^$curName$', 'm');
-				var item = GmlAPI.gmlLookupItems.findFirst(q->q.value == curName);
-				if (item != null) {
-					item.value = newName;
-				} else {
-					// todo: meta
-					GmlAPI.gmlLookupItems.push({value: newName});
-				}
-			}
-			if (args.kind == "sprite") pj.spriteURLs.move(curName, newName);
-			//
-			if (args.patchCode) {
-				GlobalSearch.findReferences(curName, {
-					find: null,
-					replaceBy: newName,
-					results: log.length > 0 ? log.join("\n") : null,
-					noDotPrefix: true,
-					checkRefKind: false,
+				yyText = yyText.replaceExt(rxPath, function(_) {
+					changed = true;
+					return '"' + newPath + '"';
 				});
-			} else if (log.length > 0) {
-				var file = new GmlFile("Update log", null, KGmlSearchResults.inst, log.join("\n"));
-				GmlFile.openTab(file);
+				pyRes.id.name = newName;
+				pyRes.id.path = newPath;
+			}
+			yyText = yyText.replaceExt(rxRef, function(_, s1, s2, s3) {
+				log.push('// Updated a reference to ${newName} in @[${res.id.name}]');
+				changed = true;
+				return s1 + newName + s2 + newPath + s3;
+			});
+			yyText = yyText.replaceExt(rxDef, function(_, s1, s2) {
+				log.push('// Updated a definition reference to ${newName} in @[${res.id.name}]');
+				changed = true;
+				return s1 + newName + s2;
+			});
+			if (changed) pj.writeTextFileSync(yyPath, yyText);
+		}
+		function updateResourceSafe(res:YyProjectResource) {
+			try {
+				updateResource(res);
+			} catch (x:Dynamic) {
+				Console.warn(x);
 			}
 		}
-		pj.writeYyFileSync(pj.name, py);
-		return false;
+		if (args.patchRefs) {
+			for (res in py.resources) updateResourceSafe(res);
+		} else {
+			updateResourceSafe(pyRes);
+		}
+		//
+		if (pj.isGM2024_8) {
+			var arr = py.resources;
+			arr.remove(pyRes);
+			arr.insertYyRefSorted(pyRes);
+		}
+		//
+		pj.renameSync(curPath, curDir + "/" + newName + ".yy");
+		pj.renameSync(curDir, newDir);
+		if (args.kind == "script") pj.renameSync('$newDir/$curName.gml', '$newDir/$newName.gml');
+		//
+		var comp = GmlAPI.gmlComp.findFirst((c) -> c.name == curName);
+		if (comp != null) comp.name = newName;
+		GmlAPI.gmlKind.move(curName, newName);
+		var lookup = GmlAPI.gmlLookup[curName];
+		if (lookup != null) {
+			lookup.path = newPath;
+			GmlAPI.gmlLookup.move(curName, newName);
+			var rxLookup = new RegExp('^$curName$', 'm');
+			var item = GmlAPI.gmlLookupItems.findFirst(q->q.value == curName);
+			if (item != null) {
+				item.value = newName;
+			} else {
+				// todo: meta
+				GmlAPI.gmlLookupItems.push({value: newName});
+			}
+		}
+		if (args.kind == "sprite") pj.spriteURLs.move(curName, newName);
+		//
+		if (args.patchCode) {
+			GlobalSearch.findReferences(curName, {
+				find: null,
+				replaceBy: newName,
+				results: log.length > 0 ? log.join("\n") : null,
+				noDotPrefix: true,
+				checkRefKind: false,
+			});
+		} else if (log.length > 0) {
+			var file = new GmlFile("Update log", null, KGmlSearchResults.inst, log.join("\n"));
+			GmlFile.openTab(file);
+		}
+		return finish();
 	}
 	
 	public static function move(q:TreeViewItemMove) {
 		var pdat = prepare(q);
-		var pj = pdat.pj, py = pdat.py;
+		var pj:Project = pdat.pj;
+		var py:YyProject = pdat.py;
+		var resourceOrder:YyResourceOrderSettings = pj.readResourceOrderFileSync();
 		//
 		function moveDirRec(dirEl:TreeViewDir, path:String) {
 			var dirName = Path.withoutDirectory(path);
@@ -552,11 +699,12 @@ class YyManip {
 		var isDir = dragEl.treeIsDir;
 		var dragElPath = dragEl.treeRelPath; // current path
 		var dragItem = getProjectItemForTreeEl(py, dragEl);
+		var orderItem = getProjectOrderItemForTreeEl(dragEl, null, resourceOrder, true);
 		var oldDir = q.srcDir;
 		//
 		var newDir = q.tvDir;
 		var newDirPath = newDir.treeRelPath;
-		//Main.console.log(q, dragElPath, newDirPath);
+		//Console.log(q, dragElPath, newDirPath);
 		//
 		if (oldDir == newDir) {
 			// just changing order
@@ -583,7 +731,7 @@ class YyManip {
 		// shift subsequent items in current container back:
 		var oldParItems = q.srcDir.treeItemEls;
 		var oldParIndex = oldParItems.indexOf(dragEl);
-		offsetTreeItems(py, oldParItems, oldParIndex + 1, -1);
+		offsetTreeItems(py, oldParItems, oldParIndex + 1, -1, resourceOrder);
 		/*for (i in oldParIndex + 1 ... oldParItems.length) {
 			var el = oldParItems[i];
 			el.yyOrder -= 1;
@@ -595,29 +743,30 @@ class YyManip {
 		// shift subsequent items in new container forward:
 		var newDirItems = newDir.treeItemEls;
 		var newDirIndex:Int;
-		if (q.order == 0) {
+		if (q .order == 0) {
 			newDirIndex = newDirItems.length;
 		} else {
 			newDirIndex = newDirItems.indexOf(cast q.tvRef);
-			if (q.order > 0 && newDirIndex >= 0) newDirIndex++;
+			if (q .order > 0 && newDirIndex >= 0) newDirIndex++;
 		}
-		dragItem.order = newDirIndex;
-		offsetTreeItems(py, newDirItems, newDirIndex, 1);
-		/*for (i in newDirIndex ... newDirItems.length) {
-			var el = newDirItems[i];
-			el.yyOrder += 1;
-			var item = getPyItemForTreeEl(el);
-			if (item != null) item.order += 1;
-		}*/
+		if (orderItem != null) {
+			if (newDirIndex == 0) {
+				if (isDir) {
+					resourceOrder.FolderOrderSettings.remove(orderItem);
+				} else resourceOrder.ResourceOrderSettings.remove(orderItem);
+			} else orderItem.order = newDirIndex;
+		} else dragItem.order = newDirIndex;
+		offsetTreeItems(py, newDirItems, newDirIndex, 1, resourceOrder);
 		newDir.treeItems.insertBefore(dragEl, newDirItems[newDirIndex]);
 		
 		//
 		pj.writeYyFileSync(pj.name, py);
+		pj.writeResourceOrderFileSync(resourceOrder);
 		return true;
 	}
 	public static function moveTV(q:TreeViewItemMove) {
 		q.srcRef.parentElement.removeChild(q.srcRef);
-		switch (q.order) {
+		switch (q .order) {
 			case 1: q.tvRef.insertAfterSelf(q.srcRef);
 			case -1: q.tvRef.insertBeforeSelf(q.srcRef);
 			default: q.tvDir.treeItems.appendChild(q.srcRef);
@@ -625,12 +774,21 @@ class YyManip {
 	}
 }
 abstract YyProjectFolderOrResource(Dynamic)
-from YyProjectFolder from YyProjectResource to YyProjectFolder to YyProjectResource {
+	from YyProjectFolder
+	from YyProjectResource
+	from YyResourceOrderItem
+	to YyProjectFolder
+	to YyProjectResource
+	to YyResourceOrderItem
+{
 	public var order(get, set):Int;
 	private inline function get_order():Int {
 		return (this:YyProjectFolder).order;
 	}
 	private inline function set_order(ord:Int):Int {
 		return (this:YyProjectFolder).order = ord;
+	}
+	public inline function asOrderItem():YyResourceOrderItem {
+		return this;
 	}
 }

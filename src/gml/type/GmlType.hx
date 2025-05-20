@@ -82,6 +82,11 @@ enum abstract GmlTypeKind(Int) {
 	var KGlobal = 0x08; // type of `global`
 	var KFunction = 0x09; // (a:int, b:string)->any is function<int, string, any>
 	var KRest = 0x0A; // `...v:T` in functions
+	/**
+		`function Cool(a:int, b:string) constructor`
+		is `constructor<int, string, Cool>`
+	**/
+	var KConstructor = 0x0B;
 	
 	// value types
 	var KUndefined = 0x10;
@@ -97,6 +102,7 @@ enum abstract GmlTypeKind(Int) {
 	
 	var KCustomKeyArray = 0x28;
 	var KTuple = 0x29;
+	var KCustomKeyStruct = 0x2A;
 	
 	// Constraints:
 	var KObject = 0x30; // any object type casts to this
@@ -104,6 +110,10 @@ enum abstract GmlTypeKind(Int) {
 	var KAsset = 0x32; // any asset types and objects cast to this
 	
 	// Special:
-	var KMethodSelf = 0x40; // used exclusively by linter to redirect `self` in second arg
-	var KAnyFieldsOf = 0x41; // 
+	var KAnyFieldsOf = 0x1000; // e.g. in instance_create_depth()
+	var KParamsOf = 0x1001; // e.g. in instance_create_depth()
+	var KParamsOfNL = 0x1002; // e.g. in instance_create_depth()
+	var KMethodSelf = 0x1010; // e.g. in method()
+	var KMethodFunc = 0x1011; // also in method()
+	var KBufferAutoType = 0x1020; // in buffer functions
 }

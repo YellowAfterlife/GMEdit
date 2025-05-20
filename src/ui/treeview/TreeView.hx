@@ -13,6 +13,7 @@ import js.html.DragEvent;
 import js.html.Element;
 import js.html.DivElement;
 import js.html.Event;
+import js.html.Console;
 import js.html.MouseEvent;
 import Main.*;
 import js.html.SpanElement;
@@ -275,11 +276,14 @@ using tools.PathTools;
 		var item:TreeViewItem = cast element;
 		if (!item.treeIsItem) return null;
 		
-		var openAs = (cast element:TreeViewItem).yyOpenAs;
+		var openAs = item.yyOpenAs;
 		if (openAs != null) {
 			if (nav == null) {
 				nav = { kind: openAs };
 			} else nav.kind = openAs;
+			if (item.yyOpenData != null) {
+				nav.data = item.yyOpenData;
+			}
 		}
 		return GmlFile.open(element.innerText, element.getAttribute(attrPath), nav);
 	}
@@ -423,11 +427,11 @@ using tools.PathTools;
 	}
 	// EventEmitter:
 	@:native("_emit") public static dynamic function emit<E:{}>(eventName:String, ?e:E):Dynamic {
-		console.error("EventEmitter is not hooked for TreeView!");
+		Console.error("EventEmitter is not hooked for TreeView!");
 		return null;
 	}
 	@:native("_signal") public static dynamic function signal<E>(eventName:String, e:E):Void {
-		console.error("EventEmitter is not hooked for TreeView!");
+		Console.error("EventEmitter is not hooked for TreeView!");
 	}
 }
 typedef TreeViewQuery = {

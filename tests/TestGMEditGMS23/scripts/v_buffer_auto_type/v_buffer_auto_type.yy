@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Types",
-    "path": "folders/Scripts/Linter/Types.yy",
+  "$GMScript":"",
+  "%Name":"v_buffer_auto_type",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_buffer_auto_type",
+  "parent":{
+    "name":"Types",
+    "path":"folders/Scripts/Linter/Types.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_buffer_auto_type",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

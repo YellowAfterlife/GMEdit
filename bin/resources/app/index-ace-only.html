@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="UTF-8" />
+	<title>GMEdit</title>
+	<link rel="icon" href="favicon.ico" />
+	<meta property="theme-color" content="#FFF037" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.86" />
+</head><body id="app">
+<div id="main">
+	<div id="editor-td">
+		<div class="bottom gml">
+			<div class="tabview">
+				<div id="ace_container" class="ace_container">
+					<textarea id="source" class="ace_editor ace-tm"></textarea>
+				</div>
+			</div>
+			<div width="5" id="misc-splitter-td" class="splitter-td"
+				splitter-element="#misc-td"
+				splitter-lskey="splitter-width-misc"
+				splitter-width-var="--misc-width"
+				splitter-default-width="150"
+				style="display:none"
+			></div>
+			<div id="misc-td" style="display:none">
+				<select id="misc-select">
+				</select>
+				<div id="misc-panel"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="popout-container">
+	<form id="tag-editor" class="popout-window popout-center" style="display:none"></form>
+	<form id="global-search" class="popout-window popout-center" style="display:none"></form>
+	<form id="global-search-info" class="popout-window popout-center" style="display:none"></form>
+	<div id="preferences-window" class="popout-window" style="display:none"></div>
+</div>
+<input type="color" id="color-picker" style="display:none"/>
+<!-- -->
+<script src="./ace/src-noconflict/ace.js"></script>
+<script src="./ace/src-noconflict/ext-language_tools.js"></script>
+<script src="./ace/mode-gml.js"></script>
+<script type="text/javascript">
+window.__chromeTabs_es5 = true;
+</script>
+</body>

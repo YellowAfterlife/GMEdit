@@ -115,7 +115,7 @@ dot_product_normalized(x1:number,y1:number,x2:number,y2:number)$->number
 dot_product_3d_normalized(x1:number,y1:number,z1:number,x2:number,y2:number,z2:number)$->number
 math_set_epsilon(new_epsilon:number)->void
 math_get_epsilon()->number
-angle_difference(src:number,dest:number)->number
+angle_difference(dest:number,src:number)->number
 point_distance_3d(x1:number,y1:number,z1:number,x2:number,y2:number,z2:number)->number
 point_distance(x1:number,y1:number,x2:number,y2:number)->number
 point_direction(x1:number,y1:number,x2:number,y2:number)->number
@@ -126,11 +126,11 @@ lengthdir_y(len:number,dir:number)->number
 
 #region 2.3
 
-real(val:string)->number
-bool(val:number)->bool
+real(val:any)->number
+bool(val:any)->bool
 string(val:any)->string
 int64(val:number|string|pointer)->int
-ptr(val:number|string)->pointer
+ptr(val:number|string|pointer|struct|function)->pointer
 string_format(val:number,total:int,dec:int)->string
 chr(val:int)->string
 ansi_char(val:int)->string
@@ -316,9 +316,9 @@ collision_line<T:object|instance>(x1:number,y1:number,x2:number,y2:number,obj:T,
 point_in_rectangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number)->bool
 point_in_triangle(px:number,py:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->bool
 point_in_circle(px:number,py:number,cx:number,cy:number,rad:number)->bool
-rectangle_in_rectangle(sx1:number,sy1:number,sx2:number,sy2:number,dx1:number,dy1:number,dx2:number,dy2:number)->bool
-rectangle_in_triangle(sx1:number,sy1:number,sx2:number,sy2:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->bool
-rectangle_in_circle(sx1:number,sy1:number,sx2:number,sy2:number,cx:number,cy:number,rad:number)->bool
+rectangle_in_rectangle(sx1:number,sy1:number,sx2:number,sy2:number,dx1:number,dy1:number,dx2:number,dy2:number)->int
+rectangle_in_triangle(sx1:number,sy1:number,sx2:number,sy2:number,x1:number,y1:number,x2:number,y2:number,x3:number,y3:number)->int
+rectangle_in_circle(sx1:number,sy1:number,sx2:number,sy2:number,cx:number,cy:number,rad:number)->int
 
 #endregion
 
@@ -896,13 +896,13 @@ draw_vertex(x:number,y:number)->void
 draw_vertex_colour(x:number,y:number,col:int,alpha:number)£->void
 draw_vertex_color(x:number,y:number,col:int,alpha:number)$->void
 draw_primitive_end()->void
-sprite_get_uvs(spr:sprite,subimg:int)->int[]
+sprite_get_uvs(spr:sprite,subimg:int)->number[]
 font_get_uvs(font:font)->font[]
 sprite_get_texture(spr:sprite,subimg:int)->texture
 font_get_texture(font:font)->texture
 texture_get_width(texid:texture)->int
 texture_get_height(texid:texture)->int
-texture_get_uvs(texid:texture)->int[]
+texture_get_uvs(texid:texture)->number[]
 draw_primitive_begin_texture(kind:primitive_type,texid:texture)->void
 draw_vertex_texture(x:number,y:number,xtex:number,ytex:number)->void
 draw_vertex_texture_colour(x:number,y:number,xtex:number,ytex:number,col:int,alpha:number)£->void
@@ -1487,6 +1487,7 @@ file_find_next()->string
 file_find_close()->void
 
 file_attributes(fname:string,attr:int|file_attribute)->bool
+fa_none#:file_attribute
 fa_readonly#:file_attribute
 fa_hidden#:file_attribute
 fa_sysfile#:file_attribute
@@ -1632,7 +1633,7 @@ ds_map_replace_map<K;V>(map:ds_map<K;V>,key:K,value:V)
 ds_map_replace_list<K;V>(map:ds_map<K;V>,key:K,value:V)
 ds_map_delete<K;V>(map:ds_map<K;V>,key:K)
 ds_map_exists<K;V>(map:ds_map<K;V>,key:K)->bool
-ds_map_find_value<K;V>(map:ds_map<K;V>,key)->V
+ds_map_find_value<K;V>(map:ds_map<K;V>,key:K)->V
 ds_map_find_previous<K;V>(map:ds_map<K;V>,key:K)->K
 ds_map_find_next<K;V>(map:ds_map<K;V>,key:K)->K
 ds_map_find_first<K;V>(map:ds_map<K;V>)->K
@@ -1794,7 +1795,7 @@ pt_shape_snow#:particle_shape
 #region 12.2
 
 part_system_create()->particle_system
-part_system_create_layer(layer:layer|string,persistent:bool)->particle_system
+part_system_create_layer(layer:layer|string,persistent:bool, ?partsys)->particle_system
 part_system_destroy(ind:particle_system)->void
 part_system_exists(ind:particle_system)->bool
 part_system_clear(ind:particle_system)->void
@@ -2125,7 +2126,7 @@ gamepad_button_check_pressed(device:int, buttonIndex:gamepad_button)->bool
 gamepad_button_check_released(device:int, buttonIndex:gamepad_button)->bool
 gamepad_button_value(device:int, buttonIndex:gamepad_button)->number
 gamepad_axis_count(device:int)->int
-gamepad_axis_value(device:int, axisIndex:gamepad_button)->number
+gamepad_axis_value(device:int, axisIndex:gamepad_axis)->number
 gamepad_set_vibration(device:int, leftMotorSpeed:number, rightMotorSpeed:number)->void
 gamepad_set_colour(index:int,colour:int)£->void
 gamepad_set_color(index:int,color:int)$->void
@@ -2146,10 +2147,10 @@ gp_padu#:gamepad_button
 gp_padd#:gamepad_button
 gp_padl#:gamepad_button
 gp_padr#:gamepad_button
-gp_axislh#:gamepad_button
-gp_axislv#:gamepad_button
-gp_axisrh#:gamepad_button
-gp_axisrv#:gamepad_button
+gp_axislh#:gamepad_axis
+gp_axislv#:gamepad_axis
+gp_axisrh#:gamepad_axis
+gp_axisrv#:gamepad_axis
 
 #endregion
 

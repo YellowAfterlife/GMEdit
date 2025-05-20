@@ -1,5 +1,4 @@
 package yy;
-import yy.YyResourceRef;
 import haxe.DynamicAccess;
 
 /**

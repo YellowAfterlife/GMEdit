@@ -1,5 +1,7 @@
 package ui;
 #if !starter
+import haxe.extern.EitherType;
+import plugins.PluginManager;
 import ace.AceWrap;
 import electron.AppTools;
 import electron.Dialog;
@@ -21,8 +23,8 @@ import js.html.LegendElement;
 import js.html.MouseEvent;
 import js.html.SelectElement;
 import js.html.Window;
+import js.html.Console;
 import Main.document;
-import Main.console;
 import js.lib.RegExp;
 import tools.Dictionary;
 import tools.JsTools;
@@ -86,15 +88,25 @@ class Preferences {
 		lg.prepend(cb);*/
 	}
 	public static function addGroup(out:Element, legend:String):FieldSetElement {
-		var fs = document.createFieldSetElement();
-		fs.classList.add("group");
-		var lg = document.createLegendElement();
-		lg.appendChild(document.createTextNode(legend));
-		fs.appendChild(lg);
-		addGroupToggle(fs);
-		out.appendChild(fs);
-		return fs;
+		final group = createGroup(legend);
+		out.appendChild(group);
+
+		return group;
 	}
+
+	public static function createGroup(name:String):FieldSetElement {
+		final group = document.createFieldSetElement();
+		group.classList.add("group");
+		
+		final legend = document.createLegendElement();
+		legend.appendChild(document.createTextNode(name));
+		group.appendChild(legend);
+
+		addGroupToggle(group);
+
+		return group;
+	}
+
 	public static function addRadios(out:Element, legend:String, curr:String, names:Array<String>, fn:String->Void) {
 		var fs = document.createFieldSetElement();
 		fs.classList.add("radios");
@@ -188,6 +200,26 @@ class Preferences {
 			if (e.keyCode == KeyboardEvent.DOM_VK_RETURN) fn(cb.value);
 		});
 		ctr.appendChild(cb);
+		//
+		out.appendChild(ctr);
+		return ctr;
+	}
+	public static function addTextArea(out:Element, legend:String, curr:String, fn:String->Void):Element {
+		var ctr = document.createDivElement();
+		ctr.classList.add("input");
+		//
+		var lb = document.createLabelElement();
+		lb.htmlFor = legend;
+		lb.appendChild(document.createTextNode(legend));
+		ctr.appendChild(lb);
+		//
+		var ta = document.createTextAreaElement();
+		ta.value = curr;
+		ta.name = legend;
+		ta.addEventListener("change", function(_) {
+			fn(ta.value);
+		});
+		ctr.appendChild(ta);
 		//
 		out.appendChild(ctr);
 		return ctr;
@@ -302,7 +334,6 @@ class Preferences {
 	public static function createFuncAnchor(label:String, func:js.html.Event->Void) {
 		var a = document.createAnchorElement();
 		a.href = "javascript:void(0)";
-		a.target = "_blank";
 		a.onclick = function(e) {
 			func(e);
 			return false;
@@ -342,6 +373,12 @@ class Preferences {
 		}
 		return kind.create("Preferences", null, null, null);
 	}
+	public static function andSave<T>(fn:EitherType<T->Void, T->T>) {
+		return function(val) {
+			(fn:T->Void)(val);
+			save();
+		}
+	}
 	public static function save() {
 		FileWrap.writeConfigSync("config", path, current);
 	}
@@ -350,7 +387,7 @@ class Preferences {
 		try {
 			pref = FileWrap.readConfigSync("config", path);
 		} catch (e:Dynamic) {
-			console.error("Error loading preferences: ", e);
+			Console.error("Error loading preferences: ", e);
 		}
 		// migrations:
 		if (pref != null) {
@@ -453,7 +490,7 @@ class Preferences {
 				opts.remove("theme");
 				opts.remove("enableSnippets");
 				FileWrap.writeConfigSync("config", "aceOptions", cast opts);
-				//Main.console.log("Ace settings saved.");
+				//Console.log("Ace settings saved.");
 			}
 		};
 	}
@@ -467,7 +504,7 @@ class Preferences {
 				editor.setOptions(opts);
 			}
 		} catch (e:Dynamic) {
-			console.error("Error loading Ace options: " + e);
+			Console.error("Error loading Ace options: " + e);
 		};
 		editor.setOption("fixedWidthGutter", true);
 		// flush Ace options on changes (usually only via Ctrl+,):

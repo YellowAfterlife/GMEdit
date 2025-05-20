@@ -4,6 +4,7 @@ import gml.GmlObjectInfo;
 import haxe.Json;
 import haxe.extern.EitherType;
 import js.lib.RegExp;
+import js.html.Console;
 import parsers.GmlEvent;
 import gml.file.GmlFile;
 import gml.file.GmlFileExtra;
@@ -16,7 +17,10 @@ import tools.NativeString;
 import tools.JsTools;
 import ui.treeview.TreeView;
 import ace.AceMacro.jsRx;
+import yy.YyGUID;
+import yy.YyObjectEvent;
 import yy.YyResourceRef;
+import yy.YyTools;
 
 /**
  * ...
@@ -44,7 +48,7 @@ import yy.YyResourceRef;
 			var code = try {
 				FileWrap.readTextFileSync(full);
 			} catch (x:Dynamic) {
-				Main.console.warn("Missing event file: " + full);
+				Console.warn("Missing event file: " + full);
 				"";
 			}
 			if (out != "") out += "\n\n";
@@ -60,6 +64,7 @@ import yy.YyResourceRef;
 		var dir = Path.directory(objPath);
 		var sorted = ui.Preferences.current.eventOrder == 1;
 		var v22 = YyTools.isV22(this);
+		var project = Project.current;
 		
 		//
 		var eventData:GmlEventList = GmlEvent.parse(gmlCode, gml.GmlVersion.v2);
@@ -83,7 +88,7 @@ import yy.YyResourceRef;
 		for (item in eventData) {
 			var idat = item.data;
 			if (idat.type == GmlEvent.typeCollision) {
-				var obj = Project.current.yyObjectGUIDs[idat.name];
+				var obj = project.yyObjectGUIDs[idat.name];
 				if (obj == null) {
 					errors += "Couldn't find object " + idat.name + " for collision event.\n";
 				} else idat.obj = obj;
@@ -131,7 +136,7 @@ import yy.YyResourceRef;
 		}
 		
 		// form newly introduced events:
-		var v2022_8 = Project.current.yyResourceVersion >= 1.6;
+		var v2022_8 = project.yyResourceVersion >= 1.6;
 		for (i in 0 ... eventData.length) {
 			var ename = newNames[i];
 			if (sorted && oldMap.exists(ename)) continue; // see above
@@ -170,7 +175,16 @@ import yy.YyResourceRef;
 					eventNum: idat.numb != null ? idat.numb : 0,
 					name: "",
 				};
-				if (!v2022_8 || col != null) ev.collisionObjectId = col;
+				if (project.isGM2024) {
+					if (project.isGM2024_8) {
+						Reflect.setField(ev, "$GMEvent", "v1");
+					} else {
+						Reflect.setField(ev, "$GMEvent", "");
+					}
+					Reflect.setField(ev, "%Name", "");
+					ev.resourceVersion = "2.0";
+				}
+				ev.collisionObjectId = col;
 				if (!v2022_8) {
 					ev.parent = { name: this.name, path: 'objects/${this.name}/${this.name}.yy' };
 					ev.tags = [];
@@ -192,7 +206,14 @@ import yy.YyResourceRef;
 		return true;
 	}
 	private function getParentJson():YyObject {
-		var parentName = Project.current.yyObjectNames[this.parentObjectId];
+		var parentName:String;
+		if (this.parentObjectId == null) {
+			parentName = null;
+		} else if (this.parentObjectId is String) {
+			parentName = Project.current.yyObjectNames[this.parentObjectId];
+		} else {
+			parentName = (this.parentObjectId:YyResourceRef).name;
+		}
 		if (parentName == null) return null;
 		// todo: have an actual asset name -> asset path lookup instead
 		var el = TreeView.element.querySelector('.item['
@@ -209,31 +230,45 @@ import yy.YyResourceRef;
 		if (edata == null) return null;
 		var etype = edata.type;
 		var enumb = edata.numb;
-		var eobj = edata.obj; if (eobj == null) eobj = YyGUID.zero;
-		//
+		var eobj = edata.obj;
 		var obj:YyObject = FileWrap.readYyFileSync(full);
-		var parentId = obj.parentObjectId;
+		var v22 = YyTools.isV22(obj);
+		//
+		var parentId:String;
+		inline function setParentId() {
+			if (obj.parentObjectId == null) {
+				parentId = null;
+			} else if (obj.parentObjectId is String) {
+				parentId = obj.parentObjectId;
+				if (parentId == YyGUID.zero) parentId = null;
+			} else {
+				parentId = (obj.parentObjectId:YyResourceRef).name;
+				if (parentId == "") parentId = null;
+			}
+		}
+		setParentId();
 		var tries = 1024;
-		while (parentId != YyGUID.zero && --tries >= 0) {
+		while (parentId != null && --tries >= 0) {
 			obj = obj.getParentJson();
 			if (obj == null) return null;
 			for (event in obj.eventList) {
-				if (event.eventtype == etype
-				&& event.enumb == enumb
-				&& event.collisionObjectId == eobj) {
+				if (event.unpack(obj).getName() == edef) {
 					return GmlFile.open(obj.name, obj.path, { def: edef });
 				}
 			}
-			parentId = obj.parentObjectId;
+			setParentId();
 		}
 		return null;
 	}
 	public function getInfo(?info:GmlObjectInfo):GmlObjectInfo {
 		var objName = this.name;
+		var v23 = Project.current.isGMS23;
 		if (info == null) {
 			info = new GmlObjectInfo();
 			info.objectName = objName;
-			if (this.spriteId.isValid()) {
+			if (Reflect.isObject(this.spriteId)) {
+				info.spriteName = (cast this.spriteId:YyResourceRef).name;
+			} else if (this.spriteId.isValid()) {
 				var res = Project.current.yyResources[this.spriteId];
 				if (res != null) {
 					info.spriteName = res.Value.resourceName;
@@ -245,7 +280,14 @@ import yy.YyResourceRef;
 		}
 		//
 		for (event in this.eventList) {
-			var eid = YyEvent.toString(event.eventtype, event.enumb, event.collisionObjectId);
+			var eid:String;
+			if (v23) {
+				var cor:YyResourceRef = event.collisionObjectId;
+				var co = cor != null ? cor.name : null;
+				eid = GmlEvent.toString(event.eventType, event.eventNum, co);
+			} else {
+				eid = YyEvent.toString(event.eventtype, event.enumb, event.collisionObjectId);
+			}
 			var elist = info.eventMap[eid];
 			if (elist == null) {
 				elist = [];
@@ -294,6 +336,7 @@ typedef YyObjectImpl = {
 	
 	physicsShape:Int,
 	physicsShapePoints:Array<YyObjectPhysicsShapePoint>,
+	?managed:Bool,
 };
 typedef YyObjectPhysicsShapePoint = {
 	>YyBase, // GMPoint 1.0

@@ -48,8 +48,8 @@ class GmlLinterHelper {
 	inline function readCheckSkip(kind:GmlLinterKind, expect:String):FoundError {
 		return linter.readCheckSkip(kind, expect);
 	}
-	inline function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind, ?targetType:GmlType):FoundError {
-		return linter.expr.read(oldDepth, flags, _nk, targetType);
+	inline function readExpr(oldDepth:Int, flags:GmlLinterReadFlags = None, ?_nk:GmlLinterKind, ?targetType:GmlType, ?templateTypes:Array<GmlType>):FoundError {
+		return linter.expr.read(oldDepth, flags, _nk, targetType, templateTypes);
 	}
 	inline function readStat(oldDepth:Int, flags:GmlLinterReadFlags = GmlLinterReadFlags.None, ?_nk:GmlLinterKind):FoundError {
 		return linter.readStat(oldDepth, flags, _nk);

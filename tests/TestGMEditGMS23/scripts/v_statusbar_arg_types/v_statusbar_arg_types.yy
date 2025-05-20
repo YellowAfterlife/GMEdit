@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Other",
-    "path": "folders/Scripts/Other.yy",
+  "$GMScript":"",
+  "%Name":"v_statusbar_arg_types",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_statusbar_arg_types",
+  "parent":{
+    "name":"Other",
+    "path":"folders/Scripts/Other.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_statusbar_arg_types",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

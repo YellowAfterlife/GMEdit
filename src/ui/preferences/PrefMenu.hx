@@ -18,12 +18,12 @@ class PrefMenu {
 		PrefMagic.build(out);
 		PrefApp.build(out);
 		PrefBackups.build(out);
-		PrefPlugins.build(out);
+		PrefPlugins.buildPreferences(out);
 		if (electron.Electron.isAvailable()) {
 			var gr = addGroup(out, "Other useful things"), el:Element;
 			//
 			el = addButton(gr, "GML dialects directory", function() {
-				Shell.openExternal(FileWrap.userPath + "/api");
+				Shell.openItem(FileWrap.userPath + "/api");
 			});
 			addWiki(el, "https://github.com/GameMakerDiscord/GMEdit/wiki/GML-dialects");
 			//

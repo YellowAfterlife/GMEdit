@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"v_feather_types",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_feather_types",
+  "parent":{
+    "name":"Types",
+    "path":"folders/Scripts/Linter/Types.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

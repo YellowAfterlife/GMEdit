@@ -110,6 +110,9 @@ class AceWrapCommonCompleters {
 	/** Suggests the 2.3 `function` keyword quite so specifically */
 	public var keywordCompleterGMS23_function:AceWrapCompleter;
 	
+	/** Suggests the 2.3 `constructor` keyword quite so specifically */
+	public var keywordCompleterGMS23_constructor:AceWrapCompleter;
+	
 	/** A mishmash of completers for various `#keyword`s, each with their own conditions */
 	public var hashtagCompleters:Array<AceWrapCompleter>;
 	
@@ -151,6 +154,27 @@ class AceWrapCommonCompleters {
 		});
 		completers.push(keywordCompleterGMS23_function);
 		
+		keywordCompleterGMS23_constructor = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("constructor", "keyword")
+		], excludeTokens, true, gmlOnly, function(cc, editor, session, pos:AcePos, prefix:String, callback) {
+			if (!Preferences.current.compKeywords) return false;
+			
+			if (!prefix.startsWith("co")) return false;
+			if (!Project.current.isGMS23) return false;
+			var line = session.getLine(pos.row);
+			var col = pos.column - prefix.length;
+			while (--col >= 0) {
+				var c = line.fastCodeAt(col);
+				if (c == " ".code || c == "\t".code) {
+					// OK!
+				} else if (c == ")".code) {
+					return true;
+				} else return false;
+			}
+			return false;
+		});
+		completers.push(keywordCompleterGMS23_constructor);
+		
 		keywordCompleterExprStat = new AceWrapCompleterCustom(GmlAPI.kwCompExprStat,
 		excludeTokens, true, gmlOnly, function(cc, editor, session, pos, prefix:String, callback) {
 			if (!Preferences.current.compKeywords) return false;
@@ -177,6 +201,7 @@ class AceWrapCommonCompleters {
 			new AceAutoCompleteItem("template", jsk, "@template [{Constraint}] Type\nDeclare type parameters"),
 			new AceAutoCompleteItem("typedef", jsk, "@typedef {FullType} Alias\nDeclare a shorthand for a type"),
 			new AceAutoCompleteItem("init", jsk, "@init\nMarks a non-Create event as a variable/function source"),
+			new AceAutoCompleteItem("static", jsk, "@static\nMarks a static variable as intended for access via Constructor.varname"),
 		];
 		jsDocCompleter = new AceWrapCompleter([], ["comment.meta"], false, gmlOnly);
 		for (ac in jsDocItems) jsDocCompleter.items.push(ac); // we don't want items sorted in this one case

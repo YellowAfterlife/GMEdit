@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Types",
-    "path": "folders/Scripts/Linter/Types.yy",
+  "$GMScript":"",
+  "%Name":"v_specified_map",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_specified_map",
+  "parent":{
+    "name":"Types",
+    "path":"folders/Scripts/Linter/Types.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_specified_map",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

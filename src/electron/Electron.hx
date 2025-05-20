@@ -4,6 +4,7 @@ import electron.Menu;
 #if !starter
 import Main.window;
 import js.Syntax;
+import js.html.Console;
 import electron.FontScanner.FontScannerFallback;
 import electron.extern.ElectronRemote;
 import electron.extern.*;
@@ -21,6 +22,7 @@ import electron.ElectronMacros.*;
 	public static var remote:ElectronRemote;
 	public static var clipboard:Clipboard;
 	public static var ipcRenderer:Dynamic;
+	public static var webUtils:WebUtils;
 	
 	public static inline function init():Void {
 		inline function load(hxname:String, ename:String):Void {
@@ -55,7 +57,7 @@ import electron.ElectronMacros.*;
 			try {
 				setExternType(FontScanner, req("./native/font-scanner/index.js"));
 			} catch (x:Dynamic) {
-				Main.console.warn("font-scanner failed to load: ", x);
+				Console.warn("font-scanner failed to load: ", x);
 				setExternType(FontScanner, cast FontScannerFallback);
 			}
 			
@@ -65,9 +67,10 @@ import electron.ElectronMacros.*;
 			var path = AppTools.getPath("userData") + "/GMEdit";
 			FileWrap.userPath = path;
 			ensure(path);
-			ensure(path + "/session");
-			ensure(path + "/snippets");
 			ensure(path + "/config");
+			ensure(path + "/snippets");
+			ensure(path + "/session");
+			ensure(path + "/cache");
 			ensure(path + "/themes");
 			ensure(path + "/plugins");
 			ensure(path + "/api");

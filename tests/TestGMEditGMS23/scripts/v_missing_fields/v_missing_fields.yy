@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Linter",
-    "path": "folders/Scripts/Linter.yy",
+  "$GMScript":"",
+  "%Name":"v_missing_fields",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_missing_fields",
+  "parent":{
+    "name":"Linter",
+    "path":"folders/Scripts/Linter.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_missing_fields",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

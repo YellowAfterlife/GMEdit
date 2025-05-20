@@ -82,7 +82,7 @@ typedef MenuItemOptions = {
 	?id:String,
 	?position:String,
 };
-@:enum abstract MenuItemType(String) from String to String{
+enum abstract MenuItemType(String) from String to String{
 	var Normal:MenuItemType = "normal";
 	var Sep:MenuItemType = "separator";
 	var Sub:MenuItemType = "submenu";

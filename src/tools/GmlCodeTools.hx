@@ -130,6 +130,10 @@ class GmlCodeTools {
 		while (--pos >= 0) {
 			var c:CharCode = src.fastCodeAt(pos);
 			switch (c) {
+				case "\n".code: {
+					// todo: have to parse the file from the beginning... just for this?
+					return true;
+				}
 				case '"'.code, "'".code: return true;
 				case ")".code, "]".code, "{".code, "}".code: return true;
 				case "[".code: return false;
@@ -290,9 +294,8 @@ class GmlCodeTools {
 							case "*".code: q.skip(); q.skipComment();
 							default:
 						};
-						case '"'.code, "'".code, "`".code, "@".code: {
-							q.skipStringAuto(c, version);
-						};
+						case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
+						case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
 						default:
 					}
 				}

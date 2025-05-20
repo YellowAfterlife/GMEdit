@@ -1,4 +1,5 @@
 package gml.project;
+import haxe.extern.EitherType;
 import tools.Aliases;
 import ui.ext.Bookmarks;
 
@@ -18,7 +19,7 @@ typedef ProjectState = {
 typedef ProjectTabState = {
 	?relPath:RelPath,
 	?fullPath:FullPath,
-	?pinned:Bool,
+	?pinned:EitherType<Bool, Int>,
 	?kind:String,
 	?data:Dynamic,
 }

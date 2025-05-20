@@ -1,4 +1,5 @@
 package ui.preferences;
+import tools.Dictionary;
 import js.html.Element;
 import ui.Preferences.*;
 import gml.GmlAPI;
@@ -131,13 +132,34 @@ class PrefCode {
 		
 		addCheckbox(out,
 			"Highlight code inside hinted GML strings (e.g. /*gml*/@'return 1')",
-			current.codeLiterals, function(z) {
-			current.codeLiterals = z;
-			save();
-		}).title = "Supported modes: gml, hlsl, glsl."
-			+ "\nGMS2: use /*mode*/@'string'."
-			+ "\nGMS1: use /*mode*/'string'."
-			+ "\nAffects newly opened code tabs.";
-		//		
+			current.codeLiterals,
+			andSave(v -> current.codeLiterals = v)
+		).setTitleLines([
+			"Supported modes: gml, hlsl, glsl.",
+			"GMS2: use /*mode*/@'string'.",
+			"GMS1: use /*mode*/'string'.",
+			"Affects newly opened code tabs."
+		]);
+		
+		addCheckbox(out,
+			"Highlight self/other/global/all/noone as 'ace_kwconst'",
+			current.constKeywords,
+			andSave(v -> {
+				current.constKeywords = v;
+				applyConstKeywords(true, null);
+			})
+		).setTitleLines([
+			"For consistency with GMS2 IDE.",
+			"Must be supported by your theme.",
+			"Takes effect after re-opening files."
+		]);
+	}
+	public static function applyConstKeywords(force:Bool, stdKind:Dictionary<String>) {
+		var enable = Preferences.current.constKeywords;
+		if (!force && !enable) return;
+		stdKind ??= GmlAPI.stdKind;
+		for (kw in ["self", "other", "all", "noone", "global"]) {
+			stdKind[kw] = enable ? "keyword.kwconst" : "keyword";
+		}
 	}
 }

@@ -1,4 +1,5 @@
 package electron;
+import electron.extern.NodeBuffer;
 #if !starter
 import gmx.SfGmx;
 import haxe.Json;
@@ -43,7 +44,19 @@ import haxe.extern.EitherType;
 	}
 	#end
 	//
-	public static function readFileSync(path:String, ?enc:String):Dynamic;
+	#if 0
+	@:native("readFileSync")
+	public static function readFileSync_1(path:String, ?enc:String):Any;
+	public static inline function readFileSync(path:String, ?enc:String):Any {
+		Console.log("readFileSync", path);
+		return readFileSync_1(path, enc);
+	}
+	#else
+	public static function readFileSync(path:String, ?enc:String):Any;
+	#end
+	public static inline function readNodeFileSync(path:String):NodeBuffer {
+		return readFileSync(path);
+	}
 	public static inline function readTextFileSync(path:String):String {
 		return readFileSync(path, "utf8");
 	}

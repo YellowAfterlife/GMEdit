@@ -39,21 +39,39 @@ using tools.ERegTools;
 		}
 	}
 	
-	static var rxInsertBefore = JsTools.rx(~/^\[\+(\w+)\]\s*(.+)$/gm);
-	static var rxReplace = JsTools.rx(~/^(\w+).+$/gm);
+	static var rxInsertBefore = JsTools.rx(~/^\[\+(\w+.*)\]\s*(.+)$/gm);	// insert-before with any symbols ([+field*@])
+	static var rxReplaceStruct = new RegExp(
+		'^(?:\\[.*\\])?'			// with optional insert-before declaration ([+field])
+		+'(\\?\\?.+?)'				// capture struct name + fields (??Struct\nfield1\nfield2...)
+		+'(?:(?:\\n\\n)|$(?!\\n))',	// until double newline or the end of the document
+	"sgm");
+	static var rxReplaceStructName = JsTools.rx(~/^\?\?(\w+)$/gm);	// just struct name (??Struct)
+	static var rxReplace = JsTools.rx(~/^(\w+)\b(?:[^?\\n].*$|$)/gm);	// reamining declarations except structs and its fields
 	static function applyPatchFile(raw:String, txt:String) {
 		rxInsertBefore.each(txt, function(mt:RegExpMatch) {
-			var name = mt[1];
+			var name = NativeString.escapeRx(mt[1]);
 			var code = mt[2];
-			var rx = new RegExp('^$name\\b', "gm");
+			var rx = new RegExp('^$name', "gm");
 			raw = raw.replaceExt(rx, function(next) {
 				return code + "\n" + next;
 			});
 		});
+		rxReplaceStruct.each(txt, function(mt:RegExpMatch) {
+			var code = mt[1];
+			rxReplaceStructName.lastIndex = 0;
+			var nt = rxReplaceStructName.exec(code);
+			if (nt != null) {
+				var name = nt[1];
+				var rx = new RegExp('^(\\?\\?$name\\b.+?)(?:(?:\\n\\n)|$(?!\\n))', "sgm");
+				raw = raw.replaceExt(rx, function(_) {
+					return code + "\n\n";
+				});
+			}
+		});
 		rxReplace.each(txt, function(mt:RegExpMatch) {
 			var name = mt[1];
 			var code = mt[0];
-			var rx = new RegExp('^$name\\b.*$', "gm");
+			var rx = new RegExp('^$name\\b(?:[^?\\n].*$|$)', "gm");
 			raw = raw.replaceExt(rx, function(_) {
 				return code;
 			});
@@ -176,6 +194,7 @@ using tools.ERegTools;
 			comp: GmlAPI.stdComp,
 			types: GmlAPI.stdTypes,
 			typeExists: GmlAPI.stdTypeExists,
+			featherAliases: GmlAPI.featherAliases,
 			namespaceDefs: GmlAPI.stdNamespaceDefs,
 			typedefs: GmlAPI.stdTypedefs,
 			fieldHints: GmlAPI.stdFieldHints,
@@ -218,29 +237,38 @@ using tools.ERegTools;
 		#if !gmedit.live
 		if (FileSystem.canSync) {
 			var xdir = FileWrap.userPath + "/api/" + version.getName();
-			if (FileSystem.existsSync(xdir))
-			for (xrel in FileSystem.readdirSync(xdir)) {
-				var xfull = xdir + "/" + xrel;
-				if (FileSystem.statSync(xfull).isDirectory()) continue;
-				if (xrel == "fnames") {
-					cx.call(getContent, xfull, function(s:String) {
-						ctx.raw += "\n" + s;
-					});
-					continue;
-				}
-				var xp = new Path(xrel);
-				if (xp.ext != null && xp.ext.toLowerCase() == "gml") {
-					if (Path.extension(xp.file).toLowerCase() == "replace") {
+
+			var xsearch:String->Void = null;
+			xsearch = function(xdir:String) {
+				for (xrel in FileSystem.readdirSync(xdir)) {
+					var xfull = xdir + "/" + xrel;
+					if (FileSystem.statSync(xfull).isDirectory()) {
+						xsearch(xfull);
+						continue;
+					}
+					if (xrel == "fnames") {
 						cx.call(getContent, xfull, function(s:String) {
-							ctx.raw = applyPatchFile(ctx.raw, s);
+							ctx.raw += "\n" + s;
 						});
 						continue;
 					}
-					cx.call(getContent, xfull, function(s:String) {
-						ctx.raw += "\n" + s;
-					});
+					var xp = new Path(xrel);
+					if (xp.ext != null && xp.ext.toLowerCase() == "gml") {
+						if (Path.withoutExtension(xp.file).toLowerCase() == "replace") {
+							cx.call(getContent, xfull, function(s:String) {
+								ctx.raw = applyPatchFile(ctx.raw, s);
+							});
+							continue;
+						}
+						cx.call(getContent, xfull, function(s:String) {
+							ctx.raw += "\n" + s;
+						});
+					}
 				}
 			}
+			
+			if (FileSystem.existsSync(xdir))
+				xsearch(xdir);
 		}
 		#end
 		
@@ -288,7 +316,7 @@ using tools.ERegTools;
 					init += 'lwInst:"' + arr.join("|") + '"\n';
 					//
 					init += "}";
-					//Main.console.log(init);
+					//Console.log(init);
 					#end
 					LiveWeb.api.setAPI(data);
 				}

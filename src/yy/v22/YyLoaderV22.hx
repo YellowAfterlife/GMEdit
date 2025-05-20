@@ -5,6 +5,7 @@ import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
 import js.lib.RegExp;
+import js.html.Console;
 import synext.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
@@ -44,7 +45,7 @@ class YyLoaderV22 {
 		var cfdPath = new Dictionary<YyProjectResource>();
 		function checkForDuplicates(map:Dictionary<YyProjectResource>, key:String, item:YyProjectResource):Void {
 			if (map.exists(key)) {
-				Main.console.error('Collision for $key!'
+				Console.error('Collision for $key!'
 					+ ' GMS2 will not load the project unless you fix this.'
 					+ ' Contenders:', map[key], item);
 			} else map[key] = item;
@@ -70,7 +71,7 @@ class YyLoaderV22 {
 				default: null;
 			};
 			if (expectedPathPrefix != null && !NativeString.startsWith(path, expectedPathPrefix)) {
-				Main.console.warn('`$path` is marked as $type but is not in $expectedPathPrefix directory.'
+				Console.warn('`$path` is marked as $type but is not in $expectedPathPrefix directory.'
 					+ ' This suggests that your resource type might be mismatched.');
 			}
 			//
@@ -80,7 +81,7 @@ class YyLoaderV22 {
 				var view:YyView = try {
 					project.readYyFileSync(val.resourcePath);
 				} catch (x:Dynamic) {
-					Main.console.error("Failed to load " + val.resourcePath);
+					Console.error("Failed to load " + val.resourcePath);
 					continue;
 				};
 				val.resourceName = view.folderName;
@@ -126,7 +127,7 @@ class YyLoaderV22 {
 				//
 				var treeLocPath = '`$path` (in ${view.id}.yy)';
 				if (treeLocation.exists(el)) {
-					Main.console.warn('Resource `$el` ('
+					Console.warn('Resource `$el` ('
 						+ (type == "GMFolder" ? views[res.Key].folderName : val.resourcePath)
 						+ ') exists in two places at once, $treeLocPath and `' + treeLocation[el]
 						+ '`. This may cause GMS2 to remove your resource on load.'

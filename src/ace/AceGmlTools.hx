@@ -51,11 +51,11 @@ using StringTools;
 		var it = new AceTokenIterator(session, pos.row, pos.column);
 		var tk:AceToken;
 		while ((tk = it.stepBackward()) != null) {
-			var tt:String = tk.type;
+			var tt = tk.type;
 			if (isBlank(tt)) continue;
 			switch (tt) {
-				case "keyword": return JsTools.or(keywordContextKind[tk.value], Unknown);
 				case "eventname", "eventkeyname": return Statement;
+				case _ if (tt.isKeyword()): return JsTools.or(keywordContextKind[tk.value], Unknown);
 				default:
 			}
 			//
@@ -144,11 +144,11 @@ using StringTools;
 						tk = tmpi.stepBackwardNonText();
 						if (tk == null) break; // `<sof>¦(` ..?
 						switch (tk.type) {
-							case "keyword": break;
 							case "paren.rparen", "square.paren.rparen", "curly.paren.rparen": {
 								// `fn()[0]¦(` and other exotic things you can do
 							};
-							default: if (!tk.isIdent()) break;
+							case _ if (!tk.isIdent()): break;
+							case _ if (tk.isKeyword()): break;
 						}
 					}
 				}
@@ -158,7 +158,7 @@ using StringTools;
 					if (depth <= 0) break;
 				}
 				case _ if (tk.isIdent()): {
-					if (depth == 0 && tkType == "keyword") {
+					if (depth == 0 && tkType.isKeyword()) {
 						switch (tk.value) {
 							case "self", "other", "global": {}
 							case "cast", "as": break;
@@ -209,7 +209,9 @@ using StringTools;
 	public static function findSelfCallDoc(type:GmlType, imp:GmlImports):GmlFuncDoc {
 		if (type == null) return null;
 		type = type.resolve();
-		if (type.getKind() == KFunction) {
+		var typeKind = type.getKind();
+		if (typeKind == KFunction || typeKind == KConstructor) {
+			var isConstructor = typeKind == KConstructor;
 			var params = type.unwrapParams();
 			var args = [];
 			var n = params.length - 1;
@@ -223,7 +225,13 @@ using StringTools;
 				} else arg = param.toString();
 				args.push(arg);
 			}
-			var doc = new GmlFuncDoc("function", "function(", GmlFuncDoc.parRetArrow + params[n].toString(), args, rest);
+			var doc = new GmlFuncDoc(
+				isConstructor ? "constructor" : "function",
+				isConstructor ? "constructor(" : "function(",
+				GmlFuncDoc.parRetArrow + params[n].toString(), args, rest
+			);
+			doc.isConstructor = isConstructor;
+			
 			doc.argTypes = params.slice(0, n).map(function(t) {
 				return t.resolve().getKind() == KRest ? t.unwrapParam() : t;
 			});

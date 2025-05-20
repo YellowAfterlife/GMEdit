@@ -4,6 +4,9 @@ function Some(a/*:int*/, b/*:int*/) constructor {
 	static sub = function(c/*:string*/) {
 		c = 0; ///want_warn
 	}
+	function StrangeSpace (a/*:int*/) {
+		
+	}
 }
 
 function v_imp_func_args() {

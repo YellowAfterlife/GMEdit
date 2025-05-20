@@ -36,9 +36,22 @@ class PathTools {
 		return ptExt(ptNoExt(path));
 	}
 	
+	/** "some.project.gmx" -> "some" */
+	public static inline function ptNoExt2(path:String):String {
+		return Path.withoutExtension(Path.withoutExtension(path));
+	}
+	
 	/** Returns file name (no directory, no extension) */
-	public static inline function ptName(path:String):String {
-		return path.ptNoDir().ptNoExt();
+	public static function ptName(path:String):String {
+		var pt = new Path(path);
+		pt.dir = null;
+		pt.ext = null;
+		return pt.toString();
+	}
+	
+	/** "C:/project/some.project.gmx" -> "some" */
+	public static inline function ptName2(path:String):String {
+		return path.ptName().ptNoExt();
 	}
 	
 	/** ("a/b", "c") -> "a/b/c" */

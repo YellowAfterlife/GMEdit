@@ -13,7 +13,7 @@ using tools.NativeArray;
  */
 class GMLive {
 	static var rxLive:RegExp = new RegExp("if\\b\\s*\\(?\\s*"
-		+ "\\b(?:live_call|live_call_ext|live_defcall|live_defcall_ext)"
+		+ "\\b(?:live_call|live_call_ext|live_defcall|live_defcall_ext|live_auto_call)"
 	, "");
 	public static var attr:String = "data-gmlive";
 	public static function check(code:String) {

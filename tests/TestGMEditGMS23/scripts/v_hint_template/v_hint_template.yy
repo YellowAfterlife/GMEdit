@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "JSDoc",
-    "path": "folders/Scripts/Linter/JSDoc.yy",
+  "$GMScript":"",
+  "%Name":"v_hint_template",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_hint_template",
+  "parent":{
+    "name":"JSDoc",
+    "path":"folders/Scripts/Linter/JSDoc.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_hint_template",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

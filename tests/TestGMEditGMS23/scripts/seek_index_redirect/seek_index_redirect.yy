@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"seek_index_redirect",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"seek_index_redirect",
+  "parent":{
+    "name":"JSDoc",
+    "path":"folders/Scripts/Linter/JSDoc.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

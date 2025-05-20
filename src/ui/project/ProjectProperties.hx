@@ -1,4 +1,6 @@
 package ui.project;
+import gml.file.GmlFile;
+import ui.preferences.PrefPlugins;
 import gml.GmlAPI;
 import haxe.Json;
 import js.html.DivElement;
@@ -83,6 +85,29 @@ class ProjectProperties {
 		});
 	}
 	
+	static function buildSearch(project:Project, out:Element) {
+		var fs = Preferences.addGroup(out, "Search and indexing");
+		fs.id = "project-properties-search";
+		
+		var d = project.properties;
+		var el:Element;
+		
+		el = Preferences.addTextArea(fs, "Library resource names",
+			(d.libraryResources ?? []).join("\n"),
+		function(text:String) {
+			text = NativeString.trimBoth(text);
+			var lines = text.split("\n");
+			d.libraryResources = lines;
+			save(project, d);
+			project.updateLibraryResourceMap(lines);
+		});
+		
+		el.querySelectorAuto("label", Element).title = [
+			"Library resources are omitted from search results and Global Lookup.",
+			"Takes effect upon reloading the project."
+		].join("\n");
+	}
+	
 	static function addGmlNameInput(out:Element, legend:String, curr:GmlName, fn:GmlName->Void) {
 		var input:InputElement = null;
 		var rx = new RegExp("^[a-zA-Z_]\\w*$");
@@ -113,6 +138,10 @@ class ProjectProperties {
 	
 	static function buildSyntax(project:Project, out:DivElement) {
 		var d = project.properties;
+		inline function autoSave() {
+			save(project, d);
+		}
+		
 		var fs = Preferences.addGroup(out, "Syntax extensions");
 		fs.id = "project-properties-syntax";
 		var lambdaModes = [
@@ -129,6 +158,14 @@ class ProjectProperties {
 		if (project.version.config.projectModeId != 2) {
 			el.querySelectorAuto("label:last-of-type input", InputElement).disabled = true;
 		}
+		
+		//
+		Preferences.addCheckbox(fs, "Automatic arrow functions", d.autoArrowFunctions, (z) -> {
+			d.autoArrowFunctions = z;
+			autoSave();
+		}).setTitleLines([
+			"Auto-collapses function literals into arrow functions without /*=>*/"
+		]);
 		
 		//
 		var argRegexInput:InputElement = null;
@@ -189,23 +226,35 @@ class ProjectProperties {
 	
 	public static function build(project:Project, out:DivElement) {
 		buildCode(project, out);
+		buildSearch(project, out);
 		buildSyntax(project, out);
 		ui.preferences.PrefLinter.build(out, project);
+		PrefPlugins.buildProjectProperties(out, project);
 		//
 		plugins.PluginEvents.projectPropertiesBuilt({
 			project: project,
 			target: out,
 		});
 	}
-	public static function open() {
-		var kind = KProjectProperties.inst;
-		var pj = Project.current;
+
+	public static function open():Null<GmlFile> {
+
+		final kind = KProjectProperties.inst;
+		final pj = Project.current;
+
+		if (pj.path == "") {
+			return null;
+		}
+		
 		for (tab in ChromeTabs.getTabs()) {
 			if (tab.gmlFile.kind != kind) continue;
 			if ((cast tab.gmlFile.editor:KProjectPropertiesEditor).project != pj) continue;
 			tab.click();
 			return tab.gmlFile;
 		}
-		return kind.create(name, null, pj, null);
+
+		return kind.create("Project properties", null, pj, null);
+		
 	}
+
 }

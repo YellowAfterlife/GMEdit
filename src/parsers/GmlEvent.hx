@@ -16,6 +16,8 @@ using tools.NativeString;
  */
 class GmlEvent {
 	public static inline var typeCollision:Int = 4;
+	/** GM8 only! **/
+	public static inline var typeTrigger:Int = 11;
 	/** GMEdit-specific, not a real event */
 	public static inline var typeMagic:Int = -1;
 	public static inline var kindMagicProperties:Int = 1;
@@ -25,8 +27,13 @@ class GmlEvent {
 	static var t2s:Array<String> = [];
 	static var t2sc:Array<String> = [];
 	static var s2t:Dictionary<Int> = new Dictionary();
+	static var sc2t:Dictionary<Int> = new Dictionary();
 	static var i2s:Array<Array<String>> = [];
 	static var s2i:Dictionary<GmlEventData> = new Dictionary();
+	/** Returns index for a CapitalizedName **/
+	public static inline function getCapTypeIndex(name:String):Null<Int> {
+		return sc2t[name];
+	}
 	/** Returns rawname of given event type */
 	public static inline function getTypeName(type:Int):String {
 		return t2s[type];
@@ -54,12 +61,13 @@ class GmlEvent {
 		t2s[type] = nlq;
 		t2sc[type] = name;
 		s2t.set(nlq, type);
+		sc2t.set(name, type);
 	}
 	//
 	public static function toString(type:Int, numb:Int, name:String) {
-		if (type == typeCollision) {
-			return "collision:" + name;
-		}
+		if (type == typeCollision) return "collision:" + name;
+		if (type == typeTrigger) return "trigger:" + name;
+		//
 		var arr = i2s[type];
 		if (arr != null) {
 			var out = arr[numb];
@@ -78,7 +86,10 @@ class GmlEvent {
 		var type = s2t[name.substring(0, i)];
 		var name = name.substring(i + 1);
 		if (type == null) return null;
-		if (type == typeCollision) return { type: type, numb: null, name: name };
+		switch (type) {
+			case typeCollision, typeTrigger:
+				return { type: type, numb: null, name: name };
+		}
 		if (isKeyType(type)) {
 			var key = GmlKeycode.fromName(name);
 			if (key == null) return null;
@@ -102,6 +113,7 @@ class GmlEvent {
 		var evCode:Array<String> = [];
 		var evName = null;
 		var sctName = null;
+		var isAutoSection = true;
 		/**
 		   @param	till	Final character to grab data till
 		   @param	cont	Whether this is a section/action, continuing same event
@@ -109,6 +121,22 @@ class GmlEvent {
 		**/
 		function flush(till:Int, cont:Bool, ?eof:Bool):Void {
 			var flushCode = q.substring(evStart, till);
+			/*
+			Expected structure:
+			<snip>#event properties
+			parent_index = -1;
+			
+			#event create
+			// code with no trailing newlines
+			#section
+			// code with no trailing newlines
+			
+			#event draw
+			// code with no trailing newlines</snip>
+			So events are separated with 2 newlines (one empty),
+			actions/sections are separated by 1 (tight fit if there are no trailing ones),
+			and no extra newlines are kept at EOF.
+			*/
 			flushCode = flushCode.trimTrailRn(eof ? 0 : (cont ? 1 : 2));
 			if (evName == null) {
 				if (flushCode != "") {
@@ -123,7 +151,10 @@ class GmlEvent {
 				var flushData = GmlEvent.fromString(evName);
 				if (flushData != null) {
 					//
-					if (eof || flushCode != "") {
+					if (!isAutoSection
+						|| !cont && evCode.length == 0
+						|| flushCode.trimBoth() != ""
+					) {
 						evCode.push(flushCode);
 					}
 					//
@@ -140,6 +171,8 @@ class GmlEvent {
 			}
 		}
 		//
+		var hasEventSections = version.config.hasEventSections;
+		var hasEventActions = version.config.hasEventActions;
 		while (q.loop) {
 			var c = q.read();
 			switch (c) {
@@ -149,15 +182,17 @@ class GmlEvent {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, version);
-				case "#".code: {
+				case "$".code if (q.isDqTplStart(version)): q.skipDqTplString(version);
+				case "#".code: { // #meta
+					// line start only!
 					if (q.pos > 1) switch (q.get(q.pos - 2)) {
 						case "\r".code, "\n".code: { };
 						default: continue;
 					}
-					if (q.substr(q.pos, 5) == "event") {
-						//
-						flush(q.pos - 1, false);
-						q.skip(5);
+					//
+					var hashPos = q.pos - 1;
+					if (q.skipIfIdentEquals("event")) {
+						flush(hashPos, false);
 						// skip spaces:
 						q.skipSpaces0();
 						// read name:
@@ -185,9 +220,10 @@ class GmlEvent {
 						q.skipLineEnd();
 						//
 						evStart = q.pos;
-					}
-					else if (version.config.hasEventSections && q.substr(q.pos, 7) == "section") {
-						q.skip(7);
+						isAutoSection = true;
+						continue;
+					} // event
+					if (hasEventSections && q.skipIfIdentEquals("section")) {
 						//
 						var nameStart = q.pos;
 						var nameEnd = -1;
@@ -206,23 +242,36 @@ class GmlEvent {
 							default: q.skip();
 						}
 						if (nameEnd < 0) nameEnd = q.length;
-						flush(nameStart - 8, true);
+						flush(hashPos, true);
 						sctName = q.substring(nameStart, nameEnd);
 						if (sctName.charCodeAt(0) == "|".code) {
 							sctName = sctName.substring(1);
 						}
 						//
 						evStart = q.pos;
+						isAutoSection = false;
+						continue;
 					}
-					else if (version.config.hasEventActions && q.substr(q.pos, 6) == "action") {
-						q.skip(6);
-						flush(q.pos - 7, true);
-						evStart = q.pos - 7;
+					if (hasEventSections && q.skipIfIdentEquals("with")) {
+						flush(hashPos, true);
+						q.skipLine();
+						q.skipLineEnd();
+						evStart = hashPos;
+						isAutoSection = false;
+						continue;
+					}
+					if (hasEventActions && q.skipIfIdentEquals("action")) {
+						// we flush twice because action lines are their own blocks
+						flush(hashPos, true);
+						evStart = hashPos;
 						q.skipLine();
 						q.skipLineEnd();
 						flush(q.pos, true);
 						evStart = q.pos;
+						isAutoSection = true;
+						continue;
 					}
+					// #something else
 				};
 				default:
 			} // switch (q.read)
@@ -248,6 +297,7 @@ class GmlEvent {
 		linkType(8, "Draw");
 		linkType(9, "KeyPress");
 		linkType(10, "KeyRelease");
+		linkType(11, "Trigger");
 		linkType(12, "CleanUp");
 		linkType(13, "Gesture");
 		// set up auto-completion for events that have ":id" suffix:

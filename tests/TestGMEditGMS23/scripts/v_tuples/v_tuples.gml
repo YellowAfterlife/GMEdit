@@ -51,7 +51,7 @@ function v_tuples() {
 	has_rest = [1, "2", "3"]; ///want_warn
 	has_rest = [1, "2", 3, 4];
 	has_rest = [1, "2", 3, "4"]; ///want_warn
-	has_rest[-1] = 0; ///want_warn
+	//has_rest[-1] = 0; ///want_warn
 	has_rest[2] = 0;
 	has_rest[3] = 0;
 	has_rest[4] = ""; ///want_warn

@@ -2,6 +2,8 @@ package parsers.seeker;
 import gml.GmlFuncDoc;
 import gml.type.GmlTypeDef;
 import parsers.GmlSeekData.GmlSeekDataNamespaceHint;
+import synext.GmlExtCoroutines;
+import js.html.Console;
 
 /**
  * ...
@@ -61,6 +63,35 @@ class GmlSeekerProcDoc {
 				var mainComp = seeker.mainComp;
 				if (mainComp != null) mainComp.doc = doc.getAcText();
 			}
+			
+			if (seeker.out.hasCoroutines && (
+					seeker.out.yieldScripts.contains(doc.name)
+					|| doc.name == main && seeker.out.yieldScripts.contains("")
+				)
+			) {
+				switch (seeker.out.coroutineMode) {
+					case Linear: {
+						// hack the definition to return coroutine_array_result<script>
+						// and to take coroutine_array<script> as prefix argument
+						var crp = "<" + doc.name + ">";
+						var crt = GmlExtCoroutines.arrayTypeName + crp;
+						doc.post = GmlFuncDoc.parRetArrow + GmlExtCoroutines.arrayTypeResultName + crp;
+						doc.hasReturn = true;
+						if (doc.argTypes == null) doc.argTypes = [];
+						doc.argTypes.unshift(GmlTypeDef.parse(crt + '|number|undefined'));
+						doc.args.unshift("state");
+						@:privateAccess doc.minArgsCache = 1;
+					};
+					case Method: {
+						doc.post = GmlFuncDoc.parRetArrow + "function<bool>";
+						doc.hasReturn = true;
+					};
+					case Constructor: {
+						doc.post = GmlFuncDoc.parRetArrow + GmlExtCoroutines.constructorFor(doc.name);
+						doc.hasReturn = true;
+					};
+				}
+			}
 		}
 		
 		if (jsDoc.implementsNames != null) {
@@ -73,7 +104,7 @@ class GmlSeekerProcDoc {
 			if (arr == null) { arr = []; out.namespaceImplements[ownType] = arr; }
 			//
 			if (ownType == null) {
-				Main.console.warn("Trying to add @implements without a known self-type", arr);
+				Console.warn("Trying to add @implements without a known self-type", arr);
 			} else for (nsi in jsDoc.implementsNames) {
 				if (arr.indexOf(nsi) < 0) arr.push(nsi);
 			}

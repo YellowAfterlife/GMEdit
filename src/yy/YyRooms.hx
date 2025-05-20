@@ -5,6 +5,7 @@ import electron.FileWrap;
 import gml.Project;
 import gml.file.GmlFileExtra;
 import haxe.Json;
+import js.html.Console;
 import js.lib.RegExp;
 import parsers.GmlReader;
 import tools.Dictionary;
@@ -34,7 +35,7 @@ class YyRooms {
 				out += "#target " + pair.id.name + "\n" + rcc;
 				extraFiles.push(new GmlFileExtra(pj.fullPath(rccPath)));
 			} catch (x:Dynamic) {
-				Main.console.error('Error reading RCC from room ${pair.id.name}: ', x);
+				Console.error('Error reading RCC from room ${pair.id.name}: ', x);
 			}
 		}
 		else for (pair in pjd.resources) {
@@ -91,9 +92,7 @@ class YyRooms {
 					case "*".code: q.skip(); q.skipComment();
 					default:
 				};
-				case '"'.code, "'".code, "`".code, "@".code: {
-					q.skipStringAuto(c, gml.GmlVersion.v2);
-				};
+				case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, gml.GmlVersion.v2);
 				case "#".code if ((p == 0 || q.get(p - 1) == "\n".code)
 					&& q.substr(p + 1, 6) == "target"
 					&& q.get(p + 7).isSpace0()
@@ -115,6 +114,7 @@ class YyRooms {
 		return {map:map,pairs:pairs};
 	}
 	public static function setCCs(pjPath:String, code:String, extraFiles:Array<GmlFileExtra>):Bool {
+		// todo: use GmlMultifile.split(code, "", "target")
 		var data = parse(code);
 		if (data == null) return false;
 		
@@ -144,7 +144,7 @@ class YyRooms {
 				}
 				FileWrap.unlinkSync(xf.path);
 			} catch (x:Dynamic) {
-				Main.console.error("Error removing creation code for " + name + ":", x);
+				Console.error("Error removing creation code for " + name + ":", x);
 			}
 			extraFiles.splice(xi, 1);
 		}

@@ -11,13 +11,14 @@ import ui.treeview.TreeViewElement;
  */
 class GmlMultifile {
 	public static var errorText:String;
-	public static function split(gmlCode:String, first:String):GmlMultifilePairs {
+	public static function split(gmlCode:String, first:String, keyword:String = "define"):GmlMultifilePairs {
 		var q = new GmlReader(gmlCode);
 		var start = 0;
 		var out:GmlMultifilePairs = [];
 		var scriptName = first;
 		var errors = "";
 		var version = GmlAPI.version;
+		var keywordLen = keyword.length;
 		function flush(till:Int) {
 			if (start > 0 || till > start) {
 				var next = q.substring(start, till);
@@ -36,8 +37,11 @@ class GmlMultifile {
 					default:
 				};
 				case '"'.code, "'".code, "`".code, "@".code: row += q.skipStringAuto(c, version);
+				case "$".code if (q.isDqTplStart(version)): row += q.skipDqTplString(version);
 				case "#".code: if (q.pos == 1 || q.get(q.pos - 2) == "\n".code) {
-					if (q.substr(q.pos, 6) == "define") {
+					if (q.substr(q.pos, keywordLen) == keyword
+						&& !q.get(q.pos + keywordLen).isIdent1() // not `#defineButNotReally`
+					) {
 						flush(q.pos - 1);
 						q.skip(6);
 						q.skipSpaces0();
@@ -45,7 +49,7 @@ class GmlMultifile {
 						q.skipIdent1();
 						scriptName = q.substring(p, q.pos);
 						if (scriptName == "") {
-							errors += 'Expected a script name at line $row.\n';
+							errors += 'Expected a name at line $row.\n';
 						}
 						q.skipLine();
 						//

@@ -144,7 +144,7 @@ class GmlLinterIdent {
 							+ t.toString());
 					}
 				};
-				case TInst(tn, _, _): {
+				case TInst(tn, _, tk) if (tk != GmlTypeKind.KAny): {
 					var wantWarn = false;
 					var found = AceGmlTools.findNamespace(tn, imp, function(ns:GmlNamespace) {
 						wantWarn = true;

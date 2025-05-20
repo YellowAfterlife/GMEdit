@@ -57,12 +57,15 @@ class MainMenu {
 			id: "open-dialog",
 			icon: Menu.silkIcon("folder_page"),
 			click: function() {
+				var filters = gml.GmlVersion.hasCustomDialects ? [
+					new DialogFilter("Anything supported", ["*"])
+				] : [
+					new DialogFilter("GameMaker files", ["gmx", "yy", "yyp", "yyz", "gml"]),
+					new DialogFilter("Other common files", ["js", "md", "dmd", "txt", "ini"]),
+					new DialogFilter("All files", ["*"])
+				];
 				Dialog.showOpenDialog({
-					filters: [
-						new DialogFilter("GameMaker files", ["gmx", "yy", "yyp", "yyz", "gml"]),
-						new DialogFilter("Other supported files", ["js", "md", "dmd", "txt"]),
-						new DialogFilter("All files", ["*"]),
-					],
+					filters: filters,
 				}, function(paths:Array<String>) {
 					if (paths != null && paths[0] != null) {
 						FileDrag.handle(paths[0], null);

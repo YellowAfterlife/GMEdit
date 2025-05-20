@@ -38,9 +38,7 @@ class GmxProject {
 						};
 						default:
 					};
-					case '"'.code, "'".code, "`".code, "@".code: {
-						q.skipStringAuto(c, gml.GmlVersion.v1);
-					};
+					case '"'.code, "'".code, "`".code, "@".code: q.skipStringAuto(c, gml.GmlVersion.v1);
 					case "#".code: {
 						if (q.substr(q.pos, 5) != "macro") continue;
 						q.skip(5);

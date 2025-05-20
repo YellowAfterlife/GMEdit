@@ -3,6 +3,7 @@ import ace.AceWrap;
 import ace.extern.*;
 import ace.extern.AceCommandManager;
 import haxe.extern.EitherType;
+import js.html.Console;
 import js.lib.RegExp;
 import tools.CharCode;
 import tools.NativeString;
@@ -87,7 +88,7 @@ using StringTools;
 		function show(cmdName:String, text:String, ?kb:AceCommandKey) {
 			if (!isPrimary) return;
 			var cmd = editor.commands.commands[cmdName];
-			if (cmd == null) Main.console.warn('Command $cmdName is amiss');
+			if (cmd == null) Console.warn('Command $cmdName is amiss');
 			var key:String = getKeybindString(editor, cmdName, kb);
 			CommandPalette.add({
 				name: text,

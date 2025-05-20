@@ -13,7 +13,7 @@ if (remoteAsModule) {
 }
 
 const minVersion = 11
-const maxVersion = 18
+const maxVersion = 33
 if (electronVersion < minVersion) {
 	throw new Error([
 		"Hey, this Electron version is too old!",
@@ -37,6 +37,63 @@ const fs = require('fs')
 let activeWindows = []
 const isWindows = process.platform == "win32"
 const isMac = process.platform == "darwin"
+app.on("browser-window-created", (e, wnd) => {
+	if (!isMac) {
+		wnd.removeMenu();
+	}
+	
+	// https://github.com/electron/electron/issues/42055
+	wnd.webContents.on('devtools-opened', () => {
+		const css = `
+			:root {
+				--sys-color-base: var(--ref-palette-neutral100);
+				--source-code-font-family: consolas !important;
+				--source-code-font-size: 12px;
+				--monospace-font-family: consolas !important;
+				--monospace-font-size: 12px;
+				--default-font-family: system-ui, sans-serif;
+				--default-font-size: 12px;
+				--ref-palette-neutral99: #ffffffff;
+			}
+			.theme-with-dark-background {
+				--sys-color-base: var(--ref-palette-secondary25);
+			}
+			body {
+				--default-font-family: system-ui,sans-serif;
+			}
+		`;
+		wnd.webContents.devToolsWebContents.executeJavaScript(`
+			const overriddenStyle = document.createElement('style');
+			overriddenStyle.innerHTML = '${css.replaceAll('\n', ' ')}';
+			document.body.append(overriddenStyle);
+			document.querySelectorAll('.platform-windows').forEach(el => el.classList.remove('platform-windows'));
+			addStyleToAutoComplete();
+			const observer = new MutationObserver((mutationList, observer) => {
+				for (const mutation of mutationList) {
+					if (mutation.type === 'childList') {
+						for (let i = 0; i < mutation.addedNodes.length; i++) {
+							const item = mutation.addedNodes[i];
+							if (item.classList.contains('editor-tooltip-host')) {
+								addStyleToAutoComplete();
+							}
+						}
+					}
+				}
+			});
+			observer.observe(document.body, {childList: true});
+			function addStyleToAutoComplete() {
+				document.querySelectorAll('.editor-tooltip-host').forEach(element => {
+					if (element.shadowRoot.querySelectorAll('[data-key="overridden-dev-tools-font"]').length === 0) {
+						const overriddenStyle = document.createElement('style');
+						overriddenStyle.setAttribute('data-key', 'overridden-dev-tools-font');
+						overriddenStyle.innerHTML = '.cm-tooltip-autocomplete ul[role=listbox] {font-family: consolas !important;}';
+						element.shadowRoot.append(overriddenStyle);
+					}
+				});
+			}
+		`);
+	});
+});
 
 function createWindow(first) {
 	//
@@ -68,7 +125,13 @@ function createWindow(first) {
 		show: !showOnceReady,
 		icon: __dirname + '/favicon.' + (isWindows ? "ico" : "png")
 	})
-	if (!isMac) wnd.removeMenu()
+
+	wnd.webContents.on('did-create-window', (childWnd) => {
+		childWnd.once('ready-to-show', () => {
+			childWnd.webContents.setZoomLevel(wnd.webContents.getZoomLevel())
+		})
+	})
+
 	activeWindows.push(wnd)
 	if (showOnceReady) {
 		wnd.once('ready-to-show', () => wnd.show())
@@ -171,6 +234,7 @@ app.on('activate', function () {
 	const ipc = electron.ipcMain
 	// https://github.com/electron/electron/issues/4349
 	ipc.on('shell-open', (e, path) => {
+		if (isWindows) path = path.replace(/\//g, "\\")
 		electron.shell.openPath(path)
 	})
 	
@@ -198,6 +262,10 @@ app.on('activate', function () {
 		}
 		wnd.setSize(width, height)
 	})
+
+	ipc.on('zoom-in', ({ sender }) => sender.setZoomLevel(sender.getZoomLevel() + 1))
+
+	ipc.on('zoom-out', ({ sender }) => sender.setZoomLevel(sender.getZoomLevel() - 1))
 	
 	ipc.on('add-recent-document', (e, path) => {
 		if (isWindows) path = path.replace(/\//g, "\\")

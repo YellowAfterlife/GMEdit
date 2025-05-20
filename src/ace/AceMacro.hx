@@ -1,4 +1,5 @@
 package ace;
+import haxe.extern.EitherType;
 import haxe.io.Path;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -22,9 +23,25 @@ class AceMacro {
 		return macro $v{pretty};
 	}
 	
-	public static macro function rxRule(tk:ExprOf<Dynamic>, rx:ExprOf<EReg>, ?nx:Expr) {
+	public static macro function rxRule(tk:ExprOf<Dynamic>, rx:ExprOf<EitherType<EReg, Array<EReg>>>, ?nx:Expr) {
 		switch (rx.expr) {
 			case EConst(CRegexp(r, o)): return macro rule($tk, $v{r}, $nx);
+			case EArrayDecl(values): {
+				var rb = new StringBuf();
+				for (ax in values) switch (ax.expr) {
+					case EConst(CRegexp(r, o)): rb.add("(" + r + ")");
+					default: throw Context.error("Expected a regular expression literal", ax.pos);
+				}
+				switch (tk.expr) {
+					case EFunction(kind, f): {
+						if (f.args.length != values.length) {
+							throw Context.error("Argument count mismatch", tk.pos);
+						}
+					}
+					default:
+				}
+				return macro rule($tk, $v{rb.toString()}, $nx);
+			};
 			default: throw Context.error("Expected a regular expression literal", rx.pos);
 		}
 	}

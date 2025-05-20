@@ -26,6 +26,7 @@ import ace.raw.*;
 import haxe.extern.EitherType;
 import tools.HighlightTools.*;
 import tools.JsTools;
+import tools.JsTools.*;
 import ui.Preferences;
 using tools.NativeString;
 using tools.NativeArray;
@@ -38,8 +39,15 @@ using tools.NativeArray;
  */
 @:expose("AceGmlHighlight")
 @:keep class AceGmlHighlight extends AceHighlight {
+	// these are done like this because app-starter loads the theme before app runs:
 	public static var useBracketDepth:Bool = (function() {
 		return Main.document.documentElement.getAttribute("data-theme-uses-bracket-depth") != null;
+	})();
+	public static var maxBracketDepth:Int = (function() {
+		var s = Main.document.documentElement.getAttribute("data-theme-max-bracket-depth");
+		var i = null;
+		if (s != null) i = Std.parseInt(s);
+		return i ?? 256;
 	})();
 	public static function makeRules(editor:EditCode, ?version:GmlVersion):AceHighlightRuleset {
 		if (version == null) version = GmlAPI.version;
@@ -83,16 +91,6 @@ using tools.NativeArray;
 		function mtIdent(ident:String) {
 			return AceGmlHighlightIdents.getGlobalType(ident, fieldDef);
 		}
-		function mtImport(_import, _, _pkg:String, _, _in, _, _as) {
-			return ["preproc.import",
-				"text",
-				"importfrom",
-				"text",
-				"keyword",
-				"text",
-				_pkg.endsWith(".*") ? "namespace" : "importas",
-			];
-		}
 		//
 		var rPragma_call:AceLangRule = {
 			regex: '(gml_pragma)(\\s*)(\\()(\\s*)' +
@@ -129,7 +127,24 @@ using tools.NativeArray;
 		//
 		var rDefine = rxRule(["preproc.define", "scriptname"], ~/^(#define[ \t]+)(\w+)/);
 		var rTarget = rxRule(["preproc.target"], ~/^(#target[ \t]+)/);
-		var rPragma = rxRule(["preproc.pragma", "keyword", "string"], ~/^(#pragma\b[ \t]*)(\w*[ \t]*)(.*)/);
+		var rPragma = rxRule(["preproc.pragma", "keyword", "string"], ~/(#pragma\b[ \t]*)(\w*[ \t]*)(.*)/);
+		var rActionWith = rxRule(function(start, with, s1, obj, s2, command) {
+			return [
+				"preproc.action",
+				"keyword",
+				"text",
+				obj == "self" || obj == "other" ? "keyword" : AceGmlHighlightIdents.getGlobalType(obj, "text"),
+				"text",
+				"actionname",
+			];
+		}, [
+			~/#action\b[ \t]*/,
+			~/with\b/, 
+			~/\s*/,
+			~/\w*/,
+			~/\s*/,
+			~/\w*/,
+		]);
 		var rAction = rxRule(["preproc.action", "actionname"], ~/^(#action\b[ \t]*)(\w*)/);
 		var rKeyEvent = rulePairs([
 			"^#event", "preproc.event",
@@ -146,6 +161,15 @@ using tools.NativeArray;
 			~/^(#moment[ \t]+)(\d+)(.*)/
 		);
 		var rSection = rxRule(["preproc.section", "sectionname"], ~/^(#section[ \t]*)(.*)/);
+		var rWith = rxRule(function(s, obj) {
+			var tt:AceTokenType;
+			if (obj == "self" || obj == "other") {
+				tt = "keyword";
+			} else {
+				tt = AceGmlHighlightIdents.getGlobalType(obj, "text");
+			}
+			return ["preproc.section", tt];
+		}, ~/^(#with[ \t]*)(\w*)/);
 		var commentDocLineType:String = "comment.doc.line";
 		//
 		var rGmlComment = (fakeMultiline
@@ -181,7 +205,12 @@ using tools.NativeArray;
 			fakeMultiline
 				? rxRule("comment", ~/\/\*.*?(?:\*\/|$)/)
 				: rxPush("comment", ~/\/\*/, "gml.comment"),
-			rDefine, rAction, rKeyEvent, rEvent, rEventBlank, rMoment, rTarget,
+			// #stuff:
+			rDefine,
+			rActionWith, rAction,
+			rKeyEvent, rEvent, rEventBlank,
+			rMoment,
+			rTarget,
 		].concat(version.config.hasPragma ? [rPragma] : []).concat([
 			//rxRule(["keyword", "text", "local"], ~/(static)(\s+)([_a-zA-Z]\w*)/),
 			//{ macros
@@ -219,13 +248,16 @@ using tools.NativeArray;
 			//
 			rxRule(["preproc.hyper", "comment.hyper"], ~/(#hyper\b)(.*)/),
 			rxRule(["preproc.lambda", "text", "scriptname"], ~/(#(?:lambda|lamdef)\b)([ \t]*)(\w*)/),
-			rxRule("preproc.gmcr", ~/#gmcr\b/),
+			rxRule(["preproc.gmcr", "regionname"], ~/(#gmcr)\b(.*)/),
 		]); //}
-		if (version.config.hasRegions) { // regions
+		// regions
+		if (version.config.hasRegions) {
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#region[ \t]*)(.*)/));
 			rBase.push(rxRule(["preproc.region", "regionname"], ~/(#endregion[ \t]*)(.*)/));
 		}
 		rBase.push(rSection); // only used in v2 for object info
+		if (version.config.hasEventSections) rBase.push(rWith);
+		//
 		if (version.hasStringEscapeCharacters()) {
 			rBase.push(rxPush("string", ~/"/, "gml.string.esc"));
 		} else {
@@ -241,12 +273,16 @@ using tools.NativeArray;
 		if (version.hasTemplateStrings()) {
 			rBase.push(rxPush("string", ~/`/, "gml.string.tpl"));
 		}
+		if (version.hasQuoteTemplateStrings()) {
+			rBase.push(rxPush("string", ~/\$"/, "gml.string.tpl.dq"));
+		}
 		//{ braces
 		var rCurlyOpen:AceLangRule = {
 			regex: "\\{",
 			onMatch: function(value:String, state:AceLangRuleState, stack, line, row) {
 				if (useBracketDepth) {
-					return "curly.paren.lparen.depth" + AceGmlState.getDepth(state);
+					return "curly.paren.lparen.depth"
+						+ (AceGmlState.getDepth(state) % maxBracketDepth);
 				}
 				return "curly.paren.lparen";
 			},
@@ -261,7 +297,8 @@ using tools.NativeArray;
 			regex: "\\}",
 			onMatch: function(value:String, state:AceLangRuleState, stack, line, row) {
 				if (useBracketDepth) {
-					return "curly.paren.rparen.depth" + (AceGmlState.getDepth(state) - 1);
+					return "curly.paren.rparen.depth"
+						+ ((AceGmlState.getDepth(state) - 1) % maxBracketDepth);
 				}
 				return "curly.paren.rparen";
 			},
@@ -281,9 +318,10 @@ using tools.NativeArray;
 			]);
 		}
 		rBase = rBase.concat([ //{
-			rxRule("numeric", ~/\$[0-9a-fA-F]+/), // $c0ffee
-			rxRule("numeric", ~/0x[0-9a-fA-F]*/), // 0xc0ffee
-			rxRule("numeric", ~/\d+(?:\.\d*)?/), // 42.5 (GML has no E# suffixes)
+			rxRule("numeric", ~/\$[_0-9a-fA-F]+/), // $c0ffee
+			rxRule("numeric", ~/0x[_0-9a-fA-F]*/), // 0xc0ffee
+			rxRule("numeric", ~/0b[_01]*/), // 0b101
+			rxRule("numeric", ~/\d[\d_]*(?:\.[\d_]*)?/), // 42.5 (GML has no E# suffixes)
 			rxRule("constant.boolean", ~/(?:true|false)\b/),
 			rxPush(["keyword", "text", "enum"], ~/(enum)(\s+)(\w+)/, "gml.enum"),
 			rxRule(function(goto, _, label) {
@@ -385,6 +423,7 @@ using tools.NativeArray;
 				~/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
 			),
 		];
+		//
 		function getNamespaceType(name:String) {
 			var ns = GmlAPI.gmlNamespaces[name];
 			return JsTools.orx(
@@ -393,6 +432,29 @@ using tools.NativeArray;
 				"text"
 			);
 		}
+		var rCommentDoc = rComment.concat([
+			rxRule(function(meta, _, type1, _, keyword, _, type2) {
+				var t1 = getNamespaceType(type1);
+				var t2 = getNamespaceType(type2);
+				var dt = commentDocLineType;
+				return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
+			}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
+			rxRule(function(meta, _, prop, _, val) {
+				var dt = commentDocLineType;
+				var valid = parsers.linter.misc.GmlLinterJSDocFlag.map.exists(prop);
+				var kt = valid ? "linterflag" : "linterflag.typeerror";
+				var vt = switch (val) {
+					case "true", "false": "constant.boolean";
+					case "default": "keyword";
+					default: "typeerror";
+				}
+				if (prop == "") dt = "linterflag";
+				return ["comment.meta", dt, kt, dt, vt];
+			}, ~/(@lint)(\s*)(\w*)(\s*)(\w*)/),
+			rxRule("curly.paren.lparen", ~/\{$/),
+			rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
+			rule("comment.meta", "@(?:\\w+|$)"),
+		]);
 		//}
 		//{ string-based
 		var rPragma_sq = [rule("string", "'", "pop")].concat(rBase);
@@ -405,6 +467,17 @@ using tools.NativeArray;
 			rxRule("string", ~/.*?["]/, "pop"),
 			rxRule("string", ~/.+/),
 		];
+		var rString_esc = [ //{ GMS2 strings with escape characters
+			rule("string.escape", "\\\\(?:"
+				+ "x[0-9a-fA-F]{2}|" // \x41
+				+ "u[0-9a-fA-F]{4}|" // \u1234
+				// there's also octal which doesn't work (?)
+			+ ".)"),
+			// (this is to allow escaping linebreaks, which is honestly a strange thing)
+			({ token : "string", regex : "\\\\$", consumeLineEnd : true }:AceLangRule),
+			rule("string", '"|$', "pop"),
+			rdef("string"),
+		]; //}
 		var rString_tpl_id:AceLangRule = {
 			regex: "(\\$)([a-zA-Z_]\\w*)",
 			onMatch: function(
@@ -422,6 +495,9 @@ using tools.NativeArray;
 			rxRule("string", ~/[`]/, "pop"),
 			rdef("string"),
 		];
+		var rString_tpl_dq = [
+			rxPush(["curly.paren.lparen"], ~/(\{)/, "gml.tpl"),
+		].concat(rString_esc);
 		if (fakeMultiline) {
 			var eol = rule("string", ".*?$", "pop");
 			rPragma_sq.unshift(eol);
@@ -429,6 +505,7 @@ using tools.NativeArray;
 			rString_sq.insert(1, eol);
 			rString_dq.insert(1, eol);
 			rString_tpl.insert(1, eol);
+			rString_tpl_dq.insert(1, eol);
 		}
 		//}
 		//{ #mfunc
@@ -510,20 +587,11 @@ using tools.NativeArray;
 				rule("impfield", "@\\w+"),
 				rule("text", "[ \t]*$", "pop"),
 			].concat(rBase), //}
-			"gml.string.esc": [ //{ GMS2 strings with escape characters
-				rule("string.escape", "\\\\(?:"
-					+ "x[0-9a-fA-F]{2}|" // \x41
-					+ "u[0-9a-fA-F]{4}|" // \u1234
-					// there's also octal which doesn't work (?)
-				+ ".)"),
-				// (this is to allow escaping linebreaks, which is honestly a strange thing)
-				({ token : "string", regex : "\\\\$", consumeLineEnd : true }:AceLangRule),
-				rule("string", '"|$', "pop"),
-				rdef("string"),
-			], //}
+			"gml.string.esc": rString_esc,
 			"gml.string.sq": rString_sq,
 			"gml.string.dq": rString_dq,
 			"gml.string.tpl": rString_tpl,
+			"gml.string.tpl.dq": rString_tpl_dq,
 			"gml.tpl": [ // values inside template strings
 				rxPush("curly.paren.lparen", ~/\{/, "gml.tpl"),
 				rxRule("curly.paren.rparen", ~/\}/, "pop")
@@ -538,28 +606,7 @@ using tools.NativeArray;
 				rxRule("comment.line", ~/$/, "pop"),
 				rdef("comment.line"),
 			]), //}
-			"gml.comment.doc.line": rComment.concat([ //{
-				rxRule(function(meta, _, type1, _, keyword, _, type2) {
-					var t1 = getNamespaceType(type1);
-					var t2 = getNamespaceType(type2);
-					var dt = commentDocLineType;
-					return ["comment.meta", dt, t1, dt, "keyword", dt, t2];
-				}, ~/(@hint)(\s+)(\w+)(\s+)(extends|implements)(\b\s*)(\w*)/),
-				rxRule(function(meta, _, prop, _, val) {
-					var dt = commentDocLineType;
-					var valid = parsers.linter.misc.GmlLinterJSDocFlag.map.exists(prop);
-					var kt = valid ? "linterflag" : "linterflag.typeerror";
-					var vt = switch (val) {
-						case "true", "false": "constant.boolean";
-						case "default": "keyword";
-						default: "typeerror";
-					}
-					if (prop == "") dt = "linterflag";
-					return ["comment.meta", dt, kt, dt, vt];
-				}, ~/(@lint)(\s*)(\w*)(\s*)(\w*)/),
-				rxRule("curly.paren.lparen", ~/\{$/),
-				rxPush("curly.paren.lparen", ~/\{/, "gml.comment.doc.curly"),
-				rule("comment.meta", "@(?:\\w+|$)"),
+			"gml.comment.doc.line": rCommentDoc.concat([ //{
 				rxRule((_) -> commentDocLineType, ~/$/, "pop"),
 				rdef("comment.doc.line"),
 			]), //}
@@ -585,9 +632,9 @@ using tools.NativeArray;
 				rxRule("comment", ~/.*?\*\//, "pop"),
 				rxRule("comment", ~/.+/)
 			]), //}
-			"gml.comment.doc": rComment.concat(rCommentPop).concat([
+			"gml.comment.doc": rCommentDoc.concat(rCommentPop).concat([
 				rxRule("comment.doc", ~/.*?\*\//, "pop"),
-				rxRule("comment.doc", ~/.+/)
+				rdef("comment.doc")
 			]),
 			"gml.comment.gml": rCommentPop.concat([
 				rxRule("comment", ~/.*?\*\//, "pop"),

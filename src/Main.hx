@@ -3,23 +3,16 @@ package;
 import ace.*;
 import ace.AceWrap;
 import electron.*;
-import electron.Dialog;
 import gml.*;
 import shaders.*;
 import file.kind.misc.KPlain;
-import haxe.io.Path;
-import js.Lib;
 import tools.*;
 import js.html.Console;
-import js.html.DivElement;
-import js.html.DragEvent;
-import js.html.Element;
 import js.html.HTMLDocument;
-import js.html.KeyboardEvent;
 import js.html.Window;
+import js.lib.Function;
 import parsers.GmlEvent;
 import plugins.PluginManager;
-import tools.HtmlTools;
 import ui.ChromeTabs;
 import ui.*;
 #if gmedit.live
@@ -38,11 +31,6 @@ class Main {
 	public static var window(get, never):Window;
 	private static inline function get_window() {
 		return js.Syntax.code("window");
-	}
-	//
-	public static var console(get, never):RawConsole;
-	private static inline function get_console() {
-		return js.Syntax.code("console");
 	}
 	//
 	public static var document(get, never):HTMLDocument;
@@ -84,8 +72,8 @@ class Main {
 					for (v in infos.customParams) out.push(v);
 				}
 			}
-			var console = window.console;
-			Reflect.callMethod(console, console.log, out);
+			Console.log(out);
+			//(cast Console.log:Function).apply(js.Browser.console, out);
 		};
 		Electron.init();
 		yy.YyJsonPrinter.init();
@@ -141,12 +129,13 @@ class Main {
 		ProjectStyle.init();
 		FileDrag.init();
 		ChromeTabs.init();
+		PluginManager.initApi();
 		Project.init();
 		aceEditor.statusBar.update();
+		Project.nameNode.innerText = "Loading project...";
+		Project.openInitialProject();
 		Project.nameNode.innerText = "Loading plugins...";
-		plugins.PluginManager.init(function() {
-			Project.nameNode.innerText = "Loading project...";
-			Project.openInitialProject();
+		PluginManager.loadInstalledPlugins().then(function(_) {
 			#if gmedit.live
 				aceEditor.session = WelcomePage.init(aceEditor);
 				#if gmedit.mini
@@ -155,9 +144,9 @@ class Main {
 					LiveWeb.init();
 				#end
 			#end
-			PluginManager.dispatchInitCallbacks();
+			PluginManager.startPlugins();
 		});
-		console.log("hello!");
+		Console.log("hello!");
 		StartupTests.main();
 	}
 }

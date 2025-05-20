@@ -1,7 +1,12 @@
 function v_ternary_ident() {
-	var v = true, z = true;
+	let z = true;
+	var v;
 	v = z ? true : false;
 	v = z ? 10 : 0;
 	v = z ? noone : obj_test;
 	v = z ? obj_test : noone;
+	
+	//
+	let a = "", b = "", c = "";
+	c = !z ? a : b;
 }

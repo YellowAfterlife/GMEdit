@@ -1,5 +1,6 @@
 package electron;
 import js.html.CustomEvent;
+import js.html.Console;
 import js.html.Element;
 import js.html.FileList;
 import js.html.FormElement;
@@ -18,7 +19,7 @@ class Dialog {
 	 */
 	public static function showMessageBox(options:DialogMessageOptions, ?async:Int->Bool->Void):Int {
 		if (Electron == null) {
-			Main.console.error("Don't have a showMessageBox here");
+			Console.error("Don't have a showMessageBox here");
 			return -1;
 		} else if (async != null) {
 			Electron_Dialog.showMessageBox(options).then(function(result) {
@@ -103,7 +104,7 @@ class Dialog {
 	
 	public static function showOpenDialog(options:DialogOpenOptions, ?async:Array<String>->Void):Array<String> {
 		if (Electron == null) {
-			Main.console.log("Don't have sync showOpenDialog here");
+			Console.log("Don't have sync showOpenDialog here");
 			return null;
 		} else if (async != null) {
 			Electron_Dialog.showOpenDialog(options).then(function(result) {
@@ -126,9 +127,7 @@ class Dialog {
 					var raw = FileSystem.readFileSync(path);
 					var ua:Uint8Array = untyped Uint8Array.from(raw);
 					var abuf = ua.buffer;
-					files.push(new File(cast abuf, cast {
-						name: path
-					}));
+					files.push(new File([abuf], path));
 				}
 				func(cast files);
 			});
@@ -273,7 +272,7 @@ from DialogFilterImpl to DialogFilterImpl {
 private typedef DialogFilterImpl = {name:String, extensions:Array<String>};
 
 @:build(tools.AutoEnum.build("nq"))
-@:enum abstract DialogOpenFeature(String) from String to String {
+enum abstract DialogOpenFeature(String) from String to String {
 	var openFile;
 	var openDirectory;
 	var multiSelections;
@@ -330,7 +329,7 @@ typedef DialogMessageOptions = {
 	?noLink:Bool,
 };
 @:build(tools.AutoEnum.build("lq"))
-@:enum abstract DialogMessageType(String) from String to String {
+enum abstract DialogMessageType(String) from String to String {
 	var None;
 	/** On Windows, "question" displays the same icon as "info" */
 	var Info;

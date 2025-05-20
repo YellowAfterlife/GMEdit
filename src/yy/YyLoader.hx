@@ -5,6 +5,7 @@ import electron.FileWrap;
 import gml.GmlAPI;
 import gml.Project;
 import js.lib.RegExp;
+import js.html.Console;
 import synext.GmlExtLambda;
 import parsers.GmlSeeker;
 import haxe.io.Path;
@@ -36,9 +37,11 @@ class YyLoader {
 	
 	static var itemsToInsert:Array<{item:TreeViewElement,dir:TreeViewDir}> = null;
 	
+	static var rxV23 = new RegExp('"resourceType":[ ]*"GMProject"');
 	public static inline function isV23(yypContent:String) {
-		return yypContent.contains('"resourceType": "GMProject"');
+		return yypContent.contains('"resourceType":') && rxV23.test(yypContent);
 	}
+	
 	static var assetColours:Dictionary<Array<String>> = new Dictionary();
 	public static function applyAssetColour(el:TreeViewElement, path:String) {
 		var colors = assetColours[path.ptNoBS()];
@@ -73,11 +76,31 @@ class YyLoader {
 		if (project.isGMS23) {
 			var metaData = yyProject.MetaData;
 			if (metaData != null && metaData.IDEVersion != null) {
-				project.isGM2022 = new RegExp("^20\\d{2}\\.").test(metaData.IDEVersion);
+				var mt = new RegExp("^(20\\d{2})\\.(\\d+)?").exec(metaData.IDEVersion);
+				var year = null, mon = null;
+				if (mt != null) {
+					year = Std.parseInt(mt[1]);
+					mon = Std.parseInt(mt[2]);
+				}
+				if (year == null) year = 0;
+				if (mon == null) mon = 0;
+				project.isGM2022 = year >= 2022;
+				project.isGM2023 = year >= 2023;
+				project.isGM2024 = year >= 2024 || yyProjectTxt.contains("\"$GMProject\":");
+				project.isGM2024_8 = project.isGM2024 && mon >= 8;
+				project.usesResourceOrderFile = project.isGM2023 && project.existsSync(project.getResourceOrderFilePath());
 				project.yyResourceVersion = try {
 					Std.parseFloat(yyProject.resourceVersion);
 				} catch (x:Dynamic) 1.0;
 			}
+		}
+		//
+		var resourceOrder:YyResourceOrderSettings = null;
+		if (project.usesResourceOrderFile) try {
+			resourceOrder = project.readYyFileSync(project.getResourceOrderFilePath());
+		} catch (x:Dynamic) {
+			Console.error("Failed to read resource order file:", x);
+			project.usesResourceOrderFile = false;
 		}
 		//
 		assetColours = new Dictionary();
@@ -111,7 +134,12 @@ class YyLoader {
 			}
 			//
 			var folderDir = TreeView.makeAssetDir(folder.name, folderPath + "/", "mixed");
-			folderDir.yyOrder = folder.order;
+			var folderOrder = folder.order ?? 0;
+			if (resourceOrder != null) {
+				var folder2 = resourceOrder.FolderOrderSettings.findFirst((f)->f.path == folderPathYY);
+				if (folder2 != null) folderOrder = folder2.order;
+			}
+			folderDir.yyOrder = folderOrder;
 			folderMap[folderPath] = folderDir;
 			folderPairs.push({
 				dir: folderDir,
@@ -140,24 +168,35 @@ class YyLoader {
 			var parentPath = folderPath.substring(0, lastSlash);
 			var parentDir = folderMap[parentPath];
 			if (parentDir == null) {
-				Main.console.log("Folder without parent", folderPath);
+				Console.log("Folder without parent", folderPath);
 				continue;
 			}
 			if (parentDir == pair.dir) continue;
 			TreeView.insertSorted(parentDir, pair.dir);
 		}
-		if (true) {
-			var ccs = TreeView.makeAssetItem("roomCreationCodes",
-				project.name, project.path, "roomccs");
-			ccs.removeAttribute(TreeView.attrThumb);
-			ccs.yyOpenAs = KYyRoomCCs.inst;
-			ccs.yyOrder = -1;
-			var ccsPar:TreeViewDir = JsTools.orx(
+		inline function getRoomsFolder():TreeViewDir {
+			return JsTools.orx(
 				folderMap["folders/Rooms"],
 				folderMap["folders/rooms"],
 				topLevel
 			);
-			ccsPar.treeItems.appendChild(ccs);
+		}
+		if (true) { // RoomOrder
+			var ord = TreeView.makeAssetItem("Room Order",
+				project.name, project.path, "roomorder"
+			);
+			ord.removeAttribute(TreeView.attrThumb);
+			ord.yyOpenAs = KYyRoomOrder.inst;
+			ord.yyOrder = -1;
+			getRoomsFolder().treeItems.appendChild(ord);
+		}
+		if (true) { // RoomCCs
+			var ccs = TreeView.makeAssetItem("Room Creation Codes",
+				project.name, project.path, "roomccs");
+			ccs.removeAttribute(TreeView.attrThumb);
+			ccs.yyOpenAs = KYyRoomCCs.inst;
+			ccs.yyOrder = -1;
+			getRoomsFolder().treeItems.appendChild(ccs);
 		}
 		if (project.existsSync("#import")) {
 			var idir = TreeView.makeAssetDir("Imports", "#import/", "file");
@@ -175,6 +214,25 @@ class YyLoader {
 			}
 			topLevel.treeItems.appendChild(idir);
 		}
+		if (project.existsSync("options")) {
+			var optDir = TreeView.makeAssetDir("Options", "options/", "options");
+			for (item in project.readdirSync("options")) {
+				if (!item.isDirectory) continue;
+				for (subitem in project.readdirSync(item.relPath)) {
+					if (subitem.isDirectory) continue;
+					if (subitem.relPath.ptExt() != "yy") continue;
+					var optItem = TreeView.makeAssetItem(
+						item.relPath.ptName(),
+						subitem.relPath,
+						subitem.fullPath,
+						"options",
+					);
+					optItem.yyOpenAs = file.kind.misc.KJavaScript.inst;
+					optDir.treeItems.appendChild(optItem);
+				}
+			}
+			topLevel.treeItems.appendChild(optDir);
+		}
 		// restoreOpen runs in Project:reload
 		project.yyObjectNames = new Dictionary();
 		project.yyObjectGUIDs = new Dictionary();
@@ -187,7 +245,7 @@ class YyLoader {
 		for (resource in yyProject.resources) {
 			var resPath = resource.id.path;
 			var resName = resource.id.name;
-			project.yyOrder[resName] = resource.order;
+			project.yyOrder[resName] = resource.order ?? 0;
 			// get rid of this mess later
 			project.yyResources[resName] = resource;
 			project.yyResourceGUIDs[resName] = cast resName;
@@ -198,6 +256,9 @@ class YyLoader {
 				project.yyObjectGUIDs[resName] = cast resName;
 			}
 		}
+		if (resourceOrder != null) for (ordItem in resourceOrder.ResourceOrderSettings) {
+			project.yyOrder[ordItem.name] = ordItem.order;
+		}
 		//
 		for (resource in yyProject.resources) {
 			GmlSeeker.run(resource.id.path, resource.id.name, KYyUnknown.inst);
@@ -205,6 +266,13 @@ class YyLoader {
 		project.yyTextureGroups = new Array();
 		for (texturepage in yyProject.TextureGroups) {
 			project.yyTextureGroups.push(texturepage.name);
+		}
+		//
+		if (yyProject.AudioGroups != null) for (ag in yyProject.AudioGroups) {
+			GmlAPI.gmlKind[ag.name] = "asset.audio_group";
+			var ac = new AceAutoCompleteItem(ag.name, "audio_group");
+			GmlAPI.gmlAssetComp[ag.name] = ac;
+			GmlAPI.gmlComp.push(ac);
 		}
 	}
 }

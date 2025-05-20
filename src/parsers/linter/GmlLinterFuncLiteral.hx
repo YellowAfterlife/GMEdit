@@ -9,6 +9,7 @@ import tools.Aliases;
 import tools.Dictionary;
 import tools.JsTools;
 import tools.macros.GmlLinterMacros.*;
+using gml.type.GmlTypeTools;
 
 /**
  * ...
@@ -19,18 +20,38 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 	public var doc:GmlFuncDoc;
 	public var selfOverride:GmlType;
 	
+	static var defaultOptions:GmlLinterFuncLiteralOptions = {};
 	public function read(oldDepth:Int, isFunc:Bool, isStat:Bool, ?options:GmlLinterFuncLiteralOptions):FoundError {
 		var name = "function";
 		var isTopLevel = isFunc && isStat && oldDepth == 2 && linter.functionsAreGlobal;
-		var arrowOpts = options != null ? options.arrowFunc : null;
+		if (options == null) options = defaultOptions;
+		var arrowOpts = options.arrowFunc;
+		var targetType = options.targetType;
+		var templateTypes = options.templateTypes;
+		var targetArgTypes:Array<GmlType> = null;
+		if (targetType != null) {
+			var mappedType = targetType;
+			if (templateTypes != null) {
+				mappedType = mappedType.mapTemplateTypes(templateTypes);
+			}
+			switch (mappedType) {
+				case TInst(_, tp, KFunction | KConstructor) if (tp.length > 0):
+					targetArgTypes = tp.slice(0, tp.length - 1);
+				default:
+			}
+		}
 		//
-		var hasName = arrowOpts == null && peek() == KIdent;
+		var hasName = arrowOpts == null && peek() == LKIdent;
 		if (hasName) {
 			skip();
 			name = nextVal;
 			if (isTopLevel) context = name;
 		}
 		var globalDoc = isTopLevel && hasName ? gml.GmlAPI.gmlDoc[name] : null;
+		var globalDocArgTypes = globalDoc != null ? globalDoc.argTypes : null;
+		var globalDocArgOffset = globalDoc != null && tools.NativeString.startsWith(
+			globalDoc.post, GmlFuncDoc.parRetArrow + synext.GmlExtCoroutines.arrayTypeResultName
+		) ? 1 : 0;
 		var doc = new GmlFuncDoc(name, "(", ")", [], false);
 		var nextLocalType = isTopLevel ? "local" : "sublocal";
 		//
@@ -64,12 +85,17 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 					var t = GmlTypeDef.parse(argTypeStr);
 					procArgTypePost(arrowOpts.firstArgName, t, argTypeStr);
 				} else {
-					procArgTypePost(arrowOpts.firstArgName, null, null);
+					var firstTargetArgType = targetArgTypes != null ? targetArgTypes[0] : null;
+					if (firstTargetArgType != null) {
+						procArgTypePost(arrowOpts.firstArgName, firstTargetArgType, null);
+					} else {
+						procArgTypePost(arrowOpts.firstArgName, null, null);
+					}
 				}
 			}
 		}
 		if (wantPar == null) { // let's ponder whether we want (...args)
-			if (skipIf(peek() == KParOpen)) {
+			if (skipIf(peek() == LKParOpen)) {
 				wantPar = true;
 			} else if (isFunc) {
 				return readExpect("function literal arguments");
@@ -80,9 +106,9 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 			var reader = reader;
 			while (reader.loop) {
 				switch (next()) {
-					case KParOpen, KSqbOpen, KCubOpen: depth++;
-					case KParClose, KSqbClose, KCubClose: if (--depth <= 0) break;
-					case KIdent: {
+					case LKParOpen, LKSqbOpen, LKCubOpen: depth++;
+					case LKParClose, LKSqbClose, LKCubClose: if (--depth <= 0) break;
+					case LKIdent: {
 						if (awaitArgName) {
 							var argName = nextVal;
 							var argIndex = doc.args.length;
@@ -90,19 +116,23 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 							doc.args.push(argName);
 							var argTypeStr = null;
 							var t:GmlType;
-							if (skipIf(peek() == KColon)) {
+							if (skipIf(peek() == LKColon)) {
+								// arg:type
 								rc(linter.readTypeName());
 								argTypeStr = GmlLinter.readTypeName_typeStr;
 								t = GmlTypeDef.parse(argTypeStr);
 							} else {
-								if (globalDoc != null && globalDoc.argTypes != null) {
-									t = globalDoc.argTypes[argIndex];
+								if (globalDocArgTypes != null) {
+									// no :type, but we have this hinted already
+									t = globalDoc.argTypes[argIndex + globalDocArgOffset];
+								} else if (targetArgTypes != null) {
+									t = targetArgTypes[argIndex];
 								} else t = null;
 							}
 							procArgTypePost(argName, t, argTypeStr);
 						}
 					};
-					case KComma: if (depth == 1) awaitArgName = true;
+					case LKComma: if (depth == 1) awaitArgName = true;
 					default:
 				}
 			}
@@ -111,7 +141,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 		var nextFuncRetStatus = GmlLinterReturnStatus.NoReturn;
 		if (arrowOpts != null) {
 			if (arrowOpts.state != AfterArrow) {
-				if (next() != KArrowFunc) {
+				if (next() != LKArrowFunc) {
 					var ctx = switch (arrowOpts.state) {
 						case AfterColon: "because it had a (name:type)";
 						case AfterComma: "because it had comma-separated words";
@@ -123,18 +153,27 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 				}
 			}
 		} else {
-			if (skipIf(peek() == KArrow)) { // `->returnType`
+			if (skipIf(peek() == LKArrow)) { // `->returnType`
 				rc(linter.readTypeName());
 				doc.returnTypeString = GmlLinter.readTypeName_typeStr;
 				nextFuncRetStatus = (doc.returnType.getKind() == KVoid ? WantNoReturn : WantReturn);
 			}
-			if (isFunc && skipIf(peek() == KColon)) { // : <parent>(...super args)
-				rc(readCheckSkip(KIdent, "a parent type name"));
-				rc(readCheckSkip(KParOpen, "opening bracket"));
+			if (isFunc && skipIf(peek() == LKColon)) { // : <parent>(...super args)
+				rc(readCheckSkip(LKIdent, "a parent type name"));
+				rc(readCheckSkip(LKParOpen, "opening bracket"));
 				rc(linter.funcArgs.read(oldDepth + 1) < 0);
 			}
 			if (isFunc) { // `function() constructor`?
-				skipIf(peek() == KIdent && nextVal == "constructor");
+				if (skipIf(peek() == LKIdent && nextVal == "constructor")) {
+					doc.isConstructor = true;
+					doc.hasReturn = true;
+					doc.returnTypeString = "any";
+					nextFuncRetStatus = WantNoReturnConstructor;
+					if (!hasName) {
+						// An anonymous constructor! Good luck with that
+						selfOverride = GmlTypeDef.any;
+					}
+				}
 			}
 		}
 		//
@@ -151,7 +190,7 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 		linter.localVarTokenType = nextLocalType;
 		
 		inline function readFuncBody():FoundError {
-			if (arrowOpts == null || skipIfPeek(KSemico) || peek() == KCubOpen) {
+			if (arrowOpts == null || skipIfPeek(LKSemico) || peek() == LKCubOpen) {
 				return readStat(0);
 			} else {
 				var trouble = readExpr(0);
@@ -197,7 +236,9 @@ typedef GmlLinterFuncLiteralOptions = {
 		state:GmlLinterFuncLiteralArgsArrowState,
 		firstArgName:String,
 		?retType:GmlType,
-	}
+	},
+	?targetType:GmlType,
+	?templateTypes:Array<GmlType>,
 };
 enum abstract GmlLinterFuncLiteralArgsArrowState(Int) {
 	var AfterColon;

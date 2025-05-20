@@ -1,4 +1,5 @@
 package ui.preferences;
+import tools.NativeString;
 import electron.Electron;
 import electron.FileWrap;
 import js.html.Element;
@@ -9,6 +10,7 @@ import gml.Project;
 import ui.RecentProjects;
 import ui.preferences.PrefData;
 using tools.HtmlTools;
+using tools.NativeString;
 
 /**
  * ...
@@ -42,6 +44,15 @@ class PrefNav {
 			+ " at cost of not reflecting any potential changes to sprites"
 		);
 		//
+		addIntInput(out, "Batch size for indexing/project search", current.assetIndexBatchSize, function(n) {
+			current.assetIndexBatchSize = n;
+			save();
+		}).title = (
+			"Higher values speed up loading/searching times on big projects, but going too high"
+			+ " may cause load/search errors due to running out of file descriptors."
+			+ " Note that this is measured in assets rather than files due to implementation details."
+		);
+		//
 		var assetOrder23 = [
 			"Custom order (as authored)",
 			"Ascending (A-Z)",
@@ -57,6 +68,45 @@ class PrefNav {
 	}
 	static function buildChromeTabs(out:Element) {
 		PrefNavTabs.build(out);
+	}
+	static function buildCaching(out:Element) {
+		var g = addGroup(out, "Asset caching");
+		addWiki(g, "https://github.com/YellowAfterlife/GMEdit/wiki/preferences#asset-caching");
+		//
+		var cbIndex:InputElement = null;
+		addCheckbox(g, "Cache text files in memory after load",
+			current.assetCache,
+		function(v) {
+			current.assetCache = v;
+			if (cbIndex != null) cbIndex.disabled = !v;
+			save();
+		});
+		//
+		var ctrIndex = addCheckbox(g, "And cache small text files in a combined \"index\" file on disk",
+			current.diskAssetCache.enabled, andSave(v -> current.diskAssetCache.enabled = v)
+		);
+		cbIndex = ctrIndex.querySelectorAuto("input");
+		if (cbIndex != null) cbIndex.disabled = !current.assetCache;
+		//
+		addIntInput(g, "Maximum size per item (in characters)",
+			current.diskAssetCache.maxSizePerItem,
+			andSave(v -> current.diskAssetCache.maxSizePerItem = v)
+		);
+		addIntInput(g, "Minimum item count in \"index\" file",
+			current.diskAssetCache.minItemCount,
+			andSave(v -> current.diskAssetCache.minItemCount = v)
+		);
+		addFloatInput(g, "Index update threshold (in %)",
+			current.diskAssetCache.cacheUpdateThreshold,
+			andSave(v -> current.diskAssetCache.cacheUpdateThreshold = v)
+		);
+		addInput(g, "File extensions (e.g. `gml; yy`)",
+			current.diskAssetCache.fileExtensions.join("; "),
+			function(str) {
+				var vals = str.split(";").map(v -> v.trimBoth().toLowerCase());
+				current.diskAssetCache.fileExtensions = vals;
+			}
+		);
 	}
 	static function buildFiles(out:Element) {
 		out = addGroup(out, "File handling");
@@ -97,9 +147,9 @@ class PrefNav {
 		addCheckbox(out, "Close associated tab(s) when deleting a resource in GMEdit", current.closeTabsOnFileDeletion, function(v) {
 			current.closeTabsOnFileDeletion = v; save();
 		});
-		addCheckbox(out, "Cache assets in memory", current.assetCache, function(v) {
-			current.assetCache = v; save();
-		}).title = "Disabling this improves memory use at cost of longer project reloads";
+		//
+		buildCaching(out);
+		//
 		return out;
 	}
 	static function buildRecent(out:Element) {
@@ -135,9 +185,14 @@ class PrefNav {
 			+ " over the GMEdit icon (Windows-only?)"
 		);
 		//
-		addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
-			current.gmkSplitPath = v; save();
-		});
+		if (Electron != null) {
+			addInput(out, "Gmk-Splitter path (for converting GM≤8.1 projects)", current.gmkSplitPath, function(v) {
+				current.gmkSplitPath = v; save();
+			});
+			addInput(out, "GM≤8.1 extension directory", current.gmkExtensionFolder ?? "", function(v) {
+				current.gmkExtensionFolder = v; save();
+			});
+		}
 	}
 	static function buildLookup(out:Element) {
 		out = addGroup(out, "Global lookup (default: Ctrl+T)");

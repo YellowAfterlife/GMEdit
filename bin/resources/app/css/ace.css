@@ -115,9 +115,18 @@ textarea#source {
 #app .ace-tm .ace_eventkeyname {
 	color: #308;
 }
+
+#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_type,
+#app .ace-tm .ace_curly.ace_paren,
+#app .ace-tm .ace_quasi.ace_paren {
+	color: #00379B;
+}
+
 #app .ace-tm .ace_function,
 #app .ace-tm .ace_variable,
 #app .ace-tm .ace_constant,
+#app .ace-tm .ace_kwconst,
 #app .ace-tm .ace_macro,
 #app .ace-tm .ace_globalvar,
 #app .ace-tm .ace_extfunction,
@@ -149,11 +158,10 @@ textarea#source {
 #app .ace-tm .ace_script {
 	color: #990099;
 }
-#app .ace-tm .ace_keyword,
+#app .ace-tm .ace_keyword:not(.ace_kwconst),
 #app .ace-tm .ace_type,
 #app .ace-tm .ace_curly.ace_paren,
 #app .ace-tm .ace_quasi.ace_paren {
-	color: #00379B;
 	font-weight: bold;
 }
 #app .ace-tm .ace_preproc {
@@ -249,6 +257,7 @@ textarea#source {
 .ace_editor.ace_autocomplete {
 	font-family: sans-serif;
 	overflow: visible;
+	width: 25em;
 }
 .ace_editor.ace_autocomplete .ace_text-layer {
 	margin-left: 0!important;
@@ -257,7 +266,7 @@ textarea#source {
 	opacity: 1;
 	margin: 0;
 	display: inline-block;
-	width: 68px;
+	width: 6em;
 	vertical-align: bottom;
 	overflow-x: hidden;
 	text-overflow: ellipsis;

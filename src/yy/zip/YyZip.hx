@@ -1,4 +1,5 @@
 package yy.zip;
+import electron.extern.NodeBuffer;
 import gml.GmlVersion;
 import gml.Project;
 import gmx.SfGmx;
@@ -13,6 +14,7 @@ import js.lib.RegExp;
 import js.html.FormElement;
 import js.html.InputElement;
 import js.html.Blob;
+import js.html.Console;
 import tools.Dictionary;
 import tools.JsTools;
 import yy.zip.YyZipTools;
@@ -84,7 +86,7 @@ class YyZip extends Project {
 			Project.current = new YyZip(path, main, entries);
 			return true;
 		} catch (e:Dynamic) {
-			Main.console.log('Error processing YYZ ($fileName)', e);
+			Console.log('Error processing YYZ ($fileName)', e);
 			return false;
 		}
 	}
@@ -141,6 +143,9 @@ class YyZip extends Project {
 			var par = yyzDirMap[dir.dir];
 			if (par != null) par.entries.remove(dir);
 		}
+	}
+	override function readNodeFileSync(path:String):NodeBuffer {
+		throw "Not available here!";
 	}
 	override public function readTextFile(path:String, fn:Error->String->Void):Void {
 		var file = yyzFileMap[fixSlashes(path)];

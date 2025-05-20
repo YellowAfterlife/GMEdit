@@ -1,4 +1,5 @@
 package gml;
+import ui.preferences.PrefCode;
 import electron.FileSystem;
 import gml.GmlAPILoader;
 import gml.GmlEnum;
@@ -8,6 +9,7 @@ import gml.type.GmlTypeTools;
 import haxe.io.Path;
 import js.lib.RegExp;
 import js.lib.RegExp.RegExpMatch;
+import js.html.Console;
 import parsers.GmlParseAPI;
 import parsers.GmlSeekData.GmlSeekDataHint;
 import synext.GmlExtMFunc;
@@ -56,8 +58,9 @@ class GmlAPI {
 		("if|then|else|begin|end"
 		+ "|for|while|do|until|repeat|with|break|continue"
 		+ "|switch|case|default"
+		+ "|try|throw|catch|finally"
 		+ "|exit|return|wait"
-		+ "|enum|var|globalvar"
+		+ "|enum|var|globalvar|static"
 		).split("|"), true
 	);
 	
@@ -96,6 +99,9 @@ class GmlAPI {
 	public static var stdKind:Dictionary<String> = new Dictionary();
 	public static var stdTypeExists:Dictionary<Bool> = new Dictionary();
 	
+	/** "id.dsmap" -> "ds_map" */
+	public static var featherAliases:Dictionary<String> = new Dictionary();
+	
 	/** Types per built-in variable */
 	public static var stdTypes:Dictionary<GmlType> = new Dictionary();
 	
@@ -114,6 +120,7 @@ class GmlAPI {
 		stdDoc = new Dictionary();
 		stdTypes = new Dictionary();
 		stdTypeExists = new Dictionary();
+		featherAliases = new Dictionary();
 		stdComp.clear();
 		
 		stdInstComp.clear();
@@ -127,6 +134,8 @@ class GmlAPI {
 		
 		var sk = new Dictionary();
 		for (s in kwList) sk[s] = "keyword";
+		
+		PrefCode.applyConstKeywords(false, sk);
 		
 		var kw2 = version.config.additionalKeywords;
 		if (kw2 != null) for (s in kw2) sk[s] = "keyword";
@@ -142,9 +151,7 @@ class GmlAPI {
 		sk["false"] = "constant.boolean";
 		
 		for (k in GmlTypeTools.builtinTypes) {
-			switch (k) {
-				case "string", "bool": continue;
-			}
+			if (GmlTypeTools.simplenameMap[k]) continue;
 			sk[k] = "namespace";
 		}
 		stdKind = sk;
@@ -246,13 +253,13 @@ class GmlAPI {
 	
 	public static var gmlNamespaceComp:ArrayMap<AceAutoCompleteItem> = new ArrayMap();
 	
-	public static function ensureNamespace(name:String):GmlNamespace {
+	public static function ensureNamespace(name:String, ?opt:GmlEnsureNamespaceOptions):GmlNamespace {
 		var ns = gmlNamespaces[name];
 		if (ns == null) {
 			ns = new GmlNamespace(name);
 			gmlNamespaces[name] = ns;
 			gmlNamespaceComp[name] = new AceAutoCompleteItem(name, "namespace");
-			if (!gmlKind.exists(name) && !stdKind.exists(name)) gmlKind[name] = "namespace";
+			if (!gmlKind.exists(name) && !stdKind.exists(name) && opt?.setKind != false) gmlKind[name] = "namespace";
 			if (name == "instance" || name == "object") ns.isObject = true;
 		}
 		return ns;
@@ -309,7 +316,9 @@ class GmlAPI {
 			gmlAssetIDs.set(type, new Dictionary());
 		}
 		for (k in GmlTypeTools.builtinTypes) {
-			var ns = ensureNamespace(k);
+			var ns = ensureNamespace(k, {
+				setKind: !GmlTypeTools.simplenameMap[k]
+			});
 			ns.canCastToStruct = ns.name == "struct";
 			ns.noTypeRef = true;
 		}
@@ -379,3 +388,6 @@ class GmlNamespaceDef {
 	public var parents:Array<String>;
 	public function new() {}
 }
+typedef GmlEnsureNamespaceOptions = {
+	?setKind:Bool,
+};

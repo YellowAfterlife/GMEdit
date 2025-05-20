@@ -119,10 +119,9 @@
 		var mainMenu = aceEditor.contextMenu.menu;
 		var insertAt = 0;
 		while (insertAt < mainMenu.items.length) {
-			if (mainMenu.items[insertAt++].aceCommand == "selectall") break;
+			if (mainMenu.items[insertAt++].aceCommand == "popout-editor") break;
 		}
-		mainMenu.insert(insertAt, new MenuItem({type:"separator", id:"show-aside-sep"}));
-		mainMenu.insert(insertAt + 1, new MenuItem({
+		mainMenu.insert(insertAt, new MenuItem({
 			label: "Show aside",
 			id: "show-aside",
 			icon: __dirname + "/icons/silk/application_split_vertical.png",

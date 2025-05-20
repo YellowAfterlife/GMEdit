@@ -33,5 +33,7 @@ import tools.JsTools;
 	/** Returns whether `value` is an identifier (/^\w+$/) */
 	public inline function isIdent():Bool return __isIdent.test(this.value);
 	private static var __isIdent:RegExp = JsTools.rx(~/^\w+$/);
+	
+	public inline function isKeyword() return this.type.isKeyword();
 }
 typedef AceTokenImpl = { type:AceTokenType, value:String, ?index:Int, ?start:Int };

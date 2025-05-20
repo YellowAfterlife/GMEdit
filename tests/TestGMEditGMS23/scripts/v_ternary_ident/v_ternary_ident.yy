@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Highlighting",
-    "path": "folders/Scripts/Highlighting.yy",
+  "$GMScript":"",
+  "%Name":"v_ternary_ident",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_ternary_ident",
+  "parent":{
+    "name":"Highlighting",
+    "path":"folders/Scripts/Highlighting.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_ternary_ident",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

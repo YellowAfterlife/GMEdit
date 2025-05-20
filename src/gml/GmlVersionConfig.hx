@@ -19,6 +19,12 @@ typedef GmlVersionConfig = {
 	/** Display name */
 	var name:String;
 	
+	/** Whether you can do "var a = b" */
+	var hasVarDeclSet:Bool;
+	
+	/** Whether `list[|ind]` / `map[?key]` / `grid[#x, y]` are supported **/
+	var hasDsAccessors:Bool;
+	
 	/** Whether you can do "a \" b" */
 	var hasStringEscapeCharacters:Bool;
 	
@@ -28,6 +34,9 @@ typedef GmlVersionConfig = {
 	/** Whether `health: ${hp}/${maxhp}` is allowed */
 	var hasTemplateStrings:Bool;
 	
+	/** Whether $"health: {hp}/{maxhp}" is allowed (GM2023) */
+	var hasQuoteTemplateStrings:Bool;
+	
 	/** Whether 'text' is allowed */
 	var hasSingleQuotedStrings:Bool;
 	
@@ -36,6 +45,9 @@ typedef GmlVersionConfig = {
 	
 	/** Whether `#RrGgBbb` is allowed */
 	var hasColorLiterals:Bool;
+	
+	/** Whether scr_some.stativar is allowed */
+	var hasScriptDotStatic:Bool;
 	
 	/** Whether GMS2 style `/// @meta` docs are used */
 	var hasJSDoc:Bool;
@@ -87,7 +99,7 @@ typedef GmlVersionConfig = {
 	/**
 	 * 
 	 * "local": Per-file (e.g. NTT mods)
-	 * "directory": For all files inside same directory (as if they are scripts)
+	 * "directory": For all files inside the same directory (as if they are scripts)
 	 * "gms1": GameMaker Studio 1 indexer
 	 * "gms2": GameMaker Studio 2 indexer
 	 */
@@ -141,6 +153,8 @@ class GmlVersionConfigDefaults {
 			parent: null,
 			name: null,
 			//
+			hasVarDeclSet: true,
+			hasDsAccessors: true,
 			hasStringEscapeCharacters: v2,
 			hasLiteralStrings: v2,
 			hasSingleQuotedStrings: v1,
@@ -150,7 +164,9 @@ class GmlVersionConfigDefaults {
 			hasRegions: v2,
 			hasEventSections: v1,
 			hasEventActions: v1,
-			hasColorLiterals: false,
+			hasColorLiterals: v2,
+			hasScriptDotStatic: v2,
+			hasQuoteTemplateStrings: v2,
 			hasPragma: false,
 			//
 			resetLineCounterOnDefine: true,

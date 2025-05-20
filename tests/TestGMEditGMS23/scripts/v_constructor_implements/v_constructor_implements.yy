@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Constructors",
-    "path": "folders/Scripts/Linter/Constructors.yy",
+  "$GMScript":"",
+  "%Name":"v_constructor_implements",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_constructor_implements",
+  "parent":{
+    "name":"Constructors",
+    "path":"folders/Scripts/Linter/Constructors.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_constructor_implements",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

@@ -12,7 +12,7 @@ function v_func_literal_types() {
 	
 	let fii = function(a/*:int*/, b/*:int*/) {}
 	fii(1, 2);
-	fii("a", "b");
+	fii("a", "b"); ///want_warn
 	
 	let firs/*:function<int, rest<string>, void>*/ = /*#cast*/ function() {}
 	firs(); ///want_warn

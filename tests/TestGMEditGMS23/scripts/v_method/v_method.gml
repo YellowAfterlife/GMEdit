@@ -2,6 +2,7 @@
 function v_method() {
 	let a = function(_a/*:int*/) {}
 	let b = function(_b/*:string*/) {}
+	a = method([], a); ///want_warn
 	a = method({}, a);
 	a = method({}, b); ///want_warn
 	b = method({}, a); ///want_warn

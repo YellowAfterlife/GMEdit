@@ -1,0 +1,19 @@
+{
+	"parent": "gml1",
+	"name": "GameMaker 8.2 (unpacked projects)",
+	
+	"docMode": "gm82",
+	"projectMode": "gm82",
+	"indexingMode": "gm82",
+	"loadingMode": "gm82",
+	"searchMode": "gm82",
+	
+	"hasEventSections": true,
+	"hasEventActions": true,
+	"hasVarDeclSet": false,
+	"hasDsAccessors": false,
+	
+	"projectRegex": "\\.gm82$",
+	"helpURL": "http://docs.yoyogames.com/?tab=i&page=$1",
+	"helpIndex": "helpindexdat.js"
+}

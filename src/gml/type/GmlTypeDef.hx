@@ -25,7 +25,6 @@ import tools.JsTools;
 	public static var asset:GmlType = TInst("asset", [], KAsset);
 	public static var global:GmlType = TInst("global", [], KGlobal);
 	public static var anyFunction:GmlType = TInst("function", [], KFunction);
-	public static var methodSelf:GmlType = TInst("methodSelf", [], KMethodSelf);
 	
 	public static inline function arrayOf(itemType:GmlType):GmlType {
 		return TInst("array", [itemType], KArray);
@@ -53,6 +52,12 @@ import tools.JsTools;
 			GmlTypeParser.cache[name] = t;
 		}
 		return t;
+	}
+	
+	public static function simpleOf(name:String, par:Array<GmlType>):GmlType {
+		if (name == null) return null;
+		var kind = JsTools.or(@:privateAccess GmlTypeParser.kindMeta[name], KCustom);
+		return TInst(name, par, kind);
 	}
 	
 	public static function object(name:String):GmlType @:privateAccess {

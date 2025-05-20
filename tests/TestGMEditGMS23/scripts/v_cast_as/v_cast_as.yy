@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Casts",
-    "path": "folders/Scripts/Linter/Casts.yy",
+  "$GMScript":"",
+  "%Name":"v_cast_as",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_cast_as",
+  "parent":{
+    "name":"Casts",
+    "path":"folders/Scripts/Linter/Casts.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_cast_as",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

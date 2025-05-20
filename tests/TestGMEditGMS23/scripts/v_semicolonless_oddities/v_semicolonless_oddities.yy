@@ -1,12 +1,13 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "Highlighting",
-    "path": "folders/Scripts/Highlighting.yy",
+  "$GMScript":"",
+  "%Name":"v_semicolonless_oddities",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_semicolonless_oddities",
+  "parent":{
+    "name":"Highlighting",
+    "path":"folders/Scripts/Highlighting.yy",
   },
-  "resourceVersion": "1.0",
-  "name": "v_semicolonless_oddities",
-  "tags": [],
-  "resourceType": "GMScript",
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

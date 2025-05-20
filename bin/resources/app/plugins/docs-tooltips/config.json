@@ -1,0 +1,5 @@
+{
+  "name": "docs-tooltips",
+  "description": "Provides detailed tooltips with information from the latest official documentation.",
+  "scripts": ["docs-tooltips.js"]
+}

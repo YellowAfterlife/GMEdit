@@ -2,6 +2,7 @@ package yy.v22;
 import haxe.Rest;
 import tools.Dictionary;
 import yy.YyGUID;
+import js.html.Console;
 
 /**
  * ...

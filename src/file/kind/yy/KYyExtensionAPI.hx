@@ -17,7 +17,8 @@ class KYyExtensionAPI extends KGml {
 		canSyntaxCheck = false;
 	}
 	override public function loadCode(editor:EditCode, data:Dynamic):String {
-		if (data == null) data = YyJson.parse(super.loadCode(editor, data));
+		if (data == null) data = super.loadCode(editor, data);
+		if (data is String) data = YyJson.parse(data);
 		return GmlExtensionAPI.get2(data);
 	}
 	override public function saveCode(editor:EditCode, code:String):Bool {

@@ -1,11 +1,13 @@
 package ace;
 import ace.extern.AcePos;
 import ace.extern.AceToken;
+import electron.AppTools;
 import electron.Clipboard;
 import electron.Electron;
 import electron.FileWrap;
 import electron.Menu;
 import js.Promise;
+import js.html.Console;
 import tools.Dictionary;
 import ui.GlobalSearch;
 import ui.OpenDeclaration;
@@ -26,8 +28,8 @@ class AceCtxMenu {
 	public function bind(editor:AceWrap) {
 		this.editor = editor;
 		editor.contextMenu = this;
-		var pos:AcePos;
-		var tk:AceToken;
+		var pos:AcePos = null;
+		var tk:AceToken = null;
 		inline function cb():Clipboard {
 			return Electron.clipboard;
 		}
@@ -35,7 +37,7 @@ class AceCtxMenu {
 			try {
 				return editor.commands.commands[cmd].getAccelerator();
 			} catch (x:Dynamic) {
-				Main.console.log('Error retrieving accelerator for $cmd:', x);
+				Console.log('Error retrieving accelerator for $cmd:', x);
 				return null;
 			}
 		}
@@ -101,7 +103,7 @@ class AceCtxMenu {
 			tk = editor.session.getTokenAtPos(pos);
 			if (tk.value.trimBoth() == "") tk = null;
 		}
-		var findRefs = menu.appendOpt({
+		menu.appendOpt({
 			id: "open-definition",
 			label: "Open definition",
 			icon: Menu.silkIcon("brick_go"),
@@ -111,7 +113,7 @@ class AceCtxMenu {
 				if (tk != null) OpenDeclaration.proc(editor.session, pos, tk);
 			}
 		});
-		var findRefs = menu.appendOpt({
+		menu.appendOpt({
 			id: "find-references",
 			label: "Find references",
 			icon: Menu.silkIcon("find_references"),
@@ -181,16 +183,42 @@ class AceCtxMenu {
 			menu.popupAsync(ev);
 			return false;
 		});
+		//
+		menu.appendSep("sep-popout");
+		menu.appendOpt({
+			id: "popout-editor",
+			label: "Copy into New Window",
+			icon: Menu.silkIcon("application_add"),
+			click: function() {
+				var file = gml.file.GmlFile.current;
+				if (file == null) return;
+				if (file.codeEditor == null) return;
+				var p = new AcePopout();
+				file.codeEditor.acePopouts.push(p);
+				p.bind(file.codeEditor);
+			}
+		});
 	}
 	public static function initMac(editor:AceWrap) {
 		// Mac wants a menu, or you shall not be able to use Cmd+C/Cmd+V
 		// So we'll bind the one attached to main code editor, whatever
 		if (Electron == null || !FileWrap.isMac) return;
 		var menu = new Menu();
+		var editSubMenu = editor.contextMenu.menu;
+		editSubMenu.appendOpt({
+			id: "quit",
+			label: "Quit",
+			role: "quit",
+			icon: Menu.silkIcon("stop"),
+			accelerator: "command+Q",
+			click: function() {
+				AppTools.quit();
+			}
+		});
 		menu.appendOpt({
 			id: "sub-edit",
 			label: "Edit",
-			submenu: editor.contextMenu.menu,
+			submenu: editSubMenu,
 		});
 		Menu.setApplicationMenu(menu);
 	}

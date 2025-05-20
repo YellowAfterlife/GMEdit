@@ -13,6 +13,7 @@ import synext.GmlExtLambda;
 import haxe.Constraints.Function;
 import js.lib.RegExp;
 import js.Syntax;
+import js.html.Console;
 using tools.NativeString;
 
 /**
@@ -45,7 +46,7 @@ class GlobalSearchImpl {
 		if (Std.is(opt.find, RegExp)) {
 			rx = opt.find;
 			if (!rx.global) {
-				Main.console.warn("This is not a /g regexp and you are potentially in trouble.");
+				Console.warn("This is not a /g regexp and you are potentially in trouble.");
 			}
 			term = rx.toString();
 		} else {
@@ -82,8 +83,10 @@ class GlobalSearchImpl {
 		var saveItem:GlobalSearchItem;
 		var saveCtxItems:Array<GlobalSearchItem>;
 		var canLambda = pj.canLambda() && opt.expandLambdas;
+		var checkLibRes = opt.checkLibResources;
 		var lambdaGml:String = null;
 		pj.search(function(name:String, path:String, code:String) {
+			if (!checkLibRes && pj.libraryResourceMap[name]) return isRepl ? code : null;
 			var lambdaPre:GmlExtLambdaPre;
 			if (canLambda) {
 				lambdaPre = GmlExtLambda.preInit(pj);
@@ -205,6 +208,13 @@ class GlobalSearchImpl {
 							}
 						}
 					};
+					case "$".code if (!opt.checkStrings && q.isDqTplStart(version)): {
+						q.skipDqTplString(version);
+						if (q.pos > p + 1) {
+							flush(p);
+							start = q.pos;
+						}
+					}
 					case "#".code: if (p == 0 || q.get(p - 1) == "\n".code) {
 						if (q.substr(p, 6) == "#macro") {
 							if (!opt.checkMacros) {

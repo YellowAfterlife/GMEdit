@@ -1,4 +1,12 @@
 package gml;
+import gmk.snips.GmkSnipsLoader;
+import gmk.snips.GmkSnipsSearcher;
+import gml.project.ProjectFileCache;
+import js.lib.DataView;
+import js.html.Console;
+import haxe.io.Bytes;
+import haxe.io.BytesOutput;
+import electron.extern.NodeBuffer;
 import ace.extern.*;
 import electron.FileSystem;
 import electron.Electron;
@@ -24,6 +32,8 @@ import plugins.PluginEvents;
 import plugins.PluginManager;
 import ace.AceWrap;
 import gmk.*;
+import gmk.gm82.*;
+import gmk.snip.*;
 import gmx.*;
 import raw.*;
 import yy.*;
@@ -36,8 +46,10 @@ import ui.ChromeTabs;
 import ui.Preferences;
 import ui.ext.Bookmarks;
 import ui.ext.GMLive;
+import yy.YyProject.YyResourceOrderSettings;
 import yy.zip.YyZip;
 using tools.PathTools;
+using tools.NativeString;
 import gml.file.GmlFile;
 import ui.GlobalSearch;
 import ui.project.ProjectProperties;
@@ -126,13 +138,34 @@ import ui.treeview.TreeViewElement;
 
 	/** Whether this is a new-format GMS2.3+ project */
 	public var isGMS23:Bool = false;
-	
+	/** GM2022 or newer */
 	public var isGM2022:Bool = false;
+	/** GM2023 or newer */
+	public var isGM2023:Bool = false;
+	/** GM2024 or newer */
+	public var isGM2024:Bool = false;
+	/** GM2024 or newer */
+	public var isGM2024_8:Bool = false;
 	
 	/** Whether to use extended JSON syntax (int64 support, trailing commas) */
 	public var yyExtJson:Bool = false;
 	/** This will be false for 2.3 */
 	public var yyUsesGUID:Bool = true;
+	
+	public var usesResourceOrderFile:Bool = false;
+	public function getResourceOrderFilePath():String {
+		return Path.withExtension(name, "resource_order");
+	}
+	public function readResourceOrderFileSync():YyResourceOrderSettings {
+		if (!usesResourceOrderFile) return null;
+		var path = getResourceOrderFilePath();
+		if (existsSync(path)) {
+			return readYyFileSync(getResourceOrderFilePath());
+		} else return null;
+	}
+	public function writeResourceOrderFileSync(yy:YyResourceOrderSettings) {
+		if (yy != null) writeYyFileSync(getResourceOrderFilePath(), yy);
+	}
 	
 	/** name -> URL */
 	public var spriteURLs:Dictionary<String> = new Dictionary();
@@ -146,6 +179,57 @@ import ui.treeview.TreeViewElement;
 	
 	public var properties:ProjectData = cast {};
 	public var propertiesElement:DivElement = null;
+	
+	/** name -> exclude? */
+	public var libraryResourceMap:Dictionary<Bool> = new Dictionary();
+	public var libraryResourceRegex:Array<RegExp> = [];
+	public function updateLibraryResourceMap(?lrList:Array<String>) {
+		if (lrList == null) lrList = properties.libraryResources;
+		var lrMap = new Dictionary();
+		function makeRegex(pattern:String) {
+			var rs = "^" + pattern.split("*").map(NativeString.escapeRx).join(".+?") + "$";
+			return new RegExp(rs);
+		}
+		if (lrList != null) for (lrName in lrList) {
+			lrName = NativeString.trimBoth(lrName);
+			if (lrName == "") continue;
+			if (lrName.startsWith("//")) continue;
+			if (lrName.startsWith("/")) {
+				var rx = makeRegex(lrName.substring(1));
+				yyResourceTypes.forEach(function(name, type) {
+					var item:TreeViewItem = cast TreeView.find(true, { ident: name });
+					if (item == null) return;
+					var dir = item.treeParentDir;
+					if (dir == null) return;
+					//
+					var path = dir.treeRelPath;
+					if (current.isGMS23 && path.startsWith("folders/")) {
+						path = path.substring("folders/".length);
+					}
+					if (!path.endsWith("/")) path += "/";
+					path += name;
+					//
+					if (rx.test(path)) {
+						lrMap[name] = true;
+						//Console.log(path, name);
+					}
+				});
+				continue;
+			}
+			if (lrName.contains("*")) {
+				var rx = makeRegex(lrName);
+				yyResourceTypes.forEach(function(name, type) {
+					if (rx.test(name)) {
+						lrMap[name] = true;
+						//Console.log(lrName, name);
+					}
+				});
+				continue;
+			}
+			lrMap[lrName] = true;
+		}
+		libraryResourceMap = lrMap;
+	}
 	
 	/** whether X is a lambda script */
 	public var lambdaMap:Dictionary<Bool> = new Dictionary();
@@ -266,6 +350,7 @@ import ui.treeview.TreeViewElement;
 	#end
 	public function new(_path:String, _load:Bool = true) {
 		path = _path;
+		fileCache = new ProjectFileCache(this);
 		#if !gmedit.live
 		new_procSingle();
 		#end
@@ -319,7 +404,9 @@ import ui.treeview.TreeViewElement;
 			var tab:ChromeTab = cast _tab;
 			var ts = tab.gmlFile.kind.saveTabState(tab);
 			if (ts != null) {
-				if (tab.isPinned) ts.pinned = true;
+				if (tab.isPinned) {
+					ts.pinned = tab.pinLayer;
+				}
 				if (tab.isOpen) activeTab = tabs.length;
 				tabs.push(ts);
 			}
@@ -333,6 +420,7 @@ import ui.treeview.TreeViewElement;
 		};
 		PluginEvents.projectStateSave({project:this, state:data});
 		ProjectStateManager.set(path, data);
+		fileCache.onSave();
 	}
 	public var firstLoadState:ProjectState = null;
 	
@@ -340,6 +428,8 @@ import ui.treeview.TreeViewElement;
 	public function finishedIndexing() {
 		nameNode.innerText = displayName;
 		if (current.hasGMLive) GMLive.updateAll();
+		//
+		fileCache.onSave();
 		//
 		if (isGMS23) {
 			@:privateAccess YyLoader.folderMap = null;
@@ -350,6 +440,8 @@ import ui.treeview.TreeViewElement;
 				if (th != null) TreeView.setThumb(null, th, el);
 			}
 		}
+		//
+		updateLibraryResourceMap(properties.libraryResources);
 		// try restoring tabs:
 		var state = firstLoadState;
 		if (state != null) {
@@ -386,11 +478,22 @@ import ui.treeview.TreeViewElement;
 				}
 				
 				if (file != null) {
-					if (tabState.pinned) file.tabEl.classList.add("chrome-tab-pinned");
+					var pinLayerVal = tabState.pinned;
+					var pinLayer:Int;
+					if (pinLayerVal == null) {
+						pinLayer = 0;
+					} else if (pinLayerVal is Bool) {
+						pinLayer = (pinLayerVal:Bool) ? 1 : 0;
+					} else {
+						pinLayer = (pinLayerVal:Int);
+					}
+					if (pinLayer > 0) {
+						ChromeTabs.impl.setTabPinLayer(file.tabEl, pinLayer);
+					}
 					if (i == state.activeTab) activeFile = file;
 				}
 			} catch (x:Dynamic) {
-				Main.console.error("Error recovering " + path + ":", x);
+				Console.error("Error recovering " + path + ":", x);
 			}
 			if (activeFile != null) activeFile.tabEl.click();
 			//
@@ -403,6 +506,8 @@ import ui.treeview.TreeViewElement;
 			#if !gmedit.no_gmx
 			"gms1": GmxLoader.run,
 			"gmk-splitter": GmkLoader.run,
+			"gmk-snip": GmkSnipsLoader.run,
+			"gm82": Gm82Loader.run,
 			#end
 			"gms2": YyLoader.run,
 			"directory": RawLoader.run,
@@ -411,6 +516,7 @@ import ui.treeview.TreeViewElement;
 			#if !gmedit.no_gmx
 			"gms1": GmxSearcher.run,
 			"gmk-splitter": GmkSearcher.run,
+			"gmk-snip": GmkSnipsSearcher.run,
 			#end
 			"gms2": YySearcher.run,
 			"directory": RawSearcher.run,
@@ -422,7 +528,7 @@ import ui.treeview.TreeViewElement;
 	public static function openInitialProject() {
 		#if !gmedit.live
 		var path = moduleArgs["open"];
-		if (path != null) {
+		if (path != null && path != ".") {
 			var tmp = new Project("", false);
 			current = tmp;
 			window.setTimeout(function() {
@@ -456,6 +562,7 @@ import ui.treeview.TreeViewElement;
 			var state:ProjectState = null;
 			if (first) {
 				properties = ProjectProperties.load(this);
+				
 				GmlAPI.forceTemplateStrings = properties.templateStringScript != null;
 				GmlSeekData.map = new Dictionary();
 				state = ProjectStateManager.get(path);
@@ -467,6 +574,7 @@ import ui.treeview.TreeViewElement;
 					yySpriteURLs = new Dictionary();
 				}
 			}
+			fileCache.onLoad();
 			reload_1();
 			ace.AceTooltips.resetCache();
 			TreeView.restoreOpen(state != null ? state.treeviewOpenNodes : null);
@@ -491,8 +599,12 @@ import ui.treeview.TreeViewElement;
 				} else electron.IPC.send("set-taskbar-icon", null, "");
 			} catch (x:Dynamic) {}
 			
-			if (PluginManager.ready == true && version != GmlVersion.none) {
-				PluginEvents.projectOpen({project:this});
+			if (version != GmlVersion.none) {
+				if (PluginManager.isReady) {
+					PluginEvents.projectOpen({project:this});
+				} else {
+					PluginManager.dispatchProjectOpenOnReady = true;
+				}
 			}
 			ui.ProjectStyle.reload();
 		}, 1);
@@ -517,20 +629,33 @@ import ui.treeview.TreeViewElement;
 			func(this, fn, done, opt);
 		} else done();
 	}
-	//
-	public function fullPath(path:String):FullPath {
+	
+	/**
+	Returns an absolute path for the given relative path	
+	**/
+	public function fullPath(path:RelPath):FullPath {
 		if (dir != "") {
 			return (dir + "/" + path).ptNoBS();
 		} else return path;
 	}
+	
+	/**
+	Returns a relative path for the given full path.
+	If the path is not part of the project, returns null.
+	**/
 	public function relPath(path:FullPath):RelPath {
-		if (dir != "" && NativeString.startsWith(path, dir)) {
-			var p = dir.length;
-			switch (path.charCodeAt(p)) {
-				case "/".code, "\\".code: return path.substring(p + 1);
-			}
-		}
-		return path;
+		if (!Path.isAbsolute(path)) return path;
+		
+		if (dir == "") return null;
+		
+		if (NativeString.contains(path, "\\")) path = path.ptNoBS();
+		
+		if (!NativeString.startsWith(path, dir)) return null;
+		
+		var pos = dir.length;
+		if (path.charCodeAt(pos) == "/".code) {
+			return path.substring(pos + 1);
+		} else return null;
 	}
 	public function existsSync(path:String):Bool {
 		return FileSystem.existsSync(fullPath(path));
@@ -547,11 +672,19 @@ import ui.treeview.TreeViewElement;
 		if (existsSync(path)) unlinkSync(path);
 	}
 	//
-	private var fileCache:Dictionary<{data:String, mtime:Float}> = new Dictionary();
+	public function readNodeFileSync(path:String):NodeBuffer {
+		return FileSystem.readNodeFileSync(fullPath(path));
+	}
+	public function writeNodeFileSync(path:String, data:Any) {
+		FileSystem.writeFileSync(path, data);
+	}
+	//
+	private var fileCache:ProjectFileCache;
+	//
 	public function readTextFile(path:String, fn:Error->String->Void):Void {
 		if (Preferences.current.assetCache) {
 			var full = fullPath(path);
-			var pair = fileCache[path];
+			var pair = fileCache.map[path];
 			if (pair != null) {
 				FileSystem.stat(full, function(e, stat) {
 					if (e == null && stat.mtimeMs == pair.mtime) {
@@ -560,9 +693,9 @@ import ui.treeview.TreeViewElement;
 						fn(e2, text);
 						if (e2 == null) {
 							if (e == null) {
-								fileCache[path] = { data: text, mtime: stat.mtimeMs };
+								fileCache.map[path] = { data: text, mtime: stat.mtimeMs };
 							} else FileSystem.stat(full, function(e3, stat2) {
-								if (e3 == null) fileCache[path] = { data: text, mtime: stat2.mtimeMs };
+								if (e3 == null) fileCache.map[path] = { data: text, mtime: stat2.mtimeMs };
 							});
 						}
 					});
@@ -571,7 +704,7 @@ import ui.treeview.TreeViewElement;
 				FileSystem.readTextFile(full, function(e, text) {
 					fn(e, text);
 					if (e == null) FileSystem.stat(full, function(e, stat) {
-						if (e == null) fileCache[path] = { data: text, mtime: stat.mtimeMs };
+						if (e == null) fileCache.map[path] = { data: text, mtime: stat.mtimeMs };
 					});
 				});
 			}
@@ -581,15 +714,26 @@ import ui.treeview.TreeViewElement;
 		if (Preferences.current.assetCache) {
 			var full = fullPath(path);
 			var mtime = FileSystem.mtimeSync(full);
-			var pair = fileCache[path];
+			var pair = fileCache.map[path];
 			if (pair != null && pair.mtime == mtime) return pair.data;
 			var result = FileSystem.readTextFileSync(full);
-			fileCache[path] = { data: result, mtime: mtime };
+			fileCache.map[path] = { data: result, mtime: mtime };
 			return result;
 		} else return FileSystem.readTextFileSync(fullPath(path));
 	}
 	public function writeTextFileSync(path:String, text:String) {
-		FileSystem.writeFileSync(fullPath(path), text);
+		var full = fullPath(path);
+		FileSystem.writeFileSync(full, text);
+		if (Preferences.current.assetCache) {
+			var item = fileCache.map[path];
+			if (item != null) {
+				var time = FileSystem.mtimeSync(full);
+				if (time != null) {
+					item.mtime = time;
+					item.data = text;
+				}
+			}
+		}
 	}
 	//
 	public function readJsonFile<T:{}>(path:String, callback:Error->T->Void):Void {
@@ -659,7 +803,7 @@ import ui.treeview.TreeViewElement;
 				try {
 					return readJsonFileSync(full);
 				} catch (x:Dynamic) {
-					Main.console.error('Failed to read `$full`:', x);
+					Console.error('Failed to read `$full`:', x);
 				}
 			}
 		}

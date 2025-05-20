@@ -16,6 +16,7 @@ package parsers.linter;
 		requireFunctions: true,
 		checkHasReturn: true,
 		checkScriptArgumentCounts: true,
+		addMissingArgsToJSDoc: true,
 		
 		specTypeVar: false,
 		specTypeStatic: false,
@@ -30,6 +31,7 @@ package parsers.linter;
 		implicitNullableCasts: false,
 		implicitBoolIntCasts: true,
 		warnAboutRedundantCasts: false,
+		// todo: warn about mixing exit and return X; warn about not all paths returning
 		strictScriptSelf: false,
 		
 		liveCheckOnEnter: false,
@@ -52,6 +54,8 @@ typedef GmlLinterPrefsImpl = {
 	?requireFunctions:Bool,
 	?checkHasReturn:Bool,
 	?checkScriptArgumentCounts:Bool,
+	
+	?addMissingArgsToJSDoc:Bool,
 	
 	/** auto-infer for `var` */
 	?specTypeVar:Bool,
@@ -91,6 +95,9 @@ typedef GmlLinterPrefsImpl = {
 	
 	/** Whether to assume scripts without a @self to have {void} @self */
 	?strictScriptSelf:Bool,
+	
+	/** Whether to only show fields in Script.| if they have a @static JSDoc */
+	?strictStaticJSDoc:Bool,
 	
 	?liveCheckOnEnter:Bool,
 	?liveCheckOnSemico:Bool,

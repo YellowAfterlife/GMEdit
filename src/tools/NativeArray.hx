@@ -1,6 +1,7 @@
 package tools;
 
 import js.Syntax;
+import yy.YyResourceRef;
 
 /**
  * ...
@@ -12,7 +13,7 @@ import js.Syntax;
 	}
 
 	/**Create a new array from a given content*/
-	public static inline function from<T>(content: Dynamic):Array<T> {
+	@:noUsing public static inline function from<T>(content: Dynamic):Array<T> {
 		return Syntax.code("Array.from")(content);
 	}
 	
@@ -52,8 +53,12 @@ import js.Syntax;
 	}
 	
 	public static inline function forEach<T>(arr:Array<T>, fn:T->Void):Void {
-		untyped arr.forEach(fn);
+		(cast arr).forEach(fn);
 	}
+	public static inline function defaultSort<T>(arr:Array<T>) {
+		(cast arr).sort();
+	}
+	
 	public static function insertAfter<T>(arr:Array<T>, insertWhat:T, afterWhat:T):Void {
 		var i = arr.indexOf(afterWhat);
 		if (i >= 0) {
@@ -66,6 +71,42 @@ import js.Syntax;
 			arr.insert(i, insertWhat);
 		} else arr.unshift(insertWhat);
 	}
+	public static function insertAtRandom<T>(arr:Array<T>, item:T):Int {
+		var at = Std.random(arr.length + 1);
+		arr.insert(at, item);
+		return at;
+	}
+	static inline function insertSorted<T>(arr:Array<T>, item:T, getName:T->String) {
+		var pos = 0;
+		var nameLq = getName(item);
+		nameLq = nameLq.toLowerCase();
+		while (pos < arr.length) {
+			var cur = arr[pos];
+			var clq = getName(cur);
+			clq = clq.toLowerCase();
+			// TODO: but "obj_unit_mover" should come after "obj_unit"!
+			if (nameLq < clq) {
+				arr.insert(pos, item);
+				break;
+			} else pos += 1;
+		}
+		if (pos >= arr.length) {
+			arr.push(item);
+		}
+	}
+	public static function insertNameSorted<T:{name:String}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.name);
+	}
+	public static function insertPathSorted<T:{path:String}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.path);
+	}
+	public static function insertFolderPathSorted<T:{folderPath:String}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.folderPath);
+	}
+	public static function insertYyRefSorted<T:{id:YyResourceRef}>(arr:Array<T>, item:T) {
+		insertSorted(arr, item, q -> q.id.path);
+	}
+	
 	public static function replaceOne<T>(arr:Array<T>, replaceWhat:T, withWhat:T):Bool {
 		var i = arr.indexOf(replaceWhat);
 		if (i >= 0) {

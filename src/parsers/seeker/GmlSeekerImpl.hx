@@ -78,11 +78,13 @@ class GmlSeekerImpl {
 	public var isCreateEvent:Bool;
 	public var specTypeInst:Bool;
 	public var specTypeInstSubTopLevel:Bool;
+	public var strictStaticJSDoc:Bool;
 	
 	public var funcsAreGlobal:Bool;
 	public var hasFunctionLiterals:Bool;
 	public var hasTryCatch:Bool;
 	public var jsDoc:GmlSeekerJSDoc = new GmlSeekerJSDoc();
+	public var isLibraryResource:Bool;
 	
 	public var commentLineJumps = new IntDictionary<Int>();
 	
@@ -126,6 +128,7 @@ class GmlSeekerImpl {
 		canLam = !notLam && project.canLambda();
 		canDefineComp = (kind is KGml) && (cast kind:KGml).canDefineComp;
 		funcsAreGlobal = GmlFileKindTools.functionsAreGlobal(kind);
+		isLibraryResource = project.libraryResourceMap[main];
 		
 		isObject = (kind is KGmlEvents);
 		isCreateEvent = isObject && (locals.name == "create"
@@ -136,8 +139,9 @@ class GmlSeekerImpl {
 		hasFunctionLiterals = additionalKeywordsMap.exists("function");
 		hasTryCatch = additionalKeywordsMap.exists("catch");
 		
-		specTypeInst = GmlLinter.getOption((p) -> p.specTypeInst);
-		specTypeInstSubTopLevel = GmlLinter.getOption((p) -> p.specTypeInstSubTopLevel);
+		specTypeInst = GmlLinter.getOption(p -> p.specTypeInst);
+		specTypeInstSubTopLevel = GmlLinter.getOption(p -> p.specTypeInstSubTopLevel);
+		strictStaticJSDoc = GmlLinter.getOption(p -> p.strictStaticJSDoc);
 		localKind = notLam ? "local" : "sublocal";
 		if (project.properties.lambdaMode == Scripts) {
 			if (orig.contains("/" + GmlExtLambda.lfPrefix)) {
@@ -159,8 +163,11 @@ class GmlSeekerImpl {
 	public function setLookup(s:String, eol:Bool, meta:String):Void {
 		var col = eol ? null : 0;
 		var row = reader.row;
-		if (!GmlAPI.gmlLookup.exists(s)) {
-			if (s != mainTop) GmlAPI.gmlLookupItems.push({ value:s, meta:meta });
+		if (!GmlAPI.gmlLookup.exists(s)
+			&& s != mainTop
+			&& !isLibraryResource
+		) {
+			GmlAPI.gmlLookupItems.push({ value:s, meta:meta });
 		}
 		var lookup:GmlLookup = { path: orig, sub: sub, row: row, col: col };
 		if (project.isGMS23 && s == mainTop) {
@@ -183,8 +190,8 @@ class GmlSeekerImpl {
 		while (q.loop) {
 			/*//
 			if (q.pos < oldPos && debug) {
-				Main.console.warn("old", oldPos, oldSource.length);
-				Main.console.warn("new", q.pos, q.source.length, q.source == oldSource);
+				Console.warn("old", oldPos, oldSource.length);
+				Console.warn("new", q.pos, q.source.length, q.source == oldSource);
 			}
 			oldPos = q.pos;
 			oldSource = q.source;
@@ -194,7 +201,9 @@ class GmlSeekerImpl {
 			var s = find(flags);
 			if (s == null) continue;
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
-				jsDoc.proc(this, s);
+				if (s.fastCodeAt(1) == "*".code) {
+					jsDoc.procMultiLine(this, s);
+				} else jsDoc.proc(this, s);
 				continue;
 			}
 			// (known to not be JSDoc from hereafter):
