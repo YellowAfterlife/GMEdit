@@ -156,16 +156,17 @@ class GmlSeekerProcVar {
 				var oldLocalKind = seeker.localKind;
 				seeker.localKind = "sublocal";
 				GmlSeekerProcExpr.proc(seeker, name, true);
+				
 				var exprIsFunction = GmlSeekerProcExpr.isFunction;
-				if (exprIsFunction) {
-					seeker.doLoop(seeker.curlyDepth);
-				}
 				var args:String = GmlSeekerProcExpr.args;
 				var argTypes:Array<GmlType> = GmlSeekerProcExpr.argTypes;
 				var exprIsConstructor = GmlSeekerProcExpr.isConstructor;
 				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
 				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
 				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
+				if (exprIsFunction) {
+					seeker.doLoop(seeker.curlyDepth);
+				}
 				
 				inline function addFieldHint(asInst:Bool) {
 					GmlSeekerProcField.addFieldHint(seeker, exprIsConstructor, seeker.jsDoc.interfaceName,
