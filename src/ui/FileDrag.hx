@@ -53,7 +53,7 @@ class FileDrag {
 				if (GmlAPI.version == GmlVersion.none) GmlAPI.version = GmlVersion.v1;
 				GmlFile.open(Path.withoutExtension(name), path);
 			};
-			case "yyz", "zip": {
+			case "yyz", "zip", "yymps": {
 				if (file != null) {
 					var reader = new js.html.FileReader();
 					reader.onloadend = function(_) {
