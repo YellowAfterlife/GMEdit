@@ -376,6 +376,7 @@ using tools.NativeArray;
 			rxRule("punctuation.operator", ~/\?|:|,|;|\./),
 			rCurlyOpen,
 			rCurlyClose,
+			rxRule(["square.paren.lparen", "text"], ~/(\[)(\$)/),
 			rxRule("square.paren.lparen", ~/\[/),
 			rxRule("square.paren.rparen", ~/\]/),
 			rParOpen = rxRule("paren.lparen", ~/\(/),
