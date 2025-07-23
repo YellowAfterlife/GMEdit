@@ -333,7 +333,7 @@ instance_count*@:int
 instance_id*@ // TODO
 instance_find<T:object>(obj:T,n:int)->T
 instance_exists<T:object|instance>(obj:T)->bool
-instance_number<T:object>(obj:T)->bool
+instance_number<T:object>(obj:T)->int
 instance_position<T:object|instance>(x:number,y:number,obj:T)->T
 instance_nearest<T:object|instance>(x:number,y:number,obj:T)->T
 instance_furthest<T:object|instance>(x:number,y:number,obj:T)->T
@@ -1208,7 +1208,7 @@ audio_get_listener_info(index:int)->ds_map<string,any>
 #region 7.2
 
 show_message(str:string)->void
-show_message_async(str:string)->void
+show_message_async(str:string)->int
 clickable_add(x:number,y:number,spritetpe:html_clickable_tpe,URL:string,target:string,params:string)->html_clickable
 clickable_add_ext(x:number,y:number,spritetpe:html_clickable_tpe,URL:string,target:string,params:string,scale:number,alpha:number)->html_clickable
 clickable_change(buttonid:html_clickable,spritetpe:html_clickable_tpe,x:number,y:number)->void
