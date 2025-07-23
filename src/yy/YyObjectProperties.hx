@@ -32,7 +32,7 @@ class YyObjectProperties {
 	public static var typeList:Array<String> = [
 		"unknown",
 		"real", "int", "string", "bool",
-		"expr", "asset", "list", "mlist", "color",
+		"any", "expr", "asset", "list", "mlist", "color",
 	];
 	public static var assetTypes:Array<YyObjectPropertiesAssetFlag> = [
 		new YyObjectPropertiesAssetFlag(1, "tileset"),
@@ -178,7 +178,7 @@ class YyObjectProperties {
 				};
 				case TString: out += 'string = ' + Json.stringify(prop.value);
 				case TBool: out += 'bool = ' + (prop.value == 'True' ? 'true' : 'false');
-				case TExpr: out += 'expr = ' + printExpr(prop.value);
+				case TExpr: out += 'any = ' + printExpr(prop.value);
 				case TAsset: {
 					out += 'asset';
 					if (v22) {
@@ -402,9 +402,9 @@ class YyObjectProperties {
 							varType: asInt ? TInt : TReal,
 						});
 					};
-					case "string", "expr": {
+					case "string", "any", "expr": {
 						if (params != null) throw type + " has no params";
-						var asExpr = type == "expr";
+						var asExpr = type != "string";
 						addProp({
 							listItems: null,
 							multiselect: false,
