@@ -9,7 +9,7 @@ function v_local_constructor_2(ctr/*:constructor<int, any>*/) {
 	return new ctr(""); ///want_warn
 }
 function v_local_constructor() {
-	var q;
+	var q, c;
 	let fun = function(b/*:int*/) {
 		return b + 1;
 	}

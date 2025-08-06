@@ -205,56 +205,36 @@ class GmlSeekerProcExpr {
 		start = q.pos;
 		if (q.read() != "(".code) return;
 		
+		var doc = seeker.doc;
+		var returnType:String = null;
 		if (asStatic) {
 			// ... since we won't be going over the whole thing like with `var`
 			q.pos--;
 			args = GmlSeekerProcDefine.procFuncLiteralArgs(seeker, true);
+			returnType = GmlSeekerProcDefine.procFuncLiteralArgs_returnType;
 		}
-		else while (q.loop) {
-			var c = q.peek();
-			if (c == ")".code) {
-				q.skip();
-				break;
-			} else {
-				if (q.skipCommon() < 0) q.skip();
+		else {
+			// have to go over stuff for a `var`
+			while (q.loop) {
+				var c = q.peek();
+				if (c == ")".code) {
+					q.skip();
+					break;
+				} else {
+					if (q.skipCommon() < 0) q.skip();
+				}
 			}
-		}
-		
-		var doc = seeker.doc;
-		var jsDoc = seeker.jsDoc;
-		if (jsDoc.args != null) {
-			args = "(" + jsDoc.args.join(", ") + ")";
-			argTypes = jsDoc.typesFlush(JsTools.nca(doc, doc.templateItems), s);
-			jsDoc.args = null;
-			jsDoc.types = null;
-		} else if (!asStatic) {
 			args = q.substring(start, q.pos);
-		}
-		
-		var returnType:String = null;
-		if (asStatic) {
-			// OK!
-		} else if (q.skipIfStrEquals("/*->")) {
-			var p = q.pos;
-			q.skipComment();
-			if (q.peekstr(2, -2) == "*/") {
-				returnType = q.substring(p, q.pos - 2);
+			if (q.skipIfStrEquals("/*->")) {
+				var p = q.pos;
+				q.skipComment();
+				if (q.peekstr(2, -2) == "*/") {
+					returnType = q.substring(p, q.pos - 2);
+				}
 			}
 		}
 		//
-		templateItems = jsDoc.templateItems;
-		jsDoc.templateItems = null;
-		if (doc != null && doc.templateItems != null) {
-			templateSelf = GmlTypeTemplateItem.toTemplateSelf(doc.templateItems);
-			templateItems = templateItems != null
-				? doc.templateItems.concat(templateItems)
-				: doc.templateItems.copy();
-		}
-		
-		if (jsDoc.returns != null) {
-			args += GmlFuncDoc.retArrow + jsDoc.returns;
-			jsDoc.returns = null;
-		} else if (returnType != null) {
+		if (returnType != null) {
 			args += GmlFuncDoc.retArrow + returnType;
 		}
 		

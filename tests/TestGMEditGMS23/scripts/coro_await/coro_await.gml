@@ -22,7 +22,8 @@ function coro_await_coroutine() constructor {
 		case 3/* [L5,c10] post yield */:
 			__result_0__ = result;
 			b = __result_0__;
-			show_message([a, b]);
+			show_message([a, b]); ///aw
+			
 		default/* [L28,c18] end */:
 			result = undefined; __label__ = -1; return false;
 		}
@@ -55,7 +56,7 @@ function coro_await() {
 	var a = yield coro_http_get(local, "https://yal.cc/ping");
 	yield coro_wait(local, 5);
 	var b = yield coro_http_get(local, "https://yal.cc/ping");
-	show_message([a, b]);
+	show_message([a, b]); ///aw
 }
 function coro_await_test() {
 	coro_await().next();

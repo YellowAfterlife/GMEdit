@@ -1,16 +1,19 @@
 package parsers.seeker;
 import file.kind.gml.KGmlLambdas;
 import gml.GmlAPI;
+import gml.GmlFuncDoc;
 import gml.GmlLocals;
 import gml.type.GmlType;
 import gml.type.GmlTypeTemplateItem;
 import js.lib.RegExp;
 import js.html.Console;
+import parsers.seeker.GmlSeekerJSDoc;
 import parsers.seeker.GmlSeekerParser;
 import parsers.seeker.GmlSeekerProcExpr;
 import synext.GmlExtLambda;
 import tools.Aliases;
 import tools.CharCode;
+import tools.JsTools;
 using tools.NativeString;
 
 /**
@@ -164,16 +167,54 @@ class GmlSeekerProcVar {
 				var templateSelf:GmlType = GmlSeekerProcExpr.templateSelf;
 				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
 				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
+				var jsDocBeforeFunc:GmlSeekerJSDoc = null;
 				if (exprIsFunction) {
+					jsDocBeforeFunc = seeker.jsDoc.copy();
+					jsDocBeforeFunc.resetInterface();
+					seeker.jsDoc.reset(false);
+					//
+					var outerDoc = seeker.doc;
+					seeker.doc = null;
 					seeker.doLoop(seeker.curlyDepth);
+					seeker.doc = outerDoc;
+					//
+					jsDocBeforeFunc.append(seeker.jsDoc);
+					
+					// If a constructor has a @template tag, it needs to be added to templateItems
+					// on methods within it so that they know which types to replace with <T>
+					if (outerDoc != null && outerDoc.templateItems != null) {
+						templateSelf = GmlTypeTemplateItem.toTemplateSelf(outerDoc.templateItems);
+						templateItems = GmlSeekerJSDoc.concatArrays(outerDoc .templateItems, templateItems);
+					}
+					//
+					if (jsDocBeforeFunc.args != null) {
+						args = "(" + jsDocBeforeFunc.args.join(", ") + ")";
+						argTypes = jsDocBeforeFunc.typesFlush(templateItems, s);
+					} else {
+						//args = null;
+						//argTypes = null;
+					}
+					if (jsDocBeforeFunc.returns != null) {
+						args = GmlFuncDoc.addOrReplaceReturnType(args, jsDocBeforeFunc.returns);
+					}
+					seeker.jsDoc.reset(false);
 				}
 				
-				inline function addFieldHint(asInst:Bool) {
+				function addFieldHint(asInst:Bool) {
 					GmlSeekerProcField.addFieldHint(seeker, exprIsConstructor, seeker.jsDoc.interfaceName,
 					asInst, name, args, null, fieldType, argTypes, true);
 					
 					var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
 					if (addFieldHint_doc != null) {
+						
+						// this adds the @params from before the function declaration:
+						if (jsDocBeforeFunc != null) {
+							GmlSeekerProcDoc.flushToDoc(seeker, jsDocBeforeFunc, addFieldHint_doc, false);
+						}
+						
+						// and this adds the @params from inside the function declaration!
+						GmlSeekerProcDoc.flushToDoc(seeker, seeker.jsDoc, addFieldHint_doc, true);
+						
 						// similar to GmlSeekerProcIdent
 						addFieldHint_doc.lookup = {
 							path: seeker.orig,
@@ -197,6 +238,8 @@ class GmlSeekerProcVar {
 				
 				seeker.localKind = oldLocalKind;
 				if (exprIsFunction) {
+					seeker.jsDoc.reset(false);
+					//
 					q.skipSpaces1_local();
 					var c = q.peek();
 					if (c == ",".code) continue;

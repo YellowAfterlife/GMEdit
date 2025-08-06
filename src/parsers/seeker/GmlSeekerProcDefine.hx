@@ -197,6 +197,7 @@ class GmlSeekerProcDefine {
 						case "(".code, "{".code, "[".code: depth++;
 						case ")".code, "}".code, "]".code: if (--depth <= 0) {
 							if (litArgs != null) {
+								// TODO: does this need to check if q.pos-1 > argStart ..?
 								litArgs.push(q.substring(argStart, q.pos - 1).trimBoth());
 							}
 							break;
@@ -230,6 +231,7 @@ class GmlSeekerProcDefine {
 					
 					// `@param` override the parsed arguments
 					var doc = GmlFuncDoc.create(main, jsDoc.args, jsDoc.rest);
+					doc.argsAreFromJSDoc = true;
 					doc.argTypes = jsDoc.typesFlush(null, main);
 					seeker.doc = doc;
 					jsDoc.args = null;

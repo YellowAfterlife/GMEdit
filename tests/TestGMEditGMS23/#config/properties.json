@@ -1,24 +1,32 @@
 {
-    "builderSettings": {
-        "runtimeVersion": "runtime-2023.6.0.139"
+    "builderSettings":{
+        "runtimeVersion":"runtime-2023.6.0.139"
     },
-    "indentWithTabs": true,
-    "linterPrefs": {
-        "addMissingArgsToJSDoc": true,
-        "implicitBoolIntCasts": false,
-        "requireFields": true,
-        "specTypeColon": true,
-        "specTypeConst": true,
-        "specTypeInst": true,
-        "specTypeInstSubTopLevel": true,
-        "specTypeLet": true,
-        "specTypeVar": false,
-        "strictScriptSelf": true,
-        "strictStaticJSDoc": true,
-        "warnAboutRedundantCasts": true
+    "docs_tooltips":{
+        "disabled":false
     },
-    "nullConditionalSet": "nc_set",
-    "nullConditionalVal": "nc_val",
-    "privateFieldRegex": "^__",
-    "privateGlobalRegex": "^__"
+    "indentWithTabs":true,
+    "linterChecker":{
+        "allowWarnTokens":"allow_warn aw",
+        "validate":true,
+        "wantWarnTokens":"want_warn ww"
+    },
+    "linterPrefs":{
+        "addMissingArgsToJSDoc":true,
+        "implicitBoolIntCasts":false,
+        "requireFields":true,
+        "specTypeColon":true,
+        "specTypeConst":true,
+        "specTypeInst":true,
+        "specTypeInstSubTopLevel":true,
+        "specTypeLet":true,
+        "specTypeVar":false,
+        "strictScriptSelf":true,
+        "strictStaticJSDoc":true,
+        "warnAboutRedundantCasts":true
+    },
+    "nullConditionalSet":"nc_set",
+    "nullConditionalVal":"nc_val",
+    "privateFieldRegex":"^__",
+    "privateGlobalRegex":"^__"
 }

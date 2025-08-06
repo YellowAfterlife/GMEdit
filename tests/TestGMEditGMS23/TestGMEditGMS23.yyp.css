@@ -1,4 +1,5 @@
-#app .ace_comment.ace_doc.ace_line.ace_startswith_want_warn {
+#app .ace_comment.ace_doc.ace_line.ace_startswith_want_warn,
+#app .ace_comment.ace_doc.ace_line.ace_startswith_ww {
 	background-image: repeating-linear-gradient(135deg,
 		rgba(255, 200, 79, 0),
 		rgba(255, 200, 79, 0) 10px,
@@ -11,7 +12,8 @@
 	background-repeat: repeat;
 	color: #C40;
 }
-#app #main.chrome-tabs-dark-theme .ace_comment.ace_doc.ace_line.ace_startswith_want_warn {
+#app #main.chrome-tabs-dark-theme .ace_comment.ace_doc.ace_line.ace_startswith_want_warn,
+#app #main.chrome-tabs-dark-theme .ace_comment.ace_doc.ace_line.ace_startswith_ww {
 	background-image: repeating-linear-gradient(135deg,
 		rgba(255, 200, 79, 0),
 		rgba(255, 200, 79, 0) 10px,
@@ -19,6 +21,31 @@
 		rgba(255, 200, 79, 0.15) 20px
 	);
 	color: rgba(255, 200, 79, 1);
+}
+
+#app .ace_comment.ace_doc.ace_line.ace_startswith_allow_warn,
+#app .ace_comment.ace_doc.ace_line.ace_startswith_aw {
+	background-image: repeating-linear-gradient(135deg,
+		rgba(200, 255, 79, 0),
+		rgba(200, 255, 79, 0) 10px,
+		rgba(200, 255, 79, 0.25) 10px,
+		rgba(200, 255, 79, 0.25) 20px
+	);
+	outline: 1px solid rgba(200, 255, 79, 0.75);
+	outline-offset: 1px;
+	background-position: top left;
+	background-repeat: repeat;
+	color: #490;
+}
+#app #main.chrome-tabs-dark-theme .ace_comment.ace_doc.ace_line.ace_startswith_allow_warn,
+#app #main.chrome-tabs-dark-theme .ace_comment.ace_doc.ace_line.ace_startswith_aw {
+	background-image: repeating-linear-gradient(135deg,
+		rgba(200, 255, 79, 0),
+		rgba(200, 255, 79, 0) 10px,
+		rgba(200, 255, 79, 0.15) 10px,
+		rgba(200, 255, 79, 0.15) 20px
+	);
+	color: rgba(200, 255, 79, 1);
 }
 
 #app .ace_comment.ace_doc.ace_line.ace_startswith_note\: {

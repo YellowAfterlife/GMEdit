@@ -5,6 +5,7 @@ import gml.type.GmlType;
 import gml.type.GmlTypeDef;
 import gml.type.GmlTypeTemplateItem;
 import gml.type.GmlTypeTools;
+import haxe.Rest;
 import js.lib.RegExp;
 import js.html.Console;
 import parsers.GmlReader;
@@ -38,16 +39,68 @@ class GmlSeekerJSDoc {
 		rest = null;
 		self = null;
 		returns = null;
-		if (resetInterf) {
-			isInterface = false;
-			interfaceName = null;
-			implementsNames = null;
-			templateItems = null;
-		}
+		isStatic = false;
+		if (resetInterf) resetInterface();
+	}
+	public function resetInterface() {
+		isInterface = false;
+		interfaceName = null;
+		implementsNames = null;
+		templateItems = null;
 	}
 	
 	public function new() {
 		//
+	}
+	
+	static function copyArray<T>(arr:Array<T>) {
+		return arr != null ? arr.copy() : null;
+	}
+	public function copy() {
+		var r = new GmlSeekerJSDoc();
+		r.args = copyArray(args);
+		r.types = copyArray(types);
+		r.rest = rest;
+		r.self = self;
+		r.returns = returns;
+		r.isInterface = isInterface;
+		r.interfaceName = interfaceName;
+		r.implementsNames = copyArray(implementsNames);
+		r.templateItems = copyArray(templateItems);
+		r.isStatic = isStatic;
+		r.redirectCount = redirectCount;
+		return r;
+	}
+	
+	public static function concatArrays<T>(rest:Rest<Array<T>>) {
+		var result = null;
+		var count = 0;
+		for (arr in rest) {
+			if (arr == null) continue;
+			if (result == null) {
+				result = arr;
+			} else {
+				result = result.concat(arr);
+			}
+			count += 1;
+		}
+		if (count == 1) result = result.copy();
+		return result;
+	}
+	/** combines two JSDoc sets, including stacking arguments */
+	public function append(q:GmlSeekerJSDoc) {
+		// args
+		args = concatArrays(args, q.args);
+		types = concatArrays(types, q.types);
+		if (q.rest) rest = true;
+		//
+		if (q.self != null) self = q.self;
+		if (q.returns != null) returns = q.returns;
+		if (q.isInterface) isInterface = true;
+		if (q.interfaceName != null) interfaceName = q.interfaceName;
+		if (q.isStatic) isStatic = true;
+		implementsNames = concatArrays(implementsNames, q.implementsNames);
+		templateItems = concatArrays(templateItems, q.templateItems);
 	}
 	
 	public function typesFlush(pre:Array<GmlTypeTemplateItem>, ctx:String):Array<GmlType> {
@@ -291,7 +344,7 @@ class GmlSeekerJSDoc {
 		mt = jsDoc_interface.exec(s);
 		if (mt != null) {
 			isInterface = true;
-			interfaceName = mt[1];
+			interfaceName = mt[1]; // @interface {Name}
 			if (interfaceName == null) {
 				if (seeker.isObject) {
 					interfaceName = seeker.getObjectName();

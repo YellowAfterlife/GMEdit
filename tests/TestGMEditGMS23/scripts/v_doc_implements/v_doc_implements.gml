@@ -16,7 +16,7 @@ function Class2(_parent) constructor {
 		// `.` should show `parent` field
 		// TODO: `with (_parent)` will not show fields because mini-linter didn't index the rest of the function
 	}
-	with (_parent /*#as IInterface*/) {
+	with (_parent /*#as IInterface*/) { ///allow_warn whatever
 		// but this'll work
 	}
 };

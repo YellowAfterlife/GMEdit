@@ -26,7 +26,7 @@ function coro_arr_ctr_coroutine(_args) constructor {
 			i++;
 			__label__ = 1; continue;
 		case 4/* [L4,c2] end for */:
-		default/* [L22,c0] end */:
+		default/* [L20,c0] end */:
 			result = undefined; __label__ = -1; return false;
 		}
 	}
@@ -35,18 +35,12 @@ function coro_arr_ctr_coroutine(_args) constructor {
 function coro_arr_ctr_test() {
 	var arr = ["a", "b", "c"];
 	var ca = coro_arr_ctr(arr);
-	var s;
 	for (var i = 0; i < array_length(arr); i++) {
 		var r = ca.next();
-		s = r; ///want_warn
 		assert(r, 1);
 		assert(ca.result, arr[i]);
 	}
 	assert(ca.next(), 0);
-}
-
-function macro:let() {
-	
 }
 
 // @gmcr {"mode":"constructor","yieldScripts":["coro_arr_ctr"]}
@@ -61,11 +55,9 @@ function coro_arr_ctr(arr) {
 }
 function coro_arr_ctr_test() {
 	var arr = ["a", "b", "c"];
-	let ca = coro_arr_ctr(arr);
-	var s/*:string*\endco\/;
+	var ca = coro_arr_ctr(arr);
 	for (var i = 0; i < array_length(arr); i++) {
-		var r := ca.next();
-		s = r; ///want_warn
+		var r = ca.next();
 		assert(r, true);
 		assert(ca.result, arr[i]);
 	}

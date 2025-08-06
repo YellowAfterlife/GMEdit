@@ -28,6 +28,11 @@ class GmlFuncDoc {
 	public static inline function patchArrow(s:String):String {
 		return StringTools.replace(s, "->", retArrow);
 	}
+	public static function addOrReplaceReturnType(doc:String, returnType:String) {
+		var pos = doc.indexOf(retArrow);
+		if (pos >= 0) doc = doc.substring(0, pos);
+		return doc + retArrow + returnType;
+	}
 	
 	public var name:String;
 	
@@ -40,7 +45,10 @@ class GmlFuncDoc {
 	/** an array of argument names */
 	public var args:Array<String>;
 	
+	/** an array of argument types */
 	public var argTypes:Array<GmlType> = null;
+	
+	public var argsAreFromJSDoc = false;
 	
 	public var hasReturn:Bool = null;
 	
