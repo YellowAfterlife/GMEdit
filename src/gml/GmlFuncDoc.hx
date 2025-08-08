@@ -64,6 +64,9 @@ class GmlFuncDoc {
 	/** Type of `self` set via `/// @self` */
 	public var selfType:GmlType = null;
 	
+	/** Whether type of `self` was auto-set based on constructor name/interface **/
+	public var selfTypeIsAuto = true;
+	
 	// these are currently only set for sub-functions so that you can navigate to them
 	public var lookup:GmlLookup = null;
 	public var nav:GmlFileNav = null;

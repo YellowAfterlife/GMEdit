@@ -86,6 +86,7 @@
     {"id":{"name":"v_null_conditional","path":"scripts/v_null_conditional/v_null_conditional.yy",},},
     {"id":{"name":"nc_scripts","path":"scripts/nc_scripts/nc_scripts.yy",},},
     {"id":{"name":"v_speculative_types","path":"scripts/v_speculative_types/v_speculative_types.yy",},},
+    {"id":{"name":"v_hint_self_implements","path":"scripts/v_hint_self_implements/v_hint_self_implements.yy",},},
     {"id":{"name":"v_doc_is_global","path":"scripts/v_doc_is_global/v_doc_is_global.yy",},},
     {"id":{"name":"v_params_of","path":"scripts/v_params_of/v_params_of.yy",},},
     {"id":{"name":"v_func_doc_static","path":"scripts/v_func_doc_static/v_func_doc_static.yy",},},

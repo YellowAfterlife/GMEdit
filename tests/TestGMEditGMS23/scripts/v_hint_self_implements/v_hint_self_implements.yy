@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"v_hint_self_implements",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"v_hint_self_implements",
+  "parent":{
+    "name":"JSDoc",
+    "path":"folders/Scripts/Linter/JSDoc.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"1.0",
+}

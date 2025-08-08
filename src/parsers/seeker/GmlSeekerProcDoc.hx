@@ -11,6 +11,28 @@ import js.html.Console;
  * @author YellowAfterlife
  */
 class GmlSeekerProcDoc {
+	public static function flushSelfType(seeker:GmlSeekerImpl, doc:GmlFuncDoc) {
+		final jsDoc = seeker.jsDoc;
+		final main = seeker.main;
+		final out = seeker.out;
+		if (jsDoc.isInterface) {
+			if (jsDoc.interfaceName == null) jsDoc.interfaceName = main;
+			if (!out.namespaceHints.exists(jsDoc.interfaceName)) {
+				out.namespaceHints[jsDoc.interfaceName] = new GmlSeekDataNamespaceHint(jsDoc.interfaceName, null, null);
+			}
+		}
+		//
+		if (jsDoc.self != null) {
+			doc.selfType = GmlTypeDef.parse(jsDoc.self, doc.name);
+			doc.selfTypeIsAuto = false;
+		} else if (jsDoc.interfaceName != null && doc.selfTypeIsAuto) {
+			doc.selfType = GmlTypeDef.parse(jsDoc.interfaceName, doc.name);
+		} else return false;
+		//
+		//jsDoc.isInterface = false;
+		//jsDoc.self = null;
+		return true;
+	}
 	public static function flushToDoc(seeker:GmlSeekerImpl, jsDoc:GmlSeekerJSDoc, doc:GmlFuncDoc, updateComp:Bool){
 		final q = seeker.reader;
 		final jsDoc = seeker.jsDoc;
@@ -43,17 +65,7 @@ class GmlSeekerProcDoc {
 			doc.returnTypeString = jsDoc.returns;
 			updateComp = true;
 		}
-		if (jsDoc.isInterface) {
-			if (jsDoc.interfaceName == null) jsDoc.interfaceName = main;
-			if (!out.namespaceHints.exists(jsDoc.interfaceName)) {
-				out.namespaceHints[jsDoc.interfaceName] = new GmlSeekDataNamespaceHint(jsDoc.interfaceName, null, null);
-			}
-		}
-		if (jsDoc.self != null) {
-			doc.selfType = GmlTypeDef.parse(jsDoc.self, doc.name);
-		} else if (jsDoc.interfaceName != null) {
-			doc.selfType = GmlTypeDef.parse(jsDoc.interfaceName, doc.name);
-		} else doc.selfType = null;
+		flushSelfType(seeker, doc);
 		
 		//
 		if (updateComp) {

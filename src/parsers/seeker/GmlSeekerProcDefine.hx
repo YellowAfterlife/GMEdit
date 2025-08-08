@@ -251,6 +251,7 @@ class GmlSeekerProcDefine {
 					seeker.doc.returnTypeString = jsDoc.returns;
 					jsDoc.returns = null;
 				}
+				GmlSeekerProcDoc.flushSelfType(seeker, seeker.doc);
 				seeker.doc.templateItems = jsDoc.templateItems;
 				jsDoc.templateItems = null;
 				seeker.docIsAutoFunc = isFunc;
