@@ -205,7 +205,12 @@ class GmlSeekerProcIdent {
 			GmlSeekerProcField.addFieldHint(seeker, isConstructor, seeker.jsDoc.interfaceName, true, s, args, null, fieldType, argTypes, true);
 			var addFieldHint_doc = GmlSeekerProcField.addFieldHint_doc;
 			if (addFieldHint_doc != null) {
-				// similar to GmlSeekerProcVar
+				// related: GmlSeekerProcVar
+				
+				// this will not pick up JSDocs inside a function,
+				// but running doLoop might cause trouble with nested definitions
+				GmlSeekerProcDoc.flushToDoc(seeker, seeker.jsDoc, addFieldHint_doc, true);
+				
 				var nav:GmlFileNav = {
 					ctx: s,
 					ctxAfter: true,

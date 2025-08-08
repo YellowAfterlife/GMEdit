@@ -8,5 +8,10 @@ function v_hint_self_implements_extras() {
 	orig_name = name;
 	some = 1;
 	var t = missing; ///ww
+	
+	/// @returns {int}
 	func = function() /*=>*/ {};
+	
+	/// @param ...args
+	log = function() /*=>*/ {}
 }
