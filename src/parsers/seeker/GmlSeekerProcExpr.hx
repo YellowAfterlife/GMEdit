@@ -205,7 +205,6 @@ class GmlSeekerProcExpr {
 		start = q.pos;
 		if (q.read() != "(".code) return;
 		
-		var doc = seeker.doc;
 		var returnType:String = null;
 		if (asStatic) {
 			// ... since we won't be going over the whole thing like with `var`

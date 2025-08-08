@@ -1,4 +1,5 @@
 package parsers.seeker;
+import parsers.seeker.GmlSeekerImpl.GmlSeeker_doLoop;
 import file.kind.gml.KGmlLambdas;
 import gml.GmlAPI;
 import gml.GmlFuncDoc;
@@ -168,6 +169,7 @@ class GmlSeekerProcVar {
 				var templateItems:Array<GmlTypeTemplateItem> = GmlSeekerProcExpr.templateItems;
 				var fieldType:GmlType = GmlSeekerProcExpr.fieldType;
 				var jsDocBeforeFunc:GmlSeekerJSDoc = null;
+				static var doLoopConfig = new GmlSeeker_doLoop();
 				if (exprIsFunction) {
 					jsDocBeforeFunc = seeker.jsDoc.copy();
 					jsDocBeforeFunc.resetInterface();
@@ -175,7 +177,9 @@ class GmlSeekerProcVar {
 					//
 					var outerDoc = seeker.doc;
 					seeker.doc = null;
-					seeker.doLoop(seeker.curlyDepth);
+					doLoopConfig.exitAtCubDepth = seeker.curlyDepth;
+					doLoopConfig.storeStartEnd = true;
+					seeker.doLoop(doLoopConfig);
 					seeker.doc = outerDoc;
 					//
 					jsDocBeforeFunc.append(seeker.jsDoc);
@@ -214,6 +218,8 @@ class GmlSeekerProcVar {
 						
 						// and this adds the @params from inside the function declaration!
 						GmlSeekerProcDoc.flushToDoc(seeker, seeker.jsDoc, addFieldHint_doc, true);
+						
+						addFieldHint_doc.procHasReturn(seeker.reader.source, doLoopConfig.start, doLoopConfig.end);
 						
 						// similar to GmlSeekerProcIdent
 						addFieldHint_doc.lookup = {

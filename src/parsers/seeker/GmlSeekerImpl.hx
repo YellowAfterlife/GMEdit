@@ -1,4 +1,5 @@
 package parsers.seeker;
+import haxe.extern.EitherType;
 import ace.extern.AceAutoCompleteItem;
 import ace.extern.AceTokenType;
 import file.FileKind;
@@ -185,7 +186,21 @@ class GmlSeekerImpl {
 		GmlSeekerProcDoc.flush(this);
 	}
 	
-	public function doLoop(?exitAtCubDepth:Int) {
+	public function doLoop(?configOrExitAt:EitherType<GmlSeeker_doLoop, Int>) {
+		var exitAtCubDepth:Int = null;
+		var config:GmlSeeker_doLoop;
+		if (configOrExitAt == null) {
+			config = null;
+		} else if (configOrExitAt is Int) {
+			exitAtCubDepth = configOrExitAt;
+			config = null;
+		} else {
+			config = configOrExitAt;
+			exitAtCubDepth = config.exitAtCubDepth;
+		}
+		var storeStartEnd = config?.storeStartEnd;
+		if (storeStartEnd) config.start = -1;
+		//
 		var q = reader;
 		while (q.loop) {
 			/*//
@@ -197,7 +212,10 @@ class GmlSeekerImpl {
 			oldSource = q.source;
 			//*/
 			var flags = Ident | Doc | Define | Macro;
-			if (exitAtCubDepth != null || funcsAreGlobal || withStartsAtCurlyDepth >= 0) flags |= Cub1;
+			if (exitAtCubDepth != null || storeStartEnd
+				|| funcsAreGlobal || withStartsAtCurlyDepth >= 0
+			) flags |= Cub1;
+			if (storeStartEnd) flags |= Cub0;
 			var s = find(flags);
 			if (s == null) continue;
 			if (s.fastCodeAt(0) == "/".code) { // JSDoc
@@ -208,7 +226,12 @@ class GmlSeekerImpl {
 			}
 			// (known to not be JSDoc from hereafter):
 			switch (s) {
+				case "{": {
+					if (storeStartEnd && config.start == -1) config.start = q.pos;
+				}
 				case "}": {
+					// thus this will be before the last closing bracket.
+					if (storeStartEnd) config.end = q.pos - 1;
 					if (curlyDepth <= 0 && funcsAreGlobal && docIsAutoFunc) {
 						flushDoc();
 						main = null;
@@ -313,4 +336,18 @@ class GmlSeekerImpl {
 		//
 		if (project.hasGMLive) out.hasGMLive = out.hasGMLive || ui.ext.GMLive.check(src);
 	}
+}
+class GmlSeeker_doLoop {
+	// in:
+	public var exitAtCubDepth:Int = null;
+	// in/out:
+	public var storeStartEnd = false;
+	public var start = -1;
+	public var end = -1;
+	//
+	public function reset(){
+		static var empty = new GmlSeeker_doLoop();
+		js.lib.Object.assign(this, empty);
+	}
+	public function new() {}
 }
