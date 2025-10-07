@@ -590,7 +590,7 @@ class GmlLinter {
 			case LKVar, LKConst, LKLet, LKGlobalVar, LKArgs, LKStatic: {
 				var varKeyword = nextVal;
 				var isArgs = nk == LKArgs;
-				var isStaticCtr = nk == LKStatic && currFuncDoc.isConstructor;
+				var isStaticCtr = nk == LKStatic && currFuncDoc != null && currFuncDoc.isConstructor;
 				var isCoroutineArgs = isArgs && currFuncDoc != null	&& currFuncDoc.post.startsWith(GmlFuncDoc.parRetArrow + synext.GmlExtCoroutines.arrayTypeResultName);
 				var keywordStr = nextVal;
 				seqStart.setTo(reader);
