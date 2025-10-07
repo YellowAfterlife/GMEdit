@@ -65,6 +65,8 @@ class GmlLinterFuncLiteral extends GmlLinterHelper {
 					doc.argTypes = NativeArray.create(doc.args.length - 1);
 				}
 				doc.argTypes.push(t);
+			} else {
+				if (doc.argTypes != null) doc.argTypes.push(t);
 			}
 			if (setLocalVars) editor.locals[context].add(argName, nextLocalType,
 				JsTools.nca(argTypeStr, "type " + argTypeStr)

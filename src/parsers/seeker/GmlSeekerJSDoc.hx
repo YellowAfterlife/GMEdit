@@ -117,6 +117,53 @@ class GmlSeekerJSDoc {
 		return rt;
 	}
 	
+	function procIs(seeker:GmlSeekerImpl, full:String, typeStr:String, doc:String) {
+		var out = seeker.out;
+		var q = seeker.reader;
+		var hasType = typeStr != null;
+		//
+		inline function procComp(comp:AceAutoCompleteItem):Void {
+			if (comp != null) {
+				if (hasType) comp.setDocTag("type", typeStr);
+				if (doc != null && doc.trimBoth() != "") comp.setDocTag("ℹ", doc);
+			}
+		}
+		var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
+		var lineText = q.source.substring(lineStart, q.pos);
+		var lineMatch = jsDoc_is_line.exec(lineText);
+		if (lineMatch == null) return;
+		var kind = lineMatch[1];
+		var name:String;
+		var type = GmlTypeDef.parse(typeStr, full);
+		if (lineMatch[1] != null) {
+			tools.RegExpTools.each(JsTools.rx(~/\w+/g), lineMatch[1], function(mt) {
+				name = mt[0];
+				if (hasType) out.globalVarTypes[name] = type;
+				procComp(out.comps[name]);
+			});
+		} else if (lineMatch[2] != null) {
+			name = lineMatch[2];
+			if (hasType) out.globalTypes[name] = type;
+			var globalField = out.globalFields[name];
+			if (globalField != null) {
+				procComp(globalField.comp);
+			}
+		} else {
+			name = lineMatch[3];
+			var namespace:String;
+			if (seeker.isCreateEvent) {
+				namespace = seeker.getObjectName();
+			} else if (seeker.doc != null) {
+				namespace = seeker.doc.name;
+				if (namespace == null) return;
+			} else return;
+			var hint = out.fieldHints[namespace + ":" + name];
+			if (hint != null) {
+				if (hasType) hint.type = type;
+				procComp(hint.comp);
+			}
+		}
+	}
 	public function proc(seeker:GmlSeekerImpl, s:String) {
 		/*
 		A thing to remember! Suppose you have the following:
@@ -147,50 +194,7 @@ class GmlSeekerJSDoc {
 		
 		mt = jsDoc_is.exec(s);
 		if (mt != null) {
-			var typeStr = mt[1];
-			var hasType = typeStr != null;
-			var doc = mt[2];
-			inline function procComp(comp:AceAutoCompleteItem):Void {
-				if (comp != null) {
-					if (hasType) comp.setDocTag("type", typeStr);
-					if (doc != null && doc.trimBoth() != "") comp.setDocTag("ℹ", doc);
-				}
-			}
-			var lineStart = q.source.lastIndexOf("\n", q.pos - 1) + 1;
-			var lineText = q.source.substring(lineStart, q.pos);
-			var lineMatch = jsDoc_is_line.exec(lineText);
-			if (lineMatch == null) return;
-			var kind = lineMatch[1];
-			var name:String;
-			var type = GmlTypeDef.parse(typeStr, mt[0]);
-			if (lineMatch[1] != null) {
-				tools.RegExpTools.each(JsTools.rx(~/\w+/g), lineMatch[1], function(mt) {
-					name = mt[0];
-					if (hasType) out.globalVarTypes[name] = type;
-					procComp(out.comps[name]);
-				});
-			} else if (lineMatch[2] != null) {
-				name = lineMatch[2];
-				if (hasType) out.globalTypes[name] = type;
-				var globalField = out.globalFields[name];
-				if (globalField != null) {
-					procComp(globalField.comp);
-				}
-			} else {
-				name = lineMatch[3];
-				var namespace:String;
-				if (seeker.isCreateEvent) {
-					namespace = seeker.getObjectName();
-				} else if (seeker.doc != null) {
-					namespace = seeker.doc.name;
-					if (namespace == null) return;
-				} else return;
-				var hint = out.fieldHints[namespace + ":" + name];
-				if (hint != null) {
-					if (hasType) hint.type = type;
-					procComp(hint.comp);
-				}
-			}
+			procIs(seeker, s, mt[1], mt[2]);
 			return;
 		}
 		
@@ -492,6 +496,12 @@ class GmlSeekerJSDoc {
 			}
 			if (seeker.mainComp != null) seeker.mainComp.doc = seeker.doc.getAcText();
 			return; // found!
+		}
+		
+		// perhaps it's `field = value; /// note`
+		if (!jsDoc_anyTag.test(s) && (mt = jsDoc_is_line.exec(s)) != null) {
+			procIs(seeker, s, null, s.substring(3).trimBoth());
+			return;
 		}
 		
 		// perhaps it's just extra text

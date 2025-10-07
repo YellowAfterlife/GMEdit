@@ -9,6 +9,7 @@ class GmlSeekerJSDocRegex {
 	public static var jsDoc_full:RegExp = new RegExp("^///\\s*" // start
 		+ "\\w*[ \t]*(\\(.+)" // `func(...`
 	);
+	public static var jsDoc_anyTag = new RegExp("^///\\s*@\\w+");
 	/** 2.3 only! */
 	public static var jsDoc_func:RegExp = new RegExp("^///\\s*" // start
 		+ "@func\\s+"
