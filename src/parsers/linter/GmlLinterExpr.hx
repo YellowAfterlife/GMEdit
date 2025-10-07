@@ -345,8 +345,12 @@ class GmlLinterExpr extends GmlLinterHelper {
 		inline function mergeBinOpNullSafety():Void {
 			nullSafety.mergeItems(self.binOps.nullSafety);
 		}
+		var prevType:GmlType = null;
+		var prevPrevType:GmlType = null;
 		while (q.loop) {
 			nk = self.peek();
+			prevPrevType = prevType;
+			prevType = currType;
 			var setValue = false;
 			switch (nk) {
 				case LKSet: {
@@ -387,7 +391,11 @@ class GmlLinterExpr extends GmlLinterHelper {
 
 						// Check that the function's self doc matches the current context
 						if (currFunc.selfType != null && currFunc.selfType.getKind() != KVoid) {
-							var currSelfType = self.getSelfType();
+							var currSelfType;
+							if (currKind == LKField || currKind == LKNullField) {
+								// methods shouldn't have @self but if you did that...
+								currSelfType = prevPrevType;
+							} else currSelfType = self.getSelfType();
 							if (GmlTypeTools.canCastTo(currSelfType, currFunc.selfType) == false) {
 								self.addWarning(currFunc.name
 									+ ' expects to be executed in the context of ' + currFunc.selfType.toString()
