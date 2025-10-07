@@ -530,7 +530,7 @@ ds_grid_shuffle<T>(grid:ds_grid<T>)->void
 ds_grid_read<T>(grid:ds_grid<T>, str:string, ?legacy:bool)->void
 ds_grid_sort<T>(grid:ds_grid<T>, column:int, ascending:bool)->void
 ds_grid_set<T>(grid:ds_grid<T>, x:int, y:int, value:T)->void
-ds_grid_get<T>(grid:ds_grid<T>, x:int, y:int)->void
+ds_grid_get<T>(grid:ds_grid<T>, x:int, y:int)->T
 ds_grid_to_mp_grid<T:number>(ds_grid:ds_grid<T>,mp_grid:mp_grid,?func:function<value:T;x:int;y:int,void>)->void
 
 #endregion
