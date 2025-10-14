@@ -1,4 +1,5 @@
 package gml.type;
+import parsers.linter.GmlLinterPrefs.GmlLinterUndefinedCastsTo;
 import ace.AceGmlTools;
 import gml.type.GmlType;
 import gml.type.GmlType.GmlTypeAnonField;
@@ -28,6 +29,7 @@ class GmlTypeCanCastTo {
 	public static var allowImplicitNullCast:Bool = false;
 	public static var allowImplicitBoolIntCasts:Bool = false;
 	public static var allowNullToAny:Bool = false;
+	public static var undefinedCastsTo:GmlLinterUndefinedCastsTo = Nullable;
 	
 	public static function canCastTo(from:GmlType, to:GmlType, ?tpl:Array<GmlType>, ?imp:GmlImports):Bool {
 		from = from.resolve();
@@ -45,14 +47,24 @@ class GmlTypeCanCastTo {
 		if (from.equals(to, tpl)) return true;
 		
 		if (kto == KNullable) {
-			// undefined -> number?
+			// undefined -> T?
 			if (kfrom == KUndefined) return true;
-			// number -> number?
+			// T -> T?
 			if (kfrom != KNullable && from.canCastTo(to.unwrapParam(), tpl, imp)) return true;
 		}
 		
 		if (kfrom == KUndefined) {
 			if (allowNullToAny) return true;
+			switch (undefinedCastsTo) {
+				case Nullable: {}; // the usual
+				case RefTypes:
+					if (canCastTo(to, GmlTypeDef.anyStruct, tpl, imp)) return true;
+					if (canCastTo(to, GmlTypeDef.anyArray, tpl, imp)) return true;
+					if (canCastTo(to, GmlTypeDef.anyFunction, tpl, imp)) return true;
+					if (canCastTo(to, GmlTypeDef.string, tpl, imp)) return true;
+				case Anything:
+					return true;
+			}
 			var nsName = to.getNamespace();
 			var ns = nsName != null ? GmlAPI.gmlNamespaces[nsName] : null;
 			if (ns != null && ns.isNullable) return true;

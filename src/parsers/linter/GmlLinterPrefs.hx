@@ -29,6 +29,7 @@ package parsers.linter;
 		
 		requireFields: false,
 		implicitNullableCasts: false,
+		undefinedCastsTo: Nullable,
 		implicitBoolIntCasts: true,
 		warnAboutRedundantCasts: false,
 		// todo: warn about mixing exit and return X; warn about not all paths returning
@@ -87,6 +88,8 @@ typedef GmlLinterPrefsImpl = {
 	/** Whether to allow implicit T?->T casts */
 	?implicitNullableCasts:Bool,
 	
+	?undefinedCastsTo:GmlLinterUndefinedCastsTo,
+	
 	/** Whether to allow implicit bool<->int casts */
 	?implicitBoolIntCasts:Bool,
 	
@@ -105,4 +108,9 @@ typedef GmlLinterPrefsImpl = {
 	?liveMinDelay:Int,
 	?liveIdleDelay:Int,
 	?liveIdleMaxLines:Int,
+}
+enum GmlLinterUndefinedCastsTo {
+	Nullable;
+	RefTypes;
+	Anything;
 }

@@ -4,11 +4,7 @@ import js.html.InputElement;
 import parsers.linter.GmlLinterPrefs;
 import gml.Project;
 import ui.Preferences.*;
-import gml.GmlAPI;
-import gml.file.GmlFile;
 using tools.HtmlTools;
-import js.html.SelectElement;
-import file.kind.misc.KSnippets;
 import tools.macros.PrefLinterMacros.*;
 
 /**
@@ -18,6 +14,44 @@ import tools.macros.PrefLinterMacros.*;
 class PrefLinter {
 	static var selectOpts:Array<String> = ["inherit", "on", "off"];
 	static var selectVals:Array<Bool> = [null, true, false];
+	static function savePrefs(project:Project) {
+		if (project != null) {
+			ui.project.ProjectProperties.save(project, project.properties);
+		} else {
+			Preferences.save();
+		}
+	}
+	static function addLinterDropdown<T>(
+		out:Element,
+		project:Project,
+		name:String,
+		get:GmlLinterPrefs->T,
+		set:GmlLinterPrefs->Null<T>->Void,
+		options:Array<{ value:T, label:String, tip:String }>
+	) {
+		var prefs = project?.properties.linterPrefs ?? current.linterPrefs;
+		if (project != null) {
+			var parentValue = get(current.linterPrefs) ?? get(GmlLinterPrefs.defValue);
+			var parentOption = options.filter(o -> o.value == parentValue)[0];
+			var parentLabel = "inherit";
+			if (parentOption != null) parentLabel += " (➜ " + parentOption.label + ")";
+			options = [pair((null:T), parentLabel)].concat(options);
+		}
+		var currValue = get(prefs);
+		var currOption = options.filter(o -> o.value == currValue)[0];
+		var currLabel = currOption?.label ?? "";
+		var labels = options.map(o -> o.label);
+		return addDropdown(out, name, currLabel, labels, (val) -> {
+			var opt = options.filter(o -> o.label == val)[0];
+			if (opt != null) {
+				set(prefs, opt.value);
+				savePrefs(project);
+			}
+		});
+	}
+	static function pair<T>(value:T, label:String, ?tip:String) {
+		return { value: value, label: label, tip: tip };
+	}
 	public static function build(out:Element, project:Project) {
 		out = addGroup(out, "Linter");
 		if (project != null) {
@@ -32,12 +66,8 @@ class PrefLinter {
 				opt = project.properties.linterPrefs = {};
 			}
 		} else opt = current.linterPrefs;
-		function saveOpt() {
-			if (project != null) {
-				ui.project.ProjectProperties.save(project, project.properties);
-			} else {
-				Preferences.save();
-			}
+		inline function saveOpt() {
+			savePrefs(project);
 		}
 		//
 		function aBool(name:String,
@@ -46,19 +76,10 @@ class PrefLinter {
 		defValue:Bool):Element {
 			var initialValue = get(opt);
 			if (project != null) {
-				var options = PrefLinter.selectOpts.copy();
-				var values = selectVals;
-				var parentValue = get(current.linterPrefs);
-				if (parentValue == null) parentValue = defValue;
-				options[0] += ' (➜ ' + (parentValue ? "on" : "off") + ")";
-				//
-				if (initialValue == null) initialValue = null; // undefined -> null
-				var initialOption = options[values.indexOf(initialValue)];
-				return addDropdown(out, name, initialOption, options, function(s) {
-					var z = values[options.indexOf(s)];
-					set(opt, z);
-					saveOpt();
-				});
+				return addLinterDropdown(out, project, name, get, set, [
+					pair(true, "on"),
+					pair(false, "off"),
+				]);
 			} else {
 				if (initialValue == null) initialValue = defValue;
 				return addCheckbox(out, name, initialValue, function(z) {
@@ -132,8 +153,17 @@ class PrefLinter {
 		el.title = "If JSDoc lists fewer arguments than function() itself, they will be mixed together.";
 		
 		out = addGroup(orig, "Misc.");
-		addf(aBool, "Warn about missing fields on a.b access", opt.requireFields);
-		addf(aBool, "Allow implicitly casting Type? to Type", opt.implicitNullableCasts);
+		addf(aBool, "Warn about missing fields on `a.b` access", opt.requireFields);
+		addf(aBool, "Allow implicitly casting `Type?` to `Type`", opt.implicitNullableCasts);
+		addLinterDropdown(out, project, "Allow implicitly casting `undefined` to...",
+			q -> q.undefinedCastsTo,
+			(q, v) -> { q.undefinedCastsTo = v; },
+			[
+				pair(Nullable, "Nullable only"),
+				pair(RefTypes, "Reference types", "Arrays, structs, functions"),
+				pair(Anything, "Anything"),
+			]
+		);
 		addf(aBool, "Allow implicitly casting between bool and int", opt.implicitBoolIntCasts);
 		addf(aBool, "Warn about redundant casts (e.g. for `4 as number`)", opt.warnAboutRedundantCasts);
 		addf(aBool, "Treat scripts without @self as having `void` self", opt.strictScriptSelf);

@@ -206,6 +206,7 @@ class GmlLinter {
 		
 		GmlTypeCanCastTo.allowImplicitNullCast = prefs.implicitNullableCasts;
 		GmlTypeCanCastTo.allowImplicitBoolIntCasts = prefs.implicitBoolIntCasts;
+		GmlTypeCanCastTo.undefinedCastsTo = prefs.undefinedCastsTo;
 		GmlTypeCanCastTo.allowNullToAny = false;
 		initModules();
 	}
