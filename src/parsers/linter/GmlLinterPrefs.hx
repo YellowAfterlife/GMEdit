@@ -109,8 +109,8 @@ typedef GmlLinterPrefsImpl = {
 	?liveIdleDelay:Int,
 	?liveIdleMaxLines:Int,
 }
-enum GmlLinterUndefinedCastsTo {
-	Nullable;
-	RefTypes;
-	Anything;
+enum abstract GmlLinterUndefinedCastsTo(String) {
+	var Nullable;
+	var RefTypes;
+	var Anything;
 }
