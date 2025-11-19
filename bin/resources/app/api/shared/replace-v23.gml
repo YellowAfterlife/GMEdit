@@ -214,7 +214,7 @@ dbg_button<T:function>(label:string,callback_ref:T|debug_reference<T>,?width:num
 dbg_sprite_button<T:function,R:sprite>(callback_ref:T|debug_reference<T>,sprite_ref_or_array:debug_reference<R>|debug_reference<R>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?width:number,?height:number,?xoffset:number,?yoffset:number,?widthSprite:number,?heightSprite:number)->void
 dbg_same_line()->void
 dbg_add_font_glyphs(filename_ttf:string,?size:number,?font_range:int)->void
-ref_create<T>(context:instance|struct|debug_reference<instance>|debug_reference<struct>,name:string|debug_reference<string>,?index:int)->debug_reference<T>
+ref_create<T>(context:instance|struct|global|debug_reference<instance>|debug_reference<struct>,name:string|debug_reference<string>,?index:int)->debug_reference<T>
 
 #endregion
 
