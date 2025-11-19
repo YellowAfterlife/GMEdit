@@ -39,6 +39,9 @@ import tools.JsTools;
 	public static inline function mapOf(keyType:GmlType, valType:GmlType):GmlType {
 		return TInst("ds_map", [keyType, valType], KMap);
 	}
+	public static inline function enumValue(name:String):GmlType {
+		return TInst("enum", [simple(name)], KEnumValue);
+	}
 	
 	public static function type(name:String):GmlType {
 		return TInst("type", [TInst(name, [], KCustom)], KType);
