@@ -2681,8 +2681,8 @@ shader_set_uniform_matrix(uniform_id:shader_uniform)->void
 shader_set_uniform_matrix_array(uniform_id:shader_uniform,array:int[])->void
 shader_enable_corner_id(enable:bool)->void
 texture_set_stage(sampled_id:shader_sampler, texture_id:texture)->void
-texture_get_texel_width(texture_id:texture)->int
-texture_get_texel_height(texture_id:texture)->int
+texture_get_texel_width(texture_id:texture)->number
+texture_get_texel_height(texture_id:texture)->number
 shaders_are_supported()->bool
 
 #endregion

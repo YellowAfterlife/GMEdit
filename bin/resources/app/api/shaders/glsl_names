@@ -90,6 +90,7 @@ gl_FogFragCoord
 gl_FragColor 
 gl_FragData 
 gl_FragDepth
+gl_FragCoord
 
 gl_MaxVertexUniformComponents
 gl_MaxFragmentUniformComponents
