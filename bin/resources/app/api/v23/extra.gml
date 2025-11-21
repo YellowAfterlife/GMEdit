@@ -614,3 +614,19 @@ absolute?:flexpanel_position
 static?:flexpanel_position
 
 flexpanel_position_type#:flexpanel_position_enum
+
+??colspace_enum
+room?:colspace_type
+ui_view?:colspace_type
+ui_display?:colspace_type
+colspace_all?:colspace_type
+
+colspace#:colspace_enum
+
+??texgroup_info
+sprites?:struct
+
+layer_type_unknown#:layer_type
+layer_type_room#:layer_type
+layer_type_ui_viewports#:layer_type
+layer_type_ui_display#:layer_type

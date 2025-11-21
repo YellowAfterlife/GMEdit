@@ -287,7 +287,6 @@ room_set_view_enabled
 room_assign
 room_instance_clear
 room_set_camera
-file_text_close
 file_text_write_string
 file_text_write_real
 file_text_writeln
