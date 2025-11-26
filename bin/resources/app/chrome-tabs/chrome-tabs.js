@@ -348,7 +348,7 @@
       if (tabEls.length > 0) {
         document.documentElement.style.setProperty("--chrome-tabs-height", (top + tabHeight) + "px")
       } else document.documentElement.style.removeProperty("--chrome-tabs-height")
-      if (setDatasetValue(document.documentElement, "multilineTabs", top > 0 ? "" : null)) {
+      if (setDatasetValue(document.documentElement, "multilineTabs", top > 0 ? "" + top : null)) {
         var _ignore = this.ignoreResize;
         this.ignoreResize = true;
         var e = new CustomEvent("resize");
