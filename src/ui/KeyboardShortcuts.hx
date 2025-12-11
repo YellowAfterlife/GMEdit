@@ -355,12 +355,14 @@ class KeyboardShortcuts {
 			var session = editor.session;
 			var line = session.getLine(pos.row);
 			if (line != null && pos.column < line.length
-				&& OpenDeclaration.proc(session, pos, session.getTokenAtPos(pos))
 			) {
-				if (session.selection.isEmpty()) {
-					session.selection.moveTo(pos.row, pos.column);
+				if (OpenDeclaration.proc(session, pos, session.getTokenAtPos(pos))) {
+					if (session.selection.isEmpty()) {
+						session.selection.moveTo(pos.row, pos.column);
+					}
+					dom.preventDefault();
 				}
-				dom.preventDefault();
+				ui.misc.LinuxPaste.prevent();
 			}
 		});
 		editor.on("mousewheel", function(ev:Dynamic) {
@@ -375,6 +377,7 @@ class KeyboardShortcuts {
 		});
 		//
 		ui.misc.DebugShowToken.initEditor(editor);
+		ui.misc.LinuxPaste.init();
 	}
 }
 

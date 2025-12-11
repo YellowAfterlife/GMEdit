@@ -2537,6 +2537,12 @@ var TextInput = function(parentNode, host) {
     };
     
     var onPaste = function(e) {
+        // +y: absorb Linux middle click paste when requested
+        if (!$gmedit["ui.misc.LinuxPaste"].isAllowed()) {
+            event.preventDefault(e);
+            return false;
+        }
+        // </>
         var data = handleClipboardData(e);
         if (typeof data == "string") {
             if (data)
