@@ -7,6 +7,7 @@ instance_create_layer<T:object>(x:number,y:number,layer_id_or_name:layer|string,
 
 #region 2.1
 
+GM_runtime_type#:string
 GM_project_filename#:string
 GM_build_type#:string
 GM_is_sandboxed#:bool
@@ -88,7 +89,6 @@ array_concat<T>(...arrays:T[])->T[]
 array_union<T>(...arrays:T[])->T[]
 array_intersection<T>(...arrays:T[])->T[]
 
-weak_ref_create<T:struct>(thing_to_track:T)->weak_reference
 weak_ref_alive(weak_ref:weak_reference)->bool
 weak_ref_any_alive(array:weak_reference[],?index:int,?length:int)->bool
 
@@ -132,6 +132,26 @@ string_foreach(str:string,func:function<char:string; pos:int; void>, ?pos:int, ?
 place_empty<T:object|instance|layer_tilemap|array>(x:number,y:number,obj:T)->bool
 place_meeting<T:object|instance|layer_tilemap|array>(x:number,y:number,obj:T)->bool
 move_and_collide<T:object|instance|layer_tilemap|array>(dx:number,dy:number,obj:T,?num_iterations:int,?xoff:number,?yoff:number,?max_x_move:number,?max_y_move:number)->T[]
+sphere_is_visible(x:number,y:number,z:number,radius:number)->bool
+
+#endregion
+
+
+#region 3.5
+
+instance_position<T:object|instance|layer_tilemap|array>(x:number,y:number,obj:T)->T
+instance_place<T:object|instance|layer_tilemap|array>(x:number,y:number,obj:T)->T
+
+#endregion
+
+#region 3.6
+
+instance_deactivate_all(notme:bool,?collision_space:colspace_type)->void
+instance_deactivate_object<T:object|instance>(obj:T,?collision_space:colspace_type)->void
+instance_deactivate_region(left:number,top:number,width:number,height:number,inside:bool,notme:bool,?collision_space:colspace_type)->void
+instance_activate_all(?collision_space:colspace_type)->void
+instance_activate_object<T:object|instance>(obj:T,?collision_space:colspace_type)->void
+instance_activate_region(left:number,top:number,width:number,height:number,inside:bool,?collision_space:colspace_type)->void
 
 #endregion
 
@@ -185,7 +205,8 @@ ev_async_system_event#:event_type
 
 show_debug_message(val_or_format:any, ...values:any)->void
 show_debug_message_ext(format:string, values_arr:array)->void
-show_debug_overlay(enable:bool,?minimised:bool,?scale:number,?alpha:number)->void
+show_debug_overlay(enable:bool,?minimised:bool,?scale:number,?alpha:number,?gamepad_enable:bool,?gamepad_index:int)->void
+debug_mode:bool
 is_debug_overlay_open()->bool
 is_mouse_over_debug_overlay()->bool
 is_keyboard_used_debug_overlay()->bool
@@ -193,12 +214,16 @@ show_debug_log(enable:bool)->void
 debug_event(string:string,?silent:bool)->struct // TODO ResourceCounts and DumpMemory structs
 debug_get_callstack(?maxDepth:int)->string[]
 
-dbg_view(name:string,visible:bool,?x:number,?y:number,?width:number,?height:number)->debug_view
+dbg_view(name:string,visible:bool,?x:number?,?y:number?,?width:number?,?height:number?)->debug_view
 dbg_section(name:string,?open:bool)->debug_section
 dbg_view_delete(view:debug_view)->void
-dbg_view_exists(view:debug_view)->void
+dbg_view_exists(view:debug_view)->bool
+dbg_set_view(view:debug_view)->void
 dbg_section_delete(section:debug_section)->bool
 dbg_section_exists(section:debug_section)->bool
+dbg_set_section(section:debug_section)->void
+dbg_control_delete(section:debug_section)->bool
+dbg_control_exists(section:debug_section)->bool
 dbg_slider<T:number>(ref_or_array:debug_reference<T>|debug_reference<T>[],?minimum:number,?maximum:number,?label:string,?step:number)->void
 dbg_slider_int<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],?minimum:int,?maximum:int,?label:string,?step:int)->void
 dbg_drop_down<T:int>(ref_or_array:debug_reference<T>|debug_reference<T>[],specifier:string|string[],?label:string)->void
@@ -214,7 +239,16 @@ dbg_button<T:function>(label:string,callback_ref:T|debug_reference<T>,?width:num
 dbg_sprite_button<T:function,R:sprite>(callback_ref:T|debug_reference<T>,sprite_ref_or_array:debug_reference<R>|debug_reference<R>[],index_ref_or_array:debug_reference<int>|debug_reference<int>[],?width:number,?height:number,?xoffset:number,?yoffset:number,?widthSprite:number,?heightSprite:number)->void
 dbg_same_line()->void
 dbg_add_font_glyphs(filename_ttf:string,?size:number,?font_range:int)->void
-ref_create<T>(context:instance|struct|debug_reference<instance>|debug_reference<struct>,name:string|debug_reference<string>,?index:int)->debug_reference<T>
+dbg_get_gamepad_input()->int
+ref_create<T>(context:instance|struct|global|debug_reference<instance>|debug_reference<struct>,name:string|debug_reference<string>|int|debug_reference<int>,?index:int)->debug_reference<T>
+
+debug_input_record(filter:debug_input_filter)->void
+debug_input_save(filename:string)->void
+debug_input_playback(filename:string)->void
+
+debug_input_filter_keyboard#:debug_input_filter
+debug_input_filter_mouse#:debug_input_filter
+debug_input_filter_touch#:debug_input_filter
 
 #endregion
 
@@ -235,6 +269,8 @@ mb_side2#:mouse_button
 
 #region 5.1
 
+collision_space*@:colspace_type
+
 bboxkind_spine#:bbox_kind
 
 // exception structure entries
@@ -243,6 +279,9 @@ message?:string
 longMessage?:string
 script?:script
 stacktrace?:Array<string>
+
+// Layer-related built-in variables
+on_ui_layer@:bool
 
 // Sequence-related built-ins
 in_sequence@:bool
@@ -255,7 +294,8 @@ drawn_by_sequence@:bool
 
 draw_clear_depth(depth:number)->void
 draw_clear_stencil(stencil:int)->void
-draw_clear_ext(?color:int,alpha:number,depth:number,stencil:int)->void
+draw_clear_ext(?color:int?,?alpha:number?,?depth:number?,?stencil:int?)->void
+draw_get_circle_precision()->int
 
 #endregion
 
@@ -295,6 +335,8 @@ surface_r8unorm#:surface_format
 surface_rg8unorm#:surface_format
 surface_rgba16float#:surface_format
 surface_rgba32float#:surface_format
+
+application_surface_is_draw_enabled()->bool
 
 video_open(path:string)->void
 video_close()->void
@@ -342,17 +384,38 @@ window_mouse_get_delta_y()->number
 
 #endregion
 
+#region 5.10
+
+view_visible[0..7]:bool[]
+view_xview[0..7]&:int[]
+view_yview[0..7]&:int[]
+view_wview[0..7]&:int[]
+view_hview[0..7]&:int[]
+view_xport[0..7]:int[]
+view_yport[0..7]:int[]
+view_wport[0..7]:int[]
+view_hport[0..7]:int[]
+view_angle[0..7]&:number[]
+view_hborder[0..7]&:int[]
+view_vborder[0..7]&:int[]
+view_hspeed[0..7]&:number[]
+view_vspeed[0..7]&:number[]
+view_object[0..7]&:instance[]
+
+#endregion
+
 //////////////
 // Chapter 406
 //////////////
 
 #region 6.3
 
-audio_system()&->void
+audio_emitter_gain(emitterid:audio_emitter,gain:number,?time:number)->void
 audio_play_sound(soundid:sound,priority:int,loops:bool,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
 audio_play_sound_on(emitterid:audio_emitter,soundid:sound,loops:bool,priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
-audio_play_sound_at(soundid:sound,x:number,y:number,z:number, falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
+audio_play_sound_at(soundid:sound,x:number,y:number,z:number,falloff_ref_dist:number,falloff_max_dist:number,falloff_factor:number,loops:bool, priority:int,?gain:real,?offset:real,?pitch:real,?listener_mask:int)->sound_instance
 audio_play_sound_ext(params:any_fields_of<audio_play_sound_ext_t>)->sound_instance
+audio_sound_gain(index:sound|sound_instance,level:number,?time:number)->void
 audio_system_is_initialised()->bool
 
 audio_sound_get_asset(voiceIndex:sound_instance)->sound|undefined
@@ -367,9 +430,12 @@ audio_sync_group_is_paused(sync_group_id:sound_sync_group)->bool
 
 audio_throw_on_error(enable:bool)->void
 
+audio_group_set_gain(groupId:audio_group,volume:number,?time:number)->void
 audio_group_get_gain(groupId:audio_group)->number
 audio_group_get_assets(groupId:audio_group)->sound[]
 audio_sound_get_audio_group(index:sound|sound_instance)->audio_group
+
+audio_system()&->void
 
 #endregion
 
@@ -383,6 +449,8 @@ audio_sound_get_audio_group(index:sound|sound_instance)->audio_group
 
 #region 8.1
 
+sprite_get_convex_hull(ind:sprite,?max_points:int,?subimg:int)->number[]
+
 sprite_get_info(ind:sprite)->sprite_info|undefined
 sprite_get_nineslice(ind:sprite)->nineslice
 sprite_set_nineslice(ind:sprite,nineslice:nineslice)->void
@@ -393,13 +461,16 @@ texturegroup_get_names()->string[]
 texturegroup_load(groupname:string,?prefetch=true)->int
 texturegroup_unload(groupname:string)->void
 texturegroup_get_status(groupname:string)->texture_group_status
-texturegroup_set_mode(explicit:bool,debug:bool,default_sprite:sprite)->void
+texturegroup_set_mode(explicit:bool,?debug:bool,?default_sprite:sprite)->void
+texturegroup_exists(groupname:string)->bool
+texturegroup_add(groupname:string,source:string|buffer|string[]|buffer[],texgroup_info_struct_or_json:texgroup_info|string)->void
+texturegroup_delete(groupname:string)->bool
 
 #endregion
 
 #region 8.9
 
-room_get_info(room:room,?views:bool,?instances:bool,?layers:bool,?layer_elements:bool,?tilemap_data:bool)->room_info
+room_get_info(room:room,?views:bool,?instances:bool,?layers:bool,?layer_elements:bool,?tilemap_data:bool,?live:bool)->room_info
 
 #endregion
 
@@ -426,7 +497,7 @@ font_get_sdf_enabled(ind:font)->bool
 font_sdf_spread(ind:font,spread:number)->void
 font_get_sdf_spread(ind:font)->number
 
-font_enable_effects(ind:font, enable:bool, ?params:font_effect_params|struct)->void
+font_enable_effects(ind:font, enable:bool, ?params:any_fields_of<font_effect_params>)->void
 
 #endregion
 
@@ -439,6 +510,7 @@ method_call<T:function>(method:T,?args:any[],?offset:int=0,?num_args:int=args_le
 
 #region 9.9
 
+asset_get_type(asset:asset|string)->asset_type
 asset_get_ids(asset_type:asset_type)->array
 
 asset_sequence#:asset_type
@@ -452,6 +524,8 @@ asset_particlesystem#:asset_type
 //////////////
 
 #region 10.1
+
+file_text_close(file:file_handle)->bool
 
 cache_directory*:string
 
@@ -557,8 +631,10 @@ part_type_size_y(ind:particle,size_min_y:number,size_max_y:number,size_incr_y:nu
 
 #region 12.2
 
-particle_get_info(particles:particle_asset)->particle_system_info
+particle_add(info:particle_system_info)->particle_asset
+particle_delete(ind:particle_asset)->void
 particle_exists(particles:particle_asset)->bool
+particle_get_info(particles:particle_asset)->particle_system_info
 
 part_system_create(?particles:particle_asset)->particle_system
 part_system_color(ind:particle_system,color:int,alpha:number)$->void
@@ -586,12 +662,21 @@ ps_mode_burst#:particle_mode
 // Chapter 414
 //////////////
 
+window_post_message(message:string)->void
+
 //////////////
 // Chapter 415
 //////////////
 
-matrix_transform_vertex(matrix:number[], x:number, y:number, z:number, ?w:number)->number[]
-matrix_inverse(matrix:number[])->number[]
+matrix_get(type:matrix_type,?result_matrix:number[])->number[]
+matrix_build(x:number,y:number,z:number,xrotation:number,yrotation:number,zrotation:number,xscale:number,yscale:number,zscale:number,?result_matrix:number[])->number[]
+matrix_build_lookat(xfrom:number,yfrom:number,zfrom:number,xto:number,yto:number,zto:number,xup:number,yup:number,zup:number,?result_matrix:number[])->number[]
+matrix_build_projection_ortho(width:number,height:number,znear:number,zfar:number,?result_matrix:number[])->number[]
+matrix_build_projection_perspective(width:number,height:number,znear:number,zfar:number,?result_matrix:number[])->number[]
+matrix_build_projection_perspective_fov(fov_y:number,aspect:number,znear:number,zfar:number,?result_matrix:number[])->number[]
+matrix_multiply(matrix1:number[],matrix2:number[],?result_matrix:number[])->number[]
+matrix_transform_vertex(matrix:number[],x:number,y:number,z:number,?w:number?,?result_vertex:number[])->number[]
+matrix_inverse(matrix:number[],?result_matrix:number[])->number[]
 
 os_ps4#:os_type
 os_ps5#:os_type
@@ -599,16 +684,28 @@ os_xboxseriesxs#:os_type
 os_gdk#:os_type
 os_operagx#:os_type
 os_gxgames#:os_type
+os_switch2#:os_type
 
 os_request_permission(...permissions:string)->void
 os_set_orientation_lock(landscape_enable:bool,portrait_enable:bool)->void
 event_data*:ds_map<string,any>
+mac_refresh_receipt_validation()->void
 
 tm_systemtiming#:display_timing_method
+tm_countvsyncs_winalt#:display_timing_method
 
 draw_enable_svg_aa(enable:bool)!->void
 draw_set_svg_aa_level(aa_level:number)!->void
 draw_get_svg_aa_level()!->number
+vector_sprite_cache_limit(limit:int)!->void
+vector_sprite_cache_prune_fraction(fraction:number)!->void
+vector_sprite_cache_prune_age(frames:int)!->void
+vector_sprite_cache_get_limit()!->int
+vector_sprite_cache_get_prune_fraction()!->number
+vector_sprite_cache_get_prune_age()!->int
+vector_sprite_cache_get_used()!->int
+vector_sprite_cache_get_max_used()!->int
+vector_sprite_cache_get_oldest_entry_age()!->int
 
 stencilop_keep#:gpu_stencilop
 stencilop_zero#:gpu_stencilop
@@ -666,8 +763,10 @@ zip_save(zip_object:zip_object, path:string)->int
 os_is_network_connected(?attempt_connection:bool|network_connect_type)->bool
 
 physics_raycast<T:object|instance>(x_start:number, y_start:number, x_end:number, y_end:number, ids:T|T[], ?all_hits:bool = false, ?max_fraction:number)->physics_hitpoint[]?
+physics_debug(enable:bool)->void
 
 network_send_raw(socket:network_socket, bufferid:buffer, size:int, ?option:network_send_option)->int
+network_set_config(parameter:network_config, value1:network_socket|int|bool, ?value2:int)->string
 
 network_socket_ws#:network_type
 network_socket_wss#:network_type
@@ -681,6 +780,7 @@ network_send_text#:network_send_option
 network_config_websocket_protocol#:network_config
 network_config_enable_multicast#:network_config
 network_config_disable_multicast#:network_config
+network_config_message_size_limit#:network_config
 
 network_connect_none#:network_connect_type
 network_connect_blocking#:network_connect_type
@@ -693,6 +793,7 @@ buffer_get_surface(buffer:buffer, source_surface:surface, offset:int)->void
 buffer_get_surface_depth(buffer:buffer, source_surface:surface, offset:int)->bool
 buffer_set_surface(buffer:buffer, dest_surface:surface, offset:int)->void
 buffer_set_surface_depth(buffer:buffer, dest_surface:surface, offset:int)->bool
+buffer_get_used_size(buffer:buffer)->int
 buffer_set_used_size(buffer:buffer,size:int)->void
 buffer_copy_stride(src_buffer:buffer, src_offset:int, src_size:int, src_stride:int, src_count:int, dest_buffer:buffer, dest_offset:int, dest_stride:int)->void
 
@@ -730,10 +831,12 @@ gp_extra6#:gamepad_button
 shader_set_uniform_f_buffer(uniform_id:shader_uniform,buffer:buffer,offset:int,count:int)->void
 
 vertex_format_get_info(format_id:vertex_format)->vertex_format_info
+vertex_format_exists(format_id:vertex_format)->bool
 
 vertex_submit_ext(vbuff:vertex_buffer,primtype:primitive_type,texture:texture,offset:int,num:int)->void
 vertex_update_buffer_from_buffer(dest_vbuff:vertex_buffer,dest_offset:int,src_buffer:buffer,?src_offset:int,?src_size:int)->void
 vertex_update_buffer_from_vertex(dest_vbuff:vertex_buffer,dest_vert:int,src_vbuff:vertex_buffer,?src_vert:int,?src_vert_num:int)->void
+vertex_buffer_exists(vbuff:vertex_buffer)->bool
 
 skeleton_animation_set(anim_name:string, ?loop:bool)!->void
 skeleton_animation_set_ext(anim_name:string, track:int, ?loop:bool)!->void
@@ -752,11 +855,19 @@ skeleton_animation_set_position(track:int,position:number)!->void
 skeleton_animation_is_looping(track:int)!->bool
 skeleton_animation_is_finished(track:int)!->bool
 
+draw_enable_skeleton_blend_override(enable:bool)!->void
+draw_get_enable_skeleton_blend_override()!->bool
 skeleton_slot_data_instance(list:ds_list<ds_map<string;any>>)!->void
+
+layer_get_flexpanel_node(layer:layer|string)->flexpanel_node
+layer_get_type(layer:layer|string)->layer_type
 
 layer_get_all()->layer[]
 
 layerelementtype_text#:layer_element_type
+
+layer_tilemap_set_colmask(tilemap_element_id:layer_tilemap,index:sprite)->int
+layer_tilemap_get_colmask(tilemap_element_id:layer_tilemap)->sprite
 
 tileset_get_info(tileset_id)->tileset_info|undefined
 
@@ -766,6 +877,7 @@ camera_set_view_target<T:instance|object>(camera:camera,object:T)->void
 camera_get_view_target<T:instance|object>(camera:camera)->T|any
 
 keyboard_virtual_show(virtual_keyboard_type:virtual_keyboard_type, virtual_return_key_type:virtual_keyboard_return_key, auto_capitalization_type:virtual_keyboard_autocapitalization, predictive_text_enabled:bool)->void
+keyboard_virtual_set_position(x:number,y:number)->void
 
 nineslice_left#:nineslice_tile_index
 nineslice_top#:nineslice_tile_index
@@ -833,6 +945,27 @@ layer_sequence_get_speedscale(sequence_element_id:layer_sequence)->number
 
 layer_sequence_get_length(sequence_element_id:layer_sequence)->int
 
+// particle elements
+
+layer_particle_xscale(particle_element_id:layer_particle,xscale:number)->void
+layer_particle_yscale(particle_element_id:layer_particle,yscale:number)->void
+layer_particle_angle(particle_element_id:layer_particle,angle:number)->void
+layer_particle_blend(particle_element_id:layer_particle,color:int)->void
+layer_particle_alpha(particle_element_id:layer_particle,alpha:number)->void
+layer_particle_x(particle_element_id:layer_particle,x:number)->void
+layer_particle_y(particle_element_id:layer_particle,y:number)->void
+
+layer_particle_get_id(layer:layer|string, particle_element_name:string)->layer_particle
+layer_particle_get_instance(particle_element_id:layer_particle)->particle_system
+layer_particle_get_system(particle_element_id:layer_particle)->particle_asset
+layer_particle_get_xscale(particle_element_id:layer_particle)->number
+layer_particle_get_yscale(particle_element_id:layer_particle)->number
+layer_particle_get_angle(particle_element_id:layer_particle)->number
+layer_particle_get_blend(particle_element_id:layer_particle)->int
+layer_particle_get_alpha(particle_element_id:layer_particle)->number
+layer_particle_get_x(particle_element_id:layer_particle)->number
+layer_particle_get_y(particle_element_id:layer_particle)->number
+
 // text items
 layer_text_get_id(layer_id:layer|string,text_element_name:string)->layer_text
 layer_text_exists(layer_id:layer|string,text_element_id:layer_text)->bool
@@ -849,14 +982,17 @@ layer_text_alpha(text_element_id:layer_text,alpha:number)->void
 layer_text_font(text_element_id:layer_text,font:font)->void
 layer_text_xorigin(text_element_id:layer_text,xorigin:number)->void
 layer_text_yorigin(text_element_id:layer_text,yorigin:number)->void
+layer_text_origin(text_element_id:layer_text,origin:text_origin)->void
 layer_text_text(text_element_id:layer_text,text:string)->void
 layer_text_halign(text_element_id:layer_text,alignment:text_horizontal_alignment)->void
 layer_text_valign(text_element_id:layer_text,alignment:text_vertical_alignment)->void
 layer_text_charspacing(text_element_id:layer_text,charspacing:number)->void
 layer_text_linespacing(text_element_id:layer_text,linespacing:number)->void
+layer_text_paragraphspacing(text_element_id:layer_text,paragraphspacing:number)->void
 layer_text_framew(text_element_id:layer_text,width:number)->void
 layer_text_frameh(text_element_id:layer_text,height:number)->void
 layer_text_wrap(text_element_id:layer_text,wrap:bool)->void
+layer_text_wrapmode(text_element_id:layer_text,wrapmode:text_wrap)->void
 
 layer_text_get_x(text_element_id:layer_text)->number
 layer_text_get_y(text_element_id:layer_text)->number
@@ -868,14 +1004,17 @@ layer_text_get_alpha(text_element_id:layer_text)->number
 layer_text_get_font(text_element_id:layer_text)->font
 layer_text_get_xorigin(text_element_id:layer_text)->number
 layer_text_get_yorigin(text_element_id:layer_text)->number
+layer_text_get_origin(text_element_id:layer_text)->text_origin
 layer_text_get_text(text_element_id:layer_text)->string
 layer_text_get_halign(text_element_id:layer_text)->text_horizontal_alignment
 layer_text_get_valign(text_element_id:layer_text)->text_vertical_alignment
 layer_text_get_charspacing(text_element_id:layer_text)->number
 layer_text_get_linespacing(text_element_id:layer_text)->number
+layer_text_get_paragraphspacing(text_element_id:layer_text)->number
 layer_text_get_framew(text_element_id:layer_text)->number
 layer_text_get_frameh(text_element_id:layer_text)->number
 layer_text_get_wrap(text_element_id:layer_text)->bool
+layer_text_get_wrapmode(text_element_id:layer_text)->text_wrap
 
 // Text element alignment
 textalign_left#:text_horizontal_alignment
@@ -885,6 +1024,21 @@ textalign_justify#:text_horizontal_alignment
 textalign_top#:text_vertical_alignment
 textalign_middle#:text_vertical_alignment
 textalign_bottom#:text_vertical_alignment
+
+// Text element origin
+origin_topleft#:text_origin
+origin_topcentre#:text_origin
+origin_topright#:text_origin
+origin_middleleft#:text_origin
+origin_middlecentre#:text_origin
+origin_middleright#:text_origin
+origin_bottomleft#:text_origin
+origin_bottomcentre#:text_origin
+origin_bottomright#:text_origin
+
+// Text element wrapmode
+textwrap_default#:text_wrap
+textwrap_splitwords#:text_wrap
 
 // Animation Curves
 animcurve_get(curve_id:animcurve)->animcurve_struct
@@ -1319,6 +1473,8 @@ flexpanel_node_get_data(node:flexpanel_node)->struct
 flexpanel_node_set_name(node:flexpanel_node, name:string)->void
 flexpanel_node_set_data(node:flexpanel_node, struct:struct)->void
 flexpanel_node_get_struct(node:flexpanel_node)->flexpanel_data
+flexpanel_node_get_measure_function(node:flexpanel_node)->function<width:number; width_type:int; height:number; height_type:int; struct>
+flexpanel_node_set_measure_function(node:flexpanel_node,mesaure_func:function<width:number; width_type:int; height:number; height_type:int; struct>)->void
 flexpanel_calculate_layout(node:flexpanel_node, width:number|undefined, height:number|undefined, direction:flexpanel_direction_type)->void
 flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_layout
 flexpanel_node_style_get_align_content(node:flexpanel_node)->flexpanel_justify_type
@@ -1361,8 +1517,8 @@ flexpanel_node_style_set_gap(node:flexpanel_node, gutter:flexpanel_gutter_type, 
 flexpanel_node_style_set_position(node:flexpanel_node, edge:flexpanel_edge_type, value:number, unit:flexpanel_unit_type)->void
 flexpanel_node_style_set_justify_content(node:flexpanel_node, justify:flexpanel_justify_type)->void
 flexpanel_node_style_set_direction(node:flexpanel_node, flexpanel_direction:flexpanel_direction_type)->void
-flexpanel_node_style_set_margin(node:flexpanel_node, edge:flexpanel_edge_type, value:number)->void
-flexpanel_node_style_set_padding(node:flexpanel_node, edge:flexpanel_edge_type, value:number)->void
+flexpanel_node_style_set_margin(node:flexpanel_node, edge:flexpanel_edge_type, value:number, ?unit:flexpanel_unit_type)->void
+flexpanel_node_style_set_padding(node:flexpanel_node, edge:flexpanel_edge_type, value:number, ?unit:flexpanel_unit_type)->void
 flexpanel_node_style_set_border(node:flexpanel_node, edge:flexpanel_edge_type, value:number)->void
 flexpanel_node_style_set_position_type(node:flexpanel_node, type:flexpanel_position)->void
 flexpanel_node_style_set_min_width(node:flexpanel_node, value:number, unit:flexpanel_unit_type)->void

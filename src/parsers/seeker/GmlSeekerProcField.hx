@@ -4,6 +4,8 @@ import gml.GmlAPI;
 import gml.GmlField;
 import gml.GmlFuncDoc;
 import gml.type.GmlType;
+import gml.type.GmlTypeCanCastTo;
+import gml.type.GmlTypeDef;
 import parsers.GmlSeekData.GmlSeekDataHint;
 import tools.JsTools;
 import tools.NativeString;
@@ -60,7 +62,8 @@ class GmlSeekerProcField {
 		info = NativeString.nzcct(info, "\n", 'from $namespace');
 		if (type != null) info = NativeString.nzcct(info, "\n", "type " + type.toString());
 		
-		var compMeta = isField ? (args != null ? "function" : "variable") : "namespace";
+		var isFunc = args != null || GmlTypeCanCastTo.canCastTo(type, GmlTypeDef.anyFunction);
+		var compMeta = isField ? (isFunc ? "function" : "variable") : "namespace";
 		var privateFieldRegex = seeker.privateFieldRegex;
 		var comp = privateFieldRegex == null || !privateFieldRegex.test(name)
 			? new AceAutoCompleteItem(name, compMeta, info) : null;

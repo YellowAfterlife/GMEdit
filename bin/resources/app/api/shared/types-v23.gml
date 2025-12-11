@@ -219,11 +219,23 @@ typedef sequence_interpolation : uncompareable;
 feathername: Constant.SequenceAudioKey
 typedef sequence_audio_mode : uncompareable;
 
+feathername: Constant.LayerType
+typedef layer_type : uncompareable;
+
 feathername: Constant.TextAlign
 typedef text_horizontal_alignment : uncompareable;
 
 feathername: Constant.TextAlign
 typedef text_vertical_alignment : uncompareable;
+
+feathername: Constant.TextOrigin
+typedef text_origin : uncompareable;
+
+feathername: Constant.TextWrap
+typedef text_wrap : uncompareable;
+
+feathername: Id.ParticleElement
+typedef layer_particle : layer_element
 
 feathername: Constant.AnimCurveInterpolationType
 typedef animcurve_interpolation : uncompareable;
@@ -286,3 +298,11 @@ feathername: Enum.flexpanel_position_type
 typedef flexpanel_position : string;
 
 fe_name mp_grid = Id.MpGrid;
+
+feathername: colspace
+typedef colspace_type : uncompareable;
+
+feathername: Constant.DebugInputFilter
+typedef debug_input_filter : uncompareable;
+
+typedef texgroup_info : struct

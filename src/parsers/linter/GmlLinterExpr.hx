@@ -437,7 +437,7 @@ class GmlLinterExpr extends GmlLinterHelper {
 					var isStatic:Bool, nsType:GmlType = null;
 					if (enumType != null) {
 						isStatic = true;
-						currType = GmlTypeDef.int;
+						currType = GmlTypeDef.enumValue(enumType.name);//GmlTypeDef.int;
 						currFunc = null;
 						var ef = enumType.compMap[field];
 						if (ef != null && ef.doc != null) {

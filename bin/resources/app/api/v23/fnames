@@ -50,7 +50,7 @@ path_action_reverse#
 
 
 //////////////
-// Chapter 402
+// Chapter 403
 //////////////
 
 // section 2.1
@@ -62,6 +62,7 @@ NaN#
 infinity#
 GM_build_date#
 GM_version#
+GM_runtime_type#
 GM_runtime_version#
 GM_project_filename#
 GM_build_type#
@@ -373,6 +374,7 @@ distance_to_point(x,y)
 distance_to_object(obj)
 position_empty(x,y)
 position_meeting(x,y,obj)
+sphere_is_visible(x,y,z,radius)
 
 // section 3.2
 
@@ -462,12 +464,12 @@ instance_id_get(index)
 
 // section 3.6
 
-instance_deactivate_all(notme)
-instance_deactivate_object(obj)
-instance_deactivate_region(left,top,width,height,inside,notme)
-instance_activate_all()
-instance_activate_object(obj)
-instance_activate_region(left,top,width,height,inside)
+instance_deactivate_all(notme,[collision_space])
+instance_deactivate_object(obj,[collision_space])
+instance_deactivate_region(left,top,width,height,inside,notme,[collision_space])
+instance_activate_all([collision_space])
+instance_activate_object(obj,[collision_space])
+instance_activate_region(left,top,width,height,inside,[collision_space])
 
 // section 3.7
 
@@ -729,12 +731,12 @@ error_occurred&
 error_last&
 show_debug_message(val_or_format,val0,val1,...)
 show_debug_message_ext(format,array_value)
-show_debug_overlay(enable,[minimised],[scale],[alpha],...)
+show_debug_overlay(enable,[minimised],[scale],[alpha],[gamepad_enable],[gamepad_index]...)
 is_debug_overlay_open()
 is_mouse_over_debug_overlay()
 is_keyboard_used_debug_overlay()
 show_debug_log(enable)
-debug_mode*
+debug_mode
 debug_event(str,...)
 debug_get_callstack([maxdepth],...)
 alarm_get(index)
@@ -743,8 +745,12 @@ dbg_view(name,visible,[x],[y],[width],[height],...)
 dbg_section(name,[open])
 dbg_view_delete(viewPTR)
 dbg_view_exists(viewPTR)
+dbg_set_view(viewPTR)
 dbg_section_delete(sectionPTR)
 dbg_section_exists(sectionPTR)
+dbg_set_section(sectionPTR)
+dbg_control_delete(controlPTR)
+dbg_control_exists(controlPTR)
 dbg_slider(dbgRefOrArrayOfDbgRef,[minimum],[maximum],[label],[step]...)
 dbg_slider_int(dbgRefOrArrayOfDbgRef,[minimum],[maximum],[label],[step]...)
 dbg_drop_down(dbgRefOrArrayOfDbgRef,specifierOrArrayValues,[labelOrArrayLabels],[label]...)
@@ -760,8 +766,16 @@ dbg_button(label,dbgRef,[width],[height]...)
 dbg_sprite_button(dbgRef,dbgRefSprite,dbgRefSpriteIndex,[width],[height],[xoffset],[yoffset],[widthSprite],[heightSprite]...)
 dbg_same_line()
 dbg_add_font_glyphs( filenameTTF,[size],[fontRange]... )
+dbg_get_gamepad_input()
 ref_create(dbgrefOrStruct,dbgrefOrName,[index],...)
 
+debug_input_record(filter)
+debug_input_save(filename)
+debug_input_playback(filename)
+
+debug_input_filter_keyboard#
+debug_input_filter_mouse#
+debug_input_filter_touch#
 
 font_texture_page_size
 
@@ -897,6 +911,7 @@ bbox_left*@
 bbox_right*@
 bbox_top*@
 bbox_bottom*@
+collision_space*@
 
 bboxmode_automatic#
 bboxmode_fullimage#
@@ -917,6 +932,7 @@ stacktrace*@
 
 // Layer-related built-in variables
 layer@
+on_ui_layer@
 
 // Sequence-related built-ins
 in_sequence@
@@ -961,6 +977,7 @@ draw_triangle(x1,y1,x2,y2,x3,y3,outline)
 draw_circle(x,y,r,outline)
 draw_ellipse(x1,y1,x2,y2,outline)
 draw_set_circle_precision(precision)
+draw_get_circle_precision()
 draw_arrow(x1,y1,x2,y2,size)
 draw_button(x1,y1,x2,y2,up)
 draw_path(path,x,y,absolute)
@@ -1201,6 +1218,7 @@ application_surface_draw_enable(on_off)
 application_get_position()
 application_surface_enable(enable)
 application_surface_is_enabled()
+application_surface_is_draw_enabled()
 
 
 video_open(path)
@@ -1300,20 +1318,20 @@ window_mouse_get_delta_y()
 view_enabled
 view_current*
 view_visible[0..7]
-// view_xview[0..7]
-// view_yview[0..7]
-// view_wview[0..7]
-// view_hview[0..7]
+view_xview[0..7]&
+view_yview[0..7]&
+view_wview[0..7]&
+view_hview[0..7]&
 view_xport[0..7]
 view_yport[0..7]
 view_wport[0..7]
 view_hport[0..7]
-// view_angle[0..7]
-// view_hborder[0..7]
-// view_vborder[0..7]
-// view_hspeed[0..7]
-// view_vspeed[0..7]
-// view_object[0..7]
+view_angle[0..7]&
+view_hborder[0..7]&
+view_vborder[0..7]&
+view_hspeed[0..7]&
+view_vspeed[0..7]&
+view_object[0..7]&
 view_surface_id[0..7]
 view_camera[0..7]
 window_view_mouse_get_x(id)
@@ -1338,7 +1356,7 @@ audio_emitter_exists(emitterid)
 audio_emitter_pitch(emitterid,pitch)
 audio_emitter_velocity(emitterid,vx,vy,vz)
 audio_emitter_falloff(emitterid, falloff_ref_dist,falloff_max_dist,falloff_factor)
-audio_emitter_gain(emitterid,gain)
+audio_emitter_gain(emitterid,gain,[time])
 audio_play_sound(soundid,priority,loops,[gain],[offset],[pitch],[listener_mask])
 audio_play_sound_on(emitterid,soundid,loops,priority,[gain],[offset],[pitch],[listener_mask])
 audio_play_sound_at(soundid,x,y,z,falloff_ref_dist,falloff_max_dist,falloff_factor,loops,priority,[gain],[offset],[pitch],[listener_mask])
@@ -1357,7 +1375,7 @@ audio_play_music(soundid,loops)&
 audio_stop_music()&
 audio_master_gain(gain)
 audio_music_gain(value,time)&
-audio_sound_gain(index,level,time)
+audio_sound_gain(index,level,[time])
 audio_sound_pitch(index,pitch)
 audio_stop_all()
 audio_resume_all()
@@ -1420,7 +1438,7 @@ audio_group_is_loaded( groupId )
 audio_group_load_progress( groupId )
 audio_group_name( groupId )
 audio_group_stop_all( groupId )
-audio_group_set_gain( groupId, volume, time )
+audio_group_set_gain( groupId, volume, [time] )
 audio_group_get_gain(groupId)
 audio_group_get_assets(groupId)
 audio_sound_get_audio_group(index)
@@ -1504,6 +1522,8 @@ sprite_get_bbox_left(ind)
 sprite_get_bbox_right(ind)
 sprite_get_bbox_top(ind)
 sprite_get_bbox_bottom(ind)
+sprite_get_convex_hull(ind,[max_pts],[subimg])
+
 
 sprite_set_bbox_mode(ind,mode)
 sprite_set_bbox(ind,left,top,right,bottom)
@@ -1544,6 +1564,9 @@ texturegroup_load(groupname,[prefetch])
 texturegroup_unload(groupname)
 texturegroup_get_status(groupname)
 texturegroup_set_mode(explicit,debug,default_sprite)
+texturegroup_exists(groupname)
+texturegroup_add(groupname,filename_or_buffer_or_array_of_filenames_or_buffers,struct_of_asset_descriptions)
+texturegroup_delete(groupname)
 
 texture_debug_messages(debug_level)
 
@@ -1611,7 +1634,7 @@ object_is_ancestor(ind_child,ind_parent)
 
 room_exists(ind)
 room_get_name(ind)
-room_get_info(ind,[views],[instances],[layers],[layer_elements],[tilemap_data])
+room_get_info(ind,[views],[instances],[layers],[layer_elements],[tilemap_data],[live])
 
 //////////////
 // Chapter 409
@@ -1715,7 +1738,7 @@ room_get_camera(ind,vind)
 room_set_camera(ind,vind,camera)
 
 asset_get_index(name)
-asset_get_type(name)
+asset_get_type(name_or_ref)
 asset_get_ids(asset_type)
 
 asset_object#
@@ -2052,8 +2075,10 @@ pt_shape_smoke#
 pt_shape_snow#
 
 // section 12.2
-particle_get_info(ind)
+particle_add(info)
+particle_delete(ind)
 particle_exists(ind)
+particle_get_info(ind)
 
 part_system_create([partsys])
 part_system_create_layer(layer,persistent,[partsys])
@@ -2115,6 +2140,7 @@ external_define(dll,name,calltype,restype,argnumb,arg1type,arg2type,...)!
 external_free(dllname)!
 window_handle()
 window_device()
+window_post_message(message)
 ty_real#
 ty_string#
 dll_cdecl#
@@ -2126,17 +2152,17 @@ dll_stdcall#
 matrix_view#
 matrix_projection#
 matrix_world#
-matrix_get(type)
+matrix_get(type,[result_matrix])
 matrix_set(type,matrix)
 matrix_build_identity()
-matrix_build(x,y,z,xrotation,yrotation,zrotation,xscale,yscale,zscale)
-matrix_build_lookat(xfrom,yfrom,zfrom,xto,yto,zto,xup,yup,zup)
-matrix_build_projection_ortho(width,height,znear,zfar)
-matrix_build_projection_perspective(width,height,znear,zfar)
-matrix_build_projection_perspective_fov(fov_y,aspect,znear,zfar)
-matrix_multiply(matrix,matrix)
-matrix_transform_vertex(matrix, x, y, z, [w])
-matrix_inverse(matrix)
+matrix_build(x,y,z,xrotation,yrotation,zrotation,xscale,yscale,zscale,[result_matrix])
+matrix_build_lookat(xfrom,yfrom,zfrom,xto,yto,zto,xup,yup,zup,[result_matrix])
+matrix_build_projection_ortho(width,height,znear,zfar,[result_matrix])
+matrix_build_projection_perspective(width,height,znear,zfar,[result_matrix])
+matrix_build_projection_perspective_fov(fov_y,aspect,znear,zfar,[result_matrix])
+matrix_multiply(matrix1,matrix2,[result_matrix])
+matrix_transform_vertex(matrix, x, y, z, [w],[result_array])
+matrix_inverse(matrix,[result_matrix])
 
 matrix_stack_push(...)
 matrix_stack_pop()
@@ -2156,18 +2182,18 @@ os_android#
 //os_symbian#
 os_linux#
 os_unknown#
-os_winphone#
+os_winphone#&
 //os_tizen#
-os_win8native#
+os_win8native#&
 //os_wiiu#
 //os_3ds#
-os_psvita#
+os_psvita#&
 //os_bb10#
 os_ps4#
-os_xboxone#
-os_ps3#
+os_xboxone#&
+os_ps3#&
 //os_xbox360#
-os_uwp#
+os_uwp#&
 os_tvos#
 os_switch#
 os_ps5#
@@ -2175,6 +2201,7 @@ os_xboxseriesxs#
 os_gdk#
 os_operagx#
 os_gxgames#
+os_switch2#
 
 browser_not_a_browser#
 browser_unknown#
@@ -2232,12 +2259,15 @@ async_load*
 delta_time*
 webgl_enabled*
 event_data*
+mac_refresh_receipt_validation()
+
 
 display_set_timing_method(method)
 display_get_timing_method()
 tm_sleep#
 tm_countvsyncs#
 tm_systemtiming#
+tm_countvsyncs_winalt#
 
 display_set_sleep_margin(milliseconds)
 display_get_sleep_margin()
@@ -2261,6 +2291,15 @@ draw_get_swf_aa_level()!
 draw_enable_svg_aa(enable)!
 draw_set_svg_aa_level(aa_level)!
 draw_get_svg_aa_level()!
+vector_sprite_cache_limit(limit)!
+vector_sprite_cache_prune_fraction(fraction)!
+vector_sprite_cache_prune_age(frames)!
+vector_sprite_cache_get_limit()!
+vector_sprite_cache_get_prune_fraction()!
+vector_sprite_cache_get_prune_age()!
+vector_sprite_cache_get_used()!
+vector_sprite_cache_get_max_used()!
+vector_sprite_cache_get_oldest_entry_age()!
 draw_texture_flush()
 draw_flush()
 
@@ -2685,6 +2724,7 @@ physics_world_update_speed(speed)
 physics_world_update_iterations(iterations)
 physics_world_draw_debug(draw_flags)
 physics_raycast(xStart,yStart,xEnd,yEnd,ids,[all_hits],[max_fraction],...)
+physics_debug(enable)
 
 // Pause
 physics_pause_enable(pause)
@@ -2913,7 +2953,7 @@ network_send_broadcast(socket, port, bufferid, size)
 network_send_udp(socket, URL, port, bufferid, size)
 network_send_udp_raw(socket, URL, port, bufferid, size)
 network_set_timeout(socket, read, write)
-network_set_config(parameter, value)
+network_set_config(parameter, value1, [value2])
 network_resolve(url)
 network_destroy(socket)
 network_socket_tcp#
@@ -2939,6 +2979,7 @@ network_config_avoid_time_wait#
 network_config_websocket_protocol#
 network_config_enable_multicast#
 network_config_disable_multicast#
+network_config_message_size_limit#
 
 network_connect_none#
 network_connect_blocking#
@@ -2954,6 +2995,7 @@ buffer_get_surface(buffer, surface,offset)
 buffer_get_surface_depth(buffer, surface,offset)
 buffer_set_surface(buffer, surface,offset)
 buffer_set_surface_depth(buffer, surface,offset)
+buffer_get_used_size(buffer)
 buffer_set_used_size(buffer,size)
 buffer_delete(buffer)
 buffer_exists(buffer)
@@ -3128,6 +3170,7 @@ vertex_format_add_texcoord()
 vertex_format_add_textcoord()&
 vertex_format_add_custom(type,usage)
 vertex_format_get_info(format_id)
+vertex_format_exists(format_id)
 
 vertex_usage_position#
 vertex_usage_colour#£
@@ -3179,6 +3222,7 @@ vertex_create_buffer_from_buffer(src_buffer,format)
 vertex_create_buffer_from_buffer_ext(src_buffer,format,src_offset,num_vertices)
 vertex_update_buffer_from_buffer(dest_vbuff,dest_offset,src_buffer,[src_offset],[src_size])
 vertex_update_buffer_from_vertex(dest_vbuff,dest_vert,src_vbuff,[src_vert],[src_vert_num])
+vertex_buffer_exists(vbuff)
 
 push_local_notification(fire_time, title, message, data)&
 push_get_first_local_notification( ds_map )&
@@ -3240,6 +3284,8 @@ draw_skeleton_instance(instance, animname,skinname,frame,x,y,xscale,yscale,rot,c
 draw_skeleton_collision(sprite,animname,frame,x,y,xscale,yscale,rot,col)!
 draw_enable_skeleton_blendmodes(enable)!
 draw_get_enable_skeleton_blendmodes()!
+draw_enable_skeleton_blend_override(enable)!
+draw_get_enable_skeleton_blend_override()!
 skeleton_animation_list(sprite, list)!
 skeleton_skin_list(sprite, list)!
 skeleton_bone_list(sprite, list)!
@@ -3267,6 +3313,8 @@ layer_hspeed(layer_id,speed)
 layer_vspeed(layer_id,speed)
 layer_get_hspeed(layer_id)
 layer_get_vspeed(layer_id)
+layer_get_flexpanel_node(layer_name)
+layer_get_type(layer_id)
 
 layer_script_begin(layer_id,script)
 layer_script_end(layer_id,script)
@@ -3375,6 +3423,9 @@ layer_tilemap_exists(layer_id,tilemap_element_id)
 
 layer_tilemap_create(layer_id,x,y,tileset,width,height)
 layer_tilemap_destroy(tilemap_element_id)
+
+layer_tilemap_set_colmask(tilemap_element_id,index)
+layer_tilemap_get_colmask(tilemap_element_id)
 
 tilemap_tileset(tilemap_element_id,tileset)
 tilemap_x(tilemap_element_id,x)
@@ -3563,6 +3614,7 @@ keyboard_virtual_show(virtual_keyboard_type, virtual_return_key_type, auto_capit
 keyboard_virtual_hide()
 keyboard_virtual_status()
 keyboard_virtual_height()
+keyboard_virtual_set_position(x,y)
 
 kbv_type_default#
 kbv_type_ascii#
@@ -3660,6 +3712,27 @@ layer_sequence_get_speedscale(sequence_element_id)
 
 layer_sequence_get_length(sequence_element_id)
 
+// particle elements
+
+layer_particle_xscale(particle_element_id,xscale)
+layer_particle_yscale(particle_element_id,yscale)
+layer_particle_angle(particle_element_id,angle)
+layer_particle_blend(particle_element_id,col)
+layer_particle_alpha(particle_element_id,alpha)
+layer_particle_x(particle_element_id,x)
+layer_particle_y(particle_element_id,y)
+
+layer_particle_get_id(layer_id, particle_element_name)
+layer_particle_get_instance(particle_element_id)
+layer_particle_get_system(particle_element_id)
+layer_particle_get_xscale(particle_element_id)
+layer_particle_get_yscale(particle_element_id)
+layer_particle_get_angle(particle_element_id)
+layer_particle_get_blend(particle_element_id)
+layer_particle_get_alpha(particle_element_id)
+layer_particle_get_x(particle_element_id)
+layer_particle_get_y(particle_element_id)
+
 // text items
 layer_text_get_id(layer_id,text_element_name)
 layer_text_exists(layer_id,text_element_id)
@@ -3676,14 +3749,17 @@ layer_text_alpha(text_element_id,alpha)
 layer_text_font(text_element_id,font)
 layer_text_xorigin(text_element_id,xorigin)
 layer_text_yorigin(text_element_id,yorigin)
+layer_text_origin(text_element_id,origin)
 layer_text_text(text_element_id,text)
 layer_text_halign(text_element_id,alignment)
 layer_text_valign(text_element_id,alignment)
 layer_text_charspacing(text_element_id,charspacing)
 layer_text_linespacing(text_element_id,linespacing)
+layer_text_paragraphspacing(text_element_id,paragraphspacing)
 layer_text_framew(text_element_id,width)
 layer_text_frameh(text_element_id,height)
 layer_text_wrap(text_element_id,wrap)
+layer_text_wrapmode(text_element_id,wrapmode)
 
 layer_text_get_x(text_element_id)
 layer_text_get_y(text_element_id)
@@ -3695,14 +3771,17 @@ layer_text_get_alpha(text_element_id)
 layer_text_get_font(text_element_id)
 layer_text_get_xorigin(text_element_id)
 layer_text_get_yorigin(text_element_id)
+layer_text_get_origin(text_element_id)
 layer_text_get_text(text_element_id)
 layer_text_get_halign(text_element_id)
 layer_text_get_valign(text_element_id)
 layer_text_get_charspacing(text_element_id)
 layer_text_get_linespacing(text_element_id)
+layer_text_get_paragraphspacing(text_element_id)
 layer_text_get_framew(text_element_id)
 layer_text_get_frameh(text_element_id)
 layer_text_get_wrap(text_element_id)
+layer_text_get_wrapmode(text_element_id)
 
 // Text element alignment
 textalign_left#
@@ -3712,6 +3791,21 @@ textalign_justify#
 textalign_top#
 textalign_middle#
 textalign_bottom#
+
+// Text element origin
+origin_topleft#
+origin_topcentre#
+origin_topright#
+origin_middleleft#
+origin_middlecentre#
+origin_middleright#
+origin_bottomleft#
+origin_bottomcentre#
+origin_bottomright#
+
+// Text element wrapmode
+textwrap_default#
+textwrap_splitwords#
 
 // Animation Curves
 animcurve_get(curve_id)
@@ -4215,6 +4309,8 @@ flexpanel_node_get_data(node)
 flexpanel_node_set_name(node,name)
 flexpanel_node_set_data(node,dataStruct)
 flexpanel_node_get_struct(node)
+flexpanel_node_get_measure_function(node)
+flexpanel_node_set_measure_function(node,function)
 flexpanel_calculate_layout(node,width,height,direction)
 flexpanel_node_layout_get_position(node,[relative])
 flexpanel_node_style_get_align_content(node)
@@ -4257,8 +4353,8 @@ flexpanel_node_style_set_gap(node,gutter,size)
 flexpanel_node_style_set_position(node,edge,value,unit)
 flexpanel_node_style_set_justify_content(node,justify)
 flexpanel_node_style_set_direction(node,flexpanel_direction)
-flexpanel_node_style_set_margin(node,edge,value)
-flexpanel_node_style_set_padding(node,edge,value)
+flexpanel_node_style_set_margin(node,edge,value,[unit])
+flexpanel_node_style_set_padding(node,edge,value,[unit])
 flexpanel_node_style_set_border(node,edge,value)
 flexpanel_node_style_set_position_type(node,type)
 flexpanel_node_style_set_min_width(node,value,unit)
