@@ -379,7 +379,7 @@ class AceWrapCommonCompleters {
 		});
 		completers.push(glslCompleter);
 		
-		hlslCompleter = new AceWrapCompleter(ShaderAPI.glslComp, excludeTokens, true, function(q) {
+		hlslCompleter = new AceWrapCompleter(ShaderAPI.hlslComp, excludeTokens, true, function(q) {
 			return q.modeId == "ace/mode/shader" && q.gmlFile != null && Std.is(q.gmlFile.kind, KHLSL);
 		});
 		completers.push(hlslCompleter);
