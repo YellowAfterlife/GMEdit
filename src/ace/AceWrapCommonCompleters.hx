@@ -304,6 +304,14 @@ class AceWrapCommonCompleters {
 			return true;
 		});
 		hashtagCompleters.push(htShaderDefine);
+
+		var htUndef = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("undef", "preproc", "#undef name"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#u")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htUndef);
 		
 		var htEvent = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("event", "preproc"),
@@ -316,6 +324,8 @@ class AceWrapCommonCompleters {
 
 		var htIf = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("if", "preproc", "#if condition"),
+			new AceAutoCompleteItem("ifdef", "preproc", "#ifdef name"),
+			new AceAutoCompleteItem("ifndef", "preproc", "#ifndef name"),
 		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
 			if (!hashLineStartsWith(ssn, pos, prefix, "#i")) return false;
 			return true;
