@@ -293,6 +293,17 @@ class AceWrapCommonCompleters {
 			} else return false;
 		});
 		hashtagCompleters.push(htDefine);
+
+		var htShaderDefine = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("define", "preproc", [
+				"#define name ?expr",
+				"#define name(...args) expr"
+			].join("\n")),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#d")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htShaderDefine);
 		
 		var htEvent = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("event", "preproc"),
