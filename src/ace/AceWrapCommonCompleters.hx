@@ -350,6 +350,14 @@ class AceWrapCommonCompleters {
 			});
 			hashtagCompleters.push(htElse);
 		}
+
+		var htPragma = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("pragma", "preproc", "#pragma directive"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#p")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htPragma);
 		
 		for (cc in hashtagCompleters) {
 			cc.minLength = 1;
