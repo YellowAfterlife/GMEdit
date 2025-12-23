@@ -47,6 +47,18 @@ class AceWrapCommonCompleters {
 	public function gmlOnly(session:AceSession):Bool {
 		return gmlModes[session.modeId];
 	}
+	public function shaderOnly(session:AceSession):Bool {
+		return session.modeId == "ace/mode/shader" && session.gmlFile != null;
+	}
+	public function glslOnly(session:AceSession):Bool {
+		return shaderOnly(session) && Std.is(session.gmlFile.kind, KGLSL);
+	}
+	public function hlslOnly(session:AceSession):Bool {
+		return shaderOnly(session) && Std.is(session.gmlFile.kind, KHLSL);
+	}
+	public function codeAny(session:AceSession):Bool {
+		return session.gmlFile != null;
+	}
 	
 	public var completers:Array<AceAutoCompleter> = [];
 	
@@ -374,14 +386,10 @@ class AceWrapCommonCompleters {
 	}
 	
 	function initShaders() {
-		glslCompleter = new AceWrapCompleter(ShaderAPI.glslComp, excludeTokens, true, function(q) {
-			return q.modeId == "ace/mode/shader" && q.gmlFile != null && Std.is(q.gmlFile.kind, KGLSL);
-		});
+		glslCompleter = new AceWrapCompleter(ShaderAPI.glslComp, excludeTokens, true, glslOnly);
 		completers.push(glslCompleter);
 		
-		hlslCompleter = new AceWrapCompleter(ShaderAPI.hlslComp, excludeTokens, true, function(q) {
-			return q.modeId == "ace/mode/shader" && q.gmlFile != null && Std.is(q.gmlFile.kind, KHLSL);
-		});
+		hlslCompleter = new AceWrapCompleter(ShaderAPI.hlslComp, excludeTokens, true, hlslOnly);
 		completers.push(hlslCompleter);
 	}
 	
