@@ -313,6 +313,33 @@ class AceWrapCommonCompleters {
 			return Std.is(file.kind, KYyEvents) || Std.is(file.kind, KGmxEvents);
 		});
 		hashtagCompleters.push(htEvent);
+
+		var htIf = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("if", "preproc", "#if condition"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#i")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htIf);
+
+		var htElif = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("elif", "preproc", "#elif condition"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#e")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htElif);
+
+		for (word in ["else", "endif"]) {
+			var start = "#" + word.charAt(0);
+			var htElse = new AceWrapCompleterCustom([
+				new AceAutoCompleteItem(word, "preproc"),
+			], excludeTokens, true, shaderOnly, function(cc, ed, ssn, pos, prefix, cb) {
+				if (!hashStartsWith(ssn, pos, prefix, start)) return false;
+				return true;
+			});
+			hashtagCompleters.push(htElse);
+		}
 		
 		for (cc in hashtagCompleters) {
 			cc.minLength = 1;
