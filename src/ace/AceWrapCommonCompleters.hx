@@ -244,7 +244,7 @@ class AceWrapCommonCompleters {
 			var start = "#" + word.charAt(0);
 			var htRegion = new AceWrapCompleterCustom([
 				new AceAutoCompleteItem(word, "preproc"),
-			], excludeTokens, true, gmlOnly, function(cc, ed, ssn, pos, prefix, cb) {
+			], excludeTokens, true, codeAny, function(cc, ed, ssn, pos, prefix, cb) {
 				if (!hashStartsWith(ssn, pos, prefix, start)) return false;
 				return Project.current.version.config.indexingMode != GMS1;
 			});
