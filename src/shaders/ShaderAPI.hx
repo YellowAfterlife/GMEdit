@@ -35,13 +35,23 @@ class ShaderAPI {
 						kind: kind, doc: doc, comp: comp,
 						kindPrefix: name
 					});
-					if (FileSystem.existsSync(path_keywords)) {
-						FileSystem.readTextFile(path_keywords, function(e, d) {
-							~/(\w+)/gm.each(d, function(rx:EReg) {
-								kind.set(rx.matched(1), "keyword");
-							});
+
+					FileSystem.readTextFile(path_keywords, function(e, d) {
+						GmlParseAPI.loadStd(d, {
+							kind: kind, doc: doc, comp: comp,
+							kindPrefix: name
 						});
-					}
+						
+						~/(\w+)/gm.each(d, function(rx:EReg) {
+							kind.set(rx.matched(1), "keyword");
+						});
+						for (compItem in comp) {
+							var kindGet = kind.get(compItem.name);
+							if (kind.get(compItem.name) == "keyword") {
+								compItem.meta = "keyword";
+							}
+						}
+					});
 				});
 			}
 			//
