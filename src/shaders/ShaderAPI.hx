@@ -56,6 +56,7 @@ class ShaderAPI {
 			}
 			//
 			loadAPI(Main.relPath('api/shaders/${name}_names'), Main.relPath('api/shaders/keywords_$name.txt'));
+			loadAPI(Main.relPath('api/shaders/extra/${name}_names'), Main.relPath('api/shaders/extra/keywords_$name.txt'));
 			// custom syntax
 			if (FileSystem.canSync) {
 				var xdir = FileWrap.userPath + "/api/shaders";
