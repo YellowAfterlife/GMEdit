@@ -5,6 +5,8 @@ import ace.statusbar.AceStatusBarImports;
 import ace.statusbar.AceStatusBarResolver;
 import editors.EditCode;
 import file.kind.gml.KGmlScript;
+import file.kind.misc.KGLSL;
+import file.kind.misc.KHLSL;
 import gml.GmlAPI;
 import gml.GmlImports;
 import gml.GmlLocals;
@@ -231,17 +233,20 @@ class AceStatusBar {
 		//
 		var showRow = pos.row;
 		var isScript = JsTools.nca(file, (file.kind is KGmlScript));
-		var checkRx = isScript ? GmlAPI.scopeResetRx : GmlAPI.scopeResetRxNF;
+		var isShader = JsTools.nca(file, (file.kind is KGLSL)) || JsTools.nca(file, (file.kind is KHLSL));
 		var startRow = showRow + 1;
 		var session = editor.getSession();
 		var resetOnDefine:Bool = GmlExternAPI.gmlResetOnDefine;
 		var scope:String = "";
-		while (--startRow >= 0) {
-			var checkResult = checkRx.exec(session.getLine(startRow));
-			if (checkResult != null) {
-				scope = checkResult[1];
-				if (resetOnDefine) showRow -= startRow + 1;
-				break;
+		if (!isShader) {
+			var checkRx = isScript ? GmlAPI.scopeResetRx : GmlAPI.scopeResetRxNF;
+			while (--startRow >= 0) {
+				var checkResult = checkRx.exec(session.getLine(startRow));
+				if (checkResult != null) {
+					scope = checkResult[1];
+					if (resetOnDefine) showRow -= startRow + 1;
+					break;
+				}
 			}
 		}
 		// move this elsewhere maybe
