@@ -35,7 +35,8 @@ using tools.NativeString;
 	
 	//
 	public var version:GmlVersion;
-	public function new(gmlCode:String, ?version:GmlVersion) {
+	public var isShader:Bool = false;
+	public function new(gmlCode:String, ?version:GmlVersion, ?isShader:Bool) {
 		super(gmlCode);
 		if (version != null) {
 			this.version = version;
@@ -46,6 +47,9 @@ using tools.NativeString;
 			} else {
 				this.version = GmlVersion.v2;
 			}
+		}
+		if (isShader != null) {
+			this.isShader = isShader;
 		}
 	}
 	
@@ -423,8 +427,12 @@ using tools.NativeString;
 		}
 		switch (preproc) {
 			case "#define", "#target":
-				proc(function() skipIdent1());
-				return result;
+				if (!isShader) {
+					proc(function() skipIdent1());
+					return result;
+				} else {
+					return name;
+				}
 			case "#event":
 				proc(function() skipEventName());
 				return name != null ? name + '($result)' : result;
