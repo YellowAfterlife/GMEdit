@@ -366,6 +366,14 @@ class AceWrapCommonCompleters {
 			return true;
 		});
 		hashtagCompleters.push(htError);
+
+		var htExtension = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("extension", "preproc", "#extension name : behavior"),
+		], excludeTokens, true, glslOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#e")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htExtension);
 		
 		for (cc in hashtagCompleters) {
 			cc.minLength = 1;
