@@ -69,7 +69,7 @@ class ShaderAPI {
 							xsearch(xfull);
 							continue;
 						}
-						if (xrel == "glsl_names") {
+						if (xrel == '${name}_names') {
 							loadAPI(xfull, '${xdir}/keywords_$name.txt');
 							continue;
 						}
