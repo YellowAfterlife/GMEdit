@@ -1,5 +1,5 @@
 //////////////
-// Shader names
+// Shader names - version 1.20
 //////////////
 
 // # = constant
@@ -8,6 +8,7 @@
 
 true#
 false#
+pi#
 
 // types
 x#
@@ -39,7 +40,7 @@ MATRIX_PROJECTION#
 MATRIX_WORLD#
 MATRIX_WORLD_VIEW#
 MATRIX_WORLD_VIEW_PROJECTION#
-MATRIX_MAX#
+MATRICES_MAX#
 
 // GameMaker special
 gm_BaseTexture
@@ -52,9 +53,10 @@ gm_PS_FogEnabled
 gm_FogColour
 gm_AlphaTestEnabled
 gm_AlphaRefValue
-
-
-discard
+gm_Lights_Direction
+gm_Lights_PosRange
+gm_Lights_Colour
+gm_AmbientColour
 
 // special
 gl_Position
@@ -62,204 +64,229 @@ gl_PointSize
 gl_ClipVertex
 
 // Read only
-gl_Vertex
-gl_Normal 
-gl_Color 
+gl_Color
 gl_SecondaryColor
-gl_MultiTexCoord0 
-gl_MultiTexCoord1 
-gl_MultiTexCoord2 
-gl_MultiTexCoord3 
-gl_MultiTexCoord4 
-gl_MultiTexCoord5 
-gl_MultiTexCoord6 
-gl_MultiTexCoord7 
+gl_Normal
+gl_Vertex
+gl_MultiTexCoord0
+gl_MultiTexCoord1
+gl_MultiTexCoord2
+gl_MultiTexCoord3
+gl_MultiTexCoord4
+gl_MultiTexCoord5
+gl_MultiTexCoord6
+gl_MultiTexCoord7
 gl_FogCoord
-
 
 // vertex shader R/W
 gl_FrontColor
 gl_BackColor
-gl_FrontSecondaryColor 
+gl_FrontSecondaryColor
 gl_BackSecondaryColor
 gl_TexCoord
 gl_FogFragCoord
 
-
 // Fragment variables R/W
-gl_FragColor 
-gl_FragData 
-gl_FragDepth
 gl_FragCoord
+gl_FrontFacing
+gl_FragColor
+gl_FragData
+gl_FragDepth
 
-gl_MaxVertexUniformComponents
-gl_MaxFragmentUniformComponents
-gl_MaxVertexAttribs
-gl_MaxVaryingFloats
-gl_MaxDrawBuffers
-gl_MaxTextureCoords
-gl_MaxTextureUnits
-gl_MaxTextureImageUnits
-gl_MaxVertexTextureImageUnits
-gl_MaxCombinedTextureImageUnits
 gl_MaxLights
 gl_MaxClipPlanes
-
-
+gl_MaxTextureUnits
+gl_MaxTextureCoords
+gl_MaxVertexAttribs
+gl_MaxVertexUniformComponents
+gl_MaxVaryingFloats
+gl_MaxVertexTextureImageUnits
+gl_MaxCombinedTextureImageUnits
+gl_MaxTextureImageUnits
+gl_MaxFragmentUniformComponents
+gl_MaxDrawBuffers
 
 // Built in uniforms
-gl_ModelViewMatrix 
-gl_ModelViewProjectionMatrix 
-gl_ProjectionMatrix 
+gl_ModelViewMatrix
+gl_ModelViewProjectionMatrix
+gl_ProjectionMatrix
 gl_TextureMatrix
-gl_ModelViewMatrixInverse 
-gl_ModelViewProjectionMatrixInverse 
-gl_ProjectionMatrixInverse 
-gl_TextureMatrixInverse
-gl_ModelViewMatrixTranspose 
-gl_ModelViewProjectionMatrixTranspose 
-gl_ProjectionMatrixTranspose 
-gl_TextureMatrixTranspose
-gl_ModelViewMatrixInverseTranspose 
-gl_ModelViewProjectionMatrixInverseTranspose 
-gl_ProjectionMatrixInverseTranspose 
-gl_TextureMatrixInverseTranspose
-gl_NormalMatrix
-gl_NormalScale
-gl_DepthRangeParameters
 
+gl_NormalMatrix
+gl_ModelViewMatrixInverse
+gl_ProjectionMatrixInverse
+gl_ModelViewProjectionMatrixInverse
+gl_TextureMatrixInverse
+gl_ModelViewMatrixTranspose
+gl_ProjectionMatrixTranspose
+gl_ModelViewProjectionMatrixTranspose
+gl_TextureMatrixTranspose
+gl_ModelViewMatrixInverseTranspose
+gl_ProjectionMatrixInverseTranspose
+gl_ModelViewProjectionMatrixInverseTranspose
+gl_TextureMatrixInverseTranspose
+gl_NormalScale
+gl_ClipPlane
+
+gl_DepthRangeParameters
 near
 far
 diff
 gl_DepthRange
+
+gl_PointParameters
+size
+sizeMin
+sizeMax
+fadeThresholdSize
+distanceConstantAttenuation
+distanceLinearAttenuation
+distanceQuadraticAttenuation
+gl_Point
+
+gl_MaterialParameters
+emission
+ambient
+diffuse
+specular
+shininess
+gl_FrontMaterial
+gl_BackMaterial
+
+gl_LightSourceParameters
+position
+halfVector
+spotDirection
+spotExponent
+spotCutoff
+spotCosCutoff
+constantAttenuation
+linearAttenuation
+quadraticAttenuation
+gl_LightSource
+
+gl_LightModelParameters
+gl_LightModel
+
+gl_LightModelProducts
+sceneColor
+gl_FrontLightModelProduct
+gl_BackLightModelProduct
+gl_LightProducts
+gl_FrontLightProduct
+gl_BackLightProduct
+
+gl_TextureEnvColor
+gl_EyePlaneS
+gl_EyePlaneT
+gl_EyePlaneR
+gl_EyePlaneQ
+gl_ObjectPlaneS
+gl_ObjectPlaneT
+gl_ObjectPlaneR
+gl_ObjectPlaneQ
+
+gl_FogParameters
 color
 density
 start
 end
 scale
 gl_Fog
-ambient 
-diffuse 
-specular 
-position 
-halfVector 
-spotDirection 
-spotExponent 
-spotCutoff 
-spotCosCutoff 
-constantAttenuation 
-linearAttenuation 
-quadraticAttenuation
-gl_LightSource
-
 
 // General functions
 
-sin(val)
-cos(val)
-tan(val)
+sin(angle)
+cos(angle)
+tan(angle)
 asin(val)
 acos(val)
-atan(val)
+atan(y,x)
 radians(deg)
 degrees(rad)
 
-
-pow(val,val) 
-exp(val) 
-log(val) 
-exp2(val) 
-log2(val) 
-sqrt(val) 
+pow(x,y)
+exp(val)
+log(val)
+exp2(val)
+log2(val)
+sqrt(val)
 inversesqrt(val)
 
-abs(val) 
-ceil(val) 
-clamp(val,val,val) 
-clamp(val,val,val) 
-floor(val) 
-fract(val) 
-max(val,val) 
-max(val,val) 
-min(val,val) 
-min(val,val) 
-mix(val,val,val) 
-mix(val,val,float) 
-mod(val,val) 
-mod(val,float) 
-sign(val) 
-smoothstep(val,val,val) 
-smoothstep(float,float,val) 
-step(val,val) 
+abs(val)
+sign(val)
+floor(val)
+ceil(val)
+fract(val)
+mod(val,val)
+min(val,val)
+max(val,val)
+clamp(val,val,val)
+mix(val,val,val)
 step(val,val)
+smoothstep(val,val,val)
 
+length(vec)
+distance(vec,vec)
+dot(val,val)
+cross(vec3,vec3)
+normalize(vec)
 ftransform()
-cross(vec3,vec3) 
-distance(vec,vec) 
-dot(val,val) 
-faceforward(V,I,N) 
-length(vec) 
-normalize(vec) 
-reflect(I,N) 
-refract(I,N,eta) 
+faceforward(N,I,Nref)
+reflect(I,N)
+refract(I,N,eta)
 
+matrixCompMult(matx, maty)
 
-dFdx(val) 
-dFdy(val) 
+outerProduct(vec,vec)
+
+transpose(mat)
+
+lessThan(vec,vec)
+lessThanEqual(vec,vec)
+greaterThan(vec,vec)
+greaterThanEqual(vec,vec)
+equal(vec,vec)
+notequal(vec,vec)
+
+all(bvec)
+any(bvec)
+not(bvec)
+
+texture1D(sampler1D, float, [bias])
+texture1DProj(sampler1D, vec, [bias])
+texture1DLod(sampler1D, float, lod)
+texture1DProjLod(sampler1D, vec, lod)
+
+texture2D(sampler2D, vec2, [bias])
+texture2DProj(sampler2D, vec, [bias])
+texture2DLod(sampler2D, vec2, lod)
+texture2DProjLod(sampler2D, vec, lod)
+
+texture3D(sampler3D, vec3, [bias])
+texture3DProj(sampler3D, vec4, [bias])
+texture3DLod(sampler3D, vec3, lod)
+texture3DProjLod(sampler3D, vec4, lod)
+
+textureCube(samplerCube, vec3, [bias])
+textureCubeLod(samplerCube, vec3, lod)
+
+shadow1D(sampler1DShadow, vec3, [bias])
+shadow2D(Sampler2DShadow, vec3, [bias])
+shadow1DProj(sampler1DShadow, vec4, [bias])
+shadow2DProj(sampler2DShadow, vec4, [bias])
+shadow1DLod(sampler1DShadow, vec3, lod)
+shadow2DLod(sampler2DShadow, vec3, lod)
+shadow1DProjLod(sampler1DShadow, vec4, lod)
+shadow2DProjLod(sampler2DShadow, vec4, lod)
+
+dFdx(val)
+dFdy(val)
 fwidth(val)
 
-all(bvec) 
-any(bvec) 
-equal(vec,vec) 
-equal(ivec,ivec) 
-equal(bvec,bvec) 
-greaterThan(vec,vec) 
-greaterThan(ivec,ivec) 
-greaterThanEqual(vec,vec) 
-greaterThanEqual(ivec,ivec) 
-lessThan(vec,vec) 
-lessThan(ivec,ivec) 
-lessThanEqual(vec,vec) 
-lessThanEqual(ivec,ivec) 
-not(bvec) 
-notEqual(vec,vec) 
-notEqual(ivec,ivec) 
-notEqual(bvec,bvec)
+noise1(val)
+noise2(val)
+noise3(val)
+noise4(val)
 
-texture1D(sampler1D,float) 
-texture1DProj(sampler1D,vec2) 
-texture1DProj(sampler1D,vec4) 
-texture2D(sampler2D,vec2) 
-texture2DProj(sampler2D,vec3) 
-texture2DProj(sampler2D,vec4) 
-texture3D(sampler3D,vec3) 
-texture3DProj(sampler3D,vec4) 
-textureCube(samplerCube,vec3) 
-shadow1D(sampler1DShadow,vec3) 
-shadow2D(sampler2DShadow,vec3) 
-shadow1DProj(sampler1DShadow,vec4) 
-shadow2DProj(sampler2DShadow,vec4) 
-
-texture1DLod(sampler1D,float,lod) 
-texture1DProjLod(sampler1D,vec2,lod) 
-texture1DProjLod(sampler1D,vec4,lod) 
-texture2DLod(sampler2D,vec2,lod) 
-texture2DProjLod(sampler2D,vec3,lod) 
-texture2DProjLod(sampler2D,vec4,lod) 
-texture3DProjLod(sampler3D,vec4,lod) 
-textureCubeLod(samplerCube,vec3,lod) 
-shadow1DLod(sampler1DShadow,vec3,lod) 
-shadow2DLod(sampler2DShadow,vec3,lod) 
-shadow1DProjLod(sampler1DShadow,vec4,lod) 
-shadow2DProjLod(sampler2DShadow,vec4,lod)
-
-
-noise1(val) 
-noise2(val) 
-noise3(val) 
-noise4(val) 
-
-
-//randomize()
-//choose(x1,x2,x3,...)
-
+discard

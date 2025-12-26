@@ -16,7 +16,7 @@ class KYyShader extends FileKind {
 	override public function create(name:String, path:String, data:Dynamic, nav:GmlFileNav):GmlFile {
 		if (data == null) data = FileWrap.readYyFileSync(path);
 		var shKind:FileKind = switch (data.type) {
-			case 2, 4: KHLSL.inst;
+			case 2, 3, 4: KHLSL.inst;
 			default: KGLSL.inst;
 		};
 		var nav1:GmlFileNav = { kind: shKind };

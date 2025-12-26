@@ -14,6 +14,7 @@ import haxe.Constraints.Function;
 import js.lib.RegExp;
 import js.Syntax;
 import js.html.Console;
+import haxe.io.Path;
 using tools.NativeString;
 
 /**
@@ -95,7 +96,8 @@ class GlobalSearchImpl {
 				lambdaGml = lambdaPre.gml;
 			} else lambdaPre = null;
 			GlobalSearch.currentPath = path;
-			var q = new GmlReader(code);
+			var isShader = (Path.extension(path) == "fsh" || Path.extension(path) == "vsh");
+			var q = new GmlReader(code, null, isShader);
 			var qSqb:GmlReader = null;
 			var start = 0;
 			var row = 0;

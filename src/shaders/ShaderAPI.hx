@@ -2,6 +2,7 @@ package shaders;
 import ace.AceWrap;
 import ace.extern.*;
 import electron.FileSystem;
+import electron.FileWrap;
 import gml.GmlFuncDoc;
 import parsers.GmlParseAPI;
 import tools.Dictionary;
@@ -28,17 +29,56 @@ class ShaderAPI {
 			var doc = new Dictionary<GmlFuncDoc>();
 			var comp = new AceAutoCompleteItems();
 			//
-			FileSystem.readTextFile(Main.relPath('api/shaders/${name}_names'), function(e, defs) {
-				GmlParseAPI.loadStd(defs, {
-					kind: kind, doc: doc, comp: comp,
-					kindPrefix: name
-				});
-				FileSystem.readTextFile(Main.relPath('api/shaders/keywords_$name.txt'), function(e, d) {
-					~/(\w+)/gm.each(d, function(rx:EReg) {
-						kind.set(rx.matched(1), "keyword");
+			function loadAPI(path_names:String, path_keywords:String) {
+				FileSystem.readTextFile(path_names, function(e, defs) {
+					GmlParseAPI.loadStd(defs, {
+						kind: kind, doc: doc, comp: comp,
+						kindPrefix: name
+					});
+
+					FileSystem.readTextFile(path_keywords, function(e, d) {
+						GmlParseAPI.loadStd(d, {
+							kind: kind, doc: doc, comp: comp,
+							kindPrefix: name
+						});
+						
+						~/(\w+)/gm.each(d, function(rx:EReg) {
+							kind.set(rx.matched(1), "keyword");
+						});
+						for (compItem in comp) {
+							var kindGet = kind.get(compItem.name);
+							if (kind.get(compItem.name) == "keyword") {
+								compItem.meta = "keyword";
+							}
+						}
 					});
 				});
-			});
+			}
+			//
+			loadAPI(Main.relPath('api/shaders/${name}_names'), Main.relPath('api/shaders/keywords_$name.txt'));
+			loadAPI(Main.relPath('api/shaders/extra/${name}_names'), Main.relPath('api/shaders/extra/keywords_$name.txt'));
+			// custom syntax
+			if (FileSystem.canSync) {
+				var xdir = FileWrap.userPath + "/api/shaders";
+
+				var xsearch:String->Void = null;
+				xsearch = function(xdir:String) {
+					for (xrel in FileSystem.readdirSync(xdir)) {
+						var xfull = xdir + "/" + xrel;
+						if (FileSystem.statSync(xfull).isDirectory()) {
+							xsearch(xfull);
+							continue;
+						}
+						if (xrel == '${name}_names') {
+							loadAPI(xfull, '${xdir}/keywords_$name.txt');
+							continue;
+						}
+					}
+				}
+				
+				if (FileSystem.existsSync(xdir))
+					xsearch(xdir);
+			}
 			//
 			if (iter == 0) {
 				glslKind = kind;

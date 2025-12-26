@@ -1,0 +1,4 @@
+precision
+lowp
+mediump
+highp
