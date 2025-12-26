@@ -40,6 +40,7 @@ import ace.AceGmlHighlight;
 			rxRule("numeric",
 				~/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b/
 			),
+			rxRule("constant", ~/\b([xyzw]{1,4}|[rgba]{1,4}|[stqp]{1,4})\b/),
 			rxRule(identFunc, ~/\w+/),
 			rxRule("preproc", ~/#(\w+.+)/),
 			rxRule("set.operator", ~/=|\+=|\-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=/),
