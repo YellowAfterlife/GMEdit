@@ -47,6 +47,18 @@ class AceWrapCommonCompleters {
 	public function gmlOnly(session:AceSession):Bool {
 		return gmlModes[session.modeId];
 	}
+	public function shaderOnly(session:AceSession):Bool {
+		return session.modeId == "ace/mode/shader" && session.gmlFile != null;
+	}
+	public function glslOnly(session:AceSession):Bool {
+		return shaderOnly(session) && Std.is(session.gmlFile.kind, KGLSL);
+	}
+	public function hlslOnly(session:AceSession):Bool {
+		return shaderOnly(session) && Std.is(session.gmlFile.kind, KHLSL);
+	}
+	public function codeAny(session:AceSession):Bool {
+		return session.gmlFile != null;
+	}
 	
 	public var completers:Array<AceAutoCompleter> = [];
 	
@@ -232,7 +244,7 @@ class AceWrapCommonCompleters {
 			var start = "#" + word.charAt(0);
 			var htRegion = new AceWrapCompleterCustom([
 				new AceAutoCompleteItem(word, "preproc"),
-			], excludeTokens, true, gmlOnly, function(cc, ed, ssn, pos, prefix, cb) {
+			], excludeTokens, true, codeAny, function(cc, ed, ssn, pos, prefix, cb) {
 				if (!hashStartsWith(ssn, pos, prefix, start)) return false;
 				return Project.current.version.config.indexingMode != GMS1;
 			});
@@ -281,6 +293,25 @@ class AceWrapCommonCompleters {
 			} else return false;
 		});
 		hashtagCompleters.push(htDefine);
+
+		var htShaderDefine = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("define", "preproc", [
+				"#define name ?expr",
+				"#define name(...args) expr"
+			].join("\n")),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#d")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htShaderDefine);
+
+		var htUndef = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("undef", "preproc", "#undef name"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#u")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htUndef);
 		
 		var htEvent = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("event", "preproc"),
@@ -290,6 +321,67 @@ class AceWrapCommonCompleters {
 			return Std.is(file.kind, KYyEvents) || Std.is(file.kind, KGmxEvents);
 		});
 		hashtagCompleters.push(htEvent);
+
+		var htIf = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("if", "preproc", "#if condition"),
+			new AceAutoCompleteItem("ifdef", "preproc", "#ifdef name"),
+			new AceAutoCompleteItem("ifndef", "preproc", "#ifndef name"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#i")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htIf);
+
+		var htElif = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("elif", "preproc", "#elif condition"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#e")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htElif);
+
+		for (word in ["else", "endif"]) {
+			var start = "#" + word.charAt(0);
+			var htElse = new AceWrapCompleterCustom([
+				new AceAutoCompleteItem(word, "preproc"),
+			], excludeTokens, true, shaderOnly, function(cc, ed, ssn, pos, prefix, cb) {
+				if (!hashStartsWith(ssn, pos, prefix, start)) return false;
+				return true;
+			});
+			hashtagCompleters.push(htElse);
+		}
+
+		var htPragma = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("pragma", "preproc", "#pragma directive"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#p")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htPragma);
+
+		var htError = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("error", "preproc", "#error message"),
+		], excludeTokens, true, shaderOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#e")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htError);
+
+		var htExtension = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("extension", "preproc", "#extension name : behavior"),
+		], excludeTokens, true, glslOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#e")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htExtension);
+
+		var htLine = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("line", "preproc", "#line number ?file"),
+		], excludeTokens, true, glslOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!hashLineStartsWith(ssn, pos, prefix, "#l")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htLine);
 		
 		for (cc in hashtagCompleters) {
 			cc.minLength = 1;
@@ -374,14 +466,10 @@ class AceWrapCommonCompleters {
 	}
 	
 	function initShaders() {
-		glslCompleter = new AceWrapCompleter(ShaderAPI.glslComp, excludeTokens, true, function(q) {
-			return q.modeId == "ace/mode/shader" && q.gmlFile != null && Std.is(q.gmlFile.kind, KGLSL);
-		});
+		glslCompleter = new AceWrapCompleter(ShaderAPI.glslComp, excludeTokens, true, glslOnly);
 		completers.push(glslCompleter);
 		
-		hlslCompleter = new AceWrapCompleter(ShaderAPI.glslComp, excludeTokens, true, function(q) {
-			return q.modeId == "ace/mode/shader" && q.gmlFile != null && Std.is(q.gmlFile.kind, KHLSL);
-		});
+		hlslCompleter = new AceWrapCompleter(ShaderAPI.hlslComp, excludeTokens, true, hlslOnly);
 		completers.push(hlslCompleter);
 	}
 	
