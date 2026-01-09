@@ -13,7 +13,7 @@ class LinuxPaste {
 	static var allowAfter = 0.0;
 	static var updateOnMouseUp = false;
 	static inline function getTime():Float {
-		return js.Syntax.code("(new Date|0)");
+		return Date.now().getTime();
 	}
 	public static function prevent(isMouseDown:Bool = true) {
 		allowAfter = getTime() + delay;
