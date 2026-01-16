@@ -278,6 +278,18 @@ class AceWrapCommonCompleters {
 		});
 		hashtagCompleters.push(htMFunc);
 		
+		var htGmcr = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("gmcr", "preproc", [
+				"#gmcr ?mode",
+				"GMEdit-specific"
+			].join("\n")),
+		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!Preferences.current.coroutineMagic) return false;
+			if (!hashLineStartsWith(ssn, pos, prefix, "#g")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htGmcr);
+		
 		var htDefine = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("define", "preproc"),
 		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
