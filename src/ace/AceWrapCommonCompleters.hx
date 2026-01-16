@@ -80,6 +80,8 @@ class AceWrapCommonCompleters {
 	public var importCompleter:AceWrapCompleter;
 	/** Suggests #lambda function names */
 	public var lambdaCompleter:AceWrapCompleter;
+	/** Suggests #gmcr keywords */
+	public var gmcrCompleter:AceWrapCompleter;
 	
 	/** Suggests local namespaces when typing `var v:` */
 	public var namespaceTypeCompleter:AceWrapCompleter;
@@ -146,6 +148,9 @@ class AceWrapCommonCompleters {
 		
 		lambdaCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
 		completers.push(lambdaCompleter);
+		
+		gmcrCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
+		completers.push(gmcrCompleter);
 	}
 	
 	/** The following work on premise that they will execute in a row */
