@@ -134,6 +134,7 @@ class AceGmlDocHint {
 				typeParams[typeParam] = "variable";
 				procSpaces();
 				if (q.peek() == ":".code) {
+					q.skip();
 					addShift(ttOperator, ":");
 					if (procType()) return true;
 					procSpaces();
