@@ -20,4 +20,9 @@ function v_callable() {
 	array_map(a1, callableRetT); ///want_warn
 	array_map(a2, callableRetT); ///note: OK!
 }
+
+function v_callable_inst() constructor {
+	sorter = /*#cast*/ {}; /// @is {SorterT<string>}
+	var sorter_ret1/*:string*/ = sorter("a", 0); ///want_warn 2 warnings
+	var sorter_ret2/*:int*/ = sorter("a", "b"); ///want_warn
 }
