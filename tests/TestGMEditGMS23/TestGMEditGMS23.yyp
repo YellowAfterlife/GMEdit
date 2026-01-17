@@ -120,6 +120,7 @@
     {"id":{"name":"coro_await","path":"scripts/coro_await/coro_await.yy",},},
     {"id":{"name":"obj_self_object","path":"objects/obj_self_object/obj_self_object.yy",},},
     {"id":{"name":"obj_not_self_object","path":"objects/obj_not_self_object/obj_not_self_object.yy",},},
+    {"id":{"name":"v_last_param_of","path":"scripts/v_last_param_of/v_last_param_of.yy",},},
     {"id":{"name":"v_comparisons","path":"scripts/v_comparisons/v_comparisons.yy",},},
     {"id":{"name":"v_ternary_ident","path":"scripts/v_ternary_ident/v_ternary_ident.yy",},},
     {"id":{"name":"v_outlineview_nav","path":"scripts/v_outlineview_nav/v_outlineview_nav.yy",},},
