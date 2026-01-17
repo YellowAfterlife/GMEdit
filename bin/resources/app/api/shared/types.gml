@@ -35,6 +35,15 @@ typedef enum_tuple;
 // specified_map<a:int, b:string, void> allows only map[?"a"] and map[?"b"]
 typedef specified_map;
 
+// any_fields_of<Struct> is a struct containing some/all fields of Struct
+typedef any_fields_of;
+// params_of<T> extracts template parameters from T, so (params_of<T<int, string, undefined>>) will allow (int, string, undefined)
+typedef params_of;
+// params_of_nl<T> is like above but without the last parameter (useful for extracting types of arguments from function<>)
+typedef params_of_nl;
+// last_param_of<T> extracts only the last parameter (useful for extracting return type from function<>)
+typedef last_param_of;
+
 // GMEdit will auto-pick these for async_load based on event name
 typedef async_load_http = specified_map<
 	id:int,
