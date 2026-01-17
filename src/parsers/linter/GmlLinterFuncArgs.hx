@@ -79,6 +79,8 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 		var hasBufferAutoType:Bool = false;
 		var bufferAutoType:GmlType = null;
 		var bufferAutoTypeRet = false;
+		var lastParamType:GmlType = null;
+		var lastParamRet:Bool = false;
 		//
 		var methodAutoSelf:GmlType = null;
 		//
@@ -119,6 +121,9 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 				case TInst(_, [], KBufferAutoType):
 					hasBufferAutoType = true;
 					bufferAutoTypeRet = true;
+				case TInst(_, [t], KLastParamOf):
+					lastParamRet = true;
+					lastParamType = t;
 				case TInst(name, [t], KCustom) if (name == GmlExtCoroutines.arrayTypeResultName):
 					coroutineStatus = 2;
 					coroutineResult = t;
@@ -268,8 +273,23 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 		
 		if (doc != null) {
 			var retType = doc.returnType;
-			if (bufferAutoTypeRet) retType = bufferAutoType;
-			else if (coroutineResult != null) retType = argc > 0 ? coroutineResult : null;
+			if (bufferAutoTypeRet) {
+				retType = bufferAutoType;
+			}
+			else if (lastParamRet) {
+				var tParams = switch (GmlTypeTools.mapTemplateTypes(lastParamType, templateTypes)) {
+					case null: [];
+					case TInst(_, tp, _): tp;
+					default: [];
+				}
+				var n = tParams.length;
+				if (n > 0) {
+					retType = tParams[n - 1];
+				}
+			}
+			else if (coroutineResult != null) {
+				retType = argc > 0 ? coroutineResult : null;
+			}
 			returnType = retType.mapTemplateTypes(templateTypes);
 		} else if (isFuncValue) {
 			returnType = argTypes[argTypesLen];
