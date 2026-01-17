@@ -183,6 +183,17 @@ class GmlLinterFuncArgs extends GmlLinterHelper {
 						rc(foundError);
 						_default = false;
 					};
+					case TInst(_, [t], KLastParamOf): {
+						var tParams = switch (GmlTypeTools.mapTemplateTypes(t, templateTypes)) {
+							case null: [];
+							case TInst(_, tp, _): tp;
+							default: [];
+						}
+						var n = tParams.length;
+						if (n > 0) {
+							argType = tParams[n - 1];
+						}
+					};
 					default:
 				}
 				if (_default) {
