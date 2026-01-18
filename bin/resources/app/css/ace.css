@@ -186,6 +186,8 @@ textarea#source {
 }
 .ace_tooltip {
 	font: 10pt sans-serif;
+	white-space: pre-wrap;
+    word-wrap: normal;
 }
 
 /** markdown-specific */
