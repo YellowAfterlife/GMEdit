@@ -1477,6 +1477,8 @@ flexpanel_node_get_measure_function(node:flexpanel_node)->function<width:number;
 flexpanel_node_set_measure_function(node:flexpanel_node,mesaure_func:function<width:number; width_type:int; height:number; height_type:int; struct>)->void
 flexpanel_calculate_layout(node:flexpanel_node, width:number|undefined, height:number|undefined, direction:flexpanel_direction_type)->void
 flexpanel_node_layout_get_position(node:flexpanel_node, ?relative:bool)->flexpanel_layout
+flexpanel_set_rounding_scale(scaleFactor:number)->void
+flexpanel_get_rounding_scale()->number
 flexpanel_node_style_get_align_content(node:flexpanel_node)->flexpanel_justify_type
 flexpanel_node_style_get_align_items(node:flexpanel_node)->flexpanel_align_type
 flexpanel_node_style_get_align_self(node:flexpanel_node)->flexpanel_align_type

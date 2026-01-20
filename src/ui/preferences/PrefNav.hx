@@ -71,7 +71,7 @@ class PrefNav {
 	}
 	static function buildCaching(out:Element) {
 		var g = addGroup(out, "Asset caching");
-		addWiki(g, "https://github.com/YellowAfterlife/GMEdit/wiki/preferences#asset-caching");
+		addWiki(g, "https://github.com/YellowAfterlife/GMEdit/wiki/preferences#asset-cache");
 		//
 		var cbIndex:InputElement = null;
 		addCheckbox(g, "Cache text files in memory after load",

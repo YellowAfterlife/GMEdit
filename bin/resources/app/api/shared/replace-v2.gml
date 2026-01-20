@@ -92,11 +92,11 @@ sprite_set_speed(ind:sprite,speed:number,type:sprite_speed_type)->void
 sprite_get_speed_type(ind:sprite)->sprite_speed_type
 sprite_get_speed(ind:sprite)->number
 
-texture_is_ready(tex_id:texture_group|string)->bool
-texture_prefetch(tex_id_or_groupname:texture_group|string)->void
-texture_flush(tex_id_or_groupname:texture_group|string)->void
+texture_is_ready(tex_id:texture|string)->bool
+texture_prefetch(tex_id_or_groupname:texture|string)->void
+texture_flush(tex_id_or_groupname:texture|string)->void
 
-texturegroup_get_textures(groupname:string)->texture_group[]
+texturegroup_get_textures(groupname:string)->texture[]
 texturegroup_get_sprites(groupname:string)->sprite[]
 texturegroup_get_fonts(groupname:string)->font[]
 texturegroup_get_tilesets(groupname:string)->tileset[]
