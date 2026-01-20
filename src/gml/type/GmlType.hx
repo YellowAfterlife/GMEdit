@@ -112,8 +112,9 @@ enum abstract GmlTypeKind(Int) {
 	
 	// Special:
 	var KAnyFieldsOf = 0x1000; // e.g. in instance_create_depth()
-	var KParamsOf = 0x1001; // e.g. in instance_create_depth()
-	var KParamsOfNL = 0x1002; // e.g. in instance_create_depth()
+	var KParamsOf = 0x1001; // params_of<function<int,string,void>> -> rest<int,string,void>
+	var KParamsOfNL = 0x1002; // params_of_nl<function<int,string,void>> -> rest<int,string>
+	var KLastParamOf = 0x1003; // last_param_of<function<int,string,void>> -> void
 	var KMethodSelf = 0x1010; // e.g. in method()
 	var KMethodFunc = 0x1011; // also in method()
 	var KBufferAutoType = 0x1020; // in buffer functions
