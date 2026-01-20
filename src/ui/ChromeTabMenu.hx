@@ -95,6 +95,24 @@ class ChromeTabMenu {
 			}
 		}));
 		menu.append(new MenuItem({
+			id: "close-all-to-right",
+			label: "Close All to Right",
+			click: function() {
+				var tabs = target.parentElement.querySelectorEls(".chrome-tab");
+				var index = tabs.length;
+				for(i in 0...index) {
+					var tab = tabs[i];
+					if (tab == target) {
+						index = i;
+						continue;
+					}
+					if (i > index) {
+						tab.querySelector(".chrome-tab-close").click();
+					}
+				}
+			}
+		}));
+		menu.append(new MenuItem({
 			id: "close-sep",
 			type: MenuItemType.Sep
 		}));
