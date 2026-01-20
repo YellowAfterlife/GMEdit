@@ -1,5 +1,8 @@
 package synext;
 import ace.AceWrap;
+import ace.AceWrapCompleter;
+import ace.extern.AceAutoCompleteItem;
+import ace.extern.AceAutoCompleteItems;
 import gml.GmlAPI;
 import haxe.DynamicAccess;
 import js.html.ScriptElement;
@@ -22,6 +25,7 @@ class GmlExtCoroutines {
 	private static var keywordMap1:Dictionary<AceTokenType> = Dictionary.fromKeys(
 		["yield", "label", "goto"], "keyword");
 	public static var keywordMap:Dictionary<AceTokenType> = keywordMap0;
+	public static var comp:AceAutoCompleteItems = [for (name => type in keywordMap1) { new AceAutoCompleteItem(name, type); }];
 	public static var enabled:Bool = false;
 	public static inline var constructorSuffix = "_coroutine";
 	public static inline var endComment = "*\\endco\\/";
@@ -38,6 +42,8 @@ class GmlExtCoroutines {
 	public static inline function update(enable:Bool) {
 		enabled = enable;
 		keywordMap = enable ? keywordMap1 : keywordMap0;
+		Main.aceEditor.gmlCompleters.gmcrCompleter.items = enable
+			? comp : AceWrapCompleter.noItems;
 	}
 	public static function ensureScript() {
 		var scr:ScriptElement = cast Main.document.getElementById("gmcr_script");

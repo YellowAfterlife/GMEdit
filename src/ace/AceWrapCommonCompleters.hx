@@ -80,6 +80,8 @@ class AceWrapCommonCompleters {
 	public var importCompleter:AceWrapCompleter;
 	/** Suggests #lambda function names */
 	public var lambdaCompleter:AceWrapCompleter;
+	/** Suggests #gmcr keywords */
+	public var gmcrCompleter:AceWrapCompleter;
 	
 	/** Suggests local namespaces when typing `var v:` */
 	public var namespaceTypeCompleter:AceWrapCompleter;
@@ -146,6 +148,9 @@ class AceWrapCommonCompleters {
 		
 		lambdaCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
 		completers.push(lambdaCompleter);
+		
+		gmcrCompleter = new AceWrapCompleter([], excludeTokens, true, gmlOnly);
+		completers.push(gmcrCompleter);
 	}
 	
 	/** The following work on premise that they will execute in a row */
@@ -277,6 +282,18 @@ class AceWrapCommonCompleters {
 			return Project.current.version.config.indexingMode != GMS1;
 		});
 		hashtagCompleters.push(htMFunc);
+		
+		var htGmcr = new AceWrapCompleterCustom([
+			new AceAutoCompleteItem("gmcr", "preproc", [
+				"#gmcr ?mode",
+				"GMEdit-specific"
+			].join("\n")),
+		], excludeTokens, true, gmlOnly, function(cc, ed, ssn:AceSession, pos, prefix:String, cb) {
+			if (!Preferences.current.coroutineMagic) return false;
+			if (!hashLineStartsWith(ssn, pos, prefix, "#g")) return false;
+			return true;
+		});
+		hashtagCompleters.push(htGmcr);
 		
 		var htDefine = new AceWrapCompleterCustom([
 			new AceAutoCompleteItem("define", "preproc"),
