@@ -151,6 +151,9 @@ class GmlLinterIdent {
 						if (ns.getInstKind(currName) != null) {
 							currType = ns.getInstType(currName);
 							currFunc = ns.getInstDoc(currName);
+							if (currFunc == null) {
+								currFunc = currType.getSelfCallDoc(linter.getImports());
+							}
 							return true;
 						} else return false;
 					});
