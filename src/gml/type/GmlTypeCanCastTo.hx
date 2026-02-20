@@ -153,6 +153,11 @@ class GmlTypeCanCastTo {
 							return AceGmlTools.findNamespace(n1, imp, function(ns:GmlNamespace) {
 								var selfCall = ns.instTypes[""];
 								if (selfCall != null) {
+									switch (from) {
+										case TInst(_, params, KCustom):
+											selfCall = GmlTypeTools.mapTemplateTypes(selfCall, params);
+										default:
+									}
 									return canCastTo(selfCall, to, tpl, imp);
 								} else return false;
 							});
