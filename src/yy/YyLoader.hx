@@ -105,8 +105,10 @@ class YyLoader {
 		//
 		assetColours = new Dictionary();
 		var pjName = Path.withoutExtension(project.name);
+		var pjFolderName = Path.withoutDirectory(project.dir);
+		if (pjFolderName == "") pjFolderName = pjName;
 		for (dir in Preferences.userPaths) try {
-			var abPath = '$dir/Layouts/$pjName/$pjName/asset_browser.json';
+			var abPath = '$dir/Layouts/$pjFolderName/$pjName/asset_browser.json';
 			if (!FileSystem.existsSync(abPath)) continue;
 			var ab:YyAssetBrowserData = FileSystem.readYyFileSync(abPath);
 			var abc = ab.AssetColours;
