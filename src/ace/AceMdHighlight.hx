@@ -41,8 +41,8 @@ using tools.NativeString;
 			rBase.push(rxPush("md-italic", ~/\b_\B/, "md.italic"));
 			rBase.push(rxPush("md-bold", ~/\*/, "md.bold"));
 		} else {
-			rBase.push(rxPush("md-italic", ~/\b(?:__|\*\*)\B/, "md.italic"));
-			rBase.push(rxPush("md-bold", ~/\b(?:_|\*)\B/, "md.bold"));
+			rBase.push(rxPush("md-bold", ~/(?:\b__\B|\*\*\b)/, "md.bold"));
+			rBase.push(rxPush("md-italic", ~/(?:\b_\B|\*\b)/, "md.italic"));
 		}
 		rBase.push(rulePairs([
 			"^\\s*#+\\s*", "md-section-prefix",
@@ -94,13 +94,14 @@ using tools.NativeString;
 			rules["md.bold"] = rcct([rEsc,
 				rxRule("md-bold", ~/(?:\*|$)/, "pop"),
 			], rdef("md-bold"));
-		} else {
-			rules["md.italic"] = rcct([
-				rxRule("md-italic", ~/(?:__|\*\*)\b/, "pop")
-			], rdef("md-italic"));
-			rules["md.bold"] = rcct([rEsc,
-				rxRule("md-bold", ~/(?:_|\*)\b/, "pop")
+		}
+		else {
+			rules["md.bold"] = rcct([
+				rxRule("md-bold", ~/(?:\B__\b|\b\*\*)/, "pop")
 			], rdef("md-bold"));
+			rules["md.italic"] = rcct([rEsc,
+				rxRule("md-italic", ~/(?:\B_\b|\b\*)/, "pop")
+			], rdef("md-italic"));
 		}
 		//
 		rules["md.comment"] = [

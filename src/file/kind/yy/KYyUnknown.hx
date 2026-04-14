@@ -101,7 +101,7 @@ class KYyUnknown extends FileKind {
 					if (electron.FileWrap.existsSync(full)) {
 						content = electron.FileWrap.readTextFileSync(full);
 					} else content = "";
-					detect.kind = file.kind.misc.KPlain.inst;
+					detect.kind = file.kind.misc.KMarkdown.inst;
 				};
 				case "GMExtension": makeEl = false;
 			}

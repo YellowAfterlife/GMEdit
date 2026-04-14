@@ -357,7 +357,11 @@ class YyManip {
 				pj.yyObjectGUIDs[name] = cast name;
 			}
 			//
-			ntv = TreeView.makeAssetItem(name, itemRelPath, itemFullPath, kind);
+			var tvItem = TreeView.makeAssetItem(name, itemRelPath, itemFullPath, kind);
+			if (kind == "notes") {
+				tvItem.yyOpenAs = file.kind.misc.KMarkdown.inst;
+			}
+			ntv = tvItem;
 		} // end of folder/not folder
 		
 		// add the treeview and realign YYP items:

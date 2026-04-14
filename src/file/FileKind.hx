@@ -209,8 +209,8 @@ import js.html.Console;
 		KYy.register("GMFont", KYyFont.inst);
 		KYy.register("GMSound", KYySound.inst);
 		//
-		register("md", new KMarkdown(false));
-		register("dmd", new KMarkdown(true));
+		register("md", KMarkdown.inst);
+		register("dmd", KMarkdown.instDMD);
 		register("js", KJavaScript.inst);
 		register("json", KJavaScript.inst);
 		//

@@ -12,6 +12,9 @@ import file.kind.KCode;
  * @author YellowAfterlife
  */
 class KMarkdown extends KCode {
+	public static var inst = new KMarkdown(false);
+	public static var instDMD = new KMarkdown(true);
+	//
 	public var isDocMd:Bool;
 	public function new(dmd:Bool) {
 		super();
