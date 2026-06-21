@@ -118,11 +118,12 @@ input[type=range]::-webkit-slider-runnable-track {
 
 
 
-
-select {
+select, textarea {
 	background-color: #333;
 	color: #eeeeee;
 	border: none;
+}
+select {
 	padding: 6px;
 }
 * {
@@ -227,7 +228,8 @@ button[type=button].highlighted-button {
 }
 
 .popout-window input[type="text"],
-.popout-window select {
+.popout-window select,
+.popout-window textarea {
 	background: #444;
 }
 .popout-window select option[hint]:after {
@@ -240,6 +242,7 @@ button[type=button].highlighted-button {
 	background-color: var(--color-background);
 }
 #preferences-editor input[type="text"],
+#preferences-editor textarea,
 #preferences-editor input[type="button"],
 .ace_optionsMenuEntry button,
 .ace_optionsMenuEntry button:hover,
