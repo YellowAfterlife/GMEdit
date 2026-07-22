@@ -72,8 +72,11 @@ class KYyUnknown extends FileKind {
 			switch (resType) {
 				case "GMSprite", "GMTileSet", "GMSound", "GMPath",
 					"GMScript", "GMShader", "GMFont", "GMTimeline",
-					"GMObject", "GMRoom", "GMAnimCurve"
+					"GMObject", "GMRoom", "GMAnimCurve", "GMParticleSystem"
 				: { // assets
+					if (resType == "GMParticleSystem") {
+						kind = "particle_asset";
+					}
 					var aceKind = "asset." + kind;
 					GmlAPI.gmlKind.set(name, aceKind);
 					GmlAPI.gmlLookupItems.push({ value:name, meta:aceKind });
