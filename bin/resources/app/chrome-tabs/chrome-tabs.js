@@ -177,6 +177,7 @@
           if (tcl.contains('chrome-tab-title-text')) tab = tab.parentElement;
           if (tab) tab.querySelector('.chrome-tab-close').click();
         }
+        $gmedit["ui.misc.LinuxPaste"].prevent();
         return false;
       })
 
